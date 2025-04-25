@@ -1,0 +1,1 @@
+<img src={{ asset('images/icon-jkb.png') }} alt="JKB">
