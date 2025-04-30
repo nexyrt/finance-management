@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\ClientManagement;
 use App\Livewire\Dashboard;
 use App\Livewire\Settings\Appearance;
 use App\Livewire\Settings\Password;
@@ -11,6 +12,7 @@ Route::redirect('/', '/login')->name('home');
 // Group all routes requiring auth and verification
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', Dashboard::class)->name('dashboard');
+    Route::get('/clients', ClientManagement::class)->name('clients');
 });
 
 Route::middleware(['auth'])->group(function () {
