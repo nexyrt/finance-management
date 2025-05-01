@@ -20,7 +20,7 @@
                     </flux:navlist.item>
                 </flux:navlist.group>
 
-                <flux:navlist.group :heading="__('Client Management')" class="grid">
+                <flux:navlist.group :heading="__('Master Data')" class="grid">
                     <flux:navlist.item icon="users" :href="route('clients')"
                         :current="request() -> routeIs('clients')" wire:navigate>{{ __('Clients') }}
                     </flux:navlist.item>

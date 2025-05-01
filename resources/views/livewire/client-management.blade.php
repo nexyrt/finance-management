@@ -1,4 +1,52 @@
-<div class="py-8">
+<div x-data="{
+    selectAll: @entangle('selectAll').live,
+    selectedClients: @entangle('selectedClients').live,
+    bulkAction: '',
+
+    toggleAll() {
+        this.selectAll = !this.selectAll;
+        $wire.call('selectAllClients', this.selectAll);
+    },
+
+    toggleClient(clientId, event) {
+        // Convert clientId to integer for accurate comparison
+        clientId = parseInt(clientId);
+
+        // Before we call the Livewire method, let's check if we're adding or removing
+        if (event.target.checked) {
+            // If it's not already in the array, add it
+            if (!this.selectedClients.includes(clientId)) {
+                this.selectedClients.push(clientId);
+            }
+        } else {
+            // If it is in the array, remove only this one
+            this.selectedClients = this.selectedClients.filter(id => id !== clientId);
+            // If we're removing one, we should ensure selectAll is false
+            this.selectAll = false;
+        }
+
+        // Then sync with Livewire
+        $wire.call('selectClient', clientId, event.target.checked);
+    },
+
+    isSelected(clientId) {
+        return this.selectedClients.includes(parseInt(clientId));
+    },
+
+    setBulkAction(action) {
+        this.bulkAction = action;
+        $wire.call('bulkActionChanged', action);
+    },
+
+    executeBulkAction() {
+        $wire.call('executeBulkAction');
+        this.bulkAction = '';
+    }
+}" class="py-8" @clientPageChanged="$wire.call('refreshClientModals')" x-init="$watch('selectedClients', value => {
+    if (value.length === 0) {
+        selectAll = false;
+    }
+})">
     {{-- Header section with search and filters --}}
     <div class="flex flex-col md:flex-row items-center justify-between mb-6 px-4">
         <h1 class="text-2xl font-bold text-zinc-100 mb-4 md:mb-0">Client Management</h1>
@@ -45,12 +93,62 @@
         </div>
     @endif
 
+    {{-- Bulk Actions Toolbar --}}
+    <div x-show="selectedClients.length > 0" x-transition:enter="transition ease-out duration-300"
+        x-transition:enter-start="opacity-0 transform scale-95" x-transition:enter-end="opacity-100 transform scale-100"
+        x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 transform scale-100"
+        x-transition:leave-end="opacity-0 transform scale-95"
+        class="mb-6 px-4 py-3 bg-gradient-to-r from-indigo-900 to-blue-900 rounded-lg shadow-lg border border-indigo-700" x-cloak>
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <div class="flex items-center justify-center h-10 w-10 rounded-full bg-indigo-800 bg-opacity-50">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" viewBox="0 0 20 20"
+                        fill="currentColor">
+                        <path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" />
+                    </svg>
+                </div>
+                <div>
+                    <span class="text-white font-semibold"><span x-text="selectedClients.length"></span> clients
+                        selected</span>
+                    <button @click="deselectAll()"
+                        class="block text-xs text-blue-200 hover:text-white transition-colors duration-150">
+                        Deselect All
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex flex-wrap justify-center sm:justify-end gap-2">
+                <flux:modal.trigger name="bulk-delete-confirmation">
+                    <x-shared.button variant="danger" class="w-full sm:w-auto">
+                        <div class="flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5" viewBox="0 0 20 20"
+                                fill="currentColor">
+                                <path fill-rule="evenodd"
+                                    d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                                    clip-rule="evenodd" />
+                            </svg>
+                            Delete Selected
+                        </div>
+                    </x-shared.button>
+                </flux:modal.trigger>
+
+                <!-- You can add more bulk actions here in the future -->
+            </div>
+        </div>
+    </div>
+
     {{-- Clients Table --}}
     <div class="bg-zinc-900 border border-zinc-700 rounded-md shadow-sm overflow-hidden mx-4">
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-zinc-700">
                 <thead class="bg-zinc-800">
                     <tr>
+                        <th scope="col" class="pl-6 pr-3 py-3">
+                            <div class="flex items-center">
+                                <input type="checkbox" :checked="selectAll" @click="toggleAll"
+                                    class="form-checkbox h-4 w-4 text-indigo-600 transition duration-150 ease-in-out rounded border-zinc-600 bg-zinc-800 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-zinc-800" />
+                            </div>
+                        </th>
                         <th scope="col"
                             class="px-6 py-3 text-left text-xs font-medium text-zinc-300 uppercase tracking-wider cursor-pointer"
                             wire:click="sortBy('name')">
@@ -95,7 +193,13 @@
                 </thead>
                 <tbody class="divide-y divide-zinc-700">
                     @forelse ($clients as $client)
-                        <tr class="hover:bg-zinc-800/60 transition-colors duration-150 ease-in-out">
+                        <tr class="hover:bg-zinc-800/60 transition-colors duration-150 ease-in-out"
+                            :class="{ 'bg-zinc-800/30': isSelected({{ $client->id }}) }">
+                            <td class="pl-6 pr-3 py-4 whitespace-nowrap">
+                                <input type="checkbox" :checked="isSelected({{ $client->id }})"
+                                    @click="toggleClient({{ $client->id }}, $event)"
+                                    class="form-checkbox h-4 w-4 text-indigo-600 transition duration-150 ease-in-out rounded border-zinc-600 bg-zinc-800 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-zinc-800" />
+                            </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm font-medium text-zinc-100">{{ $client->name }}</div>
                             </td>
@@ -175,7 +279,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="px-6 py-10 text-center text-zinc-400">
+                            <td colspan="6" class="px-6 py-10 text-center text-zinc-400">
                                 <div class="flex flex-col items-center justify-center">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 mb-3 text-zinc-600"
                                         fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -197,13 +301,88 @@
         </div>
 
         {{-- Pagination --}}
-        <div class="border-t border-zinc-700 px-4 py-3">
-            {{ $clients->links() }}
-        </div>
+        @if ($perPage !== 'All')
+            <div class="border-t border-zinc-700 px-4 py-3">
+                {{ $clients->links() }}
+            </div>
+        @else
+            <div class="border-t border-zinc-700 px-4 py-3 text-sm text-zinc-400 text-center">
+                Showing all {{ count($clients) }} clients
+            </div>
+        @endif
     </div>
 
-    {{-- Create/Edit Client Modal --}}
-    <flux:modal name="create-client" title="{{ $isEdit ? 'Edit Client' : 'Add New Client' }}" size="lg">
+    {{-- Bulk Delete Confirmation Modal --}}
+    <flux:modal name="bulk-delete-confirmation" size="md" x-cloak>
+        <div class="text-center">
+            <div class="inline-flex items-center justify-center h-16 w-16 rounded-full bg-red-100 text-red-600 mb-6">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+            </div>
+
+            <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Confirm Bulk Deletion</h3>
+
+            <div class="mb-6">
+                <p class="text-gray-600 dark:text-gray-300 mb-4">
+                    You are about to delete <span class="font-bold text-red-600"
+                        x-text="selectedClients.length"></span> selected clients.
+                    This action cannot be undone.
+                </p>
+
+                <div
+                    class="bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-700 rounded-lg p-4 text-left">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <svg class="h-5 w-5 text-amber-500" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd"
+                                    d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                                    clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm text-amber-700 dark:text-amber-200">
+                                Note: Clients with dependencies (services or invoices) will be skipped automatically.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                <flux:modal.close>
+                    <x-shared.button variant="secondary" class="w-full sm:w-auto">
+                        <div class="flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                            Cancel
+                        </div>
+                    </x-shared.button>
+                </flux:modal.close>
+
+                <flux:modal.close>
+                    <x-shared.button wire:click="executeBulkAction" variant="danger" class="w-full sm:w-auto">
+                        <div class="flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                            Yes, Delete Selected
+                        </div>
+                    </x-shared.button>
+                </flux:modal.close>
+            </div>
+        </div>
+    </flux:modal>
+
+    {{-- Create Client Modal --}}
+    <flux:modal name="create-client" size="lg">
         <h3 class="font-semibold text-lg text-zinc-100 pb-5">{{ $isEdit ? 'Edit Client' : 'Add New Client' }}</h3>
         <form wire:submit.prevent="saveClient">
             <div class="space-y-5">
@@ -220,7 +399,7 @@
                     <div x-data="{}" class="w-full">
                         <label class="block text-sm font-medium text-zinc-300 mb-1">Client Type <span
                                 class="text-red-500">*</span></label>
-                        <div class="client-type-container">
+                        <div class="client-type-container grid grid-cols-2 gap-2">
                             <label class="relative inline-flex items-center cursor-pointer client-type-radio">
                                 <input type="radio" wire:model.live="clientType" value="individual"
                                     class="sr-only peer">
@@ -363,9 +542,11 @@
                     </x-shared.button>
                 </flux:modal.close>
 
-                <x-shared.button variant="primary" type="submit">
-                    {{ $isEdit ? 'Update Client' : 'Create Client' }}
-                </x-shared.button>
+                <flux:modal.close>
+                    <x-shared.button variant="primary" type="submit">
+                        Create Client
+                    </x-shared.button>
+                </flux:modal.close>
             </div>
         </form>
     </flux:modal>
@@ -389,7 +570,7 @@
                         <div x-data="{}" class="w-full">
                             <label class="block text-sm font-medium text-zinc-300 mb-1">Client Type <span
                                     class="text-red-500">*</span></label>
-                            <div class="client-type-container">
+                            <div class="client-type-container grid grid-cols-2 gap-2">
                                 <label class="relative inline-flex items-center cursor-pointer client-type-radio">
                                     <input type="radio" wire:model.live="clientType" value="individual"
                                         class="sr-only peer">
@@ -547,11 +728,11 @@
                 <p class="mt-4 text-zinc-400">Loading client data...</p>
             </div>
         @endif
-
     </flux:modal>
 
 
     <flux:modal name="company-selector" title="Select Companies" size="md">
+        <h3 class="font-semibold text-lg text-zinc-100 pb-5">Select Companies</h3>
         <div class="mb-4">
             <flux:input wire:model.live.debounce.300ms="companySearch" placeholder="Search companies..." />
         </div>
@@ -565,7 +746,7 @@
                                 <input type="checkbox" value="{{ $company['id'] }}"
                                     wire:click="toggleCompany({{ $company['id'] }})"
                                     {{ in_array($company['id'], $selectedCompanies) ? 'checked' : '' }}
-                                    class="form-checkbox h-4 w-4 text-indigo-600 transition duration-150 ease-in-out">
+                                    class="form-checkbox h-4 w-4 text-indigo-600 transition duration-150 ease-in-out rounded border-zinc-600 bg-zinc-800 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-zinc-800">
                                 <span class="text-zinc-200">{{ $company['name'] }}</span>
                             </label>
                         </li>
@@ -588,6 +769,7 @@
     </flux:modal>
 
     <flux:modal name="owner-selector" title="Select Individual Owners" size="md">
+        <h3 class="font-semibold text-lg text-zinc-100 pb-5">Select Individual Owners</h3>
         <div class="mb-4">
             <flux:input wire:model.live.debounce.300ms="ownerSearch" placeholder="Search individuals..." />
         </div>
@@ -601,7 +783,7 @@
                                 <input type="checkbox" value="{{ $owner['id'] }}"
                                     wire:click="toggleOwner({{ $owner['id'] }})"
                                     {{ in_array($owner['id'], $selectedOwners) ? 'checked' : '' }}
-                                    class="form-checkbox h-4 w-4 text-indigo-600 transition duration-150 ease-in-out">
+                                    class="form-checkbox h-4 w-4 text-indigo-600 transition duration-150 ease-in-out rounded border-zinc-600 bg-zinc-800 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-zinc-800">
                                 <span class="text-zinc-200">{{ $owner['name'] }}</span>
                             </label>
                         </li>
@@ -671,9 +853,11 @@
                 </flux:modal.close>
 
                 @if (!isset($hasDependencies) || !$hasDependencies)
-                    <x-shared.button wire:click="deleteClient" variant="danger">
-                        Delete
-                    </x-shared.button>
+                    <flux:modal.close>
+                        <x-shared.button wire:click="deleteClient" variant="danger">
+                            Delete
+                        </x-shared.button>
+                    </flux:modal.close>
                 @endif
             </div>
         @else
@@ -682,12 +866,12 @@
                 <p class="mt-4 text-zinc-400">Loading client information...</p>
             </div>
         @endif
-
     </flux:modal>
 
     {{-- Client Detail View Modals (Dynamic) --}}
-    @foreach ($clients as $client)
+    @foreach ($allClients as $client)
         <flux:modal name="view-client-{{ $client->id }}" class="xl:max-w-5xl">
+            <h3 class="font-semibold text-lg text-zinc-100 pb-5">Client Details</h3>
             @if ($viewingClient && $viewingClient->id === $client->id)
                 <!-- Enhanced responsive design for the client detail view -->
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
