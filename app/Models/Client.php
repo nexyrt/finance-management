@@ -27,7 +27,7 @@ class Client extends Model
             'client_relationships', 
             'owner_id', 
             'company_id'
-        );
+        )->select(['clients.*']); // Explicitly select all columns from clients table
     }
 
     public function owners(): BelongsToMany
@@ -37,7 +37,7 @@ class Client extends Model
             'client_relationships', 
             'company_id', 
             'owner_id'
-        );
+        )->select(['clients.*']); // Explicitly select all columns from clients table
     }
 
     public function serviceClients(): HasMany
