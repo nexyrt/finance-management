@@ -9,8 +9,8 @@ return new class extends Migration {
     {
         Schema::create('invoice_items', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('invoice_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('service_client_id')->constrained()->onDelete('cascade');
+            $table->foreignId('invoice_id')->constrained()->cascadeOnDelete(); // Already has cascade
+            $table->foreignId('service_client_id')->constrained()->onDelete('cascade'); // Add onDelete cascade
             $table->decimal('amount', 12, 2);
             $table->timestamps();
         });

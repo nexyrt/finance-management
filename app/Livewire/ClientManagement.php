@@ -15,15 +15,10 @@ class ClientManagement extends Component
     public $perPage = 10;
     public $search = '';
     public $typeFilter = '';
-    public $selectedClients = [];
-    public $selectAll = false;
-    
-    // Modal states
-    public $showModal = false;
-    public $showDeleteModal = false;
     public $editingClient = null;
     public $isEditing = false;
-    
+    public $deletedInvoices = [];
+
     // Form data
     public $form = [
         'name' => '',
@@ -32,14 +27,9 @@ class ClientManagement extends Component
         'phone' => '',
         'address' => '',
         'tax_id' => '',
+        'relationships' => [],
     ];
-    
-    // Related clients selection
-    public $selectedOwner = '';
-    public $selectedCompany = '';
-    public $ownershipModal = false;
-    public $ownershipClient = null;
-    
+
     protected $rules = [
         'form.name' => 'required|string|max:255',
         'form.type' => 'required|in:individual,company',
@@ -47,27 +37,8 @@ class ClientManagement extends Component
         'form.phone' => 'nullable|string|max:20',
         'form.address' => 'nullable|string',
         'form.tax_id' => 'nullable|string|max:50',
+        'form.relationships' => 'array',
     ];
-
-    public function mount()
-    {
-        $this->search = '';
-        $this->typeFilter = '';
-    }
-
-    public function updatedSelectAll($value)
-    {
-        if ($value) {
-            $this->selectedClients = $this->getClientsProperty()->pluck('id')->toArray();
-        } else {
-            $this->selectedClients = [];
-        }
-    }
-
-    public function updatedSelectedClients()
-    {
-        $this->selectAll = count($this->selectedClients) === $this->getClientsProperty()->count();
-    }
 
     public function getClientsProperty()
     {
@@ -82,157 +53,253 @@ class ClientManagement extends Component
             ->paginate($this->perPage);
     }
 
-    public function create()
+    public function getAvailableConnectionsProperty()
+    {
+        if (empty($this->form['type'])) {
+            return collect();
+        }
+
+        if ($this->form['type'] === 'individual') {
+            $currentId = $this->editingClient?->id;
+            return Client::companies()
+                ->when($currentId, fn($query) => $query->where('id', '!=', $currentId))
+                ->get(['id', 'name', 'email']);
+        } else {
+            $currentId = $this->editingClient?->id;
+            return Client::individuals()
+                ->when($currentId, fn($query) => $query->where('id', '!=', $currentId))
+                ->get(['id', 'name', 'email']);
+        }
+    }
+
+    public function resetRelationships()
+    {
+        $this->form['relationships'] = [];
+    }
+
+    public function openCreateModal()
     {
         $this->resetForm();
         $this->isEditing = false;
-        $this->showModal = true;
     }
 
-    public function edit($clientId)
+    public function openEditModal($clientId)
     {
         $client = Client::findOrFail($clientId);
         $this->editingClient = $client;
         $this->isEditing = true;
+
+        // Ensure the type is properly set for the select component
         $this->form = [
+            'name' => $client->name,
+            'type' => $client->type, // This will be the correct value
+            'email' => $client->email,
+            'phone' => $client->phone,
+            'address' => $client->address,
+            'tax_id' => $client->tax_id,
+            'relationships' => $this->getCurrentRelationships($client),
+        ];
+    }
+
+    public function save()
+    {
+        try {
+            $this->validate();
+
+            DB::transaction(function () {
+                if ($this->isEditing) {
+                    $this->editingClient->update($this->form);
+                    $client = $this->editingClient;
+                } else {
+                    $client = Client::create($this->form);
+                }
+
+                $this->updateRelationships($client);
+            });
+
+            $this->resetForm();
+
+            session()->flash('message', $this->isEditing ? 'Client updated successfully.' : 'Client created successfully.');
+
+            // Emit event to close modal
+            $this->js('$dispatch("close-modal", { name: "client-form" })');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // Validation errors are handled by Livewire automatically
+            throw $e;
+        } catch (\Exception $e) {
+            session()->flash('error', 'An error occurred while saving the client: ' . $e->getMessage());
+        }
+    }
+
+    public function deleteClient($clientId)
+    {
+        try {
+            $client = Client::find($clientId);
+            if ($client) {
+                DB::transaction(function () use ($client) {
+                    $client->delete();
+                });
+
+                session()->flash('message', 'Client deleted successfully.');
+                $this->js('$dispatch("close-modal", { name: "delete-modal" })');
+                $this->js('$dispatch("clients-deleted")');
+            } else {
+                session()->flash('error', 'Client not found.');
+            }
+        } catch (\Exception $e) {
+            session()->flash('error', 'Error deleting client: ' . $e->getMessage());
+        }
+    }
+
+    public function deleteMultiple(array $clientIds)
+    {
+        try {
+            if (empty($clientIds)) {
+                session()->flash('error', 'No clients selected for deletion.');
+                return;
+            }
+
+            $deletedCount = 0;
+            $invoiceCount = 0;
+
+            DB::transaction(function () use ($clientIds, &$deletedCount, &$invoiceCount) {
+                foreach ($clientIds as $clientId) {
+                    $client = Client::with('invoices')->find($clientId);
+                    if ($client) {
+                        $invoiceCount += $client->invoices->count();
+                        $client->delete();
+                        $deletedCount++;
+                    }
+                }
+            });
+
+            $message = sprintf(
+                'Successfully deleted %d client%s',
+                $deletedCount,
+                $deletedCount === 1 ? '' : 's'
+            );
+
+            if ($invoiceCount > 0) {
+                $message .= sprintf(' and %d invoice%s', $invoiceCount, $invoiceCount === 1 ? '' : 's');
+            }
+
+            $message .= '.';
+
+            session()->flash('message', $message);
+
+            $this->js('$dispatch("close-modal", { name: "delete-modal" })');
+            $this->js('$dispatch("clients-deleted")');
+        } catch (\Exception $e) {
+            session()->flash('error', 'Error deleting clients: ' . $e->getMessage());
+        }
+    }
+
+    public function getDeletedInvoices(array $clientIds)
+    {
+        if (empty($clientIds))
+            return [];
+
+        return Client::whereIn('id', $clientIds)
+            ->with('invoices')
+            ->get()
+            ->flatMap(function ($client) {
+                return $client->invoices;
+            })
+            ->map(function ($invoice) {
+                return [
+                    'invoice_number' => $invoice->invoice_number,
+                    'total_amount' => $invoice->total_amount,
+                    'status' => $invoice->status,
+                ];
+            })
+            ->toArray();
+    }
+
+    public function getClientDetails($clientId)
+    {
+        $client = Client::with(['invoices', 'ownedCompanies', 'owners'])->findOrFail($clientId);
+
+        return [
+            'id' => $client->id,
             'name' => $client->name,
             'type' => $client->type,
             'email' => $client->email,
             'phone' => $client->phone,
             'address' => $client->address,
             'tax_id' => $client->tax_id,
+            'owned_companies' => $client->ownedCompanies->map(function ($company) {
+                return [
+                    'id' => $company->id,
+                    'name' => $company->name,
+                    'email' => $company->email
+                ];
+            }),
+            'owners' => $client->owners->map(function ($owner) {
+                return [
+                    'id' => $owner->id,
+                    'name' => $owner->name,
+                    'email' => $owner->email
+                ];
+            }),
+            'invoices' => $client->invoices
         ];
-        $this->showModal = true;
     }
 
-    public function save()
+    protected function getCurrentRelationships($client)
     {
-        $this->validate();
-        
-        if ($this->isEditing) {
-            $this->editingClient->update($this->form);
+        if ($client->type === 'individual') {
+            return $client->ownedCompanies()->pluck('company_id')->toArray();
         } else {
-            Client::create($this->form);
+            return $client->owners()->pluck('owner_id')->toArray();
         }
-        
-        $this->showModal = false;
-        $this->resetForm();
-        
-        session()->flash('message', $this->isEditing ? 'Client updated successfully.' : 'Client created successfully.');
     }
 
-    public function confirmDelete($clientId = null)
+    protected function updateRelationships($client)
     {
-        if ($clientId) {
-            $this->selectedClients = [$clientId];
-        }
-        $this->showDeleteModal = true;
-    }
+        if ($client->type === 'individual') {
+            $currentRelations = $client->ownedCompanies()->pluck('company_id')->toArray();
+            $newRelations = $this->form['relationships'] ?? [];
 
-    public function deleteSelected()
-    {
-        DB::transaction(function () {
-            // Delete clients and their related records
-            foreach ($this->selectedClients as $clientId) {
-                $client = Client::find($clientId);
-                if ($client) {
-                    $client->delete();
-                }
+            foreach (array_diff($currentRelations, $newRelations) as $companyId) {
+                ClientRelationship::where('owner_id', $client->id)
+                    ->where('company_id', $companyId)
+                    ->delete();
             }
-        });
-        
-        $this->selectedClients = [];
-        $this->selectAll = false;
-        $this->showDeleteModal = false;
-        
-        session()->flash('message', 'Selected clients deleted successfully.');
-    }
 
-    public function manageRelationships($clientId)
-    {
-        $this->ownershipClient = Client::findOrFail($clientId);
-        $this->loadCurrentRelationships();
-        $this->selectedOwner = '';
-        $this->selectedCompany = '';
-        $this->ownershipModal = true;
-    }
-
-    public function loadCurrentRelationships()
-    {
-        if ($this->ownershipClient->type === 'individual') {
-            $this->selectedCompany = $this->ownershipClient->ownedCompanies()
-                ->pluck('company_id')
-                ->first();
+            foreach (array_diff($newRelations, $currentRelations) as $companyId) {
+                ClientRelationship::create([
+                    'owner_id' => $client->id,
+                    'company_id' => $companyId,
+                ]);
+            }
         } else {
-            $this->selectedOwner = $this->ownershipClient->owners()
-                ->pluck('owner_id')
-                ->first();
+            $currentRelations = $client->owners()->pluck('owner_id')->toArray();
+            $newRelations = $this->form['relationships'] ?? [];
+
+            foreach (array_diff($currentRelations, $newRelations) as $ownerId) {
+                ClientRelationship::where('company_id', $client->id)
+                    ->where('owner_id', $ownerId)
+                    ->delete();
+            }
+
+            foreach (array_diff($newRelations, $currentRelations) as $ownerId) {
+                ClientRelationship::create([
+                    'owner_id' => $ownerId,
+                    'company_id' => $client->id,
+                ]);
+            }
         }
     }
 
-    public function saveRelationship()
+    public function toggleRelationship($id)
     {
-        if ($this->ownershipClient->type === 'individual' && $this->selectedCompany) {
-            // Remove existing relationships
-            ClientRelationship::where('owner_id', $this->ownershipClient->id)->delete();
-            
-            // Create new relationship
-            ClientRelationship::create([
-                'owner_id' => $this->ownershipClient->id,
-                'company_id' => $this->selectedCompany,
-            ]);
-        } elseif ($this->ownershipClient->type === 'company' && $this->selectedOwner) {
-            // Remove existing relationships
-            ClientRelationship::where('company_id', $this->ownershipClient->id)->delete();
-            
-            // Create new relationship
-            ClientRelationship::create([
-                'owner_id' => $this->selectedOwner,
-                'company_id' => $this->ownershipClient->id,
-            ]);
-        }
-        
-        $this->ownershipModal = false;
-        
-        session()->flash('message', 'Relationship updated successfully.');
-    }
+        $relationships = $this->form['relationships'] ?? [];
 
-    public function getIndividualsProperty()
-    {
-        if (!$this->ownershipClient) {
-            return collect([]);
+        if (in_array($id, $relationships)) {
+            $this->form['relationships'] = array_values(array_diff($relationships, [$id]));
+        } else {
+            $this->form['relationships'][] = $id;
         }
-        
-        // Get individuals that don't already own this company
-        if ($this->ownershipClient->type === 'company') {
-            $ownerIds = $this->ownershipClient->owners()->pluck('owner_id');
-            return Client::individuals()
-                ->whereNotIn('id', [$this->ownershipClient->id]) // Exclude self
-                ->whereNotIn('id', $ownerIds) // Exclude already owners
-                ->pluck('name', 'id')
-                ->toArray();
-        }
-        
-        return collect([]);
-    }
-
-    public function getCompaniesProperty()
-    {
-        if (!$this->ownershipClient) {
-            return collect([]);
-        }
-        
-        // Get companies that are not already owned by this individual
-        if ($this->ownershipClient->type === 'individual') {
-            $ownedCompanyIds = $this->ownershipClient->ownedCompanies()->pluck('company_id');
-            return Client::companies()
-                ->whereNotIn('id', [$this->ownershipClient->id]) // Exclude self
-                ->whereNotIn('id', $ownedCompanyIds) // Exclude already owned
-                ->pluck('name', 'id')
-                ->toArray();
-        }
-        
-        return collect([]);
     }
 
     public function resetForm()
@@ -244,6 +311,7 @@ class ClientManagement extends Component
             'phone' => '',
             'address' => '',
             'tax_id' => '',
+            'relationships' => [],
         ];
         $this->editingClient = null;
     }

@@ -13,11 +13,11 @@ class Client extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name', 
-        'type', 
-        'email', 
-        'phone', 
-        'address', 
+        'name',
+        'type',
+        'email',
+        'phone',
+        'address',
         'tax_id'
     ];
 
@@ -59,13 +59,13 @@ class Client extends Model
         // First, delete all invoice items that reference service clients of this client
         $serviceClientIds = $this->serviceClients()->pluck('id');
         InvoiceItem::whereIn('service_client_id', $serviceClientIds)->delete();
-        
+
         // Now delete the service clients
         $this->serviceClients()->delete();
-        
+
         // Delete invoices for this client
         $this->invoices()->delete();
-        
+
         // Delete client relationships
         if ($this->type === 'individual') {
             // Remove owned companies relationships
@@ -74,7 +74,7 @@ class Client extends Model
             // Remove owners relationships
             $this->owners()->detach();
         }
-        
+
         return parent::delete();
     }
 }
