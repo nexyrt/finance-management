@@ -2,6 +2,7 @@
 
 use App\Livewire\ClientManagement;
 use App\Livewire\Dashboard;
+use App\Livewire\ServiceManagement;
 use App\Livewire\Settings\Appearance;
 use App\Livewire\Settings\Password;
 use App\Livewire\Settings\Profile;
@@ -13,6 +14,7 @@ Route::redirect('/', '/login')->name('home');
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', Dashboard::class)->name('dashboard');
     Route::get('/clients', ClientManagement::class)->name('clients');
+    Route::get('/services', ServiceManagement::class)->name('services');
 });
 
 Route::middleware(['auth'])->group(function () {
