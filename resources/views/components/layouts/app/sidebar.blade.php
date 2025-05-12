@@ -24,8 +24,9 @@
                     <flux:navlist.item icon="users" :href="route('clients')"
                         :current="request() -> routeIs('clients')" wire:navigate>{{ __('Clients') }}
                     </flux:navlist.item>
-                    <flux:navlist.item icon="users" :href="route('services')"
-                        :current="request() -> routeIs('services')" wire:navigate>{{ __('Services') }}
+                    <flux:navlist.item icon="puzzle-piece" :href="route('services')"
+                        :current="request() -> routeIs('services')" wire:navigate>
+                        {{ __('Services') }}
                     </flux:navlist.item>
                 </flux:navlist.group>
             </flux:navlist>
@@ -125,7 +126,7 @@
             </flux:dropdown>
         </flux:header>
 
-        
+
 
         {{ $slot }}
 

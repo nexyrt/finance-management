@@ -18,6 +18,7 @@ class ClientManagement extends Component
     public $editingClient = null;
     public $isEditing = false;
     public $deletedInvoices = [];
+    public $viewingClient = null;
 
     // Form data
     public $form = [
@@ -42,15 +43,24 @@ class ClientManagement extends Component
 
     public function getClientsProperty()
     {
-        return Client::query()
+        $query = Client::query()
             ->when($this->search, function ($query) {
                 $query->where('name', 'like', '%' . $this->search . '%');
             })
             ->when($this->typeFilter, function ($query) {
                 $query->where('type', $this->typeFilter);
             })
-            ->latest()
-            ->paginate($this->perPage);
+            ->latest();
+
+        // Check if perPage is 'all', if so return all results without pagination
+        if ($this->perPage === 'all') {
+            // Apply pagination with a very large number to effectively get all results
+            // but still maintain the pagination component for consistency
+            return $query->paginate(999999);
+        }
+
+        // Otherwise paginate normally
+        return $query->paginate($this->perPage);
     }
 
     public function getAvailableConnectionsProperty()
@@ -194,10 +204,14 @@ class ClientManagement extends Component
         }
     }
 
+    /**
+     * Get all invoices that would be deleted with the given clients
+     */
     public function getDeletedInvoices(array $clientIds)
     {
-        if (empty($clientIds))
+        if (empty($clientIds)) {
             return [];
+        }
 
         return Client::whereIn('id', $clientIds)
             ->with('invoices')
@@ -207,12 +221,71 @@ class ClientManagement extends Component
             })
             ->map(function ($invoice) {
                 return [
+                    'id' => $invoice->id,
                     'invoice_number' => $invoice->invoice_number,
-                    'total_amount' => $invoice->total_amount,
+                    'total_amount' => (float) $invoice->total_amount,
                     'status' => $invoice->status,
                 ];
             })
+            ->values()
             ->toArray();
+    }
+
+    /**
+     * Method to open the view modal and load client details
+     */
+    public function openViewModal($clientId)
+    {
+        try {
+            // Fetch the client details
+            $client = Client::with(['invoices', 'ownedCompanies', 'owners'])->findOrFail($clientId);
+            
+            // Format the client data
+            $this->viewingClient = [
+                'id' => $client->id,
+                'name' => $client->name,
+                'type' => $client->type,
+                'email' => $client->email,
+                'phone' => $client->phone,
+                'address' => $client->address,
+                'tax_id' => $client->tax_id,
+                'owned_companies' => $client->ownedCompanies->map(function ($company) {
+                    return [
+                        'id' => $company->id,
+                        'name' => $company->name,
+                        'email' => $company->email
+                    ];
+                })->toArray(),
+                'owners' => $client->owners->map(function ($owner) {
+                    return [
+                        'id' => $owner->id,
+                        'name' => $owner->name,
+                        'email' => $owner->email
+                    ];
+                })->toArray(),
+                'invoices' => $client->invoices->map(function ($invoice) {
+                    return [
+                        'id' => $invoice->id,
+                        'invoice_number' => $invoice->invoice_number,
+                        'total_amount' => (float)$invoice->total_amount,
+                        'status' => $invoice->status,
+                    ];
+                })->toArray()
+            ];
+            
+            // Open the modal
+            $this->js('$dispatch("open-modal", { name: "view-modal" })');
+        } catch (\Exception $e) {
+            session()->flash('error', 'Error loading client details: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Clear viewing client data when the modal is closed
+     */
+    public function clearViewingClient()
+    {
+        $this->viewingClient = null;
     }
 
     public function getClientDetails($clientId)
