@@ -7,6 +7,7 @@ use App\Models\ClientRelationship;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Illuminate\Support\Facades\DB;
+use Livewire\Attributes\Computed;
 
 class ClientManagement extends Component
 {
@@ -41,7 +42,28 @@ class ClientManagement extends Component
         'form.relationships' => 'array',
     ];
 
-    public function getClientsProperty()
+    /**
+     * Reset to page 1 when search, filters, or perPage changes
+     */
+    public function updatedSearch()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedTypeFilter()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedPerPage()
+    {
+        $this->resetPage();
+    }
+
+    /**
+     * Explicit method for resetting page after perPage changes through UI
+     */
+    public function resetPageAfterChange()
     {
         $query = Client::query()
             ->when($this->search, function ($query) {
@@ -63,7 +85,8 @@ class ClientManagement extends Component
         return $query->paginate($this->perPage);
     }
 
-    public function getAvailableConnectionsProperty()
+    #[Computed]
+    public function availableConnections()
     {
         if (empty($this->form['type'])) {
             return collect();
@@ -99,10 +122,9 @@ class ClientManagement extends Component
         $this->editingClient = $client;
         $this->isEditing = true;
 
-        // Ensure the type is properly set for the select component
         $this->form = [
             'name' => $client->name,
-            'type' => $client->type, // This will be the correct value
+            'type' => $client->type,
             'email' => $client->email,
             'phone' => $client->phone,
             'address' => $client->address,
@@ -128,13 +150,9 @@ class ClientManagement extends Component
             });
 
             $this->resetForm();
-
             session()->flash('message', $this->isEditing ? 'Client updated successfully.' : 'Client created successfully.');
-
-            // Emit event to close modal
-            $this->js('$dispatch("close-modal", { name: "client-form" })');
+            $this->dispatch('refresh-component');
         } catch (\Illuminate\Validation\ValidationException $e) {
-            // Validation errors are handled by Livewire automatically
             throw $e;
         } catch (\Exception $e) {
             session()->flash('error', 'An error occurred while saving the client: ' . $e->getMessage());
@@ -151,8 +169,7 @@ class ClientManagement extends Component
                 });
 
                 session()->flash('message', 'Client deleted successfully.');
-                $this->js('$dispatch("close-modal", { name: "delete-modal" })');
-                $this->js('$dispatch("clients-deleted")');
+                $this->dispatch('clients-deleted');
             } else {
                 session()->flash('error', 'Client not found.');
             }
@@ -196,9 +213,7 @@ class ClientManagement extends Component
             $message .= '.';
 
             session()->flash('message', $message);
-
-            $this->js('$dispatch("close-modal", { name: "delete-modal" })');
-            $this->js('$dispatch("clients-deleted")');
+            $this->dispatch('clients-deleted');
         } catch (\Exception $e) {
             session()->flash('error', 'Error deleting clients: ' . $e->getMessage());
         }
@@ -290,7 +305,9 @@ class ClientManagement extends Component
 
     public function getClientDetails($clientId)
     {
-        $client = Client::with(['invoices', 'ownedCompanies', 'owners'])->findOrFail($clientId);
+        $client = Client::with(['invoices' => function($query) {
+            $query->orderBy('due_date', 'desc');
+        }, 'ownedCompanies', 'owners'])->findOrFail($clientId);
 
         return [
             'id' => $client->id,
@@ -314,7 +331,15 @@ class ClientManagement extends Component
                     'email' => $owner->email
                 ];
             }),
-            'invoices' => $client->invoices
+            'invoices' => $client->invoices->map(function ($invoice) {
+                return [
+                    'id' => $invoice->id,
+                    'invoice_number' => $invoice->invoice_number,
+                    'total_amount' => $invoice->total_amount,
+                    'status' => $invoice->status,
+                    'due_date' => $invoice->due_date->format('Y-m-d'),
+                ];
+            }),
         ];
     }
 
@@ -375,7 +400,7 @@ class ClientManagement extends Component
         }
     }
 
-    public function resetForm()
+    protected function resetForm()
     {
         $this->form = [
             'name' => '',

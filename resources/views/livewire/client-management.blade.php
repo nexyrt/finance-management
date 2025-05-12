@@ -1,13 +1,24 @@
-<section class="p-6">
+<section class="p-6 space-y-6">
     <div class="max-w-7xl mx-auto">
-        <!-- Header -->
-        <div class="mb-8 flex items-center justify-between">
+        <!-- Enhanced Header with Glass Effect -->
+        <div class="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-                <h1 class="text-3xl font-bold tracking-tight text-white">Client Management</h1>
-                <p class="mt-2 text-zinc-400">Manage your clients and their relationships</p>
+                <h1 class="text-3xl font-bold tracking-tight text-white flex items-center gap-3">
+                    <svg class="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    Client Management
+                </h1>
+                <p class="mt-2 text-zinc-400">Manage your clients and their relationships effortlessly</p>
             </div>
             <flux:modal.trigger name="client-form">
-                <x-shared.button x-on:click="$wire.openCreateModal()" variant="primary" icon="M12 4v16m8-8H4">
+                <x-shared.button @click="$wire.openCreateModal()" variant="primary"
+                    class="shadow-lg hover:shadow-blue-500/25 transition-shadow w-full sm:w-auto justify-center">
+                    <svg class="w-5 h-5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
                     Add Client
                 </x-shared.button>
             </flux:modal.trigger>
@@ -24,43 +35,52 @@
                 ]" label="Per Page" />
             </div>
 
-            <div class="w-full sm:w-48">
-                <x-inputs.select wire:model.live="typeFilter" :options="[
-                    ['value' => '', 'label' => 'All Types'],
-                    ['value' => 'individual', 'label' => 'Individuals'],
-                    ['value' => 'company', 'label' => 'Companies'],
-                ]" label="Filter by Type" />
-            </div>
+                <div class="w-full sm:w-48 z-40">
+                    <x-inputs.select wire:model.live="typeFilter" :options="[
+                        ['value' => '', 'label' => 'All Types'],
+                        ['value' => 'individual', 'label' => 'Individuals'],
+                        ['value' => 'company', 'label' => 'Companies'],
+                    ]" label="Filter by Type" />
+                </div>
 
-            <div class="flex-1 min-w-[300px]">
-                <label class="block text-sm font-medium text-zinc-300 mb-1">Search Clients</label>
-                <div class="relative">
-                    <input wire:model.live.debounce.300ms="search" placeholder="Search by name..." type="text"
-                        class="w-full pl-10 pr-4 py-2.5 bg-zinc-900/50 border border-zinc-700 rounded-lg text-zinc-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" />
-                    <svg class="absolute left-3 top-3 h-4 w-4 text-zinc-400" fill="none" stroke="currentColor"
-                        viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
+                <div class="flex-1 min-w-[300px]">
+                    <label class="block text-sm font-medium text-zinc-300 mb-1">Search Clients</label>
+                    <div class="relative">
+                        <input wire:model.live.debounce.300ms="search" placeholder="Search by name..." type="text"
+                            class="w-full pl-10 pr-4 py-2.5 bg-zinc-900/70 border border-zinc-700/50 rounded-lg text-zinc-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all placeholder:text-zinc-500" />
+                        <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-zinc-400"
+                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Alpine.js for Client Selection -->
-        <div x-data="clientManager()">
-            <!-- Bulk Actions -->
+        <!-- Main container with Alpine.js -->
+        <div x-data="clientManager()" x-init="init()" wire:key="client-manager">
+
             <div x-show="selectedClients.length > 0" x-transition:enter="transition ease-out duration-200"
                 x-transition:enter-start="opacity-0 -translate-y-2" x-transition:enter-end="opacity-100 translate-y-0"
                 x-transition:leave="transition ease-in duration-150"
                 x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 -translate-y-2"
-                x-cloak class="mb-4 p-4 bg-zinc-800/50 border border-zinc-700 rounded-lg backdrop-blur-sm">
+                class="mb-4 p-4 bg-gradient-to-r from-blue-900/20 to-indigo-900/20 border border-blue-700/50 rounded-lg backdrop-blur-sm shadow-lg">
                 <div class="flex items-center justify-between">
-                    <span class="text-sm text-zinc-300">
+                    <span class="text-sm text-zinc-300 flex items-center gap-2">
+                        <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
                         <span x-text="selectedClients.length"></span> client(s) selected
                     </span>
-                    <flux:modal.trigger name="delete-modal" @click="prepareDeleteMultiple">
-                        <x-shared.button variant="danger"
-                            icon="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+                    <flux:modal.trigger name="delete-modal">
+                        <x-shared.button @click="prepareDeleteMultiple()" variant="danger"
+                            class="shadow-lg hover:shadow-red-500/25 transition-shadow">
+                            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
                             Delete Selected
                         </x-shared.button>
                     </flux:modal.trigger>
@@ -168,54 +188,73 @@
                                             </x-shared.icon-button>
                                         </flux:modal.trigger>
 
-                                        <flux:modal.trigger name="client-form">
-                                            <x-shared.icon-button @click="$wire.openEditModal({{ $client->id }})"
-                                                variant="warning">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4"
-                                                    fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        stroke-width="2"
-                                                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                                </svg>
-                                            </x-shared.icon-button>
-                                        </flux:modal.trigger>
+                                                <flux:modal.trigger name="client-form">
+                                                    <x-shared.icon-button
+                                                        @click="$wire.openEditModal({{ $client->id }})"
+                                                        variant="warning"
+                                                        class="hover:shadow-lg hover:shadow-yellow-500/20">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4"
+                                                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                stroke-width="2"
+                                                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                        </svg>
+                                                    </x-shared.icon-button>
+                                                </flux:modal.trigger>
 
-                                        <flux:modal.trigger name="delete-modal">
-                                            <x-shared.icon-button @click="prepareDeleteSingle({{ $client->id }})"
-                                                variant="danger">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4"
-                                                    fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <flux:modal.trigger name="delete-modal">
+                                                    <x-shared.icon-button
+                                                        @click="prepareDeleteSingle({{ $client->id }})"
+                                                        variant="danger"
+                                                        class="hover:shadow-lg hover:shadow-red-500/20">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4"
+                                                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                stroke-width="2"
+                                                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                        </svg>
+                                                    </x-shared.icon-button>
+                                                </flux:modal.trigger>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="7" class="px-6 py-12 text-center">
+                                            <div class="text-zinc-400 flex flex-col items-center justify-center gap-3">
+                                                <svg class="w-12 h-12 text-zinc-600" fill="none"
+                                                    stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round"
                                                         stroke-width="2"
-                                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                        d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4">
+                                                    </path>
                                                 </svg>
-                                            </x-shared.icon-button>
-                                        </flux:modal.trigger>
-                                    </div>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="7" class="px-6 py-12 text-center">
-                                    <div class="text-zinc-400">
-                                        No clients found.
-                                        <flux:modal.trigger name="client-form">
-                                            <button class="text-blue-400 hover:text-blue-300"
-                                                @click="$wire.openCreateModal()">
-                                                Create one
-                                            </button>
-                                        </flux:modal.trigger>
-                                    </div>
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+                                                <p>No clients found.</p>
+                                                <flux:modal.trigger name="client-form">
+                                                    <button class="text-blue-400 hover:text-blue-300 font-medium"
+                                                        @click="$wire.openCreateModal()">
+                                                        Create your first client
+                                                    </button>
+                                                </flux:modal.trigger>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
 
-            <!-- Pagination -->
+            <!-- Enhanced Pagination -->
             <div class="mt-6">
-                {{ $this->clients->links() }}
+                @if ($this->perPage != -1)
+                    {{ $this->clients->links() }}
+                @else
+                    <div class="flex justify-between items-center text-sm text-zinc-400">
+                        <div>Showing all {{ count($this->clients) }} results</div>
+                    </div>
+                @endif
             </div>
 
             <!-- Client Form Modal -->
@@ -710,18 +749,25 @@
                 </div>
             </flux:modal>
 
-            <!-- Delete Confirmation Modal -->
+            <!-- Delete Confirmation Modal with Enhanced Design -->
             <flux:modal name="delete-modal" class="w-full max-w-xl">
-                <div class="p-6" x-data="deleteClientModal()" x-on:open-modal.window="handleModalOpen($event)">
-                    <flux:heading class="mb-6">
+                <div class="p-6" x-data="deleteClientModal()">
+                    <flux:heading class="mb-6 flex items-center gap-3 text-red-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
                         Confirm Deletion
                     </flux:heading>
 
                     <div class="space-y-4">
-                        <p class="text-zinc-300">
-                            Are you sure you want to delete <span x-text="clientsToDelete.length"></span> client(s)?
-                            This action cannot be undone.
-                        </p>
+                        <div class="p-4 bg-red-900/20 border border-red-900/50 rounded-lg">
+                            <p class="text-zinc-300">
+                                Are you sure you want to delete <span x-text="clientsToDelete.length"
+                                    class="font-bold text-red-400"></span> client(s)?
+                                This action cannot be undone.
+                            </p>
+                        </div>
 
                         <div x-show="loading" class="flex justify-center items-center py-4">
                             <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
@@ -779,12 +825,18 @@
                         </div>
                     </div>
 
-                    <div class="mt-8 flex justify-end gap-3">
+                    <div class="mt-8 flex justify-end gap-3 border-t border-zinc-700 pt-6">
                         <flux:modal.close>
-                            <x-shared.button variant="secondary">Cancel</x-shared.button>
+                            <x-shared.button variant="secondary" class="shadow-lg">Cancel</x-shared.button>
                         </flux:modal.close>
                         <flux:modal.close>
-                            <x-shared.button @click="confirmDelete" variant="danger">
+                            <x-shared.button @click="confirmDelete" variant="danger"
+                                class="shadow-lg hover:shadow-red-500/25 transition-shadow">
+                                <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
                                 Delete
                             </x-shared.button>
                         </flux:modal.close>
@@ -797,27 +849,42 @@
     <!-- Flash Messages -->
     <x-shared.flash-message />
 
-    <!-- Alpine.js Scripts -->
-    <script>
-        // Main client manager
-        function clientManager() {
-            return {
-                selectedClients: [],
-                selectAll: false,
+    @push('scripts')
+        <script>
+            document.addEventListener('alpine:init', () => {
+                Alpine.data('clientManager', () => ({
+                    selectedClients: [],
+                    selectAll: false,
 
-                toggleSelectAll() {
-                    const checkboxes = document.querySelectorAll('input[type="checkbox"][x-model="selectedClients"]');
-                    if (this.selectAll) {
-                        this.selectedClients = Array.from(checkboxes).map(cb => cb.value);
-                    } else {
-                        this.selectedClients = [];
-                    }
-                },
+                    init() {
+                        // Listen for Livewire events to clear selections
+                        document.addEventListener('livewire:updated', () => {
+                            this.selectedClients = [];
+                            this.selectAll = false;
+                        });
 
-                updateSelectAll() {
-                    const checkboxes = document.querySelectorAll('input[type="checkbox"][x-model="selectedClients"]');
-                    this.selectAll = checkboxes.length > 0 && this.selectedClients.length === checkboxes.length;
-                },
+                        document.addEventListener('clients-deleted', () => {
+                            this.selectedClients = [];
+                            this.selectAll = false;
+                        });
+                    },
+
+                    toggleSelectAll() {
+                        const checkboxes = document.querySelectorAll(
+                            'input[type="checkbox"][x-model="selectedClients"]');
+                        if (this.selectAll) {
+                            this.selectedClients = Array.from(checkboxes).map(cb => cb.value);
+                        } else {
+                            this.selectedClients = [];
+                        }
+                    },
+
+                    updateSelectAll() {
+                        const checkboxes = document.querySelectorAll(
+                            'input[type="checkbox"][x-model="selectedClients"]');
+                        this.selectAll = checkboxes.length > 0 && this.selectedClients.length === checkboxes
+                            .length;
+                    },
 
                 prepareDeleteMultiple() {
                     const deleteModal = document.querySelector('[x-data="deleteClientModal()"]');
@@ -942,5 +1009,55 @@
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
             background: #71717a;
         }
+
+        /* Fix for ensuring dropdowns have proper z-index */
+        .relative {
+            position: relative;
+        }
+
+        /* Add responsive table styles */
+        .overflow-x-auto {
+            scrollbar-width: thin;
+            scrollbar-color: #52525b #27272a;
+        }
+
+        .overflow-x-auto::-webkit-scrollbar {
+            height: 6px;
+        }
+
+        .overflow-x-auto::-webkit-scrollbar-track {
+            background: #27272a;
+            border-radius: 3px;
+        }
+
+        .overflow-x-auto::-webkit-scrollbar-thumb {
+            background: #52525b;
+            border-radius: 3px;
+        }
+
+        .overflow-x-auto::-webkit-scrollbar-thumb:hover {
+            background: #71717a;
+        }
+
+        /* Ensure modals appear above everything */
+        [name="view-modal"],
+        [name="client-form"],
+        [name="delete-modal"] {
+            z-index: 999;
+        }
+
+        /* Make the page more responsive on small screens */
+        @media (max-width: 640px) {
+            .flex-wrap {
+                margin-bottom: 0.5rem;
+            }
+
+            th,
+            td {
+                padding-left: 0.5rem;
+                padding-right: 0.5rem;
+            }
+        }
     </style>
 </section>
+
