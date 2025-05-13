@@ -61,9 +61,10 @@ class ClientManagement extends Component
     }
 
     /**
-     * Explicit method for resetting page after perPage changes through UI
+     * Get clients with pagination
      */
-    public function resetPageAfterChange()
+    #[Computed]
+    public function clients()
     {
         $query = Client::query()
             ->when($this->search, function ($query) {
@@ -75,7 +76,7 @@ class ClientManagement extends Component
             ->latest();
 
         // Check if perPage is 'all', if so return all results without pagination
-        if ($this->perPage === 'all') {
+        if ($this->perPage === 'all' || $this->perPage == -1) {
             // Apply pagination with a very large number to effectively get all results
             // but still maintain the pagination component for consistency
             return $query->paginate(999999);
@@ -254,7 +255,7 @@ class ClientManagement extends Component
         try {
             // Fetch the client details
             $client = Client::with(['invoices', 'ownedCompanies', 'owners'])->findOrFail($clientId);
-            
+
             // Format the client data
             $this->viewingClient = [
                 'id' => $client->id,
@@ -282,12 +283,12 @@ class ClientManagement extends Component
                     return [
                         'id' => $invoice->id,
                         'invoice_number' => $invoice->invoice_number,
-                        'total_amount' => (float)$invoice->total_amount,
+                        'total_amount' => (float) $invoice->total_amount,
                         'status' => $invoice->status,
                     ];
                 })->toArray()
             ];
-            
+
             // Open the modal
             $this->js('$dispatch("open-modal", { name: "view-modal" })');
         } catch (\Exception $e) {
@@ -305,9 +306,13 @@ class ClientManagement extends Component
 
     public function getClientDetails($clientId)
     {
-        $client = Client::with(['invoices' => function($query) {
-            $query->orderBy('due_date', 'desc');
-        }, 'ownedCompanies', 'owners'])->findOrFail($clientId);
+        $client = Client::with([
+            'invoices' => function ($query) {
+                $query->orderBy('due_date', 'desc');
+            },
+            'ownedCompanies',
+            'owners'
+        ])->findOrFail($clientId);
 
         return [
             'id' => $client->id,
