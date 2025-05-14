@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\BankAccounts;
 use App\Livewire\ClientManagement;
 use App\Livewire\Dashboard;
 use App\Livewire\ServiceManagement;
@@ -15,6 +16,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', Dashboard::class)->name('dashboard');
     Route::get('/clients', ClientManagement::class)->name('clients');
     Route::get('/services', ServiceManagement::class)->name('services');
+    Route::get('/bank-accounts', BankAccounts::class)->name('bank-accounts');
 });
 
 Route::middleware(['auth'])->group(function () {

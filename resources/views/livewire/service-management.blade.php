@@ -286,7 +286,7 @@
         </div>
     </div>
 
-    <!-- Service Form Modal - Enhanced with better styling -->
+    <!-- Service Form Modal - Fixed with wire:model.live for type selection -->
     <flux:modal wire:model.self="showServiceFormModal">
         <div class="space-y-6 p-2">
             <div>
@@ -305,7 +305,7 @@
                 <flux:input wire:model="price" type="number" step="0.01" label="Price" placeholder="0.00"
                     error="{{ $errors->first('price') }}" class="rounded-lg" />
 
-                <flux:select wire:model="type" label="Service Type" placeholder="Select service type"
+                <flux:select wire:model.live="type" label="Service Type" placeholder="Select service type"
                     error="{{ $errors->first('type') }}" class="rounded-lg">
                     @foreach ($serviceTypes as $option)
                         <flux:select.option value="{{ $option['value'] }}">{{ $option['label'] }}

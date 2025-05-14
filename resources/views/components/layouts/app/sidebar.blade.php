@@ -29,6 +29,10 @@
                         :current="request() -> routeIs('services')" wire:navigate>
                         {{ __('Services') }}
                     </flux:navlist.item>
+                    <flux:navlist.item icon="credit-card" :href="route('bank-accounts')"
+                        :current="request() -> routeIs('bank-accounts')" wire:navigate>
+                        {{ __('Bank Accounts') }}
+                    </flux:navlist.item>
                 </flux:navlist.group>
             </flux:navlist>
 
