@@ -401,13 +401,14 @@
                     </div>
                 @endif
 
+
                 <!-- Transaction Filters -->
                 <div class="flex flex-col md:flex-row gap-4 pt-2">
                     <div class="w-full md:w-1/2">
-                        <x-inputs.daterangepicker wire:model.live="dateRange" startName="start" endName="end"
-                            startValue="{{ $dateRange['start'] }}" endValue="{{ $dateRange['end'] }}"
-                            label="Date Range" placeholder="Select date range" class="w-full" />
+                        <x-inputs.daterangepicker wire:model.live="dateFilter" startName="dateRangeStart"
+                            endName="dateRangeEnd" label="Date Range" placeholder="Select date range" />
                     </div>
+
                     <div class="w-full md:w-1/2">
                         <flux:select wire:model.live="transactionTypeFilter" label="Transaction Type"
                             placeholder="All Types" class="w-full">
@@ -449,7 +450,7 @@
                                     class="px-4 py-3.5 text-right text-xs font-medium text-zinc-400 uppercase tracking-wider">
                                     Amount</th>
                             </tr>
-                        </thead>
+                         </thead>
                         <tbody class="bg-zinc-900/20 divide-y divide-zinc-800">
                             @forelse($this->accountTransactions as $transaction)
                                 <tr class="hover:bg-zinc-800/30 transition-colors">
@@ -531,8 +532,8 @@
                     <flux:input wire:model="transaction_amount" type="number" step="0.01" label="Amount"
                         placeholder="0.00" error="{{ $errors->first('transaction_amount') }}" class="rounded-lg" />
 
-                    <x-inputs.datepicker wire:model="transaction_date" label="Transaction Date"
-                        error="{{ $errors->first('transaction_date') }}" class="rounded-lg" />
+                    <x-inputs.datepicker wire:model.live="transaction_date" label="Transaction Date"
+                        error="{{ $errors->first('transaction_date') }}" class="rounded-lg" modalMode="true" />
 
                     <flux:input wire:model="reference_number" label="Reference Number (Optional)"
                         placeholder="Enter reference number" error="{{ $errors->first('reference_number') }}"

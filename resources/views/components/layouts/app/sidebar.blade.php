@@ -33,6 +33,10 @@
                         :current="request() -> routeIs('bank-accounts')" wire:navigate>
                         {{ __('Bank Accounts') }}
                     </flux:navlist.item>
+                    <flux:navlist.item icon="loading" :href="route('test')"
+                        :current="request() -> routeIs('test')" wire:navigate>
+                        {{ __(key: 'Testing Page') }}
+                    </flux:navlist.item>
                 </flux:navlist.group>
             </flux:navlist>
 

@@ -8,9 +8,9 @@ use Livewire\Component;
 use Livewire\WithPagination;
 use Livewire\Attributes\Rule;
 use Livewire\Attributes\Computed;
-use Flux\Livewire\Facades\Flux;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class BankAccounts extends Component
 {
@@ -35,55 +35,51 @@ class BankAccounts extends Component
     #[Rule('required|numeric|min:0')]
     public $initial_balance = 0;
 
+    // Transaction form properties
+    #[Rule('required|numeric|min:0.01')]
+    public $transaction_amount = '';
+
+    #[Rule('required|date')]
+    public $transaction_date = '';
+
+    #[Rule('required|in:deposit,withdrawal,transfer,fee,interest')]
+    public $transaction_type = 'deposit';
+
+    #[Rule('nullable|string|max:255')]
+    public $reference_number = '';
+
+    #[Rule('nullable|string')]
+    public $description = '';
+
     // Search & Filter properties
     public $search = '';
     public $sortField = 'account_name';
     public $sortDirection = 'asc';
+    public $dateRangeStart = null;
+    public $dateRangeEnd = null;
+    public $dateFilter = ''; // Combined date range field
+    public $transactionTypeFilter = '';
 
-    // UI state control
+    // UI state properties
     public $showAccountFormModal = false;
     public $showDeleteConfirmModal = false;
     public $showDetailsModal = false;
+    public $showTransactionFormModal = false;
     public $editMode = false;
     public $accountId = null;
     public $accountToDelete = null;
     public $selectedAccount = null;
-    
-    // Transaction form
-    #[Rule('required|numeric|min:0.01')]
-    public $transaction_amount = '';
-    
-    #[Rule('required|date')]
-    public $transaction_date = '';
-    
-    #[Rule('required|in:deposit,withdrawal,transfer,fee,interest')]
-    public $transaction_type = 'deposit';
-    
-    #[Rule('nullable|string|max:255')]
-    public $reference_number = '';
-    
-    #[Rule('nullable|string')]
-    public $description = '';
-    
-    public $showTransactionFormModal = false;
-    public $dateRange = [
-        'start' => null,
-        'end' => null
-    ];
-    
-    public $transactionTypeFilter = '';
 
-    // Currency options
-    public $currencyOptions = [
+    // Options arrays
+    protected $currencyOptions = [
         ['value' => 'IDR', 'label' => 'Indonesian Rupiah (IDR)'],
         ['value' => 'USD', 'label' => 'US Dollar (USD)'],
         ['value' => 'EUR', 'label' => 'Euro (EUR)'],
         ['value' => 'SGD', 'label' => 'Singapore Dollar (SGD)'],
         ['value' => 'MYR', 'label' => 'Malaysian Ringgit (MYR)'],
     ];
-    
-    // Transaction type options
-    public $transactionTypeOptions = [
+
+    protected $transactionTypeOptions = [
         ['value' => 'deposit', 'label' => 'Deposit'],
         ['value' => 'withdrawal', 'label' => 'Withdrawal'],
         ['value' => 'transfer', 'label' => 'Transfer'],
@@ -91,17 +87,189 @@ class BankAccounts extends Component
         ['value' => 'interest', 'label' => 'Interest'],
     ];
 
+    // Lifecycle methods
     public function mount()
     {
-        $this->transaction_date = now()->format('Y-m-d');
-        
-        // Default date range to current month
-        $this->dateRange['start'] = now()->startOfMonth()->format('Y-m-d');
-        $this->dateRange['end'] = now()->endOfMonth()->format('Y-m-d');
-        
-        Log::info('BankAccountManagement component mounted');
+        $this->initializeDefaultValues();
     }
 
+    // Computed properties
+    #[Computed]
+    public function bankAccounts()
+    {
+        return BankAccount::when($this->search, function ($query) {
+                $query->where(function ($q) {
+                    $q->where('account_name', 'like', '%' . $this->search . '%')
+                        ->orWhere('account_number', 'like', '%' . $this->search . '%')
+                        ->orWhere('bank_name', 'like', '%' . $this->search . '%');
+                });
+            })
+            ->orderBy($this->sortField, $this->sortDirection)
+            ->paginate(10);
+    }
+
+    #[Computed]
+    public function accountTransactions()
+    {
+        if (!$this->selectedAccount) {
+            return collect();
+        }
+
+        Log::info('Fetching transactions with date range', [
+            'dateRangeStart' => $this->dateRangeStart,
+            'dateRangeEnd' => $this->dateRangeEnd
+        ]);
+
+        $query = BankTransaction::where('bank_account_id', $this->selectedAccount->id);
+        
+        if ($this->dateRangeStart && $this->dateRangeEnd) {
+            $query->whereBetween('transaction_date', [
+                $this->dateRangeStart,
+                $this->dateRangeEnd
+            ]);
+        }
+        
+        if ($this->transactionTypeFilter) {
+            $query->where('transaction_type', $this->transactionTypeFilter);
+        }
+        
+        $transactions = $query->orderBy('transaction_date', 'desc')->paginate(10);
+        
+        return $transactions;
+    }
+
+    #[Computed]
+    public function accountsStats()
+    {
+        $totalAccounts = BankAccount::count();
+        $totalBalance = BankAccount::sum('current_balance');
+        $currencyGroups = BankAccount::selectRaw('currency, SUM(current_balance) as total')
+            ->groupBy('currency')
+            ->get();
+
+        return [
+            'totalAccounts' => $totalAccounts,
+            'totalBalance' => $totalBalance,
+            'currencyGroups' => $currencyGroups,
+        ];
+    }
+
+    #[Computed]
+    public function transactionStats()
+    {
+        if (!$this->selectedAccount) {
+            return null;
+        }
+
+        // Create and clone queries for accurate sum calculations
+        $baseQuery = BankTransaction::where('bank_account_id', $this->selectedAccount->id);
+        
+        if ($this->dateRangeStart && $this->dateRangeEnd) {
+            $baseQuery->whereBetween('transaction_date', [
+                $this->dateRangeStart,
+                $this->dateRangeEnd
+            ]);
+        }
+        
+        // Clone queries to avoid SQL errors
+        $incomingQuery = clone $baseQuery;
+        $outgoingQuery = clone $baseQuery;
+        
+        $incoming = $incomingQuery->where('amount', '>', 0)->sum('amount');
+        $outgoing = $outgoingQuery->where('amount', '<', 0)->sum('amount');
+
+        return [
+            'incoming' => $incoming,
+            'outgoing' => abs($outgoing),
+            'net' => $incoming + $outgoing,
+        ];
+    }
+
+    // Helper methods
+    protected function initializeDefaultValues()
+    {
+        $this->transaction_date = now()->format('Y-m-d');
+        $this->dateRangeStart = now()->startOfMonth()->format('Y-m-d');
+        $this->dateRangeEnd = now()->endOfMonth()->format('Y-m-d');
+        
+        // Set the formatted date range string for display
+        $startFormatted = Carbon::parse($this->dateRangeStart)->format('d/m/Y');
+        $endFormatted = Carbon::parse($this->dateRangeEnd)->format('d/m/Y');
+        $this->dateFilter = "{$startFormatted} - {$endFormatted}";
+        
+        Log::info('BankAccount component mounted', [
+            'dateRangeStart' => $this->dateRangeStart,
+            'dateRangeEnd' => $this->dateRangeEnd,
+            'dateFilter' => $this->dateFilter
+        ]);
+    }
+
+    protected function convertDateFormat($value, $outputFormat = 'Y-m-d')
+    {
+        if (!$value) return null;
+        
+        try {
+            // Handle DD/MM/YYYY format
+            if (preg_match('/^\d{2}\/\d{2}\/\d{4}$/', $value)) {
+                return Carbon::createFromFormat('d/m/Y', $value)->format($outputFormat);
+            }
+            
+            // Handle Y-m-d format (already correct)
+            if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $value)) {
+                return $value;
+            }
+            
+            // Try to parse any other date format
+            return Carbon::parse($value)->format($outputFormat);
+        } 
+        catch (\Exception $e) {
+            Log::error('Error parsing date', [
+                'value' => $value,
+                'error' => $e->getMessage()
+            ]);
+            return null;
+        }
+    }
+
+    // Event handlers
+    public function updatedDateFilter($value)
+    {
+        Log::info('Date filter updated', ['value' => $value]);
+        
+        if (empty($value)) {
+            $this->dateRangeStart = null;
+            $this->dateRangeEnd = null;
+            return;
+        }
+        
+        // Parse the combined date range string
+        $dates = explode(' - ', $value);
+        
+        if (count($dates) === 2) {
+            $this->dateRangeStart = $this->convertDateFormat($dates[0]);
+            $this->dateRangeEnd = $this->convertDateFormat($dates[1]);
+            
+            Log::info('Date range parsed', [
+                'start' => $this->dateRangeStart,
+                'end' => $this->dateRangeEnd
+            ]);
+        }
+    }
+
+    public function updatedTransactionTypeFilter()
+    {
+        $this->dispatch('filterChanged');
+    }
+
+    public function updatedTransactionDate($value)
+    {
+        $formattedDate = $this->convertDateFormat($value);
+        if ($formattedDate) {
+            $this->transaction_date = $formattedDate;
+        }
+    }
+
+    // Account actions
     public function createAccount()
     {
         $this->reset([
@@ -111,14 +279,10 @@ class BankAccounts extends Component
         $this->currency = 'IDR'; // Default currency
         $this->editMode = false;
         $this->showAccountFormModal = true;
-        
-        Log::info('Opening create bank account modal');
     }
 
     public function editAccount($accountId)
     {
-        Log::info('Editing bank account', ['account_id' => $accountId]);
-
         try {
             $account = BankAccount::findOrFail($accountId);
             $this->accountId = $account->id;
@@ -130,128 +294,75 @@ class BankAccounts extends Component
             $this->initial_balance = $account->initial_balance;
             $this->editMode = true;
             $this->showAccountFormModal = true;
-
-            Log::info('Bank account loaded for editing', [
-                'account_id' => $account->id,
-                'account_name' => $account->account_name
-            ]);
-        } catch (\Exception $e) {
-            Log::error('Error loading bank account for edit', [
-                'account_id' => $accountId,
-                'error' => $e->getMessage()
-            ]);
-
-            session()->flash('error', 'Error loading bank account: ' . $e->getMessage());
+        } 
+        catch (\Exception $e) {
+            $this->showError('Error loading bank account: ' . $e->getMessage());
         }
     }
 
     public function saveAccount()
     {
-        Log::info('Pre-validation bank account data', [
-            'account_name' => $this->account_name,
-            'account_number' => $this->account_number,
-            'editMode' => $this->editMode
-        ]);
-
-        $this->validate([
-            'account_name' => 'required|string|max:255',
-            'account_number' => 'required|string|max:255',
-            'bank_name' => 'required|string|max:255',
-            'branch' => 'nullable|string|max:255',
-            'currency' => 'required|string|size:3',
-            'initial_balance' => 'required|numeric|min:0',
-        ]);
+        $this->validate();
 
         try {
+            DB::beginTransaction();
+
             $accountData = [
                 'account_name' => $this->account_name,
                 'account_number' => $this->account_number,
                 'bank_name' => $this->bank_name,
                 'branch' => $this->branch,
                 'currency' => $this->currency,
-                'initial_balance' => $this->initial_balance,
             ];
-            
-            // For editing, don't update the initial_balance again
-            if ($this->editMode) {
-                unset($accountData['initial_balance']);
-            }
-
-            DB::beginTransaction();
 
             if ($this->editMode) {
-                Log::info('Updating bank account', [
-                    'account_id' => $this->accountId,
-                    'account_data' => $accountData
-                ]);
-
+                // Update existing account
                 $account = BankAccount::findOrFail($this->accountId);
                 $account->update($accountData);
-
-                Log::info('Bank account updated successfully', [
-                    'account_id' => $account->id,
-                    'account_name' => $account->account_name
-                ]);
-
-                session()->flash('message', 'Bank account updated successfully!');
-            } else {
-                Log::info('Creating new bank account', [
-                    'account_data' => $accountData
-                ]);
-
-                // Set current_balance to initial_balance for new accounts
-                $accountData['current_balance'] = $accountData['initial_balance'];
+                $this->showMessage('Bank account updated successfully!');
+            } 
+            else {
+                // Create new account
+                $accountData['initial_balance'] = $this->initial_balance;
+                $accountData['current_balance'] = $this->initial_balance;
                 
                 $account = BankAccount::create($accountData);
                 
-                // Create an initial balance transaction if initial_balance > 0
-                if ($accountData['initial_balance'] > 0) {
+                // Create initial transaction if needed
+                if ($this->initial_balance > 0) {
                     BankTransaction::create([
                         'bank_account_id' => $account->id,
-                        'amount' => $accountData['initial_balance'],
+                        'amount' => $this->initial_balance,
                         'transaction_date' => now(),
                         'transaction_type' => 'deposit',
                         'description' => 'Initial balance',
                         'reference_number' => 'INIT-' . uniqid(),
                     ]);
                 }
-
-                Log::info('Bank account created successfully', [
-                    'account_id' => $account->id,
-                    'account_name' => $account->account_name
-                ]);
-
-                session()->flash('message', 'Bank account created successfully!');
+                
+                $this->showMessage('Bank account created successfully!');
             }
-            
+
             DB::commit();
-            
             $this->showAccountFormModal = false;
             $this->reset(['account_name', 'account_number', 'bank_name', 'branch', 'initial_balance', 'accountId', 'editMode']);
-
-        } catch (\Exception $e) {
+        } 
+        catch (\Exception $e) {
             DB::rollBack();
-            
-            Log::error('Error saving bank account', [
-                'mode' => $this->editMode ? 'edit' : 'create',
-                'account_id' => $this->editMode ? $this->accountId : null,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-
-            session()->flash('error', 'Error saving bank account: ' . $e->getMessage());
+            $this->showError('Error saving bank account: ' . $e->getMessage());
         }
     }
 
+    public function cancelAccountForm()
+    {
+        $this->showAccountFormModal = false;
+        $this->reset(['account_name', 'account_number', 'bank_name', 'branch', 'initial_balance', 'currency', 'accountId', 'editMode']);
+    }
+    
     public function confirmDelete($accountId)
     {
         $this->accountToDelete = BankAccount::findOrFail($accountId);
         $this->showDeleteConfirmModal = true;
-        
-        Log::info('Confirming delete for bank account', [
-            'account_id' => $accountId,
-            'account_name' => $this->accountToDelete->account_name
-        ]);
     }
 
     public function deleteAccount()
@@ -260,56 +371,35 @@ class BankAccounts extends Component
             if (!$this->accountToDelete) {
                 throw new \Exception("No account selected for deletion");
             }
-            
+
             // Check if account has transactions or payments
             $transactionCount = $this->accountToDelete->transactions()->count();
             $paymentCount = $this->accountToDelete->payments()->count();
-            
+
             if ($transactionCount > 0 || $paymentCount > 0) {
                 throw new \Exception("Cannot delete account with associated transactions or payments");
             }
-            
-            $accountName = $this->accountToDelete->account_name;
-            
+
             $this->accountToDelete->delete();
-            
-            Log::info('Bank account deleted successfully', [
-                'account_id' => $this->accountToDelete->id,
-                'account_name' => $accountName
-            ]);
-            
-            session()->flash('message', 'Bank account deleted successfully!');
-            
-        } catch (\Exception $e) {
-            Log::error('Error deleting bank account', [
-                'account_id' => $this->accountToDelete ? $this->accountToDelete->id : null,
-                'error' => $e->getMessage()
-            ]);
-            
-            session()->flash('error', 'Error deleting bank account: ' . $e->getMessage());
+            $this->showMessage('Bank account deleted successfully!');
+        } 
+        catch (\Exception $e) {
+            $this->showError('Error deleting bank account: ' . $e->getMessage());
         }
-        
+
         $this->showDeleteConfirmModal = false;
         $this->accountToDelete = null;
     }
-    
+
+    // Transaction actions
     public function viewAccountDetails($accountId)
     {
         try {
             $this->selectedAccount = BankAccount::findOrFail($accountId);
             $this->showDetailsModal = true;
-            
-            Log::info('Viewing bank account details', [
-                'account_id' => $accountId,
-                'account_name' => $this->selectedAccount->account_name
-            ]);
-        } catch (\Exception $e) {
-            Log::error('Error loading bank account details', [
-                'account_id' => $accountId,
-                'error' => $e->getMessage()
-            ]);
-            
-            session()->flash('error', 'Error loading bank account details: ' . $e->getMessage());
+        } 
+        catch (\Exception $e) {
+            $this->showError('Error loading bank account details: ' . $e->getMessage());
         }
     }
     
@@ -323,21 +413,12 @@ class BankAccounts extends Component
             $this->reference_number = '';
             $this->description = '';
             $this->showTransactionFormModal = true;
-            
-            Log::info('Opening transaction form for account', [
-                'account_id' => $accountId,
-                'account_name' => $this->selectedAccount->account_name
-            ]);
-        } catch (\Exception $e) {
-            Log::error('Error opening transaction form', [
-                'account_id' => $accountId,
-                'error' => $e->getMessage()
-            ]);
-            
-            session()->flash('error', 'Error opening transaction form: ' . $e->getMessage());
+        } 
+        catch (\Exception $e) {
+            $this->showError('Error opening transaction form: ' . $e->getMessage());
         }
     }
-    
+
     public function saveTransaction()
     {
         $this->validate([
@@ -347,21 +428,21 @@ class BankAccounts extends Component
             'reference_number' => 'nullable|string|max:255',
             'description' => 'nullable|string',
         ]);
-        
+
         try {
             DB::beginTransaction();
-            
+
             // Calculate actual amount based on transaction type
             $amount = $this->transaction_amount;
             if (in_array($this->transaction_type, ['withdrawal', 'transfer', 'fee'])) {
                 $amount = -$amount;
-                
+
                 // Check if there's enough balance
                 if ($this->selectedAccount->current_balance + $amount < 0) {
                     throw new \Exception("Insufficient funds for this transaction");
                 }
             }
-            
+
             // Create transaction
             $transaction = BankTransaction::create([
                 'bank_account_id' => $this->selectedAccount->id,
@@ -371,50 +452,36 @@ class BankAccounts extends Component
                 'description' => $this->description,
                 'reference_number' => $this->reference_number,
             ]);
-            
+
             // Update account balance
             $this->selectedAccount->current_balance += $amount;
             $this->selectedAccount->save();
-            
+
             DB::commit();
-            
-            Log::info('Transaction created successfully', [
-                'transaction_id' => $transaction->id,
-                'account_id' => $this->selectedAccount->id,
-                'amount' => $amount,
-                'type' => $this->transaction_type,
-                'new_balance' => $this->selectedAccount->current_balance
-            ]);
-            
-            session()->flash('message', 'Transaction recorded successfully!');
+            $this->showMessage('Transaction recorded successfully!');
             $this->showTransactionFormModal = false;
-            
-        } catch (\Exception $e) {
+        } 
+        catch (\Exception $e) {
             DB::rollBack();
-            
-            Log::error('Error creating transaction', [
-                'account_id' => $this->selectedAccount->id,
-                'error' => $e->getMessage()
-            ]);
-            
-            session()->flash('error', 'Error creating transaction: ' . $e->getMessage());
+            $this->showError('Error creating transaction: ' . $e->getMessage());
         }
     }
-    
-    public function updatedDateRange()
-    {
-        Log::info('Date range updated', $this->dateRange);
-    }
-    
+
+    // Utility functions
     public function resetFilters()
     {
-        $this->reset(['search', 'dateRange', 'transactionTypeFilter']);
+        $this->reset(['search', 'transactionTypeFilter']);
         
-        // Set date range to current month
-        $this->dateRange['start'] = now()->startOfMonth()->format('Y-m-d');
-        $this->dateRange['end'] = now()->endOfMonth()->format('Y-m-d');
+        // Reset date range to current month
+        $this->dateRangeStart = now()->startOfMonth()->format('Y-m-d');
+        $this->dateRangeEnd = now()->endOfMonth()->format('Y-m-d');
         
-        Log::info('Filters reset to default');
+        // Update the formatted date range display
+        $startFormatted = Carbon::parse($this->dateRangeStart)->format('d/m/Y');
+        $endFormatted = Carbon::parse($this->dateRangeEnd)->format('d/m/Y');
+        $this->dateFilter = "{$startFormatted} - {$endFormatted}";
+        
+        $this->dispatch('filtersReset');
     }
 
     public function sortBy($field)
@@ -425,99 +492,35 @@ class BankAccounts extends Component
             $this->sortField = $field;
             $this->sortDirection = 'asc';
         }
-
-        Log::info('Sorting bank accounts', [
-            'field' => $this->sortField,
-            'direction' => $this->sortDirection
-        ]);
-    }
-
-    #[Computed]
-    public function bankAccounts()
-    {
-        return BankAccount::when($this->search, function ($query) {
-                $query->where(function($q) {
-                    $q->where('account_name', 'like', '%' . $this->search . '%')
-                      ->orWhere('account_number', 'like', '%' . $this->search . '%')
-                      ->orWhere('bank_name', 'like', '%' . $this->search . '%');
-                });
-            })
-            ->orderBy($this->sortField, $this->sortDirection)
-            ->paginate(10);
     }
     
-    #[Computed]
-    public function accountTransactions()
+    protected function showMessage($message)
     {
-        if (!$this->selectedAccount) {
-            return collect();
-        }
-        
-        return BankTransaction::where('bank_account_id', $this->selectedAccount->id)
-            ->when($this->dateRange['start'] && $this->dateRange['end'], function($query) {
-                $query->whereBetween('transaction_date', [
-                    $this->dateRange['start'], 
-                    $this->dateRange['end']
-                ]);
-            })
-            ->when($this->transactionTypeFilter, function($query) {
-                $query->where('transaction_type', $this->transactionTypeFilter);
-            })
-            ->orderBy('transaction_date', 'desc')
-            ->paginate(10);
+        session()->flash('message', $message);
     }
     
-    #[Computed]
-    public function accountsStats()
+    protected function showError($message)
     {
-        $totalAccounts = BankAccount::count();
-        $totalBalance = BankAccount::sum('current_balance');
-        $currencyGroups = BankAccount::selectRaw('currency, SUM(current_balance) as total')
-            ->groupBy('currency')
-            ->get();
-            
-        return [
-            'totalAccounts' => $totalAccounts,
-            'totalBalance' => $totalBalance,
-            'currencyGroups' => $currencyGroups,
-        ];
+        session()->flash('error', $message);
+        Log::error($message);
     }
     
-    #[Computed]
-    public function transactionStats()
+    // Getter methods for templates
+    public function getCurrencyOptions()
     {
-        if (!$this->selectedAccount) {
-            return null;
-        }
-        
-        $dateQuery = $this->selectedAccount->transactions();
-        
-        if ($this->dateRange['start'] && $this->dateRange['end']) {
-            $dateQuery = $dateQuery->whereBetween('transaction_date', [
-                $this->dateRange['start'], 
-                $this->dateRange['end']
-            ]);
-        }
-        
-        $incoming = $dateQuery->where('amount', '>', 0)->sum('amount');
-        $outgoing = $dateQuery->where('amount', '<', 0)->sum('amount');
-        
-        return [
-            'incoming' => $incoming,
-            'outgoing' => abs($outgoing),
-            'net' => $incoming + $outgoing,
-        ];
+        return $this->currencyOptions;
+    }
+    
+    public function getTransactionTypeOptions()
+    {
+        return $this->transactionTypeOptions;
     }
 
-    public function cancelAccountForm()
-    {
-        $this->showAccountFormModal = false;
-        $this->reset(['account_name', 'account_number', 'bank_name', 'branch', 'initial_balance', 'currency', 'accountId', 'editMode']);
-        Log::info('Bank account form canceled');
-    }
-    
     public function render()
     {
-        return view('livewire.bank-accounts');
+        return view('livewire.bank-accounts', [
+            'currencyOptions' => $this->currencyOptions,
+            'transactionTypeOptions' => $this->transactionTypeOptions
+        ]);
     }
 }

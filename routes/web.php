@@ -7,6 +7,7 @@ use App\Livewire\ServiceManagement;
 use App\Livewire\Settings\Appearance;
 use App\Livewire\Settings\Password;
 use App\Livewire\Settings\Profile;
+use App\Livewire\TestingPage;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/login')->name('home');
@@ -17,6 +18,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/clients', ClientManagement::class)->name('clients');
     Route::get('/services', ServiceManagement::class)->name('services');
     Route::get('/bank-accounts', BankAccounts::class)->name('bank-accounts');
+    Route::get('/test', TestingPage::class)->name('test');
 });
 
 Route::middleware(['auth'])->group(function () {
