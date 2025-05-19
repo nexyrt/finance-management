@@ -1,30 +1,18 @@
 <?php
 
 namespace App\Livewire;
-
-use App\Models\Client;
-use Livewire\WithPagination;
+use App\Models\BankAccount;
+use App\Models\BankTransaction;
 use Livewire\Component;
+use Masmerise\Toaster\Toaster;
 
 class TestingPage extends Component
 {
-    use WithPagination;
-    
-    public $selected = [];
-
-    public function deleteSelected()
-    {
-        Client::destroy($this->selected);
-        $this->selected = [];
-        session()->flash('message', 'Selected clients deleted successfully.');
-    }
-
     public function render()
     {
-        $clients = Client::paginate(10);
-
         return view('livewire.testing-page', [
-            'clients' => $clients,
+            'accounts' => BankAccount::paginate(15),
+            'transactions' => BankTransaction::where('bank_account_id', 3)->paginate(15),
         ]);
     }
 }

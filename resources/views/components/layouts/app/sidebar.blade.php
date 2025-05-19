@@ -135,12 +135,11 @@
             </flux:dropdown>
         </flux:header>
 
-
-
         {{ $slot }}
 
         @fluxScripts
         @stack('scripts')
+        <x-toaster-hub />
     </body>
 
 </html>

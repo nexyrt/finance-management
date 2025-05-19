@@ -13,7 +13,7 @@ return new class extends Migration
             $table->foreignId('bank_account_id')->constrained();
             $table->decimal('amount', 15, 2);
             $table->date('transaction_date');
-            $table->enum('transaction_type', ['deposit', 'withdrawal', 'transfer', 'fee', 'interest']);
+            $table->enum('transaction_type', ['debit', 'credit']);
             $table->text('description')->nullable();
             $table->string('reference_number')->nullable();
             $table->timestamps();
