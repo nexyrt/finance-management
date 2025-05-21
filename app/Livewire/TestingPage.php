@@ -3,7 +3,9 @@
 namespace App\Livewire;
 use App\Models\BankAccount;
 use App\Models\BankTransaction;
+use Flux\Flux;
 use Livewire\Component;
+use Masmerise\Toaster\Toast;
 use Masmerise\Toaster\Toaster;
 
 class TestingPage extends Component
@@ -39,15 +41,16 @@ class TestingPage extends Component
 
         // Reset form and close modal
         $this->reset('form');   
+        Flux::modals()->close();
 
         // Show success message
-        session()->flash('message', 'Bank account added successfully.');
+        Toaster::success('Bank account created successfully!');
     }
 
     public function render()
     {
         return view('livewire.testing-page', [
-            'accounts' => BankAccount::paginate(15),
+            'accounts' => BankAccount::all(),
             'transactions' => BankTransaction::where('bank_account_id', 3)->paginate(15),
         ]);
     }

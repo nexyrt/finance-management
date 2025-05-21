@@ -11,170 +11,176 @@
         </div>
     </header>
 
-    <!-- Bank Accounts List -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
-        <!-- Bank Account Card 1 -->
-        <div class="bg-zinc-900 rounded-xl p-5 border border-zinc-700 shadow-lg">
-            <div class="flex justify-between items-start mb-4">
-                <div class="flex items-center gap-3">
-                    <div class="bg-blue-600 h-10 w-10 rounded-lg flex items-center justify-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none"
-                            viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" />
-                        </svg>
+    <!-- Bank Accounts Carousel using Flowbite -->
+    <div id="bank-accounts-carousel" class="relative w-full mb-8" data-carousel="static">
+        <!-- Carousel wrapper -->
+        <div class="relative overflow-hidden rounded-lg h-auto">
+            @php
+                // Calculate how many items per slide (2 for md screens and above, 1 for smaller)
+                $itemsPerSlide = 2;
+                $totalSlides = ceil(count($accounts) / $itemsPerSlide);
+                
+                // Group accounts into slides
+                $slides = [];
+                for ($i = 0; $i < $totalSlides; $i++) {
+                    $slideAccounts = array_slice($accounts->toArray(), $i * $itemsPerSlide, $itemsPerSlide);
+                    $slides[] = $slideAccounts;
+                }
+            @endphp
+
+            @foreach ($slides as $index => $slideAccounts)
+                <!-- Slide {{ $index + 1 }} -->
+                <div class="hidden duration-700 ease-in-out" data-carousel-item="{{ $index === 0 ? 'active' : '' }}">
+                    <div class="flex flex-col md:flex-row gap-4 p-4">
+                        @foreach ($slideAccounts as $item)
+                            <!-- Bank Account Card -->
+                            <div class="w-full md:w-1/2">
+                                <div class="bg-zinc-900 rounded-xl p-5 border border-zinc-700 shadow-lg h-full">
+                                    <div class="flex justify-between items-start mb-4">
+                                        <div class="flex items-center gap-3">
+                                            @php
+                                                // Generate dynamic bank icon color based on bank name
+                                                $colors = ['blue', 'red', 'purple', 'green', 'yellow', 'indigo', 'pink'];
+                                                $colorIndex = crc32($item['bank_name'] ?? 'default') % count($colors);
+                                                $color = $colors[$colorIndex];
+                                            @endphp
+                                            <div class="bg-{{ $color }}-600 h-10 w-10 rounded-lg flex items-center justify-center">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white"
+                                                    fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                        d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" />
+                                                </svg>
+                                            </div>
+                                            <div>
+                                                <h3 class="text-lg font-bold text-white">{{ $item['bank_name'] ?? 'Bank' }}</h3>
+                                                <p class="text-sm text-gray-400">{{ $item['account_name'] ?? 'Account' }}</p>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <button class="text-gray-400 hover:text-gray-200 transition-colors">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20"
+                                                    fill="currentColor">
+                                                    <path
+                                                        d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8-2.83-2.828z" />
+                                                </svg>
+                                            </button>
+                                            <button class="text-gray-400 hover:text-red-400 transition-colors">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20"
+                                                    fill="currentColor">
+                                                    <path fill-rule="evenodd"
+                                                        d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                                                        clip-rule="evenodd" />
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div class="mb-4">
+                                            <p class="text-sm text-gray-400">Account Number</p>
+                                            <p class="text-lg font-medium text-white">
+                                                @php
+                                                    // Format account number with spaces for readability
+                                                    $acc = $item['account_number'] ?? '0000000000';
+                                                    echo implode(' ', str_split($acc, 4));
+                                                @endphp
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-400">Last Updated</p>
+                                            <p class="text-white">
+                                                @if (isset($item['updated_at']))
+                                                    @php
+                                                        // Format the date in a more readable way
+                                                        $date = is_string($item['updated_at'])
+                                                            ? new DateTime($item['updated_at'])
+                                                            : $item['updated_at'];
+                                                        
+                                                        $now = new DateTime();
+                                                        $interval = $date->diff($now);
+                                                        
+                                                        if ($interval->days == 0) {
+                                                            echo 'Today, ' . $date->format('H:i');
+                                                        } elseif ($interval->days == 1) {
+                                                            echo 'Yesterday, ' . $date->format('H:i');
+                                                        } elseif ($interval->days < 7) {
+                                                            echo $interval->days . ' days ago';
+                                                        } else {
+                                                            echo $date->format('M d, Y');
+                                                        }
+                                                    @endphp
+                                                @else
+                                                    Not available
+                                                @endif
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-4">
+                                        <p class="text-sm text-gray-400">Balance</p>
+                                        <p class="text-xl font-bold text-emerald-400">
+                                            @php
+                                                // Format currency with Rp prefix and thousand separators
+                                                $balance = $item['current_balance'] ?? 0;
+                                                if (is_string($balance)) {
+                                                    $balance = (float) preg_replace('/[^0-9.]/', '', $balance);
+                                                }
+                                                // Format with thousand separator and remove decimal if it's zero
+                                                $formatted = number_format($balance, 0, ',', '.');
+                                                echo "Rp {$formatted}";
+                                            @endphp
+                                        </p>
+                                    </div>
+
+                                    <button
+                                        class="w-full bg-zinc-700 hover:bg-zinc-600 text-white py-2 rounded-lg transition-colors">
+                                        View Transactions
+                                    </button>
+                                </div>
+                            </div>
+                        @endforeach
                     </div>
-                    <div>
-                        <h3 class="text-lg font-bold text-white">Bank Mandiri</h3>
-                        <p class="text-sm text-gray-400">Primary Account</p>
-                    </div>
                 </div>
-                <div class="flex items-center gap-2">
-                    <button class="text-gray-400 hover:text-gray-200 transition-colors">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                            <path
-                                d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-                        </svg>
-                    </button>
-                    <button class="text-gray-400 hover:text-red-400 transition-colors">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd"
-                                d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
-                                clip-rule="evenodd" />
-                        </svg>
-                    </button>
-                </div>
-            </div>
-
-            <div class="mb-4">
-                <p class="text-sm text-gray-400">Account Number</p>
-                <p class="text-lg font-medium text-white">1234 5678 9012 3456</p>
-            </div>
-
-            <div class="grid grid-cols-2 gap-4 mb-4">
-                <div>
-                    <p class="text-sm text-gray-400">Balance</p>
-                    <p class="text-xl font-bold text-emerald-400">Rp 125,000,000</p>
-                </div>
-                <div>
-                    <p class="text-sm text-gray-400">Last Updated</p>
-                    <p class="text-white">Today, 10:45 AM</p>
-                </div>
-            </div>
-
-            <button class="w-full bg-zinc-700 hover:bg-zinc-600 text-white py-2 rounded-lg transition-colors">
-                View Transactions
-            </button>
+            @endforeach
         </div>
 
-        <!-- Bank Account Card 2 -->
-        <div class="bg-zinc-900 rounded-xl p-5 border border-zinc-700 shadow-lg">
-            <div class="flex justify-between items-start mb-4">
-                <div class="flex items-center gap-3">
-                    <div class="bg-red-600 h-10 w-10 rounded-lg flex items-center justify-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none"
-                            viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" />
-                        </svg>
-                    </div>
-                    <div>
-                        <h3 class="text-lg font-bold text-white">BCA</h3>
-                        <p class="text-sm text-gray-400">Secondary Account</p>
-                    </div>
-                </div>
-                <div class="flex items-center gap-2">
-                    <button class="text-gray-400 hover:text-gray-200 transition-colors">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                            <path
-                                d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-                        </svg>
-                    </button>
-                    <button class="text-gray-400 hover:text-red-400 transition-colors">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd"
-                                d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
-                                clip-rule="evenodd" />
-                        </svg>
-                    </button>
-                </div>
-            </div>
-
-            <div class="mb-4">
-                <p class="text-sm text-gray-400">Account Number</p>
-                <p class="text-lg font-medium text-white">9876 5432 1098 7654</p>
-            </div>
-
-            <div class="grid grid-cols-2 gap-4 mb-4">
-                <div>
-                    <p class="text-sm text-gray-400">Balance</p>
-                    <p class="text-xl font-bold text-emerald-400">Rp 78,500,000</p>
-                </div>
-                <div>
-                    <p class="text-sm text-gray-400">Last Updated</p>
-                    <p class="text-white">Yesterday, 3:20 PM</p>
-                </div>
-            </div>
-
-            <button class="w-full bg-zinc-700 hover:bg-zinc-600 text-white py-2 rounded-lg transition-colors">
-                View Transactions
-            </button>
+        <!-- Slider indicators -->
+        <div class="absolute z-30 flex -translate-x-1/2 space-x-3 rtl:space-x-reverse bottom-5 left-1/2">
+            @for ($i = 0; $i < $totalSlides; $i++)
+                <button type="button" class="w-8 h-2 rounded-full bg-{{ $i === 0 ? 'blue-500' : 'zinc-600' }}" 
+                    aria-current="{{ $i === 0 ? 'true' : 'false' }}" 
+                    aria-label="Slide {{ $i + 1 }}" 
+                    data-carousel-slide-to="{{ $i }}"></button>
+            @endfor
         </div>
 
-        <!-- Bank Account Card 3 -->
-        <div class="bg-zinc-900 rounded-xl p-5 border border-zinc-700 shadow-lg">
-            <div class="flex justify-between items-start mb-4">
-                <div class="flex items-center gap-3">
-                    <div class="bg-purple-600 h-10 w-10 rounded-lg flex items-center justify-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none"
-                            viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" />
-                        </svg>
-                    </div>
-                    <div>
-                        <h3 class="text-lg font-bold text-white">BNI</h3>
-                        <p class="text-sm text-gray-400">Operations Account</p>
-                    </div>
-                </div>
-                <div class="flex items-center gap-2">
-                    <button class="text-gray-400 hover:text-gray-200 transition-colors">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                            <path
-                                d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-                        </svg>
-                    </button>
-                    <button class="text-gray-400 hover:text-red-400 transition-colors">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20"
-                            fill="currentColor">
-                            <path fill-rule="evenodd"
-                                d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
-                                clip-rule="evenodd" />
-                        </svg>
-                    </button>
-                </div>
-            </div>
-
-            <div class="mb-4">
-                <p class="text-sm text-gray-400">Account Number</p>
-                <p class="text-lg font-medium text-white">5678 1234 9876 5432</p>
-            </div>
-
-            <div class="grid grid-cols-2 gap-4 mb-4">
-                <div>
-                    <p class="text-sm text-gray-400">Balance</p>
-                    <p class="text-xl font-bold text-emerald-400">Rp 42,750,000</p>
-                </div>
-                <div>
-                    <p class="text-sm text-gray-400">Last Updated</p>
-                    <p class="text-white">2 days ago</p>
-                </div>
-            </div>
-
-            <button class="w-full bg-zinc-700 hover:bg-zinc-600 text-white py-2 rounded-lg transition-colors">
-                View Transactions
-            </button>
-        </div>
+        <!-- Slider controls -->
+        <button type="button"
+            class="absolute top-0 start-0 z-30 flex items-center justify-center h-full px-4 cursor-pointer group focus:outline-none"
+            data-carousel-prev>
+            <span
+                class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-zinc-700/80 hover:bg-zinc-600 group-focus:ring-4 group-focus:ring-zinc-500 group-focus:outline-none">
+                <svg class="w-4 h-4 text-white rtl:rotate-180" aria-hidden="true"
+                    xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M5 1 1 5l4 4" />
+                </svg>
+                <span class="sr-only">Previous</span>
+            </span>
+        </button>
+        <button type="button"
+            class="absolute top-0 end-0 z-30 flex items-center justify-center h-full px-4 cursor-pointer group focus:outline-none"
+            data-carousel-next>
+            <span
+                class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-zinc-700/80 hover:bg-zinc-600 group-focus:ring-4 group-focus:ring-zinc-500 group-focus:outline-none">
+                <svg class="w-4 h-4 text-white rtl:rotate-180" aria-hidden="true"
+                    xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="m1 9 4-4-4-4" />
+                </svg>
+                <span class="sr-only">Next</span>
+            </span>
+        </button>
     </div>
 
     <!-- Transaction History Section -->
@@ -345,11 +351,9 @@
                         Cancel
                     </flux:button>
                 </flux.modal.close>
-                <flux.modal.close>
-                    <flux:button type="submit" variant="primary">
-                        Save Account
-                    </flux:button>
-                </flux.modal.close>
+                <flux:button wire:click='saveBankAccount' variant="primary">
+                    Save Account
+                </flux:button>
             </div>
         </form>
     </flux:modal>
