@@ -78,6 +78,27 @@
                 this.year = today.getFullYear();
                 this.month = today.getMonth();
                 this.generateDatePicker();
+                
+                // Fix for Livewire interactions
+                this.$watch('startValue', (value) => {
+                    if (value) {
+                        let startDate = this.parseDate(value);
+                        if (startDate) {
+                            this.startDate = startDate;
+                            this.updateInputDisplay();
+                        }
+                    }
+                });
+                
+                this.$watch('endValue', (value) => {
+                    if (value) {
+                        let endDate = this.parseDate(value);
+                        if (endDate) {
+                            this.endDate = endDate;
+                            this.updateInputDisplay();
+                        }
+                    }
+                });
             },
             
             parseDate(dateString) {
@@ -259,7 +280,10 @@
             },
             
             toggleDatepicker() {
-                this.showDatepicker = !this.showDatepicker;
+                // Always reset the visibility state before toggling
+                setTimeout(() => {
+                    this.showDatepicker = !this.showDatepicker;
+                }, 10);
             },
             
             generateDatePicker() {
@@ -300,6 +324,7 @@
                 this.generateDatePicker();
             }
         }"
+        @click.outside="showDatepicker = false"
     >
         <input 
             {{ $attributes->merge(['class' => 'w-full px-3 py-2.5 bg-zinc-800 border border-zinc-700 rounded-xl shadow-sm hover:border-zinc-600 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-sm text-zinc-200 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500']) }}

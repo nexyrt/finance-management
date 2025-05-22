@@ -6,7 +6,7 @@
                 <p class="mt-1 text-gray-400">Manage your company bank accounts and view transaction history</p>
             </div>
             <flux:modal.trigger name="add-wallet">
-                <flux:button  wire:click="resetForm">Add Wallet</flux:button>
+                <flux:button wire:click="resetForm">Add Wallet</flux:button>
             </flux:modal.trigger>
         </div>
     </header>
@@ -80,6 +80,7 @@
                                         </button>
                                     </flux:modal.trigger>
                                     <button
+                                        wire:click="loadBankTransactions({{ $account->id }})"
                                         class="px-3 py-1.5 bg-zinc-700 hover:bg-zinc-600 text-white text-xs rounded-lg transition-colors">
                                         View
                                     </button>
@@ -95,19 +96,43 @@
     <!-- Transaction History Section -->
     <div class="mt-10">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-            <h2 class="text-xl font-bold text-white mb-4 md:mb-0">Transaction History</h2>
+            <h2 class="text-xl font-bold text-white mb-4 md:mb-0">
+                Transaction History
+                @if($selectedBankId && $accounts->find($selectedBankId))
+                    <span class="text-sm text-gray-400 ml-2">
+                        ({{ $accounts->find($selectedBankId)->bank_name }} - {{ $accounts->find($selectedBankId)->account_name }})
+                    </span>
+                @endif
+            </h2>
 
             <div class="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
                 <div class="flex-1 md:flex-none">
-                    <x-inputs.daterangepicker wire:model.live='date' placeholder="Select Date" />
+                    <x-inputs.daterangepicker 
+                        wire:model.live="dateRange"
+                        placeholder="Select Date Range" 
+                        startName="start_date"
+                        endName="end_date"
+                        :startValue="$startDate ?? ''"
+                        :endValue="$endDate ?? ''"
+                    />
                 </div>
                 <div class="flex-1 md:flex-none">
-                    <x-inputs.select wire:model='transaction_type' placeholder="Choose a Transactions" selected=""
+                    <x-inputs.select 
+                        wire:model.live="transactionType" 
+                        placeholder="Choose Transaction Type" 
                         :options="[
                             ['value' => '', 'label' => 'All Transactions'],
-                            ['value' => 'debit', 'label' => 'Debit'],
-                            ['value' => 'credit', 'label' => 'Credit'],
-                        ]" />
+                            ['value' => 'credit', 'label' => 'Credit (Income)'],
+                            ['value' => 'debit', 'label' => 'Debit (Expense)'],
+                        ]"
+                    />
+                </div>
+                <div class="flex items-center">
+                    <button 
+                        wire:click="resetFilters"
+                        class="px-3 py-2 rounded text-sm bg-zinc-700 text-white hover:bg-zinc-600 transition-colors">
+                        Reset Filters
+                    </button>
                 </div>
             </div>
         </div>
@@ -116,47 +141,40 @@
             <table class="min-w-full bg-zinc-900 divide-y divide-zinc-700">
                 <thead class="bg-zinc-800">
                     <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Date
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                            Description</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                            Account</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Type
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                            Amount</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                            Balance</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Date</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Description</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Account</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Type</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Amount</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Balance</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-zinc-700">
                     @forelse($transactions as $transaction)
                         <tr class="hover:bg-zinc-800 transition-colors">
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                                {{ $transaction->date->format('Y-m-d') }}
+                                {{ $transaction->created_at ? $transaction->created_at->format('d M Y, H:i') : 'N/A' }}
                             </td>
                             <td class="px-6 py-4 text-sm text-gray-300">
-                                {{ $transaction->description }}
+                                {{ $transaction->description ?? 'No description' }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                                {{ $transaction->bankAccount->bank_name }}
+                                {{ $transaction->bankAccount ? $transaction->bankAccount->bank_name . ' - ' . $transaction->bankAccount->account_name : 'Unknown Account' }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                @if (in_array($transaction->type, ['deposit', 'interest']))
+                                @if ($transaction->transaction_type === 'credit')
                                     <span class="px-2 py-1 text-xs rounded-full bg-emerald-900 text-emerald-300">
-                                        {{ ucfirst($transaction->type) }}
+                                        Credit
                                     </span>
                                 @else
                                     <span class="px-2 py-1 text-xs rounded-full bg-red-900 text-red-300">
-                                        {{ ucfirst($transaction->type) }}
+                                        Debit
                                     </span>
                                 @endif
                             </td>
-                            <td
-                                class="px-6 py-4 whitespace-nowrap text-sm font-medium 
-                                {{ in_array($transaction->type, ['deposit', 'interest']) ? 'text-emerald-400' : 'text-red-400' }}">
-                                {{ in_array($transaction->type, ['deposit', 'interest']) ? '+ ' : '- ' }}
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium 
+                                {{ $transaction->transaction_type === 'credit' ? 'text-emerald-400' : 'text-red-400' }}">
+                                {{ $transaction->transaction_type === 'credit' ? '+ ' : '- ' }}
                                 Rp {{ number_format((float) abs($transaction->amount), 0, ',', '.') }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
@@ -166,7 +184,11 @@
                     @empty
                         <tr>
                             <td colspan="6" class="px-6 py-8 text-center text-gray-400">
-                                No transactions found for this account
+                                @if($selectedBankId)
+                                    No transactions found for this account
+                                @else
+                                    Select a bank account to view transactions
+                                @endif
                             </td>
                         </tr>
                     @endforelse
@@ -175,12 +197,11 @@
         </div>
 
         <div class="mt-4 flex justify-between items-center">
-            <p class="text-sm text-gray-400">Showing 5 of 24 transactions</p>
+            <p class="text-sm text-gray-400">
+                Showing {{ $transactions->count() }} of {{ $transactions->total() }} transactions
+            </p>
             <div class="flex gap-2">
-                <button
-                    class="px-3 py-1 rounded bg-zinc-700 text-white hover:bg-zinc-600 transition-colors">Previous</button>
-                <button
-                    class="px-3 py-1 rounded bg-zinc-700 text-white hover:bg-zinc-600 transition-colors">Next</button>
+                {{ $transactions->links('vendor.pagination.simple-tailwind-custom') }}
             </div>
         </div>
     </div>
@@ -262,4 +283,33 @@
             </div>
         </div>
     </flux:modal>
+
+    @push('scripts')
+    <script>
+        document.addEventListener('livewire:initialized', function() {
+            // Fix for daterangepicker visibility issue
+            Livewire.hook('morph.updated', ({ el }) => {
+                // Check if we need to fix date picker inputs after a Livewire update
+                const datePickerInput = el.querySelector('[wire\\:model\\.live="dateRange"]');
+                if (datePickerInput) {
+                    // Add a click handler if not already present
+                    if (!datePickerInput._hasClickHandler) {
+                        datePickerInput._hasClickHandler = true;
+                        datePickerInput.addEventListener('click', function(e) {
+                            // If the datepicker doesn't show, reset it via Livewire
+                            setTimeout(() => {
+                                const datepickerVisible = !!document.querySelector('[x-show="showDatepicker"]:not([style*="display: none"])');
+                                if (!datepickerVisible) {
+                                    Livewire.find(datePickerInput.closest('[wire\\:id]').getAttribute('wire:id'))
+                                        .call('resetDatepicker');
+                                }
+                            }, 50);
+                        });
+                    }
+                }
+            });
+        });
+    </script>
+    @endpush
+
 </section>

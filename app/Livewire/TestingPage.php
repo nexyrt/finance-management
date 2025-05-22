@@ -5,10 +5,14 @@ use App\Models\BankAccount;
 use App\Models\BankTransaction;
 use Flux\Flux;
 use Livewire\Component;
+use Livewire\WithPagination;
 use Masmerise\Toaster\Toaster;
+use Carbon\Carbon;
 
 class TestingPage extends Component
 {
+    use WithPagination;
+
     public $form = [
         'account_name' => '',
         'account_number' => '',
@@ -21,6 +25,11 @@ class TestingPage extends Component
     public $date;
     public $editMode = false;
     public $editId = null;
+    public $selectedBankId = null;
+    public $dateRange = '';
+    public $startDate = null;
+    public $endDate = null;
+    public $transactionType = '';
 
     protected $rules = [
         'form.account_name' => 'required|string|max:255',
@@ -30,6 +39,33 @@ class TestingPage extends Component
         'form.currency' => 'required|string|in:IDR,USD,EUR,SGD',
         'form.initial_balance' => 'required|numeric|min:0',
     ];
+
+    protected $queryString = [
+        'selectedBankId' => ['except' => null],
+        'startDate' => ['except' => null], 
+        'endDate' => ['except' => null],
+        'transactionType' => ['except' => ''],
+    ];
+
+    /**
+     * Initialize component
+     */
+    public function mount()
+    {
+        // Format any existing date range values when component loads
+        if ($this->startDate && $this->endDate) {
+            try {
+                $startFormatted = Carbon::parse($this->startDate)->format('d/m/Y');
+                $endFormatted = Carbon::parse($this->endDate)->format('d/m/Y');
+                $this->dateRange = "$startFormatted - $endFormatted";
+            } catch (\Exception $e) {
+                // Handle invalid dates silently
+                $this->startDate = null;
+                $this->endDate = null;
+                $this->dateRange = '';
+            }
+        }
+    }
 
     public function resetForm()
     {
@@ -126,11 +162,117 @@ class TestingPage extends Component
         }
     }
 
+    /**
+     * Reset all transaction filters
+     */
+    public function resetFilters()
+    {
+        $this->dateRange = '';
+        $this->startDate = null;
+        $this->endDate = null;
+        $this->transactionType = '';
+        $this->resetPage();
+    }
+
+    /**
+     * Handle date range selection
+     */
+    public function updatedDateRange($value)
+    {
+        if (empty($value)) {
+            $this->startDate = null;
+            $this->endDate = null;
+            return;
+        }
+
+        $dates = explode(' - ', $value);
+        if (count($dates) === 2) {
+            try {
+                // Parse date format (DD/MM/YYYY)
+                $this->startDate = Carbon::createFromFormat('d/m/Y', trim($dates[0]))->startOfDay()->toDateString();
+                $this->endDate = Carbon::createFromFormat('d/m/Y', trim($dates[1]))->endOfDay()->toDateString();
+            } catch (\Exception $e) {
+                $this->startDate = null;
+                $this->endDate = null;
+                Toaster::error('Invalid date format');
+            }
+        }
+
+        $this->resetPage();
+    }
+
+    /**
+     * Fetch transactions for a specific bank account
+     * 
+     * @param int $bankId The ID of the bank account
+     * @return void
+     */
+    public function loadBankTransactions($bankId)
+    {
+        try {
+            // Verify the bank exists
+            $bank = BankAccount::findOrFail($bankId);
+
+            // Set the selected bank ID
+            $this->selectedBankId = $bankId;
+
+            // Reset page for pagination
+            $this->resetPage();
+
+            // Show success message (optional)
+            Toaster::success("Viewing transactions for {$bank->bank_name} - {$bank->account_name}");
+        } catch (\Exception $e) {
+            Toaster::error('Failed to load bank transactions: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Reset selected bank account
+     */
+    public function clearSelectedBank()
+    {
+        $this->selectedBankId = null;
+        $this->resetPage();
+    }
+
+    // Add this method to reset the daterangepicker
+    public function resetDatepicker()
+    {
+        // This intentionally empty method will trigger a re-render
+        // which will help resolve the datepicker display issue
+    }
+
     public function render()
     {
+        // Build the transaction query
+        $transactionQuery = BankTransaction::query();
+
+        // Filter by bank account if selected
+        if ($this->selectedBankId) {
+            $transactionQuery->where('bank_account_id', $this->selectedBankId);
+        }
+
+        // Filter by date range
+        if ($this->startDate && $this->endDate) {
+            $transactionQuery->whereBetween('transaction_date', [$this->startDate, $this->endDate]);
+        }
+
+        // Filter by transaction type
+        if ($this->transactionType) {
+            $transactionQuery->where('transaction_type', $this->transactionType);
+        }
+
+        // Get all accounts for the table
+        $accounts = BankAccount::all();
+
+        // Get filtered transactions with pagination
+        $transactions = $transactionQuery->with('bankAccount')
+            ->latest('transaction_date')
+            ->paginate(10);
+
         return view('livewire.testing-page', [
-            'accounts' => BankAccount::all(),
-            'transactions' => BankTransaction::where('bank_account_id', 3)->paginate(15),
+            'accounts' => $accounts,
+            'transactions' => $transactions,
         ]);
     }
 }
