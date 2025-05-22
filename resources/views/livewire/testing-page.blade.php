@@ -6,7 +6,7 @@
                 <p class="mt-1 text-gray-400">Manage your company bank accounts and view transaction history</p>
             </div>
             <flux:modal.trigger name="add-wallet">
-                <flux:button>Add Wallet</flux:button>
+                <flux:button  wire:click="resetForm">Add Wallet</flux:button>
             </flux:modal.trigger>
         </div>
     </header>
@@ -60,7 +60,8 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">Today, 10:45</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
                                 <div class="flex items-center gap-3">
-                                    <button class="text-gray-400 hover:text-gray-200 transition-colors">
+                                    <button wire:click="editBankAccount({{ $account->id }})"
+                                        class="text-gray-400 hover:text-yellow-400 transition-colors">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20"
                                             fill="currentColor">
                                             <path
@@ -130,67 +131,45 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-zinc-700">
-                    <!-- Transaction 1 -->
-                    <tr class="hover:bg-zinc-800 transition-colors">
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">2023-05-15</td>
-                        <td class="px-6 py-4 text-sm text-gray-300">Client Payment - PT Maju Jaya</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">Bank Mandiri</td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="px-2 py-1 text-xs rounded-full bg-emerald-900 text-emerald-300">Income</span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-emerald-400">+ Rp 25,000,000
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">Rp 125,000,000</td>
-                    </tr>
-
-                    <!-- Transaction 2 -->
-                    <tr class="hover:bg-zinc-800 transition-colors">
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">2023-05-12</td>
-                        <td class="px-6 py-4 text-sm text-gray-300">Office Rent Payment</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">BCA</td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="px-2 py-1 text-xs rounded-full bg-red-900 text-red-300">Expense</span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-red-400">- Rp 15,000,000</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">Rp 78,500,000</td>
-                    </tr>
-
-                    <!-- Transaction 3 -->
-                    <tr class="hover:bg-zinc-800 transition-colors">
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">2023-05-10</td>
-                        <td class="px-6 py-4 text-sm text-gray-300">Server Maintenance</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">BNI</td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="px-2 py-1 text-xs rounded-full bg-red-900 text-red-300">Expense</span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-red-400">- Rp 7,250,000</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">Rp 42,750,000</td>
-                    </tr>
-
-                    <!-- Transaction 4 -->
-                    <tr class="hover:bg-zinc-800 transition-colors">
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">2023-05-08</td>
-                        <td class="px-6 py-4 text-sm text-gray-300">Client Payment - PT Sukses Makmur</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">Bank Mandiri</td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="px-2 py-1 text-xs rounded-full bg-emerald-900 text-emerald-300">Income</span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-emerald-400">+ Rp 32,500,000
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">Rp 100,000,000</td>
-                    </tr>
-
-                    <!-- Transaction 5 -->
-                    <tr class="hover:bg-zinc-800 transition-colors">
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">2023-05-05</td>
-                        <td class="px-6 py-4 text-sm text-gray-300">Employee Salaries</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">BCA</td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="px-2 py-1 text-xs rounded-full bg-red-900 text-red-300">Expense</span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-red-400">- Rp 45,000,000</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">Rp 93,500,000</td>
-                    </tr>
+                    @forelse($transactions as $transaction)
+                        <tr class="hover:bg-zinc-800 transition-colors">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                                {{ $transaction->date->format('Y-m-d') }}
+                            </td>
+                            <td class="px-6 py-4 text-sm text-gray-300">
+                                {{ $transaction->description }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                                {{ $transaction->bankAccount->bank_name }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                @if (in_array($transaction->type, ['deposit', 'interest']))
+                                    <span class="px-2 py-1 text-xs rounded-full bg-emerald-900 text-emerald-300">
+                                        {{ ucfirst($transaction->type) }}
+                                    </span>
+                                @else
+                                    <span class="px-2 py-1 text-xs rounded-full bg-red-900 text-red-300">
+                                        {{ ucfirst($transaction->type) }}
+                                    </span>
+                                @endif
+                            </td>
+                            <td
+                                class="px-6 py-4 whitespace-nowrap text-sm font-medium 
+                                {{ in_array($transaction->type, ['deposit', 'interest']) ? 'text-emerald-400' : 'text-red-400' }}">
+                                {{ in_array($transaction->type, ['deposit', 'interest']) ? '+ ' : '- ' }}
+                                Rp {{ number_format((float) abs($transaction->amount), 0, ',', '.') }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                                Rp {{ number_format((float) $transaction->balance_after, 0, ',', '.') }}
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="6" class="px-6 py-8 text-center text-gray-400">
+                                No transactions found for this account
+                            </td>
+                        </tr>
+                    @endforelse
                 </tbody>
             </table>
         </div>
@@ -206,12 +185,16 @@
         </div>
     </div>
 
-    <!-- Add Bank Account Modal -->
+    <!-- Add/Edit Bank Account Modal -->
     <flux:modal name="add-wallet" class="md:w-96">
-        <form class="space-y-6">
+        <form wire:submit.prevent="saveOrUpdateBankAccount" class="space-y-6">
             <div>
-                <flux:heading size="lg">Add Bank Account</flux:heading>
-                <flux:text class="mt-2">Make sure all information is accurate before submitting.</flux:text>
+                <flux:heading size="lg">
+                    {{ $editMode ? 'Edit Bank Account' : 'Add Bank Account' }}
+                </flux:heading>
+                <flux:text class="mt-2">
+                    {{ $editMode ? 'Update bank account information below.' : 'Make sure all information is accurate before submitting.' }}
+                </flux:text>
             </div>
 
             <!-- Account Name -->
@@ -236,7 +219,8 @@
                     ['value' => 'USD', 'label' => 'USD'],
                     ['value' => 'EUR', 'label' => 'EUR'],
                     ['value' => 'SGD', 'label' => 'SGD'],
-                ]" selected="IDR" />
+                ]" :selected="$form['currency']"
+                    :modalMode="true" />
 
                 <!-- Initial Balance -->
                 <flux:input label="Initial Balance" wire:model="form.initial_balance" type="text"
@@ -245,13 +229,14 @@
 
             <!-- Action Buttons -->
             <div class="flex justify-end gap-3 pt-2">
-                <flux.modal.close>
+                <flux:modal.close>
                     <flux:button type="button" variant="filled">
                         Cancel
                     </flux:button>
-                </flux.modal.close>
-                <flux:button wire:click='saveBankAccount' variant="primary">
-                    Save Account
+                </flux:modal.close>
+
+                <flux:button type="submit" variant="primary">
+                    {{ $editMode ? 'Update Account' : 'Save Account' }}
                 </flux:button>
             </div>
         </form>
@@ -272,7 +257,7 @@
                 <flux:modal.close>
                     <flux:button variant="ghost">Cancel</flux:button>
                 </flux:modal.close>
-                <flux:button @click="$wire.deleteBankAccount(selectedWallet)" variant="danger">Delete project
+                <flux:button @click="$wire.deleteBankAccount(selectedWallet)" variant="danger">Delete Account
                 </flux:button>
             </div>
         </div>

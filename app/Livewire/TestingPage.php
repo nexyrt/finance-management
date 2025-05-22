@@ -9,7 +9,6 @@ use Masmerise\Toaster\Toaster;
 
 class TestingPage extends Component
 {
-    public $date;
     public $form = [
         'account_name' => '',
         'account_number' => '',
@@ -19,7 +18,7 @@ class TestingPage extends Component
         'initial_balance' => '',
         'current_balance' => 0,
     ];
-
+    public $date;
     public $editMode = false;
     public $editId = null;
 
@@ -32,22 +31,20 @@ class TestingPage extends Component
         'form.initial_balance' => 'required|numeric|min:0',
     ];
 
-    public function saveBankAccount()
+    public function resetForm()
     {
-        $this->validate();
+        $this->form = [
+            'account_name' => '',
+            'account_number' => '',
+            'bank_name' => '',
+            'branch' => '',
+            'currency' => 'IDR',
+            'initial_balance' => '',
+            'current_balance' => 0,
+        ];
 
-        // Set current balance equal to initial balance for new accounts
-        $this->form['current_balance'] = $this->form['initial_balance'];
-
-        // Create bank account
-        BankAccount::create($this->form);
-
-        // Reset form and close modal
-        $this->reset('form');
-        Flux::modals()->close();
-
-        // Show success message
-        Toaster::success('Bank account created successfully!');
+        $this->editMode = false;
+        $this->editId = null;
     }
 
     public function editBankAccount($id)
@@ -67,31 +64,48 @@ class TestingPage extends Component
             'current_balance' => $account->current_balance,
         ];
 
-        Flux::modals()->open('add-wallet');
+        Flux::modal("add-wallet")->show();
     }
 
-    public function updateBankAccount()
+    public function saveOrUpdateBankAccount()
     {
         $this->validate();
 
         try {
-            $account = BankAccount::findOrFail($this->editId);
+            if ($this->editMode) {
+                // Update existing account
+                $account = BankAccount::findOrFail($this->editId);
 
-            $account->update([
-                'account_name' => $this->form['account_name'],
-                'account_number' => $this->form['account_number'],
-                'bank_name' => $this->form['bank_name'],
-                'branch' => $this->form['branch'],
-                'currency' => $this->form['currency'],
-                'initial_balance' => $this->form['initial_balance'],
-            ]);
+                // Calculate the difference in initial balance
+                $balanceDifference = $this->form['initial_balance'] - $account->initial_balance;
 
+                // Update the account details
+                $account->update([
+                    'account_name' => $this->form['account_name'],
+                    'account_number' => $this->form['account_number'],
+                    'bank_name' => $this->form['bank_name'],
+                    'branch' => $this->form['branch'],
+                    'currency' => $this->form['currency'],
+                    'initial_balance' => $this->form['initial_balance'],
+                    // Adjust current balance by the same amount that initial balance changed
+                    'current_balance' => $account->current_balance + $balanceDifference,
+                ]);
+
+                Toaster::success('Bank account updated successfully!');
+            } else {
+                // Create new account
+                $this->form['current_balance'] = $this->form['initial_balance'];
+                BankAccount::create($this->form);
+
+                Toaster::success('Bank account created successfully!');
+            }
+
+            // Reset form and close modal
             $this->reset(['form', 'editMode', 'editId']);
             Flux::modals()->close();
 
-            Toaster::success('Bank account updated successfully!');
         } catch (\Exception $e) {
-            Toaster::error('Failed to update bank account: ' . $e->getMessage());
+            Toaster::error('Operation failed: ' . $e->getMessage());
         }
     }
 
