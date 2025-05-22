@@ -1,4 +1,4 @@
-<section class="w-full bg-zinc-800 text-gray-200 p-6">
+<section x-data="{ selectedWallet: null }" class="w-full bg-zinc-800 text-gray-200 p-6">
     <header class="mb-6">
         <div class="flex justify-between items-center">
             <div>
@@ -17,154 +17,75 @@
             <table class="min-w-full bg-zinc-900 divide-y divide-zinc-700">
                 <thead class="bg-zinc-800">
                     <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Bank</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Account Name</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Account Number</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Balance</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Last Updated</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Actions</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Bank
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                            Account Name</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                            Account Number</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                            Balance</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Last
+                            Updated</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                            Actions</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-zinc-700">
-                    <!-- Bank Account 1 -->
-                    <tr class="hover:bg-zinc-800 transition-colors">
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="flex items-center gap-3">
-                                <div class="bg-blue-600 h-10 w-10 rounded-lg flex items-center justify-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" />
-                                    </svg>
+                    <!-- Bank Account -->
+                    @foreach ($accounts as $account)
+                        <tr class="hover:bg-zinc-800 transition-colors">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center gap-3">
+                                    <div class="bg-blue-600 h-10 w-10 rounded-lg flex items-center justify-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white"
+                                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" />
+                                        </svg>
+                                    </div>
+                                    <span class="text-white">
+                                        <p class="font-medium">{{ $account->bank_name }}</p>
+                                        <p class="text-sm">{{ $account->branch }}</p>
+                                    </span>
                                 </div>
-                                <span class="font-medium text-white">Bank Mandiri</span>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">Primary Account</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">1234 5678 9012 3456</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-emerald-400">Rp 125.000.000</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">Today, 10:45</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                            <div class="flex items-center gap-3">
-                                <button class="text-gray-400 hover:text-gray-200 transition-colors">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                        <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-                                    </svg>
-                                </button>
-                                <button class="text-gray-400 hover:text-red-400 transition-colors">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
-                                    </svg>
-                                </button>
-                                <button class="px-3 py-1.5 bg-zinc-700 hover:bg-zinc-600 text-white text-xs rounded-lg transition-colors">
-                                    View
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-
-                    <!-- Bank Account 2 -->
-                    <tr class="hover:bg-zinc-800 transition-colors">
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="flex items-center gap-3">
-                                <div class="bg-red-600 h-10 w-10 rounded-lg flex items-center justify-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" />
-                                    </svg>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{{ $account->account_name }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{{ $account->account_number }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-emerald-400">
+                                Rp {{ number_format((float) $account->current_balance, 0, ',', '.') }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">Today, 10:45</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                                <div class="flex items-center gap-3">
+                                    <button class="text-gray-400 hover:text-gray-200 transition-colors">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20"
+                                            fill="currentColor">
+                                            <path
+                                                d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                                        </svg>
+                                    </button>
+                                    <flux:modal.trigger name="delete-wallet">
+                                        <button @click="selectedWallet = {{ $account->id }}"
+                                            class="text-gray-400 hover:text-red-400 transition-colors">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20"
+                                                fill="currentColor">
+                                                <path fill-rule="evenodd"
+                                                    d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                                                    clip-rule="evenodd" />
+                                            </svg>
+                                        </button>
+                                    </flux:modal.trigger>
+                                    <button
+                                        class="px-3 py-1.5 bg-zinc-700 hover:bg-zinc-600 text-white text-xs rounded-lg transition-colors">
+                                        View
+                                    </button>
                                 </div>
-                                <span class="font-medium text-white">BCA</span>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">Secondary Account</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">9876 5432 1098 7654</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-emerald-400">Rp 78.500.000</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">Yesterday, 15:30</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                            <div class="flex items-center gap-3">
-                                <button class="text-gray-400 hover:text-gray-200 transition-colors">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                        <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-                                    </svg>
-                                </button>
-                                <button class="text-gray-400 hover:text-red-400 transition-colors">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
-                                    </svg>
-                                </button>
-                                <button class="px-3 py-1.5 bg-zinc-700 hover:bg-zinc-600 text-white text-xs rounded-lg transition-colors">
-                                    View
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-
-                    <!-- Bank Account 3 -->
-                    <tr class="hover:bg-zinc-800 transition-colors">
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="flex items-center gap-3">
-                                <div class="bg-purple-600 h-10 w-10 rounded-lg flex items-center justify-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" />
-                                    </svg>
-                                </div>
-                                <span class="font-medium text-white">BNI</span>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">Operations Account</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">5678 1234 9876 5432</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-emerald-400">Rp 42.750.000</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">2 days ago</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                            <div class="flex items-center gap-3">
-                                <button class="text-gray-400 hover:text-gray-200 transition-colors">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                        <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-                                    </svg>
-                                </button>
-                                <button class="text-gray-400 hover:text-red-400 transition-colors">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
-                                    </svg>
-                                </button>
-                                <button class="px-3 py-1.5 bg-zinc-700 hover:bg-zinc-600 text-white text-xs rounded-lg transition-colors">
-                                    View
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-
-                    <!-- Bank Account 4 -->
-                    <tr class="hover:bg-zinc-800 transition-colors">
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="flex items-center gap-3">
-                                <div class="bg-green-600 h-10 w-10 rounded-lg flex items-center justify-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" />
-                                    </svg>
-                                </div>
-                                <span class="font-medium text-white">BRI</span>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">Savings Account</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">1111 2222 3333 4444</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-emerald-400">Rp 56.200.000</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">3 days ago</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                            <div class="flex items-center gap-3">
-                                <button class="text-gray-400 hover:text-gray-200 transition-colors">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                        <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-                                    </svg>
-                                </button>
-                                <button class="text-gray-400 hover:text-red-400 transition-colors">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
-                                    </svg>
-                                </button>
-                                <button class="px-3 py-1.5 bg-zinc-700 hover:bg-zinc-600 text-white text-xs rounded-lg transition-colors">
-                                    View
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
+                            </td>
+                        </tr>
+                    @endforeach
                 </tbody>
             </table>
         </div>
@@ -177,24 +98,15 @@
 
             <div class="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
                 <div class="flex-1 md:flex-none">
-                    <x-inputs.select selected="" placeholder="Choose a Wallet" :options="[
-                        ['value' => '', 'label' => 'All Wallet'],
-                        ['value' => 'BNI', 'label' => 'BNI'],
-                        ['value' => 'BCA', 'label' => 'BCA'],
-                    ]" />
+                    <x-inputs.daterangepicker wire:model.live='date' placeholder="Select Date" />
                 </div>
-
                 <div class="flex-1 md:flex-none">
                     <x-inputs.select wire:model='transaction_type' placeholder="Choose a Transactions" selected=""
                         :options="[
                             ['value' => '', 'label' => 'All Transactions'],
-                            ['value' => 'income', 'label' => 'Income'],
-                            ['value' => 'expense', 'label' => 'Expense'],
+                            ['value' => 'debit', 'label' => 'Debit'],
+                            ['value' => 'credit', 'label' => 'Credit'],
                         ]" />
-                </div>
-
-                <div class="flex-1 md:flex-none">
-                    <flux:input type="date" max="2999-12-31" />
                 </div>
             </div>
         </div>
@@ -343,5 +255,26 @@
                 </flux:button>
             </div>
         </form>
+    </flux:modal>
+
+    <!-- Delete Bank Account Modal -->
+    <flux:modal name="delete-wallet" class="min-w-[22rem]">
+        <div class="space-y-6">
+            <div>
+                <flux:heading size="lg">Delete Bank Account?</flux:heading>
+                <flux:text class="mt-2">
+                    <p>You're about to delete this Bank Account.</p>
+                    <p>This action will delete the related <span class="font-bold">Payments and Transaction</span>.</p>
+                </flux:text>
+            </div>
+            <div class="flex gap-2">
+                <flux:spacer />
+                <flux:modal.close>
+                    <flux:button variant="ghost">Cancel</flux:button>
+                </flux:modal.close>
+                <flux:button @click="$wire.deleteBankAccount(selectedWallet)" variant="danger">Delete project
+                </flux:button>
+            </div>
+        </div>
     </flux:modal>
 </section>

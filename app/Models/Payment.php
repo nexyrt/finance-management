@@ -33,29 +33,30 @@ class Payment extends Model
     {
         return $this->belongsTo(BankAccount::class);
     }
-    
+
     public static function boot()
     {
         parent::boot();
-        
+
         static::created(function ($payment) {
             // Update invoice status
             $payment->invoice->updateStatus();
-            
+
             // Update bank account balance
             $bankAccount = $payment->bankAccount;
             $bankAccount->current_balance += $payment->amount;
             $bankAccount->save();
-            
+
             // Create bank transaction record
             BankTransaction::create([
                 'bank_account_id' => $payment->bank_account_id,
                 'amount' => $payment->amount,
                 'transaction_date' => $payment->payment_date,
-                'transaction_type' => 'deposit',
+                'transaction_type' => 'credit', // ✅ cocok dengan enum
                 'description' => 'Payment received for Invoice #' . $payment->invoice->invoice_number,
                 'reference_number' => $payment->reference_number,
             ]);
+
         });
     }
 }

@@ -302,7 +302,7 @@
         }"
     >
         <input 
-            {{ $attributes->merge(['class' => 'w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-md text-zinc-200 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500']) }}
+            {{ $attributes->merge(['class' => 'w-full px-3 py-2.5 bg-zinc-800 border border-zinc-700 rounded-xl shadow-sm hover:border-zinc-600 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-sm text-zinc-200 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500']) }}
             type="text"
             id="{{ $id }}"
             name="{{ $name }}"
@@ -325,7 +325,7 @@
             x-transition:leave-start="opacity-100 scale-100"
             x-transition:leave-end="opacity-0 scale-95"
             x-on:click.away="showDatepicker = false"
-            class="absolute z-50 bg-blue-900 bg-opacity-95 rounded-md shadow-lg p-4 border border-zinc-700 mt-1"
+            class="absolute z-50 bg-zinc-900 rounded-md shadow-lg p-4 border border-zinc-700 mt-1"
             style="display: none; width: 300px;"
         >
             <div class="flex justify-between items-center mb-2">
@@ -400,10 +400,10 @@
                             x-on:click="selectDate(date)"
                             class="h-7 w-7 mx-auto text-center rounded-full text-sm leading-none flex items-center justify-center transition duration-150"
                             :class="{
-                                'bg-indigo-600 text-white font-medium': isSelectedDate(date),
-                                'bg-indigo-900 text-white': isInRange(date),
+                                'bg-blue-600 text-white font-medium': isSelectedDate(date),
+                                'bg-zinc-700 text-white': isInRange(date),
                                 'text-zinc-300 hover:bg-zinc-800': !isSelectedDate(date) && !isInRange(date) && !isToday(date),
-                                'text-indigo-400 font-medium': !isSelectedDate(date) && !isInRange(date) && isToday(date)
+                                'text-blue-400 font-medium': !isSelectedDate(date) && !isInRange(date) && isToday(date)
                             }"
                             :disabled="!isDateSelectable(date)"
                         ></button>
@@ -414,14 +414,14 @@
             <div class="mt-4 flex justify-between">
                 <button 
                     type="button"
-                    class="px-3 py-1 text-xs text-blue-400 hover:text-blue-300 font-medium rounded hover:bg-zinc-800"
+                    class="px-3 py-1 text-xs text-zinc-400 hover:text-zinc-300 font-medium rounded hover:bg-zinc-800"
                     x-on:click="setToday()"
                 >
                     Today
                 </button>
                 <button 
                     type="button"
-                    class="px-3 py-1 text-xs text-zinc-200 hover:text-white font-medium bg-indigo-600 hover:bg-indigo-700 rounded"
+                    class="px-3 py-1 text-xs text-zinc-200 hover:text-white font-medium bg-blue-600 hover:bg-blue-700 rounded"
                     x-on:click="applyDateRange()"
                     :disabled="!startDate || !endDate"
                     :class="{'opacity-50 cursor-not-allowed': !startDate || !endDate, 'cursor-pointer': startDate && endDate}"

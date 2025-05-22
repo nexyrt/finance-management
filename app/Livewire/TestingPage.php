@@ -5,11 +5,11 @@ use App\Models\BankAccount;
 use App\Models\BankTransaction;
 use Flux\Flux;
 use Livewire\Component;
-use Masmerise\Toaster\Toast;
 use Masmerise\Toaster\Toaster;
 
 class TestingPage extends Component
 {
+    public $date;
     public $form = [
         'account_name' => '',
         'account_number' => '',
@@ -19,6 +19,9 @@ class TestingPage extends Component
         'initial_balance' => '',
         'current_balance' => 0,
     ];
+
+    public $editMode = false;
+    public $editId = null;
 
     protected $rules = [
         'form.account_name' => 'required|string|max:255',
@@ -40,11 +43,73 @@ class TestingPage extends Component
         BankAccount::create($this->form);
 
         // Reset form and close modal
-        $this->reset('form');   
+        $this->reset('form');
         Flux::modals()->close();
 
         // Show success message
         Toaster::success('Bank account created successfully!');
+    }
+
+    public function editBankAccount($id)
+    {
+        $this->editMode = true;
+        $this->editId = $id;
+
+        $account = BankAccount::findOrFail($id);
+
+        $this->form = [
+            'account_name' => $account->account_name,
+            'account_number' => $account->account_number,
+            'bank_name' => $account->bank_name,
+            'branch' => $account->branch,
+            'currency' => $account->currency,
+            'initial_balance' => $account->initial_balance,
+            'current_balance' => $account->current_balance,
+        ];
+
+        Flux::modals()->open('add-wallet');
+    }
+
+    public function updateBankAccount()
+    {
+        $this->validate();
+
+        try {
+            $account = BankAccount::findOrFail($this->editId);
+
+            $account->update([
+                'account_name' => $this->form['account_name'],
+                'account_number' => $this->form['account_number'],
+                'bank_name' => $this->form['bank_name'],
+                'branch' => $this->form['branch'],
+                'currency' => $this->form['currency'],
+                'initial_balance' => $this->form['initial_balance'],
+            ]);
+
+            $this->reset(['form', 'editMode', 'editId']);
+            Flux::modals()->close();
+
+            Toaster::success('Bank account updated successfully!');
+        } catch (\Exception $e) {
+            Toaster::error('Failed to update bank account: ' . $e->getMessage());
+        }
+    }
+
+    public function deleteBankAccount($id)
+    {
+        try {
+            $account = BankAccount::findOrFail($id);
+            $accountName = $account->account_name;
+
+            // Delete the account
+            $account->delete();
+            Flux::modals()->close();
+
+            // Show success message
+            Toaster::success("Bank account \"$accountName\" has been deleted.");
+        } catch (\Exception $e) {
+            Toaster::error($e->getMessage());
+        }
     }
 
     public function render()
