@@ -33,8 +33,8 @@
                         :current="request() -> routeIs('bank-accounts')" wire:navigate>
                         {{ __('Bank Accounts') }}
                     </flux:navlist.item>
-                    <flux:navlist.item icon="loading" :href="route('test')"
-                        :current="request() -> routeIs('test')" wire:navigate>
+                    <flux:navlist.item icon="loading" :href="route('test')" :current="request() -> routeIs('test')"
+                        wire:navigate>
                         {{ __(key: 'Testing Page') }}
                     </flux:navlist.item>
                 </flux:navlist.group>
@@ -138,7 +138,7 @@
         {{ $slot }}
 
         @fluxScripts
-        <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
         @stack('scripts')
         <x-toaster-hub />
     </body>

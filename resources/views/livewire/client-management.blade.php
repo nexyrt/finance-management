@@ -1,59 +1,53 @@
-<section class="p-6 space-y-6">
-    <div class="max-w-7xl mx-auto">
-        <!-- Enhanced Header with Glass Effect -->
-        <div class="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-                <h1 class="text-3xl font-bold tracking-tight text-white flex items-center gap-3">
-                    <svg class="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                    </svg>
-                    Client Management
-                </h1>
-                <p class="mt-2 text-zinc-400">Manage your clients and their relationships effortlessly</p>
-            </div>
-            <flux:modal.trigger name="client-form">
-                <x-shared.button @click="$wire.openCreateModal()" variant="primary"
-                    class="shadow-lg hover:shadow-blue-500/25 transition-shadow w-full sm:w-auto justify-center">
-                    <svg class="w-5 h-5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                    </svg>
-                    Add Client
-                </x-shared.button>
-            </flux:modal.trigger>
+<section class="w-full p-6 space-y-6">
+    <!-- Enhanced Header with Glass Effect -->
+    <div class="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-3">
+                Client Management
+            </h1>
+            <p class="mt-2 text-zinc-400">Manage your clients and their relationships effortlessly</p>
+        </div>
+        <flux:modal.trigger name="client-form">
+            <x-shared.button @click="$wire.openCreateModal()" variant="primary"
+                class="shadow-lg hover:shadow-blue-500/25 transition-shadow w-full sm:w-auto justify-center">
+                <svg class="w-5 h-5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+                Add Client
+            </x-shared.button>
+        </flux:modal.trigger>
+    </div>
+
+    <!-- Filters -->
+    <div class="mb-6 flex flex-wrap gap-4">
+        <div class="w-full sm:w-48">
+            <x-inputs.select wire:model.live="perPage" :options="[
+                ['value' => '10', 'label' => '10 per page'],
+                ['value' => '25', 'label' => '25 per page'],
+                ['value' => '50', 'label' => '50 per page'],
+                ['value' => 'all', 'label' => 'All'],
+            ]" label="Per Page" />
         </div>
 
-        <!-- Filters -->
-        <div class="mb-6 flex flex-wrap gap-4">
-            <div class="w-full sm:w-48">
-                <x-inputs.select wire:model.live="perPage" :options="[
-                    ['value' => '10', 'label' => '10 per page'],
-                    ['value' => '25', 'label' => '25 per page'],
-                    ['value' => '50', 'label' => '50 per page'],
-                    ['value' => 'all', 'label' => 'All'],
-                ]" label="Per Page" />
-            </div>
+        <div class="w-full sm:w-48 z-40">
+            <x-inputs.select wire:model.live="typeFilter" :options="[
+                ['value' => '', 'label' => 'All Types'],
+                ['value' => 'individual', 'label' => 'Individuals'],
+                ['value' => 'company', 'label' => 'Companies'],
+            ]" label="Filter by Type" />
+        </div>
 
-            <div class="w-full sm:w-48 z-40">
-                <x-inputs.select wire:model.live="typeFilter" :options="[
-                    ['value' => '', 'label' => 'All Types'],
-                    ['value' => 'individual', 'label' => 'Individuals'],
-                    ['value' => 'company', 'label' => 'Companies'],
-                ]" label="Filter by Type" />
-            </div>
-
-            <div class="flex-1 min-w-[300px]">
-                <label class="block text-sm font-medium text-zinc-300 mb-1">Search Clients</label>
-                <div class="relative">
-                    <input wire:model.live.debounce.300ms="search" placeholder="Search by name..." type="text"
-                        class="w-full pl-10 pr-4 py-2.5 bg-zinc-900/70 border border-zinc-700/50 rounded-lg text-zinc-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all placeholder:text-zinc-500" />
-                    <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-zinc-400" fill="none"
-                        stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
-                </div>
+        <div class="flex-1 min-w-[300px]">
+            <label class="block text-sm font-medium text-zinc-300 mb-1">Search Clients</label>
+            <div class="relative">
+                <input wire:model.live.debounce.300ms="search" placeholder="Search by name..." type="text"
+                    class="w-full pl-10 pr-4 py-2.5 bg-zinc-900/70 border border-zinc-700/50 rounded-lg text-zinc-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all placeholder:text-zinc-500" />
+                <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-zinc-400" fill="none"
+                    stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
             </div>
         </div>
     </div>
@@ -114,7 +108,7 @@
                 </thead>
                 <tbody class="divide-y divide-zinc-700">
                     @forelse($this->clients as $client)
-                        <tr class="hover:bg-zinc-800/50 transition-all duration-150">
+                        <tr class="hover:bg-zinc-800/50 transition-all duration-150" wire:key="{{ $client->id }}">
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <input type="checkbox" value="{{ $client->id }}" x-model="selectedClients"
                                     @change="updateSelectAll"
@@ -248,206 +242,199 @@
 
     <!-- Client Form Modal -->
     <flux:modal name="client-form" class="w-full max-w-5xl">
-        <form wire:submit="save" class="p-0 mt-7 overflow-hidden rounded-xl">
-            <!-- Header with gradient background -->
-            <div class="bg-gradient-to-r from-blue-900 via-indigo-800 to-purple-900 px-8 py-6">
-                <h2 class="text-2xl font-bold text-white tracking-tight">
-                    {{ $isEditing ? 'Edit Client' : 'Create New Client' }}
-                </h2>
-                <p class="mt-2 text-blue-200 text-sm">
-                    {{ $isEditing ? 'Update information for existing client' : 'Add a new client to your system' }}
-                </p>
-            </div>
+        <form wire:submit="save" class="overflow-hidden rounded-xl">
+            <h2 class="text-2xl font-bold text-white tracking-tight mb-5">
+                {{ $isEditing ? 'Edit Client' : 'Create New Client' }}
+            </h2>
 
-            <div class="p-8 bg-zinc-900">
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    <div class="lg:col-span-2 space-y-6">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <label class="block text-sm font-medium text-zinc-300 mb-2">
-                                    Name
-                                </label>
-                                <div class="relative">
-                                    <svg xmlns="http://www.w3.org/2000/svg"
-                                        class="h-5 w-5 absolute left-3 top-2.5 text-zinc-500" fill="none"
-                                        viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                    </svg>
-                                    <input wire:model="form.name" placeholder="Enter client name"
-                                        class="w-full pl-10 pr-4 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" />
-                                </div>
-                                @error('form.name')
-                                    <span class="text-red-400 text-sm mt-1 block">{{ $message }}</span>
-                                @enderror
-                            </div>
-
-                            <!-- Fixed Type Selection -->
-                            <div wire:key="client-type-{{ $isEditing ? $editingClient?->id : 'new' }}">
-                                <label class="block text-sm font-medium text-zinc-300 mb-2">
-                                    Type
-                                </label>
-                                <div class="relative">
-                                    <svg xmlns="http://www.w3.org/2000/svg"
-                                        class="h-5 w-5 absolute left-3 top-2.5 text-zinc-500" fill="none"
-                                        viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                                    </svg>
-                                    <select wire:model.live="form.type" wire:change="resetRelationships"
-                                        class="w-full pl-10 pr-4 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-200 text-sm appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
-                                        <option value="individual">Individual</option>
-                                        <option value="company">Company</option>
-                                    </select>
-                                    <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-                                        <svg class="w-4 h-4 text-zinc-400" fill="none" stroke="currentColor"
-                                            viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M19 9l-7 7-7-7"></path>
-                                        </svg>
-                                    </div>
-                                </div>
-                                @error('form.type')
-                                    <span class="text-red-400 text-sm mt-1 block">{{ $message }}</span>
-                                @enderror
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-medium text-zinc-300 mb-2">
-                                    Email
-                                </label>
-                                <div class="relative">
-                                    <svg xmlns="http://www.w3.org/2000/svg"
-                                        class="h-5 w-5 absolute left-3 top-2.5 text-zinc-500" fill="none"
-                                        viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                                    </svg>
-                                    <input wire:model="form.email" type="email" placeholder="Enter email address"
-                                        class="w-full pl-10 pr-4 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" />
-                                </div>
-                                @error('form.email')
-                                    <span class="text-red-400 text-sm mt-1 block">{{ $message }}</span>
-                                @enderror
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-medium text-zinc-300 mb-2">
-                                    Phone
-                                </label>
-                                <div class="relative">
-                                    <svg xmlns="http://www.w3.org/2000/svg"
-                                        class="h-5 w-5 absolute left-3 top-2.5 text-zinc-500" fill="none"
-                                        viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                                    </svg>
-                                    <input wire:model="form.phone" placeholder="Enter phone number"
-                                        class="w-full pl-10 pr-4 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" />
-                                </div>
-                                @error('form.phone')
-                                    <span class="text-red-400 text-sm mt-1 block">{{ $message }}</span>
-                                @enderror
-                            </div>
-                        </div>
-
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="lg:col-span-2 space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label class="block text-sm font-medium text-zinc-300 mb-2">
-                                Address
+                                Name
                             </label>
                             <div class="relative">
                                 <svg xmlns="http://www.w3.org/2000/svg"
                                     class="h-5 w-5 absolute left-3 top-2.5 text-zinc-500" fill="none"
                                     viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                                 </svg>
-                                <textarea wire:model="form.address" placeholder="Enter address"
-                                    class="w-full pl-10 pr-4 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                                    rows="3"></textarea>
+                                <input wire:model="form.name" placeholder="Enter client name"
+                                    class="w-full pl-10 pr-4 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" />
                             </div>
-                            @error('form.address')
+                            @error('form.name')
+                                <span class="text-red-400 text-sm mt-1 block">{{ $message }}</span>
+                            @enderror
+                        </div>
+
+                        <!-- Fixed Type Selection -->
+                        <div wire:key="client-type-{{ $isEditing ? $editingClient?->id : 'new' }}">
+                            <label class="block text-sm font-medium text-zinc-300 mb-2">
+                                Type
+                            </label>
+                            <div class="relative">
+                                <svg xmlns="http://www.w3.org/2000/svg"
+                                    class="h-5 w-5 absolute left-3 top-2.5 text-zinc-500" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                </svg>
+                                <select wire:model.live="form.type" wire:change="resetRelationships"
+                                    class="w-full pl-10 pr-4 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-200 text-sm appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+                                    <option value="individual">Individual</option>
+                                    <option value="company">Company</option>
+                                </select>
+                                <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                                    <svg class="w-4 h-4 text-zinc-400" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M19 9l-7 7-7-7"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                            @error('form.type')
                                 <span class="text-red-400 text-sm mt-1 block">{{ $message }}</span>
                             @enderror
                         </div>
 
                         <div>
                             <label class="block text-sm font-medium text-zinc-300 mb-2">
-                                Tax ID
+                                Email
                             </label>
                             <div class="relative">
                                 <svg xmlns="http://www.w3.org/2000/svg"
                                     class="h-5 w-5 absolute left-3 top-2.5 text-zinc-500" fill="none"
                                     viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                        d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                                 </svg>
-                                <input wire:model="form.tax_id" placeholder="Enter tax ID"
+                                <input wire:model="form.email" type="email" placeholder="Enter email address"
                                     class="w-full pl-10 pr-4 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" />
                             </div>
-                            @error('form.tax_id')
+                            @error('form.email')
+                                <span class="text-red-400 text-sm mt-1 block">{{ $message }}</span>
+                            @enderror
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-zinc-300 mb-2">
+                                Phone
+                            </label>
+                            <div class="relative">
+                                <svg xmlns="http://www.w3.org/2000/svg"
+                                    class="h-5 w-5 absolute left-3 top-2.5 text-zinc-500" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                                </svg>
+                                <input wire:model="form.phone" placeholder="Enter phone number"
+                                    class="w-full pl-10 pr-4 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" />
+                            </div>
+                            @error('form.phone')
                                 <span class="text-red-400 text-sm mt-1 block">{{ $message }}</span>
                             @enderror
                         </div>
                     </div>
 
                     <div>
-                        <div>
-                            <div class="bg-zinc-800/70 rounded-xl border border-zinc-700 p-5 h-full">
-                                <div class="mb-4">
-                                    <h3 class="text-sm font-medium text-zinc-200 mb-1 flex items-center">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-purple-400"
-                                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M13 10V3L4 14h7v7l9-11h-7z" />
-                                        </svg>
-                                        Relationships
-                                    </h3>
-                                    <p class="text-xs text-zinc-400 mb-4">
-                                        {{ $form['type'] === 'individual' ? 'Select companies to own' : 'Select company owners' }}
-                                    </p>
-                                </div>
+                        <label class="block text-sm font-medium text-zinc-300 mb-2">
+                            Address
+                        </label>
+                        <div class="relative">
+                            <svg xmlns="http://www.w3.org/2000/svg"
+                                class="h-5 w-5 absolute left-3 top-2.5 text-zinc-500" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            <textarea wire:model="form.address" placeholder="Enter address"
+                                class="w-full pl-10 pr-4 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                                rows="3"></textarea>
+                        </div>
+                        @error('form.address')
+                            <span class="text-red-400 text-sm mt-1 block">{{ $message }}</span>
+                        @enderror
+                    </div>
 
-                                <div class="space-y-2 max-h-80 overflow-y-auto custom-scrollbar">
-                                    @foreach ($this->availableConnections as $connection)
-                                        <label
-                                            class="flex items-center p-3 bg-zinc-800/50 border rounded-lg cursor-pointer hover:bg-zinc-700/50 transition-all
+                    <div>
+                        <label class="block text-sm font-medium text-zinc-300 mb-2">
+                            Tax ID
+                        </label>
+                        <div class="relative">
+                            <svg xmlns="http://www.w3.org/2000/svg"
+                                class="h-5 w-5 absolute left-3 top-2.5 text-zinc-500" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            <input wire:model="form.tax_id" placeholder="Enter tax ID"
+                                class="w-full pl-10 pr-4 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" />
+                        </div>
+                        @error('form.tax_id')
+                            <span class="text-red-400 text-sm mt-1 block">{{ $message }}</span>
+                        @enderror
+                    </div>
+                </div>
+
+                <div>
+                    <div>
+                        <div class="bg-zinc-800/70 rounded-xl border border-zinc-700 p-5 h-full">
+                            <div class="mb-4">
+                                <h3 class="text-sm font-medium text-zinc-200 mb-1 flex items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-purple-400"
+                                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                    </svg>
+                                    Relationships
+                                </h3>
+                                <p class="text-xs text-zinc-400 mb-4">
+                                    {{ $form['type'] === 'individual' ? 'Select companies to own' : 'Select company owners' }}
+                                </p>
+                            </div>
+
+                            <div class="space-y-2 max-h-80 overflow-y-auto custom-scrollbar">
+                                @foreach ($this->availableConnections as $connection)
+                                    <label
+                                        class="flex items-center p-3 bg-zinc-800/50 border rounded-lg cursor-pointer hover:bg-zinc-700/50 transition-all
                                             {{ in_array($connection->id, $this->form['relationships'] ?? []) ? 'border-blue-500 bg-blue-900/20' : 'border-zinc-700' }}">
-                                            <input type="checkbox" value="{{ $connection->id }}"
-                                                {{ in_array($connection->id, $this->form['relationships'] ?? []) ? 'checked' : '' }}
-                                                wire:click="toggleRelationship({{ $connection->id }})"
-                                                class="w-4 h-4 mr-3 bg-zinc-900 border-zinc-600 rounded focus:ring-2 focus:ring-offset-0 focus:ring-blue-500">
-                                            <span class="text-sm text-zinc-200">{{ $connection->name }}</span>
-                                        </label>
-                                    @endforeach
-                                    @if ($this->availableConnections->isEmpty())
-                                        <div class="p-4 text-center text-zinc-400 text-sm">
-                                            No {{ $form['type'] === 'individual' ? 'companies' : 'individuals' }}
-                                            available
-                                        </div>
-                                    @endif
-                                </div>
+                                        <input type="checkbox" value="{{ $connection->id }}"
+                                            {{ in_array($connection->id, $this->form['relationships'] ?? []) ? 'checked' : '' }}
+                                            wire:click="toggleRelationship({{ $connection->id }})"
+                                            class="w-4 h-4 mr-3 bg-zinc-900 border-zinc-600 rounded focus:ring-2 focus:ring-offset-0 focus:ring-blue-500">
+                                        <span class="text-sm text-zinc-200">{{ $connection->name }}</span>
+                                    </label>
+                                @endforeach
+                                @if ($this->availableConnections->isEmpty())
+                                    <div class="p-4 text-center text-zinc-400 text-sm">
+                                        No {{ $form['type'] === 'individual' ? 'companies' : 'individuals' }}
+                                        available
+                                    </div>
+                                @endif
                             </div>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <div class="px-8 py-4 bg-zinc-800 border-t border-zinc-700 flex justify-end gap-3">
-                    <flux:modal.close>
-                        <button type="button"
-                            class="px-4 py-2 bg-zinc-700 hover:bg-zinc-600 text-zinc-200 rounded-lg font-medium text-sm transition-all shadow-sm">
-                            Cancel
-                        </button>
-                    </flux:modal.close>
-                    <flux:modal.close>
-                        <button type="submit"
-                            class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-medium text-sm transition-all shadow-sm">
-                            {{ $isEditing ? 'Update Client' : 'Create Client' }}
-                        </button>
-                    </flux:modal.close>
-                </div>
+            <div class="px-8 py-4 bg-zinc-800 flex justify-end gap-3">
+                <flux:modal.close>
+                    <button type="button"
+                        class="px-4 py-2 bg-zinc-700 hover:bg-zinc-600 text-zinc-200 rounded-lg font-medium text-sm transition-all shadow-sm">
+                        Cancel
+                    </button>
+                </flux:modal.close>
+                <flux:modal.close>
+                    <button type="submit"
+                        class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-medium text-sm transition-all shadow-sm">
+                        {{ $isEditing ? 'Update Client' : 'Create Client' }}
+                    </button>
+                </flux:modal.close>
+            </div>
         </form>
     </flux:modal>
 

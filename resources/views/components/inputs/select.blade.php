@@ -7,12 +7,18 @@
     'label' => null,
     'id' => 'select-' . uniqid(),
     'modalMode' => false,
+    'size' => 'md', // sm, md, xl
 ])
 
 @once
     @push('styles')
         <style>
             [x-cloak] { display: none !important; }
+            
+            /* Select Size Variants */
+            .select-sm { width: 10rem; }      /* 160px - w-40 */
+            .select-md { width: 12rem; }      /* 192px - w-48 */
+            .select-xl { width: 15rem; }      /* 240px - w-60 */
         </style>
     @endpush
 @endonce
@@ -28,6 +34,8 @@
             selectedValue: @js($selected),
             options: @js($options),
             modalMode: {{ $modalMode ? 'true' : 'false' }},
+            size: '{{ $size }}',
+            
             init() {
                 this.$watch('selectedValue', value => {
                     if (this.$refs.hiddenInput) {
@@ -41,16 +49,23 @@
                     this.$el.style.zIndex = '50';
                 }
             },
+            
             toggleDropdown() {
                 this.open = !this.open;
             },
+            
             getSelectedLabel() {
                 const option = this.options.find(opt => opt.value === this.selectedValue);
                 return option ? option.label : this.selectedValue;
+            },
+            
+            getSizeClass() {
+                return 'select-' + this.size;
             }
         }" 
         class="relative font-sans" 
         x-cloak
+        :class="getSizeClass()"
         {{ $attributes->only(['class'])->merge(['class' => '']) }}
     >
         <!-- Hidden input -->
@@ -67,18 +82,18 @@
             type="button" 
             x-ref="button" 
             id="{{ $id }}"
-            class="flex items-center justify-between w-full px-3 py-2.5 text-left bg-zinc-800 border border-zinc-700 rounded-xl shadow-sm hover:border-zinc-600 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-150 ease-in-out"
+            class="flex items-center justify-between w-40 px-3 py-2.5 text-left bg-zinc-800 border border-zinc-700 rounded-xl shadow-sm hover:border-zinc-600 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-150 ease-in-out"
         >
             <!-- Selected value display -->
             <span 
                 x-text="selectedValue ? getSelectedLabel() : '{{ $placeholder }}'"
-                class="text-sm text-zinc-200 truncate"
+                class="text-sm text-zinc-200 truncate flex-1 mr-2"
             ></span>
 
             <!-- Chevron icon -->
             <svg 
                 :class="{ 'transform rotate-180': open }"
-                class="w-4 h-4 ml-2 transition-transform duration-200 ease-in-out text-zinc-400" 
+                class="w-4 h-4 transition-transform duration-200 ease-in-out text-zinc-400 flex-shrink-0" 
                 fill="none"
                 stroke="currentColor" 
                 viewBox="0 0 24 24" 
@@ -99,7 +114,7 @@
             x-transition:leave-start="opacity-100 transform scale-100"
             x-transition:leave-end="opacity-0 transform scale-95"
             :class="{ 'z-[9999]': modalMode, 'z-50': !modalMode }"
-            class="absolute w-full mt-1 bg-zinc-800 border border-zinc-700 rounded-md shadow-lg overflow-hidden"
+            class="absolute w-40 mt-1 bg-zinc-800 border border-zinc-700 rounded-md shadow-lg overflow-hidden"
             style="display: none;"
         >
             <div class="max-h-60 overflow-y-auto py-1">
