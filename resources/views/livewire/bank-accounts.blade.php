@@ -135,8 +135,6 @@
                         </th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                             Amount</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                            Balance</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-zinc-700">
@@ -167,9 +165,6 @@
                                 {{ $transaction->transaction_type === 'credit' ? 'text-emerald-400' : 'text-red-400' }}">
                                 {{ $transaction->transaction_type === 'credit' ? '+ ' : '- ' }}
                                 Rp {{ number_format((float) abs($transaction->amount), 0, ',', '.') }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                                Rp {{ number_format((float) $transaction->balance_after, 0, ',', '.') }}
                             </td>
                         </tr>
                     @empty

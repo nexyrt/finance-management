@@ -67,21 +67,24 @@ class Dashboard extends Component
     
     private function parseDateRange($range)
     {
-        if (strpos($range, ' - ') !== false) {
-            list($start, $end) = explode(' - ', $range);
-            return [
-                'start' => Carbon::createFromFormat('d/m/Y', $start)->startOfDay(),
-                'end' => Carbon::createFromFormat('d/m/Y', $end)->endOfDay(),
-            ];
-        } elseif (strpos($range, ' to ') !== false) {
+        // Handle the new format: "2025-05-12 to 2025-05-23"
+        if (strpos($range, ' to ') !== false) {
             list($start, $end) = explode(' to ', $range);
             return [
                 'start' => Carbon::parse($start)->startOfDay(),
                 'end' => Carbon::parse($end)->endOfDay(),
             ];
         }
+        // Keep legacy format support: "12/05/2025 - 23/05/2025"
+        elseif (strpos($range, ' - ') !== false) {
+            list($start, $end) = explode(' - ', $range);
+            return [
+                'start' => Carbon::createFromFormat('d/m/Y', $start)->startOfDay(),
+                'end' => Carbon::createFromFormat('d/m/Y', $end)->endOfDay(),
+            ];
+        }
         
-        // Default to current month
+        // Default to current month if format is not recognized
         return [
             'start' => Carbon::now()->startOfMonth(),
             'end' => Carbon::now()->endOfMonth(),

@@ -9,9 +9,11 @@
             
             <!-- Date Range Picker -->
             <div class="w-full sm:w-64">
-                <x-inputs.daterangepicker 
+                <x-inputs.datepicker 
                     label="Date Range"
-                    wire:model.live="dateRange"
+                    mode="range"
+                    placeholder="Select date range"
+                    name="dateRange"
                 />
             </div>
         </div>

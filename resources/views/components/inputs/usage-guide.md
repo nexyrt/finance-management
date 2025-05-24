@@ -1,6 +1,6 @@
-# Flux UI Form Components Guide
+# Custom Input Components Guide
 
-This guide covers how to use the updated form components with optional labels.
+This guide covers how to use the custom input components with optional labels.
 
 ## Installation
 
@@ -9,59 +9,99 @@ This guide covers how to use the updated form components with optional labels.
    - `resources/views/components/inputs/daterangepicker.blade.php`
    - `resources/views/components/inputs/select.blade.php`
 
-2. Make sure Alpine.js is available in your layout.
+2. Make sure Alpine.js and Flatpickr are available in your layout.
 
 3. Add these sections to your layout:
    ```php
    @stack('styles')
    <!-- At the end of the body -->
    @stack('scripts')
+   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
    ```
 
 ## Basic Usage
 
-### Datepicker
+### Date Picker
 
 ```php
-<!-- Without label -->
+<!-- Single date picker (default mode) -->
 <x-inputs.datepicker name="event_date" />
 
-<!-- With label -->
-<x-inputs.datepicker name="event_date" label="Event Date" />
+<!-- Date range picker -->
+<x-inputs.datepicker 
+    name="booking_period" 
+    mode="range" 
+    placeholder="Pilih rentang tanggal"
+/>
 
-<!-- With Livewire -->
-<x-inputs.datepicker wire:model="eventDate" label="Event Date" />
+<!-- Multiple date picker -->
+<x-inputs.datepicker 
+    name="holidays" 
+    mode="multiple" 
+    placeholder="Pilih beberapa tanggal"
+/>
+
+<!-- With time enabled -->
+<x-inputs.datepicker 
+    name="appointment_time" 
+    :enable-time="true" 
+    date-format="Y-m-d H:i"
+    placeholder="Pilih tanggal dan waktu"
+/>
+
+<!-- With disabled dates -->
+<x-inputs.datepicker 
+    name="available_date" 
+    :disabled-dates="[
+        [
+            'from' => '2025-01-01',
+            'to' => '2025-01-07'
+        ],
+        '2025-02-14' // Single date
+    ]"
+/>
+
+<!-- With min/max dates -->
+<x-inputs.datepicker 
+    name="future_date" 
+    min-date="today"
+    max-date="2025-12-31"
+/>
 ```
 
 ### Date Range Picker
 
 ```php
-<!-- Without label -->
+<!-- Single date picker (default mode) -->
+<x-inputs.daterangepicker name="event_date" />
+
+<!-- Date range picker -->
 <x-inputs.daterangepicker 
-    startName="check_in" 
-    endName="check_out" 
+    name="booking_period" 
+    mode="range" 
+    placeholder="Pilih rentang tanggal"
 />
 
-<!-- With label -->
+<!-- Multiple date picker -->
 <x-inputs.daterangepicker 
-    startName="check_in" 
-    endName="check_out" 
-    label="Booking Period" 
+    name="holidays" 
+    mode="multiple" 
+    placeholder="Pilih beberapa tanggal"
 />
 
-<!-- With Livewire -->
+<!-- With time enabled -->
 <x-inputs.daterangepicker 
-    startName="startDate" 
-    endName="endDate" 
-    wire:model="startDate" 
-    label="Date Range" 
+    name="appointment_time" 
+    :enable-time="true" 
+    date-format="Y-m-d H:i"
+    placeholder="Pilih tanggal dan waktu"
 />
 ```
 
 ### Select Dropdown
 
 ```php
-<!-- Without label -->
+<!-- Basic select -->
 <x-inputs.select 
     :options="[
         ['value' => 'option1', 'label' => 'Option 1'],
@@ -75,11 +115,18 @@ This guide covers how to use the updated form components with optional labels.
     label="Room Type"
 />
 
-<!-- With Livewire -->
+<!-- Different sizes -->
 <x-inputs.select 
-    wire:model="selectedOption" 
     :options="$options"
-    label="Select an Option" 
+    size="sm"
+    label="Small Select"
+/>
+
+<!-- For use in modals -->
+<x-inputs.select 
+    :options="$options"
+    :modal-mode="true"
+    label="Modal Select"
 />
 ```
 
@@ -89,7 +136,7 @@ This guide covers how to use the updated form components with optional labels.
 <form method="POST" action="{{ route('bookings.store') }}">
     @csrf
     
-    <!-- Select room type with label -->
+    <!-- Select room type -->
     <div class="mb-4">
         <x-inputs.select 
             name="room_type" 
@@ -99,24 +146,26 @@ This guide covers how to use the updated form components with optional labels.
         @error('room_type') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
     </div>
     
-    <!-- Date range for booking with label -->
-    <div class="mb-4">
-        <x-inputs.daterangepicker 
-            startName="check_in" 
-            endName="check_out"
-            label="Stay Period"
-        />
-        @error('check_in') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
-        @error('check_out') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
-    </div>
-    
-    <!-- Arrival date with label -->
+    <!-- Date range for booking -->
     <div class="mb-4">
         <x-inputs.datepicker 
-            name="arrival_date" 
-            label="Arrival Date"
+            name="booking_dates" 
+            mode="range"
+            placeholder="Pilih rentang tanggal booking"
+            min-date="today"
         />
-        @error('arrival_date') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
+        @error('booking_dates') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
+    </div>
+    
+    <!-- Arrival time with time picker -->
+    <div class="mb-4">
+        <x-inputs.datepicker 
+            name="arrival_time" 
+            :enable-time="true"
+            date-format="Y-m-d H:i"
+            placeholder="Pilih waktu kedatangan"
+        />
+        @error('arrival_time') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
     </div>
     
     <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded">
@@ -130,52 +179,137 @@ This guide covers how to use the updated form components with optional labels.
 ```php
 // In your Livewire component class
 public $roomType;
-public $startDate;
-public $endDate;
-public $arrivalDate;
+public $bookingDates;
+public $arrivalTime;
+public $availableDates;
 
 // In your Livewire component template
 <div>
-    <!-- All components with labels -->
+    <!-- Select - auto-binds to $roomType property -->
     <div class="mb-4">
         <x-inputs.select 
-            wire:model="roomType" 
+            name="roomType" 
             :options="$roomTypeOptions"
             label="Room Type"
         />
         @error('roomType') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
     </div>
     
-    <div class="mb-4">
-        <x-inputs.daterangepicker 
-            startName="startDate" 
-            endName="endDate" 
-            wire:model="startDate"
-            label="Stay Period"
-        />
-        @error('startDate') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
-        @error('endDate') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
-    </div>
-    
+    <!-- Date picker - auto-binds to $bookingDates property -->
     <div class="mb-4">
         <x-inputs.datepicker 
-            wire:model="arrivalDate" 
-            label="Arrival Date"
+            name="bookingDates" 
+            mode="range"
+            placeholder="Pilih periode booking"
         />
-        @error('arrivalDate') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
+        @error('bookingDates') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
+    </div>
+    
+    <!-- Multiple date selection - auto-binds to $availableDates property -->
+    <div class="mb-4">
+        <x-inputs.datepicker 
+            name="availableDates" 
+            mode="multiple"
+            placeholder="Pilih tanggal yang tersedia"
+        />
+        @error('availableDates') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
     </div>
 </div>
 ```
 
-## Benefits of Using Labels
+## Component Properties
 
-1. **Improved Accessibility**: Labels help screen readers identify form fields
-2. **Better User Experience**: Clear labeling makes forms easier to understand
-3. **Consistent Design**: Standardizes the appearance of form fields
-4. **Optional Implementation**: Labels can be omitted when not needed
+### DatePicker Props
 
-All components work consistently with or without labels, so you can use whichever format best suits your specific UI requirements.
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `name` | string | 'date' | Property name for Livewire binding |
+| `placeholder` | string | 'Pilih tanggal' | Input placeholder text |
+| `disabledDates` | array | [] | Array of disabled date ranges or single dates |
+| `mode` | string | 'single' | Picker mode: 'single', 'multiple', 'range' |
+| `dateFormat` | string | 'Y-m-d' | Date format for display and value |
+| `enableTime` | boolean | false | Enable time selection |
+| `minDate` | string | null | Minimum selectable date |
+| `maxDate` | string | null | Maximum selectable date |
+
+### DateRangePicker Props
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `name` | string | 'date' | Property name for Livewire binding |
+| `placeholder` | string | 'Pilih tanggal' | Input placeholder text |
+| `disabledDates` | array | [] | Array of disabled date ranges or single dates |
+| `mode` | string | 'single' | Picker mode: 'single', 'multiple', 'range' |
+| `dateFormat` | string | 'Y-m-d' | Date format for display and value |
+| `enableTime` | boolean | false | Enable time selection |
+| `minDate` | string | null | Minimum selectable date |
+| `maxDate` | string | null | Maximum selectable date |
+
+### Select Props
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `options` | array | [] | Array of options with 'value' and 'label' keys |
+| `placeholder` | string | 'Select an option' | Placeholder text |
+| `selected` | string | '' | Initially selected value |
+| `label` | string | null | Optional label for the select |
+| `modalMode` | boolean | false | Use higher z-index for modals |
+| `size` | string | 'md' | Size variant: 'sm', 'md', 'xl' |
+
+## Advanced Examples
+
+### Disabled Dates Configuration
+
+```php
+<!-- Complex disabled dates pattern -->
+<x-inputs.datepicker 
+    name="event_date"
+    :disabled-dates="[
+        // Disable date ranges
+        [
+            'from' => '2025-12-24',
+            'to' => '2025-12-26'
+        ],
+        // Disable specific dates
+        '2025-01-01',
+        '2025-07-04'
+    ]"
+/>
+```
+
+### Custom Styling
+
+```php
+<!-- Custom CSS classes -->
+<x-inputs.datepicker 
+    name="styled_date"
+    class="custom-datepicker-class"
+/>
+
+<x-inputs.select 
+    :options="$options"
+    class="custom-select-class"
+/>
+```
+
+## Key Features
+
+1. **Auto Livewire Binding**: Components automatically bind to Livewire properties using the `name` attribute
+2. **Consistent Dark Theme**: Matches your zinc-based color scheme
+3. **Flexible Configuration**: Multiple modes and options for date pickers
+4. **Accessibility**: Proper labeling and keyboard navigation
+5. **Reusable**: Works across all Livewire components without additional wire:model attributes
+
+## Important Notes
+
+- **Livewire Integration**: Simply use the `name` attribute to bind to your Livewire property. No need for `wire:model`
+- **Property Naming**: The `name` attribute value should match your Livewire component property name exactly
+- **Auto Updates**: Changes in the components automatically update your Livewire properties via `@this.set()`
 
 ## Styling
 
-The labels use the `text-zinc-300` color class to match the dark theme of your application. You can modify this in the component files if you need a different appearance.
+The components use your application's dark theme with zinc colors:
+- Background: `bg-zinc-600` for inputs, `bg-zinc-800` for dropdowns
+- Text: `text-gray-200` for input text, `text-zinc-200` for options
+- Borders: `border-zinc-700` for dropdown borders
+- Focus states: `focus:ring-blue-500` for better UX
