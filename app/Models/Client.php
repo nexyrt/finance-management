@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use App\Models\InvoiceItem; // Add this import
+use App\Models\InvoiceItem;
 
 class Client extends Model
 {
@@ -16,9 +16,15 @@ class Client extends Model
         'name',
         'type',
         'email',
-        'phone',
-        'address',
-        'tax_id'
+        'NPWP',
+        'KPP',
+        'logo',
+        'status',
+        'EFIN',
+        'account_representative',
+        'ar_phone_number',
+        'person_in_charge',
+        'address'
     ];
 
     public function ownedCompanies(): BelongsToMany
@@ -33,35 +39,21 @@ class Client extends Model
             ->withTimestamps();
     }
 
-    public function serviceClients(): HasMany
-    {
-        return $this->hasMany(ServiceClient::class, 'client_id');
-    }
-
     public function invoices(): HasMany
     {
         return $this->hasMany(Invoice::class, 'billed_to_id');
     }
 
-    public function scopeIndividuals($query)
+    public function invoiceItems(): HasMany
     {
-        return $query->where('type', 'individual');
-    }
-
-    public function scopeCompanies($query)
-    {
-        return $query->where('type', 'company');
+        return $this->hasMany(InvoiceItem::class);
     }
 
     // Override delete method to handle relationships properly
     public function delete()
     {
-        // First, delete all invoice items that reference service clients of this client
-        $serviceClientIds = $this->serviceClients()->pluck('id');
-        InvoiceItem::whereIn('service_client_id', $serviceClientIds)->delete();
-
-        // Now delete the service clients
-        $this->serviceClients()->delete();
+        // Delete invoice items related to this client
+        $this->invoiceItems()->delete();
 
         // Delete invoices for this client
         $this->invoices()->delete();

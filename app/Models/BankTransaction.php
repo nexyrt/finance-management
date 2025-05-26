@@ -21,6 +21,7 @@ class BankTransaction extends Model
 
     protected $casts = [
         'transaction_date' => 'date',
+        'amount' => 'decimal:2',
     ];
 
     public function bankAccount(): BelongsTo

@@ -3,17 +3,20 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Schema;
 
 class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
         $this->call([
-            AdminUserSeeder::class,
-            ClientSeeder::class,
+            UserSeeder::class,
             ServiceSeeder::class,
             BankAccountSeeder::class,
+            ClientSeeder::class,
+            ClientRelationshipSeeder::class,
             InvoiceSeeder::class,
+            BankTransactionSeeder::class,
         ]);
     }
 }

@@ -10,14 +10,12 @@ return new class extends Migration {
         Schema::create('invoices', function (Blueprint $table) {
             $table->id();
             $table->string('invoice_number')->unique();
-            $table->foreignId('billed_to_id')->constrained('clients')->onDelete('cascade'); // Add onDelete cascade
+            $table->foreignId('billed_to_id')->constrained('clients')->onDelete('cascade');
             $table->decimal('total_amount', 15, 2);
             $table->date('issue_date');
             $table->date('due_date');
             $table->enum('status', ['draft', 'sent', 'paid', 'partially_paid', 'overdue'])
                 ->default('draft');
-            $table->enum('payment_terms', ['full', 'installment'])->default('full');
-            $table->integer('installment_count')->default(1);
             $table->timestamps();
         });
     }

@@ -17,11 +17,11 @@ class Payment extends Model
         'payment_date',
         'payment_method',
         'reference_number',
-        'installment_number'
     ];
 
     protected $casts = [
         'payment_date' => 'date',
+        'amount' => 'decimal:2',
     ];
 
     public function invoice(): BelongsTo
@@ -32,31 +32,5 @@ class Payment extends Model
     public function bankAccount(): BelongsTo
     {
         return $this->belongsTo(BankAccount::class);
-    }
-
-    public static function boot()
-    {
-        parent::boot();
-
-        static::created(function ($payment) {
-            // Update invoice status
-            $payment->invoice->updateStatus();
-
-            // Update bank account balance
-            $bankAccount = $payment->bankAccount;
-            $bankAccount->current_balance += $payment->amount;
-            $bankAccount->save();
-
-            // Create bank transaction record
-            BankTransaction::create([
-                'bank_account_id' => $payment->bank_account_id,
-                'amount' => $payment->amount,
-                'transaction_date' => $payment->payment_date,
-                'transaction_type' => 'credit', // ✅ cocok dengan enum
-                'description' => 'Payment received for Invoice #' . $payment->invoice->invoice_number,
-                'reference_number' => $payment->reference_number,
-            ]);
-
-        });
     }
 }

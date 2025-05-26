@@ -9,16 +9,25 @@ class BankAccountFactory extends Factory
 {
     protected $model = BankAccount::class;
 
+    private $banks = [
+        'Bank Central Asia (BCA)',
+        'Bank Mandiri',
+        'Bank Rakyat Indonesia (BRI)',
+        'Bank Negara Indonesia (BNI)',
+        'Bank Danamon',
+        'Bank Permata',
+        'CIMB Niaga',
+    ];
+
     public function definition(): array
     {
-        $initialBalance = $this->faker->numberBetween(5000, 50000);
-        
+        $initialBalance = $this->faker->randomFloat(2, 1000000, 100000000);
+
         return [
-            'account_name' => $this->faker->words(2, true) . ' Account',
-            'account_number' => $this->faker->numerify('############'),
-            'bank_name' => $this->faker->company() . ' Bank',
-            'branch' => $this->faker->city() . ' Branch',
-            'currency' => $this->faker->randomElement(['USD', 'EUR', 'GBP']),
+            'account_name' => $this->faker->company . ' - Operational',
+            'account_number' => $this->faker->numerify('##########'),
+            'bank_name' => $this->faker->randomElement($this->banks),
+            'branch' => $this->faker->city,
             'initial_balance' => $initialBalance,
             'current_balance' => $initialBalance,
         ];

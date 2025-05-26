@@ -12,23 +12,34 @@ class InvoiceFactory extends Factory
 
     public function definition(): array
     {
-        $issueDate = $this->faker->dateTimeBetween('-3 months', 'now');
-        $dueDate = clone $issueDate;
-        $dueDate->modify('+30 days');
-        
         return [
-            'invoice_number' => 'INV-' . $this->faker->unique()->numerify('#####'),
-            'billed_to_id' => Client::inRandomOrder()->first() ?? Client::factory()->create(),
-            'total_amount' => 0, // Will be updated when invoice items are added
-            'issue_date' => $issueDate,
-            'due_date' => $dueDate,
+            'invoice_number' => 'INV-' . $this->faker->unique()->numerify('######'),
+            'billed_to_id' => Client::factory(),
+            'total_amount' => $this->faker->randomFloat(2, 1000000, 50000000),
+            'issue_date' => $this->faker->dateTimeBetween('-6 months', 'now'),
+            'due_date' => $this->faker->dateTimeBetween('now', '+1 month'),
             'status' => $this->faker->randomElement(['draft', 'sent', 'paid', 'partially_paid', 'overdue']),
-            'payment_terms' => $this->faker->randomElement(['full', 'installment']),
-            'installment_count' => function (array $attributes) {
-                return $attributes['payment_terms'] === 'installment' 
-                    ? $this->faker->numberBetween(2, 6) 
-                    : 1;
-            },
         ];
+    }
+
+    public function draft()
+    {
+        return $this->state(fn(array $attributes) => [
+            'status' => 'draft',
+        ]);
+    }
+
+    public function sent()
+    {
+        return $this->state(fn(array $attributes) => [
+            'status' => 'sent',
+        ]);
+    }
+
+    public function paid()
+    {
+        return $this->state(fn(array $attributes) => [
+            'status' => 'paid',
+        ]);
     }
 }

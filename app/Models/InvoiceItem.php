@@ -10,15 +10,24 @@ class InvoiceItem extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['invoice_id', 'service_client_id', 'amount'];
+    protected $fillable = [
+        'invoice_id',
+        'client_id',
+        'service_name',
+        'amount'
+    ];
+
+    protected $casts = [
+        'amount' => 'decimal:2',
+    ];
 
     public function invoice(): BelongsTo
     {
         return $this->belongsTo(Invoice::class);
     }
 
-    public function serviceClient(): BelongsTo
+    public function client(): BelongsTo
     {
-        return $this->belongsTo(ServiceClient::class);
+        return $this->belongsTo(Client::class);
     }
 }

@@ -14,7 +14,6 @@ return new class extends Migration
             $table->string('account_number');
             $table->string('bank_name');
             $table->string('branch')->nullable();
-            $table->string('currency', 3)->default('USD');
             $table->decimal('initial_balance', 15, 2)->default(0);
             $table->decimal('current_balance', 15, 2)->default(0);
             $table->timestamps();

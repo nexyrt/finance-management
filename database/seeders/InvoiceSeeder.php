@@ -7,105 +7,70 @@ use App\Models\Client;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
 use App\Models\Payment;
-use App\Models\ServiceClient;
+use App\Models\Service;
 use Illuminate\Database\Seeder;
 
 class InvoiceSeeder extends Seeder
 {
     public function run(): void
     {
-        // Create 10 invoices with items and some with payments
-        for ($i = 1; $i <= 10; $i++) {
-            // Create invoice
+        $allClients = Client::all();
+        $services = Service::all();
+        $bankAccounts = BankAccount::all();
+
+        for ($i = 1; $i <= 20; $i++) {
+            // Use your InvoiceFactory
             $invoice = Invoice::factory()->create([
-                'invoice_number' => 'INV-' . str_pad($i, 5, '0', STR_PAD_LEFT),
-                'status' => 'sent', // Start all as sent
-                'billed_to_id' => Client::inRandomOrder()->first()->id, // Ensure each invoice has a client
+                'invoice_number' => 'INV-' . str_pad($i, 6, '0', STR_PAD_LEFT),
+                'billed_to_id' => $allClients->random()->id,
             ]);
-            
-            // Add 1-5 invoice items
-            $itemCount = rand(1, 5);
-            $total = 0;
-            
+
+            // Use your InvoiceItemFactory
+            $itemCount = rand(1, 4);
+            $totalAmount = 0;
+
             for ($j = 0; $j < $itemCount; $j++) {
-                // Get a service client that isn't already invoiced
-                $serviceClient = ServiceClient::whereDoesntHave('invoiceItems')->inRandomOrder()->first();
-                
-                if (!$serviceClient) {
-                    // Create a new service client if none available
-                    $serviceClient = ServiceClient::factory()->create();
-                }
-                
-                // Create invoice item
-                InvoiceItem::create([
+                $service = $services->random();
+                $amount = $service->price + rand(-500000, 1000000);
+
+                InvoiceItem::factory()->create([
                     'invoice_id' => $invoice->id,
-                    'service_client_id' => $serviceClient->id,
-                    'amount' => $serviceClient->amount,
+                    'client_id' => $allClients->random()->id,
+                    'service_name' => $service->name,
+                    'amount' => $amount,
                 ]);
-                
-                $total += $serviceClient->amount;
+
+                $totalAmount += $amount;
             }
-            
-            // Update invoice total
-            $invoice->update(['total_amount' => $total]);
-            
-            // For some invoices, create payment records
-            if ($i <= 7) { // 70% of invoices have some payment
-                $bankAccount = BankAccount::inRandomOrder()->first();
-                
-                if ($invoice->payment_terms === 'full') {
-                    // For full payment terms, either fully paid or partially paid
-                    $paymentAmount = ($i <= 4) ? $total : $total * rand(30, 80) / 100;
-                    
-                    Payment::create([
-                        'invoice_id' => $invoice->id,
-                        'bank_account_id' => $bankAccount->id,
-                        'amount' => $paymentAmount,
-                        'payment_date' => $invoice->issue_date->addDays(rand(1, 20)),
-                        'payment_method' => collect(['bank_transfer', 'credit_card', 'check'])->random(),
-                        'reference_number' => 'REF-' . strtoupper(substr(md5(rand()), 0, 10)),
-                        'installment_number' => 1,
-                    ]);
-                    
-                    // Update invoice status based on payment
-                    if ($paymentAmount >= $total) {
-                        $invoice->update(['status' => 'paid']);
-                    } else {
-                        $invoice->update(['status' => 'partially_paid']);
-                    }
-                } else {
-                    // For installment payment terms
-                    $installmentAmount = round($total / $invoice->installment_count, 2);
-                    $paidInstallments = rand(1, $invoice->installment_count);
-                    
-                    for ($k = 1; $k <= $paidInstallments; $k++) {
-                        Payment::create([
-                            'invoice_id' => $invoice->id,
-                            'bank_account_id' => $bankAccount->id,
-                            'amount' => $installmentAmount,
-                            'payment_date' => $invoice->issue_date->addDays($k * 30),
-                            'payment_method' => collect(['bank_transfer', 'credit_card', 'check'])->random(),
-                            'reference_number' => 'REF-' . strtoupper(substr(md5(rand()), 0, 10)),
-                            'installment_number' => $k,
-                        ]);
-                    }
-                    
-                    // Update invoice status based on installments paid
-                    if ($paidInstallments >= $invoice->installment_count) {
-                        $invoice->update(['status' => 'paid']);
-                    } else {
-                        $invoice->update(['status' => 'partially_paid']);
-                    }
-                }
-            } else if ($i > 7 && $i <= 9) {
-                // Some invoices are overdue
-                $invoice->update([
-                    'status' => 'overdue',
-                    'issue_date' => now()->subDays(45),
-                    'due_date' => now()->subDays(15),
+
+            $invoice->update(['total_amount' => $totalAmount]);
+
+            // Use your PaymentFactory (70% chance)
+            if (rand(1, 100) <= 70) {
+                $paymentAmount = rand(1, 100) <= 80
+                    ? $totalAmount
+                    : $totalAmount * rand(30, 90) / 100;
+
+                Payment::factory()->create([
+                    'invoice_id' => $invoice->id,
+                    'bank_account_id' => $bankAccounts->random()->id,
+                    'amount' => $paymentAmount,
+                    'payment_date' => $invoice->issue_date->addDays(rand(1, 30)),
+                    'reference_number' => 'PAY-' . str_pad(rand(1, 999999), 6, '0', STR_PAD_LEFT),
                 ]);
             }
-            // The remaining invoices stay as "sent"
+
+            // Update invoice status
+            $invoice->refresh();
+            $amountPaid = $invoice->payments->sum('amount');
+
+            if ($amountPaid >= $invoice->total_amount) {
+                $invoice->update(['status' => 'paid']);
+            } elseif ($amountPaid > 0) {
+                $invoice->update(['status' => 'partially_paid']);
+            } else {
+                $invoice->update(['status' => rand(1, 100) <= 60 ? 'sent' : 'draft']);
+            }
         }
     }
 }

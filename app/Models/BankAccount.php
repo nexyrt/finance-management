@@ -15,9 +15,13 @@ class BankAccount extends Model
         'account_number',
         'bank_name',
         'branch',
-        'currency',
         'initial_balance',
         'current_balance'
+    ];
+
+    protected $casts = [
+        'initial_balance' => 'decimal:2',
+        'current_balance' => 'decimal:2',
     ];
 
     public function transactions(): HasMany

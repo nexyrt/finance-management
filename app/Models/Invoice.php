@@ -18,16 +18,14 @@ class Invoice extends Model
         'issue_date',
         'due_date',
         'status',
-        'payment_terms',
-        'installment_count'
     ];
 
     protected $casts = [
         'issue_date' => 'date',
         'due_date' => 'date',
+        'total_amount' => 'decimal:2',
     ];
 
-    // Fix the client relationship to use billed_to_id
     public function client(): BelongsTo
     {
         return $this->belongsTo(Client::class, 'billed_to_id');
