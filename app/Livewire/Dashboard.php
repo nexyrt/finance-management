@@ -126,7 +126,7 @@ class Dashboard extends Component
         return $serviceRevenue->pluck('total_revenue', 'service_name')->toArray();
     }
 
-    /**
+    /** 
      * Get monthly revenue data for chart
      */
     public function getMonthlyRevenue()
