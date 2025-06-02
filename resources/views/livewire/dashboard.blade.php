@@ -523,7 +523,7 @@
                                     ticks: {
                                         color: isDark ? '#a1a1aa' : '#6b7280',
                                         callback: function(value) {
-                                            return 'Rp ' + value + 'M';
+                                        return 'Rp ' + value + ' Juta';
                                         }
                                     }
                                 },
