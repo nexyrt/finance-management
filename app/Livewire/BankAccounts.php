@@ -41,6 +41,18 @@ class BankAccounts extends Component
         'transactionType' => ['except' => ''],
     ];
 
+    // Add this method to handle transaction type changes
+    public function updatedTransactionType()
+    {
+        $this->resetPage();
+    }
+
+    // Add this method to handle selected bank changes  
+    public function updatedSelectedBankId()
+    {
+        $this->resetPage();
+    }
+
     public function resetForm()
     {
         $this->form = [
@@ -131,6 +143,11 @@ class BankAccounts extends Component
 
             // Show success message
             Toaster::success("Bank account \"$accountName\" has been deleted.");
+            
+            // Clear selection if deleted account was selected
+            if ($this->selectedBankId == $id) {
+                $this->selectedBankId = null;
+            }
         } catch (\Exception $e) {
             Toaster::error($e->getMessage());
         }
@@ -158,7 +175,9 @@ class BankAccounts extends Component
     public function clearSelectedBank()
     {
         $this->selectedBankId = null;
+        $this->transactionType = '';
         $this->resetPage();
+        Toaster::info('Selection cleared. Showing all transactions.');
     }
 
     public function render()
@@ -171,17 +190,18 @@ class BankAccounts extends Component
             $transactionQuery->where('bank_account_id', $this->selectedBankId);
         }
 
-        // Filter by transaction type
-        if ($this->transactionType) {
+        // Filter by transaction type if selected
+        if (!empty($this->transactionType)) {
             $transactionQuery->where('transaction_type', $this->transactionType);
         }
 
         // Get all accounts for the table
-        $accounts = BankAccount::all();
+        $accounts = BankAccount::orderBy('bank_name')->get();
 
         // Get filtered transactions with pagination
         $transactions = $transactionQuery->with('bankAccount')
             ->latest('transaction_date')
+            ->latest('created_at')
             ->paginate(10);
 
         return view('livewire.bank-accounts', [
