@@ -141,6 +141,7 @@
         {{ $slot }}
 
         @fluxScripts
+        @livewireScripts
         <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
         @stack('scripts')
         <x-toaster-hub />
