@@ -38,7 +38,7 @@
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm text-gray-500 dark:text-zinc-400 font-medium">Total Saldo</p>
-                    <p class="text-2xl font-bold text-gray-800 dark:text-white mt-1">{{ $totalBalance }}</p>
+                    <p class="text-2xl font-bold text-gray-800 dark:text-white mt-1">{{ $this->totalBalance }}</p>
                     <p class="text-xs text-green-600 dark:text-green-400 mt-2 flex items-center">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" viewBox="0 0 20 20"
                             fill="currentColor">
@@ -65,7 +65,7 @@
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm text-gray-500 dark:text-zinc-400 font-medium">Total Akun</p>
-                    <p class="text-2xl font-bold text-gray-800 dark:text-white mt-1">{{ $totalAccounts }}</p>
+                    <p class="text-2xl font-bold text-gray-800 dark:text-white mt-1">{{ $this->totalAccounts }}</p>
                     <p class="text-xs text-blue-600 dark:text-blue-400 mt-2">
                         Aktif semua
                     </p>
@@ -86,7 +86,7 @@
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm text-gray-500 dark:text-zinc-400 font-medium">Transaksi Hari Ini</p>
-                    <p class="text-2xl font-bold text-gray-800 dark:text-white mt-1">{{ $todayTransactions }}</p>
+                    <p class="text-2xl font-bold text-gray-800 dark:text-white mt-1">{{ $this->todayTransactions }}</p>
                     <p class="text-xs text-amber-600 dark:text-amber-400 mt-2">
                         Total transaksi
                     </p>
@@ -139,7 +139,7 @@
 
                 <!-- Bank Accounts Cards -->
                 <div class="p-6 space-y-4">
-                    @forelse($bankAccounts as $account)
+                    @forelse($this->bankAccounts as $account)
                         <div
                             class="group relative bg-gray-50 dark:bg-zinc-800 rounded-xl p-6 border border-gray-100 dark:border-zinc-700 hover:shadow-md dark:hover:shadow-zinc-950/25 transition-all duration-300 hover:scale-[1.01]">
                             <div class="flex items-center justify-between">
@@ -234,9 +234,9 @@
                 </div>
 
                 <!-- Pagination -->
-                @if ($bankAccounts->hasPages())
+                @if ($this->bankAccounts->hasPages())
                     <div class="px-6 py-4 border-t border-gray-100 dark:border-zinc-800">
-                        {{ $bankAccounts->links() }}
+                        {{ $this->bankAccounts->links() }}
                     </div>
                 @endif
             </div>
@@ -258,7 +258,7 @@
                 </div>
 
                 <div class="p-6 space-y-4">
-                    @forelse($recentTransactions as $transaction)
+                    @forelse($this->recentTransactions as $transaction)
                         <div
                             class="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors">
                             <div
@@ -363,7 +363,7 @@
                 </div>
 
                 <div class="p-6 space-y-4">
-                    @foreach ($balanceDistribution as $bank)
+                    @foreach ($this->balanceDistribution as $bank)
                         <div class="space-y-2">
                             <div class="flex justify-between items-center">
                                 <span
@@ -378,13 +378,13 @@
                         </div>
                     @endforeach
 
-                    @if ($balanceDistribution->isNotEmpty())
+                    @if ($this->balanceDistribution->isNotEmpty())
                         <!-- Summary -->
                         <div class="pt-4 border-t border-gray-100 dark:border-zinc-800">
                             <div class="flex justify-between items-center">
                                 <span class="text-sm font-semibold text-gray-800 dark:text-white">Total Saldo</span>
                                 <span
-                                    class="text-sm font-semibold text-gray-800 dark:text-white">{{ $totalBalance }}</span>
+                                    class="text-sm font-semibold text-gray-800 dark:text-white">{{ $this->totalBalance }}</span>
                             </div>
                         </div>
                     @endif
@@ -489,7 +489,7 @@
 
             <div class="space-y-4">
                 <flux:select wire:model="selected_bank_account_id" label="Akun Bank" placeholder="Pilih Akun Bank">
-                    @foreach ($availableAccounts as $account)
+                    @foreach ($this->availableAccounts as $account)
                         <flux:select.option value="{{ $account->id }}">
                             {{ $account->bank_name }} - {{ $account->account_number }}
                         </flux:select.option>
@@ -535,7 +535,7 @@
 
             <div class="space-y-4">
                 <flux:select wire:model="transfer_from_account" label="Dari Akun" placeholder="Pilih akun sumber">
-                    @foreach ($availableAccounts as $account)
+                    @foreach ($this->availableAccounts as $account)
                         <flux:select.option value="{{ $account->id }}">
                             {{ $account->bank_name }} - {{ $account->account_number }}
                             ({{ $this->formatCurrency($account->current_balance) }})
@@ -544,7 +544,7 @@
                 </flux:select>
 
                 <flux:select wire:model="transfer_to_account" label="Ke Akun" placeholder="Pilih akun tujuan">
-                    @foreach ($availableAccounts as $account)
+                    @foreach ($this->availableAccounts as $account)
                         <flux:select.option value="{{ $account->id }}">
                             {{ $account->bank_name }} - {{ $account->account_number }}
                         </flux:select.option>
@@ -630,7 +630,7 @@
                     <flux:select wire:model.live="transactionFilterBank" placeholder="Semua Bank" size="sm"
                         clearable>
                         <flux:select.option value="">Semua Bank</flux:select.option>
-                        @foreach ($availableAccounts as $account)
+                        @foreach ($this->availableAccounts as $account)
                             <flux:select.option value="{{ $account->id }}">{{ $account->bank_name }}
                             </flux:select.option>
                         @endforeach
@@ -662,7 +662,7 @@
 
                         @if ($transactionFilterBank)
                             @php
-                                $selectedBank = $availableAccounts->where('id', $transactionFilterBank)->first();
+                                $selectedBank = $this->availableAccounts->where('id', $transactionFilterBank)->first();
                             @endphp
                             <span
                                 class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300">
@@ -712,31 +712,32 @@
             </div>
 
             <!-- Summary Stats -->
-            @if ($allTransactions->count() > 0)
+            @if ($this->allTransactions->count() > 0)
                 <div
                     class="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 bg-white dark:bg-zinc-900 rounded-lg border border-gray-200 dark:border-zinc-700">
                     <div class="text-center">
                         <p class="text-sm text-gray-500 dark:text-zinc-400">Total Transaksi</p>
-                        <p class="text-xl font-bold text-gray-800 dark:text-white">{{ $allTransactions->total() }}</p>
+                        <p class="text-xl font-bold text-gray-800 dark:text-white">
+                            {{ $this->allTransactions->total() }}</p>
                     </div>
                     <div class="text-center">
                         <p class="text-sm text-gray-500 dark:text-zinc-400">Total Masuk</p>
                         <p class="text-xl font-bold text-green-600 dark:text-green-400">
-                            {{ $this->formatCurrency($allTransactions->where('transaction_type', 'credit')->sum('amount')) }}
+                            {{ $this->formatCurrency($this->allTransactions->where('transaction_type', 'credit')->sum('amount')) }}
                         </p>
                     </div>
                     <div class="text-center">
                         <p class="text-sm text-gray-500 dark:text-zinc-400">Total Keluar</p>
                         <p class="text-xl font-bold text-red-600 dark:text-red-400">
-                            {{ $this->formatCurrency($allTransactions->where('transaction_type', 'debit')->sum('amount')) }}
+                            {{ $this->formatCurrency($this->allTransactions->where('transaction_type', 'debit')->sum('amount')) }}
                         </p>
                     </div>
                     <div class="text-center">
                         <p class="text-sm text-gray-500 dark:text-zinc-400">Saldo Bersih</p>
                         @php
                             $netBalance =
-                                $allTransactions->where('transaction_type', 'credit')->sum('amount') -
-                                $allTransactions->where('transaction_type', 'debit')->sum('amount');
+                                $this->allTransactions->where('transaction_type', 'credit')->sum('amount') -
+                                $this->allTransactions->where('transaction_type', 'debit')->sum('amount');
                         @endphp
                         <p
                             class="text-xl font-bold {{ $netBalance >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }}">
@@ -760,7 +761,7 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-200 dark:divide-zinc-700">
-                        @forelse($allTransactions as $transaction)
+                        @forelse($this->allTransactions as $transaction)
                             <tr class="hover:bg-gray-50 dark:hover:bg-zinc-800">
                                 <td class="px-4 py-3 text-gray-800 dark:text-white">
                                     {{ \Carbon\Carbon::parse($transaction->transaction_date)->format('d/m/Y') }}
@@ -819,9 +820,9 @@
             </div>
 
             <!-- Pagination for All Transactions -->
-            @if ($allTransactions instanceof \Illuminate\Pagination\LengthAwarePaginator && $allTransactions->hasPages())
+            @if ($this->allTransactions instanceof \Illuminate\Pagination\LengthAwarePaginator && $this->allTransactions->hasPages())
                 <div class="border-t border-gray-200 dark:border-zinc-700 pt-4">
-                    {{ $allTransactions->links() }}
+                    {{ $this->allTransactions->links() }}
                 </div>
             @endif
         </div>

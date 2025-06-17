@@ -19,6 +19,9 @@
                     <flux:navlist.item icon="home" :href="route('dashboard')"
                         :current="request() -> routeIs('dashboard')" wire:navigate>{{ __('Dashboard') }}
                     </flux:navlist.item>
+                    <flux:navlist.item icon="users" :href="route('invoices')"
+                        :current="request() -> routeIs('invoices')" wire:navigate>{{ __('Invoice') }}
+                    </flux:navlist.item>
                 </flux:navlist.group>
 
                 <flux:navlist.group :heading="__('Master Data')" class="grid">
