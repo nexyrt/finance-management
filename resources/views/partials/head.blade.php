@@ -7,7 +7,6 @@
 <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <link rel="icon" href="favicon.ico" type="image/x-icon">
-@livewireStyles
 
 <style>
     .client-type-radio {
