@@ -22,4 +22,13 @@
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
+  
+    # Handle flux assets with correct MIME type
+    RewriteRule ^flux/.*\.js$ index.php [L,E=CONTENT_TYPE:application/javascript]
+    RewriteRule ^flux/.*\.css$ index.php [L,E=CONTENT_TYPE:text/css]
+    
+    # Laravel routes
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^ index.php [L]
 </IfModule>
