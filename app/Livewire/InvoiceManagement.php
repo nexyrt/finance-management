@@ -661,6 +661,20 @@ class InvoiceManagement extends Component
         unset($this->invoices);
     }
 
+    // Add new method for badge colors
+    public function getStatusColor($status)
+    {
+        $colors = [
+            'draft' => 'zinc',
+            'sent' => 'blue',
+            'paid' => 'green',
+            'partially_paid' => 'amber',
+            'overdue' => 'red',
+        ];
+
+        return $colors[$status] ?? 'zinc';
+    }
+
     public function toggleSelectAll()
     {
         if (count($this->selectedInvoices) === $this->invoices->count()) {

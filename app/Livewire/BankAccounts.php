@@ -19,7 +19,6 @@ class BankAccounts extends Component
     public $account_number = '';
     public $bank_name = '';
     public $branch = '';
-    public $initial_balance = 0;
     public $current_balance = 0;
 
     // Transaction Form Properties
@@ -69,13 +68,12 @@ class BankAccounts extends Component
             'account_number' => 'required|string|max:50|unique:bank_accounts,account_number,' . $accountId,
             'bank_name' => 'required|string|max:255',
             'branch' => 'nullable|string|max:255',
-            'initial_balance' => 'required|numeric|min:0',
             'current_balance' => 'required|numeric|min:0',
         ];
     }
 
     protected $transactionRules = [
-        'transaction_amount' => 'required|numeric|min:0.01',
+        'transaction_amount' => 'required|numeric|min:1',
         'transaction_date' => 'required|date|before_or_equal:today',
         'transaction_type' => 'required|in:credit,debit',
         'transaction_description' => 'nullable|string|max:500',
@@ -88,20 +86,10 @@ class BankAccounts extends Component
         return [
             'transfer_from_account' => 'required|exists:bank_accounts,id|different:transfer_to_account',
             'transfer_to_account' => 'required|exists:bank_accounts,id|different:transfer_from_account',
-            'transfer_amount' => 'required|numeric|min:0.01|max:' . ($this->getFromAccountBalance()),
+            'transfer_amount' => 'required|numeric|min:1',
             'transfer_description' => 'nullable|string|max:500',
             'transfer_reference' => 'nullable|string|max:100',
         ];
-    }
-
-    private function getFromAccountBalance()
-    {
-        if (!$this->transfer_from_account) {
-            return 0;
-        }
-        
-        $account = BankAccount::find($this->transfer_from_account);
-        return $account ? $account->current_balance : 0;
     }
 
     public function mount()
@@ -109,11 +97,53 @@ class BankAccounts extends Component
         $this->transaction_date = Carbon::now()->format('Y-m-d');
     }
 
+    // Currency input value updaters - Handle raw values dari Alpine.js
+    public function updatedCurrentBalance($value)
+    {
+        // Value dari Alpine.js adalah integer mentah (contoh: 50000000 untuk Rp 50.000.000)
+        // Tidak perlu konversi, langsung simpan sebagai raw value untuk database
+        $maxValue = 999999999999999; // 15 digit maksimum untuk DECIMAL(15,2)
+        
+        if ($value > $maxValue) {
+            $this->addError('current_balance', 'Nilai terlalu besar. Maksimum adalah Rp ' . number_format($maxValue, 0, ',', '.'));
+            return;
+        }
+        
+        $this->current_balance = $value;
+    }
+
+    public function updatedTransactionAmount($value)
+    {
+        // Value dari Alpine.js adalah integer mentah
+        $maxValue = 999999999999999; // 15 digit maksimum untuk DECIMAL(15,2)
+        
+        if ($value > $maxValue) {
+            $this->addError('transaction_amount', 'Nilai terlalu besar. Maksimum adalah Rp ' . number_format($maxValue, 0, ',', '.'));
+            return;
+        }
+        
+        $this->transaction_amount = $value;
+    }
+
+    public function updatedTransferAmount($value)
+    {
+        // Value dari Alpine.js adalah integer mentah
+        $maxValue = 999999999999999; // 15 digit maksimum untuk DECIMAL(15,2)
+        
+        if ($value > $maxValue) {
+            $this->addError('transfer_amount', 'Nilai terlalu besar. Maksimum adalah Rp ' . number_format($maxValue, 0, ',', '.'));
+            return;
+        }
+        
+        $this->transfer_amount = $value;
+    }
+
     // Livewire 3.0 Computed Properties
     #[Computed]
     public function totalBalance()
     {
-        return $this->formatCurrency(BankAccount::sum('current_balance'));
+        $total = BankAccount::sum('current_balance');
+        return 'Rp ' . number_format($total, 0, ',', '.');
     }
 
     #[Computed] 
@@ -225,7 +255,12 @@ class BankAccounts extends Component
     #[Computed]
     public function availableAccounts()
     {
-        return BankAccount::select('id', 'bank_name', 'account_number', 'current_balance')->get();
+        return BankAccount::select('id', 'bank_name', 'account_number', 'current_balance')
+            ->get()
+            ->map(function ($account) {
+                $account->formatted_balance = $this->formatAccountBalance($account);
+                return $account;
+            });
     }
 
     private function applyDateRangeFilter($query)
@@ -259,8 +294,8 @@ class BankAccounts extends Component
         $this->account_number = $this->editingAccount->account_number;
         $this->bank_name = $this->editingAccount->bank_name;
         $this->branch = $this->editingAccount->branch;
-        $this->initial_balance = $this->editingAccount->initial_balance;
         $this->current_balance = $this->editingAccount->current_balance;
+        
         $this->showEditAccountModal = true;
     }
 
@@ -291,23 +326,18 @@ class BankAccounts extends Component
         $this->validate($this->rules());
 
         try {
-            DB::transaction(function () {
-                BankAccount::create([
-                    'account_name' => $this->account_name,
-                    'account_number' => $this->account_number,
-                    'bank_name' => $this->bank_name,
-                    'branch' => $this->branch,
-                    'initial_balance' => $this->initial_balance,
-                    'current_balance' => $this->current_balance,
-                ]);
-            });
+            BankAccount::create([
+                'account_name' => $this->account_name,
+                'account_number' => $this->account_number,
+                'bank_name' => $this->bank_name,
+                'branch' => $this->branch ?: null,
+                'initial_balance' => $this->current_balance, // Raw value dari currency input
+                'current_balance' => $this->current_balance, // Raw value dari currency input
+            ]);
 
             $this->dispatch('notify', type: 'success', message: 'Bank account berhasil ditambahkan!');
             $this->showAddAccountModal = false;
             $this->resetAccountForm();
-            
-            // Clear computed property cache
-            unset($this->totalBalance, $this->totalAccounts, $this->bankAccounts);
         } catch (\Exception $e) {
             $this->dispatch('notify', type: 'error', message: 'Gagal menambahkan bank account: ' . $e->getMessage());
         }
@@ -318,23 +348,17 @@ class BankAccounts extends Component
         $this->validate($this->rules());
 
         try {
-            DB::transaction(function () {
-                $this->editingAccount->update([
-                    'account_name' => $this->account_name,
-                    'account_number' => $this->account_number,
-                    'bank_name' => $this->bank_name,
-                    'branch' => $this->branch,
-                    'initial_balance' => $this->initial_balance,
-                    'current_balance' => $this->current_balance,
-                ]);
-            });
+            $this->editingAccount->update([
+                'account_name' => $this->account_name,
+                'account_number' => $this->account_number,
+                'bank_name' => $this->bank_name,
+                'branch' => $this->branch,
+                'current_balance' => $this->current_balance, // Raw value dari currency input
+            ]);
 
             $this->dispatch('notify', type: 'success', message: 'Bank account berhasil diperbarui!');
             $this->showEditAccountModal = false;
             $this->resetAccountForm();
-            
-            // Clear computed property cache
-            unset($this->totalBalance, $this->bankAccounts);
         } catch (\Exception $e) {
             $this->dispatch('notify', type: 'error', message: 'Gagal memperbarui bank account: ' . $e->getMessage());
         }
@@ -344,27 +368,16 @@ class BankAccounts extends Component
     {
         try {
             DB::transaction(function () {
-                // Check if account has transactions
-                $transactionCount = $this->accountToDelete->transactions()->count();
+                // Delete semua transaksi terkait terlebih dahulu
+                $this->accountToDelete->transactions()->delete();
                 
-                if ($transactionCount > 0) {
-                    // Archive instead of delete
-                    $this->accountToDelete->update([
-                        'account_name' => $this->accountToDelete->account_name . ' (Archived)',
-                        'current_balance' => 0,
-                    ]);
-                } else {
-                    // Safe to delete
-                    $this->accountToDelete->delete();
-                }
+                // Kemudian delete account
+                $this->accountToDelete->delete();
             });
 
-            $this->dispatch('notify', type: 'success', message: 'Bank account berhasil dihapus!');
+            $this->dispatch('notify', type: 'success', message: 'Bank account dan semua transaksi terkait berhasil dihapus!');
             $this->showDeleteModal = false;
             $this->accountToDelete = null;
-            
-            // Clear computed property cache
-            unset($this->totalBalance, $this->totalAccounts, $this->bankAccounts);
         } catch (\Exception $e) {
             $this->dispatch('notify', type: 'error', message: 'Gagal menghapus bank account: ' . $e->getMessage());
         }
@@ -387,7 +400,7 @@ class BankAccounts extends Component
                 // Create transaction
                 BankTransaction::create([
                     'bank_account_id' => $this->selected_bank_account_id,
-                    'amount' => $this->transaction_amount,
+                    'amount' => $this->transaction_amount, // Raw value dari currency input
                     'transaction_date' => $this->transaction_date,
                     'transaction_type' => $this->transaction_type,
                     'description' => $this->transaction_description,
@@ -405,9 +418,6 @@ class BankAccounts extends Component
             $this->dispatch('notify', type: 'success', message: 'Transaksi berhasil ditambahkan!');
             $this->showAddTransactionModal = false;
             $this->resetTransactionForm();
-            
-            // Clear computed property cache
-            unset($this->totalBalance, $this->recentTransactions, $this->todayTransactions);
         } catch (\Exception $e) {
             $this->dispatch('notify', type: 'error', message: 'Gagal menambahkan transaksi: ' . $e->getMessage());
         }
@@ -416,13 +426,17 @@ class BankAccounts extends Component
     // Transfer Management
     public function processTransfer()
     {
-        @dd($this->transfer_from_account, $this->transfer_to_account, $this->transfer_amount);
         $this->validate($this->transferRules());
 
         try {
             DB::transaction(function () {
                 $fromAccount = BankAccount::findOrFail($this->transfer_from_account);
                 $toAccount = BankAccount::findOrFail($this->transfer_to_account);
+
+                // Validate sufficient balance
+                if ($fromAccount->current_balance < $this->transfer_amount) {
+                    throw new \Exception('Saldo tidak mencukupi untuk transfer.');
+                }
 
                 $transferReference = $this->transfer_reference ?: 'TRF-' . Carbon::now()->format('YmdHis');
 
@@ -456,9 +470,6 @@ class BankAccounts extends Component
             $this->dispatch('notify', type: 'success', message: 'Transfer berhasil diproses!');
             $this->showTransferModal = false;
             $this->resetTransferForm();
-            
-            // Clear computed property cache
-            unset($this->totalBalance, $this->recentTransactions);
         } catch (\Exception $e) {
             $this->dispatch('notify', type: 'error', message: 'Gagal memproses transfer: ' . $e->getMessage());
         }
@@ -471,9 +482,6 @@ class BankAccounts extends Component
         $this->transactionFilterType = '';
         $this->transactionDateRange = '';
         $this->resetPage('transactionsPage');
-        
-        // Clear computed property cache
-        unset($this->allTransactions);
     }
 
     // Reset forms
@@ -483,7 +491,6 @@ class BankAccounts extends Component
         $this->account_number = '';
         $this->bank_name = '';
         $this->branch = '';
-        $this->initial_balance = 0;
         $this->current_balance = 0;
         $this->editingAccount = null;
         $this->resetErrorBag();
@@ -513,7 +520,13 @@ class BankAccounts extends Component
     // Utility Methods
     public function formatCurrency($amount)
     {
-        return 'Rp ' . number_format((float)$amount, 0, ',', '.');
+        return 'Rp ' . number_format($amount, 0, ',', '.');
+    }
+
+    public function formatAccountBalance($account)
+    {
+        $balance = is_object($account) ? $account->current_balance : $account;
+        return 'Rp ' . number_format($balance, 0, ',', '.');
     }
 
     public function sortBy($field)
@@ -524,9 +537,6 @@ class BankAccounts extends Component
             $this->sortBy = $field;
             $this->sortDirection = 'asc';
         }
-        
-        // Clear computed property cache
-        unset($this->bankAccounts);
     }
 
     // Livewire lifecycle hooks
@@ -543,19 +553,16 @@ class BankAccounts extends Component
     public function updatingTransactionFilterBank()
     {
         $this->resetPage('transactionsPage');
-        unset($this->allTransactions);
     }
 
     public function updatingTransactionFilterType()
     {
         $this->resetPage('transactionsPage');
-        unset($this->allTransactions);
     }
 
     public function updatingTransactionDateRange()
     {
         $this->resetPage('transactionsPage');
-        unset($this->allTransactions);
     }
 
     public function render()
