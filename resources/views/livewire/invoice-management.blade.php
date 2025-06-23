@@ -585,7 +585,7 @@
     <!-- Modals -->
 
     <!-- Add Invoice Modal -->
-    <flux:modal wire:model.self="showAddInvoiceModal" name="add-invoice" class="max-w-4xl">
+    <flux:modal wire:model.self="showAddInvoiceModal" name="add-invoice" class="max-w-4xl" :dismissible="false">
         <form wire:submit="saveInvoice" class="space-y-6">
             <div>
                 <flux:heading size="lg">Buat Invoice Baru</flux:heading>
