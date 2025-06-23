@@ -416,6 +416,7 @@ class BankAccounts extends Component
     // Transfer Management
     public function processTransfer()
     {
+        @dd($this->transfer_from_account, $this->transfer_to_account, $this->transfer_amount);
         $this->validate($this->transferRules());
 
         try {
