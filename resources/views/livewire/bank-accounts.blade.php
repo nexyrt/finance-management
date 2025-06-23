@@ -404,13 +404,13 @@
 
             <div class="space-y-4">
                 <flux:input wire:model="account_name" label="Nama Akun" placeholder="Contoh: Rekening Operasional" />
-                @error('account_name') 
-                    <flux:error class="mt-1">{{ $message }}</flux:error> 
+                @error('account_name')
+                    <flux:error class="mt-1">{{ $message }}</flux:error>
                 @enderror
 
                 <flux:input wire:model="account_number" label="Nomor Rekening" placeholder="1234567890" />
-                @error('account_number') 
-                    <flux:error class="mt-1">{{ $message }}</flux:error> 
+                @error('account_number')
+                    <flux:error class="mt-1">{{ $message }}</flux:error>
                 @enderror
 
                 <flux:select wire:model="bank_name" label="Bank" placeholder="Pilih Bank">
@@ -424,13 +424,13 @@
                     <flux:select.option value="Bank Permata">Bank Permata</flux:select.option>
                     <flux:select.option value="Lainnya">Lainnya</flux:select.option>
                 </flux:select>
-                @error('bank_name') 
-                    <flux:error class="mt-1">{{ $message }}</flux:error> 
+                @error('bank_name')
+                    <flux:error class="mt-1">{{ $message }}</flux:error>
                 @enderror
 
                 <flux:input wire:model="branch" label="Cabang (Opsional)" placeholder="Contoh: Jakarta Pusat" />
-                @error('branch') 
-                    <flux:error class="mt-1">{{ $message }}</flux:error> 
+                @error('branch')
+                    <flux:error class="mt-1">{{ $message }}</flux:error>
                 @enderror
 
                 {{-- Currency Input untuk Saldo Awal --}}
@@ -443,18 +443,12 @@
                     <flux:label>Saldo Awal</flux:label>
                     <flux:input.group>
                         <flux:input.group.prefix>Rp</flux:input.group.prefix>
-                        <flux:input 
-                            x-ref="input"
-                            placeholder="50.000.000"
-                            required
-                            x-on:input="handleInput($event)"
-                            x-on:keydown="restrictInput($event)"
-                            x-on:paste="handlePaste($event)"
-                        />
+                        <flux:input x-ref="input" placeholder="50.000.000" required x-on:input="handleInput($event)"
+                            x-on:keydown="restrictInput($event)" x-on:paste="handlePaste($event)" />
                     </flux:input.group>
                     <input type="hidden" name="current_balance" x-ref="hiddenInput" :value="rawValue">
-                    @error('current_balance') 
-                        <flux:error class="mt-1">{{ $message }}</flux:error> 
+                    @error('current_balance')
+                        <flux:error class="mt-1">{{ $message }}</flux:error>
                     @enderror
                     <flux:description>
                         Maksimum: <span x-text="getMaxValueFormatted()"></span>
@@ -483,13 +477,13 @@
 
             <div class="space-y-4">
                 <flux:input wire:model="account_name" label="Nama Akun" placeholder="Contoh: Rekening Operasional" />
-                @error('account_name') 
-                    <flux:error class="mt-1">{{ $message }}</flux:error> 
+                @error('account_name')
+                    <flux:error class="mt-1">{{ $message }}</flux:error>
                 @enderror
 
                 <flux:input wire:model="account_number" label="Nomor Rekening" placeholder="1234567890" />
-                @error('account_number') 
-                    <flux:error class="mt-1">{{ $message }}</flux:error> 
+                @error('account_number')
+                    <flux:error class="mt-1">{{ $message }}</flux:error>
                 @enderror
 
                 <flux:select wire:model="bank_name" label="Bank" placeholder="Pilih Bank">
@@ -503,13 +497,13 @@
                     <flux:select.option value="Bank Permata">Bank Permata</flux:select.option>
                     <flux:select.option value="Lainnya">Lainnya</flux:select.option>
                 </flux:select>
-                @error('bank_name') 
-                    <flux:error class="mt-1">{{ $message }}</flux:error> 
+                @error('bank_name')
+                    <flux:error class="mt-1">{{ $message }}</flux:error>
                 @enderror
 
                 <flux:input wire:model="branch" label="Cabang (Opsional)" placeholder="Contoh: Jakarta Pusat" />
-                @error('branch') 
-                    <flux:error class="mt-1">{{ $message }}</flux:error> 
+                @error('branch')
+                    <flux:error class="mt-1">{{ $message }}</flux:error>
                 @enderror
 
                 {{-- Currency Input untuk Edit dengan wire:key untuk force re-render --}}
@@ -522,18 +516,12 @@
                     <flux:label>Saldo Saat Ini</flux:label>
                     <flux:input.group>
                         <flux:input.group.prefix>Rp</flux:input.group.prefix>
-                        <flux:input 
-                            x-ref="input"
-                            placeholder="50.000.000"
-                            required
-                            x-on:input="handleInput($event)"
-                            x-on:keydown="restrictInput($event)"
-                            x-on:paste="handlePaste($event)"
-                        />
+                        <flux:input x-ref="input" placeholder="50.000.000" required x-on:input="handleInput($event)"
+                            x-on:keydown="restrictInput($event)" x-on:paste="handlePaste($event)" />
                     </flux:input.group>
                     <input type="hidden" name="current_balance" x-ref="hiddenInput" :value="rawValue">
-                    @error('current_balance') 
-                        <flux:error class="mt-1">{{ $message }}</flux:error> 
+                    @error('current_balance')
+                        <flux:error class="mt-1">{{ $message }}</flux:error>
                     @enderror
                 </div>
             </div>
@@ -565,16 +553,16 @@
                         </flux:select.option>
                     @endforeach
                 </flux:select>
-                @error('selected_bank_account_id') 
-                    <flux:error class="mt-1">{{ $message }}</flux:error> 
+                @error('selected_bank_account_id')
+                    <flux:error class="mt-1">{{ $message }}</flux:error>
                 @enderror
 
                 <flux:select wire:model="transaction_type" label="Jenis Transaksi">
                     <flux:select.option value="credit">Kredit (Masuk)</flux:select.option>
                     <flux:select.option value="debit">Debit (Keluar)</flux:select.option>
                 </flux:select>
-                @error('transaction_type') 
-                    <flux:error class="mt-1">{{ $message }}</flux:error> 
+                @error('transaction_type')
+                    <flux:error class="mt-1">{{ $message }}</flux:error>
                 @enderror
 
                 {{-- Currency Input untuk Transaction Amount --}}
@@ -587,36 +575,30 @@
                     <flux:label>Jumlah</flux:label>
                     <flux:input.group>
                         <flux:input.group.prefix>Rp</flux:input.group.prefix>
-                        <flux:input 
-                            x-ref="input"
-                            placeholder="1.000.000"
-                            required
-                            x-on:input="handleInput($event)"
-                            x-on:keydown="restrictInput($event)"
-                            x-on:paste="handlePaste($event)"
-                        />
+                        <flux:input x-ref="input" placeholder="1.000.000" required x-on:input="handleInput($event)"
+                            x-on:keydown="restrictInput($event)" x-on:paste="handlePaste($event)" />
                     </flux:input.group>
                     <input type="hidden" name="transaction_amount" x-ref="hiddenInput" :value="rawValue">
-                    @error('transaction_amount') 
-                        <flux:error class="mt-1">{{ $message }}</flux:error> 
+                    @error('transaction_amount')
+                        <flux:error class="mt-1">{{ $message }}</flux:error>
                     @enderror
                 </div>
 
                 <flux:input wire:model="transaction_date" label="Tanggal Transaksi" type="date" />
-                @error('transaction_date') 
-                    <flux:error class="mt-1">{{ $message }}</flux:error> 
+                @error('transaction_date')
+                    <flux:error class="mt-1">{{ $message }}</flux:error>
                 @enderror
 
                 <flux:textarea wire:model="transaction_description" label="Deskripsi (Opsional)"
                     placeholder="Keterangan transaksi..." rows="3" />
-                @error('transaction_description') 
-                    <flux:error class="mt-1">{{ $message }}</flux:error> 
+                @error('transaction_description')
+                    <flux:error class="mt-1">{{ $message }}</flux:error>
                 @enderror
 
                 <flux:input wire:model="reference_number" label="Nomor Referensi (Opsional)"
                     placeholder="Contoh: TF001234" />
-                @error('reference_number') 
-                    <flux:error class="mt-1">{{ $message }}</flux:error> 
+                @error('reference_number')
+                    <flux:error class="mt-1">{{ $message }}</flux:error>
                 @enderror
             </div>
 
@@ -648,8 +630,8 @@
                         </flux:select.option>
                     @endforeach
                 </flux:select>
-                @error('transfer_from_account') 
-                    <flux:error class="mt-1">{{ $message }}</flux:error> 
+                @error('transfer_from_account')
+                    <flux:error class="mt-1">{{ $message }}</flux:error>
                 @enderror
 
                 <flux:select wire:model="transfer_to_account" label="Ke Akun" placeholder="Pilih akun tujuan">
@@ -659,8 +641,8 @@
                         </flux:select.option>
                     @endforeach
                 </flux:select>
-                @error('transfer_to_account') 
-                    <flux:error class="mt-1">{{ $message }}</flux:error> 
+                @error('transfer_to_account')
+                    <flux:error class="mt-1">{{ $message }}</flux:error>
                 @enderror
 
                 {{-- Currency Input untuk Transfer Amount --}}
@@ -673,34 +655,33 @@
                     <flux:label>Jumlah Transfer</flux:label>
                     <flux:input.group>
                         <flux:input.group.prefix>Rp</flux:input.group.prefix>
-                        <flux:input 
-                            x-ref="input"
-                            placeholder="1.000.000"
-                            required
-                            x-on:input="handleInput($event)"
-                            x-on:keydown="restrictInput($event)"
-                            x-on:paste="handlePaste($event)"
-                        />
+                        <flux:input x-ref="input" placeholder="1.000.000" required x-on:input="handleInput($event)"
+                            x-on:keydown="restrictInput($event)" x-on:paste="handlePaste($event)" />
                     </flux:input.group>
                     <input type="hidden" name="transfer_amount" x-ref="hiddenInput" :value="rawValue">
-                    @error('transfer_amount') 
-                        <flux:error class="mt-1">{{ $message }}</flux:error> 
+                    @error('transfer_amount')
+                        <flux:error class="mt-1">{{ $message }}</flux:error>
                     @enderror
                     <flux:description>
                         Maksimum: <span x-text="getMaxValueFormatted()"></span>
                     </flux:description>
                 </div>
 
+                <flux:input wire:model="transfer_date" label="Tanggal Transfer" type="date" />
+                @error('transfer_date')
+                    <flux:error class="mt-1">{{ $message }}</flux:error>
+                @enderror
+
                 <flux:textarea wire:model="transfer_description" label="Keterangan (Opsional)"
                     placeholder="Keterangan transfer..." rows="2" />
-                @error('transfer_description') 
-                    <flux:error class="mt-1">{{ $message }}</flux:error> 
+                @error('transfer_description')
+                    <flux:error class="mt-1">{{ $message }}</flux:error>
                 @enderror
 
                 <flux:input wire:model="transfer_reference" label="Nomor Referensi (Opsional)"
                     placeholder="Contoh: TRF001234" />
-                @error('transfer_reference') 
-                    <flux:error class="mt-1">{{ $message }}</flux:error> 
+                @error('transfer_reference')
+                    <flux:error class="mt-1">{{ $message }}</flux:error>
                 @enderror
             </div>
 
@@ -736,7 +717,8 @@
                     ?
                     <br><br>
                     <span class="text-red-600 dark:text-red-400 font-medium">
-                        ⚠️ PERINGATAN: Semua transaksi dan data terkait akan ikut terhapus permanen dan tidak dapat dikembalikan.
+                        ⚠️ PERINGATAN: Semua transaksi dan data terkait akan ikut terhapus permanen dan tidak dapat
+                        dikembalikan.
                     </span>
                 </flux:text>
             </div>
@@ -753,7 +735,7 @@
     </flux:modal>
 
     <!-- All Transactions Modal -->
-    <flux:modal wire:model.self="showAllTransactionsModal" name="all-transactions" class="max-w-4xl">
+    <flux:modal wire:model.self="showAllTransactionsModal" name="all-transactions" class="max-w-5xl">
         <div class="space-y-6">
             <div>
                 <flux:heading size="lg">Semua Transaksi</flux:heading>
@@ -895,6 +877,7 @@
                             <th class="px-4 py-3 text-left font-medium text-gray-700 dark:text-zinc-300">Jenis</th>
                             <th class="px-4 py-3 text-right font-medium text-gray-700 dark:text-zinc-300">Jumlah</th>
                             <th class="px-4 py-3 text-left font-medium text-gray-700 dark:text-zinc-300">Referensi</th>
+                            <th class="px-4 py-3 text-center font-medium text-gray-700 dark:text-zinc-300">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-200 dark:divide-zinc-700">
@@ -904,7 +887,11 @@
                                     {{ \Carbon\Carbon::parse($transaction->transaction_date)->format('d/m/Y') }}
                                 </td>
                                 <td class="px-4 py-3 text-gray-700 dark:text-zinc-300">
-                                    {{ $transaction->bankAccount->bank_name }}
+                                    <div>
+                                        <p class="font-medium">{{ $transaction->bankAccount->bank_name }}</p>
+                                        <p class="text-xs text-gray-500 dark:text-zinc-400">
+                                            {{ $transaction->bankAccount->account_number }}</p>
+                                    </div>
                                 </td>
                                 <td class="px-4 py-3 text-gray-700 dark:text-zinc-300">
                                     {{ $transaction->description ?: 'Transaksi ' . ucfirst($transaction->transaction_type) }}
@@ -930,10 +917,34 @@
                                 <td class="px-4 py-3 text-gray-500 dark:text-zinc-400 text-xs">
                                     {{ $transaction->reference_number ?: '-' }}
                                 </td>
+                                <td class="px-4 py-3 text-center">
+                                    <div class="flex justify-center space-x-2">
+                                        <!-- Edit Button (optional for future enhancement) -->
+                                        {{-- <button 
+                                            class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors"
+                                            title="Edit Transaksi">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                            </svg>
+                                        </button> --}}
+
+                                        <!-- Delete Button -->
+                                        <button wire:click="confirmDeleteTransaction({{ $transaction->id }})"
+                                            class="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 transition-colors"
+                                            title="Hapus Transaksi">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+                                                </path>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="px-4 py-8 text-center text-gray-500 dark:text-zinc-400">
+                                <td colspan="7" class="px-4 py-8 text-center text-gray-500 dark:text-zinc-400">
                                     <div class="flex flex-col items-center">
                                         <svg xmlns="http://www.w3.org/2000/svg"
                                             class="h-12 w-12 text-gray-400 dark:text-zinc-500 mb-2" fill="none"
@@ -965,32 +976,113 @@
         </div>
     </flux:modal>
 
+    <!-- Delete Transaction Confirmation Modal -->
+    <flux:modal wire:model.self="showDeleteTransactionModal" name="delete-transaction" class="md:w-96">
+        <div class="space-y-6">
+            <div class="text-center">
+                <div
+                    class="bg-red-100 dark:bg-red-900/30 p-3 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-red-600 dark:text-red-400"
+                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                </div>
+                <flux:heading size="lg">Hapus Transaksi</flux:heading>
+                <flux:text class="mt-2">
+                    Apakah Anda yakin ingin menghapus transaksi ini?
+                    @if ($transactionToDelete)
+                        <br><br>
+                        <div class="bg-gray-50 dark:bg-zinc-800 p-4 rounded-lg mt-4 text-left">
+                            <div class="space-y-2 text-sm">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600 dark:text-zinc-400">Bank:</span>
+                                    <span
+                                        class="font-medium">{{ $transactionToDelete->bankAccount->bank_name }}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600 dark:text-zinc-400">Tanggal:</span>
+                                    <span
+                                        class="font-medium">{{ \Carbon\Carbon::parse($transactionToDelete->transaction_date)->format('d/m/Y') }}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600 dark:text-zinc-400">Jenis:</span>
+                                    <span
+                                        class="px-2 py-1 text-xs font-medium rounded-full 
+                                        @if ($transactionToDelete->transaction_type === 'credit') bg-green-100 text-green-700
+                                        @else bg-red-100 text-red-700 @endif">
+                                        {{ $transactionToDelete->transaction_type === 'credit' ? 'Kredit (Masuk)' : 'Debit (Keluar)' }}
+                                    </span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600 dark:text-zinc-400">Jumlah:</span>
+                                    <span
+                                        class="font-semibold {{ $transactionToDelete->transaction_type === 'credit' ? 'text-green-600' : 'text-red-600' }}">
+                                        {{ $transactionToDelete->transaction_type === 'credit' ? '+' : '-' }}{{ $this->formatCurrency($transactionToDelete->amount) }}
+                                    </span>
+                                </div>
+                                @if ($transactionToDelete->description)
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-600 dark:text-zinc-400">Deskripsi:</span>
+                                        <span class="font-medium">{{ $transactionToDelete->description }}</span>
+                                    </div>
+                                @endif
+                                @if ($transactionToDelete->reference_number)
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-600 dark:text-zinc-400">Referensi:</span>
+                                        <span class="font-medium">{{ $transactionToDelete->reference_number }}</span>
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+                        <br>
+                        <span class="text-amber-600 dark:text-amber-400 font-medium">
+                            ⚠️ PERHATIAN: Saldo bank akan disesuaikan secara otomatis setelah transaksi dihapus.
+                        </span>
+                    @endif
+                </flux:text>
+            </div>
+
+            <div class="flex justify-end space-x-3">
+                <flux:button type="button" variant="ghost" wire:click="$set('showDeleteTransactionModal', false)">
+                    Batal
+                </flux:button>
+                <flux:button type="button" variant="danger" wire:click="deleteTransaction">
+                    Ya, Hapus Transaksi
+                </flux:button>
+            </div>
+        </div>
+    </flux:modal>
+
 </section>
 
 {{-- JavaScript untuk notifikasi (opsional) --}}
 @script
-<script>
-    $wire.on('notify', (event) => {
-        const { type, message } = event;
-        
-        // Membuat elemen notifikasi
-        const notification = document.createElement('div');
-        notification.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg transition-all duration-300 transform translate-x-full opacity-0 ${
+    <script>
+        $wire.on('notify', (event) => {
+            const {
+                type,
+                message
+            } = event;
+
+            // Membuat elemen notifikasi
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg transition-all duration-300 transform translate-x-full opacity-0 ${
             type === 'success' 
                 ? 'bg-green-100 border border-green-400 text-green-700' 
                 : 'bg-red-100 border border-red-400 text-red-700'
         }`;
-        
-        notification.innerHTML = `
+
+            notification.innerHTML = `
             <div class="flex items-center">
                 <div class="flex-shrink-0">
                     ${type === 'success' 
                         ? `<svg class="h-5 w-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                           </svg>`
+                                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                   </svg>`
                         : `<svg class="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
-                             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
-                           </svg>`
+                                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                                   </svg>`
                     }
                 </div>
                 <div class="ml-3">
@@ -1008,30 +1100,30 @@
                 </div>
             </div>
         `;
-        
-        // Menambahkan notifikasi ke body
-        document.body.appendChild(notification);
-        
-        // Animasi masuk
-        setTimeout(() => {
-            notification.classList.remove('translate-x-full', 'opacity-0');
-            notification.classList.add('translate-x-0', 'opacity-100');
-        }, 100);
-        
-        // Auto remove setelah 5 detik
-        setTimeout(() => {
-            notification.classList.add('translate-x-full', 'opacity-0');
-            setTimeout(() => {
-                if (notification.parentNode) {
-                    notification.parentNode.removeChild(notification);
-                }
-            }, 300);
-        }, 5000);
-    });
 
-    // Debug: Log currency input values
-    $wire.on('debug-currency', (event) => {
-        console.log('Currency Debug:', event);
-    });
-</script>
+            // Menambahkan notifikasi ke body
+            document.body.appendChild(notification);
+
+            // Animasi masuk
+            setTimeout(() => {
+                notification.classList.remove('translate-x-full', 'opacity-0');
+                notification.classList.add('translate-x-0', 'opacity-100');
+            }, 100);
+
+            // Auto remove setelah 5 detik
+            setTimeout(() => {
+                notification.classList.add('translate-x-full', 'opacity-0');
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
+            }, 5000);
+        });
+
+        // Debug: Log currency input values
+        $wire.on('debug-currency', (event) => {
+            console.log('Currency Debug:', event);
+        });
+    </script>
 @endscript

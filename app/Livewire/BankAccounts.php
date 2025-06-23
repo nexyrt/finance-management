@@ -35,6 +35,7 @@ class BankAccounts extends Component
     public $transfer_amount = 0;
     public $transfer_description = '';
     public $transfer_reference = '';
+    public $transfer_date = '';
 
     // Modal State
     public $showAddAccountModal = false;
@@ -43,6 +44,7 @@ class BankAccounts extends Component
     public $showTransferModal = false;
     public $showDeleteModal = false;
     public $showAllTransactionsModal = false;
+    public $showDeleteTransactionModal = false; // New modal state
 
     // Search and Filter
     public $search = '';
@@ -58,11 +60,12 @@ class BankAccounts extends Component
     // Edit State
     public $editingAccount = null;
     public $accountToDelete = null;
+    public $transactionToDelete = null; // New property for transaction deletion
 
     protected function rules()
     {
         $accountId = $this->editingAccount ? $this->editingAccount->id : null;
-        
+
         return [
             'account_name' => 'required|string|max:255',
             'account_number' => 'required|string|max:50|unique:bank_accounts,account_number,' . $accountId,
@@ -87,6 +90,7 @@ class BankAccounts extends Component
             'transfer_from_account' => 'required|exists:bank_accounts,id|different:transfer_to_account',
             'transfer_to_account' => 'required|exists:bank_accounts,id|different:transfer_from_account',
             'transfer_amount' => 'required|numeric|min:1',
+            'transfer_date' => 'required|date|before_or_equal:today',
             'transfer_description' => 'nullable|string|max:500',
             'transfer_reference' => 'nullable|string|max:100',
         ];
@@ -95,6 +99,7 @@ class BankAccounts extends Component
     public function mount()
     {
         $this->transaction_date = Carbon::now()->format('Y-m-d');
+        $this->transfer_date = Carbon::now()->format('Y-m-d');
     }
 
     // Currency input value updaters - Handle raw values dari Alpine.js
@@ -103,12 +108,12 @@ class BankAccounts extends Component
         // Value dari Alpine.js adalah integer mentah (contoh: 50000000 untuk Rp 50.000.000)
         // Tidak perlu konversi, langsung simpan sebagai raw value untuk database
         $maxValue = 999999999999999; // 15 digit maksimum untuk DECIMAL(15,2)
-        
+
         if ($value > $maxValue) {
             $this->addError('current_balance', 'Nilai terlalu besar. Maksimum adalah Rp ' . number_format($maxValue, 0, ',', '.'));
             return;
         }
-        
+
         $this->current_balance = $value;
     }
 
@@ -116,12 +121,12 @@ class BankAccounts extends Component
     {
         // Value dari Alpine.js adalah integer mentah
         $maxValue = 999999999999999; // 15 digit maksimum untuk DECIMAL(15,2)
-        
+
         if ($value > $maxValue) {
             $this->addError('transaction_amount', 'Nilai terlalu besar. Maksimum adalah Rp ' . number_format($maxValue, 0, ',', '.'));
             return;
         }
-        
+
         $this->transaction_amount = $value;
     }
 
@@ -129,12 +134,12 @@ class BankAccounts extends Component
     {
         // Value dari Alpine.js adalah integer mentah
         $maxValue = 999999999999999; // 15 digit maksimum untuk DECIMAL(15,2)
-        
+
         if ($value > $maxValue) {
             $this->addError('transfer_amount', 'Nilai terlalu besar. Maksimum adalah Rp ' . number_format($maxValue, 0, ',', '.'));
             return;
         }
-        
+
         $this->transfer_amount = $value;
     }
 
@@ -146,7 +151,7 @@ class BankAccounts extends Component
         return 'Rp ' . number_format($total, 0, ',', '.');
     }
 
-    #[Computed] 
+    #[Computed]
     public function totalAccounts()
     {
         return BankAccount::count();
@@ -266,10 +271,10 @@ class BankAccounts extends Component
     private function applyDateRangeFilter($query)
     {
         $dates = explode(' to ', $this->transactionDateRange);
-        
+
         if (count($dates) === 2) {
             $query->whereDate('transaction_date', '>=', Carbon::parse(trim($dates[0])))
-                  ->whereDate('transaction_date', '<=', Carbon::parse(trim($dates[1])));
+                ->whereDate('transaction_date', '<=', Carbon::parse(trim($dates[1])));
         } elseif (count($dates) === 1 && !empty(trim($dates[0]))) {
             $query->whereDate('transaction_date', '=', Carbon::parse(trim($dates[0])));
         }
@@ -295,7 +300,7 @@ class BankAccounts extends Component
         $this->bank_name = $this->editingAccount->bank_name;
         $this->branch = $this->editingAccount->branch;
         $this->current_balance = $this->editingAccount->current_balance;
-        
+
         $this->showEditAccountModal = true;
     }
 
@@ -318,6 +323,13 @@ class BankAccounts extends Component
     {
         $this->accountToDelete = BankAccount::findOrFail($accountId);
         $this->showDeleteModal = true;
+    }
+
+    // New method for confirming transaction deletion
+    public function confirmDeleteTransaction($transactionId)
+    {
+        $this->transactionToDelete = BankTransaction::with('bankAccount')->findOrFail($transactionId);
+        $this->showDeleteTransactionModal = true;
     }
 
     // Bank Account CRUD
@@ -370,7 +382,7 @@ class BankAccounts extends Component
             DB::transaction(function () {
                 // Delete semua transaksi terkait terlebih dahulu
                 $this->accountToDelete->transactions()->delete();
-                
+
                 // Kemudian delete account
                 $this->accountToDelete->delete();
             });
@@ -380,6 +392,38 @@ class BankAccounts extends Component
             $this->accountToDelete = null;
         } catch (\Exception $e) {
             $this->dispatch('notify', type: 'error', message: 'Gagal menghapus bank account: ' . $e->getMessage());
+        }
+    }
+
+    // New method for deleting transaction
+    public function deleteTransaction()
+    {
+        try {
+            DB::transaction(function () {
+                $transaction = $this->transactionToDelete;
+                $bankAccount = $transaction->bankAccount;
+
+                // Reverse the transaction effect on bank account balance
+                if ($transaction->transaction_type === 'credit') {
+                    // If it was a credit (money in), subtract it from current balance
+                    $bankAccount->decrement('current_balance', $transaction->amount);
+                } else {
+                    // If it was a debit (money out), add it back to current balance
+                    $bankAccount->increment('current_balance', $transaction->amount);
+                }
+
+                // Delete the transaction
+                $transaction->delete();
+            });
+
+            $this->dispatch('notify', type: 'success', message: 'Transaksi berhasil dihapus dan saldo bank telah disesuaikan!');
+            $this->showDeleteTransactionModal = false;
+            $this->transactionToDelete = null;
+
+            // Reset pagination if needed
+            $this->resetPage('transactionsPage');
+        } catch (\Exception $e) {
+            $this->dispatch('notify', type: 'error', message: 'Gagal menghapus transaksi: ' . $e->getMessage());
         }
     }
 
@@ -444,10 +488,10 @@ class BankAccounts extends Component
                 BankTransaction::create([
                     'bank_account_id' => $this->transfer_from_account,
                     'amount' => $this->transfer_amount,
-                    'transaction_date' => Carbon::now()->format('Y-m-d'),
+                    'transaction_date' => $this->transfer_date, // UBAH DARI Carbon::now()->format('Y-m-d')
                     'transaction_type' => 'debit',
-                    'description' => 'Transfer ke ' . $toAccount->bank_name . ' - ' . $toAccount->account_number . 
-                                   ($this->transfer_description ? '. ' . $this->transfer_description : ''),
+                    'description' => 'Transfer ke ' . $toAccount->bank_name . ' - ' . $toAccount->account_number .
+                        ($this->transfer_description ? '. ' . $this->transfer_description : ''),
                     'reference_number' => $transferReference,
                 ]);
 
@@ -455,10 +499,10 @@ class BankAccounts extends Component
                 BankTransaction::create([
                     'bank_account_id' => $this->transfer_to_account,
                     'amount' => $this->transfer_amount,
-                    'transaction_date' => Carbon::now()->format('Y-m-d'),
+                    'transaction_date' => $this->transfer_date, // UBAH DARI Carbon::now()->format('Y-m-d')
                     'transaction_type' => 'credit',
-                    'description' => 'Transfer dari ' . $fromAccount->bank_name . ' - ' . $fromAccount->account_number . 
-                                   ($this->transfer_description ? '. ' . $this->transfer_description : ''),
+                    'description' => 'Transfer dari ' . $fromAccount->bank_name . ' - ' . $fromAccount->account_number .
+                        ($this->transfer_description ? '. ' . $this->transfer_description : ''),
                     'reference_number' => $transferReference,
                 ]);
 
@@ -512,6 +556,7 @@ class BankAccounts extends Component
         $this->transfer_from_account = null;
         $this->transfer_to_account = null;
         $this->transfer_amount = 0;
+        $this->transfer_date = Carbon::now()->format('Y-m-d'); // TAMBAHKAN INI
         $this->transfer_description = '';
         $this->transfer_reference = '';
         $this->resetErrorBag();
