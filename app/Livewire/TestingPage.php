@@ -1,86 +1,85 @@
 <?php
+// app/Livewire/TestingPage.php
 
 namespace App\Livewire;
 
-use App\Models\BankAccount;
 use Livewire\Component;
+use App\Models\Service;
+use App\Models\Client;
+use App\Models\BankAccount;
 
 class TestingPage extends Component
 {
-    // Bank Account form properties
-    public $account_name = '';
-    public $account_number = '';
-    public $bank_name = '';
-    public $branch = '';
-    public $initial_balance = 0;
-    public $current_balance = 0;
-
-    protected $rules = [
-        'account_name' => 'required|string|max:255',
-        'account_number' => 'required|string|max:255',
-        'bank_name' => 'required|string|max:255',
-        'branch' => 'nullable|string|max:255',
-        'initial_balance' => 'required|numeric|min:0',
-        'current_balance' => 'required|numeric|min:0',
+    // Form properties
+    public $selectedService = '';
+    public $selectedClient = '';
+    public $selectedBank = '';
+    public $selectedCity = '';
+    
+    // Static data
+    public $cities = [
+        ['id' => 'jakarta', 'name' => 'Jakarta'],
+        ['id' => 'surabaya', 'name' => 'Surabaya'],
+        ['id' => 'bandung', 'name' => 'Bandung'],
+        ['id' => 'medan', 'name' => 'Medan'],
+        ['id' => 'semarang', 'name' => 'Semarang'],
+        ['id' => 'palembang', 'name' => 'Palembang'],
+        ['id' => 'makassar', 'name' => 'Makassar'],
+        ['id' => 'balikpapan', 'name' => 'Balikpapan'],
+        ['id' => 'yogyakarta', 'name' => 'Yogyakarta'],
+        ['id' => 'malang', 'name' => 'Malang'],
     ];
-
-    public function updatedInitialBalance($value)
+    
+    public function mount()
     {
-        // Auto-set current balance to initial balance if current balance is 0
-        if ($this->current_balance == 0) {
-            $this->current_balance = $value;
-        }
+        // Set default values for testing
+        $this->selectedCity = 'jakarta';
     }
-
-    public function save()
+    
+    public function updatedSelectedService($value)
     {
-        $this->validate();
-
-        try {
-            $bankAccount = BankAccount::create([
-                'account_name' => $this->account_name,
-                'account_number' => $this->account_number,
-                'bank_name' => $this->bank_name,
-                'branch' => $this->branch ?: null,
-                'initial_balance' => $this->initial_balance,
-                'current_balance' => $this->current_balance,
-            ]);
-
-            session()->flash('success', 
-                'Bank Account berhasil dibuat! ' . $this->account_name . 
-                ' (' . $this->bank_name . ') - Balance: Rp ' . number_format($this->current_balance, 0, ',', '.')
-            );
-            
-            $this->resetForm();
-        } catch (\Exception $e) {
-            session()->flash('error', 'Terjadi kesalahan: ' . $e->getMessage());
-        }
+        session()->flash('message', 'Service updated: ' . $value);
     }
-
-    public function setTestData()
+    
+    public function updatedSelectedClient($value)
     {
-        $this->account_name = 'PT ABC Company';
-        $this->account_number = '1234567890';
-        $this->bank_name = 'Bank Central Asia';
-        $this->branch = 'Jakarta Pusat';
-        $this->initial_balance = 50000000; // 50 juta
-        $this->current_balance = 50000000;
+        session()->flash('message', 'Client updated: ' . $value);
     }
-
-    public function resetForm()
+    
+    public function updatedSelectedBank($value)
     {
-        $this->reset(['account_name', 'account_number', 'bank_name', 'branch', 'initial_balance', 'current_balance']);
+        session()->flash('message', 'Bank updated: ' . $value);
     }
-
-    public function getBankAccountsProperty()
+    
+    public function updatedSelectedCity($value)
     {
-        return BankAccount::latest()->take(5)->get();
+        session()->flash('message', 'City updated: ' . $value);
     }
-
+    
+    public function submitForm()
+    {
+        $this->validate([
+            'selectedService' => 'required',
+            'selectedClient' => 'required',
+            'selectedBank' => 'required',
+            'selectedCity' => 'required',
+        ]);
+        
+        session()->flash('success', 'Form submitted successfully!');
+        
+        // Reset form
+        $this->reset(['selectedService', 'selectedClient', 'selectedBank']);
+        
+        // Dispatch event to reinitialize dropdowns after reset
+        $this->dispatch('form-reset');
+    }
+    
     public function render()
     {
         return view('livewire.testing-page', [
-            'bankAccounts' => $this->bankAccounts
+            'services' => Service::all(),
+            'clients' => Client::all(),
+            'bankAccounts' => BankAccount::all(),
         ]);
     }
 }

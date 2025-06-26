@@ -903,6 +903,18 @@
                                     </div>
                                 </div>
 
+                                {{-- Custom Options Example (mixed data types) --}}
+                                <div>
+                                    <x-inputs.searchable-dropdown name="customOption" label="Custom Options Example"
+                                        placeholder="Type to search..." :options="[
+                                            ['value' => 'option1', 'label' => 'Option One'],
+                                            ['value' => 'option2', 'label' => 'Option Two'],
+                                            'Simple String Option',
+                                            (object) ['id' => 'obj1', 'name' => 'Object Option'],
+                                        ]" value-field="value"
+                                        text-field="label" class="w-full" />
+                                </div>
+
                                 <flux:input wire:model.live="invoiceItems.{{ $index }}.amount" label="Jumlah"
                                     type="number" step="0.01" min="0.01" placeholder="0.00" required />
                             </div>
@@ -1192,7 +1204,7 @@
 
                         <button wire:click="$set('showDetailModal', false)"
                             class="text-gray-400 hover:text-gray-600 dark:hover:text-zinc-300">
-                            
+
                         </button>
                     </div>
                 </div>
@@ -1384,7 +1396,7 @@
                         </button>
                         <button wire:click="$set('showPreviewModal', false)"
                             class="text-gray-400 hover:text-gray-600 dark:hover:text-zinc-300">
-                            
+
                         </button>
                     </div>
                 </div>
