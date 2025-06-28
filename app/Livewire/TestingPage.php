@@ -33,7 +33,7 @@ class TestingPage extends Component
     public function mount()
     {
         // Set default values for testing
-        $this->selectedCity = 'jakarta';
+        $this->selectedCity = 'Jakarta';
     }
     
     public function updatedSelectedService($value)

@@ -12,10 +12,11 @@
     'disabled' => false,
     'clearable' => true,
     'noResultsText' => 'No results found',
-    'class' => '',
     'containerClass' => '',
     'dropdownClass' => '',
     'wire' => null,
+    'variant' => 'outline',
+    'size' => null,
 ])
 
 @php
@@ -58,7 +59,7 @@
      
     {{-- Label --}}
     @if($label)
-        <label for="{{ $inputId }}" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+        <label for="{{ $inputId }}" class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
             {{ $label }}
             @if($required)
                 <span class="text-red-500">*</span>
@@ -78,7 +79,7 @@
             autocomplete="off"
             @if($disabled) disabled @endif
             @if($required) required @endif
-            {{ $attributes->merge(['class' => 'w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 ' . $class]) }}
+            class="w-full border rounded-lg block disabled:shadow-none dark:shadow-none appearance-none {{ match($size) { 'sm' => 'text-sm py-1.5 h-8 leading-[1.125rem] ps-3', 'xs' => 'text-xs py-1.5 h-6 leading-[1.125rem] ps-3', default => 'text-base sm:text-sm py-2 h-10 leading-[1.375rem] ps-3' } }} {{ $clearable && !$disabled ? 'pe-16' : 'pe-10' }} {{ match($variant) { 'outline' => 'bg-white dark:bg-white/10 dark:disabled:bg-white/[7%]', 'filled' => 'bg-zinc-800/5 dark:bg-white/10 dark:disabled:bg-white/[7%]' } }} {{ match($variant) { 'outline' => 'text-zinc-700 disabled:text-zinc-500 placeholder-zinc-400 disabled:placeholder-zinc-400/70 dark:text-zinc-300 dark:disabled:text-zinc-400 dark:placeholder-zinc-400 dark:disabled:placeholder-zinc-500', 'filled' => 'text-zinc-700 placeholder-zinc-500 disabled:placeholder-zinc-400 dark:text-zinc-200 dark:placeholder-white/60 dark:disabled:placeholder-white/40' } }} {{ match($variant) { 'outline' => 'shadow-xs border-zinc-200 border-b-zinc-300/80 disabled:border-b-zinc-200 dark:border-white/10 dark:disabled:border-white/5', 'filled' => 'border-0' } }} focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         >
         
         {{-- Hidden Input for actual value --}}
@@ -96,18 +97,18 @@
             <button 
                 type="button"
                 data-clear
-                class="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                class="absolute {{ match($size) { 'sm' => 'right-8 top-1/2', 'xs' => 'right-6 top-1/2', default => 'right-10 top-1/2' } }} transform -translate-y-1/2 text-zinc-400/75 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors"
                 style="display: {{ $selected ? 'block' : 'none' }};"
             >
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="{{ match($size) { 'sm' => 'w-3 h-3', 'xs' => 'w-3 h-3', default => 'w-4 h-4' } }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                 </svg>
             </button>
         @endif
         
         {{-- Dropdown Icon --}}
-        <div class="absolute right-2 top-1/2 transform -translate-y-1/2 pointer-events-none">
-            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="absolute {{ match($size) { 'sm' => 'right-2 top-1/2', 'xs' => 'right-1.5 top-1/2', default => 'right-3 top-1/2' } }} transform -translate-y-1/2 pointer-events-none">
+            <svg class="{{ match($size) { 'sm' => 'w-3 h-3', 'xs' => 'w-3 h-3', default => 'w-4 h-4' } }} text-zinc-400/75" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
             </svg>
         </div>
@@ -116,17 +117,17 @@
     {{-- Dropdown Menu --}}
     <div id="{{ $dropdownId }}" 
          data-dropdown
-         class="absolute top-full left-0 right-0 z-50 hidden bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg mt-1 max-h-60 overflow-y-auto {{ $dropdownClass }}">
+         class="absolute top-full left-0 right-0 z-50 hidden bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-lg mt-1 max-h-60 overflow-y-auto {{ $dropdownClass }}">
          
         {{-- Options List --}}
-        <ul class="py-1 text-sm text-gray-700 dark:text-gray-200" 
+        <ul class="py-1 text-sm" 
             id="{{ $listId }}" 
             data-list>
             @foreach($processedOptions as $option)
                 <li>
                     <a href="#" 
                        data-value="{{ $option['value'] }}" 
-                       class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white cursor-pointer transition-colors">
+                       class="block px-4 py-2 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700 hover:text-zinc-900 dark:hover:text-zinc-100 cursor-pointer transition-colors">
                         {{ $option['text'] }}
                     </a>
                 </li>
@@ -135,7 +136,7 @@
         
         {{-- No Results Message --}}
         <div data-no-results 
-             class="hidden px-4 py-2 text-gray-500 dark:text-gray-400 text-center">
+             class="hidden px-4 py-2 text-zinc-500 dark:text-zinc-400 text-center">
             {{ $noResultsText }}
         </div>
     </div>
