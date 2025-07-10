@@ -16,7 +16,8 @@
         "livewire/livewire": "^3.6",
         "livewire/volt": "^1.7.0",
         "masmerise/livewire-toaster": "^2.8",
-        "mckenziearts/laravel-notify": "^2.7"
+        "mckenziearts/laravel-notify": "^2.7",
+        "tallstackui/tallstackui": "2.0.0"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
