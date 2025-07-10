@@ -6,16 +6,16 @@ use Livewire\Component;
 
 class TestingPage extends Component
 {
-    public $amount = '75000'; // Default value for the currency input
-    public $price = '0'; // Default value for the currency input
+    public $cleaveAmount = 150000;
+    public $intlAmount = 150000;
 
     public function submit()
     {
-        $amountInt = (int) $this->amount;
-        $priceInt = (int) $this->price;
-        $result = $amountInt - $priceInt;
-
-        dd($result, gettype($result));
+        // Cek hasil input
+        dd([
+            'cleave' => $this->cleaveAmount,
+            'intl' => $this->intlAmount,
+        ]);
     }
 
     public function render()
