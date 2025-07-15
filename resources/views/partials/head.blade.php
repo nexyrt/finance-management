@@ -5,7 +5,6 @@
 
 <link rel="preconnect" href="https://fonts.bunny.net">
 <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <link rel="icon" href="favicon.ico" type="image/x-icon">
 
 <style>
@@ -29,8 +28,8 @@
 </style>
 
 
+<wireui:scripts />
 <tallstackui:script />
-<script type="text/javascript" src="https://cdn.jsdelivr.net/gh/robsontenorio/mary@0.44.2/libs/currency/currency.js"></script>
 
 @livewireStyles
 @vite(['resources/css/app.css', 'resources/js/app.js'])
