@@ -137,11 +137,6 @@
         {{ $slot }}
 
         @fluxScripts
-        <livewire:scripts />
-        <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-        <script src="https://cdn.jsdelivr.net/npm/cleave.js@1/dist/cleave.min.js"></script>
-        @stack('scripts')
-        <x-toaster-hub />
     </body>
 
 </html>
