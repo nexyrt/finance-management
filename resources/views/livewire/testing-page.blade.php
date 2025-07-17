@@ -1,6 +1,6 @@
 <div class="max-w-7xl mx-auto p-4">
     <!-- Circles -->
-    <x-step selected="1" circles {{-- [tl! highlight] --}} helpers>
+    <x-step selected="1" circles {{-- [tl! highlight] --}} helpers navigate-previous>
         <x-step.items step="1" title="Starting" description="Step One">
             Step one...
         </x-step.items>

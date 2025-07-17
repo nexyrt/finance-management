@@ -1,7 +1,6 @@
 <?php
 
 use App\Livewire\BankAccounts;
-use App\Livewire\ClientManagement;
 use App\Livewire\Clients\Index as ClientIndex;
 use App\Livewire\Dashboard;
 use App\Livewire\ServiceManagement;
