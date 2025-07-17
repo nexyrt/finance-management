@@ -14,6 +14,7 @@ class Index extends Component
     public ?int $quantity = 10;
 
     public ?string $search = null;
+    public array $selected = [];
 
     public array $sort = [ 
         'column' => 'name',
