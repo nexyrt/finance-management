@@ -6,6 +6,17 @@ use Livewire\Component;
 
 class TestingPage extends Component
 {
+    public array $metadata = [ 
+        [
+            'key' => 'php',
+            'value' => 'Laravel',
+        ],
+        [
+            'key' => 'vuejs',
+            'value' => 'NuxtJS',
+        ]
+    ];
+    
     public function render()
     {
         return view('livewire.testing-page', [

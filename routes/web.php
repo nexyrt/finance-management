@@ -2,6 +2,7 @@
 
 use App\Livewire\BankAccounts;
 use App\Livewire\ClientManagement;
+use App\Livewire\Clients\Index as ClientIndex;
 use App\Livewire\Dashboard;
 use App\Livewire\ServiceManagement;
 use App\Livewire\InvoiceManagement;
@@ -17,7 +18,7 @@ Route::redirect('/', '/login')->name('home');
 Route::middleware(['auth', 'verified'])->group(function () {
     // Master Data
     Route::get('dashboard', Dashboard::class)->name('dashboard');
-    Route::get('/clients', ClientManagement::class)->name('clients');
+    Route::get('/clients', ClientIndex::class)->name('clients');
     Route::get('/services', ServiceManagement::class)->name('services');
     Route::get('/bank-accounts', BankAccounts::class)->name('bank-accounts');
 
