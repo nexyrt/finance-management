@@ -92,7 +92,12 @@
     @endif
 
     {{-- Table --}}
-    <x-table :$headers :$rows :$sort filter :quantity="[5, 10, 25, 50]" loading paginate selectable wire:model.live="selected">
+    <x-table :$headers :$rows :$sort filter :quantity="[5, 10, 25, 50]"  paginate
+        selectable wire:model.live="selected">
+
+        <x-slot:filters>
+            Raw filters Slot
+        </x-slot:filters>
 
         {{-- Client Name with Avatar --}}
         @interact('column_name', $row)
@@ -129,7 +134,7 @@
         @endinteract
 
         {{-- Contact Info --}}
-        @interact('column_contact', $row)
+        @interact('column_person_in_charge', $row)
             <div class="text-sm">
                 @if ($row->email)
                     <a href="mailto:{{ $row->email }}"
@@ -222,9 +227,8 @@
                     title="{{ $row->status === 'Active' ? 'Deactivate' : 'Activate' }} Client" />
 
                 {{-- Delete Button --}}
-                <x-button.circle color="red" icon="trash" size="sm"
-                    wire:click="deleteClient({{ $row->id }})"
-                    wire:confirm="Are you sure you want to delete this client?" title="Delete Client" />
+                <x-button.circle wire:click="deleteClient({{ $row->id }})" color="red" icon="trash"
+                    size="sm" title="Delete Client" />
             </div>
         @endinteract
 

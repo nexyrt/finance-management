@@ -4,10 +4,12 @@
 <title>{{ $title ?? env('APP_NAME') }}</title>
 
 <!-- Include Jodit CSS Styling -->
-<link rel="stylesheet" href="//unpkg.com/jodit@4.1.16/es2021/jodit.min.css">
 <link rel="preconnect" href="https://fonts.bunny.net">
 <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
 <link rel="icon" href="favicon.ico" type="image/x-icon">
+
+<link rel="stylesheet" href="//unpkg.com/jodit@4.1.16/es2021/jodit.min.css">
+<link href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css" rel="stylesheet" />
 
 <style>
     .client-type-radio {

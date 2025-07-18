@@ -54,7 +54,7 @@ class InvoiceManagement extends Component
     public $search = '';
     public $filterStatus = '';
     public $filterClient = '';
-    public $filterDateRange = '';
+    public $filterDateRange = [];
     public $sortBy = 'created_at';
     public $sortDirection = 'desc';
 
@@ -115,6 +115,7 @@ class InvoiceManagement extends Component
         $this->issue_date = Carbon::now()->format('Y-m-d');
         $this->due_date = Carbon::now()->addDays(30)->format('Y-m-d');
         $this->payment_date = Carbon::now()->format('Y-m-d');
+        $this->filterDateRange = [null, null]; // Initialize as array
         $this->generateInvoiceNumber();
         $this->addInvoiceItem();
     }
@@ -607,13 +608,22 @@ class InvoiceManagement extends Component
 
     private function applyDateRangeFilter($query)
     {
-        $dates = explode(' to ', $this->filterDateRange);
-        
-        if (count($dates) === 2) {
-            $query->whereDate('issue_date', '>=', Carbon::parse(trim($dates[0])))
-                  ->whereDate('issue_date', '<=', Carbon::parse(trim($dates[1])));
-        } elseif (count($dates) === 1 && !empty(trim($dates[0]))) {
-            $query->whereDate('issue_date', '=', Carbon::parse(trim($dates[0])));
+        // Check if both start and end dates are provided
+        if (is_array($this->filterDateRange) && count($this->filterDateRange) === 2) {
+            $startDate = $this->filterDateRange[0];
+            $endDate = $this->filterDateRange[1];
+            
+            // Apply filter only if both dates are not null
+            if (!empty($startDate) && !empty($endDate)) {
+                $query->whereDate('issue_date', '>=', Carbon::parse($startDate))
+                      ->whereDate('issue_date', '<=', Carbon::parse($endDate));
+            } elseif (!empty($startDate)) {
+                // If only start date is provided
+                $query->whereDate('issue_date', '>=', Carbon::parse($startDate));
+            } elseif (!empty($endDate)) {
+                // If only end date is provided
+                $query->whereDate('issue_date', '<=', Carbon::parse($endDate));
+            }
         }
     }
 

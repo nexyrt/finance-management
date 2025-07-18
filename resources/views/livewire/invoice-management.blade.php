@@ -183,8 +183,8 @@
                             @endforeach
                         </flux:select>
 
-                        <x-inputs.datepicker wire:model.live="filterDateRange" name="filterDateRange"
-                            placeholder="Filter tanggal" mode="range" class="text-sm" />
+                        <x-date wire:model.live="filterDateRange" placeholder="Filter tanggal" range
+                            class="text-sm" />
 
                         <!-- Select All -->
                         <div class="flex items-center">
@@ -901,18 +901,6 @@
                                             </button>
                                         @endforeach
                                     </div>
-                                </div>
-
-                                {{-- Custom Options Example (mixed data types) --}}
-                                <div>
-                                    <x-inputs.searchable-dropdown name="customOption" label="Custom Options Example"
-                                        placeholder="Type to search..." :options="[
-                                            ['value' => 'option1', 'label' => 'Option One'],
-                                            ['value' => 'option2', 'label' => 'Option Two'],
-                                            'Simple String Option',
-                                            (object) ['id' => 'obj1', 'name' => 'Object Option'],
-                                        ]" value-field="value"
-                                        text-field="label" class="w-full" />
                                 </div>
 
                                 <flux:input wire:model.live="invoiceItems.{{ $index }}.amount" label="Jumlah"
