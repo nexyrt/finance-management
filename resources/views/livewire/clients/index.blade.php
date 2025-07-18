@@ -60,36 +60,6 @@
         </div>
     </div>
 
-    {{-- Filters Section --}}
-    <div class="bg-white dark:bg-zinc-800 rounded-lg p-4 border border-gray-200 dark:border-zinc-700">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-                <x-select.styled label="Filter by Type" wire:model.live="typeFilter" placeholder="All Types">
-                    <x-select.option value="" text="All Types" />
-                    <x-select.option value="individual" text="Individual" />
-                    <x-select.option value="company" text="Company" />
-                </x-select.styled>
-            </div>
-
-            <div>
-                <x-select.styled label="Filter by Status" wire:model.live="statusFilter" placeholder="All Status">
-                    <x-select.option value="" text="All Status" />
-                    <x-select.option value="Active" text="Active" />
-                    <x-select.option value="Inactive" text="Inactive" />
-                </x-select.styled>
-            </div>
-
-            <div class="flex items-end">
-                @if ($typeFilter || $statusFilter)
-                    <x-button wire:click="$set('typeFilter', null); $set('statusFilter', null)" color="secondary"
-                        icon="x-mark" class="w-full">
-                        Clear Filters
-                    </x-button>
-                @endif
-            </div>
-        </div>
-    </div>
-
     {{-- Bulk Actions --}}
     @if (count($selected) > 0)
         <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
