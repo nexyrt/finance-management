@@ -224,29 +224,34 @@
                                     $typeVariants = [
                                         'Perizinan' => [
                                             'variant' => 'default',
-                                            'class' => 'bg-gradient-to-r from-blue-100 to-cyan-100 text-blue-800 border border-blue-200 dark:from-blue-900/30 dark:to-cyan-900/30 dark:text-blue-300 dark:border-blue-700',
-                                            'icon' => '📋'
+                                            'class' =>
+                                                'bg-gradient-to-r from-blue-100 to-cyan-100 text-blue-800 border border-blue-200 dark:from-blue-900/30 dark:to-cyan-900/30 dark:text-blue-300 dark:border-blue-700',
+                                            'icon' => '📋',
                                         ],
                                         'Administrasi Perpajakan' => [
                                             'variant' => 'default',
-                                            'class' => 'bg-gradient-to-r from-purple-100 to-pink-100 text-purple-800 border border-purple-200 dark:from-purple-900/30 dark:to-pink-900/30 dark:text-purple-300 dark:border-purple-700',
-                                            'icon' => '📊'
+                                            'class' =>
+                                                'bg-gradient-to-r from-purple-100 to-pink-100 text-purple-800 border border-purple-200 dark:from-purple-900/30 dark:to-pink-900/30 dark:text-purple-300 dark:border-purple-700',
+                                            'icon' => '📊',
                                         ],
                                         'Digital Marketing' => [
                                             'variant' => 'default',
-                                            'class' => 'bg-gradient-to-r from-orange-100 to-red-100 text-orange-800 border border-orange-200 dark:from-orange-900/30 dark:to-red-900/30 dark:text-orange-300 dark:border-orange-700',
-                                            'icon' => '📱'
+                                            'class' =>
+                                                'bg-gradient-to-r from-orange-100 to-red-100 text-orange-800 border border-orange-200 dark:from-orange-900/30 dark:to-red-900/30 dark:text-orange-300 dark:border-orange-700',
+                                            'icon' => '📱',
                                         ],
                                         'Sistem Digital' => [
                                             'variant' => 'default',
-                                            'class' => 'bg-gradient-to-r from-teal-100 to-emerald-100 text-teal-800 border border-teal-200 dark:from-teal-900/30 dark:to-emerald-900/30 dark:text-teal-300 dark:border-teal-700',
-                                            'icon' => '💻'
+                                            'class' =>
+                                                'bg-gradient-to-r from-teal-100 to-emerald-100 text-teal-800 border border-teal-200 dark:from-teal-900/30 dark:to-emerald-900/30 dark:text-teal-300 dark:border-teal-700',
+                                            'icon' => '💻',
                                         ],
                                     ];
                                     $badgeConfig = $typeVariants[$service->type] ?? [
                                         'variant' => 'secondary',
-                                        'class' => 'bg-gradient-to-r from-gray-100 to-slate-100 text-gray-800 border border-gray-200 dark:from-gray-900/30 dark:to-slate-900/30 dark:text-gray-300 dark:border-gray-700',
-                                        'icon' => '🔧'
+                                        'class' =>
+                                            'bg-gradient-to-r from-gray-100 to-slate-100 text-gray-800 border border-gray-200 dark:from-gray-900/30 dark:to-slate-900/30 dark:text-gray-300 dark:border-gray-700',
+                                        'icon' => '🔧',
                                     ];
                                 @endphp
                                 <flux:badge variant="{{ $badgeConfig['variant'] }}"
@@ -325,11 +330,13 @@
             <div class="px-6 py-4 bg-slate-50 dark:bg-zinc-700 border-t border-slate-200 dark:border-zinc-600">
                 <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
                     <div class="flex items-center text-sm text-slate-600 dark:text-zinc-400">
-                        <flux:badge variant="outline" class="text-slate-600 dark:text-zinc-400 border-slate-300 dark:border-zinc-600">
-                            Showing {{ $services->firstItem() }} to {{ $services->lastItem() }} of {{ $services->total() }} results
+                        <flux:badge variant="outline"
+                            class="text-slate-600 dark:text-zinc-400 border-slate-300 dark:border-zinc-600">
+                            Showing {{ $services->firstItem() }} to {{ $services->lastItem() }} of
+                            {{ $services->total() }} results
                         </flux:badge>
                     </div>
-                    
+
                     <div class="flex items-center space-x-2">
                         {{-- Previous Page Link --}}
                         @if ($services->onFirstPage())
@@ -337,7 +344,8 @@
                                 Previous
                             </flux:button>
                         @else
-                            <flux:button wire:click="previousPage" variant="subtle" size="sm" icon="chevron-left">
+                            <flux:button wire:click="previousPage" variant="subtle" size="sm"
+                                icon="chevron-left">
                                 Previous
                             </flux:button>
                         @endif
@@ -349,8 +357,12 @@
                                     <flux:badge variant="default" class="bg-blue-600 text-white px-3 py-1">
                                         {{ $page }}
                                     </flux:badge>
-                                @elseif ($page == 1 || $page == $services->lastPage() || ($page >= $services->currentPage() - 2 && $page <= $services->currentPage() + 2))
-                                    <flux:button wire:click="gotoPage({{ $page }})" variant="ghost" size="sm" class="min-w-[32px] h-8">
+                                @elseif (
+                                    $page == 1 ||
+                                        $page == $services->lastPage() ||
+                                        ($page >= $services->currentPage() - 2 && $page <= $services->currentPage() + 2))
+                                    <flux:button wire:click="gotoPage({{ $page }})" variant="ghost"
+                                        size="sm" class="min-w-[32px] h-8">
                                         {{ $page }}
                                     </flux:button>
                                 @elseif ($page == $services->currentPage() - 3 || $page == $services->currentPage() + 3)
@@ -361,7 +373,8 @@
 
                         {{-- Next Page Link --}}
                         @if ($services->hasMorePages())
-                            <flux:button wire:click="nextPage" variant="subtle" size="sm" icon:trailing="chevron-right">
+                            <flux:button wire:click="nextPage" variant="subtle" size="sm"
+                                icon:trailing="chevron-right">
                                 Next
                             </flux:button>
                         @else
@@ -393,8 +406,7 @@
                     error="{{ $errors->first('price') }}" />
 
                 <div>
-                    <x-inputs.select name="type" wire:model="type" :options="$serviceTypes" :selected="$type"
-                        label="Service Type" placeholder="Select service type" size="xl" />
+                    <x-select.styled label="Service Type" wire:model="type" :options="$serviceTypes" searchable />
                     @error('type')
                         <span class="text-red-500 text-sm">{{ $message }}</span>
                     @enderror
