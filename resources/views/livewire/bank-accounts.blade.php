@@ -764,8 +764,8 @@
                     </flux:select>
 
                     <!-- Date Range Picker -->
-                    <x-inputs.datepicker wire:model.live="transactionDateRange" name="transactionDateRange"
-                        placeholder="Pilih rentang tanggal" mode="range" class="text-sm" />
+                    <x-date wire:model.live="transactionDateRange" placeholder="Pilih rentang tanggal" range
+                        class="text-sm" />
 
                     <!-- Clear Filter Button -->
                     <flux:button wire:click="resetTransactionFilters" variant="outline" size="sm"
@@ -812,11 +812,11 @@
                             </span>
                         @endif
 
-                        @if ($transactionDateRange)
+                        @if ($transactionDateRange && count($transactionDateRange) === 2)
                             <span
                                 class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300">
-                                Tanggal: {{ $transactionDateRange }}
-                                <button wire:click="$set('transactionDateRange', '')"
+                                Tanggal: {{ $transactionDateRange[0] }} - {{ $transactionDateRange[1] }}
+                                <button wire:click="$set('transactionDateRange', [])"
                                     class="ml-1 hover:text-purple-600 dark:hover:text-purple-200">
                                     <svg class="h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd"
@@ -1078,11 +1078,11 @@
                 <div class="flex-shrink-0">
                     ${type === 'success' 
                         ? `<svg class="h-5 w-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                                   </svg>`
+                                         <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                       </svg>`
                         : `<svg class="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
-                                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
-                                   </svg>`
+                                         <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                                       </svg>`
                     }
                 </div>
                 <div class="ml-3">

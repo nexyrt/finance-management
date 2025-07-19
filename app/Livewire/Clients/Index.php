@@ -10,111 +10,19 @@ use TallStackUi\Traits\Interactions;
 
 class Index extends Component
 {
-    use WithPagination;
-    use Interactions;
+    use WithPagination, Interactions;
 
-    // Table properties
-    public array $selected = [];
-    public array $sort = [
-        'column' => 'name',
-        'direction' => 'asc',
+    protected $listeners = [
+        'client-deleted' => 'refresh',
+        'client-updated' => 'refresh',
     ];
 
-    // Filter properties
+    public array $selected = [];
+    public array $sort = ['column' => 'name', 'direction' => 'asc'];
     public ?int $quantity = 10;
     public ?string $search = null;
     public ?string $typeFilter = null;
     public ?string $statusFilter = null;
-
-    // Actions
-    public function toggleClientStatus($clientId)
-    {
-        $client = Client::findOrFail($clientId);
-        $client->update([
-            'status' => $client->status === 'Active' ? 'Inactive' : 'Active'
-        ]);
-
-        $this->dialog()->success('Success', 'Client status updated successfully.')->send();
-    }
-
-    public function deleteClient($clientId)
-    {
-        $this->dialog()
-            ->question('Delete Client', 'Are you sure you want to delete this client? This action cannot be undone.')
-            ->confirm('Delete', 'performDelete', ['clientId' => $clientId])
-            ->cancel('Cancel')
-            ->send();
-    }
-
-    public function performDelete($params)
-    {
-        $clientId = $params['clientId'];
-        $client = Client::findOrFail($clientId);
-
-        // Check if client has invoices
-        if ($client->invoices()->exists()) {
-            $this->dialog()
-                ->error('Cannot Delete!', 'Client has existing invoices and cannot be deleted.')
-                ->send();
-            return;
-        }
-
-        $client->delete();
-
-        $this->dialog()
-            ->success('Success', 'Client deleted successfully.')
-            ->send();
-    }
-
-    public function bulkActivate()
-    {
-        Client::whereIn('id', $this->selected)->update(['status' => 'Active']);
-        $this->selected = [];
-
-        $this->dispatch('notify', [
-            'title' => 'Success!',
-            'description' => 'Selected clients have been activated.',
-            'icon' => 'check'
-        ]);
-    }
-
-    public function bulkDeactivate()
-    {
-        Client::whereIn('id', $this->selected)->update(['status' => 'Inactive']);
-        $this->selected = [];
-
-        $this->dispatch('notify', [
-            'title' => 'Success!',
-            'description' => 'Selected clients have been deactivated.',
-            'icon' => 'check'
-        ]);
-    }
-
-    public function bulkDelete()
-    {
-        // Check for clients with invoices
-        $clientsWithInvoices = Client::whereIn('id', $this->selected)
-            ->whereHas('invoices')
-            ->count();
-
-        if ($clientsWithInvoices > 0) {
-            $this->dispatch('notify', [
-                'title' => 'Cannot Delete!',
-                'description' => 'Some clients have existing invoices and cannot be deleted.',
-                'icon' => 'exclamation-triangle'
-            ]);
-            return;
-        }
-
-        Client::whereIn('id', $this->selected)->delete();
-        $this->selected = [];
-
-        $this->dispatch('notify', [
-            'title' => 'Success!',
-            'description' => 'Selected clients have been deleted.',
-            'icon' => 'check'
-        ]);
-    }
 
     public function with(): array
     {
@@ -137,18 +45,10 @@ class Index extends Component
                         ->orWhere('NPWP', 'like', "%{$this->search}%")
                         ->orWhere('account_representative', 'like', "%{$this->search}%");
                 })
-                ->when($this->typeFilter, function (Builder $query) {
-                    return $query->where('type', $this->typeFilter);
-                })
-                ->when($this->statusFilter, function (Builder $query) {
-                    return $query->where('status', $this->statusFilter);
-                })
+                ->when($this->typeFilter, fn($query) => $query->where('type', $this->typeFilter))
+                ->when($this->statusFilter, fn($query) => $query->where('status', $this->statusFilter))
                 ->withCount('invoices')
-                ->with([
-                    'invoices' => function ($query) {
-                        $query->select('id', 'billed_to_id', 'total_amount', 'status');
-                    }
-                ])
+                ->with(['invoices' => fn($query) => $query->select('id', 'billed_to_id', 'total_amount', 'status')])
                 ->orderBy(...array_values($this->sort))
                 ->paginate($this->quantity)
                 ->withQueryString()
@@ -157,11 +57,6 @@ class Index extends Component
 
     public function render()
     {
-        $clients = $this->with();
-
-        return view('livewire.clients.index', [
-            'headers' => $clients['headers'],
-            'rows' => $clients['rows'],
-        ]);
+        return view('livewire.clients.index', $this->with());
     }
 }

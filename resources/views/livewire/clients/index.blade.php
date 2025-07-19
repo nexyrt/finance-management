@@ -17,83 +17,8 @@
         </div>
     </div>
 
-    {{-- Quick Stats --}}
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div class="bg-white dark:bg-zinc-800 rounded-lg p-4 border border-gray-200 dark:border-zinc-700">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Clients</p>
-                    <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ $rows->total() }}</p>
-                </div>
-                <x-icon name="users" class="w-8 h-8 text-blue-500" />
-            </div>
-        </div>
-
-        <div class="bg-white dark:bg-zinc-800 rounded-lg p-4 border border-gray-200 dark:border-zinc-700">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Active</p>
-                    <p class="text-2xl font-bold text-green-600">{{ $rows->where('status', 'Active')->count() }}</p>
-                </div>
-                <x-icon name="check-circle" class="w-8 h-8 text-green-500" />
-            </div>
-        </div>
-
-        <div class="bg-white dark:bg-zinc-800 rounded-lg p-4 border border-gray-200 dark:border-zinc-700">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Companies</p>
-                    <p class="text-2xl font-bold text-purple-600">{{ $rows->where('type', 'company')->count() }}</p>
-                </div>
-                <x-icon name="building-office" class="w-8 h-8 text-purple-500" />
-            </div>
-        </div>
-
-        <div class="bg-white dark:bg-zinc-800 rounded-lg p-4 border border-gray-200 dark:border-zinc-700">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Individuals</p>
-                    <p class="text-2xl font-bold text-indigo-600">{{ $rows->where('type', 'individual')->count() }}</p>
-                </div>
-                <x-icon name="user" class="w-8 h-8 text-indigo-500" />
-            </div>
-        </div>
-    </div>
-
-    {{-- Bulk Actions --}}
-    @if (count($selected) > 0)
-        <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center gap-2">
-                    <x-icon name="check-circle" class="w-5 h-5 text-blue-600" />
-                    <span class="text-sm font-medium text-blue-900 dark:text-blue-100">
-                        {{ count($selected) }} client(s) selected
-                    </span>
-                </div>
-
-                <div class="flex items-center gap-2">
-                    <x-button wire:click="bulkActivate" color="green" size="sm"
-                        wire:confirm="Are you sure you want to activate the selected clients?">
-                        Activate
-                    </x-button>
-
-                    <x-button wire:click="bulkDeactivate" color="yellow" size="sm"
-                        wire:confirm="Are you sure you want to deactivate the selected clients?">
-                        Deactivate
-                    </x-button>
-
-                    <x-button wire:click="bulkDelete" color="red" size="sm"
-                        wire:confirm="Are you sure you want to delete the selected clients? This action cannot be undone.">
-                        Delete
-                    </x-button>
-                </div>
-            </div>
-        </div>
-    @endif
-
     {{-- Table --}}
-    <x-table :$headers :$rows :$sort filter :quantity="[5, 10, 25, 50]"  paginate
-        selectable wire:model.live="selected">
+    <x-table :$headers :$rows :$sort filter :quantity="[5, 10, 25, 50]" loading paginate selectable wire:model.live="selected">
 
         <x-slot:filters>
             Raw filters Slot
@@ -213,23 +138,11 @@
 
         {{-- Actions --}}
         @interact('column_actions', $row)
-            <div class="flex items-center space-x-1">
-                {{-- View Button --}}
-                <x-button.circle color="blue" icon="eye" size="sm" title="View Client" />
-
-                {{-- Edit Button --}}
-                <x-button.circle color="yellow" icon="pencil" size="sm" title="Edit Client" />
-
-                {{-- Status Toggle --}}
-                <x-button.circle color="{{ $row->status === 'Active' ? 'red' : 'green' }}"
-                    icon="{{ $row->status === 'Active' ? 'pause' : 'play' }}" size="sm"
-                    wire:click="toggleClientStatus({{ $row->id }})"
-                    title="{{ $row->status === 'Active' ? 'Deactivate' : 'Activate' }} Client" />
-
-                {{-- Delete Button --}}
-                <x-button.circle wire:click="deleteClient({{ $row->id }})" color="red" icon="trash"
-                    size="sm" title="Delete Client" />
-            </div>
+            <x-dropdown icon="ellipsis-vertical" static>
+                <x-dropdown.items text="View" icon="eye" />
+                <livewire:clients.edit :client="$row" :key="uniqid()" />
+                <livewire:clients.delete :client="$row" :key="uniqid()" />
+            </x-dropdown>
         @endinteract
 
     </x-table>

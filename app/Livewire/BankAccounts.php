@@ -55,7 +55,7 @@ class BankAccounts extends Component
     // Transaction Filters for All Transactions Modal
     public $transactionFilterBank = '';
     public $transactionFilterType = '';
-    public $transactionDateRange = '';
+    public $transactionDateRange = [];
 
     // Edit State
     public $editingAccount = null;
@@ -270,13 +270,18 @@ class BankAccounts extends Component
 
     private function applyDateRangeFilter($query)
     {
-        $dates = explode(' to ', $this->transactionDateRange);
+        if (is_array($this->transactionDateRange) && count($this->transactionDateRange) === 2) {
+            $startDate = $this->transactionDateRange[0];
+            $endDate = $this->transactionDateRange[1];
 
-        if (count($dates) === 2) {
-            $query->whereDate('transaction_date', '>=', Carbon::parse(trim($dates[0])))
-                ->whereDate('transaction_date', '<=', Carbon::parse(trim($dates[1])));
-        } elseif (count($dates) === 1 && !empty(trim($dates[0]))) {
-            $query->whereDate('transaction_date', '=', Carbon::parse(trim($dates[0])));
+            if (!empty($startDate) && !empty($endDate)) {
+                $query->whereDate('transaction_date', '>=', Carbon::parse($startDate))
+                    ->whereDate('transaction_date', '<=', Carbon::parse($endDate));
+            } elseif (!empty($startDate)) {
+                $query->whereDate('transaction_date', '>=', Carbon::parse($startDate));
+            } elseif (!empty($endDate)) {
+                $query->whereDate('transaction_date', '<=', Carbon::parse($endDate));
+            }
         }
     }
 
@@ -524,7 +529,7 @@ class BankAccounts extends Component
     {
         $this->transactionFilterBank = '';
         $this->transactionFilterType = '';
-        $this->transactionDateRange = '';
+        $this->transactionDateRange = [];
         $this->resetPage('transactionsPage');
     }
 
