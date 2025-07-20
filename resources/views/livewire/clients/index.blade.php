@@ -18,7 +18,7 @@
     </div>
 
     {{-- Table --}}
-    <x-table :$headers :$rows :$sort filter :quantity="[5, 10, 25, 50]" loading paginate selectable wire:model.live="selected">
+    <x-table :$headers :$rows :$sort filter :quantity="[5, 10, 25, 50]" paginate selectable wire:model.live="selected">
 
         <x-slot:filters>
             Raw filters Slot
