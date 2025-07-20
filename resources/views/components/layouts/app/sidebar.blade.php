@@ -6,6 +6,8 @@
 </head>
 
 <body class="min-h-screen bg-white dark:bg-zinc-800">
+    <x-toast /> 
+    <x-dialog />
 
     {{-- Include the notification component --}}
     <flux:sidebar sticky stashable class="border-r border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900">
