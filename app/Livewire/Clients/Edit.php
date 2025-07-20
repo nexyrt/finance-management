@@ -12,7 +12,7 @@ class Edit extends Component
 
     public Client $client;
     public bool $showEditModal = false;
-    
+
     // Form properties
     public string $name = '';
     public string $type = '';
@@ -51,11 +51,11 @@ class Edit extends Component
         $this->client->update([
             'name' => $this->name,
             'type' => $this->type,
-            'email' => $this->email,
-            'NPWP' => $this->NPWP,
+            'email' => $this->email ?: null, // Convert empty string to null
+            'NPWP' => $this->NPWP ?: null,
             'status' => $this->status,
-            'account_representative' => $this->account_representative,
-            'address' => $this->address,
+            'account_representative' => $this->account_representative ?: null,
+            'address' => $this->address ?: null,
         ]);
 
         $this->showEditModal = false;
