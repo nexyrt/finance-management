@@ -139,7 +139,7 @@
         {{-- Actions --}}
         @interact('column_actions', $row)
             <x-dropdown icon="ellipsis-vertical" static>
-                <x-dropdown.items text="View" icon="eye" />
+                <livewire:clients.show :client="$row" :key="uniqid()" />
                 <livewire:clients.edit :client="$row" :key="uniqid()" />
                 <livewire:clients.delete :client="$row" :key="uniqid()" />
             </x-dropdown>

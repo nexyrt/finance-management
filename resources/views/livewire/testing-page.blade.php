@@ -1,3 +1,5 @@
-<div class="max-w-7xl mx-auto p-4">
-    
+<div>
+    <x-modal title="TallStackUi" wire='showTestingModal'>
+        TallStackUi
+    </x-modal>
 </div>

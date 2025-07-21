@@ -1,7 +1,7 @@
 <div>
     <x-dropdown.items text="Edit" icon="pencil" wire:click="openEditModal" />
 
-    <x-modal wire="showEditModal" title="Edit Client" size="2xl" persistent>
+    <x-modal wire="showEditModal" title="Edit Client" size="2xl">
         <form wire:submit="updateClient" class="space-y-6">
             <!-- Basic Information -->
             <div class="space-y-4">

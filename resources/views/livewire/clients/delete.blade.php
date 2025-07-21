@@ -1,7 +1,7 @@
 {{-- resources/views/livewire/client/delete.blade.php --}}
 
 <div>
-    <x-dropdown.items text="Delete" icon="trash" wire:click="$set('showDeleteModal', true)" />
+    <x-dropdown.items text="Delete" icon="trash" wire:click="$set('showDeleteModal', true)" center/>
 
     <x-modal wire="showDeleteModal" title="Delete Client">
         <p>Are you sure you want to delete <strong>{{ $client->name }}</strong>?</p>

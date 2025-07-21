@@ -10,7 +10,7 @@ class Edit extends Component
 {
     use Interactions;
 
-    public Client $client;
+    public ?Client $client = null;
     public bool $showEditModal = false;
 
     // Form properties
@@ -22,6 +22,10 @@ class Edit extends Component
     public string $account_representative = '';
     public string $address = '';
 
+    protected $listeners = [
+        'open-client-edit' => 'openEditFromGlobal'
+    ];
+
     protected array $rules = [
         'name' => 'required|string|max:255',
         'type' => 'required|in:individual,company',
@@ -32,8 +36,33 @@ class Edit extends Component
         'address' => 'nullable|string',
     ];
 
+    public function mount(?Client $client = null)
+    {
+        if ($client) {
+            $this->client = $client;
+            $this->loadClientData();
+        }
+    }
+
+    // Method untuk membuka edit dari dalam dropdown (existing)
     public function openEditModal()
     {
+        $this->loadClientData();
+        $this->showEditModal = true;
+    }
+
+    // Method untuk membuka edit dari global event (NEW)
+    public function openEditFromGlobal($clientId)
+    {
+        $this->client = Client::find($clientId);
+        $this->loadClientData();
+        $this->showEditModal = true;
+    }
+
+    private function loadClientData()
+    {
+        if (!$this->client) return;
+
         $this->name = $this->client->name;
         $this->type = $this->client->type;
         $this->email = $this->client->email ?? '';
@@ -41,7 +70,6 @@ class Edit extends Component
         $this->status = $this->client->status;
         $this->account_representative = $this->client->account_representative ?? '';
         $this->address = $this->client->address ?? '';
-        $this->showEditModal = true;
     }
 
     public function updateClient()
@@ -51,7 +79,7 @@ class Edit extends Component
         $this->client->update([
             'name' => $this->name,
             'type' => $this->type,
-            'email' => $this->email ?: null, // Convert empty string to null
+            'email' => $this->email ?: null,
             'NPWP' => $this->NPWP ?: null,
             'status' => $this->status,
             'account_representative' => $this->account_representative ?: null,
@@ -61,5 +89,17 @@ class Edit extends Component
         $this->showEditModal = false;
         $this->dispatch('client-updated');
         $this->toast()->success("{$this->client->name} updated successfully.")->send();
+    }
+
+    public function closeModal()
+    {
+        $this->showEditModal = false;
+        $this->resetForm();
+    }
+
+    private function resetForm()
+    {
+        $this->reset(['name', 'type', 'email', 'NPWP', 'status', 'account_representative', 'address']);
+        $this->resetValidation();
     }
 }
