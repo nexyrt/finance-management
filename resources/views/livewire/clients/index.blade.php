@@ -1,17 +1,15 @@
 {{-- resources/views/livewire/clients/index.blade.php --}}
 
-<div class="space-y-6">
+<div class="w-full p-6 bg-white dark:bg-zinc-800 space-y-6">
     {{-- Page Header --}}
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Client Management</h1>
-            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                Manage your clients and track their business relationships
-            </p>
+        <div class="mb-4 lg:mb-0">
+            <h1 class="text-3xl font-bold text-gray-800 dark:text-white">Client Management</h1>
+            <p class="text-gray-500 dark:text-zinc-400">Manage your clients and track their business relationships</p>
         </div>
 
         <div class="flex items-center gap-3">
-            <x-button href="#" icon="plus" color="primary">
+            <x-button wire:click="$dispatch('create-client')" icon="plus" color="primary">
                 Add Client
             </x-button>
         </div>
@@ -138,12 +136,24 @@
 
         {{-- Actions --}}
         @interact('column_actions', $row)
-            <x-dropdown icon="ellipsis-vertical" static>
-                <livewire:clients.show :client="$row" :key="uniqid()" />
-                <livewire:clients.edit :client="$row" :key="uniqid()" />
-                <livewire:clients.delete :client="$row" :key="uniqid()" />
+            <x-dropdown icon="ellipsis-vertical">
+                <x-dropdown.items text="Show" icon="eye"
+                    wire:click="$dispatch('show-client', { clientId: {{ $row->id }} })" />
+                <x-dropdown.items text="Edit" icon="pencil"
+                    wire:click="$dispatch('edit-client', { clientId: {{ $row->id }} })" />
+                <x-dropdown.items text="Manage Relationships" icon="users"
+                    wire:click="$dispatch('manage-relationships', { clientId: {{ $row->id }} })" />
+                <x-dropdown.items text="Delete" icon="trash"
+                    wire:click="$dispatch('delete-client', { clientId: {{ $row->id }} })" />
             </x-dropdown>
         @endinteract
 
     </x-table>
+
+    {{-- Modal components (include once) --}}
+    <livewire:clients.edit />
+    <livewire:clients.delete />
+    <livewire:clients.show />
+    <livewire:clients.create />
+    <livewire:clients.relationship />
 </div>

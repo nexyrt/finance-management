@@ -3,6 +3,7 @@
 namespace App\Livewire\Clients;
 
 use App\Models\Client;
+use Livewire\Attributes\On;
 use Livewire\Component;
 use TallStackUi\Traits\Interactions;
 
@@ -11,7 +12,7 @@ class Edit extends Component
     use Interactions;
 
     public ?Client $client = null;
-    public bool $showEditModal = false;
+    public bool $showModal = false;
 
     // Form properties
     public string $name = '';
@@ -21,10 +22,6 @@ class Edit extends Component
     public string $status = '';
     public string $account_representative = '';
     public string $address = '';
-
-    protected $listeners = [
-        'open-client-edit' => 'openEditFromGlobal'
-    ];
 
     protected array $rules = [
         'name' => 'required|string|max:255',
@@ -36,43 +33,27 @@ class Edit extends Component
         'address' => 'nullable|string',
     ];
 
-    public function mount(?Client $client = null)
-    {
-        if ($client) {
-            $this->client = $client;
-            $this->loadClientData();
-        }
-    }
-
-    // Method untuk membuka edit dari dalam dropdown (existing)
-    public function openEditModal()
-    {
-        $this->loadClientData();
-        $this->showEditModal = true;
-    }
-
-    // Method untuk membuka edit dari global event (NEW)
-    public function openEditFromGlobal($clientId)
+    #[On('edit-client')]
+    public function edit($clientId)
     {
         $this->client = Client::find($clientId);
-        $this->loadClientData();
-        $this->showEditModal = true;
-    }
-
-    private function loadClientData()
-    {
+        
         if (!$this->client) return;
 
-        $this->name = $this->client->name;
-        $this->type = $this->client->type;
-        $this->email = $this->client->email ?? '';
-        $this->NPWP = $this->client->NPWP ?? '';
-        $this->status = $this->client->status;
-        $this->account_representative = $this->client->account_representative ?? '';
-        $this->address = $this->client->address ?? '';
+        $this->fill([
+            'name' => $this->client->name,
+            'type' => $this->client->type,
+            'email' => $this->client->email ?? '',
+            'NPWP' => $this->client->NPWP ?? '',
+            'status' => $this->client->status,
+            'account_representative' => $this->client->account_representative ?? '',
+            'address' => $this->client->address ?? '',
+        ]);
+
+        $this->showModal = true;
     }
 
-    public function updateClient()
+    public function save()
     {
         $this->validate();
 
@@ -86,20 +67,21 @@ class Edit extends Component
             'address' => $this->address ?: null,
         ]);
 
-        $this->showEditModal = false;
+        $this->showModal = false;
         $this->dispatch('client-updated');
         $this->toast()->success("{$this->client->name} updated successfully.")->send();
+        $this->reset();
     }
 
-    public function closeModal()
+    public function close()
     {
-        $this->showEditModal = false;
-        $this->resetForm();
-    }
-
-    private function resetForm()
-    {
-        $this->reset(['name', 'type', 'email', 'NPWP', 'status', 'account_representative', 'address']);
+        $this->showModal = false;
+        $this->reset();
         $this->resetValidation();
+    }
+
+    public function render()
+    {
+        return view('livewire.clients.edit');
     }
 }

@@ -3,63 +3,70 @@
 namespace App\Livewire\Clients;
 
 use App\Models\Client;
+use Livewire\Attributes\On;
 use Livewire\Component;
-use TallStackUi\Traits\Interactions;
 
 class Show extends Component
 {
-    use Interactions;
-
-    public Client $client;
+    public ?Client $client = null;
     public bool $showModal = false;
 
-    public function mount(Client $client)
+    #[On('show-client')]
+    public function show($clientId)
     {
-        $this->client = $client->load(['invoices', 'owners', 'ownedCompanies']);
+        $this->client = Client::with([
+            'invoices' => fn($q) => $q->latest()->limit(5),
+            'owners',
+            'ownedCompanies'
+        ])->find($clientId);
+
+        if ($this->client) {
+            $this->showModal = true;
+        }
     }
 
-    public function openModal()
-    {
-        $this->showModal = true;
-    }
-
-    public function closeModal()
+    public function close()
     {
         $this->showModal = false;
+        $this->client = null;
     }
 
     public function editClient()
     {
-        $this->showModal = false; // Close show modal first
-        $this->dispatch('open-client-edit', $this->client->id);
+        if ($this->client) {
+            $clientId = $this->client->id;
+            $this->close();
+            $this->dispatch('edit-client', clientId: $clientId);
+        }
     }
 
-    // Helper methods for calculations
+    public function manageRelationships()
+    {
+        if ($this->client) {
+            $clientId = $this->client->id;
+            $this->close();
+            $this->dispatch('manage-relationships', clientId: $clientId);
+        }
+    }
+
+    // Computed properties
     public function getTotalInvoices()
     {
-        return $this->client->invoices->count();
+        return $this->client?->invoices()->count() ?? 0;
     }
 
     public function getTotalAmount()
     {
-        return $this->client->invoices->sum('total_amount');
+        return $this->client?->invoices()->sum('total_amount') ?? 0;
     }
 
     public function getPaidAmount()
     {
-        return $this->client->invoices->where('status', 'paid')->sum('total_amount');
+        return $this->client?->invoices()->where('status', 'paid')->sum('total_amount') ?? 0;
     }
 
     public function getOutstandingAmount()
     {
         return $this->getTotalAmount() - $this->getPaidAmount();
-    }
-
-    public function getRecentInvoices()
-    {
-        return $this->client->invoices()
-            ->orderBy('created_at', 'desc')
-            ->limit(5)
-            ->get();
     }
 }
