@@ -72,16 +72,4 @@ class Edit extends Component
         $this->toast()->success("{$this->client->name} updated successfully.")->send();
         $this->reset();
     }
-
-    public function close()
-    {
-        $this->showModal = false;
-        $this->reset();
-        $this->resetValidation();
-    }
-
-    public function render()
-    {
-        return view('livewire.clients.edit');
-    }
 }

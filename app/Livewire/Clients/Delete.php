@@ -31,20 +31,9 @@ class Delete extends Component
         if ($this->client) {
             $name = $this->client->name;
             $this->client->delete();
-            $this->close();
+            $this->showDeleteModal = false;
             $this->dispatch('client-deleted');
             $this->toast()->success("{$name} deleted successfully.")->send();
         }
-    }
-
-    public function close()
-    {
-        $this->showDeleteModal = false;
-        $this->client = null;
-    }
-
-    public function render()
-    {
-        return view('livewire.clients.delete');
     }
 }

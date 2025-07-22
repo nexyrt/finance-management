@@ -1,6 +1,6 @@
 {{-- resources/views/livewire/clients/delete.blade.php --}}
 
-<x-modal wire="showDeleteModal" title="Delete Client" center>
+<x-modal wire="showDeleteModal" id="showDeleteModal" title="Delete Client" center>
     @if($client)
         <div class="text-center">
             <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 dark:bg-red-900/20 mb-4">
@@ -60,10 +60,10 @@
     @endif
 
     <x-slot:footer>
-        <x-button wire:click="close" color="secondary">
+        <x-button wire:click="$toggle('showDeleteModal')" color="secondary">
             Cancel
         </x-button>
-        <x-button wire:click="confirm" color="red" spinner="confirm">
+        <x-button x-on:click="$modalClose('showDeleteModal')" wire:click="confirm" color="red" spinner="confirm">
             Delete Client
         </x-button>
     </x-slot:footer>
