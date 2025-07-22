@@ -15,12 +15,74 @@
         </div>
     </div>
 
+    {{-- Filters Section --}}
+    <div class="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-4 space-y-4">
+        <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300">Filters</h3>
+        
+        <div class="flex flex-col sm:flex-row gap-4">
+            {{-- Type Filter --}}
+            <div class="min-w-0 flex-1">
+                <x-select.styled 
+                    label="Filter by Type" 
+                    wire:model.live="typeFilter"
+                    :options="[
+                        ['label' => 'All Types', 'value' => ''],
+                        ['label' => 'Individual', 'value' => 'individual'],
+                        ['label' => 'Company', 'value' => 'company'],
+                    ]"
+                    placeholder="Select type..."
+                />
+            </div>
+
+            {{-- Status Filter --}}
+            <div class="min-w-0 flex-1">
+                <x-select.styled 
+                    label="Filter by Status" 
+                    wire:model.live="statusFilter"
+                    :options="[
+                        ['label' => 'All Status', 'value' => ''],
+                        ['label' => 'Active', 'value' => 'Active'],
+                        ['label' => 'Inactive', 'value' => 'Inactive'],
+                    ]"
+                    placeholder="Select status..."
+                />
+            </div>
+
+            {{-- Clear Filters Button --}}
+            <div class="flex items-end">
+                <x-button 
+                    wire:click="clearFilters" 
+                    color="secondary" 
+                    icon="x-mark"
+                    class="whitespace-nowrap"
+                >
+                    Clear Filters
+                </x-button>
+            </div>
+        </div>
+
+        {{-- Active Filters Display --}}
+        @if($typeFilter || $statusFilter)
+            <div class="flex flex-wrap gap-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+                <span class="text-xs text-gray-500 dark:text-gray-400 mr-2">Active filters:</span>
+                @if($typeFilter)
+                    <x-badge 
+                        text="Type: {{ ucfirst($typeFilter) }}" 
+                        color="blue"
+                    />
+                @endif
+                @if($statusFilter)
+                    <x-badge 
+                        text="Status: {{ $statusFilter }}" 
+                        color="green"
+                    />
+                @endif
+            </div>
+        @endif
+    </div>
+
     {{-- Table --}}
     <x-table :$headers :$rows :$sort filter :quantity="[5, 10, 25, 50]" paginate selectable wire:model.live="selected">
-
-        <x-slot:filters>
-            Raw filters Slot
-        </x-slot:filters>
 
         {{-- Client Name with Avatar --}}
         @interact('column_name', $row)

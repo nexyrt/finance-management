@@ -59,4 +59,27 @@ class Index extends Component
     {
         return view('livewire.clients.index', $this->with());
     }
+
+    public function clearFilters()
+    {
+        $this->search = null;
+        $this->typeFilter = null;
+        $this->statusFilter = null;
+        $this->resetPage();
+    }
+
+    public function updatedSearch()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedTypeFilter()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedStatusFilter()
+    {
+        $this->resetPage();
+    }
 }
