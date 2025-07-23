@@ -1,6 +1,6 @@
 {{-- resources/views/livewire/clients/relationship.blade.php --}}
 
-<x-modal wire="showModal" title="Manage Client Relationships" size="2xl">
+<x-modal wire="clientRelationshipModal" id="client-relationship-modal" title="Manage Client Relationships" size="2xl" center>
     @if($client)
         <div class="space-y-6">
             <!-- Client Info Header -->
@@ -121,8 +121,8 @@
     @endif
 
     <x-slot:footer>
-        <x-button wire:click="close" color="secondary">Cancel</x-button>
-        <x-button wire:click="save" color="primary" spinner="save">
+        <x-button x-on:click="$modalClose('client-relationship-modal')" color="secondary">Cancel</x-button>
+        <x-button x-on:click="$modalClose('client-relationship-modal')" wire:click="save" color="primary" spinner="save">
             Save Relationships
         </x-button>
     </x-slot:footer>

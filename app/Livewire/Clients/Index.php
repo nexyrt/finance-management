@@ -28,13 +28,13 @@ class Index extends Component
     {
         return [
             'headers' => [
-                ['index' => 'name', 'label' => 'Client'],
-                ['index' => 'type', 'label' => 'Type'],
-                ['index' => 'person_in_charge', 'label' => 'Contact Info'],
+                ['index' => 'name', 'label' => 'Klien'],
+                ['index' => 'type', 'label' => 'Tipe'],
+                ['index' => 'person_in_charge', 'label' => 'Info Kontak'],
                 ['index' => 'status', 'label' => 'Status'],
-                ['index' => 'invoices_count', 'label' => 'Invoices'],
-                ['index' => 'financial_summary', 'label' => 'Financial'],
-                ['index' => 'actions', 'label' => 'Actions', 'sortable' => false],
+                ['index' => 'invoices_count', 'label' => 'Faktur'],
+                ['index' => 'financial_summary', 'label' => 'Keuangan'],
+                ['index' => 'actions', 'label' => 'Aksi', 'sortable' => false],
             ],
             'rows' => Client::query()
                 ->when($this->search, function (Builder $query) {

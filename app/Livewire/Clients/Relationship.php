@@ -13,7 +13,7 @@ class Relationship extends Component
     use Interactions;
 
     public ?Client $client = null;
-    public bool $showModal = false;
+    public bool $clientRelationshipModal = false;
     public string $relationshipType = 'owner'; // 'owner' or 'company'
 
     // Form properties
@@ -28,7 +28,7 @@ class Relationship extends Component
         if ($this->client) {
             $this->loadAvailableClients();
             $this->loadExistingRelationships();
-            $this->showModal = true;
+            $this->clientRelationshipModal = true;
         }
     }
 
@@ -80,14 +80,12 @@ class Relationship extends Component
             $message = 'Owner relationships updated';
         }
 
-        $this->close();
         $this->dispatch('relationships-updated');
         $this->toast()->success($message)->send();
     }
 
     public function close()
     {
-        $this->showModal = false;
         $this->client = null;
         $this->selectedClients = [];
         $this->availableClients = [];

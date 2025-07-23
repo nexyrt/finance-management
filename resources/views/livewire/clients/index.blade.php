@@ -7,16 +7,16 @@
             <div class="space-y-1">
                 <h1
                     class="text-4xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-indigo-800 dark:from-white dark:via-blue-200 dark:to-indigo-200 bg-clip-text text-transparent">
-                    Client Management
+                    Manajemen Klien
                 </h1>
                 <p class="text-gray-600 dark:text-zinc-400 text-lg">
-                    Manage your clients and track their business relationships
+                    Kelola klien Anda dan lacak hubungan bisnis mereka
                 </p>
             </div>
 
             <div class="flex items-center gap-3">
                 <x-button wire:click="$dispatch('create-client')" icon="plus" color="primary">
-                    Add Client
+                    Tambah Klien
                 </x-button>
             </div>
         </div>
@@ -28,7 +28,7 @@
             class="bg-white/80 dark:bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/50 dark:border-white/10 shadow-lg shadow-gray-500/5">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Clients</p>
+                    <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Klien</p>
                     <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ $rows->total() ?? 0 }}</p>
                 </div>
                 <div class="h-12 w-12 bg-blue-500/10 dark:bg-blue-400/10 rounded-xl flex items-center justify-center">
@@ -41,7 +41,7 @@
             class="bg-white/80 dark:bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/50 dark:border-white/10 shadow-lg shadow-gray-500/5">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Active Clients</p>
+                    <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Klien Aktif</p>
                     <p class="text-3xl font-bold text-green-600 dark:text-green-400">
                         {{ $rows->where('status', 'Active')->count() ?? 0 }}</p>
                 </div>
@@ -55,7 +55,7 @@
             class="bg-white/80 dark:bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/50 dark:border-white/10 shadow-lg shadow-gray-500/5">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Companies</p>
+                    <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Perusahaan</p>
                     <p class="text-3xl font-bold text-purple-600 dark:text-purple-400">
                         {{ $rows->where('type', 'company')->count() ?? 0 }}</p>
                 </div>
@@ -70,7 +70,7 @@
             class="bg-white/80 dark:bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/50 dark:border-white/10 shadow-lg shadow-gray-500/5">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Individuals</p>
+                    <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Individu</p>
                     <p class="text-3xl font-bold text-blue-600 dark:text-blue-400">
                         {{ $rows->where('type', 'individual')->count() ?? 0 }}</p>
                 </div>
@@ -84,25 +84,23 @@
     {{-- Filters Section --}}
     <div class="py-5 grid grid-cols-1 md:grid-cols-3 gap-6">
         {{-- Type Filter --}}
-        <x-select.styled label="Client Type" wire:model.live="typeFilter" :options="[
-            ['label' => 'All Types', 'value' => ''],
-            ['label' => '👤 Individual', 'value' => 'individual'],
-            ['label' => '🏢 Company', 'value' => 'company'],
-        ]" placeholder="Select type..."
+        <x-select.styled label="Tipe Klien" wire:model.live="typeFilter" :options="[
+            ['label' => 'Individu', 'value' => 'individual'],
+            ['label' => 'Perusahaan', 'value' => 'company'],
+        ]" placeholder="Pilih tipe..."
             searchable />
 
         {{-- Status Filter --}}
         <x-select.styled label="Status" wire:model.live="statusFilter" :options="[
-            ['label' => 'All Status', 'value' => ''],
-            ['label' => '✅ Active', 'value' => 'Active'],
-            ['label' => '❌ Inactive', 'value' => 'Inactive'],
+            ['label' => 'Aktif', 'value' => 'Active'],
+            ['label' => 'Tidak Aktif', 'value' => 'Inactive'],
         ]"
-            placeholder="Select status..." />
+            placeholder="Pilih status..." />
 
         {{-- Clear Filters --}}
         <div class="flex items-end">
             <x-button wire:click="clearFilters" color="secondary" icon="x-mark" class="w-full">
-                Clear All Filters
+                Hapus Semua Filter
             </x-button>
         </div>
     </div>
@@ -150,7 +148,7 @@
 
         {{-- Enhanced Type Column --}}
         @interact('column_type', $row)
-            <x-badge text="{{ $row->type === 'individual' ? '👤 Individual' : '🏢 Company' }}"
+            <x-badge text="{{ $row->type === 'individual' ? '👤 Individu' : '🏢 Perusahaan' }}"
                 color="{{ $row->type === 'individual' ? 'blue' : 'purple' }}" class="shadow-sm" />
         @endinteract
 
@@ -173,7 +171,7 @@
                 @endif
 
                 @if (!$row->email && !$row->ar_phone_number)
-                    <span class="text-gray-400 dark:text-gray-500 italic text-sm">No contact info</span>
+                    <span class="text-gray-400 dark:text-gray-500 italic text-sm">Tidak ada info kontak</span>
                 @endif
             </div>
         @endinteract
@@ -225,7 +223,7 @@
                     <div
                         class="inline-flex items-center gap-1 text-xs text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 px-2 py-1 rounded-full">
                         <x-icon name="check-circle" class="w-3 h-3" />
-                        <span>Fully Paid</span>
+                        <span>Lunas</span>
                     </div>
                 @endif
             </div>
@@ -234,13 +232,13 @@
         {{-- Enhanced Actions --}}
         @interact('column_actions', $row)
             <x-dropdown icon="ellipsis-vertical" class="shadow-lg">
-                <x-dropdown.items text="👁️ View Details"
+                <x-dropdown.items text="Lihat Detail" icon="eye"
                     wire:click="$dispatch('show-client', { clientId: {{ $row->id }} })" />
-                <x-dropdown.items text="✏️ Edit Client"
+                <x-dropdown.items text="Edit Klien" icon="pencil"
                     wire:click="$dispatch('edit-client', { clientId: {{ $row->id }} })" />
-                <x-dropdown.items text="👥 Relationships"
+                <x-dropdown.items text="Hubungan" icon="users"
                     wire:click="$dispatch('manage-relationships', { clientId: {{ $row->id }} })" />
-                <x-dropdown.items text="🗑️ Delete"
+                <x-dropdown.items text="Hapus" icon="trash"
                     wire:click="$dispatch('delete-client', { clientId: {{ $row->id }} })" />
             </x-dropdown>
         @endinteract

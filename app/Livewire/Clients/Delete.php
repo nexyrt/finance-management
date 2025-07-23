@@ -12,7 +12,7 @@ class Delete extends Component
     use Interactions;
 
     public ?Client $client = null;
-    public bool $showDeleteModal = false;
+    public bool $deleteClientModal = false;
 
     #[On('delete-client')]
     public function delete($clientId)
@@ -22,7 +22,7 @@ class Delete extends Component
         }])->find($clientId);
         
         if ($this->client) {
-            $this->showDeleteModal = true;
+            $this->deleteClientModal = true;
         }
     }
 
@@ -31,9 +31,9 @@ class Delete extends Component
         if ($this->client) {
             $name = $this->client->name;
             $this->client->delete();
-            $this->showDeleteModal = false;
+            $this->deleteClientModal = false;
             $this->dispatch('client-deleted');
-            $this->toast()->success("{$name} deleted successfully.")->send();
+            $this->dialog()->success('Klien Dihapus', "{$name} berhasil dihapus.")->send();
         }
     }
 }
