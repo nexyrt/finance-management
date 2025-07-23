@@ -34,16 +34,13 @@ class Index extends Component
                 ['index' => 'status', 'label' => 'Status'],
                 ['index' => 'invoices_count', 'label' => 'Invoices'],
                 ['index' => 'financial_summary', 'label' => 'Financial'],
-                ['index' => 'account_representative', 'label' => 'Account Rep'],
-                ['index' => 'created_at', 'label' => 'Created'],
                 ['index' => 'actions', 'label' => 'Actions', 'sortable' => false],
             ],
             'rows' => Client::query()
                 ->when($this->search, function (Builder $query) {
                     return $query->where('name', 'like', "%{$this->search}%")
                         ->orWhere('email', 'like', "%{$this->search}%")
-                        ->orWhere('NPWP', 'like', "%{$this->search}%")
-                        ->orWhere('account_representative', 'like', "%{$this->search}%");
+                        ->orWhere('NPWP', 'like', "%{$this->search}%");
                 })
                 ->when($this->typeFilter, fn($query) => $query->where('type', $this->typeFilter))
                 ->when($this->statusFilter, fn($query) => $query->where('status', $this->statusFilter))

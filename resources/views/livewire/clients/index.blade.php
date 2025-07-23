@@ -1,218 +1,253 @@
 {{-- resources/views/livewire/clients/index.blade.php --}}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-<div class="w-full p-6 bg-white dark:bg-zinc-800 space-y-6">
-    {{-- Page Header --}}
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div class="mb-4 lg:mb-0">
-            <h1 class="text-3xl font-bold text-gray-800 dark:text-white">Client Management</h1>
-            <p class="text-gray-500 dark:text-zinc-400">Manage your clients and track their business relationships</p>
+    {{-- Header Section --}}
+    <div class="mb-8">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+            <div class="space-y-1">
+                <h1
+                    class="text-4xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-indigo-800 dark:from-white dark:via-blue-200 dark:to-indigo-200 bg-clip-text text-transparent">
+                    Client Management
+                </h1>
+                <p class="text-gray-600 dark:text-zinc-400 text-lg">
+                    Manage your clients and track their business relationships
+                </p>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <x-button wire:click="$dispatch('create-client')" icon="plus" color="primary">
+                    Add Client
+                </x-button>
+            </div>
+        </div>
+    </div>
+
+    {{-- Stats Cards --}}
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div
+            class="bg-white/80 dark:bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/50 dark:border-white/10 shadow-lg shadow-gray-500/5">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Clients</p>
+                    <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ $rows->total() ?? 0 }}</p>
+                </div>
+                <div class="h-12 w-12 bg-blue-500/10 dark:bg-blue-400/10 rounded-xl flex items-center justify-center">
+                    <x-icon name="users" class="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                </div>
+            </div>
         </div>
 
-        <div class="flex items-center gap-3">
-            <x-button wire:click="$dispatch('create-client')" icon="plus" color="primary">
-                Add Client
-            </x-button>
+        <div
+            class="bg-white/80 dark:bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/50 dark:border-white/10 shadow-lg shadow-gray-500/5">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Active Clients</p>
+                    <p class="text-3xl font-bold text-green-600 dark:text-green-400">
+                        {{ $rows->where('status', 'Active')->count() ?? 0 }}</p>
+                </div>
+                <div class="h-12 w-12 bg-green-500/10 dark:bg-green-400/10 rounded-xl flex items-center justify-center">
+                    <x-icon name="check-circle" class="w-6 h-6 text-green-600 dark:text-green-400" />
+                </div>
+            </div>
+        </div>
+
+        <div
+            class="bg-white/80 dark:bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/50 dark:border-white/10 shadow-lg shadow-gray-500/5">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Companies</p>
+                    <p class="text-3xl font-bold text-purple-600 dark:text-purple-400">
+                        {{ $rows->where('type', 'company')->count() ?? 0 }}</p>
+                </div>
+                <div
+                    class="h-12 w-12 bg-purple-500/10 dark:bg-purple-400/10 rounded-xl flex items-center justify-center">
+                    <x-icon name="building-office" class="w-6 h-6 text-purple-600 dark:text-purple-400" />
+                </div>
+            </div>
+        </div>
+
+        <div
+            class="bg-white/80 dark:bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/50 dark:border-white/10 shadow-lg shadow-gray-500/5">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Individuals</p>
+                    <p class="text-3xl font-bold text-blue-600 dark:text-blue-400">
+                        {{ $rows->where('type', 'individual')->count() ?? 0 }}</p>
+                </div>
+                <div class="h-12 w-12 bg-blue-500/10 dark:bg-blue-400/10 rounded-xl flex items-center justify-center">
+                    <x-icon name="user" class="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                </div>
+            </div>
         </div>
     </div>
 
     {{-- Filters Section --}}
-    <div class="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-4 space-y-4">
-        <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300">Filters</h3>
-        
-        <div class="flex flex-col sm:flex-row gap-4">
-            {{-- Type Filter --}}
-            <div class="min-w-0 flex-1">
-                <x-select.styled 
-                    label="Filter by Type" 
-                    wire:model.live="typeFilter"
-                    :options="[
-                        ['label' => 'All Types', 'value' => ''],
-                        ['label' => 'Individual', 'value' => 'individual'],
-                        ['label' => 'Company', 'value' => 'company'],
-                    ]"
-                    placeholder="Select type..."
-                />
-            </div>
+    <div class="py-5 grid grid-cols-1 md:grid-cols-3 gap-6">
+        {{-- Type Filter --}}
+        <x-select.styled label="Client Type" wire:model.live="typeFilter" :options="[
+            ['label' => 'All Types', 'value' => ''],
+            ['label' => '👤 Individual', 'value' => 'individual'],
+            ['label' => '🏢 Company', 'value' => 'company'],
+        ]" placeholder="Select type..."
+            searchable />
 
-            {{-- Status Filter --}}
-            <div class="min-w-0 flex-1">
-                <x-select.styled 
-                    label="Filter by Status" 
-                    wire:model.live="statusFilter"
-                    :options="[
-                        ['label' => 'All Status', 'value' => ''],
-                        ['label' => 'Active', 'value' => 'Active'],
-                        ['label' => 'Inactive', 'value' => 'Inactive'],
-                    ]"
-                    placeholder="Select status..."
-                />
-            </div>
+        {{-- Status Filter --}}
+        <x-select.styled label="Status" wire:model.live="statusFilter" :options="[
+            ['label' => 'All Status', 'value' => ''],
+            ['label' => '✅ Active', 'value' => 'Active'],
+            ['label' => '❌ Inactive', 'value' => 'Inactive'],
+        ]"
+            placeholder="Select status..." />
 
-            {{-- Clear Filters Button --}}
-            <div class="flex items-end">
-                <x-button 
-                    wire:click="clearFilters" 
-                    color="secondary" 
-                    icon="x-mark"
-                    class="whitespace-nowrap"
-                >
-                    Clear Filters
-                </x-button>
-            </div>
+        {{-- Clear Filters --}}
+        <div class="flex items-end">
+            <x-button wire:click="clearFilters" color="secondary" icon="x-mark" class="w-full">
+                Clear All Filters
+            </x-button>
         </div>
-
-        {{-- Active Filters Display --}}
-        @if($typeFilter || $statusFilter)
-            <div class="flex flex-wrap gap-2 pt-2 border-t border-gray-200 dark:border-gray-700">
-                <span class="text-xs text-gray-500 dark:text-gray-400 mr-2">Active filters:</span>
-                @if($typeFilter)
-                    <x-badge 
-                        text="Type: {{ ucfirst($typeFilter) }}" 
-                        color="blue"
-                    />
-                @endif
-                @if($statusFilter)
-                    <x-badge 
-                        text="Status: {{ $statusFilter }}" 
-                        color="green"
-                    />
-                @endif
-            </div>
-        @endif
     </div>
 
-    {{-- Table --}}
-    <x-table :$headers :$rows :$sort filter :quantity="[5, 10, 25, 50]" paginate selectable wire:model.live="selected">
-
-        {{-- Client Name with Avatar --}}
+    {{-- Main Table Card --}}
+    <x-table :$headers :$rows :$sort filter :quantity="[10, 25, 50, 100]" paginate selectable wire:model.live="selected">
+        {{-- Client Name with Enhanced Avatar --}}
         @interact('column_name', $row)
-            <div class="flex items-center space-x-3">
-                <div class="h-10 w-10 flex-shrink-0">
+            <div class="flex items-center space-x-4">
+                <div class="relative">
                     @if ($row->logo)
-                        <img class="h-10 w-10 rounded-full object-cover" src="{{ $row->logo }}"
+                        <img class="h-12 w-12 rounded-2xl object-cover shadow-md" src="{{ $row->logo }}"
                             alt="{{ $row->name }}">
                     @else
                         <div
-                            class="h-10 w-10 rounded-full flex items-center justify-center
-                                {{ $row->type === 'individual' ? 'bg-blue-100 dark:bg-blue-900/20' : 'bg-purple-100 dark:bg-purple-900/20' }}">
+                            class="h-12 w-12 rounded-2xl flex items-center justify-center shadow-md
+                                        {{ $row->type === 'individual'
+                                            ? 'bg-gradient-to-br from-blue-400 to-blue-600'
+                                            : 'bg-gradient-to-br from-purple-400 to-purple-600' }}">
                             <x-icon name="{{ $row->type === 'individual' ? 'user' : 'building-office' }}"
-                                class="w-5 h-5 {{ $row->type === 'individual' ? 'text-blue-600 dark:text-blue-400' : 'text-purple-600 dark:text-purple-400' }}" />
+                                class="w-6 h-6 text-white" />
                         </div>
                     @endif
+
+                    {{-- Status indicator --}}
+                    <div
+                        class="absolute -bottom-1 -right-1 h-4 w-4 rounded-full border-2 border-white dark:border-gray-800 
+                                    {{ $row->status === 'Active' ? 'bg-green-400' : 'bg-gray-400' }}">
+                    </div>
                 </div>
+
                 <div class="min-w-0 flex-1">
-                    <p class="text-sm font-medium text-gray-900 dark:text-white truncate">
+                    <p class="text-sm font-semibold text-gray-900 dark:text-white truncate">
                         {{ $row->name }}
                     </p>
                     @if ($row->NPWP)
-                        <p class="text-xs text-gray-500 dark:text-gray-400 truncate">
-                            NPWP: {{ $row->NPWP }}
+                        <p
+                            class="text-xs text-gray-500 dark:text-gray-400 truncate font-mono bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-md inline-block mt-1">
+                            {{ $row->NPWP }}
                         </p>
                     @endif
                 </div>
             </div>
         @endinteract
 
-        {{-- Type Column --}}
+        {{-- Enhanced Type Column --}}
         @interact('column_type', $row)
-            <x-badge text="{{ ucfirst($row->type) }}" color="{{ $row->type === 'individual' ? 'blue' : 'purple' }}" />
+            <x-badge text="{{ $row->type === 'individual' ? '👤 Individual' : '🏢 Company' }}"
+                color="{{ $row->type === 'individual' ? 'blue' : 'purple' }}" class="shadow-sm" />
         @endinteract
 
-        {{-- Contact Info --}}
+        {{-- Enhanced Contact Info --}}
         @interact('column_person_in_charge', $row)
-            <div class="text-sm">
+            <div class="space-y-2">
                 @if ($row->email)
                     <a href="mailto:{{ $row->email }}"
-                        class="text-blue-600 dark:text-blue-400 hover:underline block truncate">
-                        {{ $row->email }}
+                        class="group flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors">
+                        <x-icon name="envelope" class="w-4 h-4" />
+                        <span class="truncate group-hover:underline">{{ $row->email }}</span>
                     </a>
-                @else
-                    <span class="text-gray-400 dark:text-gray-500 italic">No email</span>
                 @endif
 
                 @if ($row->ar_phone_number)
-                    <p class="text-xs text-gray-500 dark:text-gray-400 truncate">
-                        {{ $row->ar_phone_number }}
-                    </p>
+                    <div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                        <x-icon name="phone" class="w-4 h-4" />
+                        <span class="truncate">{{ $row->ar_phone_number }}</span>
+                    </div>
+                @endif
+
+                @if (!$row->email && !$row->ar_phone_number)
+                    <span class="text-gray-400 dark:text-gray-500 italic text-sm">No contact info</span>
                 @endif
             </div>
         @endinteract
 
-        {{-- Status Column --}}
+        {{-- Enhanced Status Column --}}
         @interact('column_status', $row)
-            <x-badge text="{{ $row->status }}" color="{{ $row->status === 'Active' ? 'green' : 'red' }}" />
-        @endinteract
-
-        {{-- Invoices Count --}}
-        @interact('column_invoices_count', $row)
-            <div class="text-center">
-                <x-badge text="{{ $row->invoices_count }}" color="{{ $row->invoices_count > 0 ? 'blue' : 'gray' }}" />
+            <div class="flex items-center gap-2">
+                <div class="h-2 w-2 rounded-full {{ $row->status === 'Active' ? 'bg-green-400' : 'bg-red-400' }}">
+                </div>
+                <x-badge text="{{ $row->status }}" color="{{ $row->status === 'Active' ? 'green' : 'red' }}"
+                    class="shadow-sm" />
             </div>
         @endinteract
 
-        {{-- Financial Summary --}}
+        {{-- Enhanced Invoices Count --}}
+        @interact('column_invoices_count', $row)
+            <div class="text-center">
+                <div
+                    class="inline-flex items-center gap-2 px-3 py-1 rounded-full 
+                                {{ $row->invoices_count > 0
+                                    ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
+                                    : 'bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400' }}">
+                    <x-icon name="document-text" class="w-4 h-4" />
+                    <span class="font-medium">{{ $row->invoices_count }}</span>
+                </div>
+            </div>
+        @endinteract
+
+        {{-- Enhanced Financial Summary --}}
         @interact('column_financial_summary', $row)
-            <div class="text-right text-sm">
+            <div class="text-right space-y-1">
                 @php
                     $totalAmount = $row->invoices->sum('total_amount');
                     $paidAmount = $row->invoices->filter(fn($inv) => $inv->status === 'paid')->sum('total_amount');
                     $outstandingAmount = $totalAmount - $paidAmount;
                 @endphp
 
-                <div class="font-medium text-gray-900 dark:text-white">
+                <div class="font-semibold text-gray-900 dark:text-white">
                     Rp {{ number_format($totalAmount, 0, ',', '.') }}
                 </div>
 
                 @if ($outstandingAmount > 0)
-                    <div class="text-xs text-red-600 dark:text-red-400">
-                        Outstanding: Rp {{ number_format($outstandingAmount, 0, ',', '.') }}
+                    <div
+                        class="inline-flex items-center gap-1 text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded-full">
+                        <x-icon name="exclamation-triangle" class="w-3 h-3" />
+                        <span>Rp {{ number_format($outstandingAmount, 0, ',', '.') }}</span>
                     </div>
                 @elseif($totalAmount > 0)
-                    <div class="text-xs text-green-600 dark:text-green-400">
-                        Fully Paid
+                    <div
+                        class="inline-flex items-center gap-1 text-xs text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 px-2 py-1 rounded-full">
+                        <x-icon name="check-circle" class="w-3 h-3" />
+                        <span>Fully Paid</span>
                     </div>
                 @endif
             </div>
         @endinteract
 
-        {{-- Account Representative --}}
-        @interact('column_account_representative', $row)
-            <div class="text-sm">
-                @if ($row->account_representative)
-                    <div class="font-medium text-gray-900 dark:text-white">
-                        {{ $row->account_representative }}
-                    </div>
-                @else
-                    <span class="text-gray-400 dark:text-gray-500 italic">Unassigned</span>
-                @endif
-            </div>
-        @endinteract
-
-        {{-- Created Date --}}
-        @interact('column_created_at', $row)
-            <div class="text-sm text-gray-500 dark:text-gray-400">
-                <div>{{ $row->created_at->format('M d, Y') }}</div>
-                <div class="text-xs">{{ $row->created_at->format('H:i') }}</div>
-            </div>
-        @endinteract
-
-        {{-- Actions --}}
+        {{-- Enhanced Actions --}}
         @interact('column_actions', $row)
-            <x-dropdown icon="ellipsis-vertical">
-                <x-dropdown.items text="Show" icon="eye"
+            <x-dropdown icon="ellipsis-vertical" class="shadow-lg">
+                <x-dropdown.items text="👁️ View Details"
                     wire:click="$dispatch('show-client', { clientId: {{ $row->id }} })" />
-                <x-dropdown.items text="Edit" icon="pencil"
+                <x-dropdown.items text="✏️ Edit Client"
                     wire:click="$dispatch('edit-client', { clientId: {{ $row->id }} })" />
-                <x-dropdown.items text="Manage Relationships" icon="users"
+                <x-dropdown.items text="👥 Relationships"
                     wire:click="$dispatch('manage-relationships', { clientId: {{ $row->id }} })" />
-                <x-dropdown.items text="Delete" icon="trash"
+                <x-dropdown.items text="🗑️ Delete"
                     wire:click="$dispatch('delete-client', { clientId: {{ $row->id }} })" />
             </x-dropdown>
         @endinteract
 
     </x-table>
 
-    {{-- Modal components (include once) --}}
+    {{-- Modal components --}}
     <livewire:clients.edit />
     <livewire:clients.delete />
     <livewire:clients.show />

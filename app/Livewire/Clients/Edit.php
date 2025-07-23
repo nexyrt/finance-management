@@ -12,7 +12,7 @@ class Edit extends Component
     use Interactions;
 
     public ?Client $client = null;
-    public bool $showModal = false;
+    public bool $showEditModal = false;
 
     // Form properties
     public string $name = '';
@@ -50,7 +50,7 @@ class Edit extends Component
             'address' => $this->client->address ?? '',
         ]);
 
-        $this->showModal = true;
+        $this->showEditModal = true;
     }
 
     public function save()
@@ -67,7 +67,7 @@ class Edit extends Component
             'address' => $this->address ?: null,
         ]);
 
-        $this->showModal = false;
+        $this->showEditModal = false;
         $this->dispatch('client-updated');
         $this->toast()->success("{$this->client->name} updated successfully.")->send();
         $this->reset();

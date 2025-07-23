@@ -1,6 +1,6 @@
 {{-- resources/views/livewire/clients/edit.blade.php --}}
 
-<x-modal wire="showModal" title="Edit Client" size="2xl" center>
+<x-modal wire="showEditModal" title="Edit Client" size="2xl" center>
     <div class="space-y-6">
         <!-- Basic Information -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -26,7 +26,7 @@
     </div>
 
     <x-slot:footer>
-        <x-button wire:click="$toggle('showModal')" color="secondary">Cancel</x-button>
+        <x-button wire:click="$toggle('showEditModal')" color="secondary">Cancel</x-button>
         <x-button wire:click="save" color="primary" spinner="save">Update</x-button>
     </x-slot:footer>
 </x-modal>

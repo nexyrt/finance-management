@@ -1,6 +1,6 @@
 {{-- resources/views/livewire/clients/create.blade.php --}}
 
-<x-modal wire="showModal" title="Create New Client" size="2xl">
+<x-modal wire="showModal" title="Create New Client" size="2xl" center>
     <div class="space-y-6">
         <!-- Basic Information -->
         <div class="space-y-4">

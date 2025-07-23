@@ -9,7 +9,7 @@ use Livewire\Component;
 class Show extends Component
 {
     public ?Client $client = null;
-    public bool $showModal = false;
+    public bool $showViewModal = false;
 
     #[On('show-client')]
     public function show($clientId)
@@ -21,21 +21,15 @@ class Show extends Component
         ])->find($clientId);
 
         if ($this->client) {
-            $this->showModal = true;
+            $this->showViewModal = true;
         }
-    }
-
-    public function close()
-    {
-        $this->showModal = false;
-        $this->client = null;
     }
 
     public function editClient()
     {
         if ($this->client) {
             $clientId = $this->client->id;
-            $this->close();
+            $this->showViewModal = false; // Changed from $this->close()
             $this->dispatch('edit-client', clientId: $clientId);
         }
     }
@@ -44,7 +38,7 @@ class Show extends Component
     {
         if ($this->client) {
             $clientId = $this->client->id;
-            $this->close();
+            $this->showViewModal = false; // Changed from $this->close()
             $this->dispatch('manage-relationships', clientId: $clientId);
         }
     }

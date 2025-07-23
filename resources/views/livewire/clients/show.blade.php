@@ -1,6 +1,6 @@
 {{-- resources/views/livewire/clients/show.blade.php --}}
 
-<x-modal wire="showModal" title="Client Details" size="5xl" center>
+<x-modal wire="showViewModal" title="Client Details" size="5xl" center>
     @if($client)
         <div class="space-y-6">
             <!-- Client Header -->
@@ -280,7 +280,7 @@
 
     <x-slot:footer>
         <div class="flex justify-end space-x-3">
-            <x-button wire:click="$toggle('showModal')" color="secondary">Close</x-button>
+            <x-button wire:click="$toggle('showViewModal')" color="secondary">Close</x-button>
             <x-button wire:click="editClient" color="primary" icon="pencil">Edit Client</x-button>
         </div>
     </x-slot:footer>
