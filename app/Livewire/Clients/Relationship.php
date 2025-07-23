@@ -3,7 +3,6 @@
 namespace App\Livewire\Clients;
 
 use App\Models\Client;
-use App\Models\ClientRelationship;
 use Livewire\Attributes\On;
 use Livewire\Component;
 use TallStackUi\Traits\Interactions;
@@ -24,7 +23,7 @@ class Relationship extends Component
     public function manage($clientId)
     {
         $this->client = Client::with(['owners', 'ownedCompanies'])->find($clientId);
-        
+
         if ($this->client) {
             $this->loadAvailableClients();
             $this->loadExistingRelationships();
@@ -82,12 +81,5 @@ class Relationship extends Component
 
         $this->dispatch('relationships-updated');
         $this->toast()->success($message)->send();
-    }
-
-    public function close()
-    {
-        $this->client = null;
-        $this->selectedClients = [];
-        $this->availableClients = [];
     }
 }

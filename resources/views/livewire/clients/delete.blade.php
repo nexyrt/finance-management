@@ -1,6 +1,6 @@
 {{-- resources/views/livewire/clients/delete.blade.php --}}
 <div>
-    <x-modal wire="deleteClientModal" id="delete-client-modal" center>
+    <x-modal wire="clientDeleteModal" id="client-delete-modal" center>
         <x-slot:header>
             <div class="flex items-center gap-4">
                 <div class="h-12 w-12 bg-gradient-to-br from-red-500 to-red-600 rounded-xl flex items-center justify-center shadow-lg">
@@ -84,10 +84,10 @@
 
         <x-slot:footer>
             <div class="flex justify-end gap-3">
-                <x-button wire:click="$toggle('deleteClientModal')" color="secondary">
+                <x-button wire:click="$toggle('clientDeleteModal')" color="secondary">
                     Batal
                 </x-button>
-                <x-button wire:click="confirm" x-on:click="$modalClose('delete-client-modal')" color="red" icon="trash" spinner="confirm">
+                <x-button wire:click="confirm" x-on:click="$modalClose('client-delete-modal')" color="red" icon="trash" spinner="confirm">
                     Hapus Klien
                 </x-button>
             </div>

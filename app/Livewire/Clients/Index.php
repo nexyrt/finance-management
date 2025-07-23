@@ -32,8 +32,8 @@ class Index extends Component
                 ['index' => 'type', 'label' => 'Tipe'],
                 ['index' => 'person_in_charge', 'label' => 'Info Kontak'],
                 ['index' => 'status', 'label' => 'Status'],
-                ['index' => 'invoices_count', 'label' => 'Faktur'],
-                ['index' => 'financial_summary', 'label' => 'Keuangan'],
+                ['index' => 'invoices_count', 'label' => 'Faktur', 'sortable' => false],
+                ['index' => 'financial_summary', 'label' => 'Keuangan', 'sortable' => false],
                 ['index' => 'actions', 'label' => 'Aksi', 'sortable' => false],
             ],
             'rows' => Client::query()
@@ -63,6 +63,41 @@ class Index extends Component
         $this->typeFilter = null;
         $this->statusFilter = null;
         $this->resetPage();
+    }
+
+    public function bulkDelete()
+    {
+        if (empty($this->selected)) {
+            $this->dialog()->warning('Peringatan', 'Tidak ada klien yang dipilih')->send();
+            return;
+        }
+
+        $count = count($this->selected);
+        $this->dialog()
+            ->question('Konfirmasi Hapus', "Apakah Anda yakin ingin menghapus {$count} klien? Tindakan ini tidak dapat dibatalkan.")
+            ->confirm('Hapus', 'confirmBulkDelete', 'Data berhasil dihapus')
+            ->cancel('Batal', 'cancelBulkDelete', 'Operasi dibatalkan')
+            ->send();
+    }
+
+    public function confirmBulkDelete(string $message)
+    {
+        $count = Client::whereIn('id', $this->selected)->count();
+        Client::whereIn('id', $this->selected)->delete();
+        
+        $this->selected = [];
+        $this->dialog()->success('Berhasil', $message)->send();
+        $this->dispatch('client-deleted');
+    }
+
+    public function cancelBulkDelete(string $message)
+    {
+        $this->dialog()->info('Dibatalkan', $message)->send();
+    }
+
+    public function clearSelection()
+    {
+        $this->selected = [];
     }
 
     public function updatedSearch()

@@ -82,31 +82,109 @@
     </div>
 
     {{-- Filters Section --}}
-    <div class="py-5 grid grid-cols-1 md:grid-cols-3 gap-6">
-        {{-- Type Filter --}}
-        <x-select.styled label="Tipe Klien" wire:model.live="typeFilter" :options="[
-            ['label' => 'Individu', 'value' => 'individual'],
-            ['label' => 'Perusahaan', 'value' => 'company'],
-        ]" placeholder="Pilih tipe..."
-            searchable />
+    <div class="bg-gradient-to-r from-white/90 via-white/95 to-white/90 dark:from-zinc-800/90 dark:via-zinc-800/95 dark:to-zinc-800/90 backdrop-blur-sm rounded-2xl border border-zinc-200/50 dark:border-zinc-700/50 shadow-lg shadow-zinc-500/5 mb-8">
+        <!-- Filter Header -->
+        <div class="flex items-center justify-between p-6 pb-4 border-b border-zinc-200/50 dark:border-zinc-700/50">
+            <div class="flex items-center space-x-3">
+                <div class="h-10 w-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
+                    <x-icon name="funnel" class="w-5 h-5 text-white" />
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold text-zinc-900 dark:text-white">Filter Klien</h3>
+                    <p class="text-sm text-zinc-500 dark:text-zinc-400">Gunakan filter untuk mempersempit pencarian</p>
+                </div>
+            </div>
+            
+            <!-- Active Filters Count -->
+            @if($typeFilter || $statusFilter)
+                <div class="flex items-center space-x-2">
+                    <div class="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-3 py-1 rounded-full text-sm font-medium">
+                        {{ collect([$typeFilter, $statusFilter])->filter()->count() }} Filter Aktif
+                    </div>
+                </div>
+            @endif
+        </div>
 
-        {{-- Status Filter --}}
-        <x-select.styled label="Status" wire:model.live="statusFilter" :options="[
-            ['label' => 'Aktif', 'value' => 'Active'],
-            ['label' => 'Tidak Aktif', 'value' => 'Inactive'],
-        ]"
-            placeholder="Pilih status..." />
+        <!-- Filter Controls -->
+        <div class="p-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {{-- Type Filter --}}
+                <div class="space-y-2">
+                    <div class="flex items-center space-x-2 mb-3">
+                        <div class="h-6 w-6 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+                            <x-icon name="user-group" class="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                        </div>
+                        <label class="text-sm font-medium text-zinc-700 dark:text-zinc-300">Tipe Klien</label>
+                    </div>
+                    <x-select.styled wire:model.live="typeFilter" :options="[
+                        ['label' => '👤 Individu', 'value' => 'individual'],
+                        ['label' => '🏢 Perusahaan', 'value' => 'company'],
+                    ]" placeholder="Semua tipe..."
+                        class="w-full" />
+                </div>
 
-        {{-- Clear Filters --}}
-        <div class="flex items-end">
-            <x-button wire:click="clearFilters" color="secondary" icon="x-mark" class="w-full">
-                Hapus Semua Filter
-            </x-button>
+                {{-- Status Filter --}}
+                <div class="space-y-2">
+                    <div class="flex items-center space-x-2 mb-3">
+                        <div class="h-6 w-6 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
+                            <x-icon name="shield-check" class="w-4 h-4 text-green-600 dark:text-green-400" />
+                        </div>
+                        <label class="text-sm font-medium text-zinc-700 dark:text-zinc-300">Status</label>
+                    </div>
+                    <x-select.styled wire:model.live="statusFilter" :options="[
+                        ['label' => '✅ Aktif', 'value' => 'Active'],
+                        ['label' => '❌ Tidak Aktif', 'value' => 'Inactive'],
+                    ]"
+                        placeholder="Semua status..."
+                        class="w-full" />
+                </div>
+
+                {{-- Clear Filters --}}
+                <div>
+                    <div class="flex items-center space-x-2 mb-3">
+                        <div class="h-6 w-6 bg-zinc-100 dark:bg-zinc-900/30 rounded-lg flex items-center justify-center">
+                            <x-icon name="arrow-path" class="w-4 h-4 text-zinc-600 dark:text-zinc-400" />
+                        </div>
+                        <label class="text-sm font-medium text-zinc-700 dark:text-zinc-300">Reset</label>
+                    </div>
+                    <x-button wire:click="clearFilters" color="secondary" icon="x-mark">
+                        Hapus Semua Filter
+                    </x-button>
+                </div>
+            </div>
+
+            <!-- Active Filter Tags -->
+            @if($typeFilter || $statusFilter)
+                <div class="mt-6 pt-4 border-t border-zinc-200/50 dark:border-zinc-700/50">
+                    <div class="flex items-center space-x-2 mb-3">
+                        <x-icon name="tag" class="w-4 h-4 text-zinc-500 dark:text-zinc-400" />
+                        <span class="text-sm font-medium text-zinc-600 dark:text-zinc-400">Filter Aktif:</span>
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                        @if($typeFilter)
+                            <div class="inline-flex items-center gap-2 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 px-3 py-1.5 rounded-lg border border-blue-200 dark:border-blue-800 text-sm">
+                                <span>{{ $typeFilter === 'individual' ? '👤 Individu' : '🏢 Perusahaan' }}</span>
+                                <button wire:click="$set('typeFilter', '')" class="hover:bg-blue-200 dark:hover:bg-blue-800 rounded-full p-0.5 transition-colors">
+                                    <x-icon name="x-mark" class="w-3 h-3" />
+                                </button>
+                            </div>
+                        @endif
+                        @if($statusFilter)
+                            <div class="inline-flex items-center gap-2 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 px-3 py-1.5 rounded-lg border border-green-200 dark:border-green-800 text-sm">
+                                <span>{{ $statusFilter === 'Active' ? '✅ Aktif' : '❌ Tidak Aktif' }}</span>
+                                <button wire:click="$set('statusFilter', '')" class="hover:bg-green-200 dark:hover:bg-green-800 rounded-full p-0.5 transition-colors">
+                                    <x-icon name="x-mark" class="w-3 h-3" />
+                                </button>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            @endif
         </div>
     </div>
 
     {{-- Main Table Card --}}
-    <x-table :$headers :$rows :$sort filter :quantity="[10, 25, 50, 100]" paginate selectable wire:model.live="selected">
+    <x-table :$headers :$rows :$sort filter :quantity="[10, 25, 50, 100]" paginate selectable wire:model="selected">
         {{-- Client Name with Enhanced Avatar --}}
         @interact('column_name', $row)
             <div class="flex items-center space-x-4">
@@ -244,6 +322,53 @@
         @endinteract
 
     </x-table>
+
+    {{-- Bulk Actions Bar - Sticky positioned --}}
+    <div x-data="{ show: @entangle('selected').live }" 
+         x-show="show.length > 0"
+         x-transition:enter="transition ease-out duration-300 transform"
+         x-transition:enter-start="translate-y-full opacity-0"
+         x-transition:enter-end="translate-y-0 opacity-100"
+         x-transition:leave="transition ease-in duration-200 transform"
+         x-transition:leave-start="translate-y-0 opacity-100"
+         x-transition:leave-end="translate-y-full opacity-0"
+         class="fixed bottom-0 left-1/2 transform -translate-x-1/2 z-50 mb-6">
+        
+        <div class="bg-white/95 dark:bg-zinc-800/95 backdrop-blur-sm rounded-2xl shadow-2xl border border-zinc-200/50 dark:border-zinc-700/50 px-6 py-4 min-w-80">
+            <div class="flex items-center justify-between gap-4">
+                
+                {{-- Selection Info --}}
+                <div class="flex items-center gap-3">
+                    <div class="h-10 w-10 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
+                        <x-icon name="check-circle" class="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <div>
+                        <p class="font-semibold text-zinc-900 dark:text-white" x-text="`${show.length} klien dipilih`"></p>
+                        <p class="text-sm text-zinc-500 dark:text-zinc-400">Pilih aksi untuk semua klien terpilih</p>
+                    </div>
+                </div>
+
+                {{-- Actions --}}
+                <div class="flex items-center gap-2">
+                    <x-button 
+                        wire:click="clearSelection" 
+                        color="secondary" 
+                        size="sm"
+                        icon="x-mark">
+                        Batal
+                    </x-button>
+                    
+                    <x-button 
+                        wire:click="bulkDelete" 
+                        color="red" 
+                        size="sm"
+                        icon="trash">
+                        <span x-text="`Hapus ${show.length} Klien`"></span>
+                    </x-button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     {{-- Modal components --}}
     <livewire:clients.edit />
