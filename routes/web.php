@@ -1,15 +1,14 @@
 <?php
 
 use App\Livewire\BankAccounts;
-use App\Livewire\ClientManagement;
 use App\Livewire\Clients\Index as Clients;
+use App\Livewire\Invoices\Index as Invoices;
 use App\Livewire\Dashboard;
 use App\Livewire\ServiceManagement;
 use App\Livewire\InvoiceManagement;
 use App\Livewire\Settings\Appearance;
 use App\Livewire\Settings\Password;
 use App\Livewire\Settings\Profile;
-use App\Livewire\TestingPage;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/login')->name('home');
@@ -26,7 +25,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/invoices', InvoiceManagement::class)->name('invoices');
 
     Route::get('/bank-accounts', BankAccounts::class)->name('bank-accounts');
-    Route::get('/test', TestingPage::class)->name('test');
+    Route::get('/test', Invoices::class)->name('test');
 
 });
 

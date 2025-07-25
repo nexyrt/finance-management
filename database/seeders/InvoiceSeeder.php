@@ -19,37 +19,65 @@ class InvoiceSeeder extends Seeder
         $bankAccounts = BankAccount::all();
 
         for ($i = 1; $i <= 20; $i++) {
-            // Use your InvoiceFactory
+            // Create invoice with discount logic
+            $discountType = rand(1, 100) <= 30 ? (rand(1, 2) == 1 ? 'percentage' : 'fixed') : 'fixed';
+            $discountValue = 0;
+            $discountReason = null;
+
+            // Apply discount (30% chance)
+            if (rand(1, 100) <= 30) {
+                if ($discountType === 'percentage') {
+                    $discountValue = rand(500, 2000); // 5% - 20% (stored as basis points)
+                    $discountReason = 'Diskon pelanggan setia';
+                } else {
+                    $discountValue = rand(100000, 1000000); // Rp 100k - 1M
+                    $discountReason = 'Diskon khusus';
+                }
+            }
+
             $invoice = Invoice::factory()->create([
                 'invoice_number' => 'INV-' . str_pad($i, 6, '0', STR_PAD_LEFT),
                 'billed_to_id' => $allClients->random()->id,
+                'subtotal' => 0,
+                'discount_amount' => 0,
+                'discount_type' => $discountType,
+                'discount_value' => $discountValue,
+                'discount_reason' => $discountReason,
+                'total_amount' => 0, // Will be calculated later
             ]);
 
-            // Use your InvoiceItemFactory
+            // Create invoice items with BigInt amounts
             $itemCount = rand(1, 4);
-            $totalAmount = 0;
+            $subtotal = 0;
 
             for ($j = 0; $j < $itemCount; $j++) {
                 $service = $services->random();
-                $amount = $service->price + rand(-500000, 1000000);
+                $quantity = rand(1, 5);
+                $unitPrice = (int) $service->price + rand(-500000, 1000000); // Convert to integer
+                $amount = $quantity * $unitPrice;
 
                 InvoiceItem::factory()->create([
                     'invoice_id' => $invoice->id,
                     'client_id' => $allClients->random()->id,
                     'service_name' => $service->name,
+                    'quantity' => $quantity,
+                    'unit_price' => $unitPrice,
                     'amount' => $amount,
                 ]);
 
-                $totalAmount += $amount;
+                $subtotal += $amount;
             }
 
-            $invoice->update(['total_amount' => $totalAmount]);
+            // Calculate discount and total
+            $invoice->subtotal = $subtotal;
+            $invoice->calculateDiscount(); // This will set discount_amount and total_amount
+            $invoice->save();
 
-            // Use your PaymentFactory (70% chance)
+            // Create payments (70% chance)
             if (rand(1, 100) <= 70) {
                 $paymentAmount = rand(1, 100) <= 80
-                    ? $totalAmount
-                    : $totalAmount * rand(30, 90) / 100;
+                    ? $invoice->total_amount // Full payment
+                    : (int) ($invoice->total_amount * rand(30, 90) / 100); // Partial payment
 
                 Payment::factory()->create([
                     'invoice_id' => $invoice->id,
@@ -60,17 +88,9 @@ class InvoiceSeeder extends Seeder
                 ]);
             }
 
-            // Update invoice status
+            // Update invoice status using model method
             $invoice->refresh();
-            $amountPaid = $invoice->payments->sum('amount');
-
-            if ($amountPaid >= $invoice->total_amount) {
-                $invoice->update(['status' => 'paid']);
-            } elseif ($amountPaid > 0) {
-                $invoice->update(['status' => 'partially_paid']);
-            } else {
-                $invoice->update(['status' => rand(1, 100) <= 60 ? 'sent' : 'draft']);
-            }
+            $invoice->updateStatus();
         }
     }
 }
