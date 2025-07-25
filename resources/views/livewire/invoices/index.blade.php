@@ -86,7 +86,7 @@
             </x-slot:right>
 
             {{-- Filters Section --}}
-            <div class="bg-gradient-to-r from-white/90 via-white/95 to-white/90 dark:from-zinc-800/90 dark:via-zinc-800/95 dark:to-zinc-800/90 backdrop-blur-sm rounded-2xl border border-zinc-600 shadow-lg shadow-zinc-500/5 mb-8">
+            <div class="bg-gradient-to-r from-white/90 via-white/95 to-white/90 dark:from-zinc-800/90 dark:via-zinc-800/95 dark:to-zinc-800/90 rounded-2xl border border-zinc-200/50 dark:border-zinc-700/50 shadow-lg shadow-zinc-500/5 mb-8">
                 <div class="flex items-center justify-between p-6 pb-4 border-b border-zinc-200/50 dark:border-zinc-700/50">
                     <div class="flex items-center space-x-3">
                         <div class="h-10 w-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
