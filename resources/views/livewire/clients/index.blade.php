@@ -1,5 +1,5 @@
 {{-- resources/views/livewire/clients/index.blade.php --}}
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<section class="w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
     {{-- Header Section --}}
     <div class="mb-8">
@@ -376,4 +376,4 @@
     <livewire:clients.show />
     <livewire:clients.create />
     <livewire:clients.relationship />
-</div>
+</section>
