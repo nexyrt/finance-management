@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('invoice_id')->constrained()->onDelete('cascade');
             $table->foreignId('bank_account_id')->constrained()->onDelete('cascade');
-            $table->decimal('amount', 12, 2);
+            $table->bigInteger('amount'); // Changed from decimal to bigint
             $table->date('payment_date');
             $table->enum('payment_method', ['cash', 'bank_transfer']);
             $table->string('reference_number')->nullable();

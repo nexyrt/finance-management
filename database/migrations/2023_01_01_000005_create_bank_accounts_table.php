@@ -14,8 +14,8 @@ return new class extends Migration
             $table->string('account_number');
             $table->string('bank_name');
             $table->string('branch')->nullable();
-            $table->decimal('initial_balance', 15, 2)->default(0);
-            $table->decimal('current_balance', 15, 2)->default(0);
+            $table->bigInteger('initial_balance')->default(0); // Changed from decimal to bigint
+            $table->bigInteger('current_balance')->default(0); // Changed from decimal to bigint
             $table->timestamps();
         });
     }

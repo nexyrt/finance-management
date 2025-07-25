@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('services', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->decimal('price', 12, 2);
+            $table->bigInteger('price'); // Changed from decimal to bigint
             $table->enum('type', ['Perizinan', 'Administrasi Perpajakan', 'Digital Marketing', 'Sistem Digital']);
             $table->timestamps();
         });

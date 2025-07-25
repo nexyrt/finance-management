@@ -21,7 +21,7 @@ class Payment extends Model
 
     protected $casts = [
         'payment_date' => 'date',
-        'amount' => 'decimal:2',
+        'amount' => 'integer',
     ];
 
     public function invoice(): BelongsTo
@@ -32,5 +32,17 @@ class Payment extends Model
     public function bankAccount(): BelongsTo
     {
         return $this->belongsTo(BankAccount::class);
+    }
+
+    // Format currency for display
+    public function getFormattedAmountAttribute(): string
+    {
+        return 'Rp ' . number_format($this->amount, 0, ',', '.');
+    }
+
+    // Convert rupiah string to integer (remove formatting)
+    public static function parseAmount(string $amount): int
+    {
+        return (int) preg_replace('/[^0-9]/', '', $amount);
     }
 }

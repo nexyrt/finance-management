@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('bank_transactions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('bank_account_id')->constrained()->onDelete('cascade');
-            $table->decimal('amount', 15, 2);
+            $table->bigInteger('amount'); // Changed from decimal to bigint
             $table->date('transaction_date');
             $table->enum('transaction_type', ['debit', 'credit']);
             $table->text('description')->nullable();
