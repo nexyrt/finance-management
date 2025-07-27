@@ -28,7 +28,7 @@
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Invoice</p>
-                    <p class="text-3xl font-bold text-gray-900 dark:text-white">127</p>
+                    <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ number_format($stats['total_invoices']) }}</p>
                 </div>
                 <div class="h-12 w-12 bg-blue-500/10 dark:bg-blue-400/10 rounded-xl flex items-center justify-center">
                     <x-icon name="document-text" class="w-6 h-6 text-blue-600 dark:text-blue-400" />
@@ -40,7 +40,7 @@
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Outstanding</p>
-                    <p class="text-3xl font-bold text-red-600 dark:text-red-400">Rp 45.5M</p>
+                    <p class="text-3xl font-bold text-red-600 dark:text-red-400">Rp {{ number_format($stats['outstanding_amount'], 0, ',', '.') }}</p>
                 </div>
                 <div class="h-12 w-12 bg-red-500/10 dark:bg-red-400/10 rounded-xl flex items-center justify-center">
                     <x-icon name="exclamation-triangle" class="w-6 h-6 text-red-600 dark:text-red-400" />
@@ -52,7 +52,7 @@
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Paid This Month</p>
-                    <p class="text-3xl font-bold text-green-600 dark:text-green-400">Rp 125M</p>
+                    <p class="text-3xl font-bold text-green-600 dark:text-green-400">Rp {{ number_format($stats['paid_this_month'], 0, ',', '.') }}</p>
                 </div>
                 <div class="h-12 w-12 bg-green-500/10 dark:bg-green-400/10 rounded-xl flex items-center justify-center">
                     <x-icon name="check-circle" class="w-6 h-6 text-green-600 dark:text-green-400" />
@@ -64,7 +64,7 @@
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Overdue</p>
-                    <p class="text-3xl font-bold text-orange-600 dark:text-orange-400">8</p>
+                    <p class="text-3xl font-bold text-orange-600 dark:text-orange-400">{{ $stats['overdue_count'] }}</p>
                 </div>
                 <div class="h-12 w-12 bg-orange-500/10 dark:bg-orange-400/10 rounded-xl flex items-center justify-center">
                     <x-icon name="clock" class="w-6 h-6 text-orange-600 dark:text-orange-400" />
@@ -74,7 +74,7 @@
     </div>
 
     {{-- Main Tabs Content --}}
-    <x-tab selected="invoices">
+    <x-tab wire:model.live="activeTab">
         
         {{-- Tab 1: Invoice Management --}}
         <x-tab.items tab="invoices">
@@ -82,53 +82,105 @@
                 <x-icon name="document-text" class="w-5 h-5" />
             </x-slot:left>
             <x-slot:right>
-                <x-badge text="127" color="blue" />
+                <x-badge text="{{ $stats['total_invoices'] }}" color="blue" />
             </x-slot:right>
 
             {{-- Filters Section --}}
-            
+            <div class="bg-gradient-to-r from-white/90 via-white/95 to-white/90 dark:from-zinc-800/90 dark:via-zinc-800/95 dark:to-zinc-800/90 rounded-2xl border border-zinc-200/50 dark:border-zinc-700/50 shadow-lg shadow-zinc-500/5 mb-8">
+                <div class="flex items-center justify-between p-6 pb-4 border-b border-zinc-200/50 dark:border-zinc-700/50">
+                    <div class="flex items-center space-x-3">
+                        <div class="h-10 w-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
+                            <x-icon name="funnel" class="w-5 h-5 text-white" />
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-zinc-900 dark:text-white">Filter Invoice</h3>
+                            <p class="text-sm text-zinc-500 dark:text-zinc-400">Gunakan filter untuk mempersempit pencarian</p>
+                        </div>
+                    </div>
+                    
+                    {{-- Active Filters Count --}}
+                    @if($statusFilter || $clientFilter)
+                        <div class="flex items-center space-x-2">
+                            <div class="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-3 py-1 rounded-full text-sm font-medium">
+                                {{ collect([$statusFilter, $clientFilter])->filter()->count() }} Filter Aktif
+                            </div>
+                        </div>
+                    @endif
+                </div>
+
+                <div class="p-6">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                        {{-- Status Filter --}}
+                        <div class="space-y-2">
+                            <label class="text-sm font-medium text-zinc-700 dark:text-zinc-300">Status</label>
+                            <x-select.styled wire:model.live="statusFilter" :options="[
+                                ['label' => '📄 Draft', 'value' => 'draft'],
+                                ['label' => '📤 Terkirim', 'value' => 'sent'],
+                                ['label' => '✅ Dibayar', 'value' => 'paid'],
+                                ['label' => '💰 Sebagian', 'value' => 'partially_paid'],
+                                ['label' => '⏰ Terlambat', 'value' => 'overdue'],
+                            ]" placeholder="Semua status..." class="w-full" />
+                        </div>
+
+                        {{-- Client Filter --}}
+                        <div class="space-y-2">
+                            <label class="text-sm font-medium text-zinc-700 dark:text-zinc-300">Klien</label>
+                            <x-select.styled wire:model.live="clientFilter" :options="$clients->map(fn($client) => [
+                                'label' => $client->name,
+                                'value' => $client->id
+                            ])->toArray()" placeholder="Semua klien..." searchable class="w-full" />
+                        </div>
+
+                        {{-- Search --}}
+                        <div class="space-y-2">
+                            <label class="text-sm font-medium text-zinc-700 dark:text-zinc-300">Cari</label>
+                            <x-input wire:model.live="search" placeholder="Nomor invoice atau nama klien..." icon="magnifying-glass" />
+                        </div>
+
+                        {{-- Clear Filters --}}
+                        <div class="space-y-2">
+                            <label class="text-sm font-medium text-zinc-700 dark:text-zinc-300">Reset</label>
+                            <x-button wire:click="clearFilters" color="secondary" icon="x-mark" class="w-full">
+                                Hapus Filter
+                            </x-button>
+                        </div>
+                    </div>
+
+                    {{-- Active Filter Tags --}}
+                    @if($statusFilter || $clientFilter)
+                        <div class="mt-6 pt-4 border-t border-zinc-200/50 dark:border-zinc-700/50">
+                            <div class="flex items-center space-x-2 mb-3">
+                                <x-icon name="tag" class="w-4 h-4 text-zinc-500 dark:text-zinc-400" />
+                                <span class="text-sm font-medium text-zinc-600 dark:text-zinc-400">Filter Aktif:</span>
+                            </div>
+                            <div class="flex flex-wrap gap-2">
+                                @if($statusFilter)
+                                    <div class="inline-flex items-center gap-2 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 px-3 py-1.5 rounded-lg border border-blue-200 dark:border-blue-800 text-sm">
+                                        <span>{{ ucfirst($statusFilter) }}</span>
+                                        <button wire:click="$set('statusFilter', '')" class="hover:bg-blue-200 dark:hover:bg-blue-800 rounded-full p-0.5 transition-colors">
+                                            <x-icon name="x-mark" class="w-3 h-3" />
+                                        </button>
+                                    </div>
+                                @endif
+                                @if($clientFilter)
+                                    @php $selectedClient = $clients->find($clientFilter); @endphp
+                                    @if($selectedClient)
+                                        <div class="inline-flex items-center gap-2 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 px-3 py-1.5 rounded-lg border border-green-200 dark:border-green-800 text-sm">
+                                            <span>{{ $selectedClient->name }}</span>
+                                            <button wire:click="$set('clientFilter', '')" class="hover:bg-green-200 dark:hover:bg-green-800 rounded-full p-0.5 transition-colors">
+                                                <x-icon name="x-mark" class="w-3 h-3" />
+                                            </button>
+                                        </div>
+                                    @endif
+                                @endif
+                            </div>
+                        </div>
+                    @endif
+                </div>
+            </div>
 
             {{-- Invoice Table --}}
-            <x-table :headers="[
-                ['index' => 'invoice_number', 'label' => 'No. Invoice'],
-                ['index' => 'client', 'label' => 'Klien'],
-                ['index' => 'issue_date', 'label' => 'Tanggal'],
-                ['index' => 'due_date', 'label' => 'Jatuh Tempo'],
-                ['index' => 'amount', 'label' => 'Jumlah'],
-                ['index' => 'status', 'label' => 'Status'],
-                ['index' => 'actions', 'label' => 'Aksi', 'sortable' => false],
-            ]" :rows="[
-                (object)[
-                    'id' => 1,
-                    'invoice_number' => 'INV-000001',
-                    'client' => (object)['name' => 'PT ABC Company', 'type' => 'company'],
-                    'issue_date' => '2025-01-15',
-                    'due_date' => '2025-02-15',
-                    'total_amount' => 75000000,
-                    'status' => 'sent',
-                    'amount_paid' => 0
-                ],
-                (object)[
-                    'id' => 2,
-                    'invoice_number' => 'INV-000002',
-                    'client' => (object)['name' => 'John Doe', 'type' => 'individual'],
-                    'issue_date' => '2025-01-10',
-                    'due_date' => '2025-02-10',
-                    'total_amount' => 25000000,
-                    'status' => 'paid',
-                    'amount_paid' => 25000000
-                ],
-                (object)[
-                    'id' => 3,
-                    'invoice_number' => 'INV-000003',
-                    'client' => (object)['name' => 'PT XYZ Corp', 'type' => 'company'],
-                    'issue_date' => '2024-12-20',
-                    'due_date' => '2025-01-20',
-                    'total_amount' => 50000000,
-                    'status' => 'overdue',
-                    'amount_paid' => 0
-                ]
-            ]" filter paginate selectable>
+            <x-table :$headers :$rows :$sort filter :quantity="[10, 25, 50, 100]" paginate selectable wire:model="selected">
 
                 {{-- Invoice Number Column --}}
                 @interact('column_invoice_number', $row)
@@ -138,39 +190,39 @@
                 @endinteract
 
                 {{-- Client Column --}}
-                @interact('column_client', $row)
+                @interact('column_client_name', $row)
                     <div class="flex items-center space-x-3">
                         <div class="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center">
-                            <x-icon name="{{ $row->client->type === 'individual' ? 'user' : 'building-office' }}" 
+                            <x-icon name="{{ $row->client_type === 'individual' ? 'user' : 'building-office' }}" 
                                     class="w-4 h-4 text-primary-600" />
                         </div>
-                        <span class="font-medium">{{ $row->client->name }}</span>
+                        <span class="font-medium">{{ $row->client_name }}</span>
                     </div>
                 @endinteract
 
                 {{-- Issue Date Column --}}
                 @interact('column_issue_date', $row)
                     <div class="text-sm text-gray-600 dark:text-gray-400">
-                        {{ date('d M Y', strtotime($row->issue_date)) }}
+                        {{ $row->issue_date->format('d M Y') }}
                     </div>
                 @endinteract
 
                 {{-- Due Date Column --}}
                 @interact('column_due_date', $row)
                     <div class="text-sm">
-                        <span class="{{ strtotime($row->due_date) < time() && $row->status !== 'paid' ? 'text-red-600 font-semibold' : 'text-gray-600' }}">
-                            {{ date('d M Y', strtotime($row->due_date)) }}
+                        <span class="{{ $row->due_date->isPast() && $row->status !== 'paid' ? 'text-red-600 font-semibold' : 'text-gray-600' }}">
+                            {{ $row->due_date->format('d M Y') }}
                         </span>
-                        @if(strtotime($row->due_date) < time() && $row->status !== 'paid')
+                        @if($row->due_date->isPast() && $row->status !== 'paid')
                             <div class="text-xs text-red-500 mt-1">
-                                {{ floor((time() - strtotime($row->due_date)) / 86400) }} hari lewat
+                                {{ $row->due_date->diffInDays(now()) }} hari lewat
                             </div>
                         @endif
                     </div>
                 @endinteract
 
                 {{-- Amount Column --}}
-                @interact('column_amount', $row)
+                @interact('column_total_amount', $row)
                     <div class="text-right">
                         <div class="font-semibold text-gray-900 dark:text-white">
                             Rp {{ number_format($row->total_amount, 0, ',', '.') }}
@@ -263,9 +315,9 @@
 
     </x-tab>
 
-    {{-- Bulk Actions Bar (sama seperti client management) --}}
-    <div x-data="{ show: false }" 
-         x-show="show"
+    {{-- Bulk Actions Bar --}}
+    <div x-data="{ show: @entangle('selected').live }" 
+         x-show="show.length > 0"
          x-transition:enter="transition ease-out duration-300 transform"
          x-transition:enter-start="translate-y-full opacity-0"
          x-transition:enter-end="translate-y-0 opacity-100"
@@ -281,20 +333,20 @@
                         <x-icon name="check-circle" class="w-5 h-5 text-blue-600 dark:text-blue-400" />
                     </div>
                     <div>
-                        <p class="font-semibold text-zinc-900 dark:text-white">3 invoice dipilih</p>
+                        <p class="font-semibold text-zinc-900 dark:text-white" x-text="`${show.length} invoice dipilih`"></p>
                         <p class="text-sm text-zinc-500 dark:text-zinc-400">Pilih aksi untuk semua invoice terpilih</p>
                     </div>
                 </div>
 
                 <div class="flex items-center gap-2">
-                    <x-button color="secondary" size="sm" icon="x-mark">
+                    <x-button wire:click="$set('selected', [])" color="secondary" size="sm" icon="x-mark">
                         Batal
                     </x-button>
                     <x-button color="blue" size="sm" icon="paper-airplane">
-                        Kirim Semua
+                        <span x-text="`Kirim ${show.length} Invoice`"></span>
                     </x-button>
                     <x-button color="red" size="sm" icon="trash">
-                        Hapus
+                        <span x-text="`Hapus ${show.length} Invoice`"></span>
                     </x-button>
                 </div>
             </div>
