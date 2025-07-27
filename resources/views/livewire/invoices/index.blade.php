@@ -86,56 +86,7 @@
             </x-slot:right>
 
             {{-- Filters Section --}}
-            <div class="bg-gradient-to-r from-white/90 via-white/95 to-white/90 dark:from-zinc-800/90 dark:via-zinc-800/95 dark:to-zinc-800/90 rounded-2xl border border-zinc-200/50 dark:border-zinc-700/50 shadow-lg shadow-zinc-500/5 mb-8">
-                <div class="flex items-center justify-between p-6 pb-4 border-b border-zinc-200/50 dark:border-zinc-700/50">
-                    <div class="flex items-center space-x-3">
-                        <div class="h-10 w-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
-                            <x-icon name="funnel" class="w-5 h-5 text-white" />
-                        </div>
-                        <div>
-                            <h3 class="text-lg font-semibold text-zinc-900 dark:text-white">Filter Invoice</h3>
-                            <p class="text-sm text-zinc-500 dark:text-zinc-400">Gunakan filter untuk mempersempit pencarian</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="p-6">
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-                        {{-- Status Filter --}}
-                        <div class="space-y-2">
-                            <label class="text-sm font-medium text-zinc-700 dark:text-zinc-300">Status</label>
-                            <x-select.styled :options="[
-                                ['label' => '📄 Draft', 'value' => 'draft'],
-                                ['label' => '📤 Terkirim', 'value' => 'sent'],
-                                ['label' => '✅ Dibayar', 'value' => 'paid'],
-                                ['label' => '⏰ Terlambat', 'value' => 'overdue'],
-                            ]" placeholder="Semua status..." class="w-full" />
-                        </div>
-
-                        {{-- Client Filter --}}
-                        <div class="space-y-2">
-                            <label class="text-sm font-medium text-zinc-700 dark:text-zinc-300">Klien</label>
-                            <x-select.styled :options="[
-                                ['label' => 'PT ABC Company', 'value' => '1'],
-                                ['label' => 'John Doe', 'value' => '2'],
-                                ['label' => 'PT XYZ Corp', 'value' => '3'],
-                            ]" placeholder="Semua klien..." searchable class="w-full" />
-                        </div>
-
-                        {{-- Date Range --}}
-                        <div class="space-y-2">
-                            <label class="text-sm font-medium text-zinc-700 dark:text-zinc-300">Periode</label>
-                            <x-input placeholder="Pilih tanggal..." icon="calendar" />
-                        </div>
-
-                        {{-- Search --}}
-                        <div class="space-y-2">
-                            <label class="text-sm font-medium text-zinc-700 dark:text-zinc-300">Cari</label>
-                            <x-input placeholder="Nomor invoice..." icon="magnifying-glass" />
-                        </div>
-                    </div>
-                </div>
-            </div>
+            
 
             {{-- Invoice Table --}}
             <x-table :headers="[

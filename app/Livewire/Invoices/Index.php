@@ -10,6 +10,8 @@ class Index extends Component
 {
     use WithPagination, Interactions;
 
+    
+
     public function render()
     {
         return view('livewire.invoices.index');
