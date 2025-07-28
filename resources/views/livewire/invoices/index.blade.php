@@ -446,15 +446,7 @@
                             <div class="border-t border-gray-100 dark:border-gray-700 py-1">
                                 <x-dropdown.items text="Print PDF" icon="printer"
                                     wire:click="printInvoice({{ $row->id }})"
-                                    class="text-gray-600 dark:text-gray-400" />
-
-                                <x-dropdown.items text="Preview PDF" icon="eye"
-                                    wire:click="previewInvoice({{ $row->id }})"
-                                    class="text-gray-600 dark:text-gray-400" />
-
-                                <x-dropdown.items text="Duplikasi" icon="document-duplicate"
-                                    wire:click="$dispatch('duplicate-invoice', { invoiceId: {{ $row->id }} })"
-                                    class="text-gray-600 dark:text-gray-400" />
+                                    class="text-gray-600 dark:text-gray-400" />\
                             </div>
 
                             {{-- Danger Actions --}}
