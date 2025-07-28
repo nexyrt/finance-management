@@ -426,7 +426,7 @@
                             {{-- Primary Actions --}}
                             <div class="py-1">
                                 <x-dropdown.items text="Lihat Detail" icon="eye"
-                                    class="text-gray-700 dark:text-gray-300" />
+                                    wire:click="$dispatch('show-invoice', { invoiceId: {{ $row->id }} })" />
 
                                 @if ($row->status === 'draft')
                                     <x-dropdown.items text="Edit Invoice" icon="pencil"
@@ -546,4 +546,6 @@
             </div>
         </div>
     </div>
+
+    <livewire:invoices.show />
 </section>
