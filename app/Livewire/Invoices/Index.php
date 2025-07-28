@@ -17,6 +17,7 @@ class Index extends Component
         'payment-created' => '$refresh', 
         'invoice-payment-updated' => '$refresh',
         'confirm-bulk-delete' => 'openBulkDeleteModal',
+        'invoice-created' => '$refresh',
     ];
 
     // Tab management
@@ -24,7 +25,6 @@ class Index extends Component
     
     // Table properties
     public array $selected = [];
-    // Sort property harus public dan dengan default values yang proper
     public array $sort = ['column' => 'invoice_number', 'direction' => 'desc'];
     public ?int $quantity = 10;
     
@@ -35,6 +35,40 @@ class Index extends Component
 
     // Modal properties
     public bool $showBulkDeleteModal = false;
+
+    /**
+     * Trigger Create Invoice Modal
+     */
+    public function createInvoice(): void
+    {
+        $this->dispatch('create-invoice');
+    }
+
+    /**
+     * Direct print via route (download PDF)
+     * ✅ HAPUS ": void" untuk method yang return redirect
+     */
+    public function printInvoice(int $invoiceId)
+    {
+        return redirect()->route('invoices.print', $invoiceId);
+    }
+
+    /**
+     * Preview PDF di tab baru
+     */
+    public function previewInvoice(int $invoiceId): void
+    {
+        $url = route('invoices.preview', $invoiceId);
+        $this->dispatch('open-url', url: $url);
+    }
+
+    /**
+     * Quick print (direct download tanpa modal)
+     */
+    public function quickPrint(int $invoiceId)
+    {
+        return redirect()->route('invoices.print', $invoiceId);
+    }
 
     public function with(): array
     {
@@ -91,13 +125,12 @@ class Index extends Component
             $query->where('invoices.billed_to_id', $this->clientFilter);
         }
 
-        // Handle sorting - TallStackUI akan otomatis apply sorting via array_values($this->sort)
+        // Handle sorting
         if ($this->sort['column'] === 'client_name') {
             $query->orderBy('clients.name', $this->sort['direction']);
         } elseif (in_array($this->sort['column'], ['invoice_number', 'issue_date', 'due_date', 'total_amount', 'status'])) {
             $query->orderBy('invoices.' . $this->sort['column'], $this->sort['direction']);
         } else {
-            // Default sorting jika tidak ada custom handling
             $query->orderBy(...array_values($this->sort));
         }
 
@@ -195,7 +228,6 @@ class Index extends Component
 
             foreach ($invoices as $invoice) {
                 try {
-                    // Delete related payments first if they exist
                     if ($invoice->payments->count() > 0) {
                         $invoice->payments()->delete();
                     }
@@ -210,11 +242,9 @@ class Index extends Component
                 }
             }
 
-            // Reset selection and close modal
             $this->selected = [];
             $this->showBulkDeleteModal = false;
 
-            // Show result message
             if ($deletedCount > 0) {
                 $message = "Berhasil menghapus {$deletedCount} invoice";
                 if ($skippedCount > 0) {
@@ -260,7 +290,6 @@ class Index extends Component
                 }
             }
 
-            // Reset selection
             $this->selected = [];
 
             if ($sentCount > 0) {
@@ -283,8 +312,6 @@ class Index extends Component
             return;
         }
 
-        // This is a placeholder for bulk export functionality
-        // You can implement actual export logic here (CSV, PDF, Excel, etc.)
         $this->toast()
             ->info('Info', 'Fitur export akan segera tersedia')
             ->send();

@@ -19,12 +19,12 @@ class Show extends Component
     {
         $this->invoice = Invoice::with(['client', 'items.client', 'payments.bankAccount'])
             ->find($invoiceId);
-            
+
         if (!$this->invoice) {
             $this->toast()->error('Error', 'Invoice tidak ditemukan')->send();
             return;
         }
-        
+
         $this->showModal = true;
     }
 
@@ -35,18 +35,11 @@ class Show extends Component
         $this->showModal = false; // Pastikan sync dengan Alpine
     }
 
-    public function downloadPdf(): void
-    {
-        if (!$this->invoice) return;
-        
-        $this->toast()->info('Download', 'Generating PDF...')->send();
-        // TODO: Implement PDF generation
-    }
-
     public function sendInvoice(): void
     {
-        if (!$this->invoice || $this->invoice->status !== 'draft') return;
-        
+        if (!$this->invoice || $this->invoice->status !== 'draft')
+            return;
+
         $this->invoice->update(['status' => 'sent']);
         $this->toast()->success('Success', 'Invoice berhasil dikirim')->send();
         $this->dispatch('invoice-updated');
@@ -54,8 +47,9 @@ class Show extends Component
 
     public function duplicateInvoice(): void
     {
-        if (!$this->invoice) return;
-        
+        if (!$this->invoice)
+            return;
+
         $invoiceId = $this->invoice->id;
         $this->resetData(); // Close modal first
         $this->dispatch('duplicate-invoice', invoiceId: $invoiceId);
@@ -63,8 +57,9 @@ class Show extends Component
 
     public function editInvoice(): void
     {
-        if (!$this->invoice) return;
-        
+        if (!$this->invoice)
+            return;
+
         $invoiceId = $this->invoice->id;
         $this->resetData(); // Close modal first
         $this->dispatch('edit-invoice', invoiceId: $invoiceId);
@@ -72,11 +67,31 @@ class Show extends Component
 
     public function recordPayment(): void
     {
-        if (!$this->invoice) return;
-        
+        if (!$this->invoice)
+            return;
+
         $invoiceId = $this->invoice->id;
         $this->resetData(); // Close modal first
         $this->dispatch('record-payment', invoiceId: $invoiceId);
+    }
+
+    public function printPdf(): void
+    {
+        if (!$this->invoice)
+            return;
+
+        $invoiceId = $this->invoice->id;
+        $this->resetData(); // Close modal first
+        $this->dispatch('print-invoice', invoiceId: $invoiceId);
+    }
+
+    public function downloadPdf(): void
+    {
+        if (!$this->invoice)
+            return;
+
+        $invoiceId = $this->invoice->id;
+        $this->dispatch('quick-print-invoice', invoiceId: $invoiceId);
     }
 
     public function render()

@@ -350,9 +350,14 @@
                 {{-- Quick Actions --}}
                 <div class="flex items-center gap-2">
                     @if ($invoice)
+                        {{-- ✅ TAMBAH PRINT BUTTON: --}}
+                        <x-button wire:click="printPdf" color="green" icon="printer" outline size="sm">
+                            Print PDF
+                        </x-button>
+
                         <x-button wire:click="downloadPdf" color="secondary" icon="arrow-down-tray" outline
                             size="sm">
-                            PDF
+                            Download
                         </x-button>
 
                         @if ($invoice->status === 'draft')

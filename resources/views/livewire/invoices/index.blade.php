@@ -16,7 +16,7 @@
                 <x-button color="secondary" icon="document-arrow-down" outline>
                     Export
                 </x-button>
-                <x-button color="primary" icon="plus">
+                <x-button wire:click="createInvoice" color="primary" icon="plus">
                     Buat Invoice Baru
                 </x-button>
             </div>
@@ -442,12 +442,18 @@
                             </div>
 
                             {{-- Secondary Actions --}}
+                            {{-- Di dropdown actions: --}}
                             <div class="border-t border-gray-100 dark:border-gray-700 py-1">
                                 <x-dropdown.items text="Print PDF" icon="printer"
+                                    wire:click="printInvoice({{ $row->id }})"
                                     class="text-gray-600 dark:text-gray-400" />
+
+                                <x-dropdown.items text="Preview PDF" icon="eye"
+                                    wire:click="previewInvoice({{ $row->id }})"
+                                    class="text-gray-600 dark:text-gray-400" />
+
                                 <x-dropdown.items text="Duplikasi" icon="document-duplicate"
-                                    class="text-gray-600 dark:text-gray-400" />
-                                <x-dropdown.items text="Export" icon="arrow-down-tray"
+                                    wire:click="$dispatch('duplicate-invoice', { invoiceId: {{ $row->id }} })"
                                     class="text-gray-600 dark:text-gray-400" />
                             </div>
 
@@ -496,15 +502,20 @@
                 <x-badge text="New" color="purple" />
             </x-slot:right>
 
+            <!-- ✅ GANTI content lama dengan ini: -->
             <div class="text-center py-12">
                 <div
                     class="h-24 w-24 bg-purple-100 dark:bg-purple-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
                     <x-icon name="document-plus" class="w-12 h-12 text-purple-600 dark:text-purple-400" />
                 </div>
                 <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Buat Invoice Baru</h3>
-                <p class="text-gray-600 dark:text-gray-400">Form untuk membuat invoice baru dengan multiple items</p>
-            </div>
+                <p class="text-gray-600 dark:text-gray-400 mb-6">Klik tombol di bawah untuk membuat invoice dengan
+                    multiple items</p>
 
+                <x-button wire:click="createInvoice" color="purple" icon="plus" size="lg">
+                    Buat Invoice Baru
+                </x-button>
+            </div>
         </x-tab.items>
 
     </x-tab>
@@ -518,7 +529,8 @@
             <div class="flex items-center justify-between gap-6">
                 {{-- Selection Info --}}
                 <div class="flex items-center gap-3">
-                    <div class="h-10 w-10 bg-blue-500/10 dark:bg-blue-400/10 rounded-xl flex items-center justify-center">
+                    <div
+                        class="h-10 w-10 bg-blue-500/10 dark:bg-blue-400/10 rounded-xl flex items-center justify-center">
                         <x-icon name="check-circle" class="w-5 h-5 text-blue-600 dark:text-blue-400" />
                     </div>
                     <div>
@@ -533,37 +545,20 @@
                 {{-- Actions --}}
                 <div class="flex items-center gap-2">
                     {{-- Export Selected --}}
-                    <x-button 
-                        wire:click="bulkExport" 
-                        size="sm" 
-                        color="secondary" 
-                        outline 
-                        icon="arrow-down-tray"
-                        class="whitespace-nowrap"
-                    >
+                    <x-button wire:click="bulkExport" size="sm" color="secondary" outline
+                        icon="arrow-down-tray" class="whitespace-nowrap">
                         Export
                     </x-button>
 
                     {{-- Mark as Sent (for draft invoices) --}}
-                    <x-button 
-                        wire:click="bulkSend" 
-                        size="sm" 
-                        color="blue" 
-                        outline 
-                        icon="paper-airplane"
-                        class="whitespace-nowrap"
-                    >
+                    <x-button wire:click="bulkSend" size="sm" color="blue" outline icon="paper-airplane"
+                        class="whitespace-nowrap">
                         Kirim
                     </x-button>
 
                     {{-- Delete Selected --}}
-                    <x-button 
-                        wire:click="openBulkDeleteModal" 
-                        size="sm" 
-                        color="red" 
-                        icon="trash"
-                        class="whitespace-nowrap"
-                    >
+                    <x-button wire:click="openBulkDeleteModal" size="sm" color="red" icon="trash"
+                        class="whitespace-nowrap">
                         Hapus
                     </x-button>
 
@@ -581,7 +576,8 @@
     <x-modal wire="showBulkDeleteModal" size="lg" center persistent>
         <x-slot:title>
             <div class="flex items-center gap-4">
-                <div class="h-12 w-12 bg-gradient-to-br from-red-500 to-red-600 rounded-xl flex items-center justify-center shadow-lg">
+                <div
+                    class="h-12 w-12 bg-gradient-to-br from-red-500 to-red-600 rounded-xl flex items-center justify-center shadow-lg">
                     <x-icon name="trash" class="w-6 h-6 text-white" />
                 </div>
                 <div>
@@ -595,13 +591,14 @@
             {{-- Warning --}}
             <div class="bg-red-50 dark:bg-red-900/20 rounded-xl p-4 border border-red-200/50 dark:border-red-700/50">
                 <div class="flex items-start gap-3">
-                    <div class="h-8 w-8 bg-red-500/20 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <div
+                        class="h-8 w-8 bg-red-500/20 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
                         <x-icon name="exclamation-triangle" class="w-4 h-4 text-red-600 dark:text-red-400" />
                     </div>
                     <div>
                         <h4 class="font-semibold text-red-900 dark:text-red-100 mb-1">Perhatian!</h4>
                         <p class="text-sm text-red-800 dark:text-red-200 mb-3">
-                            Anda akan menghapus <strong>{{ count($selected) }}</strong> invoice secara permanen. 
+                            Anda akan menghapus <strong>{{ count($selected) }}</strong> invoice secara permanen.
                             Tindakan ini tidak dapat dibatalkan.
                         </p>
                         <div class="bg-red-100 dark:bg-red-800/30 rounded-lg p-3">
@@ -619,10 +616,12 @@
             </div>
 
             {{-- Selected Invoice Count Info --}}
-            <div class="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-4 border border-gray-200/50 dark:border-gray-700/50">
+            <div
+                class="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-4 border border-gray-200/50 dark:border-gray-700/50">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-3">
-                        <div class="h-10 w-10 bg-blue-500/10 dark:bg-blue-400/10 rounded-xl flex items-center justify-center">
+                        <div
+                            class="h-10 w-10 bg-blue-500/10 dark:bg-blue-400/10 rounded-xl flex items-center justify-center">
                             <x-icon name="document-text" class="w-5 h-5 text-blue-600 dark:text-blue-400" />
                         </div>
                         <div>
@@ -643,14 +642,9 @@
                 <x-button @click="$wire.set('showBulkDeleteModal', false)" color="secondary">
                     Batal
                 </x-button>
-                
-                <x-button 
-                    wire:click="bulkDelete" 
-                    color="red" 
-                    icon="trash" 
-                    wire:loading.attr="disabled"
-                    wire:target="bulkDelete"
-                >
+
+                <x-button wire:click="bulkDelete" color="red" icon="trash" wire:loading.attr="disabled"
+                    wire:target="bulkDelete">
                     <span wire:loading.remove wire:target="bulkDelete">Hapus Semua Invoice</span>
                     <span wire:loading wire:target="bulkDelete">Menghapus...</span>
                 </x-button>
@@ -660,6 +654,19 @@
 
     {{-- Livewire Components --}}
     <livewire:invoices.show />
+    <livewire:invoices.create />
     <livewire:invoices.delete />
     <livewire:payments.create />
+
+    {{-- ✅ CORRECTED: JavaScript di bagian terpisah --}}
+    @push('scripts')
+        <script>
+            document.addEventListener('livewire:initialized', () => {
+                // Handle PDF preview
+                Livewire.on('open-url', (data) => {
+                    window.open(data.url, '_blank');
+                });
+            });
+        </script>
+    @endpush
 </section>
