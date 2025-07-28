@@ -22,10 +22,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/bank-accounts', BankAccounts::class)->name('bank-accounts');
 
     // Features
-    Route::get('/invoices', InvoiceManagement::class)->name('invoices');
+    Route::get('/invoices', Invoices::class)->name('invoices');
 
     Route::get('/bank-accounts', BankAccounts::class)->name('bank-accounts');
-    Route::get('/test', Invoices::class)->name('test');
+    // Route::get('/test', Invoices::class)->name('test');
 
 });
 

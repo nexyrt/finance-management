@@ -151,13 +151,6 @@
                                 placeholder="Semua klien..." searchable class="w-full" />
                         </div>
 
-                        {{-- Search --}}
-                        <div class="space-y-2">
-                            <label class="text-sm font-medium text-zinc-700 dark:text-zinc-300">Cari</label>
-                            <x-input wire:model.live="search" placeholder="Nomor invoice atau nama klien..."
-                                icon="magnifying-glass" />
-                        </div>
-
                         {{-- Clear Filters --}}
                         <div class="space-y-2">
                             <label class="text-sm font-medium text-zinc-700 dark:text-zinc-300">Reset</label>
