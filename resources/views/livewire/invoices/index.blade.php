@@ -83,7 +83,7 @@
     </div>
 
     {{-- Main Tabs Content --}}
-    <x-tab wire:model.live="activeTab">
+    <x-tab selected="invoices">
 
         {{-- Tab 1: Invoice Management --}}
         <x-tab.items tab="invoices">
@@ -91,7 +91,7 @@
                 <x-icon name="document-text" class="w-5 h-5" />
             </x-slot:left>
             <x-slot:right>
-                <x-badge text="{{ $stats['total_invoices'] }}" color="blue" />
+                <x-badge text="{{ $this->calculateStats()['total_invoices'] }}" color="blue" />
             </x-slot:right>
 
             {{-- Filters Section --}}
@@ -290,13 +290,13 @@
                             <div
                                 class="inline-flex items-center gap-1 px-2 py-1 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 rounded-md text-xs font-medium">
                                 <x-icon name="exclamation-triangle" class="w-3 h-3" />
-                                {{ $row->due_date->diffInDays(now()) }} hari lewat
+                                {{ (int) abs($row->due_date->diffInDays(now())) }} hari lewat
                             </div>
                         @elseif($isDueSoon)
                             <div
                                 class="inline-flex items-center gap-1 px-2 py-1 bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-300 rounded-md text-xs font-medium">
                                 <x-icon name="clock" class="w-3 h-3" />
-                                {{ $row->due_date->diffInDays(now()) }} hari lagi
+                                {{ (int) $row->due_date->diffInDays(now()) }} hari lagi
                             </div>
                         @else
                             <div class="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
@@ -431,13 +431,13 @@
                                 @if ($row->status === 'draft')
                                     <x-dropdown.items text="Edit Invoice" icon="pencil"
                                         class="text-blue-600 dark:text-blue-400" />
-                                    <x-dropdown.items text="Kirim Invoice" icon="paper-airplane"
-                                        class="text-green-600 dark:text-green-400" />
+                                    <x-dropdown.items wire:click='sendInvoice({{ $row->id }})' text="Kirim Invoice"
+                                        icon="paper-airplane" class="text-green-600 dark:text-green-400" />
                                 @endif
 
                                 @if (in_array($row->status, ['sent', 'overdue', 'partially_paid']))
                                     <x-dropdown.items text="Catat Pembayaran" icon="currency-dollar"
-                                        class="text-green-600 dark:text-green-400" />
+                                        wire:click="$dispatch('record-payment', { invoiceId: {{ $row->id }} })" />
                                 @endif
                             </div>
 
@@ -452,12 +452,11 @@
                             </div>
 
                             {{-- Danger Actions --}}
-                            @if ($row->status === 'draft')
-                                <div class="border-t border-gray-100 dark:border-gray-700 py-1">
-                                    <x-dropdown.items text="Hapus Invoice" icon="trash"
-                                        class="text-red-600 dark:text-red-400" />
-                                </div>
-                            @endif
+                            <div class="border-t border-gray-100 dark:border-gray-700 py-1">
+                                <x-dropdown.items text="Hapus Invoice" icon="trash"
+                                    wire:click="$dispatch('delete-invoice', { invoiceId: {{ $row->id }} })"
+                                    class="text-red-600 dark:text-red-400" />
+                            </div>
                         </x-dropdown>
                     </div>
                 @endinteract
@@ -510,42 +509,157 @@
 
     </x-tab>
 
-    {{-- Bulk Actions Bar --}}
-    <div x-data="{ show: @entangle('selected').live }" x-show="show.length > 0"
-        x-transition:enter="transition ease-out duration-300 transform"
-        x-transition:enter-start="translate-y-full opacity-0" x-transition:enter-end="translate-y-0 opacity-100"
-        x-transition:leave="transition ease-in duration-200 transform"
-        x-transition:leave-start="translate-y-0 opacity-100" x-transition:leave-end="translate-y-full opacity-0"
-        class="fixed bottom-0 left-1/2 transform -translate-x-1/2 z-50 mb-6">
+    {{-- Enhanced Bulk Actions Bar --}}
+    <div x-data="{ show: @entangle('selected').live }" x-show="show.length > 0" x-transition
+        class="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50">
 
         <div
-            class="bg-white/95 dark:bg-zinc-800/95 backdrop-blur-sm rounded-2xl shadow-2xl border border-zinc-200/50 dark:border-zinc-700/50 px-6 py-4 min-w-80">
-            <div class="flex items-center justify-between gap-4">
+            class="bg-white dark:bg-zinc-800 rounded-xl shadow-lg border border-zinc-200 dark:border-zinc-700 px-6 py-4 min-w-80">
+            <div class="flex items-center justify-between gap-6">
+                {{-- Selection Info --}}
                 <div class="flex items-center gap-3">
-                    <div class="h-10 w-10 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
+                    <div class="h-10 w-10 bg-blue-500/10 dark:bg-blue-400/10 rounded-xl flex items-center justify-center">
                         <x-icon name="check-circle" class="w-5 h-5 text-blue-600 dark:text-blue-400" />
                     </div>
                     <div>
-                        <p class="font-semibold text-zinc-900 dark:text-white"
-                            x-text="`${show.length} invoice dipilih`"></p>
-                        <p class="text-sm text-zinc-500 dark:text-zinc-400">Pilih aksi untuk semua invoice terpilih</p>
+                        <div class="font-semibold text-gray-900 dark:text-white"
+                            x-text="`${show.length} invoice dipilih`"></div>
+                        <div class="text-xs text-gray-500 dark:text-gray-400">
+                            Pilih aksi untuk invoice yang dipilih
+                        </div>
                     </div>
                 </div>
 
+                {{-- Actions --}}
                 <div class="flex items-center gap-2">
-                    <x-button wire:click="$set('selected', [])" color="secondary" size="sm" icon="x-mark">
+                    {{-- Export Selected --}}
+                    <x-button 
+                        wire:click="bulkExport" 
+                        size="sm" 
+                        color="secondary" 
+                        outline 
+                        icon="arrow-down-tray"
+                        class="whitespace-nowrap"
+                    >
+                        Export
+                    </x-button>
+
+                    {{-- Mark as Sent (for draft invoices) --}}
+                    <x-button 
+                        wire:click="bulkSend" 
+                        size="sm" 
+                        color="blue" 
+                        outline 
+                        icon="paper-airplane"
+                        class="whitespace-nowrap"
+                    >
+                        Kirim
+                    </x-button>
+
+                    {{-- Delete Selected --}}
+                    <x-button 
+                        wire:click="openBulkDeleteModal" 
+                        size="sm" 
+                        color="red" 
+                        icon="trash"
+                        class="whitespace-nowrap"
+                    >
+                        Hapus
+                    </x-button>
+
+                    {{-- Cancel Selection --}}
+                    <x-button wire:click="$set('selected', [])" size="sm" color="secondary" icon="x-mark"
+                        class="whitespace-nowrap">
                         Batal
-                    </x-button>
-                    <x-button color="blue" size="sm" icon="paper-airplane">
-                        <span x-text="`Kirim ${show.length} Invoice`"></span>
-                    </x-button>
-                    <x-button color="red" size="sm" icon="trash">
-                        <span x-text="`Hapus ${show.length} Invoice`"></span>
                     </x-button>
                 </div>
             </div>
         </div>
     </div>
 
+    {{-- Bulk Delete Confirmation Modal --}}
+    <x-modal wire="showBulkDeleteModal" size="lg" center persistent>
+        <x-slot:title>
+            <div class="flex items-center gap-4">
+                <div class="h-12 w-12 bg-gradient-to-br from-red-500 to-red-600 rounded-xl flex items-center justify-center shadow-lg">
+                    <x-icon name="trash" class="w-6 h-6 text-white" />
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white">Konfirmasi Bulk Delete</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Hapus beberapa invoice sekaligus</p>
+                </div>
+            </div>
+        </x-slot:title>
+
+        <div class="space-y-6">
+            {{-- Warning --}}
+            <div class="bg-red-50 dark:bg-red-900/20 rounded-xl p-4 border border-red-200/50 dark:border-red-700/50">
+                <div class="flex items-start gap-3">
+                    <div class="h-8 w-8 bg-red-500/20 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <x-icon name="exclamation-triangle" class="w-4 h-4 text-red-600 dark:text-red-400" />
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-red-900 dark:text-red-100 mb-1">Perhatian!</h4>
+                        <p class="text-sm text-red-800 dark:text-red-200 mb-3">
+                            Anda akan menghapus <strong>{{ count($selected) }}</strong> invoice secara permanen. 
+                            Tindakan ini tidak dapat dibatalkan.
+                        </p>
+                        <div class="bg-red-100 dark:bg-red-800/30 rounded-lg p-3">
+                            <div class="text-sm text-red-800 dark:text-red-200">
+                                <div class="font-medium mb-1">Yang akan dihapus:</div>
+                                <ul class="list-disc list-inside space-y-1">
+                                    <li>Invoice beserta semua item yang terkait</li>
+                                    <li>Semua pembayaran yang sudah tercatat (jika ada)</li>
+                                    <li>Riwayat transaksi terkait invoice</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Selected Invoice Count Info --}}
+            <div class="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-4 border border-gray-200/50 dark:border-gray-700/50">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="h-10 w-10 bg-blue-500/10 dark:bg-blue-400/10 rounded-xl flex items-center justify-center">
+                            <x-icon name="document-text" class="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                        </div>
+                        <div>
+                            <div class="font-semibold text-gray-900 dark:text-white">
+                                {{ count($selected) }} Invoice Dipilih
+                            </div>
+                            <div class="text-sm text-gray-600 dark:text-gray-400">
+                                Semua invoice yang dipilih akan dihapus
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <x-slot:footer>
+            <div class="flex justify-end gap-3">
+                <x-button @click="$wire.set('showBulkDeleteModal', false)" color="secondary">
+                    Batal
+                </x-button>
+                
+                <x-button 
+                    wire:click="bulkDelete" 
+                    color="red" 
+                    icon="trash" 
+                    wire:loading.attr="disabled"
+                    wire:target="bulkDelete"
+                >
+                    <span wire:loading.remove wire:target="bulkDelete">Hapus Semua Invoice</span>
+                    <span wire:loading wire:target="bulkDelete">Menghapus...</span>
+                </x-button>
+            </div>
+        </x-slot:footer>
+    </x-modal>
+
+    {{-- Livewire Components --}}
     <livewire:invoices.show />
+    <livewire:invoices.delete />
+    <livewire:payments.create />
 </section>

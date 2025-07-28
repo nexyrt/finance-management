@@ -12,19 +12,29 @@ class Index extends Component
 {
     use WithPagination, Interactions;
 
+    protected $listeners = [
+        'invoice-updated' => '$refresh',
+        'payment-created' => '$refresh', 
+        'invoice-payment-updated' => '$refresh',
+        'confirm-bulk-delete' => 'openBulkDeleteModal',
+    ];
+
     // Tab management
     public string $activeTab = 'invoices';
     
     // Table properties
     public array $selected = [];
     // Sort property harus public dan dengan default values yang proper
-    public array $sort = ['column' => 'invoice_number', 'direction' => 'asc'];
+    public array $sort = ['column' => 'invoice_number', 'direction' => 'desc'];
     public ?int $quantity = 10;
     
     // Filters
     public ?string $search = null;
     public ?string $statusFilter = null;
     public ?string $clientFilter = null;
+
+    // Modal properties
+    public bool $showBulkDeleteModal = false;
 
     public function with(): array
     {
@@ -122,6 +132,16 @@ class Index extends Component
         $this->resetPage();
     }
 
+    public function openBulkDeleteModal(): void
+    {
+        if (empty($this->selected)) {
+            $this->toast()->warning('Warning', 'Pilih minimal satu invoice untuk dihapus')->send();
+            return;
+        }
+        
+        $this->showBulkDeleteModal = true;
+    }
+
     public function updatedSearch(): void
     {
         $this->resetPage();
@@ -135,6 +155,139 @@ class Index extends Component
     public function updatedClientFilter(): void
     {
         $this->resetPage();
+    }
+
+    public function sendInvoice(int $invoiceId): void
+    {
+        try {
+            $invoice = Invoice::find($invoiceId);
+            
+            if (!$invoice) {
+                $this->toast()->error('Error', 'Invoice tidak ditemukan')->send();
+                return;
+            }
+
+            if ($invoice->status !== 'draft') {
+                $this->toast()->warning('Warning', 'Hanya invoice draft yang bisa dikirim')->send();
+                return;
+            }
+
+            $invoice->update(['status' => 'sent']);
+            $this->toast()->success('Berhasil', "Invoice {$invoice->invoice_number} berhasil dikirim")->send();
+            
+        } catch (\Exception $e) {
+            $this->toast()->error('Error', 'Gagal mengirim invoice: ' . $e->getMessage())->send();
+        }
+    }
+
+    public function bulkDelete(): void
+    {
+        if (empty($this->selected)) {
+            $this->toast()->warning('Warning', 'Pilih minimal satu invoice untuk dihapus')->send();
+            return;
+        }
+
+        try {
+            $invoices = Invoice::with(['payments'])->whereIn('id', $this->selected)->get();
+            $deletedCount = 0;
+            $skippedCount = 0;
+            $deletedNumbers = [];
+
+            foreach ($invoices as $invoice) {
+                try {
+                    // Delete related payments first if they exist
+                    if ($invoice->payments->count() > 0) {
+                        $invoice->payments()->delete();
+                    }
+                    
+                    $deletedNumbers[] = $invoice->invoice_number;
+                    $invoice->delete();
+                    $deletedCount++;
+                    
+                } catch (\Exception $e) {
+                    $skippedCount++;
+                    \Log::error("Failed to delete invoice {$invoice->invoice_number}: " . $e->getMessage());
+                }
+            }
+
+            // Reset selection and close modal
+            $this->selected = [];
+            $this->showBulkDeleteModal = false;
+
+            // Show result message
+            if ($deletedCount > 0) {
+                $message = "Berhasil menghapus {$deletedCount} invoice";
+                if ($skippedCount > 0) {
+                    $message .= ", {$skippedCount} invoice gagal dihapus";
+                }
+                
+                $this->dialog()
+                    ->success('Bulk Delete Selesai', $message)
+                    ->send();
+            } else {
+                $this->toast()->error('Error', 'Tidak ada invoice yang berhasil dihapus')->send();
+            }
+
+        } catch (\Exception $e) {
+            $this->toast()->error('Error', 'Gagal melakukan bulk delete: ' . $e->getMessage())->send();
+        }
+    }
+
+    public function bulkSend(): void
+    {
+        if (empty($this->selected)) {
+            $this->toast()->warning('Warning', 'Pilih minimal satu invoice untuk dikirim')->send();
+            return;
+        }
+
+        try {
+            $invoices = Invoice::whereIn('id', $this->selected)
+                ->where('status', 'draft')
+                ->get();
+
+            if ($invoices->isEmpty()) {
+                $this->toast()->warning('Warning', 'Tidak ada invoice draft yang dipilih')->send();
+                return;
+            }
+
+            $sentCount = 0;
+            foreach ($invoices as $invoice) {
+                try {
+                    $invoice->update(['status' => 'sent']);
+                    $sentCount++;
+                } catch (\Exception $e) {
+                    \Log::error("Failed to send invoice {$invoice->invoice_number}: " . $e->getMessage());
+                }
+            }
+
+            // Reset selection
+            $this->selected = [];
+
+            if ($sentCount > 0) {
+                $this->toast()
+                    ->success('Berhasil', "Berhasil mengirim {$sentCount} invoice")
+                    ->send();
+            } else {
+                $this->toast()->error('Error', 'Tidak ada invoice yang berhasil dikirim')->send();
+            }
+
+        } catch (\Exception $e) {
+            $this->toast()->error('Error', 'Gagal mengirim invoice: ' . $e->getMessage())->send();
+        }
+    }
+
+    public function bulkExport(): void
+    {
+        if (empty($this->selected)) {
+            $this->toast()->warning('Warning', 'Pilih minimal satu invoice untuk diekspor')->send();
+            return;
+        }
+
+        // This is a placeholder for bulk export functionality
+        // You can implement actual export logic here (CSV, PDF, Excel, etc.)
+        $this->toast()
+            ->info('Info', 'Fitur export akan segera tersedia')
+            ->send();
     }
 
     public function render()
