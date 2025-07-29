@@ -14,47 +14,30 @@ class TestingPage extends Component
     public $client_type = 'individual'; // individual or company
     public $name = '';
     public $email = '';
-    public $phone = '';
-    public $tax_id = '';
-    public $birth_date = '';
-    public $salary = '';
-    public $credit_card = '';
-    
-    // Address
+    public $NPWP = '';
+    public $KPP = '';
+    public $EFIN = '';
+    public $account_representative = '';
+    public $ar_phone_number = '';
+    public $person_in_charge = '';
     public $address = '';
-    public $city = '';
-    public $postal_code = '';
-    public $country = 'Indonesia';
-
-    // Company specific (if client_type is company)
-    public $company_name = '';
-    public $company_registration = '';
-    public $website = '';
+    public $status = 'Active';
 
     public function rules()
     {
-        $rules = [
+        return [
             'client_type' => 'required|in:individual,company',
             'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255',
-            'phone' => 'required|string|max:20',
-            'address' => 'required|string|max:500',
-            'city' => 'required|string|max:100',
-            'postal_code' => 'required|string|max:10',
-            'country' => 'required|string|max:100',
+            'email' => 'nullable|email|max:255|unique:clients,email',
+            'NPWP' => 'nullable|string|max:20',
+            'KPP' => 'nullable|string|max:255',
+            'EFIN' => 'nullable|string|max:255',
+            'account_representative' => 'nullable|string|max:255',
+            'ar_phone_number' => 'nullable|string|max:20',
+            'person_in_charge' => 'nullable|string|max:255',
+            'address' => 'nullable|string|max:500',
+            'status' => 'required|in:Active,Inactive',
         ];
-
-        if ($this->client_type === 'individual') {
-            $rules['birth_date'] = 'nullable|date';
-            $rules['tax_id'] = 'nullable|string|max:20';
-        } else {
-            $rules['company_name'] = 'required|string|max:255';
-            $rules['company_registration'] = 'required|string|max:50';
-            $rules['tax_id'] = 'required|string|max:20';
-            $rules['website'] = 'nullable|url|max:255';
-        }
-
-        return $rules;
     }
 
     public function submit()
@@ -69,72 +52,48 @@ class TestingPage extends Component
                 'type' => $this->client_type,
                 'name' => $this->name,
                 'email' => $this->email,
-                'phone' => $this->phone,
-                'tax_id' => $this->tax_id,
+                'NPWP' => $this->NPWP,
+                'KPP' => $this->KPP,
+                'EFIN' => $this->EFIN,
+                'account_representative' => $this->account_representative,
+                'ar_phone_number' => $this->ar_phone_number,
+                'person_in_charge' => $this->person_in_charge,
                 'address' => $this->address,
-                'city' => $this->city,
-                'postal_code' => $this->postal_code,
-                'country' => $this->country,
+                'status' => $this->status,
             ];
 
-            if ($this->client_type === 'individual') {
-                $clientData['birth_date'] = $this->birth_date ? \Carbon\Carbon::createFromFormat('d/m/Y', $this->birth_date)->format('Y-m-d') : null;
-            } else {
-                $clientData['company_name'] = $this->company_name;
-                $clientData['company_registration'] = $this->company_registration;
-                $clientData['website'] = $this->website;
-            }
+            // Create client
+            Client::create($clientData);
 
-            // Create client (uncomment when Client model is ready)
-            // Client::create($clientData);
-
-            $this->toast()->success('Client berhasil disimpan!')->send();
+            $this->dialog()->success('Berhasil!', 'Client berhasil disimpan!')->send();
             $this->resetForm();
 
-            // For testing - show the cleaned data
-            dd($clientData);
-
         } catch (\Exception $e) {
-            $this->toast()->error('Gagal menyimpan client: ' . $e->getMessage())->send();
+            $this->dialog()->error('Gagal!', 'Gagal menyimpan client: ' . $e->getMessage())->send();
         }
     }
 
     private function cleanFormData()
     {
+        // Clean NPWP (remove non-alphanumeric characters)
+        if ($this->NPWP) {
+            $this->NPWP = preg_replace('/[^\d\.]/', '', $this->NPWP);
+        }
+        
         // Clean phone number (remove non-digits)
-        $this->phone = preg_replace('/[^\d]/', '', $this->phone);
-        
-        // Clean postal code (remove non-digits)
-        $this->postal_code = preg_replace('/[^\d]/', '', $this->postal_code);
-        
-        // Clean tax ID (remove non-alphanumeric)
-        $this->tax_id = preg_replace('/[^\w]/', '', $this->tax_id);
-        
-        // Clean salary (remove non-digits)
-        if ($this->salary) {
-            $this->salary = preg_replace('/[^\d]/', '', $this->salary);
-            $this->salary = (int) $this->salary;
-        }
-        
-        // Clean credit card (remove non-digits)
-        if ($this->credit_card) {
-            $this->credit_card = preg_replace('/[^\d]/', '', $this->credit_card);
-        }
-        
-        // Clean company registration (remove non-alphanumeric)
-        if ($this->company_registration) {
-            $this->company_registration = preg_replace('/[^\w]/', '', $this->company_registration);
+        if ($this->ar_phone_number) {
+            $this->ar_phone_number = preg_replace('/[^\d]/', '', $this->ar_phone_number);
         }
     }
 
     public function resetForm()
     {
         $this->reset([
-            'name', 'email', 'phone', 'tax_id', 'birth_date', 'salary', 'credit_card',
-            'address', 'city', 'postal_code', 'company_name', 'company_registration', 'website'
+            'name', 'email', 'NPWP', 'KPP', 'EFIN', 'account_representative', 
+            'ar_phone_number', 'person_in_charge', 'address'
         ]);
         $this->client_type = 'individual';
-        $this->country = 'Indonesia';
+        $this->status = 'Active';
     }
 
     public function render()
