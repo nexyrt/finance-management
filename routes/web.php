@@ -8,6 +8,7 @@ use App\Livewire\ServiceManagement;
 use App\Livewire\Settings\Appearance;
 use App\Livewire\Settings\Password;
 use App\Livewire\Settings\Profile;
+use App\Livewire\TestingPage;
 use App\Models\Invoice;
 use Illuminate\Support\Facades\Route;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -68,8 +69,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return $pdf->download($safeFilename);
     })->name('invoices.print');
     
-    // ❌ ROUTE INI DIHAPUS:
-    // Route::get('/invoices/{invoice}/preview', ...)->name('invoices.preview');
+    Route::get('test', TestingPage::class)->name('test');
 });
 
 Route::middleware(['auth'])->group(function () {
