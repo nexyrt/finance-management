@@ -1,5 +1,5 @@
 <div>
-    <x-modal wire="showModal" size="6xl" center id="invoice-create-modal" x-on:close="$wire.resetData()">
+    <x-modal wire="showModal" size="6xl" center id="invoice-create-modal" x-on:close="$wire.resetData()" persistent>
         <x-slot:header>
             <div class="flex items-center gap-4">
                 <div class="h-12 w-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
