@@ -23,6 +23,10 @@
         </div>
     </div>
 
+    <x-button x-on:click="$modalOpen('testing-modal')" color="primary">
+        Open Modal
+    </x-button>
+
     {{-- Stats Cards --}}
     <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <div
@@ -405,10 +409,6 @@
                 {{-- Actions Column --}}
                 @interact('column_actions', $row)
                     <div class="flex items-center gap-2">
-                        {{-- Quick View Button --}}
-                        <x-button size="sm" color="secondary" outline icon="eye"
-                            class="opacity-70 hover:opacity-100 transition-opacity">
-                        </x-button>
 
                         {{-- Main Actions Dropdown --}}
                         <x-dropdown icon="ellipsis-vertical" class="relative">
@@ -649,16 +649,5 @@
     <livewire:invoices.create />
     <livewire:invoices.delete />
     <livewire:payments.create />
-
-    {{-- ✅ CORRECTED: JavaScript di bagian terpisah --}}
-    @push('scripts')
-        <script>
-            document.addEventListener('livewire:initialized', () => {
-                // Handle PDF preview
-                Livewire.on('open-url', (data) => {
-                    window.open(data.url, '_blank');
-                });
-            });
-        </script>
-    @endpush
+    <livewire:testing-page />
 </section>
