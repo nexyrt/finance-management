@@ -427,10 +427,9 @@
                             <div class="py-1">
                                 <x-dropdown.items text="Lihat Detail" icon="eye"
                                     wire:click="$dispatch('show-invoice', { invoiceId: {{ $row->id }} })" />
-
+                                <x-dropdown.items text="Edit Invoice" icon="pencil" x-on:click="$modalOpen('edit-invoice-modal')" wire:click="$dispatch('edit-invoice', { invoiceId: {{ $row->id }} })"
+                                    class="text-blue-600 dark:text-blue-400" />
                                 @if ($row->status === 'draft')
-                                    <x-dropdown.items text="Edit Invoice" icon="pencil"
-                                        class="text-blue-600 dark:text-blue-400" />
                                     <x-dropdown.items wire:click='sendInvoice({{ $row->id }})' text="Kirim Invoice"
                                         icon="paper-airplane" class="text-green-600 dark:text-green-400" />
                                 @endif
@@ -537,16 +536,16 @@
                 {{-- Actions --}}
                 <div class="flex items-center gap-2">
                     {{-- Export Selected --}}
-                    <x-button wire:click="bulkExport" size="sm" color="secondary" outline
+                    {{-- <x-button wire:click="bulkExport" size="sm" color="secondary" outline
                         icon="arrow-down-tray" class="whitespace-nowrap">
                         Export
-                    </x-button>
+                    </x-button> --}}
 
                     {{-- Mark as Sent (for draft invoices) --}}
-                    <x-button wire:click="bulkSend" size="sm" color="blue" outline icon="paper-airplane"
+                    {{-- <x-button wire:click="bulkSend" size="sm" color="blue" outline icon="paper-airplane"
                         class="whitespace-nowrap">
                         Kirim
-                    </x-button>
+                    </x-button> --}}
 
                     {{-- Delete Selected --}}
                     <x-button wire:click="openBulkDeleteModal" size="sm" color="red" icon="trash"
@@ -647,6 +646,7 @@
     {{-- Livewire Components --}}
     <livewire:invoices.show />
     <livewire:invoices.create />
+    <livewire:invoices.edit />
     <livewire:invoices.delete />
     <livewire:payments.create />
     <livewire:testing-page />
