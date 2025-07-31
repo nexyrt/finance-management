@@ -23,10 +23,6 @@
         </div>
     </div>
 
-    <x-button x-on:click="$modalOpen('testing-modal')" color="primary">
-        Open Modal
-    </x-button>
-
     {{-- Stats Cards --}}
     <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <div
@@ -427,7 +423,7 @@
                             <div class="py-1">
                                 <x-dropdown.items text="Lihat Detail" icon="eye"
                                     wire:click="$dispatch('show-invoice', { invoiceId: {{ $row->id }} })" />
-                                <x-dropdown.items text="Edit Invoice" icon="pencil" x-on:click="$modalOpen('edit-invoice-modal')" wire:click="$dispatch('edit-invoice', { invoiceId: {{ $row->id }} })"
+                                <x-dropdown.items text="Edit Invoice" icon="pencil" wire:click="$dispatch('edit-invoice', { invoiceId: {{ $row->id }} })"
                                     class="text-blue-600 dark:text-blue-400" />
                                 @if ($row->status === 'draft')
                                     <x-dropdown.items wire:click='sendInvoice({{ $row->id }})' text="Kirim Invoice"
