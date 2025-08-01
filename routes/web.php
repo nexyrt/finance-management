@@ -2,7 +2,8 @@
 
 use App\Livewire\BankAccounts;
 use App\Livewire\Clients\Index as Clients;
-use App\Livewire\Invoices\Index as Invoices;
+use App\Livewire\Invoices\Index as InvoicesIndex;
+use App\Livewire\Invoices\Edit as EditInvoice;
 use App\Livewire\Dashboard;
 use App\Livewire\ServiceManagement;
 use App\Livewire\Settings\Appearance;
@@ -23,13 +24,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/bank-accounts', BankAccounts::class)->name('bank-accounts');
 
     // Features
-    Route::get('/invoices', Invoices::class)->name('invoices');
+    Route::prefix('invoices')->name('invoices.')->group(function () {
+        Route::get('/', InvoicesIndex::class)->name('index');
+        Route::get('/{invoice}/edit', EditInvoice::class)->name('edit');
+    });
 
     // ✅ PDF PRINT dengan filename sanitization
     Route::get('/invoices/{invoice}/print', function (Invoice $invoice) {
         // Load relationships
         $invoice->load(['client', 'items.client', 'payments.bankAccount']);
-        
+
         // Company info
         $company = [
             'name' => 'Finance Management System',
@@ -38,7 +42,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             'email' => 'info@finance.com',
             'website' => 'www.finance.com',
         ];
-        
+
         // Prepare data
         $data = [
             'invoice' => $invoice,
@@ -65,11 +69,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         // ✅ SANITIZE filename - ganti karakter invalid
         $safeFilename = 'Invoice-' . str_replace(['/', '\\', ':', '*', '?', '"', '<', '>', '|'], '-', $invoice->invoice_number) . '.pdf';
-        
+
         return $pdf->download($safeFilename);
     })->name('invoices.print');
-    
-    Route::get('test', TestingPage::class)->name('test');
+
+    Route::get('/testing/{invoiceId?}', TestingPage::class)->name('test');
 });
 
 Route::middleware(['auth'])->group(function () {

@@ -423,7 +423,8 @@
                             <div class="py-1">
                                 <x-dropdown.items text="Lihat Detail" icon="eye"
                                     wire:click="$dispatch('show-invoice', { invoiceId: {{ $row->id }} })" />
-                                <x-dropdown.items text="Edit Invoice" icon="pencil" wire:click="$dispatch('edit-invoice', { invoiceId: {{ $row->id }} })"
+                                <x-dropdown.items text="Edit Invoice" icon="pencil"
+                                    href="{{ route('invoices.edit', $row->id) }}"
                                     class="text-blue-600 dark:text-blue-400" />
                                 @if ($row->status === 'draft')
                                     <x-dropdown.items wire:click='sendInvoice({{ $row->id }})' text="Kirim Invoice"
@@ -642,8 +643,6 @@
     {{-- Livewire Components --}}
     <livewire:invoices.show />
     <livewire:invoices.create />
-    <livewire:invoices.edit />
     <livewire:invoices.delete />
     <livewire:payments.create />
-    <livewire:testing-page />
 </section>
