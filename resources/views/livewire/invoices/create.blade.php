@@ -162,7 +162,7 @@
                                 {{-- Unit Price --}}
                                 <div>
                                     <x-wireui-currency 
-                                        wire:model.live="items.{{ $index }}.unit_price" 
+                                        wire:model.live.debounce.800ms="items.{{ $index }}.unit_price" 
                                         label="Harga Satuan *" 
                                         placeholder="0"
                                         prefix="Rp"
