@@ -24,6 +24,11 @@ class Edit extends Component
     public $due_date = '';
     public $status = 'draft';
     
+    // Discount fields
+    public $discount_type = 'fixed';
+    public $discount_value = 0;
+    public $discount_reason = '';
+    
     // Items array
     public $items = [];
 
@@ -60,6 +65,11 @@ class Edit extends Component
         $this->issue_date = $this->invoice->issue_date->format('Y-m-d');
         $this->due_date = $this->invoice->due_date->format('Y-m-d');
         $this->status = $this->invoice->status;
+        
+        // Load discount data
+        $this->discount_type = $this->invoice->discount_type;
+        $this->discount_value = $this->invoice->discount_value;
+        $this->discount_reason = $this->invoice->discount_reason ?? '';
         
         if ($this->invoice->items->isNotEmpty()) {
             $this->items = $this->invoice->items->map(function ($item) {
@@ -129,6 +139,11 @@ class Edit extends Component
                 $this->setServiceDetails($index);
             }
         }
+        
+        // Recalculate discount when discount fields change
+        if (in_array($propertyName, ['discount_type', 'discount_value'])) {
+            // Auto-update will trigger getGrandTotalProperty recalculation
+        }
     }
 
     public function calculateTotal($index)
@@ -151,9 +166,25 @@ class Edit extends Component
         }
     }
 
-    public function getGrandTotalProperty()
+    public function getSubtotalProperty()
     {
         return collect($this->items)->sum('total');
+    }
+
+    public function getDiscountAmountProperty()
+    {
+        if ($this->discount_type === 'percentage') {
+            // discount_value stored as percentage * 100 (e.g., 1500 = 15%)
+            return (int) (($this->subtotal * $this->discount_value) / 10000);
+        } else {
+            // Fixed amount discount
+            return (int) $this->discount_value;
+        }
+    }
+
+    public function getGrandTotalProperty()
+    {
+        return max(0, $this->subtotal - $this->discountAmount);
     }
 
     public function save()
@@ -189,7 +220,11 @@ class Edit extends Component
         $this->invoice->update([
             'invoice_number' => $this->invoice_number,
             'billed_to_id' => $this->billed_to_id,
-            'subtotal' => $this->grandTotal,
+            'subtotal' => $this->subtotal,
+            'discount_type' => $this->discount_type,
+            'discount_value' => $this->discount_value,
+            'discount_amount' => $this->discountAmount,
+            'discount_reason' => $this->discount_reason,
             'total_amount' => $this->grandTotal,
             'issue_date' => $this->issue_date,
             'due_date' => $this->due_date,

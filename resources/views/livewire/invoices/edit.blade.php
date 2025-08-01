@@ -1,4 +1,4 @@
-<div class="max-w-7xl mx-auto p-6">
+<div class="max-w-6xl mx-auto p-6">
     <!-- Header -->
     <div class="mb-6">
         <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100">
@@ -139,12 +139,76 @@
             @endforelse
         </div>
     </div>
+
+    <!-- Discount Section -->
+    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 mb-6">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Discount</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <x-select.styled 
+                wire:model.live="discount_type"
+                :options="[
+                    ['label' => 'Fixed Amount', 'value' => 'fixed'],
+                    ['label' => 'Percentage', 'value' => 'percentage']
+                ]"
+                label="Discount Type" />
+            
+            <div>
+                @if($discount_type === 'percentage')
+                    <x-input 
+                        wire:model.live="discount_value"
+                        type="number"
+                        min="0"
+                        max="10000"
+                        step="100"
+                        label="Discount Value (%)"
+                        hint="Example: 1500 = 15%" />
+                @else
+                    <x-wireui-currency
+                        wire:model.blur="discount_value"
+                        label="Discount Amount" />
+                @endif
+            </div>
+            
+            <x-input 
+                wire:model="discount_reason"
+                label="Discount Reason"
+                placeholder="Optional reason" />
+        </div>
+        
+        <!-- Discount Preview -->
+        @if($this->discountAmount > 0)
+            <div class="mt-4 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                <div class="flex justify-between items-center text-sm">
+                    <span class="text-green-700 dark:text-green-300">
+                        Discount Applied:
+                        @if($discount_type === 'percentage')
+                            {{ number_format($discount_value / 100, 2) }}% 
+                        @else
+                            Fixed Amount
+                        @endif
+                    </span>
+                    <span class="font-semibold text-green-800 dark:text-green-200">
+                        -Rp {{ number_format($this->discountAmount, 0, ',', '.') }}
+                    </span>
+                </div>
+            </div>
+        @endif
+    </div>
     
     <!-- Footer Actions -->
     <div class="flex justify-between items-center">
-        <div class="text-sm text-gray-600 dark:text-gray-400">
-            Total {{ count($items) }} item(s) • Grand Total: 
-            <span class="font-bold text-gray-900 dark:text-gray-100">Rp {{ number_format($this->grandTotal, 0, ',', '.') }}</span>
+        <div class="text-sm text-gray-600 dark:text-gray-400 space-y-1">
+            <div>Total {{ count($items) }} item(s) • Subtotal: 
+                <span class="font-medium text-gray-900 dark:text-gray-100">Rp {{ number_format($this->subtotal, 0, ',', '.') }}</span>
+            </div>
+            @if($this->discountAmount > 0)
+                <div>Discount: 
+                    <span class="font-medium text-green-600 dark:text-green-400">-Rp {{ number_format($this->discountAmount, 0, ',', '.') }}</span>
+                </div>
+            @endif
+            <div>Grand Total: 
+                <span class="font-bold text-lg text-gray-900 dark:text-gray-100">Rp {{ number_format($this->grandTotal, 0, ',', '.') }}</span>
+            </div>
         </div>
         
         <div class="flex space-x-3">
