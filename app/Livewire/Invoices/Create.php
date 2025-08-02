@@ -59,14 +59,25 @@ class Create extends Component
         $currentMonth = $date->format('m');
         $currentYear = $date->format('y');
 
-        // Count invoices in selected month/year
-        $monthlyCount = Invoice::whereYear('issue_date', $date->year)
+        // Find highest sequence number in selected month/year
+        $invoices = Invoice::whereYear('issue_date', $date->year)
             ->whereMonth('issue_date', $date->month)
-            ->count() + 1;
+            ->pluck('invoice_number');
+
+        $maxSequence = 0;
+        foreach ($invoices as $invoiceNumber) {
+            // Extract sequence from format INV/XX/JKB/MM.YY
+            if (preg_match('/INV\/(\d+)\/JKB\/\d{2}\.\d{2}/', $invoiceNumber, $matches)) {
+                $sequence = (int) $matches[1];
+                $maxSequence = max($maxSequence, $sequence);
+            }
+        }
+
+        $nextSequence = $maxSequence + 1;
 
         $this->invoice_number = sprintf(
             'INV/%02d/JKB/%02d.%s',
-            $monthlyCount,
+            $nextSequence,
             (int) $currentMonth,
             $currentYear
         );
