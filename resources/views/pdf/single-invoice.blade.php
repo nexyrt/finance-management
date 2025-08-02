@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="utf-8">
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>Invoice {{ $invoice->invoice_number }}</title>
     <style>
         * {
@@ -10,78 +11,79 @@
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: Arial, sans-serif;
             font-size: 15px;
             line-height: 1.4;
             color: #333;
         }
-        
+
         .container {
             max-width: 100%;
             margin: 0;
             padding: 15px;
         }
-        
+
         /* Header dengan logo JKB */
         .header {
-            @if($company['logo_base64'])
+            @if ($company['logo_base64'])
                 background: url('{{ $company['logo_base64'] }}') no-repeat center;
                 background-size: cover;
             @else
                 background: linear-gradient(90deg, #ff6b35 0%, #1e3a8a 100%);
             @endif
-            height: 200px; /* Adjusted height for better visibility */
+            height: 200px;
+            /* Adjusted height for better visibility */
             margin: -15px -20px 0px -15px;
             border: none;
         }
-        
+
         .logo-section {
             display: table;
             width: 100%;
         }
-        
+
         .logo {
             display: table-cell;
             width: 80px;
             vertical-align: middle;
         }
-        
+
         .logo-text {
             font-size: 48px;
             font-weight: bold;
             color: white;
             line-height: 0.8;
         }
-        
+
         .company-info {
             display: table-cell;
             vertical-align: middle;
             padding-left: 15px;
         }
-        
+
         .company-name {
             font-size: 24px;
             font-weight: bold;
             margin-bottom: 5px;
         }
-        
+
         .company-address {
             font-size: 15px;
             line-height: 1.3;
             margin-bottom: 8px;
         }
-        
+
         .company-contact {
             font-size: 15px;
         }
-        
+
         .contact-item {
             display: inline-block;
             margin-right: 20px;
         }
-        
+
         /* Invoice Title */
         .invoice-title {
             background: #1F4E78;
@@ -92,50 +94,50 @@
             font-size: 20px;
             font-weight: bold;
         }
-        
+
         /* Main Content */
         .main-content {
             display: table;
             width: 100%;
             margin-bottom: 20px;
         }
-        
+
         .left-section {
             display: table-cell;
             width: 50%;
             vertical-align: top;
             padding-right: 20px;
         }
-        
+
         .right-section {
             display: table-cell;
             width: 50%;
             vertical-align: top;
         }
-        
+
         .section-title {
             font-weight: bold;
             margin-bottom: 10px;
             color: #1e3a8a;
         }
-        
+
         .client-name {
             font-size: 16px;
             font-weight: bold;
             margin-bottom: 5px;
         }
-        
+
         .info-grid {
             display: table;
             width: 100%;
             background: #f8f9fa;
             border: 1px solid #dee2e6;
         }
-        
+
         .info-row {
             display: table-row;
         }
-        
+
         .info-label {
             display: table-cell;
             padding: 8px;
@@ -144,22 +146,22 @@
             border: 1px solid #dee2e6;
             width: 40%;
         }
-        
+
         .info-value {
             display: table-cell;
             padding: 8px;
             border: 1px solid #dee2e6;
         }
-        
+
         /* Items Table */
         .items-table {
             width: 100%;
             border-collapse: collapse;
             margin: 20px 0;
         }
-        
+
         .items-table th {
-            background: #ff6b35;
+            background: #DD7711;
             color: white;
             border: 2px solid #000000;
             padding: 10px 8px;
@@ -167,93 +169,152 @@
             font-weight: bold;
             font-size: 15px;
         }
-        
+
         .items-table td {
             border: 1px solid #000000;
             padding: 10px 8px;
             text-align: center;
             font-size: 15px;
         }
-        
+
         .items-table .text-left {
             text-align: left;
         }
-        
+
         .items-table .text-right {
             text-align: right;
         }
-        
+
+        /* Currency formatting with justify space-between for table cells */
+        .currency-cell {
+            display: table;
+            width: 100%;
+        }
+
+        .currency-left {
+            display: table-cell;
+            text-align: left;
+            width: 30%;
+        }
+
+        .currency-right {
+            display: table-cell;
+            text-align: right;
+            width: 70%;
+        }
+
         /* Total Section */
         .total-section {
-            width: 300px;
-            margin-left: auto;
-            margin-bottom: 30px;
+            width: 100%;
+            margin-bottom: 20px;
         }
-        
+
         .total-row {
             display: table;
             width: 100%;
             margin-bottom: 5px;
         }
-        
+
         .total-label {
             display: table-cell;
             font-weight: bold;
             padding: 8px;
-            background: #1e3a8a;
-            color: white;
-            border: 1px solid #1e3a8a;
+            color: black;
+            border-top: 1px solid #000000;
+            border-bottom: 3px double #000000;
+            font-style: italic;
         }
-        
+
         .total-value {
             display: table-cell;
             font-weight: bold;
             padding: 8px;
-            background: #3b82f6;
+            background: #2F75B5;
             color: white;
-            border: 1px solid #3b82f6;
-            text-align: right;
+            border: 1px solid #2F75B5;
+            font-style: italic;
         }
-        
-        /* Footer Section */
+
+        .total-value-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+
+        /* Footer Section Grid */
         .footer-section {
             display: table;
             width: 100%;
             margin-top: 30px;
         }
-        
-        .payment-section {
+
+        .footer-left {
             display: table-cell;
             width: 50%;
             vertical-align: top;
             padding-right: 20px;
         }
-        
-        .signature-section {
+
+        .footer-right {
             display: table-cell;
             width: 50%;
             vertical-align: top;
+        }
+
+        .grand-total-section {
+            margin-bottom: 20px;
+        }
+
+        .grand-total-row {
+            display: table;
+            width: 100%;
+            margin-bottom: 5px;
+        }
+
+        .grand-total-label {
+            display: table-cell;
+            font-weight: bold;
+            padding: 3px;
+            background: #BFBFBF;
+            color: black;
+            border: 1px solid #BFBFBF;
+            font-size: 16px;
+        }
+
+        .grand-total-value {
+            display: table-cell;
+            font-weight: bold;
+            padding: 3px;
+            background: #BFBFBF;
+            color: black;
+            border: 1px solid #BFBFBF;
+            text-align: right;
+            font-size: 16px;
+        }
+
+        .signature-section {
             text-align: center;
         }
-        
+
         .payment-method {
             background: #f8f9fa;
             border: 1px solid #dee2e6;
             padding: 10px;
             margin-bottom: 10px;
         }
-        
+
         .payment-title {
             font-weight: bold;
             margin-bottom: 5px;
             color: #1e3a8a;
         }
-        
+
         .bank-info {
             font-size: 15px;
             line-height: 1.4;
         }
-        
+
         .terbilang {
             font-style: italic;
             margin: 10px 0;
@@ -261,25 +322,25 @@
             background: #f8f9fa;
             border-left: 3px solid #ff6b35;
         }
-        
+
         .signature-box {
             padding: 60px 20px 20px 20px;
             margin-top: 20px;
             position: relative;
         }
-        
+
         .signature-name {
             font-weight: bold;
             border-bottom: 1px solid #333;
             padding-bottom: 5px;
             margin-bottom: 5px;
         }
-        
+
         .signature-position {
             font-size: 15px;
             color: #666;
         }
-        
+
         .signature-image {
             position: absolute;
             top: 10px;
@@ -288,7 +349,7 @@
             width: 120px;
             height: auto;
         }
-        
+
         .company-stamp {
             position: absolute;
             left: 210px;
@@ -298,6 +359,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <!-- Header dengan Logo -->
@@ -312,7 +374,7 @@
                 <div class="section-title">TAGIHAN KEPADA :</div>
                 <div class="client-name">{{ strtoupper($client->name) }}</div>
             </div>
-            
+
             <div class="right-section">
                 <div class="info-grid">
                     <div class="info-row">
@@ -347,73 +409,95 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach($items as $index => $item)
-                <tr>
-                    <td>{{ $index + 1 }}</td>
-                    <td class="text-left">{{ $item->service_name }}</td>
-                    <td>{{ number_format($item->quantity) }}</td>
-                    <td class="text-right">IDR {{ number_format($item->unit_price, 0, ',', '.') }}</td>
-                    <td class="text-right">IDR {{ number_format($item->amount, 0, ',', '.') }}</td>
-                </tr>
+                @foreach ($items as $index => $item)
+                    <tr>
+                        <td>{{ $index + 1 }}</td>
+                        <td class="text-left">{{ $item->service_name }}</td>
+                        <td>{{ number_format($item->quantity) }}</td>
+                        <td>
+                            <div class="currency-cell">
+                                <div class="currency-left">IDR</div>
+                                <div class="currency-right">{{ number_format($item->unit_price, 0, ',', '.') }}</div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="currency-cell">
+                                <div class="currency-left">IDR</div>
+                                <div class="currency-right">{{ number_format($item->amount, 0, ',', '.') }}</div>
+                            </div>
+                        </td>
+                    </tr>
                 @endforeach
             </tbody>
         </table>
 
-        <!-- Total -->
-        <div class="total-section">
-            <div class="total-row">
-                <div class="total-label">GRAND TOTAL</div>
-                <div class="total-value">IDR {{ number_format($invoice->total_amount, 0, ',', '.') }}</div>
-            </div>
-        </div>
-
-        <!-- Footer Section -->
+        <!-- Footer Section Grid -->
         <div class="footer-section">
-            <!-- Payment Methods -->
-            <div class="payment-section">
-                @foreach($company['bank_accounts'] as $index => $bank)
-                <div class="payment-method">
-                    <div class="payment-title">Metode Pembayaran #{{ $index + 1 }}</div>
-                    <div class="bank-info">
-                        <strong>Bank:</strong> {{ $bank['bank'] }}<br>
-                        <strong>No. Rek:</strong> {{ $bank['account_number'] }}<br>
-                        <strong>Atas Nama:</strong> {{ $bank['account_name'] }}
+            <!-- Kolom Kiri: Payment Methods, Terbilang, Jumlah Ditagih -->
+            <div class="footer-left">
+                <!-- Payment Methods -->
+                @foreach ($company['bank_accounts'] as $index => $bank)
+                    <div class="payment-method">
+                        <div class="payment-title">Metode Pembayaran #{{ $index + 1 }}</div>
+                        <div class="bank-info">
+                            <strong>Bank:</strong> {{ $bank['bank'] }}<br>
+                            <strong>No. Rek:</strong> {{ $bank['account_number'] }}<br>
+                            <strong>Atas Nama:</strong> {{ $bank['account_name'] }}
+                        </div>
+                    </div>
+                @endforeach
+
+                <!-- Terbilang -->
+                <div class="terbilang">
+                    Terbilang:<br>
+                    <strong>{{ $terbilang }} Rupiah</strong>
+                </div>
+            </div>
+
+            <!-- Kolom Kanan: Grand Total dan Signature -->
+            <div class="footer-right">
+                <!-- Grand Total -->
+                <div class="grand-total-section">
+                    <div class="grand-total-row">
+                        <div class="grand-total-label">GRAND TOTAL</div>
+                        <div class="grand-total-value">IDR {{ number_format($invoice->total_amount, 0, ',', '.') }}
+                        </div>
                     </div>
                 </div>
-                @endforeach
-                
+
+                <!-- Jumlah Ditagih -->
                 <div class="total-section">
                     <div class="total-row">
                         <div class="total-label">JUMLAH DITAGIH</div>
-                        <div class="total-value">IDR {{ number_format($invoice->total_amount, 0, ',', '.') }}</div>
+                        <div class="total-value">
+                            <div class="total-value-content">
+                                <span>IDR</span>
+                                <span>{{ number_format($invoice->total_amount, 0, ',', '.') }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Signature Section -->
+                <div class="signature-section">
+                    <div style="font-weight: bold; margin-bottom: 10px;">{{ $company['name'] }}</div>
+
+                    <div class="signature-box">
+                        @if ($company['signature_base64'])
+                            <img src="{{ $company['signature_base64'] }}" class="signature-image" alt="Signature">
+                        @endif
+
+                        @if ($company['stamp_base64'])
+                            <img src="{{ $company['stamp_base64'] }}" class="company-stamp" alt="Company Stamp">
+                        @endif
+
+                        <div class="signature-name">{{ $company['signature']['name'] }}</div>
+                        <div class="signature-position">{{ $company['signature']['position'] }}</div>
                     </div>
                 </div>
             </div>
-            
-            <!-- Signature Section -->
-            <div class="signature-section">
-                <div style="font-weight: bold; margin-bottom: 10px;">{{ $company['name'] }}</div>
-                
-                <div class="signature-box">
-                    @if($company['signature_base64'])
-                        <img src="{{ $company['signature_base64'] }}" class="signature-image" alt="Signature">
-                    @endif
-                    
-                    @if($company['stamp_base64'])
-                        <img src="{{ $company['stamp_base64'] }}" class="company-stamp" alt="Company Stamp">
-                    @endif
-                    
-                    <div class="signature-name">{{ $company['signature']['name'] }}</div>
-                    <div class="signature-position">{{ $company['signature']['position'] }}</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Terbilang -->
-        <div class="terbilang">
-            <strong>Terbilang:</strong><br>
-            {{ $terbilang }} Rupiah
         </div>
     </div>
 </body>
+
 </html>
