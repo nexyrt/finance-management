@@ -4,79 +4,87 @@
         <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
             <div class="space-y-1">
                 <h1
-                    class="text-4xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-indigo-800 dark:from-white dark:via-blue-200 dark:to-indigo-200 bg-clip-text text-transparent">
+                    class="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-secondary-900 via-primary-600 to-primary-700 dark:from-white dark:via-primary-300 dark:to-primary-200 bg-clip-text text-transparent">
                     Manajemen Invoice
                 </h1>
-                <p class="text-gray-600 dark:text-zinc-400 text-lg">
+                <p class="text-secondary-600 dark:text-secondary-400 text-base sm:text-lg">
                     Kelola invoice, pembayaran, dan buat invoice baru
                 </p>
             </div>
 
-            <div class="flex items-center gap-3">
-                <x-button color="secondary" icon="document-arrow-down" outline>
-                    Export
-                </x-button>
-                <x-button wire:click="createInvoice" color="primary" icon="plus">
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                <x-dropdown icon="document-arrow-down" outline color="secondary" class="w-full sm:w-auto">
+                    <x-dropdown.items text="Export Excel" icon="document-text" wire:click="exportExcel" />
+                    <x-dropdown.items text="Export PDF" icon="document" wire:click="exportPdf" />
+                </x-dropdown>
+                <x-button wire:click="createInvoice" color="primary" icon="plus" class="w-full sm:w-auto">
                     Buat Invoice Baru
                 </x-button>
             </div>
         </div>
     </div>
 
-    {{-- Stats Cards --}}
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6 mb-8">
+        <!-- Total Invoice Card -->
         <div
-            class="bg-white/80 dark:bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/50 dark:border-white/10 shadow-lg shadow-gray-500/5">
+            class="bg-white dark:bg-dark-800 border border-secondary-200 dark:border-dark-600 rounded-xl p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow">
             <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Invoice</p>
-                    <p class="text-3xl font-bold text-gray-900 dark:text-white">
+                <div class="min-w-0 flex-1">
+                    <p class="text-sm font-medium text-secondary-600 dark:text-dark-400">Total Invoice</p>
+                    <p class="text-xl sm:text-2xl lg:text-3xl font-bold text-secondary-900 dark:text-dark-50 break-all">
                         {{ number_format($stats['total_invoices']) }}</p>
                 </div>
-                <div class="h-12 w-12 bg-blue-500/10 dark:bg-blue-400/10 rounded-xl flex items-center justify-center">
-                    <x-icon name="document-text" class="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                <div
+                    class="h-10 w-10 sm:h-12 sm:w-12 bg-primary-50 dark:bg-primary-900/20 rounded-xl flex items-center justify-center flex-shrink-0 ml-3">
+                    <x-icon name="document-text" class="w-5 h-5 sm:w-6 sm:h-6 text-primary-600 dark:text-primary-400" />
                 </div>
             </div>
         </div>
 
+        <!-- Outstanding Card -->
         <div
-            class="bg-white/80 dark:bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/50 dark:border-white/10 shadow-lg shadow-gray-500/5">
+            class="bg-white dark:bg-dark-800 border border-secondary-200 dark:border-dark-600 rounded-xl p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow">
             <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Outstanding</p>
-                    <p class="text-3xl font-bold text-red-600 dark:text-red-400">Rp
-                        {{ number_format($stats['outstanding_amount'], 0, ',', '.') }}</p>
-                </div>
-                <div class="h-12 w-12 bg-red-500/10 dark:bg-red-400/10 rounded-xl flex items-center justify-center">
-                    <x-icon name="exclamation-triangle" class="w-6 h-6 text-red-600 dark:text-red-400" />
-                </div>
-            </div>
-        </div>
-
-        <div
-            class="bg-white/80 dark:bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/50 dark:border-white/10 shadow-lg shadow-gray-500/5">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Paid This Month</p>
-                    <p class="text-3xl font-bold text-green-600 dark:text-green-400">Rp
-                        {{ number_format($stats['paid_this_month'], 0, ',', '.') }}</p>
-                </div>
-                <div class="h-12 w-12 bg-green-500/10 dark:bg-green-400/10 rounded-xl flex items-center justify-center">
-                    <x-icon name="check-circle" class="w-6 h-6 text-green-600 dark:text-green-400" />
-                </div>
-            </div>
-        </div>
-
-        <div
-            class="bg-white/80 dark:bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/50 dark:border-white/10 shadow-lg shadow-gray-500/5">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Overdue</p>
-                    <p class="text-3xl font-bold text-orange-600 dark:text-orange-400">{{ $stats['overdue_count'] }}</p>
+                <div class="min-w-0 flex-1">
+                    <p class="text-sm font-medium text-secondary-600 dark:text-dark-400">Outstanding</p>
+                    <p class="text-base sm:text-lg lg:text-xl font-bold text-red-600 dark:text-red-400 break-all">
+                        Rp {{ number_format($stats['outstanding_amount'], 0, ',', '.') }}</p>
                 </div>
                 <div
-                    class="h-12 w-12 bg-orange-500/10 dark:bg-orange-400/10 rounded-xl flex items-center justify-center">
-                    <x-icon name="clock" class="w-6 h-6 text-orange-600 dark:text-orange-400" />
+                    class="h-10 w-10 sm:h-12 sm:w-12 bg-red-50 dark:bg-red-900/20 rounded-xl flex items-center justify-center flex-shrink-0 ml-3">
+                    <x-icon name="exclamation-triangle" class="w-5 h-5 sm:w-6 sm:h-6 text-red-600 dark:text-red-400" />
+                </div>
+            </div>
+        </div>
+
+        <!-- Paid This Month Card -->
+        <div
+            class="bg-white dark:bg-dark-800 border border-secondary-200 dark:border-dark-600 rounded-xl p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow">
+            <div class="flex items-center justify-between">
+                <div class="min-w-0 flex-1">
+                    <p class="text-sm font-medium text-secondary-600 dark:text-dark-400">Paid This Month</p>
+                    <p class="text-base sm:text-lg lg:text-xl font-bold text-green-600 dark:text-green-400 break-all">
+                        Rp {{ number_format($stats['paid_this_month'], 0, ',', '.') }}</p>
+                </div>
+                <div
+                    class="h-10 w-10 sm:h-12 sm:w-12 bg-green-50 dark:bg-green-900/20 rounded-xl flex items-center justify-center flex-shrink-0 ml-3">
+                    <x-icon name="check-circle" class="w-5 h-5 sm:w-6 sm:h-6 text-green-600 dark:text-green-400" />
+                </div>
+            </div>
+        </div>
+
+        <!-- Overdue Card -->
+        <div
+            class="bg-white dark:bg-dark-800 border border-secondary-200 dark:border-dark-600 rounded-xl p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow">
+            <div class="flex items-center justify-between">
+                <div class="min-w-0 flex-1">
+                    <p class="text-sm font-medium text-secondary-600 dark:text-dark-400">Overdue</p>
+                    <p class="text-xl sm:text-2xl lg:text-3xl font-bold text-orange-600 dark:text-orange-400 break-all">
+                        {{ $stats['overdue_count'] }}</p>
+                </div>
+                <div
+                    class="h-10 w-10 sm:h-12 sm:w-12 bg-orange-50 dark:bg-orange-900/20 rounded-xl flex items-center justify-center flex-shrink-0 ml-3">
+                    <x-icon name="clock" class="w-5 h-5 sm:w-6 sm:h-6 text-orange-600 dark:text-orange-400" />
                 </div>
             </div>
         </div>
@@ -94,39 +102,38 @@
                 <x-badge text="{{ $this->calculateStats()['total_invoices'] }}" color="blue" />
             </x-slot:right>
 
-            {{-- Filters Section --}}
+            {{-- Enhanced Filters Section --}}
             <div
-                class="bg-gradient-to-r from-white/90 via-white/95 to-white/90 dark:from-zinc-800/90 dark:via-zinc-800/95 dark:to-zinc-800/90 rounded-2xl border border-zinc-200/50 dark:border-zinc-700/50 shadow-lg shadow-zinc-500/5 mb-8">
+                class="bg-white dark:bg-dark-800 border border-secondary-200 dark:border-dark-600 rounded-xl shadow-sm mb-8">
                 <div
-                    class="flex items-center justify-between p-6 pb-4 border-b border-zinc-200/50 dark:border-zinc-700/50">
-                    <div class="flex items-center space-x-3">
+                    class="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 sm:p-6 pb-4 border-b border-secondary-200 dark:border-dark-600">
+                    <div class="flex items-center space-x-3 mb-4 sm:mb-0">
                         <div
-                            class="h-10 w-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
-                            <x-icon name="funnel" class="w-5 h-5 text-white" />
+                            class="h-10 w-10 bg-primary-50 dark:bg-primary-900/20 rounded-xl flex items-center justify-center">
+                            <x-icon name="funnel" class="w-5 h-5 text-primary-600 dark:text-primary-400" />
                         </div>
                         <div>
-                            <h3 class="text-lg font-semibold text-zinc-900 dark:text-white">Filter Invoice</h3>
-                            <p class="text-sm text-zinc-500 dark:text-zinc-400">Gunakan filter untuk mempersempit
+                            <h3 class="text-lg font-semibold text-secondary-900 dark:text-dark-50">Filter Invoice</h3>
+                            <p class="text-sm text-secondary-500 dark:text-dark-400">Gunakan filter untuk mempersempit
                                 pencarian</p>
                         </div>
                     </div>
 
                     {{-- Active Filters Count --}}
-                    @if ($statusFilter || $clientFilter)
+                    @if ($statusFilter || $clientFilter || $dateRange)
                         <div class="flex items-center space-x-2">
-                            <div
-                                class="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-3 py-1 rounded-full text-sm font-medium">
-                                {{ collect([$statusFilter, $clientFilter])->filter()->count() }} Filter Aktif
-                            </div>
+                            <x-badge
+                                text="{{ collect([$statusFilter, $clientFilter, $dateRange])->filter()->count() }} Filter Aktif"
+                                color="primary" />
                         </div>
                     @endif
                 </div>
 
-                <div class="p-6">
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div class="p-4 sm:p-6">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
                         {{-- Status Filter --}}
                         <div class="space-y-2">
-                            <label class="text-sm font-medium text-zinc-700 dark:text-zinc-300">Status</label>
+                            <label class="text-sm font-medium text-secondary-700 dark:text-dark-300">Status</label>
                             <x-select.styled wire:model.live="statusFilter" :options="[
                                 ['label' => '📄 Draft', 'value' => 'draft'],
                                 ['label' => '📤 Terkirim', 'value' => 'sent'],
@@ -139,7 +146,7 @@
 
                         {{-- Client Filter --}}
                         <div class="space-y-2">
-                            <label class="text-sm font-medium text-zinc-700 dark:text-zinc-300">Klien</label>
+                            <label class="text-sm font-medium text-secondary-700 dark:text-dark-300">Klien</label>
                             <x-select.styled wire:model.live="clientFilter" :options="$clients
                                 ->map(
                                     fn($client) => [
@@ -151,33 +158,42 @@
                                 placeholder="Semua klien..." searchable class="w-full" />
                         </div>
 
+                        {{-- Date Range Filter --}}
+                        <div class="space-y-2">
+                            <label class="text-sm font-medium text-secondary-700 dark:text-dark-300">Periode
+                                Tanggal</label>
+                            <x-date wire:model.live="dateRange" range placeholder="Pilih periode..." class="w-full" />
+                        </div>
+
                         {{-- Clear Filters --}}
                         <div class="space-y-2">
-                            <label class="text-sm font-medium text-zinc-700 dark:text-zinc-300">Reset</label>
-                            <x-button wire:click="clearFilters" color="secondary" icon="x-mark" class="w-full">
+                            <label class="text-sm font-medium text-secondary-700 dark:text-dark-300">Reset</label>
+                            <x-button wire:click="clearFilters" color="secondary" icon="x-mark" outline class="w-full">
                                 Hapus Filter
                             </x-button>
                         </div>
                     </div>
 
                     {{-- Active Filter Tags --}}
-                    @if ($statusFilter || $clientFilter)
-                        <div class="mt-6 pt-4 border-t border-zinc-200/50 dark:border-zinc-700/50">
+                    @if ($statusFilter || $clientFilter || $dateRange)
+                        <div class="mt-6 pt-4 border-t border-secondary-200 dark:border-dark-600">
                             <div class="flex items-center space-x-2 mb-3">
-                                <x-icon name="tag" class="w-4 h-4 text-zinc-500 dark:text-zinc-400" />
-                                <span class="text-sm font-medium text-zinc-600 dark:text-zinc-400">Filter Aktif:</span>
+                                <x-icon name="tag" class="w-4 h-4 text-secondary-500 dark:text-dark-400" />
+                                <span class="text-sm font-medium text-secondary-600 dark:text-dark-400">Filter
+                                    Aktif:</span>
                             </div>
                             <div class="flex flex-wrap gap-2">
                                 @if ($statusFilter)
                                     <div
-                                        class="inline-flex items-center gap-2 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 px-3 py-1.5 rounded-lg border border-blue-200 dark:border-blue-800 text-sm">
+                                        class="inline-flex items-center gap-2 bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300 px-3 py-1.5 rounded-lg border border-primary-200 dark:border-primary-800 text-sm">
                                         <span>{{ ucfirst($statusFilter) }}</span>
                                         <button wire:click="$set('statusFilter', '')"
-                                            class="hover:bg-blue-200 dark:hover:bg-blue-800 rounded-full p-0.5 transition-colors">
+                                            class="hover:bg-primary-200 dark:hover:bg-primary-800 rounded-full p-0.5 transition-colors">
                                             <x-icon name="x-mark" class="w-3 h-3" />
                                         </button>
                                     </div>
                                 @endif
+
                                 @if ($clientFilter)
                                     @php $selectedClient = $clients->find($clientFilter); @endphp
                                     @if ($selectedClient)
@@ -190,6 +206,20 @@
                                             </button>
                                         </div>
                                     @endif
+                                @endif
+
+                                @if ($dateRange && is_array($dateRange) && count($dateRange) >= 2)
+                                    <div
+                                        class="inline-flex items-center gap-2 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 px-3 py-1.5 rounded-lg border border-blue-200 dark:border-blue-800 text-sm">
+                                        <span>
+                                            {{ \Carbon\Carbon::parse($dateRange[0])->format('d/m/Y') }} -
+                                            {{ \Carbon\Carbon::parse($dateRange[1])->format('d/m/Y') }}
+                                        </span>
+                                        <button wire:click="$set('dateRange', [])"
+                                            class="hover:bg-blue-200 dark:hover:bg-blue-800 rounded-full p-0.5 transition-colors">
+                                            <x-icon name="x-mark" class="w-3 h-3" />
+                                        </button>
+                                    </div>
                                 @endif
                             </div>
                         </div>
@@ -204,10 +234,10 @@
                 @interact('column_invoice_number', $row)
                     <div class="group cursor-pointer">
                         <div
-                            class="font-mono font-bold text-blue-600 dark:text-blue-400 group-hover:text-blue-700 dark:group-hover:text-blue-300 transition-colors duration-200">
+                            class="font-mono font-bold text-primary-600 dark:text-primary-400 group-hover:text-primary-700 dark:group-hover:text-primary-300 transition-colors duration-200">
                             {{ $row->invoice_number }}
                         </div>
-                        <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        <div class="text-xs text-secondary-500 dark:text-dark-400 mt-1">
                             {{ $row->issue_date->format('d/m/Y') }}
                         </div>
                     </div>
@@ -219,25 +249,25 @@
                         <div class="relative flex-shrink-0">
                             <div
                                 class="w-10 h-10 {{ $row->client_type === 'individual'
-                                    ? 'bg-gradient-to-br from-blue-400 to-blue-600'
+                                    ? 'bg-gradient-to-br from-primary-400 to-primary-600'
                                     : 'bg-gradient-to-br from-purple-400 to-purple-600' }} 
-                    rounded-2xl flex items-center justify-center shadow-lg ring-2 ring-white dark:ring-gray-800">
+                    rounded-2xl flex items-center justify-center shadow-lg ring-2 ring-white dark:ring-dark-800">
                                 <x-icon name="{{ $row->client_type === 'individual' ? 'user' : 'building-office' }}"
                                     class="w-5 h-5 text-white" />
                             </div>
                             {{-- Client Type Indicator --}}
                             <div
-                                class="absolute -bottom-1 -right-1 w-4 h-4 {{ $row->client_type === 'individual' ? 'bg-blue-500' : 'bg-purple-500' }} rounded-full border-2 border-white dark:border-gray-800 flex items-center justify-center">
+                                class="absolute -bottom-1 -right-1 w-4 h-4 {{ $row->client_type === 'individual' ? 'bg-primary-500' : 'bg-purple-500' }} rounded-full border-2 border-white dark:border-dark-800 flex items-center justify-center">
                                 <x-icon
                                     name="{{ $row->client_type === 'individual' ? 'identification' : 'building-office-2' }}"
                                     class="w-2 h-2 text-white" />
                             </div>
                         </div>
                         <div class="min-w-0 flex-1">
-                            <p class="font-semibold text-gray-900 dark:text-white truncate text-sm">
+                            <p class="font-semibold text-secondary-900 dark:text-dark-50 truncate text-sm">
                                 {{ $row->client_name }}
                             </p>
-                            <div class="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
+                            <div class="flex items-center gap-1 text-xs text-secondary-500 dark:text-dark-400">
                                 <x-icon name="{{ $row->client_type === 'individual' ? 'user' : 'building-office' }}"
                                     class="w-3 h-3" />
                                 <span
@@ -250,10 +280,10 @@
                 {{-- Issue Date Column --}}
                 @interact('column_issue_date', $row)
                     <div class="space-y-1">
-                        <div class="text-sm font-medium text-gray-900 dark:text-white">
+                        <div class="text-sm font-medium text-secondary-900 dark:text-dark-50">
                             {{ $row->issue_date->format('d M Y') }}
                         </div>
-                        <div class="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                        <div class="text-xs text-secondary-500 dark:text-dark-400 flex items-center gap-1">
                             <x-icon name="calendar" class="w-3 h-3" />
                             {{ $row->issue_date->diffForHumans() }}
                         </div>
@@ -281,7 +311,7 @@
                             @endif
 
                             <span
-                                class="text-sm font-medium {{ $isOverdue ? 'text-red-600 dark:text-red-400' : ($isDueSoon ? 'text-yellow-600 dark:text-yellow-400' : 'text-gray-900 dark:text-white') }}">
+                                class="text-sm font-medium {{ $isOverdue ? 'text-red-600 dark:text-red-400' : ($isDueSoon ? 'text-yellow-600 dark:text-yellow-400' : 'text-secondary-900 dark:text-dark-50') }}">
                                 {{ $row->due_date->format('d M Y') }}
                             </span>
                         </div>
@@ -299,7 +329,7 @@
                                 {{ (int) $row->due_date->diffInDays(now()) }} hari lagi
                             </div>
                         @else
-                            <div class="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
+                            <div class="flex items-center gap-1 text-xs text-secondary-500 dark:text-dark-400">
                                 <x-icon name="check-circle" class="w-3 h-3" />
                                 {{ $row->due_date->diffForHumans() }}
                             </div>
@@ -310,7 +340,7 @@
                 {{-- Amount Column --}}
                 @interact('column_total_amount', $row)
                     <div class="text-right space-y-2">
-                        <div class="font-bold text-lg text-gray-900 dark:text-white">
+                        <div class="font-bold text-lg text-secondary-900 dark:text-dark-50">
                             Rp {{ number_format($row->total_amount, 0, ',', '.') }}
                         </div>
 
@@ -327,18 +357,18 @@
                                         {{ number_format($paymentPercentage, 1) }}% Dibayar
                                     </span>
                                     @if ($remainingAmount > 0)
-                                        <span class="text-gray-500 dark:text-gray-400">
+                                        <span class="text-secondary-500 dark:text-dark-400">
                                             Sisa: Rp {{ number_format($remainingAmount, 0, ',', '.') }}
                                         </span>
                                     @endif
                                 </div>
-                                <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                                <div class="w-full bg-secondary-200 dark:bg-dark-700 rounded-full h-2">
                                     <div class="bg-gradient-to-r from-green-400 to-green-600 h-2 rounded-full transition-all duration-300"
                                         style="width: {{ min($paymentPercentage, 100) }}%"></div>
                                 </div>
                             </div>
                         @else
-                            <div class="text-xs text-gray-500 dark:text-gray-400 italic">
+                            <div class="text-xs text-secondary-500 dark:text-dark-400 italic">
                                 Belum ada pembayaran
                             </div>
                         @endif
@@ -405,16 +435,15 @@
                 {{-- Actions Column --}}
                 @interact('column_actions', $row)
                     <div class="flex items-center gap-2">
-
                         {{-- Main Actions Dropdown --}}
                         <x-dropdown icon="ellipsis-vertical" class="relative">
                             {{-- Header with Invoice Number --}}
                             <div
-                                class="px-4 py-2 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
-                                <div class="font-mono text-sm font-medium text-gray-900 dark:text-white">
+                                class="px-4 py-2 border-b border-secondary-100 dark:border-dark-700 bg-secondary-50 dark:bg-dark-800">
+                                <div class="font-mono text-sm font-medium text-secondary-900 dark:text-dark-50">
                                     {{ $row->invoice_number }}
                                 </div>
-                                <div class="text-xs text-gray-500 dark:text-gray-400">
+                                <div class="text-xs text-secondary-500 dark:text-dark-400">
                                     {{ $row->client_name }}
                                 </div>
                             </div>
@@ -425,7 +454,7 @@
                                     wire:click="$dispatch('show-invoice', { invoiceId: {{ $row->id }} })" />
                                 <x-dropdown.items text="Edit Invoice" icon="pencil"
                                     href="{{ route('invoices.edit', $row->id) }}"
-                                    class="text-blue-600 dark:text-blue-400" />
+                                    class="text-primary-600 dark:text-primary-400" />
                                 @if ($row->status === 'draft')
                                     <x-dropdown.items wire:click='sendInvoice({{ $row->id }})' text="Kirim Invoice"
                                         icon="paper-airplane" class="text-green-600 dark:text-green-400" />
@@ -438,15 +467,14 @@
                             </div>
 
                             {{-- Secondary Actions --}}
-                            {{-- Di dropdown actions: --}}
-                            <div class="border-t border-gray-100 dark:border-gray-700 py-1">
+                            <div class="border-t border-secondary-100 dark:border-dark-700 py-1">
                                 <x-dropdown.items text="Print PDF" icon="printer"
                                     wire:click="printInvoice({{ $row->id }})"
-                                    class="text-gray-600 dark:text-gray-400" />
+                                    class="text-secondary-600 dark:text-dark-400" />
                             </div>
 
                             {{-- Danger Actions --}}
-                            <div class="border-t border-gray-100 dark:border-gray-700 py-1">
+                            <div class="border-t border-secondary-100 dark:border-dark-700 py-1">
                                 <x-dropdown.items text="Hapus Invoice" icon="trash"
                                     wire:click="$dispatch('delete-invoice', { invoiceId: {{ $row->id }} })"
                                     class="text-red-600 dark:text-red-400" />
@@ -470,11 +498,12 @@
 
             <div class="text-center py-12">
                 <div
-                    class="h-24 w-24 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <x-icon name="currency-dollar" class="w-12 h-12 text-green-600 dark:text-green-400" />
+                    class="h-20 w-20 sm:h-24 sm:w-24 bg-green-50 dark:bg-green-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <x-icon name="currency-dollar"
+                        class="w-10 h-10 sm:w-12 sm:h-12 text-green-600 dark:text-green-400" />
                 </div>
-                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Payment Tracking</h3>
-                <p class="text-gray-600 dark:text-gray-400">Kelola dan lacak semua pembayaran invoice</p>
+                <h3 class="text-lg font-semibold text-secondary-900 dark:text-dark-50 mb-2">Payment Tracking</h3>
+                <p class="text-secondary-600 dark:text-dark-400">Kelola dan lacak semua pembayaran invoice</p>
             </div>
 
         </x-tab.items>
@@ -488,14 +517,14 @@
                 <x-badge text="New" color="purple" />
             </x-slot:right>
 
-            <!-- ✅ GANTI content lama dengan ini: -->
             <div class="text-center py-12">
                 <div
-                    class="h-24 w-24 bg-purple-100 dark:bg-purple-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <x-icon name="document-plus" class="w-12 h-12 text-purple-600 dark:text-purple-400" />
+                    class="h-20 w-20 sm:h-24 sm:w-24 bg-purple-50 dark:bg-purple-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <x-icon name="document-plus"
+                        class="w-10 h-10 sm:w-12 sm:h-12 text-purple-600 dark:text-purple-400" />
                 </div>
-                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Buat Invoice Baru</h3>
-                <p class="text-gray-600 dark:text-gray-400 mb-6">Klik tombol di bawah untuk membuat invoice dengan
+                <h3 class="text-lg font-semibold text-secondary-900 dark:text-dark-50 mb-2">Buat Invoice Baru</h3>
+                <p class="text-secondary-600 dark:text-dark-400 mb-6">Klik tombol di bawah untuk membuat invoice dengan
                     multiple items</p>
 
                 <x-button wire:click="createInvoice" color="purple" icon="plus" size="lg">
@@ -508,40 +537,28 @@
 
     {{-- Enhanced Bulk Actions Bar --}}
     <div x-data="{ show: @entangle('selected').live }" x-show="show.length > 0" x-transition
-        class="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50">
+        class="fixed bottom-4 sm:bottom-6 left-4 right-4 sm:left-1/2 sm:right-auto sm:transform sm:-translate-x-1/2 z-50">
 
         <div
-            class="bg-white dark:bg-zinc-800 rounded-xl shadow-lg border border-zinc-200 dark:border-zinc-700 px-6 py-4 min-w-80">
-            <div class="flex items-center justify-between gap-6">
+            class="bg-white dark:bg-dark-800 rounded-xl shadow-lg border border-secondary-200 dark:border-dark-600 px-4 sm:px-6 py-4 sm:min-w-80">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-6">
                 {{-- Selection Info --}}
                 <div class="flex items-center gap-3">
                     <div
-                        class="h-10 w-10 bg-blue-500/10 dark:bg-blue-400/10 rounded-xl flex items-center justify-center">
-                        <x-icon name="check-circle" class="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                        class="h-10 w-10 bg-primary-50 dark:bg-primary-900/20 rounded-xl flex items-center justify-center">
+                        <x-icon name="check-circle" class="w-5 h-5 text-primary-600 dark:text-primary-400" />
                     </div>
                     <div>
-                        <div class="font-semibold text-gray-900 dark:text-white"
+                        <div class="font-semibold text-secondary-900 dark:text-dark-50"
                             x-text="`${show.length} invoice dipilih`"></div>
-                        <div class="text-xs text-gray-500 dark:text-gray-400">
+                        <div class="text-xs text-secondary-500 dark:text-dark-400">
                             Pilih aksi untuk invoice yang dipilih
                         </div>
                     </div>
                 </div>
 
                 {{-- Actions --}}
-                <div class="flex items-center gap-2">
-                    {{-- Export Selected --}}
-                    {{-- <x-button wire:click="bulkExport" size="sm" color="secondary" outline
-                        icon="arrow-down-tray" class="whitespace-nowrap">
-                        Export
-                    </x-button> --}}
-
-                    {{-- Mark as Sent (for draft invoices) --}}
-                    {{-- <x-button wire:click="bulkSend" size="sm" color="blue" outline icon="paper-airplane"
-                        class="whitespace-nowrap">
-                        Kirim
-                    </x-button> --}}
-
+                <div class="flex items-center gap-2 justify-end">
                     {{-- Delete Selected --}}
                     <x-button wire:click="openBulkDeleteModal" size="sm" color="red" icon="trash"
                         class="whitespace-nowrap">
@@ -562,23 +579,22 @@
     <x-modal wire="showBulkDeleteModal" size="lg" center persistent>
         <x-slot:title>
             <div class="flex items-center gap-4">
-                <div
-                    class="h-12 w-12 bg-gradient-to-br from-red-500 to-red-600 rounded-xl flex items-center justify-center shadow-lg">
-                    <x-icon name="trash" class="w-6 h-6 text-white" />
+                <div class="h-12 w-12 bg-red-50 dark:bg-red-900/20 rounded-xl flex items-center justify-center">
+                    <x-icon name="trash" class="w-6 h-6 text-red-600 dark:text-red-400" />
                 </div>
                 <div>
-                    <h3 class="text-xl font-bold text-gray-900 dark:text-white">Konfirmasi Bulk Delete</h3>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">Hapus beberapa invoice sekaligus</p>
+                    <h3 class="text-xl font-bold text-secondary-900 dark:text-dark-50">Konfirmasi Bulk Delete</h3>
+                    <p class="text-sm text-secondary-600 dark:text-dark-400">Hapus beberapa invoice sekaligus</p>
                 </div>
             </div>
         </x-slot:title>
 
         <div class="space-y-6">
             {{-- Warning --}}
-            <div class="bg-red-50 dark:bg-red-900/20 rounded-xl p-4 border border-red-200/50 dark:border-red-700/50">
+            <div class="bg-red-50 dark:bg-red-900/20 rounded-xl p-4 border border-red-200 dark:border-red-800">
                 <div class="flex items-start gap-3">
                     <div
-                        class="h-8 w-8 bg-red-500/20 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                        class="h-8 w-8 bg-red-100 dark:bg-red-800/50 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
                         <x-icon name="exclamation-triangle" class="w-4 h-4 text-red-600 dark:text-red-400" />
                     </div>
                     <div>
@@ -603,18 +619,18 @@
 
             {{-- Selected Invoice Count Info --}}
             <div
-                class="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-4 border border-gray-200/50 dark:border-gray-700/50">
+                class="bg-secondary-50 dark:bg-dark-700 rounded-xl p-4 border border-secondary-200 dark:border-dark-600">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-3">
                         <div
-                            class="h-10 w-10 bg-blue-500/10 dark:bg-blue-400/10 rounded-xl flex items-center justify-center">
-                            <x-icon name="document-text" class="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                            class="h-10 w-10 bg-primary-50 dark:bg-primary-900/20 rounded-xl flex items-center justify-center">
+                            <x-icon name="document-text" class="w-5 h-5 text-primary-600 dark:text-primary-400" />
                         </div>
                         <div>
-                            <div class="font-semibold text-gray-900 dark:text-white">
+                            <div class="font-semibold text-secondary-900 dark:text-dark-50">
                                 {{ count($selected) }} Invoice Dipilih
                             </div>
-                            <div class="text-sm text-gray-600 dark:text-gray-400">
+                            <div class="text-sm text-secondary-600 dark:text-dark-400">
                                 Semua invoice yang dipilih akan dihapus
                             </div>
                         </div>
@@ -624,13 +640,14 @@
         </div>
 
         <x-slot:footer>
-            <div class="flex justify-end gap-3">
-                <x-button @click="$wire.set('showBulkDeleteModal', false)" color="secondary">
+            <div class="flex flex-col sm:flex-row justify-end gap-3">
+                <x-button @click="$wire.set('showBulkDeleteModal', false)" color="secondary"
+                    class="w-full sm:w-auto">
                     Batal
                 </x-button>
 
                 <x-button wire:click="bulkDelete" color="red" icon="trash" wire:loading.attr="disabled"
-                    wire:target="bulkDelete">
+                    wire:target="bulkDelete" class="w-full sm:w-auto">
                     <span wire:loading.remove wire:target="bulkDelete">Hapus Semua Invoice</span>
                     <span wire:loading wire:target="bulkDelete">Menghapus...</span>
                 </x-button>

@@ -16,13 +16,9 @@ class Index extends Component
         'invoice-updated' => '$refresh',
         'payment-created' => '$refresh', 
         'invoice-payment-updated' => '$refresh',
-        'confirm-bulk-delete' => 'openBulkDeleteModal',
         'invoice-created' => '$refresh',
     ];
 
-    // Tab management
-    public string $activeTab = 'invoices';
-    
     // Table properties
     public array $selected = [];
     public array $sort = ['column' => 'invoice_number', 'direction' => 'desc'];
@@ -32,49 +28,50 @@ class Index extends Component
     public ?string $search = null;
     public ?string $statusFilter = null;
     public ?string $clientFilter = null;
+    public $dateRange = [];
 
     // Modal properties
     public bool $showBulkDeleteModal = false;
 
-    /**
-     * Trigger Create Invoice Modal
-     */
     public function createInvoice(): void
     {
         $this->dispatch('create-invoice');
     }
 
-    /**
-     * Direct print via route (download PDF)
-     * ✅ HAPUS ": void" untuk method yang return redirect
-     */
-    public function printInvoice(int $invoiceId)
+    public function exportExcel()
     {
-        return redirect()->route('invoices.print', $invoiceId);
+        $service = new \App\Services\InvoiceExportService();
+        
+        $filters = [
+            'search' => $this->search,
+            'statusFilter' => $this->statusFilter,
+            'clientFilter' => $this->clientFilter,
+            'dateRange' => $this->dateRange,
+        ];
+        
+        return $service->exportExcel($filters);
     }
 
-    /**
-     * Preview PDF di tab baru
-     */
-    public function previewInvoice(int $invoiceId): void
+    public function exportPdf()
     {
-        $url = route('invoices.preview', $invoiceId);
-        $this->dispatch('open-url', url: $url);
-    }
-
-    /**
-     * Quick print (direct download tanpa modal)
-     */
-    public function quickPrint(int $invoiceId)
-    {
-        return redirect()->route('invoices.print', $invoiceId);
+        $service = new \App\Services\InvoiceExportService();
+        
+        $filters = [
+            'search' => $this->search,
+            'statusFilter' => $this->statusFilter,
+            'clientFilter' => $this->clientFilter,
+            'dateRange' => $this->dateRange,
+        ];
+        
+        return response()->streamDownload(function() use ($service, $filters) {
+            echo $service->exportPdf($filters)->output();
+        }, 'invoices-' . now()->format('Y-m-d') . '.pdf', [
+            'Content-Type' => 'application/pdf'
+        ]);
     }
 
     public function with(): array
     {
-        // Calculate stats
-        $stats = $this->calculateStats();
-        
         return [
             'headers' => [
                 ['index' => 'invoice_number', 'label' => 'No. Invoice'],
@@ -87,7 +84,7 @@ class Index extends Component
             ],
             'rows' => $this->getInvoices(),
             'clients' => Client::select('id', 'name')->orderBy('name')->get(),
-            'stats' => $stats,
+            'stats' => $this->calculateStats(),
         ];
     }
 
@@ -106,6 +103,8 @@ class Index extends Component
                 'invoices.id', 'invoices.invoice_number', 'invoices.billed_to_id', 
                 'invoices.total_amount', 'invoices.issue_date', 'invoices.due_date', 
                 'invoices.status', 'invoices.created_at', 'invoices.updated_at',
+                'invoices.subtotal', 'invoices.discount_amount', 'invoices.discount_type',
+                'invoices.discount_value', 'invoices.discount_reason',
                 'clients.name', 'clients.type'
             ]);
 
@@ -123,6 +122,12 @@ class Index extends Component
 
         if ($this->clientFilter) {
             $query->where('invoices.billed_to_id', $this->clientFilter);
+        }
+
+        // Date range filter with null check
+        if (!empty($this->dateRange) && is_array($this->dateRange) && count($this->dateRange) >= 2 && $this->dateRange[0] && $this->dateRange[1]) {
+            $query->whereDate('invoices.issue_date', '>=', $this->dateRange[0])
+                  ->whereDate('invoices.issue_date', '<=', $this->dateRange[1]);
         }
 
         // Handle sorting
@@ -162,6 +167,7 @@ class Index extends Component
         $this->search = null;
         $this->statusFilter = null;
         $this->clientFilter = null;
+        $this->dateRange = [];
         $this->resetPage();
     }
 
@@ -181,6 +187,11 @@ class Index extends Component
     }
 
     public function updatedClientFilter(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatedDateRange(): void
     {
         $this->resetPage();
     }
@@ -218,8 +229,6 @@ class Index extends Component
         try {
             $invoices = Invoice::with(['payments'])->whereIn('id', $this->selected)->get();
             $deletedCount = 0;
-            $skippedCount = 0;
-            $deletedNumbers = [];
 
             foreach ($invoices as $invoice) {
                 try {
@@ -227,12 +236,10 @@ class Index extends Component
                         $invoice->payments()->delete();
                     }
                     
-                    $deletedNumbers[] = $invoice->invoice_number;
                     $invoice->delete();
                     $deletedCount++;
                     
                 } catch (\Exception $e) {
-                    $skippedCount++;
                     \Log::error("Failed to delete invoice {$invoice->invoice_number}: " . $e->getMessage());
                 }
             }
@@ -241,13 +248,8 @@ class Index extends Component
             $this->showBulkDeleteModal = false;
 
             if ($deletedCount > 0) {
-                $message = "Berhasil menghapus {$deletedCount} invoice";
-                if ($skippedCount > 0) {
-                    $message .= ", {$skippedCount} invoice gagal dihapus";
-                }
-                
                 $this->dialog()
-                    ->success('Bulk Delete Selesai', $message)
+                    ->success('Bulk Delete Selesai', "Berhasil menghapus {$deletedCount} invoice")
                     ->send();
             } else {
                 $this->toast()->error('Error', 'Tidak ada invoice yang berhasil dihapus')->send();
@@ -256,60 +258,6 @@ class Index extends Component
         } catch (\Exception $e) {
             $this->toast()->error('Error', 'Gagal melakukan bulk delete: ' . $e->getMessage())->send();
         }
-    }
-
-    public function bulkSend(): void
-    {
-        if (empty($this->selected)) {
-            $this->toast()->warning('Warning', 'Pilih minimal satu invoice untuk dikirim')->send();
-            return;
-        }
-
-        try {
-            $invoices = Invoice::whereIn('id', $this->selected)
-                ->where('status', 'draft')
-                ->get();
-
-            if ($invoices->isEmpty()) {
-                $this->toast()->warning('Warning', 'Tidak ada invoice draft yang dipilih')->send();
-                return;
-            }
-
-            $sentCount = 0;
-            foreach ($invoices as $invoice) {
-                try {
-                    $invoice->update(['status' => 'sent']);
-                    $sentCount++;
-                } catch (\Exception $e) {
-                    \Log::error("Failed to send invoice {$invoice->invoice_number}: " . $e->getMessage());
-                }
-            }
-
-            $this->selected = [];
-
-            if ($sentCount > 0) {
-                $this->toast()
-                    ->success('Berhasil', "Berhasil mengirim {$sentCount} invoice")
-                    ->send();
-            } else {
-                $this->toast()->error('Error', 'Tidak ada invoice yang berhasil dikirim')->send();
-            }
-
-        } catch (\Exception $e) {
-            $this->toast()->error('Error', 'Gagal mengirim invoice: ' . $e->getMessage())->send();
-        }
-    }
-
-    public function bulkExport(): void
-    {
-        if (empty($this->selected)) {
-            $this->toast()->warning('Warning', 'Pilih minimal satu invoice untuk diekspor')->send();
-            return;
-        }
-
-        $this->toast()
-            ->info('Info', 'Fitur export akan segera tersedia')
-            ->send();
     }
 
     public function render()
