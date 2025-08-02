@@ -65,6 +65,20 @@ class Index extends Component
         ]);
     }
 
+    public function exportExcel()
+    {
+        $service = new \App\Services\InvoiceExportService();
+        
+        $filters = [
+            'search' => $this->search,
+            'statusFilter' => $this->statusFilter,
+            'clientFilter' => $this->clientFilter,
+            'dateRange' => $this->dateRange,
+        ];
+        
+        return $service->exportExcel($filters);
+    }
+
     public function exportPdf()
     {
         $service = new \App\Services\InvoiceExportService();
