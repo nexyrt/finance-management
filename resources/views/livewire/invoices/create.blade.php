@@ -6,9 +6,9 @@
 
         <div class="space-y-6">
             {{-- Invoice Details --}}
-            <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
-                <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Invoice Information</h3>
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="bg-white dark:bg-dark-800 border border-secondary-200 dark:border-dark-600 rounded-lg p-4 sm:p-6">
+                <h3 class="text-lg font-semibold text-secondary-900 dark:text-dark-50 mb-4">Invoice Information</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <x-input wire:model="invoice_number" label="Invoice Number" />
 
                     <x-select.styled wire:model.live="billed_to_id" :options="$clients" label="Bill To"
@@ -21,80 +21,137 @@
             </div>
 
             <!-- Invoice Items -->
-            <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg mb-6">
-                <div class="p-4 border-b border-gray-200 dark:border-gray-700">
-                    <div class="flex justify-between items-center">
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Invoice Items</h3>
+            <div class="bg-white dark:bg-dark-800 border border-secondary-200 dark:border-dark-600 rounded-lg">
+                <div class="p-4 border-b border-secondary-200 dark:border-dark-600">
+                    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+                        <h3 class="text-lg font-semibold text-secondary-900 dark:text-dark-50">Invoice Items</h3>
+                        <x-button wire:click="addItem" icon="plus" color="primary" size="sm">
+                            Add Item
+                        </x-button>
                     </div>
                 </div>
 
-                <!-- Table Header -->
-                <div class="bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
-                    <div class="grid grid-cols-12 gap-4 p-4 text-sm font-semibold text-gray-700 dark:text-gray-300">
-                        <div class="col-span-1">#</div>
-                        <div class="col-span-2">Client</div>
-                        <div class="col-span-3">Service</div>
-                        <div class="col-span-1">Qty</div>
-                        <div class="col-span-2">Price</div>
-                        <div class="col-span-2">Total</div>
-                        <div class="col-span-1 text-center">Actions</div>
+                <!-- Desktop Table -->
+                <div class="hidden lg:block">
+                    <!-- Table Header -->
+                    <div class="bg-secondary-50 dark:bg-dark-900 border-b border-secondary-200 dark:border-dark-600">
+                        <div class="grid grid-cols-12 gap-4 p-4 text-sm font-semibold text-secondary-700 dark:text-dark-200">
+                            <div class="col-span-1">#</div>
+                            <div class="col-span-2">Client</div>
+                            <div class="col-span-3">Service</div>
+                            <div class="col-span-1">Qty</div>
+                            <div class="col-span-2">Price</div>
+                            <div class="col-span-2">Total</div>
+                            <div class="col-span-1 text-center">Actions</div>
+                        </div>
                     </div>
-                </div>
 
-                <!-- Table Body -->
-                <div class="divide-y divide-gray-100 dark:divide-gray-700">
-                    @forelse($items as $index => $item)
-                        <div class="grid grid-cols-12 gap-4 p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                            wire:key="item-{{ $index }}">
+                    <!-- Table Body -->
+                    <div class="divide-y divide-secondary-100 dark:divide-dark-700">
+                        @forelse($items as $index => $item)
+                            <div class="grid grid-cols-12 gap-4 p-4 hover:bg-secondary-50 dark:hover:bg-dark-700 transition-colors"
+                                wire:key="item-{{ $index }}">
 
-                            <div class="col-span-1 flex items-center">
-                                <x-badge :text="$index + 1" color="primary" size="sm" />
-                            </div>
+                                <div class="col-span-1 flex items-center">
+                                    <x-badge :text="$index + 1" color="primary" size="sm" />
+                                </div>
 
-                            <div class="col-span-2">
-                                <x-select.styled class="w-full" wire:model.blur="items.{{ $index }}.client_id"
-                                    :options="$clients" placeholder="Select client..." searchable />
-                            </div>
+                                <div class="col-span-2">
+                                    <x-select.styled wire:model.blur="items.{{ $index }}.client_id"
+                                        :options="$clients" placeholder="Select client..." searchable />
+                                </div>
 
-                            <div class="col-span-3 space-y-2">
-                                <x-select.styled wire:model.blur="items.{{ $index }}.service_id"
-                                    :options="$services" placeholder="Select service..." searchable />
+                                <div class="col-span-3 space-y-2">
+                                    <x-select.styled wire:model.blur="items.{{ $index }}.service_id"
+                                        :options="$services" placeholder="Select service..." searchable />
 
-                                @if (empty($item['service_id']))
-                                    <x-input wire:model.blur="items.{{ $index }}.service_name"
-                                        placeholder="Custom service name" class="text-sm" />
-                                @else
-                                    <div
-                                        class="px-3 py-1 bg-blue-50 dark:bg-blue-900/20 rounded text-xs text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
-                                        Template: {{ $item['service_name'] }}
+                                    @if (empty($item['service_id']))
+                                        <x-input wire:model.blur="items.{{ $index }}.service_name"
+                                            placeholder="Custom service name" class="text-sm" />
+                                    @else
+                                        <div class="px-3 py-1 bg-primary-50 dark:bg-primary-900/20 rounded text-xs text-primary-700 dark:text-primary-300 border border-primary-200 dark:border-primary-800">
+                                            Template: {{ $item['service_name'] }}
+                                        </div>
+                                    @endif
+                                </div>
+
+                                <div class="col-span-1">
+                                    <x-input wire:model.blur="items.{{ $index }}.quantity" type="number"
+                                        min="1" class="text-center" />
+                                </div>
+
+                                <div class="col-span-2">
+                                    <x-wireui-currency prefix="Rp " wire:model.blur="items.{{ $index }}.price" />
+                                </div>
+
+                                <div class="col-span-2 flex items-center">
+                                    <div class="font-semibold text-secondary-900 dark:text-dark-100">
+                                        Rp {{ number_format($item['total'], 0, ',', '.') }}
                                     </div>
-                                @endif
-                            </div>
+                                </div>
 
-                            <div class="col-span-1">
-                                <x-input wire:model.blur="items.{{ $index }}.quantity" type="number"
-                                    min="1" class="text-center" />
-                            </div>
-
-                            <div class="col-span-2">
-                                <x-wireui-currency prefix="Rp " wire:model.blur="items.{{ $index }}.price" />
-                            </div>
-
-                            <div class="col-span-2">
-                                <div class="font-semibold text-gray-900 dark:text-gray-100 text-sm">
-                                    Rp {{ number_format($item['total'], 0, ',', '.') }}
+                                <div class="col-span-1 flex justify-center">
+                                    @if (count($items) > 1)
+                                        <x-button.circle wire:click="removeItem({{ $index }})" icon="trash"
+                                            color="red" size="sm" />
+                                    @endif
                                 </div>
                             </div>
+                        @empty
+                            <div class="p-8 text-center text-secondary-500 dark:text-dark-400">
+                                <p class="font-medium">No items found</p>
+                            </div>
+                        @endforelse
+                    </div>
+                </div>
 
-                            <div class="col-span-1 flex justify-center">
+                <!-- Mobile Cards -->
+                <div class="lg:hidden divide-y divide-secondary-100 dark:divide-dark-700">
+                    @forelse($items as $index => $item)
+                        <div class="p-4 space-y-4" wire:key="item-mobile-{{ $index }}">
+                            <div class="flex justify-between items-center">
+                                <x-badge :text="'Item ' . ($index + 1)" color="primary" />
                                 @if (count($items) > 1)
                                     <x-button.circle wire:click="removeItem({{ $index }})" icon="trash"
                                         color="red" size="sm" />
                                 @endif
                             </div>
+
+                            <div class="space-y-3">
+                                <x-select.styled wire:model.blur="items.{{ $index }}.client_id"
+                                    :options="$clients" placeholder="Select client..." searchable label="Client" />
+
+                                <x-select.styled wire:model.blur="items.{{ $index }}.service_id"
+                                    :options="$services" placeholder="Select service..." searchable label="Service" />
+
+                                @if (empty($item['service_id']))
+                                    <x-input wire:model.blur="items.{{ $index }}.service_name"
+                                        placeholder="Custom service name" label="Service Name" />
+                                @else
+                                    <div class="px-3 py-1 bg-primary-50 dark:bg-primary-900/20 rounded text-xs text-primary-700 dark:text-primary-300 border border-primary-200 dark:border-primary-800">
+                                        Template: {{ $item['service_name'] }}
+                                    </div>
+                                @endif
+
+                                <div class="grid grid-cols-2 gap-3">
+                                    <x-input wire:model.blur="items.{{ $index }}.quantity" type="number"
+                                        min="1" label="Quantity" />
+                                    <x-wireui-currency prefix="Rp " wire:model.blur="items.{{ $index }}.price" 
+                                        label="Price" />
+                                </div>
+
+                                <div class="bg-secondary-50 dark:bg-dark-700 p-3 rounded-lg">
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm text-secondary-600 dark:text-dark-300">Total:</span>
+                                        <span class="font-semibold text-secondary-900 dark:text-dark-100">
+                                            Rp {{ number_format($item['total'], 0, ',', '.') }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     @empty
-                        <div class="p-8 text-center text-gray-500 dark:text-gray-400">
+                        <div class="p-8 text-center text-secondary-500 dark:text-dark-400">
                             <p class="font-medium">No items found</p>
                         </div>
                     @endforelse
@@ -102,9 +159,9 @@
             </div>
 
             <!-- Discount Section -->
-            <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
-                <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Discount (Optional)</h3>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-white dark:bg-dark-800 border border-secondary-200 dark:border-dark-600 rounded-lg p-4 sm:p-6">
+                <h3 class="text-lg font-semibold text-secondary-900 dark:text-dark-50 mb-4">Discount (Optional)</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     <x-select.styled wire:model.live="discount_type" :options="[
                         ['label' => 'Fixed Amount', 'value' => 'fixed'],
                         ['label' => 'Percentage', 'value' => 'percentage'],
@@ -123,8 +180,7 @@
                 </div>
 
                 @if ($this->discountAmount > 0)
-                    <div
-                        class="mt-4 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                    <div class="mt-4 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
                         <div class="flex justify-between items-center text-sm">
                             <span class="text-green-700 dark:text-green-300">Discount Applied:</span>
                             <span class="font-semibold text-green-800 dark:text-green-200">
@@ -137,11 +193,11 @@
         </div>
 
         <x-slot:footer>
-            <div class="flex justify-between w-full">
+            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4">
                 <!-- Summary -->
-                <div class="text-sm text-gray-600 dark:text-gray-400 space-y-1">
+                <div class="text-sm text-secondary-600 dark:text-dark-400 space-y-1">
                     <div>Total {{ count($items) }} item(s) • Subtotal:
-                        <span class="font-medium text-gray-900 dark:text-gray-100">Rp
+                        <span class="font-medium text-secondary-900 dark:text-dark-100">Rp
                             {{ number_format($this->subtotal, 0, ',', '.') }}</span>
                     </div>
                     @if ($this->discountAmount > 0)
@@ -151,14 +207,14 @@
                         </div>
                     @endif
                     <div>Grand Total:
-                        <span class="font-bold text-lg text-gray-900 dark:text-gray-100">Rp
+                        <span class="font-bold text-lg text-secondary-900 dark:text-dark-100">Rp
                             {{ number_format($this->grandTotal, 0, ',', '.') }}</span>
                     </div>
                 </div>
 
                 <!-- Actions -->
-                <div class="flex space-x-3">
-                    <x-button wire:click="addItem" icon="plus" color="primary" size="sm">
+                <div class="flex flex-wrap gap-3">
+                    <x-button wire:click="addItem" icon="plus" color="primary" size="sm" class="lg:hidden">
                         Add Item
                     </x-button>
                     <x-button wire:click="$set('showModal', false)" color="secondary">

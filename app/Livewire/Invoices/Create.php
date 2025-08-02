@@ -228,6 +228,9 @@ class Create extends Component
                         'amount' => $item['total']
                     ]);
                 }
+
+                // Force status back to draft (override model auto-evaluation)
+                $invoice->update(['status' => 'draft']);
             });
 
             $this->showModal = false;

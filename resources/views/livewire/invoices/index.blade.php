@@ -464,7 +464,6 @@
             <x-slot:left>
                 <x-icon name="currency-dollar" class="w-5 h-5" />
             </x-slot:left>
-            Payment Tracking
             <x-slot:right>
                 <x-badge text="84" color="green" />
             </x-slot:right>
@@ -485,7 +484,6 @@
             <x-slot:left>
                 <x-icon name="document-plus" class="w-5 h-5" />
             </x-slot:left>
-            Buat Invoice
             <x-slot:right>
                 <x-badge text="New" color="purple" />
             </x-slot:right>

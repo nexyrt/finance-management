@@ -175,11 +175,6 @@ class Index extends Component
         $this->showBulkDeleteModal = true;
     }
 
-    public function updatedSearch(): void
-    {
-        $this->resetPage();
-    }
-
     public function updatedStatusFilter(): void
     {
         $this->resetPage();

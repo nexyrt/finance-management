@@ -51,21 +51,4 @@ class InvoiceItem extends Model
     {
         return (int) preg_replace('/[^0-9]/', '', $amount);
     }
-
-    // Auto-calculate amount when quantity or unit_price changes
-    protected static function booted()
-    {
-        static::saving(function ($invoiceItem) {
-            $invoiceItem->amount = $invoiceItem->quantity * $invoiceItem->unit_price;
-        });
-
-        // Recalculate invoice total when item is saved/deleted
-        static::saved(function ($invoiceItem) {
-            $invoiceItem->invoice->recalculateTotal();
-        });
-
-        static::deleted(function ($invoiceItem) {
-            $invoiceItem->invoice->recalculateTotal();
-        });
-    }
 }
