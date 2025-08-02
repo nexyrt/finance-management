@@ -214,7 +214,7 @@
 
                 <!-- Actions -->
                 <div class="flex flex-wrap gap-3">
-                    <x-button wire:click="addItem" icon="plus" color="primary" size="sm" class="lg:hidden">
+                    <x-button wire:click="addItem" icon="plus" color="primary" size="sm">
                         Add Item
                     </x-button>
                     <x-button wire:click="$set('showModal', false)" color="secondary">
