@@ -30,8 +30,6 @@ document.addEventListener('DOMContentLoaded', initializeQuill);
 // Re-initialize after Livewire updates (if using Livewire)
 document.addEventListener('livewire:navigated', initializeQuill);
 
-Livewire.on('open-pdf-data', (data) => {
-    const pdfBlob = new Blob([Uint8Array.from(atob(data[0].data), c => c.charCodeAt(0))], { type: 'application/pdf' });
-    const url = URL.createObjectURL(pdfBlob);
-    window.open(url, '_blank');
+Livewire.on('open-pdf-inline', (data) => {
+    window.open(data[0].url, '_blank');
 });

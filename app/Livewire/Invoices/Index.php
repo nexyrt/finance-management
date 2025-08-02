@@ -47,16 +47,14 @@ class Index extends Component
             return;
         }
 
-        // Direct PDF generation tanpa simpan temp
         $service = new \App\Services\InvoicePrintService();
         $pdf = $service->generateSingleInvoicePdf($invoice);
 
         $filename = 'Invoice-' . str_replace(['/', '\\', ':', '*', '?', '"', '<', '>', '|'], '-', $invoice->invoice_number) . '.pdf';
 
-        // Open PDF in new tab via data URL (untuk preview)
-        $this->dispatch('open-pdf-data', [
-            'data' => base64_encode($pdf->output()),
-            'filename' => $filename
+        // Open PDF inline for preview
+        $this->dispatch('open-pdf-inline', [
+            'url' => route('invoice.pdf.preview', $invoiceId)
         ]);
 
         return response()->streamDownload(function () use ($pdf) {
