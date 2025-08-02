@@ -65,12 +65,12 @@
                         <x-badge :text="$index + 1" color="primary" size="sm" />
                     </div>
 
-                    <div class="col-span-3">
-                        <x-select.styled wire:model.blur="items.{{ $index }}.client_id" :options="$clients"
+                    <div class="col-span-3 flex items-center">
+                        <x-select.styled class="w-full" wire:model.blur="items.{{ $index }}.client_id" :options="$clients"
                             placeholder="Select client..." searchable />
                     </div>
 
-                    <div class="col-span-3 space-y-2">
+                    <div class="col-span-3 space-y-2 ">
                         <x-select.styled wire:model.blur="items.{{ $index }}.service_id" :options="$services"
                             placeholder="Select service..." searchable />
 
@@ -85,12 +85,12 @@
                         @endif
                     </div>
 
-                    <div class="col-span-1">
+                    <div class="col-span-1 flex items-center">
                         <x-input wire:model.blur="items.{{ $index }}.quantity" type="number" min="1"
                             class="text-center" />
                     </div>
 
-                    <div class="col-span-2">
+                    <div class="col-span-2 flex items-center">
                         <x-wireui-currency prefix="Rp " wire:model.blur="items.{{ $index }}.price" />
                     </div>
 
