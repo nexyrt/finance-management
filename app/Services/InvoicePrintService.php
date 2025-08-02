@@ -50,6 +50,8 @@ class InvoicePrintService
             'website' => 'www.konsultanborneo.com',
             'phone' => '0852-8888-2600',
             'logo_base64' => $this->getLogoBase64(),
+            'signature_base64' => $this->getSignatureBase64(),
+            'stamp_base64' => $this->getStampBase64(),
             'bank_accounts' => [
                 [
                     'bank' => 'Mandiri',
@@ -74,6 +76,24 @@ class InvoicePrintService
         $logoPath = public_path('images/logo-header.png');
         if (file_exists($logoPath)) {
             return 'data:image/png;base64,' . base64_encode(file_get_contents($logoPath));
+        }
+        return '';
+    }
+
+    private function getSignatureBase64(): string
+    {
+        $signaturePath = public_path('images/pdf-signature.png');
+        if (file_exists($signaturePath)) {
+            return 'data:image/png;base64,' . base64_encode(file_get_contents($signaturePath));
+        }
+        return '';
+    }
+
+    private function getStampBase64(): string
+    {
+        $stampPath = public_path('images/company-signature-stamp.png');
+        if (file_exists($stampPath)) {
+            return 'data:image/png;base64,' . base64_encode(file_get_contents($stampPath));
         }
         return '';
     }
