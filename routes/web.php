@@ -10,10 +10,7 @@ use App\Livewire\Settings\Appearance;
 use App\Livewire\Settings\Password;
 use App\Livewire\Settings\Profile;
 use App\Livewire\TestingPage;
-use App\Models\Invoice;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use Barryvdh\DomPDF\Facade\Pdf;
 
 Route::redirect('/', '/login')->name('home');
 
@@ -30,8 +27,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::prefix('invoices')->name('invoices.')->group(function () {
         Route::get('/', InvoicesIndex::class)->name('index');
         Route::get('/{invoice}/edit', EditInvoice::class)->name('edit');
-        
+
     });
+
+    Route::get('/temp-pdf/{filename}', function ($filename) {
+        $path = storage_path('app/private/temp/' . $filename);
+        if (!file_exists($path))
+            abort(404);
+
+        return response()->file($path, [
+            'Content-Type' => 'application/pdf'
+        ]);
+    })->name('temp.pdf');
 
     // Settings
     Route::prefix('settings')->name('settings.')->group(function () {
