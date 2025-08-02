@@ -31,44 +31,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/', InvoicesIndex::class)->name('index');
         Route::get('/{invoice}/edit', EditInvoice::class)->name('edit');
         
-        // Invoice Print PDF
-        Route::get('/{invoice}/print', function (Invoice $invoice) {
-            $invoice->load(['client', 'items.client', 'payments.bankAccount']);
-
-            $company = [
-                'name' => 'Finance Management System',
-                'address' => 'Jl. Contoh No. 123, Jakarta',
-                'phone' => '+62 21 1234 5678',
-                'email' => 'info@finance.com',
-                'website' => 'www.finance.com',
-            ];
-
-            $data = [
-                'invoice' => $invoice,
-                'client' => $invoice->client,
-                'items' => $invoice->items,
-                'payments' => $invoice->payments,
-                'options' => [
-                    'show_payments' => true,
-                    'show_client_details' => true,
-                    'notes' => '',
-                ],
-                'company' => $company,
-            ];
-
-            $pdf = Pdf::loadView('pdf.invoice', $data)
-                ->setPaper('A4', 'portrait')
-                ->setOptions([
-                    'dpi' => 150,
-                    'defaultFont' => 'DejaVu Sans',
-                    'isHtml5ParserEnabled' => true,
-                    'isPhpEnabled' => true,
-                ]);
-
-            $safeFilename = 'Invoice-' . str_replace(['/', '\\', ':', '*', '?', '"', '<', '>', '|'], '-', $invoice->invoice_number) . '.pdf';
-
-            return $pdf->download($safeFilename);
-        })->name('print');
     });
 
     // Settings

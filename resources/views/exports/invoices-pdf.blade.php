@@ -52,12 +52,16 @@
             border-left: 4px solid #3b82f6;
         }
         .summary-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
+            display: table;
+            width: 100%;
+            table-layout: fixed;
         }
         .summary-item {
+            display: table-cell;
+            width: 25%;
             text-align: center;
+            vertical-align: top;
+            padding: 0 10px;
         }
         .summary-value {
             font-size: 18px;
