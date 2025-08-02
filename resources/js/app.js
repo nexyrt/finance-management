@@ -30,6 +30,8 @@ document.addEventListener('DOMContentLoaded', initializeQuill);
 // Re-initialize after Livewire updates (if using Livewire)
 document.addEventListener('livewire:navigated', initializeQuill);
 
-Livewire.on('open-pdf-inline', (data) => {
-    window.open(data[0].url, '_blank');
+Livewire.on('open-preview-delayed', (data) => {
+    setTimeout(() => {
+        window.open(data[0].url, '_blank');
+    }, data[0].delay);
 });

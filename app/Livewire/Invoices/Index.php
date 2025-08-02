@@ -47,15 +47,16 @@ class Index extends Component
             return;
         }
 
+        // Buka preview di tab baru dengan delay
+        $this->dispatch('open-preview-delayed', [
+            'url' => route('invoice.pdf.preview', $invoiceId),
+            'delay' => 500
+        ]);
+
         $service = new \App\Services\InvoicePrintService();
         $pdf = $service->generateSingleInvoicePdf($invoice);
 
         $filename = 'Invoice-' . str_replace(['/', '\\', ':', '*', '?', '"', '<', '>', '|'], '-', $invoice->invoice_number) . '.pdf';
-
-        // Open PDF inline for preview
-        $this->dispatch('open-pdf-inline', [
-            'url' => route('invoice.pdf.preview', $invoiceId)
-        ]);
 
         return response()->streamDownload(function () use ($pdf) {
             echo $pdf->output();
