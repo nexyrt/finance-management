@@ -40,7 +40,7 @@
                         $config = $statusConfig[$invoice->status] ?? $statusConfig['draft'];
                     @endphp
                     <div
-                        class="inline-flex items-center gap-2 px-3 py-2 bg-{{ $config['color'] }}-100 dark:bg-{{ $config['color'] }}-900/30 text-{{ $config['color'] }}-800 dark:text-{{ $config['color'] }}-200 rounded-lg">
+                        class="inline-flex items-center gap-2 px-3 py-2 bg-{{ $config['color'] }}-100 dark:bg-dark-900/30 text-{{ $config['color'] }}-800 dark:text-{{ $config['color'] }}-200 rounded-lg">
                         <x-icon name="{{ $config['icon'] }}" class="w-4 h-4" />
                         <span class="font-medium">{{ $config['text'] }}</span>
                     </div>
