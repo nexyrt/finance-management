@@ -470,7 +470,7 @@
                             <div class="border-t border-secondary-100 dark:border-dark-700 py-1">
                                 <x-dropdown.items text="Print PDF" icon="printer"
                                     wire:click="printInvoice({{ $row->id }})"
-                                    class="text-secondary-600 dark:text-dark-400" />
+                                    class=" dark:text-dark-100" />
                             </div>
 
                             {{-- Danger Actions --}}
