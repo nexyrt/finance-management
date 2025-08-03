@@ -17,7 +17,7 @@
                     <x-dropdown.items text="Export Excel" icon="document-text" wire:click="exportExcel" />
                     <x-dropdown.items text="Export PDF" icon="document" wire:click="exportPdf" />
                 </x-dropdown>
-                <x-button wire:click="createInvoice" color="primary" icon="plus" class="w-full sm:w-auto">
+                <x-button wire:click="createInvoice" loading="createInvoice" color="primary" class="w-full sm:w-auto">
                     Buat Invoice Baru
                 </x-button>
             </div>
@@ -451,7 +451,7 @@
                             {{-- Primary Actions --}}
                             <div class="py-1">
                                 <x-dropdown.items text="Lihat Detail" icon="eye"
-                                    wire:click="$dispatch('show-invoice', { invoiceId: {{ $row->id }} })" />
+                                    wire:click="$dispatch('show-invoice', { invoiceId: {{ $row->id }} })" loading="$dispatch('show-invoice')" />
                                 <x-dropdown.items text="Edit Invoice" icon="pencil"
                                     href="{{ route('invoices.edit', $row->id) }}"
                                     class="text-primary-600 dark:text-primary-400" />

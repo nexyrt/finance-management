@@ -35,9 +35,9 @@
                 <div class="hidden lg:block">
                     <!-- Table Header -->
                     <div class="bg-secondary-50 dark:bg-dark-900 border-b border-secondary-200 dark:border-dark-600">
-                        <div class="grid grid-cols-12 gap-4 p-4 text-sm font-semibold text-secondary-700 dark:text-dark-200">
+                        <div class="grid grid-cols-13 gap-4 p-4 text-sm font-semibold text-secondary-700 dark:text-dark-200">
                             <div class="col-span-1">#</div>
-                            <div class="col-span-2">Client</div>
+                            <div class="col-span-3">Client</div>
                             <div class="col-span-3">Service</div>
                             <div class="col-span-1">Qty</div>
                             <div class="col-span-2">Price</div>
@@ -49,16 +49,18 @@
                     <!-- Table Body -->
                     <div class="divide-y divide-secondary-100 dark:divide-dark-700">
                         @forelse($items as $index => $item)
-                            <div class="grid grid-cols-12 gap-4 p-4 hover:bg-secondary-50 dark:hover:bg-dark-700 transition-colors"
+                            <div class="grid grid-cols-13 gap-4 p-4 hover:bg-secondary-50 dark:hover:bg-dark-700 transition-colors"
                                 wire:key="item-{{ $index }}">
 
                                 <div class="col-span-1 flex items-center">
                                     <x-badge :text="$index + 1" color="primary" size="sm" />
                                 </div>
 
-                                <div class="col-span-2">
-                                    <x-select.styled wire:model.blur="items.{{ $index }}.client_id"
-                                        :options="$clients" placeholder="Select client..." searchable />
+                                <div class="col-span-3 flex items-center">
+                                    <div class="w-full">
+                                        <x-select.styled wire:model.blur="items.{{ $index }}.client_id"
+                                            :options="$clients" placeholder="Select client..." searchable />
+                                    </div>
                                 </div>
 
                                 <div class="col-span-3 space-y-2">
@@ -75,22 +77,26 @@
                                     @endif
                                 </div>
 
-                                <div class="col-span-1">
-                                    <x-input wire:model.blur="items.{{ $index }}.quantity" type="number"
-                                        min="1" class="text-center" />
-                                </div>
-
-                                <div class="col-span-2">
-                                    <x-wireui-currency prefix="Rp " wire:model.blur="items.{{ $index }}.price" />
+                                <div class="col-span-1 flex items-center">
+                                    <div class="w-full">
+                                        <x-input wire:model.blur="items.{{ $index }}.quantity" type="number"
+                                            min="1" class="text-center" />
+                                    </div>
                                 </div>
 
                                 <div class="col-span-2 flex items-center">
+                                    <div class="w-full">
+                                        <x-wireui-currency prefix="Rp " wire:model.blur="items.{{ $index }}.price" />
+                                    </div>
+                                </div>
+
+                                <div class="col-span-2 flex items-center w-full">
                                     <div class="font-semibold text-secondary-900 dark:text-dark-100">
                                         Rp {{ number_format($item['total'], 0, ',', '.') }}
                                     </div>
                                 </div>
 
-                                <div class="col-span-1 flex justify-center">
+                                <div class="col-span-1 flex justify-center items-center">
                                     @if (count($items) > 1)
                                         <x-button.circle wire:click="removeItem({{ $index }})" icon="trash"
                                             color="red" size="sm" />

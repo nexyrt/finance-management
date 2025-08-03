@@ -75,23 +75,31 @@ class Show extends Component
         $this->dispatch('record-payment', invoiceId: $invoiceId);
     }
 
-    public function printPdf(): void
+    public function printInvoice()
     {
-        if (!$this->invoice)
+        if (!$this->invoice) {
+            $this->toast()->error('Error', 'Invoice tidak ditemukan')->send();
             return;
+        }
 
-        $invoiceId = $this->invoice->id;
-        $this->resetData(); // Close modal first
-        $this->dispatch('print-invoice', invoiceId: $invoiceId);
-    }
+        $invoice = $this->invoice;
 
-    public function downloadPdf(): void
-    {
-        if (!$this->invoice)
-            return;
+        // Buka preview di tab baru dengan delay
+        $this->dispatch('open-preview-delayed', [
+            'url' => route('invoice.pdf.preview', $invoice->id),
+            'delay' => 500
+        ]);
 
-        $invoiceId = $this->invoice->id;
-        $this->dispatch('quick-print-invoice', invoiceId: $invoiceId);
+        $service = new \App\Services\InvoicePrintService();
+        $pdf = $service->generateSingleInvoicePdf($invoice);
+
+        $filename = 'Invoice-' . str_replace(['/', '\\', ':', '*', '?', '"', '<', '>', '|'], '-', $invoice->invoice_number) . '.pdf';
+
+        return response()->streamDownload(function () use ($pdf) {
+            echo $pdf->output();
+        }, $filename, [
+            'Content-Type' => 'application/pdf'
+        ]);
     }
 
     public function render()
