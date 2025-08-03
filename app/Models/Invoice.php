@@ -64,4 +64,38 @@ class Invoice extends Model
     {
         return (int) preg_replace('/[^0-9]/', '', $amount);
     }
+
+    // Calculate discount amount and total amount
+    public function calculateDiscount(): void
+    {
+        if ($this->discount_value > 0) {
+            if ($this->discount_type === 'percentage') {
+                // discount_value is stored in basis points (e.g., 1500 = 15%)
+                $this->discount_amount = (int) ($this->subtotal * ($this->discount_value / 10000));
+            } else {
+                // Fixed amount discount
+                $this->discount_amount = min($this->discount_value, $this->subtotal);
+            }
+        } else {
+            $this->discount_amount = 0;
+        }
+
+        $this->total_amount = $this->subtotal - $this->discount_amount;
+    }
+
+    // Update invoice status based on payments
+    public function updateStatus(): void
+    {
+        $amountPaid = $this->amount_paid;
+
+        if ($amountPaid == 0) {
+            $this->status = 'draft';
+        } elseif ($amountPaid >= $this->total_amount) {
+            $this->status = 'paid';
+        } else {
+            $this->status = 'partially_paid';
+        }
+
+        $this->save();
+    }
 }
