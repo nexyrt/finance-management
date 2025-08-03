@@ -45,26 +45,6 @@ class Show extends Component
         $this->dispatch('invoice-updated');
     }
 
-    public function duplicateInvoice(): void
-    {
-        if (!$this->invoice)
-            return;
-
-        $invoiceId = $this->invoice->id;
-        $this->resetData(); // Close modal first
-        $this->dispatch('duplicate-invoice', invoiceId: $invoiceId);
-    }
-
-    public function editInvoice(): void
-    {
-        if (!$this->invoice)
-            return;
-
-        $invoiceId = $this->invoice->id;
-        $this->resetData(); // Close modal first
-        $this->dispatch('edit-invoice', invoiceId: $invoiceId);
-    }
-
     public function recordPayment(): void
     {
         if (!$this->invoice)
