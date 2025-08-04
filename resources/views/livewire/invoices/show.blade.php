@@ -40,7 +40,7 @@
                         $config = $statusConfig[$invoice->status] ?? $statusConfig['draft'];
                     @endphp
                     <div
-                        class="inline-flex items-center gap-2 px-3 py-2 bg-{{ $config['color'] }}-100 dark:bg-dark-900/30 text-{{ $config['color'] }}-800 dark:text-{{ $config['color'] }}-200 rounded-lg">
+                        class="inline-flex items-center gap-2 px-3 py-2 bg-{{ $config['color'] }}-100 dark:bg-secondary-900/30 text-{{ $config['color'] }}-800 dark:text-{{ $config['color'] }}-200 rounded-lg">
                         <x-icon name="{{ $config['icon'] }}" class="w-4 h-4" />
                         <span class="font-medium">{{ $config['text'] }}</span>
                     </div>
@@ -92,12 +92,14 @@
                             </div>
                             <div class="bg-secondary-50 dark:bg-dark-800 rounded-lg p-3">
                                 <p class="text-xs text-secondary-500 dark:text-dark-400">Total Item</p>
-                                <p class="font-medium text-secondary-900 dark:text-dark-50">{{ $invoice->items->count() }}
+                                <p class="font-medium text-secondary-900 dark:text-dark-50">
+                                    {{ $invoice->items->count() }}
                                     item</p>
                             </div>
                             <div class="bg-secondary-50 dark:bg-dark-800 rounded-lg p-3">
                                 <p class="text-xs text-secondary-500 dark:text-dark-400">Pembayaran</p>
-                                <p class="font-medium text-secondary-900 dark:text-dark-50">{{ $invoice->payments->count() }}x
+                                <p class="font-medium text-secondary-900 dark:text-dark-50">
+                                    {{ $invoice->payments->count() }}x
                                 </p>
                             </div>
                         </div>
@@ -106,7 +108,7 @@
                         <div class="border border-secondary-200 dark:border-dark-700 rounded-lg overflow-hidden">
                             <div
                                 class="bg-secondary-50 dark:bg-dark-800 px-4 py-2 border-b border-secondary-200 dark:border-dark-700">
-                                <h4 class="font-medium text-secondary-900 dark:text-white flex items-center gap-2">
+                                <h4 class="font-medium text-secondary-900 dark:text-dark-50 flex items-center gap-2">
                                     <x-icon name="list-bullet" class="w-4 h-4" />
                                     Item Invoice
                                 </h4>
@@ -123,16 +125,16 @@
                                                     class="w-4 h-4" />
                                             </div>
                                             <div>
-                                                <p class="font-medium text-secondary-900 dark:text-white text-sm">
+                                                <p class="font-medium text-secondary-900 dark:text-dark-50 text-sm">
                                                     {{ $item->service_name }}</p>
-                                                <p class="text-xs text-secondary-500 dark:text-secondary-400">
+                                                <p class="text-xs text-secondary-500 dark:text-dark-400">
                                                     {{ $item->client->name }} • Qty: {{ $item->quantity }}</p>
                                             </div>
                                         </div>
                                         <div class="text-right">
-                                            <p class="font-medium text-secondary-900 dark:text-white">Rp
+                                            <p class="font-medium text-secondary-900 dark:text-dark-50">Rp
                                                 {{ number_format($item->amount, 0, ',', '.') }}</p>
-                                            <p class="text-xs text-secondary-500 dark:text-secondary-400">@ Rp
+                                            <p class="text-xs text-secondary-500 dark:text-dark-400">@ Rp
                                                 {{ number_format($item->unit_price, 0, ',', '.') }}</p>
                                         </div>
                                     </div>
@@ -141,8 +143,8 @@
                             <div
                                 class="bg-secondary-50 dark:bg-dark-800 px-4 py-3 border-t border-secondary-200 dark:border-dark-700">
                                 <div class="flex justify-between items-center">
-                                    <span class="font-medium text-secondary-900 dark:text-white">Total Invoice</span>
-                                    <span class="text-lg font-bold text-secondary-900 dark:text-white">Rp
+                                    <span class="font-medium text-secondary-900 dark:text-dark-50">Total Invoice</span>
+                                    <span class="text-lg font-bold text-secondary-900 dark:text-dark-50">Rp
                                         {{ number_format($invoice->total_amount, 0, ',', '.') }}</span>
                                 </div>
                             </div>
@@ -210,15 +212,22 @@
                                                     {{ $payment->payment_date->format('d M Y') }}</p>
                                             </div>
                                         </div>
-                                        <div class="text-right">
-                                            <p class="text-sm font-medium text-secondary-900 dark:text-white">
-                                                {{ $payment->bankAccount->bank_name }}</p>
-                                            <p class="text-xs text-secondary-500 dark:text-secondary-400">
-                                                {{ ucfirst($payment->payment_method) }}</p>
-                                            @if ($payment->reference_number)
-                                                <p class="text-xs font-mono text-secondary-400">
-                                                    {{ $payment->reference_number }}</p>
-                                            @endif
+                                        <div class="flex items-center gap-3">
+                                            <div class="text-right">
+                                                <p class="text-sm font-medium text-secondary-900 dark:text-white">
+                                                    {{ $payment->bankAccount->bank_name }}</p>
+                                                <p class="text-xs text-secondary-500 dark:text-secondary-400">
+                                                    {{ ucfirst($payment->payment_method) }}</p>
+                                                @if ($payment->reference_number)
+                                                    <p class="text-xs font-mono text-secondary-400">
+                                                        {{ $payment->reference_number }}</p>
+                                                @endif
+                                            </div>
+                                            {{-- Delete Button --}}
+                                            <x-button.circle
+                                                wire:click="$dispatch('delete-payment', { paymentId: {{ $payment->id }} })"
+                                                x-on:click="$modalClose('invoice-show-modal')" color="red" icon="trash" size="sm"
+                                                outline />
                                         </div>
                                     </div>
                                 </div>
@@ -227,11 +236,12 @@
                     @else
                         <div class="text-center py-12">
                             <div
-                                class="w-16 h-16 bg-secondary-100 dark:bg-dark-800 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <x-icon name="credit-card" class="w-8 h-8 text-secondary-400" />
+                                class="bg-secondary-100 dark:bg-dark-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <x-icon name="credit-card" class="w-8 h-8 text-secondary-400 dark:text-dark-400" />
                             </div>
-                            <h3 class="font-medium text-secondary-900 dark:text-white mb-2">Belum Ada Pembayaran</h3>
-                            <p class="text-secondary-500 dark:text-secondary-400 mb-4">Invoice ini belum menerima pembayaran</p>
+                            <h3 class="font-medium text-secondary-900 dark:text-dark-50 mb-2">Belum Ada Pembayaran</h3>
+                            <p class="text-secondary-500 dark:text-dark-400 mb-4">Invoice ini belum menerima pembayaran
+                            </p>
                             @if (in_array($invoice->status, ['sent', 'overdue', 'partially_paid']))
                                 <x-button wire:click="recordPayment" color="green" icon="plus" size="sm">
                                     Catat Pembayaran
@@ -260,7 +270,8 @@
                             <div class="grid grid-cols-2 gap-4 text-sm">
                                 <div>
                                     <p class="text-secondary-500 dark:text-secondary-400">Nama</p>
-                                    <p class="font-medium text-secondary-900 dark:text-white">{{ $invoice->client->name }}
+                                    <p class="font-medium text-secondary-900 dark:text-white">
+                                        {{ $invoice->client->name }}
                                     </p>
                                 </div>
                                 <div>
@@ -295,8 +306,9 @@
                                 <div class="flex items-center gap-3">
                                     <div class="w-2 h-2 bg-primary-500 rounded-full"></div>
                                     <div class="flex-1">
-                                        <p class="text-sm font-medium text-secondary-900 dark:text-white">Invoice Dibuat</p>
-                                        <p class="text-xs text-secondary-500 dark:text-secondary-400">
+                                        <p class="text-sm font-medium text-secondary-900 dark:text-dark-50">Invoice
+                                            Dibuat</p>
+                                        <p class="text-xs text-secondary-500 dark:text-dark-400">
                                             {{ $invoice->created_at->format('d M Y H:i') }}</p>
                                     </div>
                                 </div>
@@ -305,9 +317,9 @@
                                     <div class="flex items-center gap-3">
                                         <div class="w-2 h-2 bg-green-500 rounded-full"></div>
                                         <div class="flex-1">
-                                            <p class="text-sm font-medium text-secondary-900 dark:text-white">Invoice
+                                            <p class="text-sm font-medium text-secondary-900 dark:text-dark-50">Invoice
                                                 Dikirim</p>
-                                            <p class="text-xs text-secondary-500 dark:text-secondary-400">
+                                            <p class="text-xs text-secondary-500 dark:text-dark-400">
                                                 {{ $invoice->issue_date->format('d M Y') }}</p>
                                         </div>
                                     </div>
@@ -317,9 +329,9 @@
                                     <div class="flex items-center gap-3">
                                         <div class="w-2 h-2 bg-emerald-500 rounded-full"></div>
                                         <div class="flex-1">
-                                            <p class="text-sm font-medium text-secondary-900 dark:text-white">Pembayaran
-                                                Diterima</p>
-                                            <p class="text-xs text-secondary-500 dark:text-secondary-400">
+                                            <p class="text-sm font-medium text-secondary-900 dark:text-dark-50">
+                                                Pembayaran Diterima</p>
+                                            <p class="text-xs text-secondary-500 dark:text-dark-400">
                                                 {{ $payment->payment_date->format('d M Y') }} • Rp
                                                 {{ number_format($payment->amount, 0, ',', '.') }}</p>
                                         </div>
@@ -372,7 +384,8 @@
                 {{-- Main Actions --}}
                 <div class="flex items-center gap-2">
                     @if ($invoice)
-                        <x-button href="{{ route('invoices.edit', $invoice->id) }}" color="secondary dark:dark" icon="pencil" outline size="sm">
+                        <x-button href="{{ route('invoices.edit', $invoice->id) }}" color="secondary dark:dark"
+                            icon="pencil" outline size="sm">
                             Edit
                         </x-button>
                     @endif
@@ -384,4 +397,7 @@
             </div>
         </x-slot:footer>
     </x-modal>
+
+    <livewire:payments.delete />
+
 </div>
