@@ -496,7 +496,7 @@
                 <x-badge text="84" color="green" />
             </x-slot:right>
 
-            <div class="text-center py-12">
+            {{-- <div class="text-center py-12">
                 <div
                     class="h-20 w-20 sm:h-24 sm:w-24 bg-green-50 dark:bg-green-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
                     <x-icon name="currency-dollar"
@@ -504,8 +504,9 @@
                 </div>
                 <h3 class="text-lg font-semibold text-secondary-900 dark:text-dark-50 mb-2">Payment Tracking</h3>
                 <p class="text-secondary-600 dark:text-dark-400">Kelola dan lacak semua pembayaran invoice</p>
-            </div>
-
+            </div> --}}
+            <livewire:payments.listing />
+            
         </x-tab.items>
 
         {{-- Tab 3: Create Invoice Form --}}
