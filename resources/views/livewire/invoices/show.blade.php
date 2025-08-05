@@ -157,7 +157,6 @@
                     <x-slot:left>
                         <x-icon name="credit-card" class="w-4 h-4" />
                     </x-slot:left>
-                    Pembayaran
                     <x-slot:right>
                         <x-badge text="{{ $invoice->payments->count() }}" color="green" />
                     </x-slot:right>
@@ -236,7 +235,7 @@
                     @else
                         <div class="text-center py-12">
                             <div
-                                class="bg-secondary-100 dark:bg-dark-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                                class="bg-secondary-100 dark:bg-dark-800 rounded-full w-fit p-2 flex items-center justify-center mx-auto mb-4">
                                 <x-icon name="credit-card" class="w-8 h-8 text-secondary-400 dark:text-dark-400" />
                             </div>
                             <h3 class="font-medium text-secondary-900 dark:text-dark-50 mb-2">Belum Ada Pembayaran</h3>

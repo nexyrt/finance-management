@@ -240,7 +240,7 @@
         </div>
 
         <div class="flex flex-wrap gap-3">
-            <x-button href="{{ route('invoices.index') }}" color="secondary" outline>
+            <x-button href="{{ route('invoices.index') }}" color="secondary dark:dark hover:secondary" outline>
                 Cancel
             </x-button>
             <x-button wire:click="addItem" icon="plus" color="primary" size="sm" class="lg:hidden">
