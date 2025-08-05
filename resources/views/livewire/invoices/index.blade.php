@@ -13,79 +13,9 @@
             </div>
 
             <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                <x-dropdown icon="document-arrow-down" outline color="secondary" class="w-full sm:w-auto">
-                    <x-dropdown.items text="Export Excel" icon="document-text" wire:click="exportExcel" />
-                    <x-dropdown.items text="Export PDF" icon="document" wire:click="exportPdf" />
-                </x-dropdown>
                 <x-button wire:click="createInvoice" loading="createInvoice" color="primary" class="w-full sm:w-auto">
                     Buat Invoice Baru
                 </x-button>
-            </div>
-        </div>
-    </div>
-
-    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6 mb-8">
-        <!-- Total Invoice Card -->
-        <div
-            class="bg-white dark:bg-dark-800 border border-secondary-200 dark:border-dark-600 rounded-xl p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow">
-            <div class="flex items-center justify-between">
-                <div class="min-w-0 flex-1">
-                    <p class="text-sm font-medium text-secondary-600 dark:text-dark-400">Total Invoice</p>
-                    <p class="text-xl sm:text-2xl lg:text-3xl font-bold text-secondary-900 dark:text-dark-50 break-all">
-                        {{ number_format($stats['total_invoices']) }}</p>
-                </div>
-                <div
-                    class="h-10 w-10 sm:h-12 sm:w-12 bg-primary-50 dark:bg-primary-900/20 rounded-xl flex items-center justify-center flex-shrink-0 ml-3">
-                    <x-icon name="document-text" class="w-5 h-5 sm:w-6 sm:h-6 text-primary-600 dark:text-primary-400" />
-                </div>
-            </div>
-        </div>
-
-        <!-- Outstanding Card -->
-        <div
-            class="bg-white dark:bg-dark-800 border border-secondary-200 dark:border-dark-600 rounded-xl p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow">
-            <div class="flex items-center justify-between">
-                <div class="min-w-0 flex-1">
-                    <p class="text-sm font-medium text-secondary-600 dark:text-dark-400">Outstanding</p>
-                    <p class="text-base sm:text-lg lg:text-xl font-bold text-red-600 dark:text-red-400 break-all">
-                        Rp {{ number_format($stats['outstanding_amount'], 0, ',', '.') }}</p>
-                </div>
-                <div
-                    class="h-10 w-10 sm:h-12 sm:w-12 bg-red-50 dark:bg-red-900/20 rounded-xl flex items-center justify-center flex-shrink-0 ml-3">
-                    <x-icon name="exclamation-triangle" class="w-5 h-5 sm:w-6 sm:h-6 text-red-600 dark:text-red-400" />
-                </div>
-            </div>
-        </div>
-
-        <!-- Paid This Month Card -->
-        <div
-            class="bg-white dark:bg-dark-800 border border-secondary-200 dark:border-dark-600 rounded-xl p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow">
-            <div class="flex items-center justify-between">
-                <div class="min-w-0 flex-1">
-                    <p class="text-sm font-medium text-secondary-600 dark:text-dark-400">Paid This Month</p>
-                    <p class="text-base sm:text-lg lg:text-xl font-bold text-green-600 dark:text-green-400 break-all">
-                        Rp {{ number_format($stats['paid_this_month'], 0, ',', '.') }}</p>
-                </div>
-                <div
-                    class="h-10 w-10 sm:h-12 sm:w-12 bg-green-50 dark:bg-green-900/20 rounded-xl flex items-center justify-center flex-shrink-0 ml-3">
-                    <x-icon name="check-circle" class="w-5 h-5 sm:w-6 sm:h-6 text-green-600 dark:text-green-400" />
-                </div>
-            </div>
-        </div>
-
-        <!-- Overdue Card -->
-        <div
-            class="bg-white dark:bg-dark-800 border border-secondary-200 dark:border-dark-600 rounded-xl p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow">
-            <div class="flex items-center justify-between">
-                <div class="min-w-0 flex-1">
-                    <p class="text-sm font-medium text-secondary-600 dark:text-dark-400">Overdue</p>
-                    <p class="text-xl sm:text-2xl lg:text-3xl font-bold text-orange-600 dark:text-orange-400 break-all">
-                        {{ $stats['overdue_count'] }}</p>
-                </div>
-                <div
-                    class="h-10 w-10 sm:h-12 sm:w-12 bg-orange-50 dark:bg-orange-900/20 rounded-xl flex items-center justify-center flex-shrink-0 ml-3">
-                    <x-icon name="clock" class="w-5 h-5 sm:w-6 sm:h-6 text-orange-600 dark:text-orange-400" />
-                </div>
             </div>
         </div>
     </div>
@@ -98,9 +28,80 @@
             <x-slot:left>
                 <x-icon name="document-text" class="w-5 h-5" />
             </x-slot:left>
-            <x-slot:right>
-                <x-badge text="{{ $this->calculateStats()['total_invoices'] }}" color="blue" />
-            </x-slot:right>
+
+            {{-- Statistics Cards --}}
+            <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6 mb-8">
+                <!-- Total Invoice Card -->
+                <div class="bg-white dark:bg-dark-800 border border-secondary-200 dark:border-dark-600 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow"
+                    x-tooltip="<div class='p-3 max-w-xs'><h4 class='font-semibold text-sm mb-2 text-secondary-900 dark:text-dark-50'>Total Invoice</h4><p class='text-xs text-secondary-600 dark:text-dark-300 mb-3'>Jumlah semua invoice: draft, terkirim, dibayar, dan terlambat</p><div class='space-y-1 text-xs'><div class='flex justify-between'><span class='text-secondary-600 dark:text-dark-400'>Draft: {{ $stats['draft_count'] ?? 0 }}</span></div><div class='flex justify-between'><span class='text-secondary-600 dark:text-dark-400'>Terkirim: {{ $stats['sent_count'] ?? 0 }}</span></div><div class='flex justify-between'><span class='text-secondary-600 dark:text-dark-400'>Dibayar: {{ $stats['paid_count'] ?? 0 }}</span></div><div class='flex justify-between'><span class='text-secondary-600 dark:text-dark-400'>Terlambat: {{ $stats['overdue_count'] ?? 0 }}</span></div></div></div>">
+                    <div class="flex items-center justify-between">
+                        <div class="min-w-0 flex-1">
+                            <p class="text-sm font-medium text-secondary-600 dark:text-dark-400">Total Invoice</p>
+                            <p class="text-xl font-bold text-secondary-900 dark:text-dark-50 break-all">
+                                {{ number_format($stats['total_invoices']) }}
+                            </p>
+                        </div>
+                        <div
+                            class="h-10 w-10 sm:h-12 sm:w-12 bg-primary-50 dark:bg-primary-900/20 rounded-xl flex items-center justify-center flex-shrink-0 ml-3">
+                            <x-icon name="document-text"
+                                class="w-5 h-5 sm:w-6 sm:h-6 text-primary-600 dark:text-primary-400" />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Outstanding Card -->
+                <div class="bg-white dark:bg-dark-800 border border-secondary-200 dark:border-dark-600 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow"
+                    x-tooltip="<div class='p-3 max-w-xs'><h4 class='font-semibold text-sm mb-2 text-secondary-900 dark:text-dark-50'>Outstanding Amount</h4><p class='text-xs text-secondary-600 dark:text-dark-300 mb-3'>Total nilai invoice yang belum dibayar penuh</p><div class='space-y-1 text-xs'><div class='flex justify-between'><span class='text-secondary-600 dark:text-dark-400'>Terkirim: Rp {{ number_format($stats['sent_amount'] ?? 0, 0, ',', '.') }}</span></div><div class='flex justify-between'><span class='text-secondary-600 dark:text-dark-400'>Sebagian Dibayar: Rp {{ number_format($stats['partial_amount'] ?? 0, 0, ',', '.') }}</span></div><div class='flex justify-between'><span class='text-red-600'>Terlambat: Rp {{ number_format($stats['overdue_amount'] ?? 0, 0, ',', '.') }}</span></div></div></div>">
+                    <div class="flex items-center justify-between">
+                        <div class="min-w-0 flex-1">
+                            <p class="text-sm font-medium text-secondary-600 dark:text-dark-400">Outstanding</p>
+                            <p class="text-xl font-bold text-red-600 dark:text-red-400 break-all">
+                                Rp {{ number_format($stats['outstanding_amount'], 0, ',', '.') }}
+                            </p>
+                        </div>
+                        <div
+                            class="h-10 w-10 sm:h-12 sm:w-12 bg-red-50 dark:bg-red-900/20 rounded-xl flex items-center justify-center flex-shrink-0 ml-3">
+                            <x-icon name="exclamation-triangle"
+                                class="w-5 h-5 sm:w-6 sm:h-6 text-red-600 dark:text-red-400" />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Paid This Month Card -->
+                <div class="bg-white dark:bg-dark-800 border border-secondary-200 dark:border-dark-600 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow"
+                    x-tooltip="<div class='p-3 max-w-xs'><h4 class='font-semibold text-sm mb-2 text-secondary-900 dark:text-dark-50'>Pembayaran Bulan Ini</h4><p class='text-xs text-secondary-600 dark:text-dark-300 mb-3'>Total pembayaran diterima bulan {{ now()->format('F Y') }}</p><div class='space-y-1 text-xs'><div class='flex justify-between'><span class='text-secondary-600 dark:text-dark-400'>Jumlah Transaksi: {{ $stats['payments_count'] ?? 0 }}x</span></div><div class='flex justify-between'><span class='text-secondary-600 dark:text-dark-400'>Rata-rata: Rp {{ ($stats['payments_count'] ?? 0) > 0 ? number_format(($stats['paid_this_month'] ?? 0) / ($stats['payments_count'] ?? 1), 0, ',', '.') : '0' }}</span></div></div></div>">
+                    <div class="flex items-center justify-between">
+                        <div class="min-w-0 flex-1">
+                            <p class="text-sm font-medium text-secondary-600 dark:text-dark-400">Paid This Month</p>
+                            <p class="text-xl font-bold text-green-600 dark:text-green-400 break-all">
+                                Rp {{ number_format($stats['paid_this_month'], 0, ',', '.') }}
+                            </p>
+                        </div>
+                        <div
+                            class="h-10 w-10 sm:h-12 sm:w-12 bg-green-50 dark:bg-green-900/20 rounded-xl flex items-center justify-center flex-shrink-0 ml-3">
+                            <x-icon name="check-circle"
+                                class="w-5 h-5 sm:w-6 sm:h-6 text-green-600 dark:text-green-400" />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Overdue Card -->
+                <div class="bg-white dark:bg-dark-800 border border-secondary-200 dark:border-dark-600 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow"
+                    x-tooltip="<div class='p-3 max-w-xs'><h4 class='font-semibold text-sm mb-2 text-secondary-900 dark:text-dark-50'>Invoice Terlambat</h4><p class='text-xs text-secondary-600 dark:text-dark-300 mb-3'>Invoice yang melewati tanggal jatuh tempo</p><div class='space-y-1 text-xs'><div class='flex justify-between'><span class='text-secondary-600 dark:text-dark-400'>Total: {{ $stats['overdue_count'] }} invoice</span></div><div class='flex justify-between'><span class='text-red-600'>Nilai: Rp {{ number_format($stats['overdue_amount'] ?? 0, 0, ',', '.') }}</span></div><div class='flex justify-between'><span class='text-secondary-600 dark:text-dark-400'>Rata-rata terlambat: {{ $stats['avg_overdue_days'] ?? 0 }} hari</span></div></div></div>">
+                    <div class="flex items-center justify-between">
+                        <div class="min-w-0 flex-1">
+                            <p class="text-sm font-medium text-secondary-600 dark:text-dark-400">Overdue</p>
+                            <p class="text-xl font-bold text-orange-600 dark:text-orange-400 break-all">
+                                {{ $stats['overdue_count'] }}
+                            </p>
+                        </div>
+                        <div
+                            class="h-10 w-10 sm:h-12 sm:w-12 bg-orange-50 dark:bg-orange-900/20 rounded-xl flex items-center justify-center flex-shrink-0 ml-3">
+                            <x-icon name="clock" class="w-5 h-5 sm:w-6 sm:h-6 text-orange-600 dark:text-orange-400" />
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             {{-- Enhanced Filters Section --}}
             <div
@@ -127,6 +128,11 @@
                                 color="primary" />
                         </div>
                     @endif
+
+                    <x-dropdown icon="document-arrow-down" outline color="secondary" class="w-full sm:w-auto">
+                        <x-dropdown.items text="Export Excel" icon="document-text" wire:click="exportExcel" />
+                        <x-dropdown.items text="Export PDF" icon="document" wire:click="exportPdf" />
+                    </x-dropdown>
                 </div>
 
                 <div class="p-4 sm:p-6">
@@ -451,7 +457,8 @@
                             {{-- Primary Actions --}}
                             <div class="py-1">
                                 <x-dropdown.items text="Lihat Detail" icon="eye"
-                                    wire:click="$dispatch('show-invoice', { invoiceId: {{ $row->id }} })" loading="$dispatch('show-invoice')" />
+                                    wire:click="$dispatch('show-invoice', { invoiceId: {{ $row->id }} })"
+                                    loading="$dispatch('show-invoice')" />
                                 <x-dropdown.items text="Edit Invoice" icon="pencil"
                                     href="{{ route('invoices.edit', $row->id) }}"
                                     class="text-primary-600 dark:text-primary-400" />
@@ -469,8 +476,7 @@
                             {{-- Secondary Actions --}}
                             <div class="border-t border-secondary-100 dark:border-dark-700 py-1">
                                 <x-dropdown.items text="Print PDF" icon="printer"
-                                    wire:click="printInvoice({{ $row->id }})"
-                                    class=" dark:text-dark-100" />
+                                    wire:click="printInvoice({{ $row->id }})" class=" dark:text-dark-100" />
                             </div>
 
                             {{-- Danger Actions --}}
@@ -492,9 +498,6 @@
             <x-slot:left>
                 <x-icon name="currency-dollar" class="w-5 h-5" />
             </x-slot:left>
-            <x-slot:right>
-                <x-badge text="84" color="green" />
-            </x-slot:right>
 
             {{-- <div class="text-center py-12">
                 <div
@@ -506,7 +509,7 @@
                 <p class="text-secondary-600 dark:text-dark-400">Kelola dan lacak semua pembayaran invoice</p>
             </div> --}}
             <livewire:payments.listing />
-            
+
         </x-tab.items>
 
         {{-- Tab 3: Create Invoice Form --}}
@@ -661,4 +664,5 @@
     <livewire:invoices.create />
     <livewire:invoices.delete />
     <livewire:payments.create />
+    <livewire:payments.edit />
 </section>

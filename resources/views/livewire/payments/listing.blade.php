@@ -2,7 +2,8 @@
     {{-- Stats Cards --}}
     <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         <!-- Total Payments Card -->
-        <div class="bg-white dark:bg-dark-800 border border-secondary-200 dark:border-dark-600 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
+        <div class="bg-white dark:bg-dark-800 border border-secondary-200 dark:border-dark-600 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow"
+            x-tooltip="<div class='p-3 max-w-xs'><h4 class='font-semibold text-sm mb-2 text-secondary-900 dark:text-dark-50'>Total Pembayaran</h4><p class='text-xs text-secondary-600 dark:text-dark-300 mb-3'>Jumlah seluruh transaksi pembayaran yang telah diterima</p><div class='space-y-1 text-xs'><div class='flex justify-between'><span class='text-secondary-600 dark:text-dark-400'>Transfer Bank: {{ $stats['bank_transfer_count'] ?? 0 }}x</span></div><div class='flex justify-between'><span class='text-secondary-600 dark:text-dark-400'>Tunai: {{ $stats['cash_count'] ?? 0 }}x</span></div><div class='flex justify-between'><span class='text-secondary-600 dark:text-dark-400'>Rata-rata per transaksi: Rp {{ $stats['total_payments'] > 0 ? number_format(($stats['total_amount'] ?? 0) / $stats['total_payments'], 0, ',', '.') : '0' }}</span></div></div></div>">
             <div class="flex items-center justify-between">
                 <div class="min-w-0 flex-1">
                     <p class="text-sm font-medium text-secondary-600 dark:text-dark-400">Total Pembayaran</p>
@@ -17,7 +18,8 @@
         </div>
 
         <!-- Total Amount Card -->
-        <div class="bg-white dark:bg-dark-800 border border-secondary-200 dark:border-dark-600 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
+        <div class="bg-white dark:bg-dark-800 border border-secondary-200 dark:border-dark-600 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow"
+            x-tooltip="<div class='p-3 max-w-xs'><h4 class='font-semibold text-sm mb-2 text-secondary-900 dark:text-dark-50'>Total Nilai Pembayaran</h4><p class='text-xs text-secondary-600 dark:text-dark-300 mb-3'>Akumulasi seluruh nilai pembayaran yang telah diterima</p><div class='space-y-1 text-xs'><div class='flex justify-between'><span class='text-secondary-600 dark:text-dark-400'>Via Transfer: Rp {{ number_format($stats['bank_transfer_amount'] ?? 0, 0, ',', '.') }}</span></div><div class='flex justify-between'><span class='text-secondary-600 dark:text-dark-400'>Via Tunai: Rp {{ number_format($stats['cash_amount'] ?? 0, 0, ',', '.') }}</span></div><div class='flex justify-between'><span class='text-secondary-600 dark:text-dark-400'>Pembayaran terbesar: Rp {{ number_format($stats['max_payment'] ?? 0, 0, ',', '.') }}</span></div></div></div>">
             <div class="flex items-center justify-between">
                 <div class="min-w-0 flex-1">
                     <p class="text-sm font-medium text-secondary-600 dark:text-dark-400">Total Nilai</p>
@@ -32,7 +34,8 @@
         </div>
 
         <!-- This Month Count Card -->
-        <div class="bg-white dark:bg-dark-800 border border-secondary-200 dark:border-dark-600 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
+        <div class="bg-white dark:bg-dark-800 border border-secondary-200 dark:border-dark-600 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow"
+            x-tooltip="<div class='p-3 max-w-xs'><h4 class='font-semibold text-sm mb-2 text-secondary-900 dark:text-dark-50'>Pembayaran Bulan Ini</h4><p class='text-xs text-secondary-600 dark:text-dark-300 mb-3'>Jumlah transaksi pembayaran yang diterima pada bulan {{ now()->format('F Y') }}</p><div class='space-y-1 text-xs'><div class='flex justify-between'><span class='text-secondary-600 dark:text-dark-400'>Minggu ini: {{ $stats['this_week_count'] ?? 0 }}x</span></div><div class='flex justify-between'><span class='text-secondary-600 dark:text-dark-400'>Hari ini: {{ $stats['today_count'] ?? 0 }}x</span></div><div class='flex justify-between'><span class='text-secondary-600 dark:text-dark-400'>Pertumbuhan: {{ $stats['growth_percentage'] ?? 0 }}% vs bulan lalu</span></div></div></div>">
             <div class="flex items-center justify-between">
                 <div class="min-w-0 flex-1">
                     <p class="text-sm font-medium text-secondary-600 dark:text-dark-400">Bulan Ini</p>
@@ -47,7 +50,8 @@
         </div>
 
         <!-- This Month Amount Card -->
-        <div class="bg-white dark:bg-dark-800 border border-secondary-200 dark:border-dark-600 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
+        <div class="bg-white dark:bg-dark-800 border border-secondary-200 dark:border-dark-600 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow"
+            x-tooltip="<div class='p-3 max-w-xs'><h4 class='font-semibold text-sm mb-2 text-secondary-900 dark:text-dark-50'>Nilai Pembayaran Bulan Ini</h4><p class='text-xs text-secondary-600 dark:text-dark-300 mb-3'>Total nilai pembayaran yang diterima pada bulan {{ now()->format('F Y') }}</p><div class='space-y-1 text-xs'><div class='flex justify-between'><span class='text-secondary-600 dark:text-dark-400'>Minggu ini: Rp {{ number_format($stats['this_week_amount'] ?? 0, 0, ',', '.') }}</span></div><div class='flex justify-between'><span class='text-secondary-600 dark:text-dark-400'>Hari ini: Rp {{ number_format($stats['today_amount'] ?? 0, 0, ',', '.') }}</span></div><div class='flex justify-between'><span class='text-secondary-600 dark:text-dark-400'>Rata-rata harian: Rp {{ number_format(($stats['this_month_amount'] ?? 0) / now()->day, 0, ',', '.') }}</span></div></div></div>">
             <div class="flex items-center justify-between">
                 <div class="min-w-0 flex-1">
                     <p class="text-sm font-medium text-secondary-600 dark:text-dark-400">Nilai Bulan Ini</p>
@@ -76,9 +80,10 @@
             </div>
 
             {{-- Export Action --}}
-            <x-button wire:click="exportExcel" color="secondary" icon="document-arrow-down" outline size="sm">
-                Export Excel
-            </x-button>
+            <x-dropdown icon="document-arrow-down" outline color="secondary" class="w-full sm:w-auto">
+                <x-dropdown.items text="Export Excel" icon="document-text" wire:click="exportExcel" />
+                <x-dropdown.items text="Export PDF" icon="document" wire:click="exportPdf" />
+            </x-dropdown>
         </div>
 
         <div class="p-4 sm:p-6">

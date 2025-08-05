@@ -3,6 +3,7 @@
 namespace App\Livewire\Payments;
 
 use App\Models\Payment;
+use App\Models\Invoice;
 use App\Models\BankAccount;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -164,6 +165,21 @@ class Listing extends Component
     public function exportExcel()
     {
         $service = new \App\Services\PaymentExportService();
+        
+        $filters = [
+            'search' => $this->search,
+            'paymentMethodFilter' => $this->paymentMethodFilter,
+            'bankAccountFilter' => $this->bankAccountFilter,
+            'invoiceStatusFilter' => $this->invoiceStatusFilter,
+            'dateRange' => $this->dateRange,
+        ];
+        
+        return $service->exportExcel($filters);
+    }
+
+    public function exportPdf()
+    {
+        $service = new \App\Services\PaymentExportService();
 
         $filters = [
             'search' => $this->search,
@@ -173,7 +189,11 @@ class Listing extends Component
             'dateRange' => $this->dateRange,
         ];
 
-        return $service->exportExcel($filters);
+        return response()->streamDownload(function () use ($service, $filters) {
+            echo $service->exportPdf($filters)->output();
+        }, 'payments-' . now()->format('Y-m-d') . '.pdf', [
+            'Content-Type' => 'application/pdf'
+        ]);
     }
 
     public function render()
