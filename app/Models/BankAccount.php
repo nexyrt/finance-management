@@ -16,12 +16,10 @@ class BankAccount extends Model
         'bank_name',
         'branch',
         'initial_balance',
-        'current_balance'
     ];
 
     protected $casts = [
         'initial_balance' => 'integer',
-        'current_balance' => 'integer',
     ];
 
     public function transactions(): HasMany
@@ -38,11 +36,6 @@ class BankAccount extends Model
     public function getFormattedInitialBalanceAttribute(): string
     {
         return 'Rp ' . number_format($this->initial_balance, 0, ',', '.');
-    }
-
-    public function getFormattedCurrentBalanceAttribute(): string
-    {
-        return 'Rp ' . number_format($this->current_balance, 0, ',', '.');
     }
 
     // Convert rupiah string to integer (remove formatting)

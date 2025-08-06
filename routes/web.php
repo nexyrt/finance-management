@@ -24,6 +24,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/services', ServiceManagement::class)->name('services');
     Route::get('/bank-accounts', BankAccounts::class)->name('bank-accounts');
 
+    // Bank Accounts Management
+    Route::prefix('bank-accounts')->name('bank-accounts.')->group(function () {
+        Route::get('/', BankAccounts::class)->name('index');
+        // Route::get('/{bankAccount}/edit', BankAccounts::class)->name('edit');
+
+    });
+
     // Invoice Management
     Route::prefix('invoices')->name('invoices.')->group(function () {
         Route::get('/', InvoicesIndex::class)->name('index');

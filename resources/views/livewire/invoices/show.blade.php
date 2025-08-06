@@ -255,7 +255,6 @@
                     <x-slot:left>
                         <x-icon name="information-circle" class="w-4 h-4" />
                     </x-slot:left>
-                    Detail
 
                     <div class="space-y-6">
                         {{-- Client Details --}}
