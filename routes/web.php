@@ -1,10 +1,10 @@
 <?php
 
-use App\Livewire\BankAccounts;
+use App\Livewire\Dashboard;
 use App\Livewire\Clients\Index as Clients;
 use App\Livewire\Invoices\Index as InvoicesIndex;
 use App\Livewire\Invoices\Edit as EditInvoice;
-use App\Livewire\Dashboard;
+use App\Livewire\BankAccounts\Index as BankAccountsIndex;
 use App\Livewire\ServiceManagement;
 use App\Livewire\Settings\Appearance;
 use App\Livewire\Settings\Password;
@@ -22,15 +22,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Master Data
     Route::get('/clients', Clients::class)->name('clients');
     Route::get('/services', ServiceManagement::class)->name('services');
-    Route::get('/bank-accounts', BankAccounts::class)->name('bank-accounts');
 
     // Bank Accounts Management
     Route::prefix('bank-accounts')->name('bank-accounts.')->group(function () {
-        Route::get('/', BankAccounts::class)->name('index');
+        Route::get('/', BankAccountsIndex::class)->name('index');
         // Route::get('/{bankAccount}/edit', BankAccounts::class)->name('edit');
 
     });
-
+    
     // Invoice Management
     Route::prefix('invoices')->name('invoices.')->group(function () {
         Route::get('/', InvoicesIndex::class)->name('index');

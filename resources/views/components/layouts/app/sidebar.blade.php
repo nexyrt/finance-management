@@ -35,8 +35,8 @@
                     :current="request()->routeIs('services')" wire:navigate>
                     {{ __('Services') }}
                 </flux:navlist.item>
-                <flux:navlist.item icon="credit-card" :href="route('bank-accounts')"
-                    :current="request()->routeIs('bank-accounts')" wire:navigate>
+                <flux:navlist.item icon="credit-card" :href="route('bank-accounts.index')"
+                    :current="request()->routeIs('bank-accounts.index')" wire:navigate>
                     {{ __('Bank Accounts') }}
                 </flux:navlist.item>
             </flux:navlist.group>
