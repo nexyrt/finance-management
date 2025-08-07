@@ -29,7 +29,6 @@ class BankAccountFactory extends Factory
             'bank_name' => $this->faker->randomElement($this->banks),
             'branch' => $this->faker->city,
             'initial_balance' => $initialBalance,
-            'current_balance' => $initialBalance,
         ];
     }
 }

@@ -1,12 +1,13 @@
 <?php
 
 namespace App\Livewire;
-use Livewire\Component;
+
+use App\Models\BankAccount;
+use App\Models\Client;
 use App\Models\Invoice;
 use App\Models\Payment;
-use App\Models\Client;
-use App\Models\BankAccount;
 use Carbon\Carbon;
+use Livewire\Component;
 
 class Dashboard extends Component
 {
@@ -46,8 +47,9 @@ class Dashboard extends Component
         $currentMonthTotal = $this->getCurrentMonthRevenue();
         $lastMonthTotal = $this->getLastMonthRevenue();
 
-        if ($lastMonthTotal == 0)
+        if ($lastMonthTotal == 0) {
             return 0;
+        }
 
         return round((($currentMonthTotal - $lastMonthTotal) / $lastMonthTotal) * 100, 1);
     }
@@ -87,7 +89,7 @@ class Dashboard extends Component
      */
     public function getTotalBankBalance()
     {
-        return BankAccount::sum('current_balance');
+        return BankAccount::all()->sum('balance');
     }
 
     /**
@@ -105,7 +107,7 @@ class Dashboard extends Component
                     'name' => $client->name,
                     'type' => $client->type,
                     'total_revenue' => $client->invoice_items_sum_amount ?? 0,
-                    'growth' => rand(-5, 20) // Temporary - would need historical data
+                    'growth' => rand(-5, 20), // Temporary - would need historical data
                 ];
             });
     }
@@ -126,7 +128,7 @@ class Dashboard extends Component
         return $serviceRevenue->pluck('total_revenue', 'service_name')->toArray();
     }
 
-    /** 
+    /**
      * Get monthly revenue data for chart
      */
     public function getMonthlyRevenue()
@@ -140,7 +142,7 @@ class Dashboard extends Component
 
             $monthlyData[] = [
                 'month' => $month->format('M'),
-                'revenue' => $revenue
+                'revenue' => $revenue,
             ];
         }
 
@@ -152,7 +154,7 @@ class Dashboard extends Component
      */
     public function formatCurrency($amount)
     {
-        return 'Rp ' . number_format($amount, 0, ',', '.');
+        return 'Rp '.number_format($amount, 0, ',', '.');
     }
 
     /**
@@ -160,7 +162,7 @@ class Dashboard extends Component
      */
     public function formatToMillions($amount)
     {
-        return number_format($amount / 1000000, 1) . 'M';
+        return number_format($amount / 1000000, 1).'M';
     }
 
     public function render()
