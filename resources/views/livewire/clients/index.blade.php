@@ -1,5 +1,5 @@
 {{-- resources/views/livewire/clients/index.blade.php --}}
-<section class="w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<section class="space-y-6">
 
     {{-- Header Section --}}
     <div class="mb-8">

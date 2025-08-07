@@ -1,18 +1,17 @@
-{{-- resources/views/livewire/bank-account/index.blade.php --}}
+{{-- resources/views/livewire/bank-accounts/index.blade.php --}}
 
 <div class="space-y-6">
     {{-- Header Section --}}
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div>
             <h1 class="text-3xl font-bold text-secondary-900 dark:text-dark-100">Bank Account Management</h1>
-            <p class="text-secondary-600 dark:text-dark-400 mt-2">Manage your bank accounts, transactions, and monitor
-                cash flow</p>
+            <p class="text-secondary-600 dark:text-dark-400 mt-2">Manage your bank accounts, transactions, and monitor cash flow</p>
         </div>
         <div class="flex space-x-3 mt-4 sm:mt-0">
             <x-button color="secondary dark:dark" icon="document-arrow-down" outline>
                 Import Statement
             </x-button>
-            <x-button color="primary dark:primary" icon="plus">
+            <x-button color="primary dark:primary" icon="plus" wire:click="createBankAccount">
                 Add Bank Account
             </x-button>
         </div>
@@ -23,62 +22,58 @@
         <x-card class="p-6 border border-secondary-200 dark:border-dark-700 dark:bg-dark-800 rounded-lg">
             <div class="flex items-center">
                 <div class="flex-shrink-0">
-                    <div
-                        class="w-12 h-12 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-lg flex items-center justify-center">
+                    <div class="w-12 h-12 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-lg flex items-center justify-center">
                         <x-icon name="banknotes" class="w-6 h-6 text-green-600 dark:text-green-400" />
                     </div>
                 </div>
                 <div class="ml-4">
                     <p class="text-sm font-medium text-secondary-600 dark:text-dark-400">Total Balance</p>
-                    <p class="text-2xl font-bold text-green-600 dark:text-green-400">Rp 125,750,000</p>
+                    <p class="text-2xl font-bold text-green-600 dark:text-green-400">Rp {{ number_format($totalBalance ?? 125750000, 0, ',', '.') }}</p>
                     <p class="text-xs text-green-500 dark:text-green-400 mt-1">+12.5% from last month</p>
                 </div>
             </div>
         </x-card>
 
-        <x-card class="p-6 border border-secondary-200 dark:border-dark-700 dark:bg-dark-800 rounded-md">
+        <x-card class="p-6 border border-secondary-200 dark:border-dark-700 dark:bg-dark-800 rounded-lg">
             <div class="flex items-center">
                 <div class="flex-shrink-0">
-                    <div
-                        class="w-12 h-12 bg-primary-50 dark:bg-primary-900/30 border border-primary-200 dark:border-primary-800 rounded-md flex items-center justify-center">
+                    <div class="w-12 h-12 bg-primary-50 dark:bg-primary-900/30 border border-primary-200 dark:border-primary-800 rounded-lg flex items-center justify-center">
                         <x-icon name="building-library" class="w-6 h-6 text-primary-600 dark:text-primary-400" />
                     </div>
                 </div>
                 <div class="ml-4">
                     <p class="text-sm font-medium text-secondary-600 dark:text-dark-400">Active Accounts</p>
-                    <p class="text-2xl font-bold text-primary-600 dark:text-primary-400">4</p>
+                    <p class="text-2xl font-bold text-primary-600 dark:text-primary-400">{{ $activeAccountsCount ?? 4 }}</p>
                     <p class="text-xs text-secondary-500 dark:text-dark-500 mt-1">Across 3 banks</p>
                 </div>
             </div>
         </x-card>
 
-        <x-card class="p-6 border border-secondary-200 dark:border-dark-700 dark:bg-dark-800 rounded-md">
+        <x-card class="p-6 border border-secondary-200 dark:border-dark-700 dark:bg-dark-800 rounded-lg">
             <div class="flex items-center">
                 <div class="flex-shrink-0">
-                    <div
-                        class="w-12 h-12 bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-800 rounded-md flex items-center justify-center">
+                    <div class="w-12 h-12 bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-800 rounded-lg flex items-center justify-center">
                         <x-icon name="arrow-trending-up" class="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
                     </div>
                 </div>
                 <div class="ml-4">
                     <p class="text-sm font-medium text-secondary-600 dark:text-dark-400">This Month Income</p>
-                    <p class="text-2xl font-bold text-emerald-600 dark:text-emerald-400">Rp 45,200,000</p>
+                    <p class="text-2xl font-bold text-emerald-600 dark:text-emerald-400">Rp {{ number_format($monthlyIncome ?? 45200000, 0, ',', '.') }}</p>
                     <p class="text-xs text-emerald-500 dark:text-emerald-400 mt-1">+8.3% from last month</p>
                 </div>
             </div>
         </x-card>
 
-        <x-card class="p-6 border border-secondary-200 dark:border-dark-700 dark:bg-dark-800 rounded-md">
+        <x-card class="p-6 border border-secondary-200 dark:border-dark-700 dark:bg-dark-800 rounded-lg">
             <div class="flex items-center">
                 <div class="flex-shrink-0">
-                    <div
-                        class="w-12 h-12 bg-rose-50 dark:bg-rose-900/30 border border-rose-200 dark:border-rose-800 rounded-md flex items-center justify-center">
+                    <div class="w-12 h-12 bg-rose-50 dark:bg-rose-900/30 border border-rose-200 dark:border-rose-800 rounded-lg flex items-center justify-center">
                         <x-icon name="arrow-trending-down" class="w-6 h-6 text-rose-600 dark:text-rose-400" />
                     </div>
                 </div>
                 <div class="ml-4">
                     <p class="text-sm font-medium text-secondary-600 dark:text-dark-400">This Month Expense</p>
-                    <p class="text-2xl font-bold text-rose-600 dark:text-rose-400">Rp 18,750,000</p>
+                    <p class="text-2xl font-bold text-rose-600 dark:text-rose-400">Rp {{ number_format($monthlyExpense ?? 18750000, 0, ',', '.') }}</p>
                     <p class="text-xs text-rose-500 dark:text-rose-400 mt-1">+2.1% from last month</p>
                 </div>
             </div>
@@ -90,423 +85,16 @@
         {{-- Tab 1: Bank Accounts --}}
         <x-tab.items tab="Bank Accounts">
             <div class="space-y-6">
-                {{-- Filters --}}
-                <x-card class="p-4 border border-secondary-200 dark:border-dark-700 dark:bg-dark-800 rounded-md">
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        <x-input placeholder="Search accounts..." icon="magnifying-glass" />
-                        <x-select.styled placeholder="All Banks" :options="[
-                            ['label' => 'All Banks', 'value' => ''],
-                            ['label' => 'Bank BCA', 'value' => 'bca'],
-                            ['label' => 'Bank Mandiri', 'value' => 'mandiri'],
-                            ['label' => 'Bank BNI', 'value' => 'bni'],
-                        ]" />
-                        <x-select.styled placeholder="Account Status" :options="[
-                            ['label' => 'All Status', 'value' => ''],
-                            ['label' => 'Active', 'value' => 'active'],
-                            ['label' => 'Inactive', 'value' => 'inactive'],
-                        ]" />
-                        <x-button color="primary dark:primary" outline icon="funnel">
-                            Filter
-                        </x-button>
-                    </div>
-                </x-card>
-
-                {{-- Bank Accounts Grid --}}
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {{-- Account 1 --}}
-                    <x-card
-                        class="p-6 border border-secondary-200 dark:border-dark-700 dark:bg-dark-800 hover:shadow-lg hover:border-primary-300 dark:hover:border-primary-600 transition-all duration-200 rounded-md">
-                        <div class="flex items-start justify-between mb-4">
-                            <div class="flex items-center space-x-3">
-                                <div
-                                    class="w-12 h-12 bg-primary-600 dark:bg-primary-700 rounded-md flex items-center justify-center">
-                                    <span class="text-white font-bold text-lg">BCA</span>
-                                </div>
-                                <div>
-                                    <h3 class="text-lg font-semibold text-secondary-900 dark:text-dark-100">PT Maju
-                                        Bersama - Operational</h3>
-                                    <p class="text-sm text-secondary-500 dark:text-dark-400">Bank BCA • ****7890</p>
-                                </div>
-                            </div>
-                            <x-badge text="Active" color="green dark:green" />
-                        </div>
-
-                        <div class="space-y-3">
-                            <div class="flex justify-between items-center">
-                                <span class="text-sm text-secondary-600 dark:text-dark-400">Current Balance</span>
-                                <span class="text-xl font-bold text-green-600 dark:text-green-400">Rp 75,500,000</span>
-                            </div>
-                            <div class="flex justify-between items-center">
-                                <span class="text-sm text-secondary-600 dark:text-dark-400">Last Transaction</span>
-                                <span class="text-sm text-secondary-900 dark:text-dark-200">2 hours ago</span>
-                            </div>
-                            <div class="flex justify-between items-center">
-                                <span class="text-sm text-secondary-600 dark:text-dark-400">This Month</span>
-                                <span class="text-sm text-green-600 dark:text-green-400">+Rp 12,300,000</span>
-                            </div>
-                        </div>
-
-                        <div class="flex space-x-2 mt-4 pt-4 border-t border-secondary-200 dark:border-dark-700">
-                            <x-button size="sm" color="primary dark:primary" outline icon="eye">
-                                View Details
-                            </x-button>
-                            <x-button size="sm" color="secondary dark:dark" outline icon="plus">
-                                Add Transaction
-                            </x-button>
-                            <x-button.circle size="sm" color="secondary dark:dark" outline icon="pencil" />
-                        </div>
-                    </x-card>
-
-                    {{-- Account 2 --}}
-                    <x-card
-                        class="p-6 border border-secondary-200 dark:border-dark-700 dark:bg-dark-800 hover:shadow-lg hover:border-primary-300 dark:hover:border-primary-600 transition-all duration-200 rounded-md">
-                        <div class="flex items-start justify-between mb-4">
-                            <div class="flex items-center space-x-3">
-                                <div
-                                    class="w-12 h-12 bg-amber-500 dark:bg-amber-600 rounded-md flex items-center justify-center">
-                                    <span class="text-white font-bold text-sm">MDR</span>
-                                </div>
-                                <div>
-                                    <h3 class="text-lg font-semibold text-secondary-900 dark:text-dark-100">PT Maju
-                                        Bersama - Savings</h3>
-                                    <p class="text-sm text-secondary-500 dark:text-dark-400">Bank Mandiri • ****3456</p>
-                                </div>
-                            </div>
-                            <x-badge text="Active" color="green dark:green" />
-                        </div>
-
-                        <div class="space-y-3">
-                            <div class="flex justify-between items-center">
-                                <span class="text-sm text-secondary-600 dark:text-dark-400">Current Balance</span>
-                                <span class="text-xl font-bold text-green-600 dark:text-green-400">Rp 32,750,000</span>
-                            </div>
-                            <div class="flex justify-between items-center">
-                                <span class="text-sm text-secondary-600 dark:text-dark-400">Last Transaction</span>
-                                <span class="text-sm text-secondary-900 dark:text-dark-200">1 day ago</span>
-                            </div>
-                            <div class="flex justify-between items-center">
-                                <span class="text-sm text-secondary-600 dark:text-dark-400">This Month</span>
-                                <span class="text-sm text-green-600 dark:text-green-400">+Rp 5,200,000</span>
-                            </div>
-                        </div>
-
-                        <div class="flex space-x-2 mt-4 pt-4 border-t border-secondary-200 dark:border-dark-700">
-                            <x-button size="sm" color="primary dark:primary" outline icon="eye">
-                                View Details
-                            </x-button>
-                            <x-button size="sm" color="secondary dark:dark" outline icon="plus">
-                                Add Transaction
-                            </x-button>
-                            <x-button.circle size="sm" color="secondary dark:dark" outline icon="pencil" />
-                        </div>
-                    </x-card>
-
-                    {{-- Account 3 --}}
-                    <x-card
-                        class="p-6 border border-secondary-200 dark:border-dark-700 dark:bg-dark-800 hover:shadow-lg hover:border-primary-300 dark:hover:border-primary-600 transition-all duration-200 rounded-md">
-                        <div class="flex items-start justify-between mb-4">
-                            <div class="flex items-center space-x-3">
-                                <div
-                                    class="w-12 h-12 bg-orange-500 dark:bg-orange-600 rounded-md flex items-center justify-center">
-                                    <span class="text-white font-bold text-lg">BNI</span>
-                                </div>
-                                <div>
-                                    <h3 class="text-lg font-semibold text-secondary-900 dark:text-dark-100">PT Maju
-                                        Bersama - Investment</h3>
-                                    <p class="text-sm text-secondary-500 dark:text-dark-400">Bank BNI • ****9012</p>
-                                </div>
-                            </div>
-                            <x-badge text="Active" color="green dark:green" />
-                        </div>
-
-                        <div class="space-y-3">
-                            <div class="flex justify-between items-center">
-                                <span class="text-sm text-secondary-600 dark:text-dark-400">Current Balance</span>
-                                <span class="text-xl font-bold text-green-600 dark:text-green-400">Rp 15,500,000</span>
-                            </div>
-                            <div class="flex justify-between items-center">
-                                <span class="text-sm text-secondary-600 dark:text-dark-400">Last Transaction</span>
-                                <span class="text-sm text-secondary-900 dark:text-dark-200">3 days ago</span>
-                            </div>
-                            <div class="flex justify-between items-center">
-                                <span class="text-sm text-secondary-600 dark:text-dark-400">This Month</span>
-                                <span class="text-sm text-rose-600 dark:text-rose-400">-Rp 2,100,000</span>
-                            </div>
-                        </div>
-
-                        <div class="flex space-x-2 mt-4 pt-4 border-t border-secondary-200 dark:border-dark-700">
-                            <x-button size="sm" color="primary dark:primary" outline icon="eye">
-                                View Details
-                            </x-button>
-                            <x-button size="sm" color="secondary dark:dark" outline icon="plus">
-                                Add Transaction
-                            </x-button>
-                            <x-button.circle size="sm" color="secondary dark:dark" outline icon="pencil" />
-                        </div>
-                    </x-card>
-
-                    {{-- Add New Account Card --}}
-                    <x-card
-                        class="p-6 border-2 border-dashed border-secondary-300 dark:border-dark-600 dark:bg-dark-800 hover:border-primary-400 dark:hover:border-primary-600 hover:bg-primary-50/30 dark:hover:bg-primary-900/20 transition-all duration-200 rounded-md">
-                        <div class="text-center py-8">
-                            <div
-                                class="w-16 h-16 bg-secondary-100 dark:bg-dark-700 border border-secondary-200 dark:border-dark-600 rounded-md flex items-center justify-center mx-auto mb-4">
-                                <x-icon name="plus" class="w-8 h-8 text-secondary-500 dark:text-dark-400" />
-                            </div>
-                            <h3 class="text-lg font-medium text-secondary-900 dark:text-dark-100 mb-2">Add New Bank
-                                Account</h3>
-                            <p class="text-secondary-500 dark:text-dark-400 text-sm mb-6">Connect another bank account
-                                to track your finances</p>
-                            <x-button color="primary dark:primary" icon="plus">
-                                Add Bank Account
-                            </x-button>
-                        </div>
-                    </x-card>
-                </div>
+                {{-- Will be replaced by BankAccounts\Listing component --}}
+                @livewire('bank-accounts.listing')
             </div>
         </x-tab.items>
 
         {{-- Tab 2: Recent Transactions --}}
         <x-tab.items tab="Recent Transactions">
             <div class="space-y-6">
-                {{-- Transaction Filters --}}
-                <x-card class="p-4 border border-secondary-200 dark:border-dark-700 dark:bg-dark-800 rounded-md">
-                    <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
-                        <x-input placeholder="Search transactions..." icon="magnifying-glass" />
-                        <x-select.styled placeholder="All Accounts" :options="[
-                            ['label' => 'All Accounts', 'value' => ''],
-                            ['label' => 'BCA - Operational', 'value' => '1'],
-                            ['label' => 'Mandiri - Savings', 'value' => '2'],
-                            ['label' => 'BNI - Investment', 'value' => '3'],
-                        ]" />
-                        <x-select.styled placeholder="Transaction Type" :options="[
-                            ['label' => 'All Types', 'value' => ''],
-                            ['label' => 'Credit (Income)', 'value' => 'credit'],
-                            ['label' => 'Debit (Expense)', 'value' => 'debit'],
-                        ]" />
-                        <x-date placeholder="Date Range" range />
-                        <x-button color="primary dark:primary" icon="magnifying-glass">
-                            Search
-                        </x-button>
-                    </div>
-                </x-card>
-
-                {{-- Transactions Table --}}
-                <x-card class="border border-secondary-200 dark:border-dark-700 dark:bg-dark-800 rounded-md">
-                    <div class="overflow-x-auto">
-                        <table class="w-full">
-                            <thead
-                                class="bg-secondary-50 dark:bg-dark-700 border-b border-secondary-200 dark:border-dark-600">
-                                <tr>
-                                    <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-secondary-600 dark:text-dark-300 uppercase tracking-wider">
-                                        Date</th>
-                                    <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-secondary-600 dark:text-dark-300 uppercase tracking-wider">
-                                        Account</th>
-                                    <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-secondary-600 dark:text-dark-300 uppercase tracking-wider">
-                                        Description</th>
-                                    <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-secondary-600 dark:text-dark-300 uppercase tracking-wider">
-                                        Reference</th>
-                                    <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-secondary-600 dark:text-dark-300 uppercase tracking-wider">
-                                        Type</th>
-                                    <th
-                                        class="px-6 py-3 text-right text-xs font-medium text-secondary-600 dark:text-dark-300 uppercase tracking-wider">
-                                        Amount</th>
-                                    <th
-                                        class="px-6 py-3 text-center text-xs font-medium text-secondary-600 dark:text-dark-300 uppercase tracking-wider">
-                                        Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody
-                                class="bg-white dark:bg-dark-800 divide-y divide-secondary-200 dark:divide-dark-700">
-                                <tr class="hover:bg-secondary-50 dark:hover:bg-dark-700 transition-colors">
-                                    <td
-                                        class="px-6 py-4 whitespace-nowrap text-sm text-secondary-900 dark:text-dark-200">
-                                        2024-01-15<br>
-                                        <span class="text-xs text-secondary-500 dark:text-dark-400">14:30</span>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="flex items-center">
-                                            <div
-                                                class="w-8 h-8 bg-primary-600 dark:bg-primary-700 rounded-md flex items-center justify-center mr-3">
-                                                <span class="text-white text-xs font-bold">BCA</span>
-                                            </div>
-                                            <div>
-                                                <div class="text-sm font-medium text-secondary-900 dark:text-dark-200">
-                                                    BCA Operational</div>
-                                                <div class="text-xs text-secondary-500 dark:text-dark-400">****7890
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4 text-sm text-secondary-900 dark:text-dark-200">
-                                        Transfer from PT Client ABC<br>
-                                        <span class="text-xs text-secondary-500 dark:text-dark-400">Payment for Invoice
-                                            INV-2024-0145</span>
-                                    </td>
-                                    <td
-                                        class="px-6 py-4 whitespace-nowrap text-sm text-secondary-500 dark:text-dark-400">
-                                        TRF240115001</td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <x-badge text="Credit" color="green dark:green" />
-                                    </td>
-                                    <td
-                                        class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-green-600 dark:text-green-400">
-                                        +Rp 15,000,000
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-center">
-                                        <x-button.circle size="sm" color="secondary dark:dark" outline
-                                            icon="pencil" />
-                                    </td>
-                                </tr>
-
-                                <tr class="hover:bg-secondary-50 dark:hover:bg-dark-700 transition-colors">
-                                    <td
-                                        class="px-6 py-4 whitespace-nowrap text-sm text-secondary-900 dark:text-dark-200">
-                                        2024-01-14<br>
-                                        <span class="text-xs text-secondary-500 dark:text-dark-400">09:15</span>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="flex items-center">
-                                            <div
-                                                class="w-8 h-8 bg-primary-600 dark:bg-primary-700 rounded-md flex items-center justify-center mr-3">
-                                                <span class="text-white text-xs font-bold">BCA</span>
-                                            </div>
-                                            <div>
-                                                <div class="text-sm font-medium text-secondary-900 dark:text-dark-200">
-                                                    BCA Operational</div>
-                                                <div class="text-xs text-secondary-500 dark:text-dark-400">****7890
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4 text-sm text-secondary-900 dark:text-dark-200">
-                                        Monthly Bank Administration Fee<br>
-                                        <span class="text-xs text-secondary-500 dark:text-dark-400">January 2024</span>
-                                    </td>
-                                    <td
-                                        class="px-6 py-4 whitespace-nowrap text-sm text-secondary-500 dark:text-dark-400">
-                                        ADM240114</td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <x-badge text="Debit" color="red dark:red" />
-                                    </td>
-                                    <td
-                                        class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-rose-600 dark:text-rose-400">
-                                        -Rp 25,000
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-center">
-                                        <x-button.circle size="sm" color="secondary dark:dark" outline
-                                            icon="pencil" />
-                                    </td>
-                                </tr>
-
-                                <tr class="hover:bg-secondary-50 dark:hover:bg-dark-700 transition-colors">
-                                    <td
-                                        class="px-6 py-4 whitespace-nowrap text-sm text-secondary-900 dark:text-dark-200">
-                                        2024-01-13<br>
-                                        <span class="text-xs text-secondary-500 dark:text-dark-400">16:45</span>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="flex items-center">
-                                            <div
-                                                class="w-8 h-8 bg-amber-500 dark:bg-amber-600 rounded-md flex items-center justify-center mr-3">
-                                                <span class="text-white text-xs font-bold">MDR</span>
-                                            </div>
-                                            <div>
-                                                <div class="text-sm font-medium text-secondary-900 dark:text-dark-200">
-                                                    Mandiri Savings</div>
-                                                <div class="text-xs text-secondary-500 dark:text-dark-400">****3456
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4 text-sm text-secondary-900 dark:text-dark-200">
-                                        Interest Income<br>
-                                        <span class="text-xs text-secondary-500 dark:text-dark-400">December 2023
-                                            Interest</span>
-                                    </td>
-                                    <td
-                                        class="px-6 py-4 whitespace-nowrap text-sm text-secondary-500 dark:text-dark-400">
-                                        INT240113</td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <x-badge text="Credit" color="green dark:green" />
-                                    </td>
-                                    <td
-                                        class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-green-600 dark:text-green-400">
-                                        +Rp 125,000
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-center">
-                                        <x-button.circle size="sm" color="secondary dark:dark" outline
-                                            icon="pencil" />
-                                    </td>
-                                </tr>
-
-                                <tr class="hover:bg-secondary-50 dark:hover:bg-dark-700 transition-colors">
-                                    <td
-                                        class="px-6 py-4 whitespace-nowrap text-sm text-secondary-900 dark:text-dark-200">
-                                        2024-01-12<br>
-                                        <span class="text-xs text-secondary-500 dark:text-dark-400">11:20</span>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="flex items-center">
-                                            <div
-                                                class="w-8 h-8 bg-orange-500 dark:bg-orange-600 rounded-md flex items-center justify-center mr-3">
-                                                <span class="text-white text-xs font-bold">BNI</span>
-                                            </div>
-                                            <div>
-                                                <div class="text-sm font-medium text-secondary-900 dark:text-dark-200">
-                                                    BNI Investment</div>
-                                                <div class="text-xs text-secondary-500 dark:text-dark-400">****9012
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4 text-sm text-secondary-900 dark:text-dark-200">
-                                        Transfer to BCA Operational<br>
-                                        <span class="text-xs text-secondary-500 dark:text-dark-400">Internal fund
-                                            transfer</span>
-                                    </td>
-                                    <td
-                                        class="px-6 py-4 whitespace-nowrap text-sm text-secondary-500 dark:text-dark-400">
-                                        TRF240112002</td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <x-badge text="Debit" color="red dark:red" />
-                                    </td>
-                                    <td
-                                        class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-rose-600 dark:text-rose-400">
-                                        -Rp 5,000,000
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-center">
-                                        <x-button.circle size="sm" color="secondary dark:dark" outline
-                                            icon="pencil" />
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-
-                    {{-- Pagination --}}
-                    <div
-                        class="px-6 py-4 border-t border-secondary-200 dark:border-dark-700 bg-secondary-50 dark:bg-dark-700">
-                        <div class="flex items-center justify-between">
-                            <div class="text-sm text-secondary-700 dark:text-dark-300">
-                                Showing <span class="font-medium">1</span> to <span class="font-medium">10</span> of
-                                <span class="font-medium">247</span> transactions
-                            </div>
-                            <div class="flex space-x-2">
-                                <x-button size="sm" color="secondary dark:dark" outline>Previous</x-button>
-                                <x-button size="sm" color="primary dark:primary">1</x-button>
-                                <x-button size="sm" color="secondary dark:dark" outline>2</x-button>
-                                <x-button size="sm" color="secondary dark:dark" outline>3</x-button>
-                                <x-button size="sm" color="secondary dark:dark" outline>Next</x-button>
-                            </div>
-                        </div>
-                    </div>
-                </x-card>
+                {{-- Will be replaced by BankTransactions\Listing component --}}
+                {{-- @livewire('bank-transactions.listing', ['context' => 'recent']) --}}
             </div>
         </x-tab.items>
 
@@ -515,182 +103,175 @@
             <div class="space-y-6">
                 {{-- Cash Flow Cards --}}
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <x-card class="p-6 border border-secondary-200 dark:border-dark-700 dark:bg-dark-800 rounded-md">
+                    <x-card class="p-6 border border-secondary-200 dark:border-dark-700 dark:bg-dark-800 rounded-lg">
                         <div class="text-center">
-                            <div
-                                class="w-16 h-16 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-md flex items-center justify-center mx-auto mb-4">
+                            <div class="w-16 h-16 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-lg flex items-center justify-center mx-auto mb-4">
                                 <x-icon name="arrow-trending-up" class="w-8 h-8 text-green-600 dark:text-green-400" />
                             </div>
                             <h3 class="text-lg font-semibold text-secondary-900 dark:text-dark-100">Total Inflow</h3>
-                            <p class="text-3xl font-bold text-green-600 dark:text-green-400 mt-2">Rp 65,450,000</p>
+                            <p class="text-3xl font-bold text-green-600 dark:text-green-400 mt-2">Rp {{ number_format($totalInflow ?? 65450000, 0, ',', '.') }}</p>
                             <p class="text-sm text-secondary-500 dark:text-dark-400 mt-1">This month</p>
                         </div>
                     </x-card>
 
-                    <x-card class="p-6 border border-secondary-200 dark:border-dark-700 dark:bg-dark-800 rounded-md">
+                    <x-card class="p-6 border border-secondary-200 dark:border-dark-700 dark:bg-dark-800 rounded-lg">
                         <div class="text-center">
-                            <div
-                                class="w-16 h-16 bg-rose-50 dark:bg-rose-900/30 border border-rose-200 dark:border-rose-800 rounded-md flex items-center justify-center mx-auto mb-4">
+                            <div class="w-16 h-16 bg-rose-50 dark:bg-rose-900/30 border border-rose-200 dark:border-rose-800 rounded-lg flex items-center justify-center mx-auto mb-4">
                                 <x-icon name="arrow-trending-down" class="w-8 h-8 text-rose-600 dark:text-rose-400" />
                             </div>
                             <h3 class="text-lg font-semibold text-secondary-900 dark:text-dark-100">Total Outflow</h3>
-                            <p class="text-3xl font-bold text-rose-600 dark:text-rose-400 mt-2">Rp 23,175,000</p>
+                            <p class="text-3xl font-bold text-rose-600 dark:text-rose-400 mt-2">Rp {{ number_format($totalOutflow ?? 23175000, 0, ',', '.') }}</p>
                             <p class="text-sm text-secondary-500 dark:text-dark-400 mt-1">This month</p>
                         </div>
                     </x-card>
 
-                    <x-card class="p-6 border border-secondary-200 dark:border-dark-700 dark:bg-dark-800 rounded-md">
+                    <x-card class="p-6 border border-secondary-200 dark:border-dark-700 dark:bg-dark-800 rounded-lg">
                         <div class="text-center">
-                            <div
-                                class="w-16 h-16 bg-primary-50 dark:bg-primary-900/30 border border-primary-200 dark:border-primary-800 rounded-md flex items-center justify-center mx-auto mb-4">
+                            <div class="w-16 h-16 bg-primary-50 dark:bg-primary-900/30 border border-primary-200 dark:border-primary-800 rounded-lg flex items-center justify-center mx-auto mb-4">
                                 <x-icon name="banknotes" class="w-8 h-8 text-primary-600 dark:text-primary-400" />
                             </div>
                             <h3 class="text-lg font-semibold text-secondary-900 dark:text-dark-100">Net Cash Flow</h3>
-                            <p class="text-3xl font-bold text-primary-600 dark:text-primary-400 mt-2">Rp 42,275,000</p>
+                            <p class="text-3xl font-bold text-primary-600 dark:text-primary-400 mt-2">Rp {{ number_format($netCashFlow ?? 42275000, 0, ',', '.') }}</p>
                             <p class="text-sm text-secondary-500 dark:text-dark-400 mt-1">This month</p>
                         </div>
                     </x-card>
                 </div>
 
                 {{-- Cash Flow Chart Placeholder --}}
-                <x-card class="p-6 border border-secondary-200 dark:border-dark-700 dark:bg-dark-800 rounded-md">
-                    <h3 class="text-lg font-semibold text-secondary-900 dark:text-dark-100 mb-6">Monthly Cash Flow
-                        Trend</h3>
-                    <div
-                        class="h-64 bg-secondary-100 dark:bg-dark-700 border border-secondary-200 dark:border-dark-600 rounded-md flex items-center justify-center">
+                <x-card class="p-6 border border-secondary-200 dark:border-dark-700 dark:bg-dark-800 rounded-lg">
+                    <h3 class="text-lg font-semibold text-secondary-900 dark:text-dark-100 mb-6">Monthly Cash Flow Trend</h3>
+                    <div class="h-64 bg-secondary-100 dark:bg-dark-700 border border-secondary-200 dark:border-dark-600 rounded-lg flex items-center justify-center">
                         <div class="text-center">
-                            <x-icon name="chart-bar"
-                                class="w-16 h-16 text-secondary-400 dark:text-dark-400 mx-auto mb-4" />
+                            <x-icon name="chart-bar" class="w-16 h-16 text-secondary-400 dark:text-dark-400 mx-auto mb-4" />
                             <p class="text-secondary-600 dark:text-dark-300">Cash Flow Chart</p>
-                            <p class="text-sm text-secondary-500 dark:text-dark-400">Will be implemented with Chart.js
-                            </p>
+                            <p class="text-sm text-secondary-500 dark:text-dark-400">Will be implemented with Chart.js</p>
                         </div>
                     </div>
                 </x-card>
+            </div>
+        </x-tab.items>
 
-                {{-- Quick Actions --}}
-                <x-card class="p-6 border border-secondary-200 dark:border-dark-700 dark:bg-dark-800 rounded-md">
-                    <h3 class="text-lg font-semibold text-secondary-900 dark:text-dark-100 mb-4">Quick Actions</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        {{-- Enhanced Add Transaction Dropdown --}}
-                        <div class="relative">
-                            <x-button color="primary dark:primary" icon="plus" class="w-full"
-                                x-data="{ open: false }" x-on:click="open = !open">
-                                Add Transaction
-                                <x-icon name="chevron-down" class="w-4 h-4 ml-2" />
-                            </x-button>
-
-                            <!-- Dropdown Menu -->
-                            <div x-show="open" x-on:click.away="open = false"
-                                class="absolute top-full left-0 mt-2 w-full bg-white dark:bg-dark-800 border border-secondary-200 dark:border-dark-600 rounded-lg shadow-lg z-10"
-                                x-transition>
-                                <div class="py-2">
-                                    <button
-                                        class="w-full text-left px-4 py-2 text-sm hover:bg-secondary-50 dark:hover:bg-dark-700 transition-colors">
-                                        <x-icon name="plus-circle" class="w-4 h-4 inline mr-2 text-green-600" />
-                                        Manual Transaction
-                                    </button>
-                                    <button
-                                        class="w-full text-left px-4 py-2 text-sm hover:bg-secondary-50 dark:hover:bg-dark-700 transition-colors">
-                                        <x-icon name="arrow-right-circle" class="w-4 h-4 inline mr-2 text-blue-600" />
-                                        Inter-Bank Transfer
-                                    </button>
-                                    <button
-                                        class="w-full text-left px-4 py-2 text-sm hover:bg-secondary-50 dark:hover:bg-dark-700 transition-colors">
-                                        <x-icon name="arrows-right-left"
-                                            class="w-4 h-4 inline mr-2 text-purple-600" />
-                                        Internal Transfer
-                                    </button>
-                                    <button
-                                        class="w-full text-left px-4 py-2 text-sm hover:bg-secondary-50 dark:hover:bg-dark-700 transition-colors">
-                                        <x-icon name="arrow-path" class="w-4 h-4 inline mr-2 text-orange-600" />
-                                        Recurring Transaction
-                                    </button>
-                                    <div class="border-t border-secondary-200 dark:border-dark-600 my-1"></div>
-                                    <button
-                                        class="w-full text-left px-4 py-2 text-sm hover:bg-secondary-50 dark:hover:bg-dark-700 transition-colors">
-                                        <x-icon name="calculator" class="w-4 h-4 inline mr-2 text-amber-600" />
-                                        Split Transaction
-                                    </button>
-                                    <button
-                                        class="w-full text-left px-4 py-2 text-sm hover:bg-secondary-50 dark:hover:bg-dark-700 transition-colors">
-                                        <x-icon name="document-duplicate"
-                                            class="w-4 h-4 inline mr-2 text-indigo-600" />
-                                        Bulk Entry
-                                    </button>
-                                </div>
-                            </div>
+        {{-- Tab 4: Quick Actions --}}
+        <x-tab.items tab="Quick Actions">
+            <div class="space-y-6">
+                {{-- Transaction Actions --}}
+                <x-card class="p-6 border border-secondary-200 dark:border-dark-700 dark:bg-dark-800 rounded-lg">
+                    <div class="flex items-center mb-6">
+                        <div class="w-10 h-10 bg-primary-50 dark:bg-primary-900/30 border border-primary-200 dark:border-primary-800 rounded-lg flex items-center justify-center mr-3">
+                            <x-icon name="plus" class="w-5 h-5 text-primary-600 dark:text-primary-400" />
                         </div>
-
-                        {{-- Enhanced Import with Options --}}
-                        <div class="relative">
-                            <x-button color="secondary dark:dark" outline icon="document-arrow-down" class="w-full"
-                                x-data="{ open: false }" x-on:click="open = !open">
-                                Import Statement
-                                <x-icon name="chevron-down" class="w-4 h-4 ml-2" />
-                            </x-button>
-
-                            <!-- Import Dropdown -->
-                            <div x-show="open" x-on:click.away="open = false"
-                                class="absolute top-full left-0 mt-2 w-full bg-white dark:bg-dark-800 border border-secondary-200 dark:border-dark-600 rounded-lg shadow-lg z-10"
-                                x-transition>
-                                <div class="py-2">
-                                    <button
-                                        class="w-full text-left px-4 py-2 text-sm hover:bg-secondary-50 dark:hover:bg-dark-700 transition-colors">
-                                        <x-icon name="document-text" class="w-4 h-4 inline mr-2 text-green-600" />
-                                        Bank Statement (CSV/Excel)
-                                    </button>
-                                    <button
-                                        class="w-full text-left px-4 py-2 text-sm hover:bg-secondary-50 dark:hover:bg-dark-700 transition-colors">
-                                        <x-icon name="camera" class="w-4 h-4 inline mr-2 text-blue-600" />
-                                        Receipt/Invoice Scanner
-                                    </button>
-                                    <button
-                                        class="w-full text-left px-4 py-2 text-sm hover:bg-secondary-50 dark:hover:bg-dark-700 transition-colors">
-                                        <x-icon name="link" class="w-4 h-4 inline mr-2 text-purple-600" />
-                                        Bank API Integration
-                                    </button>
-                                </div>
-                            </div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-secondary-900 dark:text-dark-100">Transaction Management</h3>
+                            <p class="text-sm text-secondary-600 dark:text-dark-400">Add, transfer, and manage your transactions</p>
                         </div>
+                    </div>
 
-                        {{-- Enhanced Reports --}}
-                        <div class="relative">
-                            <x-button color="secondary dark:dark" outline icon="document-text" class="w-full"
-                                x-data="{ open: false }" x-on:click="open = !open">
-                                Generate Report
-                                <x-icon name="chevron-down" class="w-4 h-4 ml-2" />
-                            </x-button>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <x-button color="green dark:green" icon="plus-circle" class="w-full justify-start" wire:click="addManualTransaction">
+                            <span class="ml-2">Manual Transaction</span>
+                        </x-button>
+                        <x-button color="blue dark:blue" icon="arrow-right-circle" class="w-full justify-start" wire:click="addInterBankTransfer">
+                            <span class="ml-2">Inter-Bank Transfer</span>
+                        </x-button>
+                        <x-button color="purple dark:purple" icon="arrows-right-left" class="w-full justify-start" wire:click="addInternalTransfer">
+                            <span class="ml-2">Internal Transfer</span>
+                        </x-button>
+                        <x-button color="orange dark:orange" icon="arrow-path" class="w-full justify-start" wire:click="addRecurringTransaction">
+                            <span class="ml-2">Recurring Transaction</span>
+                        </x-button>
+                        <x-button color="amber dark:amber" icon="calculator" class="w-full justify-start" wire:click="addSplitTransaction">
+                            <span class="ml-2">Split Transaction</span>
+                        </x-button>
+                        <x-button color="indigo dark:indigo" icon="document-duplicate" class="w-full justify-start" wire:click="addBulkEntry">
+                            <span class="ml-2">Bulk Entry</span>
+                        </x-button>
+                    </div>
+                </x-card>
 
-                            <!-- Reports Dropdown -->
-                            <div x-show="open" x-on:click.away="open = false"
-                                class="absolute top-full left-0 mt-2 w-full bg-white dark:bg-dark-800 border border-secondary-200 dark:border-dark-600 rounded-lg shadow-lg z-10"
-                                x-transition>
-                                <div class="py-2">
-                                    <button
-                                        class="w-full text-left px-4 py-2 text-sm hover:bg-secondary-50 dark:hover:bg-dark-700 transition-colors">
-                                        <x-icon name="chart-bar" class="w-4 h-4 inline mr-2 text-green-600" />
-                                        Cash Flow Report
-                                    </button>
-                                    <button
-                                        class="w-full text-left px-4 py-2 text-sm hover:bg-secondary-50 dark:hover:bg-dark-700 transition-colors">
-                                        <x-icon name="scale" class="w-4 h-4 inline mr-2 text-blue-600" />
-                                        Bank Reconciliation
-                                    </button>
-                                    <button
-                                        class="w-full text-left px-4 py-2 text-sm hover:bg-secondary-50 dark:hover:bg-dark-700 transition-colors">
-                                        <x-icon name="document-check" class="w-4 h-4 inline mr-2 text-purple-600" />
-                                        Tax Summary
-                                    </button>
-                                    <div class="border-t border-secondary-200 dark:border-dark-600 my-1"></div>
-                                    <button
-                                        class="w-full text-left px-4 py-2 text-sm hover:bg-secondary-50 dark:hover:bg-dark-700 transition-colors">
-                                        <x-icon name="calendar" class="w-4 h-4 inline mr-2 text-amber-600" />
-                                        Scheduled Reports
-                                    </button>
-                                </div>
-                            </div>
+                {{-- Import & Data Actions --}}
+                <x-card class="p-6 border border-secondary-200 dark:border-dark-700 dark:bg-dark-800 rounded-lg">
+                    <div class="flex items-center mb-6">
+                        <div class="w-10 h-10 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg flex items-center justify-center mr-3">
+                            <x-icon name="document-arrow-down" class="w-5 h-5 text-blue-600 dark:text-blue-400" />
                         </div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-secondary-900 dark:text-dark-100">Data Import & Integration</h3>
+                            <p class="text-sm text-secondary-600 dark:text-dark-400">Import statements and connect external sources</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <x-button color="green dark:green" icon="document-text" class="w-full justify-start" outline wire:click="importStatement">
+                            <span class="ml-2">Bank Statement (CSV/Excel)</span>
+                        </x-button>
+                        <x-button color="blue dark:blue" icon="camera" class="w-full justify-start" outline wire:click="scanReceipt">
+                            <span class="ml-2">Receipt/Invoice Scanner</span>
+                        </x-button>
+                        <x-button color="purple dark:purple" icon="link" class="w-full justify-start" outline wire:click="connectBankApi">
+                            <span class="ml-2">Bank API Integration</span>
+                        </x-button>
+                    </div>
+                </x-card>
+
+                {{-- Reports & Analysis --}}
+                <x-card class="p-6 border border-secondary-200 dark:border-dark-700 dark:bg-dark-800 rounded-lg">
+                    <div class="flex items-center mb-6">
+                        <div class="w-10 h-10 bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-800 rounded-lg flex items-center justify-center mr-3">
+                            <x-icon name="document-text" class="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-secondary-900 dark:text-dark-100">Reports & Analysis</h3>
+                            <p class="text-sm text-secondary-600 dark:text-dark-400">Generate insights and financial reports</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <x-button color="green dark:green" icon="chart-bar" class="w-full justify-start" outline wire:click="generateCashFlowReport">
+                            <span class="ml-2">Cash Flow Report</span>
+                        </x-button>
+                        <x-button color="blue dark:blue" icon="scale" class="w-full justify-start" outline wire:click="generateReconciliationReport">
+                            <span class="ml-2">Bank Reconciliation</span>
+                        </x-button>
+                        <x-button color="purple dark:purple" icon="document-check" class="w-full justify-start" outline wire:click="generateTaxSummary">
+                            <span class="ml-2">Tax Summary</span>
+                        </x-button>
+                        <x-button color="amber dark:amber" icon="calendar" class="w-full justify-start" outline wire:click="scheduleReports">
+                            <span class="ml-2">Scheduled Reports</span>
+                        </x-button>
+                    </div>
+                </x-card>
+
+                {{-- Account Management --}}
+                <x-card class="p-6 border border-secondary-200 dark:border-dark-700 dark:bg-dark-800 rounded-lg">
+                    <div class="flex items-center mb-6">
+                        <div class="w-10 h-10 bg-rose-50 dark:bg-rose-900/30 border border-rose-200 dark:border-rose-800 rounded-lg flex items-center justify-center mr-3">
+                            <x-icon name="cog-6-tooth" class="w-5 h-5 text-rose-600 dark:text-rose-400" />
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-secondary-900 dark:text-dark-100">Account Management</h3>
+                            <p class="text-sm text-secondary-600 dark:text-dark-400">Manage accounts, reconciliation, and settings</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <x-button color="primary dark:primary" icon="plus" class="w-full justify-start" wire:click="createBankAccount">
+                            <span class="ml-2">Add Bank Account</span>
+                        </x-button>
+                        <x-button color="secondary dark:dark" icon="arrows-right-left" class="w-full justify-start" outline wire:click="addInternalTransfer">
+                            <span class="ml-2">Account Transfer</span>
+                        </x-button>
+                        <x-button color="secondary dark:dark" icon="check-circle" class="w-full justify-start" outline wire:click="generateReconciliationReport">
+                            <span class="ml-2">Reconcile Accounts</span>
+                        </x-button>
+                        <x-button color="secondary dark:dark" icon="bell" class="w-full justify-start" outline wire:click="setAlerts">
+                            <span class="ml-2">Set Alerts</span>
+                        </x-button>
+                        <x-button color="secondary dark:dark" icon="archive-box" class="w-full justify-start" outline wire:click="archiveTransactions">
+                            <span class="ml-2">Archive Transactions</span>
+                        </x-button>
+                        <x-button color="secondary dark:dark" icon="document-duplicate" class="w-full justify-start" outline wire:click="exportData">
+                            <span class="ml-2">Export Data</span>
+                        </x-button>
                     </div>
                 </x-card>
             </div>

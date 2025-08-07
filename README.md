@@ -237,24 +237,47 @@ app/Livewire/Payment/
 
 ### Components Structure
 ```
-app/Livewire/BankAccount/
-├── Index.php                   # Main coordinator
-├── Listing.php                 # Bank account listing
-├── Create.php                  # Add new bank account
-├── Edit.php                    # Edit bank account
-├── Show.php                    # Account detail view
-├── Delete.php                  # Delete account
-├── Transaction/
-│   ├── Listing.php             # Transaction listing
-│   ├── Create.php              # Add transaction
-│   ├── Edit.php                # Edit transaction
-│   ├── Import.php              # Import statements
-│   └── Reconciliation.php      # Reconcile transactions
-└── Reports/
-    ├── AccountBalance.php      # Balance reports
-    ├── CashFlow.php           # Cash flow analysis
-    └── BankStatement.php       # Statement reports
+app/Livewire/BankAccounts/
+├── Index.php                    # ✅ Created - Main dashboard
+├── Create.php                   # 🔄 Need - Add bank account form
+├── Edit.php                     # 🔄 Need - Edit bank account form  
+├── Show.php                     # 🔄 Need - Account details + mini transactions
+├── Listing.php                  # 🔄 Need - Bank accounts table/grid
+└── Delete.php                   # 🔄 Need - Delete with validation
+
+app/Livewire/BankTransactions/
+├── Index.php                    # 🔄 Need - Transaction dashboard
+├── Listing.php                  # 🔄 Need - Transactions table with filters
+├── Create.php                   # 🔄 Need - Universal transaction form
+├── Edit.php                     # 🔄 Need - Edit transaction form
+├── Show.php                     # 🔄 Need - Transaction details
+├── Delete.php                   # 🔄 Need - Delete transaction
+└── Types/
+    ├── ManualTransaction.php    # 🔄 Need - Basic income/expense
+    ├── InterBankTransfer.php    # 🔄 Need - Transfer with admin fee
+    ├── InternalTransfer.php     # 🔄 Need - Between own accounts
+    ├── RecurringTransaction.php # 🔄 Need - Scheduled transactions
+    ├── SplitTransaction.php     # 🔄 Need - Multiple categories
+    └── BulkEntry.php           # 🔄 Need - Multiple transactions
 ```
+
+### 📋 **Implementation Priority**
+
+#### **Phase 1: Core CRUD**
+1. `BankAccounts/Create.php` - Basic account creation
+2. `BankAccounts/Listing.php` - Account management table
+3. `BankTransactions/Listing.php` - Transaction history
+
+#### **Phase 2: Transaction Types**
+4. `BankTransactions/ManualTransaction.php` - Most used
+5. `BankTransactions/InternalTransfer.php` - Internal operations
+6. `BankTransactions/Edit.php` - Transaction corrections
+
+#### **Phase 3: Advanced Features**
+7. `BankTransactions/InterBankTransfer.php` - External transfers
+8. `BankTransactions/RecurringTransaction.php` - Automation
+9. `BankTransactions/BulkEntry.php` - Batch operations
+
 
 ### Features
 #### Account Management
