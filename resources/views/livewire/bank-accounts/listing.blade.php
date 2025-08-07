@@ -1,14 +1,13 @@
 {{-- resources/views/livewire/bank-accounts/listing.blade.php --}}
 <div class="space-y-6">
-    {{-- Page Title --}}
+    {{-- resources/views/livewire/bank-accounts/listing.blade.php --}}
+
     {{-- Filters --}}
-    <x-card class="p-4 border border-secondary-200 dark:border-dark-700 dark:bg-dark-800 rounded-lg">
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+    <x-card class="p-4 border border-secondary-200 dark:border-dark-700 dark:bg-dark-800 rounded-xl">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <x-input placeholder="Search accounts..." icon="magnifying-glass" wire:model.live.debounce.500ms="search" />
 
             <x-select.styled placeholder="All Banks" :options="$bankOptions" wire:model.live="selectedBank" />
-
-            <x-select.styled placeholder="Account Status" :options="$statusOptions" wire:model.live="selectedStatus" />
 
             <x-button color="primary dark:primary" outline icon="funnel">
                 Filter
@@ -24,7 +23,7 @@
                 <div class="flex items-start justify-between mb-4">
                     <div class="flex items-center space-x-3">
                         <div
-                            class="w-12 h-12 bg-primary-600 dark:bg-primary-700 rounded-lg flex items-center justify-center">
+                            class="w-12 h-12 bg-primary-600 dark:bg-primary-700 rounded-xl flex items-center justify-center">
                             <span
                                 class="text-white font-bold text-lg">{{ strtoupper(substr($account->bank_name, 0, 3)) }}</span>
                         </div>
@@ -35,14 +34,13 @@
                                 ****{{ substr($account->account_number, -4) }}</p>
                         </div>
                     </div>
-                    <x-badge text="Active" color="green dark:green" />
                 </div>
 
                 <div class="space-y-3">
                     <div class="flex justify-between items-center">
                         <span class="text-sm text-secondary-600 dark:text-dark-400">Current Balance</span>
-                        <span class="text-xl font-bold text-green-600 dark:text-green-400">Rp
-                            {{ number_format($account->current_balance, 0, ',', '.') }}</span>
+                        <span
+                            class="text-xl font-bold text-green-600 dark:text-green-400">{{ $account->formatted_balance }}</span>
                     </div>
                     <div class="flex justify-between items-center">
                         <span class="text-sm text-secondary-600 dark:text-dark-400">Last Transaction</span>
@@ -73,20 +71,20 @@
             {{-- Empty State --}}
             <div class="lg:col-span-2">
                 <x-card
-                    class="p-12 border-2 border-dashed border-secondary-300 dark:border-dark-600 dark:bg-dark-800 rounded-lg">
+                    class="p-12 border-2 border-dashed border-secondary-300 dark:border-dark-600 dark:bg-dark-800 rounded-xl">
                     <div class="text-center">
                         <div
-                            class="w-16 h-16 bg-secondary-100 dark:bg-dark-700 border border-secondary-200 dark:border-dark-600 rounded-lg flex items-center justify-center mx-auto mb-4">
+                            class="w-16 h-16 bg-secondary-100 dark:bg-dark-700 border border-secondary-200 dark:border-dark-600 rounded-xl flex items-center justify-center mx-auto mb-4">
                             <x-icon name="building-library" class="w-8 h-8 text-secondary-500 dark:text-dark-400" />
                         </div>
                         <h3 class="text-lg font-medium text-secondary-900 dark:text-dark-100 mb-2">No Bank Accounts
                             Found</h3>
-                        @if ($search || $selectedBank || $selectedStatus)
+                        @if ($search || $selectedBank)
                             <p class="text-secondary-500 dark:text-dark-400 text-sm mb-6">Try adjusting your search
                                 filters or create a new bank account.</p>
                             <div class="flex justify-center space-x-4">
                                 <x-button color="secondary dark:dark" outline wire:click="$set('search', '')"
-                                    wire:click="$set('selectedBank', '')" wire:click="$set('selectedStatus', 'active')">
+                                    wire:click="$set('selectedBank', '')">
                                     Clear Filters
                                 </x-button>
                                 <x-button color="primary dark:primary" icon="plus" wire:click="createAccount">
@@ -108,10 +106,10 @@
         {{-- Add New Account Card --}}
         @if ($bankAccounts->isNotEmpty())
             <x-card
-                class="px-6 border-2 border-dashed border-secondary-300 dark:border-dark-600 dark:bg-dark-800 hover:border-primary-400 dark:hover:border-primary-600 hover:bg-primary-50/30 dark:hover:bg-primary-900/20 transition-all duration-200 rounded-lg">
-                <div class="text-center py-2">
+                class="p-6 border-2 border-dashed border-secondary-300 dark:border-dark-600 dark:bg-dark-800 hover:border-primary-400 dark:hover:border-primary-600 hover:bg-primary-50/30 dark:hover:bg-primary-900/20 transition-all duration-200 rounded-xl">
+                <div class="text-center py-8">
                     <div
-                        class="w-16 h-16 bg-secondary-100 dark:bg-dark-700 border border-secondary-200 dark:border-dark-600 rounded-lg flex items-center justify-center mx-auto mb-4">
+                        class="w-16 h-16 bg-secondary-100 dark:bg-dark-700 border border-secondary-200 dark:border-dark-600 rounded-xl flex items-center justify-center mx-auto mb-4">
                         <x-icon name="plus" class="w-8 h-8 text-secondary-500 dark:text-dark-400" />
                     </div>
                     <h3 class="text-lg font-medium text-secondary-900 dark:text-dark-100 mb-2">Add New Bank Account</h3>

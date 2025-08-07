@@ -22,6 +22,8 @@ class BankAccount extends Model
         'initial_balance' => 'integer',
     ];
 
+    protected $appends = ['balance'];
+
     public function transactions(): HasMany
     {
         return $this->hasMany(BankTransaction::class);
@@ -32,13 +34,28 @@ class BankAccount extends Model
         return $this->hasMany(Payment::class);
     }
 
-    // Format currency for display
+    // Current balance calculation
+    public function getBalanceAttribute(): int
+    {
+        $payments = $this->payments()->sum('amount');
+        $credits = $this->transactions()->where('transaction_type', 'credit')->sum('amount');
+        $debits = $this->transactions()->where('transaction_type', 'debit')->sum('amount');
+        
+        return $this->initial_balance + $payments + $credits - $debits;
+    }
+
+    // Formatted currency display
+    public function getFormattedBalanceAttribute(): string
+    {
+        return 'Rp ' . number_format($this->balance, 0, ',', '.');
+    }
+
     public function getFormattedInitialBalanceAttribute(): string
     {
         return 'Rp ' . number_format($this->initial_balance, 0, ',', '.');
     }
 
-    // Convert rupiah string to integer (remove formatting)
+    // Parse currency string to integer
     public static function parseAmount(string $amount): int
     {
         return (int) preg_replace('/[^0-9]/', '', $amount);
