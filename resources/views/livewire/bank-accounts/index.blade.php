@@ -19,7 +19,7 @@
 
     {{-- Summary Cards --}}
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <x-card class="p-6 border border-secondary-200 dark:border-dark-700 dark:bg-dark-800 rounded-lg">
+        <x-card class="p-6 border border-secondary-200 dark:border-dark-700 dark:bg-dark-800 rounded-xl">
             <div class="flex items-center">
                 <div class="flex-shrink-0">
                     <div class="w-12 h-12 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-lg flex items-center justify-center">

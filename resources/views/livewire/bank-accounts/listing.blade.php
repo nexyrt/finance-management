@@ -20,7 +20,7 @@
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         @forelse($bankAccounts as $account)
             <x-card
-                class="p-6 border border-secondary-200 dark:border-dark-700 dark:bg-dark-800 hover:shadow-lg hover:border-primary-300 dark:hover:border-primary-600 transition-all duration-200 rounded-lg">
+                class="p-6 border border-secondary-200 dark:border-dark-700 dark:bg-dark-800 hover:shadow-lg hover:border-primary-300 dark:hover:border-primary-600 transition-all duration-200 rounded-xl">
                 <div class="flex items-start justify-between mb-4">
                     <div class="flex items-center space-x-3">
                         <div
