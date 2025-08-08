@@ -17,33 +17,33 @@
 @theme {
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
 
-    /* Primary Color - Blue-500 Base Theme for Buttons */
-    --color-primary-50: #eff6ff;
-    --color-primary-100: #dbeafe;
-    --color-primary-200: #bfdbfe;
-    --color-primary-300: #93c5fd;
-    --color-primary-400: #60a5fa;
-    --color-primary-500: #3b82f6;  /* blue-500 sebagai base */
-    --color-primary-600: #2563eb;  /* blue-600 untuk hover */
-    --color-primary-700: #1d4ed8;  /* blue-700 untuk active */
-    --color-primary-800: #1e40af;
-    --color-primary-900: #1e3a8a;
-    --color-primary-950: #172554;
+    /* Primary Color - Custom untuk Light/Dark Mode */
+    --color-primary-50: #ffffff;    /* white - untuk foreground light mode */
+    --color-primary-100: #fafafa;
+    --color-primary-200: #f5f5f5;
+    --color-primary-300: #e5e5e5;
+    --color-primary-400: #d4d4d4;
+    --color-primary-500: #27272a;   /* zinc-800 - untuk accent light mode */
+    --color-primary-600: #3f3f46;   /* hover state */
+    --color-primary-700: #52525b;   /* active state */
+    --color-primary-800: #71717a;
+    --color-primary-900: #a1a1aa;
+    --color-primary-950: #171717;
 
-    /* Secondary Color - Zinc Theme for Cards & Backgrounds */
-    --color-secondary-50: #fafafa;
-    --color-secondary-100: #f4f4f5;
-    --color-secondary-200: #e4e4e7;
-    --color-secondary-300: #d4d4d8;
-    --color-secondary-400: #a1a1aa;
-    --color-secondary-500: #71717a;
-    --color-secondary-600: #52525b;
-    --color-secondary-700: #3f3f46;
-    --color-secondary-800: #27272a;
-    --color-secondary-900: #18181b;
-    --color-secondary-950: #09090b;
+    /* Secondary Color - White/Light Gray Theme for TallStackUI */
+    --color-secondary-50: #ffffff;
+    --color-secondary-100: #fafafa;
+    --color-secondary-200: #f5f5f5;
+    --color-secondary-300: #e5e5e5;
+    --color-secondary-400: #d4d4d4;
+    --color-secondary-500: #a3a3a3;
+    --color-secondary-600: #737373;
+    --color-secondary-700: #525252;
+    --color-secondary-800: #404040;
+    --color-secondary-900: #262626;
+    --color-secondary-950: #171717;
 
-    /* Dark Color - Zinc variant for dark mode */
+    /* Dark Color - Zinc Theme for TallStackUI */
     --color-dark-50: #fafafa;
     --color-dark-100: #f4f4f5;
     --color-dark-200: #e4e4e7;
@@ -55,186 +55,56 @@
     --color-dark-800: #27272a;
     --color-dark-900: #18181b;
     --color-dark-950: #09090b;
+
+    /* Success Color - Emerald for Revenue/Payments */
+    --color-success-50: #ecfdf5;
+    --color-success-100: #d1fae5;
+    --color-success-200: #a7f3d0;
+    --color-success-300: #6ee7b7;
+    --color-success-400: #34d399;
+    --color-success-500: #10b981;
+    --color-success-600: #059669;
+    --color-success-700: #047857;
+    --color-success-800: #065f46;
+    --color-success-900: #064e3b;
+    --color-success-950: #022c22;
+
+    /* Warning Color - Amber for Pending/Overdue */
+    --color-warning-50: #fffbeb;
+    --color-warning-100: #fef3c7;
+    --color-warning-200: #fde68a;
+    --color-warning-300: #fcd34d;
+    --color-warning-400: #fbbf24;
+    --color-warning-500: #f59e0b;
+    --color-warning-600: #d97706;
+    --color-warning-700: #b45309;
+    --color-warning-800: #92400e;
+    --color-warning-900: #78350f;
+    --color-warning-950: #451a03;
+
+    /* Danger Color - Red for Debts/Errors */
+    --color-danger-50: #fef2f2;
+    --color-danger-100: #fee2e2;
+    --color-danger-200: #fecaca;
+    --color-danger-300: #fca5a5;
+    --color-danger-400: #f87171;
+    --color-danger-500: #ef4444;
+    --color-danger-600: #dc2626;
+    --color-danger-700: #b91c1c;
+    --color-danger-800: #991b1b;
+    --color-danger-900: #7f1d1d;
+    --color-danger-950: #450a0a;
+
+    /* Flux Theme Colors - Zinc untuk Background Consistency */
+    --color-accent: var(--color-dark-800);
+    --color-accent-content: var(--color-dark-800); 
+    --color-accent-foreground: var(--color-white);
 }
 
-/* ====================================
-   QUILL EDITOR STYLING
-   ==================================== */
-
-.ql-editor {
-    font-family: 'Instrument Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    font-size: 16px;
-    font-weight: 400;
-    line-height: 1.6;
-    color: #374151;
-    padding: 16px;
-}
-
-/* Toolbar styling */
-.ql-toolbar {
-    font-family: 'Instrument Sans', system-ui, -apple-system, sans-serif;
-    border: 1px solid #e5e7eb;
-    border-radius: 6px 6px 0 0;
-    background-color: #f9fafb;
-    padding: 8px;
-}
-
-.ql-container {
-    border: 1px solid #e5e7eb;
-    border-top: none;
-    border-radius: 0 0 6px 6px;
-    background-color: #ffffff;
-}
-
-/* Typography hierarchy dengan Instrument Sans */
-.ql-editor h1 {
-    font-family: 'Instrument Sans', sans-serif;
-    font-size: 2.25rem;
-    font-weight: 600;
-    line-height: 1.2;
-    margin-bottom: 1rem;
-}
-
-.ql-editor h2 {
-    font-family: 'Instrument Sans', sans-serif;
-    font-size: 1.875rem;
-    font-weight: 600;
-    line-height: 1.3;
-    margin-bottom: 0.875rem;
-}
-
-.ql-editor h3 {
-    font-family: 'Instrument Sans', sans-serif;
-    font-size: 1.5rem;
-    font-weight: 600;
-    line-height: 1.4;
-    margin-bottom: 0.75rem;
-}
-
-.ql-editor h4 {
-    font-family: 'Instrument Sans', sans-serif;
-    font-size: 1.25rem;
-    font-weight: 500;
-    line-height: 1.4;
-    margin-bottom: 0.5rem;
-}
-
-.ql-editor h5 {
-    font-family: 'Instrument Sans', sans-serif;
-    font-size: 1.125rem;
-    font-weight: 500;
-    line-height: 1.5;
-    margin-bottom: 0.5rem;
-}
-
-.ql-editor h6 {
-    font-family: 'Instrument Sans', sans-serif;
-    font-size: 1rem;
-    font-weight: 500;
-    line-height: 1.5;
-    margin-bottom: 0.5rem;
-}
-
-/* Text formatting */
-.ql-editor strong, 
-.ql-editor b {
-    font-weight: 600;
-}
-
-.ql-editor em, 
-.ql-editor i {
-    font-style: italic;
-}
-
-/* Lists styling */
-.ql-editor ul, 
-.ql-editor ol {
-    padding-left: 1.5rem;
-    margin-bottom: 1rem;
-}
-
-.ql-editor li {
-    margin-bottom: 0.25rem;
-}
-
-/* Links */
-.ql-editor a {
-    color: #3b82f6;
-    text-decoration: underline;
-    font-weight: 500;
-}
-
-.ql-editor a:hover {
-    color: #1d4ed8;
-}
-
-/* Blockquotes */
-.ql-editor blockquote {
-    border-left: 4px solid #e5e7eb;
-    padding-left: 1rem;
-    margin: 1rem 0;
-    font-style: italic;
-    color: #6b7280;
-}
-
-/* Code styling */
-.ql-editor code {
-    font-family: 'Fira Code', 'Cascadia Code', 'Source Code Pro', Monaco, Consolas, monospace;
-    background-color: #f3f4f6;
-    padding: 0.125rem 0.25rem;
-    border-radius: 0.25rem;
-    font-size: 0.875rem;
-}
-
-.ql-editor pre {
-    font-family: 'Fira Code', 'Cascadia Code', 'Source Code Pro', Monaco, Consolas, monospace;
-    background-color: #f3f4f6;
-    padding: 1rem;
-    border-radius: 0.5rem;
-    overflow-x: auto;
-    margin: 1rem 0;
-}
-
-/* Placeholder styling */
-.ql-editor.ql-blank::before {
-    font-family: 'Instrument Sans', sans-serif;
-    font-weight: 400;
-    color: #9ca3af;
-    font-style: normal;
-    font-size: 16px;
-}
-
-/* Toolbar improvements */
-.ql-toolbar button {
-    font-family: 'Instrument Sans', sans-serif;
-    border-radius: 4px;
-    margin: 2px;
-}
-
-.ql-toolbar button:hover {
-    background-color: #e5e7eb;
-}
-
-.ql-toolbar button.ql-active {
-    background-color: #dbeafe;
-    color: #1d4ed8;
-}
-
-/* Dropdown styling */
-.ql-picker-options {
-    font-family: 'Instrument Sans', sans-serif;
-}
-
-.ql-picker-item {
-    font-family: 'Instrument Sans', sans-serif;
-}
-
-/* Focus states */
-.ql-editor:focus {
-    outline: none;
-    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
-}
-
-.ql-container.ql-focused {
-    border-color: #3b82f6;
+@layer theme {
+    .dark {
+        --color-accent: var(--color-white);
+        --color-accent-content: var(--color-white);
+        --color-accent-foreground: var(--color-dark-800);
+    }
 }
