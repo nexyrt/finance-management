@@ -456,6 +456,16 @@
 
             <!-- Kolom Kanan: Grand Total dan Signature -->
             <div class="footer-right">
+                <!-- Discount Section (if applicable) -->
+                @if($invoice->discount_amount > 0)
+                <div class="grand-total-section">
+                    <div class="grand-total-row">
+                        <div class="grand-total-label">DISKON</div>
+                        <div class="grand-total-value">IDR -{{ number_format($invoice->discount_amount, 0, ',', '.') }}</div>
+                    </div>
+                </div>
+                @endif
+
                 <!-- Grand Total -->
                 <div class="grand-total-section">
                     <div class="grand-total-row">
