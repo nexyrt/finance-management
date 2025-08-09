@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\BankAccounts;
+namespace App\Livewire\Accounts;
 
 use Livewire\Component;
 

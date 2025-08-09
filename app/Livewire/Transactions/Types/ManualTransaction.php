@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\BankTransactions\Types;
+namespace App\Livewire\Transactions\Types;
 
 use App\Models\BankAccount;
 use App\Models\BankTransaction;

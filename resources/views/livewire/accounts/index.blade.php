@@ -18,10 +18,10 @@
                 class="w-full sm:w-auto">
                 Tambah Transaksi
             </x-button> --}}
-            {{-- <x-button wire:click="$dispatch('open-create-modal')" color="primary" icon="building-library"
+            <x-button wire:click="$dispatch('open-create-account-modal')" color="primary" icon="building-library"
                 class="w-full sm:w-auto">
                 Tambah Rekening
-            </x-button> --}}
+            </x-button>
         </div>
     </div>
 
@@ -160,10 +160,10 @@
                             wire:click="$dispatch('edit-account', { accountId: {{ $account->id }} })" />
                         <x-dropdown.items text="Tambah Transaksi" icon="plus"
                             wire:click="$dispatch('create-transaction', { accountId: {{ $account->id }} })" />
-                        <div class="border-t border-zinc-100 dark:border-dark-700 my-1"></div>
+                        <div class="border-t border-zinc-100 dark:border-dark-700 my-1"></div> --}}
                         <x-dropdown.items text="Hapus Rekening" icon="trash"
                             wire:click="$dispatch('delete-account', { accountId: {{ $account->id }} })"
-                            class="text-red-600 dark:text-red-400" /> --}}
+                            class="text-red-600 dark:text-red-400" />
                     </x-dropdown>
                 </div>
             </div>
@@ -182,12 +182,12 @@
                     <div>
                         <p class="text-xs text-dark-500 dark:text-dark-400 mb-1">Saldo Saat Ini</p>
                         <p
-                            class="text-xl font-bold {{ $account->current_balance >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }}">
-                            Rp {{ number_format($account->current_balance, 0, ',', '.') }}
+                            class="text-xl font-bold {{ $account->balance >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }}">
+                            Rp {{ number_format($account->balance, 0, ',', '.') }}
                         </p>
                     </div>
 
-                    @if($account->initial_balance !== $account->current_balance)
+                    @if($account->initial_balance !== $account->balance)
                     <div class="bg-zinc-50 dark:bg-dark-700 rounded-lg p-3">
                         <div class="flex justify-between items-center text-xs">
                             <span class="text-dark-500 dark:text-dark-400">Saldo Awal:</span>
@@ -196,7 +196,7 @@
                             </span>
                         </div>
                         @php
-                        $difference = $account->current_balance - $account->initial_balance;
+                        $difference = $account->balance - $account->initial_balance;
                         @endphp
                         <div class="flex justify-between items-center text-xs mt-1">
                             <span class="text-dark-500 dark:text-dark-400">Perubahan:</span>
@@ -238,9 +238,9 @@
                 <p class="text-dark-600 dark:text-dark-400 mb-6 max-w-sm mx-auto">
                     Tambahkan rekening bank pertama Anda untuk mulai mengelola keuangan
                 </p>
-                {{-- <x-button wire:click="$dispatch('open-create-modal')" color="primary" icon="plus">
+                <x-button wire:click="$dispatch('open-create-account-modal')" color="primary" icon="plus">
                     Tambah Rekening Pertama
-                </x-button> --}}
+                </x-button>
             </div>
         </div>
         @endforelse
@@ -310,11 +310,11 @@
     </div>
     @endif
 
-    {{-- Modals akan dihandle oleh komponen terpisah --}}
+    {{-- Modal Components --}}
+    <livewire:accounts.create @account-created="$refresh" />
+    <livewire:accounts.delete @account-deleted="$refresh" />
     {{--
-    <livewire:bank-accounts.create />
     <livewire:bank-accounts.edit />
     <livewire:bank-accounts.show />
-    <livewire:bank-accounts.delete />
     <livewire:bank-transactions.create /> --}}
 </section>

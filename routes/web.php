@@ -4,7 +4,7 @@ use App\Livewire\Dashboard;
 use App\Livewire\Clients\Index as Clients;
 use App\Livewire\Invoices\Index as InvoicesIndex;
 use App\Livewire\Invoices\Edit as EditInvoice;
-use App\Livewire\BankAccounts\Index as BankAccountsIndex;
+use App\Livewire\Accounts\Index as BankAccountsIndex;
 use App\Livewire\ServiceManagement;
 use App\Livewire\Settings\Appearance;
 use App\Livewire\Settings\Password;
