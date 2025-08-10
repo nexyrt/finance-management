@@ -1,9 +1,9 @@
 @import 'tailwindcss';
 @import '../../vendor/livewire/flux/dist/flux.css';
-@import '../../vendor/tallstackui/tallstackui/css/v4.css'; 
+@import '../../vendor/tallstackui/tallstackui/css/v4.css';
 @import '../../vendor/wireui/wireui/ts/global.css';
 
-@plugin '@tailwindcss/forms'; 
+@plugin '@tailwindcss/forms';
 
 @source '../views';
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
@@ -17,33 +17,31 @@
 @theme {
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
 
-    /* Primary Color - Custom untuk Light/Dark Mode */
-    --color-primary-50: #ffffff;    /* white - untuk foreground light mode */
-    --color-primary-100: #fafafa;
-    --color-primary-200: #f5f5f5;
-    --color-primary-300: #e5e5e5;
-    --color-primary-400: #d4d4d4;
-    --color-primary-500: #27272a;   /* zinc-800 - untuk accent light mode */
-    --color-primary-600: #3f3f46;   /* hover state */
-    --color-primary-700: #52525b;   /* active state */
-    --color-primary-800: #71717a;
-    --color-primary-900: #a1a1aa;
-    --color-primary-950: #171717;
+    /* Primary Color - Blue Theme */
+    --color-primary-50: #eff6ff;
+    --color-primary-100: #dbeafe;
+    --color-primary-200: #bfdbfe;
+    --color-primary-300: #93c5fd;
+    --color-primary-400: #60a5fa;
+    --color-primary-500: #3b82f6;
+    --color-primary-600: #2563eb;
+    --color-primary-700: #1d4ed8;
+    --color-primary-800: #1e40af;
+    --color-primary-900: #1e3a8a;
 
-    /* Secondary Color - White/Light Gray Theme for TallStackUI */
-    --color-secondary-50: #ffffff;
-    --color-secondary-100: #fafafa;
-    --color-secondary-200: #f5f5f5;
-    --color-secondary-300: #e5e5e5;
-    --color-secondary-400: #d4d4d4;
-    --color-secondary-500: #a3a3a3;
-    --color-secondary-600: #737373;
-    --color-secondary-700: #525252;
-    --color-secondary-800: #404040;
-    --color-secondary-900: #262626;
-    --color-secondary-950: #171717;
+    /* Secondary Color - Slate Theme */
+    --color-secondary-50: #f8fafc;
+    --color-secondary-100: #f1f5f9;
+    --color-secondary-200: #e2e8f0;
+    --color-secondary-300: #cbd5e1;
+    --color-secondary-400: #94a3b8;
+    --color-secondary-500: #64748b;
+    --color-secondary-600: #475569;
+    --color-secondary-700: #334155;
+    --color-secondary-800: #1e293b;
+    --color-secondary-900: #0f172a;
 
-    /* Dark Color - Zinc Theme for TallStackUI */
+    /* Dark Color - Zinc Theme */
     --color-dark-50: #fafafa;
     --color-dark-100: #f4f4f5;
     --color-dark-200: #e4e4e7;
@@ -54,57 +52,48 @@
     --color-dark-700: #3f3f46;
     --color-dark-800: #27272a;
     --color-dark-900: #18181b;
-    --color-dark-950: #09090b;
 
-    /* Success Color - Emerald for Revenue/Payments */
-    --color-success-50: #ecfdf5;
-    --color-success-100: #d1fae5;
-    --color-success-200: #a7f3d0;
-    --color-success-300: #6ee7b7;
-    --color-success-400: #34d399;
-    --color-success-500: #10b981;
-    --color-success-600: #059669;
-    --color-success-700: #047857;
-    --color-success-800: #065f46;
-    --color-success-900: #064e3b;
-    --color-success-950: #022c22;
-
-    /* Warning Color - Amber for Pending/Overdue */
-    --color-warning-50: #fffbeb;
-    --color-warning-100: #fef3c7;
-    --color-warning-200: #fde68a;
-    --color-warning-300: #fcd34d;
-    --color-warning-400: #fbbf24;
-    --color-warning-500: #f59e0b;
-    --color-warning-600: #d97706;
-    --color-warning-700: #b45309;
-    --color-warning-800: #92400e;
-    --color-warning-900: #78350f;
-    --color-warning-950: #451a03;
-
-    /* Danger Color - Red for Debts/Errors */
-    --color-danger-50: #fef2f2;
-    --color-danger-100: #fee2e2;
-    --color-danger-200: #fecaca;
-    --color-danger-300: #fca5a5;
-    --color-danger-400: #f87171;
-    --color-danger-500: #ef4444;
-    --color-danger-600: #dc2626;
-    --color-danger-700: #b91c1c;
-    --color-danger-800: #991b1b;
-    --color-danger-900: #7f1d1d;
-    --color-danger-950: #450a0a;
-
-    /* Flux Theme Colors - Zinc untuk Background Consistency */
-    --color-accent: var(--color-dark-800);
-    --color-accent-content: var(--color-dark-800); 
+    /* Flux UI Variables - Unified with TallStackUI */
+    --color-accent: var(--color-zinc-800);
+    --color-accent-content: var(--color-zinc-800);
     --color-accent-foreground: var(--color-white);
+
+    /* Success/Error Colors */
+    --color-green-50: #f0fdf4;
+    --color-green-100: #dcfce7;
+    --color-green-500: #22c55e;
+    --color-green-600: #16a34a;
+    --color-green-700: #15803d;
+
+    --color-red-50: #fef2f2;
+    --color-red-100: #fee2e2;
+    --color-red-500: #ef4444;
+    --color-red-600: #dc2626;
+    --color-red-700: #b91c1c;
+
+    --color-amber-50: #fffbeb;
+    --color-amber-500: #f59e0b;
+    --color-amber-600: #d97706;
+
+    /* Transaction Color Coding */
+    --color-income: var(--color-green-600);
+    --color-income-bg: var(--color-green-50);
+    --color-income-light: var(--color-green-100);
+
+    --color-expense: var(--color-red-600);
+    --color-expense-bg: var(--color-red-50);
+    --color-expense-light: var(--color-red-100);
+
+    /* TallStackUI Aliases */
+    --color-green-income: var(--color-income);
+    --color-red-expense: var(--color-expense);
 }
 
 @layer theme {
     .dark {
+        /* Dark mode adjustments */
         --color-accent: var(--color-white);
         --color-accent-content: var(--color-white);
-        --color-accent-foreground: var(--color-dark-800);
+        --color-accent-foreground: var(--color-dark-900);
     }
 }

@@ -101,6 +101,6 @@ class Create extends Component
 
     public function render()
     {
-        return view('livewire.bank-accounts.create');
+        return view('livewire.accounts.create');
     }
 }

@@ -1,4 +1,151 @@
-{{-- resources/views/livewire/bank-transactions/types/manual-transaction.blade.php --}}
-<div>
-    
-</div>
+{{-- resources/views/livewire/transactions/create.blade.php --}}
+
+<x-modal wire="showModal" title="Tambah Transaksi" size="xl" center>
+    <x-slot:title>
+        <div class="flex items-center gap-4">
+            <div class="h-12 w-12 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center">
+                <x-icon name="plus" class="w-6 h-6 text-blue-600 dark:text-blue-400" />
+            </div>
+            <div>
+                <h3 class="text-xl font-bold text-dark-900 dark:text-dark-50">Tambah Transaksi</h3>
+                <p class="text-sm text-dark-600 dark:text-dark-400">Catat transaksi masuk atau keluar</p>
+            </div>
+        </div>
+    </x-slot:title>
+
+    <form wire:submit.prevent="save" class="space-y-6">
+        {{-- Transaction Type Selection --}}
+        <div class="bg-zinc-50 dark:bg-dark-700 rounded-xl p-4">
+            <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-3">Jenis Transaksi</h4>
+            <div class="grid grid-cols-2 gap-3">
+                <label class="relative">
+                    <input type="radio" wire:model.live="transaction_type" value="credit" class="sr-only peer">
+                    <div class="p-4 rounded-lg border-2 border-zinc-200 dark:border-dark-600 cursor-pointer transition-all peer-checked:border-green-500 peer-checked:bg-green-50 dark:peer-checked:bg-green-900/20">
+                        <div class="flex items-center gap-3">
+                            <div class="h-10 w-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
+                                <x-icon name="arrow-down" class="w-5 h-5 text-green-600 dark:text-green-400" />
+                            </div>
+                            <div>
+                                <p class="font-semibold text-dark-900 dark:text-dark-50">Pemasukan</p>
+                                <p class="text-xs text-dark-500 dark:text-dark-400">Uang masuk ke rekening</p>
+                            </div>
+                        </div>
+                    </div>
+                </label>
+
+                <label class="relative">
+                    <input type="radio" wire:model.live="transaction_type" value="debit" class="sr-only peer">
+                    <div class="p-4 rounded-lg border-2 border-zinc-200 dark:border-dark-600 cursor-pointer transition-all peer-checked:border-red-500 peer-checked:bg-red-50 dark:peer-checked:bg-red-900/20">
+                        <div class="flex items-center gap-3">
+                            <div class="h-10 w-10 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center">
+                                <x-icon name="arrow-up" class="w-5 h-5 text-red-600 dark:text-red-400" />
+                            </div>
+                            <div>
+                                <p class="font-semibold text-dark-900 dark:text-dark-50">Pengeluaran</p>
+                                <p class="text-xs text-dark-500 dark:text-dark-400">Uang keluar dari rekening</p>
+                            </div>
+                        </div>
+                    </div>
+                </label>
+            </div>
+        </div>
+
+        {{-- Transaction Details --}}
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {{-- Left Column --}}
+            <div class="space-y-4">
+                <div class="border-b border-zinc-200 dark:border-dark-600 pb-4">
+                    <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-1">Detail Transaksi</h4>
+                    <p class="text-xs text-dark-500 dark:text-dark-400">Informasi utama transaksi</p>
+                </div>
+
+                <x-select.styled wire:model.live="bank_account_id"
+                                 :options="$accounts->map(fn($account) => [
+                                     'label' => $account->account_name . ' (' . $account->bank_name . ')',
+                                     'value' => $account->id
+                                 ])->toArray()"
+                                 label="Rekening Bank"
+                                 placeholder="Pilih rekening..."
+                                 searchable />
+
+                <x-wireui-currency prefix="Rp "
+                                   wire:model.live="amount"
+                                   label="Jumlah"
+                                   placeholder="0"
+                                   color="dark:dark"
+                                   hint="Jumlah transaksi dalam Rupiah" />
+
+                <x-date wire:model.live="transaction_date"
+                        label="Tanggal Transaksi"
+                        helpers />
+            </div>
+
+            {{-- Right Column --}}
+            <div class="space-y-4">
+                <div class="border-b border-zinc-200 dark:border-dark-600 pb-4">
+                    <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-1">Keterangan</h4>
+                    <p class="text-xs text-dark-500 dark:text-dark-400">Deskripsi dan referensi</p>
+                </div>
+
+                <x-input wire:model.live="description"
+                         label="Deskripsi"
+                         placeholder="Contoh: Pembayaran gaji karyawan..."
+                         hint="Jelaskan tujuan transaksi" />
+
+                <x-input wire:model.live="reference_number"
+                         label="Nomor Referensi (Opsional)"
+                         placeholder="Contoh: TRX20240101001"
+                         hint="Nomor referensi atau kode transaksi" />
+            </div>
+        </div>
+
+        {{-- Preview --}}
+        @if($bank_account_id && $amount && $description)
+        <div class="bg-{{ $transaction_type === 'credit' ? 'green' : 'red' }}-50 dark:bg-{{ $transaction_type === 'credit' ? 'green' : 'red' }}-900/20 rounded-xl p-4 border border-{{ $transaction_type === 'credit' ? 'green' : 'red' }}-200 dark:border-{{ $transaction_type === 'credit' ? 'green' : 'red' }}-800">
+            <div class="flex items-center gap-3 mb-3">
+                <div class="h-8 w-8 bg-{{ $transaction_type === 'credit' ? 'green' : 'red' }}-100 dark:bg-{{ $transaction_type === 'credit' ? 'green' : 'red' }}-900/40 rounded-lg flex items-center justify-center">
+                    <x-icon name="eye" class="w-4 h-4 text-{{ $transaction_type === 'credit' ? 'green' : 'red' }}-600 dark:text-{{ $transaction_type === 'credit' ? 'green' : 'red' }}-400" />
+                </div>
+                <div>
+                    <h5 class="text-sm font-semibold text-{{ $transaction_type === 'credit' ? 'green' : 'red' }}-900 dark:text-{{ $transaction_type === 'credit' ? 'green' : 'red' }}-100">Preview Transaksi</h5>
+                    <p class="text-xs text-{{ $transaction_type === 'credit' ? 'green' : 'red' }}-800 dark:text-{{ $transaction_type === 'credit' ? 'green' : 'red' }}-200">{{ $transaction_type === 'credit' ? 'Pemasukan' : 'Pengeluaran' }}</p>
+                </div>
+            </div>
+
+            <div class="bg-white dark:bg-dark-800 rounded-lg p-4">
+                <div class="flex justify-between items-start mb-2">
+                    <div>
+                        <p class="font-medium text-dark-900 dark:text-dark-50">{{ $description }}</p>
+                        <p class="text-sm text-dark-500 dark:text-dark-400">
+                            {{ $accounts->find($bank_account_id)?->account_name }} • {{ \Carbon\Carbon::parse($transaction_date)->format('d M Y') }}
+                        </p>
+                    </div>
+                    <p class="text-lg font-bold text-{{ $transaction_type === 'credit' ? 'green' : 'red' }}-600 dark:text-{{ $transaction_type === 'credit' ? 'green' : 'red' }}-400">
+                        {{ $transaction_type === 'credit' ? '+' : '-' }}Rp {{ number_format($amount, 0, ',', '.') }}
+                    </p>
+                </div>
+                @if($reference_number)
+                <p class="text-xs text-dark-500 dark:text-dark-400 font-mono">Ref: {{ $reference_number }}</p>
+                @endif
+            </div>
+        </div>
+        @endif
+    </form>
+
+    <x-slot:footer>
+        <div class="flex flex-col sm:flex-row justify-end gap-3">
+            <x-button wire:click="closeModal" color="zinc" outline class="w-full sm:w-auto order-2 sm:order-1">
+                Batal
+            </x-button>
+
+            <x-button wire:click="save" 
+                      color="{{ $transaction_type === 'credit' ? 'green' : 'red' }}" 
+                      icon="check" 
+                      loading="save"
+                      class="w-full sm:w-auto order-1 sm:order-2">
+                <span wire:loading.remove wire:target="save">Simpan Transaksi</span>
+                <span wire:loading wire:target="save">Menyimpan...</span>
+            </x-button>
+        </div>
+    </x-slot:footer>
+</x-modal>

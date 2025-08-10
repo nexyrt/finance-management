@@ -107,7 +107,7 @@ class ManualTransaction extends Component
 
     public function render()
     {
-        return view('livewire.bank-transactions.types.manual-transaction', [
+        return view('livewire.transactions.types.manual-transaction', [
             'bankAccounts' => $this->bankAccounts,
             'transactionTypes' => $this->transactionTypes,
         ]);

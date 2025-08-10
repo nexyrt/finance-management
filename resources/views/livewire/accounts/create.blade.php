@@ -1,8 +1,8 @@
-{{-- resources/views/livewire/bank-accounts/create.blade.php --}}
+{{-- resources/views/livewire/accounts/create.blade.php --}}
 
-<x-modal wire="showModal" title="Tambah Rekening Bank" size="lg" center persistent>
+<x-modal wire="showModal" title="Tambah Rekening Bank" size="lg">
     <x-slot:title>
-        <div class="flex items-center gap-4">
+        <div class="flex items-center gap-4 my-3">
             <div class="h-12 w-12 bg-primary-50 dark:bg-primary-900/20 rounded-xl flex items-center justify-center">
                 <x-icon name="building-library" class="w-6 h-6 text-primary-600 dark:text-primary-400" />
             </div>

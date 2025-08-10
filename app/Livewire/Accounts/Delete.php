@@ -73,6 +73,6 @@ class Delete extends Component
 
     public function render()
     {
-        return view('livewire.bank-accounts.delete');
+        return view('livewire.accounts.delete');
     }
 }

@@ -18,28 +18,23 @@
         </a>
 
         <flux:navlist variant="outline">
-            <flux:navlist.group :heading="__('Invoice Overview')" class="grid">
-                <flux:navlist.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')"
-                    wire:navigate>{{ __('Dashboard') }}
-                </flux:navlist.item>
-                <flux:navlist.item icon="users" :href="route('invoices.index')"
-                    :current="request()->routeIs('invoices.index')" wire:navigate>{{ __('Invoice') }}
-                </flux:navlist.item>
-            </flux:navlist.group>
-
-            <flux:navlist.group :heading="__('Master Data')" class="grid">
-                <flux:navlist.item icon="users" :href="route('clients')" :current="request()->routeIs('clients')"
-                    wire:navigate>{{ __('Clients') }}
-                </flux:navlist.item>
-                <flux:navlist.item icon="puzzle-piece" :href="route('services')"
-                    :current="request()->routeIs('services')" wire:navigate>
-                    {{ __('Services') }}
-                </flux:navlist.item>
-                <flux:navlist.item icon="credit-card" :href="route('bank-accounts.index')"
-                    :current="request()->routeIs('bank-accounts.index')" wire:navigate>
-                    {{ __('Bank Accounts') }}
-                </flux:navlist.item>
-            </flux:navlist.group>
+            <flux:navlist.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')"
+            wire:navigate class="py-5">{{ __('Dashboard') }}
+            </flux:navlist.item>
+            <flux:navlist.item icon="users" :href="route('invoices.index')"
+            :current="request()->routeIs('invoices.index')" wire:navigate class="py-5">{{ __('Invoice') }}
+            </flux:navlist.item>
+            <flux:navlist.item icon="users" :href="route('clients')" :current="request()->routeIs('clients')"
+            wire:navigate class="py-5">{{ __('Clients') }}
+            </flux:navlist.item>
+            <flux:navlist.item icon="puzzle-piece" :href="route('services')"
+            :current="request()->routeIs('services')" wire:navigate class="py-5">
+            {{ __('Services') }}
+            </flux:navlist.item>
+            <flux:navlist.item icon="credit-card" :href="route('bank-accounts.index')"
+            :current="request()->routeIs('bank-accounts.index')" wire:navigate class="py-5">
+            {{ __('Bank Accounts') }}
+            </flux:navlist.item>
         </flux:navlist>
 
         <flux:spacer />
