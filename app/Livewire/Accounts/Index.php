@@ -25,6 +25,15 @@ class Index extends Component
     public $totalIncome = 0;
     public $totalExpense = 0;
 
+    // Listeners for real-time updates
+    protected $listeners = [
+        'account-created' => 'refreshData',
+        'account-updated' => 'refreshData', 
+        'account-deleted' => 'handleAccountDeleted',
+        'transaction-created' => 'refreshData',
+        'refreshChart' => 'refreshChart'
+    ];
+
     public function mount()
     {
         $this->calculateStats();
@@ -39,12 +48,40 @@ class Index extends Component
     {
         $this->selectedAccountId = $accountId;
         $this->resetPage();
+        
+        // Dispatch event to refresh chart with new account data
+        $this->dispatch('account-selected', accountId: $accountId);
     }
 
     public function refreshData()
     {
         $this->resetPage();
         $this->calculateStats();
+        
+        // Refresh chart after data update
+        $this->dispatch('chart-data-updated');
+    }
+
+    public function handleAccountDeleted($accountId)
+    {
+        // If deleted account was selected, reset selection
+        if ($this->selectedAccountId == $accountId) {
+            $this->selectedAccountId = null;
+        }
+        
+        $this->refreshData();
+        
+        // Auto-select first available account
+        if ($this->accountsData->count() > 0 && !$this->selectedAccountId) {
+            $this->selectedAccountId = $this->accountsData->first()['id'];
+            $this->dispatch('account-selected', accountId: $this->selectedAccountId);
+        }
+    }
+
+    public function refreshChart()
+    {
+        // This method is called to trigger chart refresh
+        $this->dispatch('chart-refresh-requested');
     }
 
     private function calculateStats()
@@ -52,12 +89,13 @@ class Index extends Component
         $this->accountsData = BankAccount::with(['transactions' => function($query) {
             $query->latest()->take(3);
         }])->get()->map(function($account) {
+            $balance = $this->calculateAccountBalance($account->id);
             return [
                 'id' => $account->id,
                 'name' => $account->account_name,
                 'bank' => $account->bank_name,
                 'account_number' => $account->account_number,
-                'balance' => $account->balance,
+                'balance' => $balance,
                 'recent_transactions' => $account->transactions,
                 'trend' => $this->calculateTrend($account->id)
             ];
@@ -68,15 +106,33 @@ class Index extends Component
         $this->totalExpense = BankTransaction::where('transaction_type', 'debit')->sum('amount');
     }
 
+    private function calculateAccountBalance($accountId)
+    {
+        $account = BankAccount::find($accountId);
+        if (!$account) return 0;
+        
+        $credits = BankTransaction::where('bank_account_id', $accountId)
+            ->where('transaction_type', 'credit')
+            ->sum('amount');
+        $debits = BankTransaction::where('bank_account_id', $accountId)
+            ->where('transaction_type', 'debit')
+            ->sum('amount');
+        
+        return $account->initial_balance + $credits - $debits;
+    }
+
     private function calculateTrend($accountId)
     {
         $thisMonth = BankTransaction::where('bank_account_id', $accountId)
             ->where('transaction_type', 'credit')
             ->whereMonth('transaction_date', now()->month)
+            ->whereYear('transaction_date', now()->year)
             ->sum('amount');
+            
         $lastMonth = BankTransaction::where('bank_account_id', $accountId)
             ->where('transaction_type', 'credit')
             ->whereMonth('transaction_date', now()->subMonth()->month)
+            ->whereYear('transaction_date', now()->subMonth()->year)
             ->sum('amount');
         
         return $thisMonth >= $lastMonth ? 'up' : 'down';
@@ -92,8 +148,12 @@ class Index extends Component
 
     private function getTransactions()
     {
+        if (!$this->selectedAccountId) {
+            return collect()->paginate(10);
+        }
+
         $query = BankTransaction::with('bankAccount')
-            ->when($this->selectedAccountId, fn($q) => $q->where('bank_account_id', $this->selectedAccountId))
+            ->where('bank_account_id', $this->selectedAccountId)
             ->when($this->search, function($q) {
                 $q->where(function($query) {
                     $query->where('description', 'like', "%{$this->search}%")
@@ -108,26 +168,28 @@ class Index extends Component
         return $query->latest('transaction_date')->paginate(10);
     }
 
-    private function getCashflowData()
+    public function getCashflowData()
     {
         return collect(range(5, 0))->map(function($monthsBack) {
             $date = now()->subMonths($monthsBack);
-            $accountFilter = $this->selectedAccountId ? ['bank_account_id' => $this->selectedAccountId] : [];
+            
+            $baseQuery = BankTransaction::whereMonth('transaction_date', $date->month)
+                ->whereYear('transaction_date', $date->year);
+            
+            // Filter by selected account if one is chosen
+            if ($this->selectedAccountId) {
+                $baseQuery->where('bank_account_id', $this->selectedAccountId);
+            }
+            
+            $income = (clone $baseQuery)->where('transaction_type', 'credit')->sum('amount');
+            $expense = (clone $baseQuery)->where('transaction_type', 'debit')->sum('amount');
             
             return [
                 'month' => $date->format('M'),
-                'income' => BankTransaction::where('transaction_type', 'credit')
-                    ->where($accountFilter)
-                    ->whereMonth('transaction_date', $date->month)
-                    ->whereYear('transaction_date', $date->year)
-                    ->sum('amount'),
-                'expense' => BankTransaction::where('transaction_type', 'debit')
-                    ->where($accountFilter)
-                    ->whereMonth('transaction_date', $date->month)
-                    ->whereYear('transaction_date', $date->year)
-                    ->sum('amount')
+                'income' => (int) $income,
+                'expense' => (int) $expense
             ];
-        });
+        })->values()->toArray();
     }
 
     public function clearFilters()

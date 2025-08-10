@@ -562,5 +562,4 @@
     </div>
 </section>
 
-<!-- Include Chart.js for the charts -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

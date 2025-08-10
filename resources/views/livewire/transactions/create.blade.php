@@ -2,7 +2,7 @@
 
 <x-modal wire="showModal" title="Tambah Transaksi" size="xl" center>
     <x-slot:title>
-        <div class="flex items-center gap-4">
+        <div class="flex items-center gap-4 my-3">
             <div class="h-12 w-12 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center">
                 <x-icon name="plus" class="w-6 h-6 text-blue-600 dark:text-blue-400" />
             </div>

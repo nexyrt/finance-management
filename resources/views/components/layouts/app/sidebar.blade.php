@@ -139,6 +139,8 @@
 
     @fluxScripts
     @livewireScripts
+    @stack('scripts')
+    
     <script src="//unpkg.com/jodit@4.1.16/es2021/jodit.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
 </body>

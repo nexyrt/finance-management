@@ -97,3 +97,5 @@
         --color-accent-foreground: var(--color-dark-900);
     }
 }
+
+[x-cloak] { display: none !important; }
