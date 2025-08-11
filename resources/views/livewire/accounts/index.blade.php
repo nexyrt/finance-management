@@ -137,8 +137,7 @@
 
                             {{-- Transfer --}}
                             <button
-                                class="w-full flex items-center gap-4 p-4 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded-xl transition-all group cursor-pointer"
-                                wire:click="$dispatch('open-transfer-modal', { fromAccountId: {{ $selectedAccountId }} })">
+                                class="w-full flex items-center gap-4 p-4 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded-xl transition-all group cursor-pointer">
                                 <div class="h-12 w-12 bg-blue-500 rounded-xl flex items-center justify-center">
                                     <x-icon name="arrow-path" class="w-6 h-6 text-white" />
                                 </div>
@@ -230,8 +229,7 @@
                         <h3 class="font-semibold text-dark-900 dark:text-dark-50">Transactions</h3>
                     </div>
 
-                    <x-table :headers="$headers" :rows="$transactions" :sort="$sort" selectable wire:model="selected"
-                        paginate>
+                    <x-table :headers="$headers" :rows="$transactions" :sort="$sort" selectable wire:model="selected">
                         @interact('column_description', $row)
                             <div class="flex items-center gap-3">
                                 <div
@@ -266,9 +264,9 @@
                         @endinteract
 
                         @interact('column_amount', $row)
-                            <div class="text-center">
+                            <div class="text-right">
                                 <p
-                                    class="font-bold text-center {{ $row->transaction_type === 'credit' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }}">
+                                    class="font-bold {{ $row->transaction_type === 'credit' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }}">
                                     {{ $row->transaction_type === 'credit' ? '+' : '-' }}Rp
                                     {{ number_format($row->amount, 0, ',', '.') }}
                                 </p>
@@ -343,5 +341,4 @@
     <livewire:accounts.edit @account-updated="refreshData" />
     <livewire:transactions.create @transaction-created="refreshData" />
     <livewire:transactions.delete @transaction-deleted="refreshData" />
-    <livewire:transactions.transfer @transfer-completed="refreshData" />
 </div>
