@@ -13,7 +13,7 @@
     <flux:sidebar sticky stashable class="border-r border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900">
         <flux:sidebar.toggle class="lg:hidden" icon="x-mark" />
 
-        <a href="{{ route('dashboard') }}" class="me-5 flex items-center space-x-2 rtl:space-x-reverse" wire:navigate>
+        <a href="{{ route('dashboard') }}" class="me-5 flex items- justify-center space-x-2 rtl:space-x-reverse" wire:navigate>
             <x-app-logo />
         </a>
 
@@ -35,6 +35,9 @@
             :current="request()->routeIs('bank-accounts.index')" wire:navigate class="py-5">
             {{ __('Bank Accounts') }}
             </flux:navlist.item>
+            <flux:navlist.item :href="route('test')" icon="loading" :current="request()->routeIs('test')"
+            wire:navigate class="py-5">{{ __('Testing') }}
+            </flux:navlist.item>
         </flux:navlist>
 
         <flux:spacer />
@@ -44,6 +47,7 @@
             <flux:radio value="light" icon="sun">{{ __('Light') }}</flux:radio>
             <flux:radio value="dark" icon="moon">{{ __('Dark') }}</flux:radio>
         </flux:radio.group>
+
         <!-- Desktop User Menu -->
         <flux:dropdown position="bottom" align="start">
             <flux:profile :name="auth()->user()->name" :initials="auth()->user()->initials()"
