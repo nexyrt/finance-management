@@ -5,6 +5,7 @@ use App\Livewire\Clients\Index as Clients;
 use App\Livewire\Invoices\Index as InvoicesIndex;
 use App\Livewire\Invoices\Edit as EditInvoice;
 use App\Livewire\Accounts\Index as BankAccountsIndex;
+use App\Livewire\Transactions\Index as TransactionsIndex;
 use App\Livewire\ServiceManagement;
 use App\Livewire\Settings\Appearance;
 use App\Livewire\Settings\Password;
@@ -26,8 +27,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Bank Accounts Management
     Route::prefix('bank-accounts')->name('bank-accounts.')->group(function () {
         Route::get('/', BankAccountsIndex::class)->name('index');
-        // Route::get('/{bankAccount}/edit', BankAccounts::class)->name('edit');
+    });
 
+    // Transactions Management
+    Route::prefix('transactions')->name('transactions.')->group(function () {
+        Route::get('/', TransactionsIndex::class)->name('index');
     });
     
     // Invoice Management
