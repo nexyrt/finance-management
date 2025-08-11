@@ -127,7 +127,7 @@ class Index extends Component
                 $q->whereBetween('transaction_date', $this->dateRange);
             });
 
-        return $query->orderBy(...array_values($this->sort))->paginate(15);
+        return $query->orderBy(...array_values($this->sort))->get();
     }
 
     private function getTableHeaders()

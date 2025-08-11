@@ -114,7 +114,7 @@
             <h3 class="font-semibold text-dark-900 dark:text-dark-50">Daftar Transaksi</h3>
         </div>
 
-        <x-table :headers="$headers" :rows="$transactions" :sort="$sort" selectable wire:model="selected" paginate>
+        <x-table :headers="$headers" :rows="$transactions" :sort="$sort" selectable wire:model="selected">
             @interact('column_description', $row)
                 <div class="flex items-center gap-3">
                     <div
