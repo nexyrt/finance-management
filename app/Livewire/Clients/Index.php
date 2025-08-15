@@ -13,6 +13,7 @@ class Index extends Component
     use WithPagination, Interactions;
 
     protected $listeners = [
+        'client-created' => 'refresh', 
         'client-deleted' => 'refresh', 
         'client-updated' => 'refresh',
     ];
