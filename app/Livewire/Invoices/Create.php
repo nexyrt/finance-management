@@ -76,7 +76,7 @@ class Create extends Component
         $nextSequence = $maxSequence + 1;
 
         $this->invoice_number = sprintf(
-            'INV/%02d/JKB/%02d.%s',
+            'INV/%02d/JAH/%02d.%s',
             $nextSequence,
             (int) $currentMonth,
             $currentYear
