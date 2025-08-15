@@ -67,7 +67,7 @@ class Create extends Component
         $maxSequence = 0;
         foreach ($invoices as $invoiceNumber) {
             // Extract sequence from format INV/XX/JKB/MM.YY
-            if (preg_match('/INV\/(\d+)\/JKB\/\d{2}\.\d{2}/', $invoiceNumber, $matches)) {
+            if (preg_match('/INV\/(\d+)\/JAH\/\d{2}\.\d{2}/', $invoiceNumber, $matches)) {
                 $sequence = (int) $matches[1];
                 $maxSequence = max($maxSequence, $sequence);
             }
