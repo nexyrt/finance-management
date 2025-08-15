@@ -1,3 +1,9 @@
+import ApexCharts from 'apexcharts'
+window.ApexCharts = ApexCharts;
+
+import Chart from 'chart.js/auto';
+window.Chart = Chart;
+
 // Initialize Quill editor with Livewire compatibility
 function initializeQuill() {
     const editorElement = document.querySelector('#editor');

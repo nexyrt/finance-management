@@ -98,4 +98,19 @@
     }
 }
 
+/* Rounded bars CSS */
+.rounded-bars .toastui-chart-series-bar rect,
+.rounded-bars .toastui-chart-series-column rect {
+    rx: 8;
+    ry: 8;
+}
+
+/* Hover effect */
+.rounded-bars .toastui-chart-series-bar rect:hover,
+.rounded-bars .toastui-chart-series-column rect:hover {
+    rx: 10;
+    ry: 10;
+    transition: all 0.2s ease;
+}
+
 [x-cloak] { display: none !important; }

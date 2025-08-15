@@ -41,6 +41,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     });
 
+    Route::get('test', TestingPage::class)->name('test');
+
     Route::get('/invoice/{invoice}/preview', function (Invoice $invoice) {
         $service = new \App\Services\InvoicePrintService();
         $pdf = $service->generateSingleInvoicePdf($invoice);
