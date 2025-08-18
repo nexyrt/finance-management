@@ -9,7 +9,12 @@ class InvoicePrintService
 {
     public function generateSingleInvoicePdf(Invoice $invoice)
     {
-        $invoice->load(['client', 'items', 'payments.bankAccount']);
+        // Load relationships including client relationship for each item
+        $invoice->load([
+            'client',
+            'items.client',  // Added client relationship for items
+            'payments.bankAccount'
+        ]);
 
         $data = [
             'invoice' => $invoice,
