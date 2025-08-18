@@ -30,7 +30,6 @@
                 background: white;
                 height: 120px;
                 margin: -15px -20px 20px -15px;
-                border-bottom: 3px solid #1e40af;
                 padding: 20px;
                 display: table;
                 width: 100%;
