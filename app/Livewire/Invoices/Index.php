@@ -65,17 +65,62 @@ class Index extends Component
         ]);
     }
 
+    /**
+     * Bulk Print Invoices - Sequential Download
+     */
+    public function bulkPrintInvoices()
+    {
+        if (empty($this->selected)) {
+            $this->toast()->warning('Warning', 'Pilih minimal satu invoice untuk di-print')->send();
+            return;
+        }
+
+        try {
+            $invoices = Invoice::whereIn('id', $this->selected)->get();
+
+            if ($invoices->isEmpty()) {
+                $this->toast()->error('Error', 'Invoice yang dipilih tidak ditemukan')->send();
+                return;
+            }
+
+            // Generate URLs for each invoice
+            $downloadUrls = [];
+            foreach ($invoices as $invoice) {
+                $downloadUrls[] = [
+                    'invoice_number' => $invoice->invoice_number,
+                    'url' => route('invoice.pdf.download', $invoice->id)
+                ];
+            }
+
+            // Dispatch event to JavaScript for sequential downloads
+            $this->dispatch('start-bulk-download', [
+                'urls' => $downloadUrls,
+                'delay' => 1000 // 1 second delay between downloads
+            ]);
+
+            $this->toast()
+                ->success('Bulk Download Started', "Memulai download {$invoices->count()} invoice PDF")
+                ->send();
+
+            // Clear selection after successful bulk print
+            $this->selected = [];
+
+        } catch (\Exception $e) {
+            $this->toast()->error('Error', 'Gagal memulai bulk download: ' . $e->getMessage())->send();
+        }
+    }
+
     public function exportExcel()
     {
         $service = new \App\Services\InvoiceExportService();
-        
+
         $filters = [
             'search' => $this->search,
             'statusFilter' => $this->statusFilter,
             'clientFilter' => $this->clientFilter,
             'dateRange' => $this->dateRange,
         ];
-        
+
         return $service->exportExcel($filters);
     }
 

@@ -12,6 +12,7 @@ use App\Livewire\Settings\Password;
 use App\Livewire\Settings\Profile;
 use App\Livewire\TestingPage;
 use App\Models\Invoice;
+use App\Services\InvoicePrintService;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/login')->name('home');
@@ -33,7 +34,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::prefix('transactions')->name('transactions.')->group(function () {
         Route::get('/', TransactionsIndex::class)->name('index');
     });
-    
+
     // Invoice Management
     Route::prefix('invoices')->name('invoices.')->group(function () {
         Route::get('/', InvoicesIndex::class)->name('index');
@@ -43,8 +44,24 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('test', TestingPage::class)->name('test');
 
+    // Route untuk direct PDF download (bulk print)
+    Route::get('/invoice/{invoice}/download', function (Invoice $invoice) {
+        $service = new InvoicePrintService();
+        $pdf = $service->generateSingleInvoicePdf($invoice);
+
+        $filename = 'Invoice-' . str_replace(['/', '\\', ':', '*', '?', '"', '<', '>', '|'], '-', $invoice->invoice_number) . '.pdf';
+
+        return response()->streamDownload(function () use ($pdf) {
+            echo $pdf->output();
+        }, $filename, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"'
+        ]);
+    })->name('invoice.pdf.download');
+
+    // Route untuk preview (existing)
     Route::get('/invoice/{invoice}/preview', function (Invoice $invoice) {
-        $service = new \App\Services\InvoicePrintService();
+        $service = new InvoicePrintService();
         $pdf = $service->generateSingleInvoicePdf($invoice);
 
         return response($pdf->output(), 200, [

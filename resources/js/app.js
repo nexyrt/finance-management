@@ -36,8 +36,8 @@ document.addEventListener('DOMContentLoaded', initializeQuill);
 // Re-initialize after Livewire updates (if using Livewire)
 document.addEventListener('livewire:navigated', initializeQuill);
 
-Livewire.on('open-preview-delayed', (data) => {
-    setTimeout(() => {
-        window.open(data[0].url, '_blank');
-    }, data[0].delay);
-});
+// Livewire.on('open-preview-delayed', (data) => {
+//     setTimeout(() => {
+//         window.open(data[0].url, '_blank');
+//     }, data[0].delay);
+// });

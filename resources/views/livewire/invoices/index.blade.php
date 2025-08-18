@@ -122,11 +122,11 @@
 
                     {{-- Active Filters Count --}}
                     @if ($statusFilter || $clientFilter || $dateRange)
-                    <div class="flex items-center space-x-2">
-                        <x-badge
-                            text="{{ collect([$statusFilter, $clientFilter, $dateRange])->filter()->count() }} Filter Aktif"
-                            color="zinc" />
-                    </div>
+                        <div class="flex items-center space-x-2">
+                            <x-badge
+                                text="{{ collect([$statusFilter, $clientFilter, $dateRange])->filter()->count() }} Filter Aktif"
+                                color="zinc" />
+                        </div>
                     @endif
 
                     <x-dropdown icon="document-arrow-down" outline color="zinc" class="w-full sm:w-auto">
@@ -146,7 +146,8 @@
                                 ['label' => '✅ Dibayar', 'value' => 'paid'],
                                 ['label' => '💰 Sebagian', 'value' => 'partially_paid'],
                                 ['label' => '⏰ Terlambat', 'value' => 'overdue'],
-                            ]" placeholder="Semua status..." class="w-full" />
+                            ]"
+                                placeholder="Semua status..." class="w-full" />
                         </div>
 
                         {{-- Client Filter --}}
@@ -159,7 +160,8 @@
                                         'value' => $client->id,
                                     ],
                                 )
-                                ->toArray()" placeholder="Semua klien..." searchable class="w-full" />
+                                ->toArray()"
+                                placeholder="Semua klien..." searchable class="w-full" />
                         </div>
 
                         {{-- Date Range Filter --}}
@@ -180,137 +182,138 @@
 
                     {{-- Active Filter Tags --}}
                     @if ($statusFilter || $clientFilter || $dateRange)
-                    <div class="mt-6 pt-4 border-t border-zinc-200 dark:border-dark-600">
-                        <div class="flex items-center space-x-2 mb-3">
-                            <x-icon name="tag" class="w-4 h-4 text-dark-500 dark:text-dark-400" />
-                            <span class="text-sm font-medium text-dark-600 dark:text-dark-400">Filter
-                                Aktif:</span>
-                        </div>
-                        <div class="flex flex-wrap gap-2">
-                            @if ($statusFilter)
-                            <div
-                                class="inline-flex items-center gap-2 bg-zinc-50 dark:bg-zinc-900/20 text-zinc-700 dark:text-zinc-300 px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 text-sm">
-                                <span>{{ ucfirst($statusFilter) }}</span>
-                                <button wire:click="$set('statusFilter', '')"
-                                    class="hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-full p-0.5 transition-colors">
-                                    <x-icon name="x-mark" class="w-3 h-3" />
-                                </button>
+                        <div class="mt-6 pt-4 border-t border-zinc-200 dark:border-dark-600">
+                            <div class="flex items-center space-x-2 mb-3">
+                                <x-icon name="tag" class="w-4 h-4 text-dark-500 dark:text-dark-400" />
+                                <span class="text-sm font-medium text-dark-600 dark:text-dark-400">Filter
+                                    Aktif:</span>
                             </div>
-                            @endif
+                            <div class="flex flex-wrap gap-2">
+                                @if ($statusFilter)
+                                    <div
+                                        class="inline-flex items-center gap-2 bg-zinc-50 dark:bg-zinc-900/20 text-zinc-700 dark:text-zinc-300 px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 text-sm">
+                                        <span>{{ ucfirst($statusFilter) }}</span>
+                                        <button wire:click="$set('statusFilter', '')"
+                                            class="hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-full p-0.5 transition-colors">
+                                            <x-icon name="x-mark" class="w-3 h-3" />
+                                        </button>
+                                    </div>
+                                @endif
 
-                            @if ($clientFilter)
-                            @php $selectedClient = $clients->find($clientFilter); @endphp
-                            @if ($selectedClient)
-                            <div
-                                class="inline-flex items-center gap-2 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 px-3 py-1.5 rounded-lg border border-green-200 dark:border-green-800 text-sm">
-                                <span>{{ $selectedClient->name }}</span>
-                                <button wire:click="$set('clientFilter', '')"
-                                    class="hover:bg-green-200 dark:hover:bg-green-800 rounded-full p-0.5 transition-colors">
-                                    <x-icon name="x-mark" class="w-3 h-3" />
-                                </button>
-                            </div>
-                            @endif
-                            @endif
+                                @if ($clientFilter)
+                                    @php $selectedClient = $clients->find($clientFilter); @endphp
+                                    @if ($selectedClient)
+                                        <div
+                                            class="inline-flex items-center gap-2 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 px-3 py-1.5 rounded-lg border border-green-200 dark:border-green-800 text-sm">
+                                            <span>{{ $selectedClient->name }}</span>
+                                            <button wire:click="$set('clientFilter', '')"
+                                                class="hover:bg-green-200 dark:hover:bg-green-800 rounded-full p-0.5 transition-colors">
+                                                <x-icon name="x-mark" class="w-3 h-3" />
+                                            </button>
+                                        </div>
+                                    @endif
+                                @endif
 
-                            @if ($dateRange && is_array($dateRange) && count($dateRange) >= 2)
-                            <div
-                                class="inline-flex items-center gap-2 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 px-3 py-1.5 rounded-lg border border-blue-200 dark:border-blue-800 text-sm">
-                                <span>
-                                    {{ \Carbon\Carbon::parse($dateRange[0])->format('d/m/Y') }} -
-                                    {{ \Carbon\Carbon::parse($dateRange[1])->format('d/m/Y') }}
-                                </span>
-                                <button wire:click="$set('dateRange', [])"
-                                    class="hover:bg-blue-200 dark:hover:bg-blue-800 rounded-full p-0.5 transition-colors">
-                                    <x-icon name="x-mark" class="w-3 h-3" />
-                                </button>
+                                @if ($dateRange && is_array($dateRange) && count($dateRange) >= 2)
+                                    <div
+                                        class="inline-flex items-center gap-2 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 px-3 py-1.5 rounded-lg border border-blue-200 dark:border-blue-800 text-sm">
+                                        <span>
+                                            {{ \Carbon\Carbon::parse($dateRange[0])->format('d/m/Y') }} -
+                                            {{ \Carbon\Carbon::parse($dateRange[1])->format('d/m/Y') }}
+                                        </span>
+                                        <button wire:click="$set('dateRange', [])"
+                                            class="hover:bg-blue-200 dark:hover:bg-blue-800 rounded-full p-0.5 transition-colors">
+                                            <x-icon name="x-mark" class="w-3 h-3" />
+                                        </button>
+                                    </div>
+                                @endif
                             </div>
-                            @endif
                         </div>
-                    </div>
                     @endif
                 </div>
             </div>
 
             {{-- Invoice Table --}}
-            <x-table :$headers :$rows :$sort filter :quantity="[10, 25, 50, 100]" paginate selectable
-                wire:model="selected">
+            <x-table :$headers :$rows :$sort filter :quantity="[10, 25, 50, 100]" paginate selectable wire:model="selected">
 
                 {{-- Invoice Number Column --}}
                 @interact('column_invoice_number', $row)
-                <div class="group cursor-pointer">
-                    <div
-                        class="font-mono font-bold text-zinc-600 dark:text-zinc-400 group-hover:text-zinc-700 dark:group-hover:text-zinc-300 transition-colors duration-200">
-                        {{ $row->invoice_number }}
+                    <div class="group cursor-pointer">
+                        <div
+                            class="font-mono font-bold text-zinc-600 dark:text-zinc-400 group-hover:text-zinc-700 dark:group-hover:text-zinc-300 transition-colors duration-200">
+                            {{ $row->invoice_number }}
+                        </div>
+                        <div class="text-xs text-dark-500 dark:text-dark-400 mt-1">
+                            {{ $row->issue_date->format('d/m/Y') }}
+                        </div>
                     </div>
-                    <div class="text-xs text-dark-500 dark:text-dark-400 mt-1">
-                        {{ $row->issue_date->format('d/m/Y') }}
-                    </div>
-                </div>
                 @endinteract
 
                 {{-- Client Column --}}
                 @interact('column_client_name', $row)
-                <div class="flex items-center space-x-4">
-                    <div class="relative flex-shrink-0">
-                        <div class="w-10 h-10 {{ $row->client_type === 'individual'
+                    <div class="flex items-center space-x-4">
+                        <div class="relative flex-shrink-0">
+                            <div
+                                class="w-10 h-10 {{ $row->client_type === 'individual'
                                     ? 'bg-gradient-to-br from-zinc-400 to-zinc-600'
                                     : 'bg-gradient-to-br from-purple-400 to-purple-600' }} 
                     rounded-2xl flex items-center justify-center shadow-lg ring-2 ring-white dark:ring-dark-800">
-                            <x-icon name="{{ $row->client_type === 'individual' ? 'user' : 'building-office' }}"
-                                class="w-5 h-5 text-white" />
+                                <x-icon name="{{ $row->client_type === 'individual' ? 'user' : 'building-office' }}"
+                                    class="w-5 h-5 text-white" />
+                            </div>
+                            {{-- Client Type Indicator --}}
+                            <div
+                                class="absolute -bottom-1 -right-1 w-4 h-4 {{ $row->client_type === 'individual' ? 'bg-zinc-500' : 'bg-purple-500' }} rounded-full border-2 border-white dark:border-dark-800 flex items-center justify-center">
+                                <x-icon
+                                    name="{{ $row->client_type === 'individual' ? 'identification' : 'building-office-2' }}"
+                                    class="w-2 h-2 text-white" />
+                            </div>
                         </div>
-                        {{-- Client Type Indicator --}}
-                        <div
-                            class="absolute -bottom-1 -right-1 w-4 h-4 {{ $row->client_type === 'individual' ? 'bg-zinc-500' : 'bg-purple-500' }} rounded-full border-2 border-white dark:border-dark-800 flex items-center justify-center">
-                            <x-icon
-                                name="{{ $row->client_type === 'individual' ? 'identification' : 'building-office-2' }}"
-                                class="w-2 h-2 text-white" />
+                        <div class="min-w-0 flex-1">
+                            <p class="font-semibold text-dark-900 dark:text-dark-50 truncate text-sm">
+                                {{ $row->client_name }}
+                            </p>
+                            <div class="flex items-center gap-1 text-xs text-dark-500 dark:text-dark-400">
+                                <x-icon name="{{ $row->client_type === 'individual' ? 'user' : 'building-office' }}"
+                                    class="w-3 h-3" />
+                                <span
+                                    class="capitalize">{{ $row->client_type === 'individual' ? 'Individu' : 'Perusahaan' }}</span>
+                            </div>
                         </div>
                     </div>
-                    <div class="min-w-0 flex-1">
-                        <p class="font-semibold text-dark-900 dark:text-dark-50 truncate text-sm">
-                            {{ $row->client_name }}
-                        </p>
-                        <div class="flex items-center gap-1 text-xs text-dark-500 dark:text-dark-400">
-                            <x-icon name="{{ $row->client_type === 'individual' ? 'user' : 'building-office' }}"
-                                class="w-3 h-3" />
-                            <span class="capitalize">{{ $row->client_type === 'individual' ? 'Individu' : 'Perusahaan'
-                                }}</span>
-                        </div>
-                    </div>
-                </div>
                 @endinteract
 
                 {{-- Issue Date Column --}}
                 @interact('column_issue_date', $row)
-                <div class="space-y-1">
-                    <div class="text-sm font-medium text-dark-900 dark:text-dark-50">
-                        {{ $row->issue_date->format('d M Y') }}
+                    <div class="space-y-1">
+                        <div class="text-sm font-medium text-dark-900 dark:text-dark-50">
+                            {{ $row->issue_date->format('d M Y') }}
+                        </div>
+                        <div class="text-xs text-dark-500 dark:text-dark-400 flex items-center gap-1">
+                            <x-icon name="calendar" class="w-3 h-3" />
+                            {{ $row->issue_date->diffForHumans() }}
+                        </div>
                     </div>
-                    <div class="text-xs text-dark-500 dark:text-dark-400 flex items-center gap-1">
-                        <x-icon name="calendar" class="w-3 h-3" />
-                        {{ $row->issue_date->diffForHumans() }}
-                    </div>
-                </div>
                 @endinteract
 
                 {{-- Due Date Column --}}
                 @interact('column_due_date', $row)
-                <div class="space-y-1">
-                    @php
-                    $isOverdue = $row->due_date->isPast() && !in_array($row->status, ['paid']);
-                    $isDueSoon =
-                    $row->due_date->diffInDays(now()) <= 7 && !$row->due_date->isPast() &&
-                        !in_array($row->status, ['paid']);
+                    <div class="space-y-1">
+                        @php
+                            $isOverdue = $row->due_date->isPast() && !in_array($row->status, ['paid']);
+                            $isDueSoon =
+                                $row->due_date->diffInDays(now()) <= 7 &&
+                                !$row->due_date->isPast() &&
+                                !in_array($row->status, ['paid']);
                         @endphp
 
                         <div class="flex items-center gap-2">
                             @if ($isOverdue)
-                            <div class="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                                <div class="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
                             @elseif($isDueSoon)
-                            <div class="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                                <div class="w-2 h-2 bg-yellow-500 rounded-full"></div>
                             @else
-                            <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                                <div class="w-2 h-2 bg-green-500 rounded-full"></div>
                             @endif
 
                             <span
@@ -320,170 +323,170 @@
                         </div>
 
                         @if ($isOverdue)
-                        <div
-                            class="inline-flex items-center gap-1 px-2 py-1 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 rounded-md text-xs font-medium">
-                            <x-icon name="exclamation-triangle" class="w-3 h-3" />
-                            {{ (int) abs($row->due_date->diffInDays(now())) }} hari lewat
-                        </div>
+                            <div
+                                class="inline-flex items-center gap-1 px-2 py-1 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 rounded-md text-xs font-medium">
+                                <x-icon name="exclamation-triangle" class="w-3 h-3" />
+                                {{ (int) abs($row->due_date->diffInDays(now())) }} hari lewat
+                            </div>
                         @elseif($isDueSoon)
-                        <div
-                            class="inline-flex items-center gap-1 px-2 py-1 bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-300 rounded-md text-xs font-medium">
-                            <x-icon name="clock" class="w-3 h-3" />
-                            {{ (int) $row->due_date->diffInDays(now()) }} hari lagi
-                        </div>
+                            <div
+                                class="inline-flex items-center gap-1 px-2 py-1 bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-300 rounded-md text-xs font-medium">
+                                <x-icon name="clock" class="w-3 h-3" />
+                                {{ (int) $row->due_date->diffInDays(now()) }} hari lagi
+                            </div>
                         @else
-                        <div class="flex items-center gap-1 text-xs text-dark-500 dark:text-dark-400">
-                            <x-icon name="check-circle" class="w-3 h-3" />
-                            {{ $row->due_date->diffForHumans() }}
-                        </div>
+                            <div class="flex items-center gap-1 text-xs text-dark-500 dark:text-dark-400">
+                                <x-icon name="check-circle" class="w-3 h-3" />
+                                {{ $row->due_date->diffForHumans() }}
+                            </div>
                         @endif
-                </div>
+                    </div>
                 @endinteract
 
                 {{-- Amount Column --}}
                 @interact('column_total_amount', $row)
-                <div class="text-right space-y-2">
-                    <div class="font-bold text-lg text-dark-900 dark:text-dark-50">
-                        Rp {{ number_format($row->total_amount, 0, ',', '.') }}
-                    </div>
-
-                    @if ($row->amount_paid > 0)
-                    @php
-                    $paymentPercentage = ($row->amount_paid / $row->total_amount) * 100;
-                    $remainingAmount = $row->total_amount - $row->amount_paid;
-                    @endphp
-
-                    {{-- Payment Progress Bar --}}
-                    <div class="space-y-1">
-                        <div class="flex justify-between text-xs">
-                            <span class="text-green-600 dark:text-green-400 font-medium">
-                                {{ number_format($paymentPercentage, 1) }}% Dibayar
-                            </span>
-                            @if ($remainingAmount > 0)
-                            <span class="text-dark-500 dark:text-dark-400">
-                                Sisa: Rp {{ number_format($remainingAmount, 0, ',', '.') }}
-                            </span>
-                            @endif
+                    <div class="text-right space-y-2">
+                        <div class="font-bold text-lg text-dark-900 dark:text-dark-50">
+                            Rp {{ number_format($row->total_amount, 0, ',', '.') }}
                         </div>
-                        <div class="w-full bg-zinc-200 dark:bg-dark-700 rounded-full h-2">
-                            <div class="bg-gradient-to-r from-green-400 to-green-600 h-2 rounded-full transition-all duration-300"
-                                style="width: {{ min($paymentPercentage, 100) }}%"></div>
-                        </div>
+
+                        @if ($row->amount_paid > 0)
+                            @php
+                                $paymentPercentage = ($row->amount_paid / $row->total_amount) * 100;
+                                $remainingAmount = $row->total_amount - $row->amount_paid;
+                            @endphp
+
+                            {{-- Payment Progress Bar --}}
+                            <div class="space-y-1">
+                                <div class="flex justify-between text-xs">
+                                    <span class="text-green-600 dark:text-green-400 font-medium">
+                                        {{ number_format($paymentPercentage, 1) }}% Dibayar
+                                    </span>
+                                    @if ($remainingAmount > 0)
+                                        <span class="text-dark-500 dark:text-dark-400">
+                                            Sisa: Rp {{ number_format($remainingAmount, 0, ',', '.') }}
+                                        </span>
+                                    @endif
+                                </div>
+                                <div class="w-full bg-zinc-200 dark:bg-dark-700 rounded-full h-2">
+                                    <div class="bg-gradient-to-r from-green-400 to-green-600 h-2 rounded-full transition-all duration-300"
+                                        style="width: {{ min($paymentPercentage, 100) }}%"></div>
+                                </div>
+                            </div>
+                        @else
+                            <div class="text-xs text-dark-500 dark:text-dark-400 italic">
+                                Belum ada pembayaran
+                            </div>
+                        @endif
                     </div>
-                    @else
-                    <div class="text-xs text-dark-500 dark:text-dark-400 italic">
-                        Belum ada pembayaran
-                    </div>
-                    @endif
-                </div>
                 @endinteract
 
                 {{-- Status Column --}}
                 @interact('column_status', $row)
-                @php
-                $statusConfig = [
-                'draft' => [
-                'color' => 'gray',
-                'text' => 'Draft',
-                'icon' => 'document',
-                'bg' => 'bg-gray-50 dark:bg-gray-800',
-                'ring' => 'ring-gray-200 dark:ring-gray-700',
-                ],
-                'sent' => [
-                'color' => 'blue',
-                'text' => 'Terkirim',
-                'icon' => 'paper-airplane',
-                'bg' => 'bg-blue-50 dark:bg-blue-900/20',
-                'ring' => 'ring-blue-200 dark:ring-blue-800',
-                ],
-                'paid' => [
-                'color' => 'green',
-                'text' => 'Dibayar',
-                'icon' => 'check-circle',
-                'bg' => 'bg-green-50 dark:bg-green-900/20',
-                'ring' => 'ring-green-200 dark:ring-green-800',
-                ],
-                'partially_paid' => [
-                'color' => 'yellow',
-                'text' => 'Sebagian',
-                'icon' => 'currency-dollar',
-                'bg' => 'bg-yellow-50 dark:bg-yellow-900/20',
-                'ring' => 'ring-yellow-200 dark:ring-yellow-800',
-                ],
-                'overdue' => [
-                'color' => 'red',
-                'text' => 'Terlambat',
-                'icon' => 'exclamation-triangle',
-                'bg' => 'bg-red-50 dark:bg-red-900/20',
-                'ring' => 'ring-red-200 dark:ring-red-800',
-                ],
-                ];
-                $config = $statusConfig[$row->status] ?? $statusConfig['draft'];
-                @endphp
+                    @php
+                        $statusConfig = [
+                            'draft' => [
+                                'color' => 'gray',
+                                'text' => 'Draft',
+                                'icon' => 'document',
+                                'bg' => 'bg-gray-50 dark:bg-gray-800',
+                                'ring' => 'ring-gray-200 dark:ring-gray-700',
+                            ],
+                            'sent' => [
+                                'color' => 'blue',
+                                'text' => 'Terkirim',
+                                'icon' => 'paper-airplane',
+                                'bg' => 'bg-blue-50 dark:bg-blue-900/20',
+                                'ring' => 'ring-blue-200 dark:ring-blue-800',
+                            ],
+                            'paid' => [
+                                'color' => 'green',
+                                'text' => 'Dibayar',
+                                'icon' => 'check-circle',
+                                'bg' => 'bg-green-50 dark:bg-green-900/20',
+                                'ring' => 'ring-green-200 dark:ring-green-800',
+                            ],
+                            'partially_paid' => [
+                                'color' => 'yellow',
+                                'text' => 'Sebagian',
+                                'icon' => 'currency-dollar',
+                                'bg' => 'bg-yellow-50 dark:bg-yellow-900/20',
+                                'ring' => 'ring-yellow-200 dark:ring-yellow-800',
+                            ],
+                            'overdue' => [
+                                'color' => 'red',
+                                'text' => 'Terlambat',
+                                'icon' => 'exclamation-triangle',
+                                'bg' => 'bg-red-50 dark:bg-red-900/20',
+                                'ring' => 'ring-red-200 dark:ring-red-800',
+                            ],
+                        ];
+                        $config = $statusConfig[$row->status] ?? $statusConfig['draft'];
+                    @endphp
 
-                <div
-                    class="inline-flex items-center gap-2 px-3 py-2 rounded-xl {{ $config['bg'] }} ring-1 {{ $config['ring'] }} transition-all duration-200 hover:shadow-md">
                     <div
-                        class="w-2 h-2 bg-{{ $config['color'] }}-500 rounded-full {{ $row->status === 'overdue' ? 'animate-pulse' : '' }}">
+                        class="inline-flex items-center gap-2 px-3 py-2 rounded-xl {{ $config['bg'] }} ring-1 {{ $config['ring'] }} transition-all duration-200 hover:shadow-md">
+                        <div
+                            class="w-2 h-2 bg-{{ $config['color'] }}-500 rounded-full {{ $row->status === 'overdue' ? 'animate-pulse' : '' }}">
+                        </div>
+                        <x-icon name="{{ $config['icon'] }}"
+                            class="w-4 h-4 text-{{ $config['color'] }}-600 dark:text-{{ $config['color'] }}-400" />
+                        <span
+                            class="text-sm font-medium text-{{ $config['color'] }}-700 dark:text-{{ $config['color'] }}-300">
+                            {{ $config['text'] }}
+                        </span>
                     </div>
-                    <x-icon name="{{ $config['icon'] }}"
-                        class="w-4 h-4 text-{{ $config['color'] }}-600 dark:text-{{ $config['color'] }}-400" />
-                    <span
-                        class="text-sm font-medium text-{{ $config['color'] }}-700 dark:text-{{ $config['color'] }}-300">
-                        {{ $config['text'] }}
-                    </span>
-                </div>
                 @endinteract
 
                 {{-- Actions Column --}}
                 @interact('column_actions', $row)
-                <div class="flex items-center gap-2">
-                    {{-- Main Actions Dropdown --}}
-                    <x-dropdown icon="ellipsis-vertical" class="relative">
-                        {{-- Header with Invoice Number --}}
-                        <div
-                            class="px-4 py-2 border-b border-zinc-100 dark:border-dark-700 bg-zinc-50 dark:bg-dark-800">
-                            <div class="font-mono text-sm font-medium text-dark-900 dark:text-dark-50">
-                                {{ $row->invoice_number }}
+                    <div class="flex items-center gap-2">
+                        {{-- Main Actions Dropdown --}}
+                        <x-dropdown icon="ellipsis-vertical" class="relative">
+                            {{-- Header with Invoice Number --}}
+                            <div
+                                class="px-4 py-2 border-b border-zinc-100 dark:border-dark-700 bg-zinc-50 dark:bg-dark-800">
+                                <div class="font-mono text-sm font-medium text-dark-900 dark:text-dark-50">
+                                    {{ $row->invoice_number }}
+                                </div>
+                                <div class="text-xs text-dark-500 dark:text-dark-400">
+                                    {{ $row->client_name }}
+                                </div>
                             </div>
-                            <div class="text-xs text-dark-500 dark:text-dark-400">
-                                {{ $row->client_name }}
+
+                            {{-- Primary Actions --}}
+                            <div class="py-1">
+                                <x-dropdown.items text="Lihat Detail" icon="eye"
+                                    wire:click="$dispatch('show-invoice', { invoiceId: {{ $row->id }} })"
+                                    loading="$dispatch('show-invoice')" />
+                                <x-dropdown.items text="Edit Invoice" icon="pencil"
+                                    href="{{ route('invoices.edit', $row->id) }}"
+                                    class="text-zinc-600 dark:text-zinc-400" />
+                                @if ($row->status === 'draft')
+                                    <x-dropdown.items wire:click='sendInvoice({{ $row->id }})' text="Kirim Invoice"
+                                        icon="paper-airplane" class="text-green-600 dark:text-green-400" />
+                                @endif
+
+                                @if (in_array($row->status, ['sent', 'overdue', 'partially_paid']))
+                                    <x-dropdown.items text="Catat Pembayaran" icon="currency-dollar"
+                                        wire:click="$dispatch('record-payment', { invoiceId: {{ $row->id }} })" />
+                                @endif
                             </div>
-                        </div>
 
-                        {{-- Primary Actions --}}
-                        <div class="py-1">
-                            <x-dropdown.items text="Lihat Detail" icon="eye"
-                                wire:click="$dispatch('show-invoice', { invoiceId: {{ $row->id }} })"
-                                loading="$dispatch('show-invoice')" />
-                            <x-dropdown.items text="Edit Invoice" icon="pencil"
-                                href="{{ route('invoices.edit', $row->id) }}"
-                                class="text-zinc-600 dark:text-zinc-400" />
-                            @if ($row->status === 'draft')
-                            <x-dropdown.items wire:click='sendInvoice({{ $row->id }})' text="Kirim Invoice"
-                                icon="paper-airplane" class="text-green-600 dark:text-green-400" />
-                            @endif
+                            {{-- Secondary Actions --}}
+                            <div class="border-t border-zinc-100 dark:border-dark-700 py-1">
+                                <x-dropdown.items text="Print PDF" icon="printer"
+                                    wire:click="printInvoice({{ $row->id }})" class=" dark:text-dark-100" />
+                            </div>
 
-                            @if (in_array($row->status, ['sent', 'overdue', 'partially_paid']))
-                            <x-dropdown.items text="Catat Pembayaran" icon="currency-dollar"
-                                wire:click="$dispatch('record-payment', { invoiceId: {{ $row->id }} })" />
-                            @endif
-                        </div>
-
-                        {{-- Secondary Actions --}}
-                        <div class="border-t border-zinc-100 dark:border-dark-700 py-1">
-                            <x-dropdown.items text="Print PDF" icon="printer" wire:click="printInvoice({{ $row->id }})"
-                                class=" dark:text-dark-100" />
-                        </div>
-
-                        {{-- Danger Actions --}}
-                        <div class="border-t border-zinc-100 dark:border-dark-700 py-1">
-                            <x-dropdown.items text="Hapus Invoice" icon="trash"
-                                wire:click="$dispatch('delete-invoice', { invoiceId: {{ $row->id }} })"
-                                class="text-red-600 dark:text-red-400" />
-                        </div>
-                    </x-dropdown>
-                </div>
+                            {{-- Danger Actions --}}
+                            <div class="border-t border-zinc-100 dark:border-dark-700 py-1">
+                                <x-dropdown.items text="Hapus Invoice" icon="trash"
+                                    wire:click="$dispatch('delete-invoice', { invoiceId: {{ $row->id }} })"
+                                    class="text-red-600 dark:text-red-400" />
+                            </div>
+                        </x-dropdown>
+                    </div>
                 @endinteract
 
             </x-table>
@@ -527,12 +530,12 @@
 
     </x-tab>
 
-    {{-- Enhanced Bulk Actions Bar --}}
+    {{-- Enhanced Bulk Actions Bar dengan Bulk Print --}}
     <div x-data="{ show: @entangle('selected').live }" x-show="show.length > 0" x-transition
         class="fixed bottom-4 sm:bottom-6 left-4 right-4 sm:left-1/2 sm:right-auto sm:transform sm:-translate-x-1/2 z-50">
 
         <div
-            class="bg-white dark:bg-dark-800 rounded-xl shadow-lg border border-zinc-200 dark:border-dark-600 px-4 sm:px-6 py-4 sm:min-w-80">
+            class="bg-white dark:bg-dark-800 rounded-xl shadow-lg border border-zinc-200 dark:border-dark-600 px-4 sm:px-6 py-4 sm:min-w-96">
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-6">
                 {{-- Selection Info --}}
                 <div class="flex items-center gap-3">
@@ -550,6 +553,12 @@
 
                 {{-- Actions --}}
                 <div class="flex items-center gap-2 justify-end">
+                    {{-- Bulk Print Button --}}
+                    <x-button wire:click="bulkPrintInvoices" size="sm" color="blue" icon="printer"
+                        loading="bulkPrintInvoices" class="whitespace-nowrap">
+                        Print All
+                    </x-button>
+
                     {{-- Delete Selected --}}
                     <x-button wire:click="openBulkDeleteModal" size="sm" color="red" icon="trash"
                         class="whitespace-nowrap">
@@ -644,6 +653,27 @@
         </x-slot:footer>
     </x-modal>
 
+    {{-- Browser Permission Warning Toast --}}
+    <div x-data="{ show: false }" x-on:show-download-warning.window="show = true; setTimeout(() => show = false, 5000)"
+        x-show="show" x-transition class="fixed top-4 right-4 z-50">
+        <div
+            class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-xl p-4 max-w-sm shadow-lg">
+            <div class="flex items-start gap-3">
+                <div
+                    class="h-8 w-8 bg-yellow-100 dark:bg-yellow-800/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <x-icon name="exclamation-triangle" class="w-4 h-4 text-yellow-600 dark:text-yellow-400" />
+                </div>
+                <div>
+                    <h4 class="font-semibold text-yellow-900 dark:text-yellow-100 mb-1">Browser Permission Required
+                    </h4>
+                    <p class="text-sm text-yellow-800 dark:text-yellow-200">
+                        Please allow multiple downloads when prompted by your browser.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     {{-- Livewire Components --}}
     <livewire:invoices.show />
     <livewire:invoices.create />
@@ -651,3 +681,58 @@
     <livewire:payments.create />
     <livewire:payments.edit />
 </section>
+
+{{-- Ganti script di akhir blade view dengan ini --}}
+<script>
+    // Wait for Livewire to be ready
+    document.addEventListener('livewire:init', () => {
+        // Listen for bulk download events
+        Livewire.on('start-bulk-download', (data) => {
+            console.log('Bulk download event received:', data);
+
+            // Show permission warning
+            window.dispatchEvent(new CustomEvent('show-download-warning'));
+
+            const {
+                urls,
+                delay
+            } = data[0];
+            let currentIndex = 0;
+
+            function downloadNext() {
+                if (currentIndex >= urls.length) {
+                    console.log('All bulk downloads completed');
+                    return;
+                }
+
+                const current = urls[currentIndex];
+                console.log(`Downloading: ${current.invoice_number} - ${current.url}`);
+
+                // Create hidden link for download
+                const link = document.createElement('a');
+                link.href = current.url;
+                link.download = `Invoice-${current.invoice_number}.pdf`;
+                link.style.display = 'none';
+
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+                currentIndex++;
+
+                // Schedule next download
+                if (currentIndex < urls.length) {
+                    setTimeout(downloadNext, delay || 1000);
+                }
+            }
+
+            // Start downloads
+            downloadNext();
+        });
+    });
+
+    // Alternative: Listen using window event (if above doesn't work)
+    window.addEventListener('livewire:init', () => {
+        console.log('Livewire initialized');
+    });
+</script>
