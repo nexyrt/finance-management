@@ -485,7 +485,7 @@
                 </div>
             </div>
 
-            <!-- Items Table - Conditional compact styling -->
+            <!-- Items Table - MERGED CLIENT CELLS -->
             <table class="items-table {{ $hasMultipleClients ? 'compact-table' : '' }}">
                 <thead>
                     <tr>
@@ -502,35 +502,75 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach ($items as $index => $item)
-                        <tr>
-                            <td>{{ $index + 1 }}</td>
-                            @if ($hasMultipleClients)
-                                <td class="client-cell">
-                                    {{ $item->client->name ?? 'N/A' }}
-                                    {{-- @if ($item->client->type)
-                                        <br><span style="font-size: 9px; color: #666; font-weight: normal;">
-                                            {{ $item->client->type === 'individual' ? 'Individu' : 'Perusahaan' }}
-                                        </span>
-                                    @endif --}}
-                                </td>
-                            @endif
-                            <td class="text-left">{{ $item->service_name }}</td>
-                            <td>{{ number_format($item->quantity) }}</td>
-                            <td>
-                                <div class="currency-cell">
-                                    <div class="currency-left">IDR</div>
-                                    <div class="currency-right">{{ number_format($item->unit_price, 0, ',', '.') }}
+                    @php
+                        // Group items by client for merging consecutive same clients
+                        $groupedItems = [];
+                        $currentClient = null;
+                        $currentGroup = [];
+
+                        foreach ($items as $item) {
+                            $clientName = $item->client->name ?? 'N/A';
+
+                            if ($currentClient === null || $currentClient === $clientName) {
+                                // Same client or first item, add to current group
+                                $currentClient = $clientName;
+                                $currentGroup[] = $item;
+                            } else {
+                                // Different client, finalize current group and start new one
+                                $groupedItems[] = [
+                                    'client' => $currentClient,
+                                    'items' => $currentGroup,
+                                    'count' => count($currentGroup),
+                                ];
+                                $currentClient = $clientName;
+                                $currentGroup = [$item];
+                            }
+                        }
+
+                        // Add last group
+                        if (!empty($currentGroup)) {
+                            $groupedItems[] = [
+                                'client' => $currentClient,
+                                'items' => $currentGroup,
+                                'count' => count($currentGroup),
+                            ];
+                        }
+
+                        $rowIndex = 1;
+                    @endphp
+
+                    @foreach ($groupedItems as $group)
+                        @foreach ($group['items'] as $itemIndex => $item)
+                            <tr>
+                                <td>{{ $rowIndex }}</td>
+                                @if ($hasMultipleClients)
+                                    @if ($itemIndex === 0)
+                                        {{-- Only show client name on first row of each group with rowspan --}}
+                                        <td class="client-cell" rowspan="{{ $group['count'] }}"
+                                            style="vertical-align: middle; border-right: 2px solid #1e40af; font-weight: bold; color: #1e40af;">
+                                            {{ $group['client'] }}
+                                        </td>
+                                    @endif
+                                @endif
+                                <td class="text-left">{{ $item->service_name }}</td>
+                                <td>{{ number_format($item->quantity) }}</td>
+                                <td>
+                                    <div class="currency-cell">
+                                        <div class="currency-left">IDR</div>
+                                        <div class="currency-right">{{ number_format($item->unit_price, 0, ',', '.') }}
+                                        </div>
                                     </div>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="currency-cell">
-                                    <div class="currency-left">IDR</div>
-                                    <div class="currency-right">{{ number_format($item->amount, 0, ',', '.') }}</div>
-                                </div>
-                            </td>
-                        </tr>
+                                </td>
+                                <td>
+                                    <div class="currency-cell">
+                                        <div class="currency-left">IDR</div>
+                                        <div class="currency-right">{{ number_format($item->amount, 0, ',', '.') }}
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            @php $rowIndex++; @endphp
+                        @endforeach
                     @endforeach
                 </tbody>
             </table>
