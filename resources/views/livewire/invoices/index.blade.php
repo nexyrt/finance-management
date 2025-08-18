@@ -691,7 +691,7 @@
             console.log('Bulk download event received:', data);
 
             // Show permission warning
-            window.dispatchEvent(new CustomEvent('show-download-warning'));
+            // window.dispatchEvent(new CustomEvent('show-download-warning'));
 
             const {
                 urls,
