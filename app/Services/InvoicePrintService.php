@@ -25,7 +25,7 @@ class InvoicePrintService
             'terbilang' => $this->numberToWords($invoice->total_amount),
         ];
 
-        $pdf = Pdf::loadView('pdf.jitsugen-invoice', $data) // Ganti menyesuaikan dengan nama template PDF yang digunakan
+        $pdf = Pdf::loadView('pdf.single-invoice', $data) // Ganti menyesuaikan dengan nama template PDF yang digunakan
             ->setPaper('A4', 'portrait')
             ->setOptions([
                 'dpi' => 150,
@@ -49,35 +49,30 @@ class InvoicePrintService
     private function getCompanyInfo(): array
     {
         return [
-            'name' => 'CV. JITSUGEN ARTHA HARMONI',
-            'address' => 'Alamat CV. JITSUGEN ARTHA HARMONI', // Update sesuai alamat
-            'email' => 'jitsugen@gmail.com', // Update email
+            'name' => 'PT. Kinara Sadayatra Nusantara',
+            'address' => 'Jl. A. Wahab Syahranie Perum Pondok Alam Indah, Nomor 3D, Kel. Sempaja Barat, Kota Samarinda - Kalimantan Timur', // Update sesuai alamat
+            'email' => 'kisantra.official@gmail.com', // Update email
             'phone' => '0852-8888-2600',
             'logo_base64' => $this->getLogoBase64(),
             'signature_base64' => $this->getSignatureBase64(),
             'stamp_base64' => $this->getStampBase64(),
-            'bank_accounts' => [
+            'bank_accounts' => [ 
                 [
-                    'bank' => 'Mandiri',
-                    'account_number' => '1480025066799',
-                    'account_name' => 'CV. JITSUGEN ARTHA HARMONI'
-                ],
-                // [
-                //     'bank' => 'BNI',
-                //     'account_number' => '1911640858',
-                //     'account_name' => 'PT. JASA KONSULTAN BORNEO'
-                // ]
+                    'bank' => 'MANDIRI',
+                    'account_number' => '1480045452425',
+                    'account_name' => 'PT. Kinara Sadayatra Nusantara'
+                ]
             ],
             'signature' => [
-                'name' => 'Lutfiannur Fahrizal Arjun',
-                'position' => 'Direktur'
+                'name' => 'Mohammad Denny Jodysetiawan',
+                'position' => 'Manajer Keuangan'
             ]
         ];
     }
 
     private function getLogoBase64(): string
     {
-        $logoPath = public_path('images/jitsugen.png'); // Update path sesuai logo yang digunakan
+        $logoPath = public_path('images/logo-header.png'); // Update path sesuai logo yang digunakan
         if (file_exists($logoPath)) {
             return 'data:image/png;base64,' . base64_encode(file_get_contents($logoPath));
         }
@@ -86,7 +81,7 @@ class InvoicePrintService
 
     private function getSignatureBase64(): string
     {
-        $signaturePath = public_path('images/signature-jitsugen.png');
+        $signaturePath = public_path('images/pdf-signature.png');
         if (file_exists($signaturePath)) {
             return 'data:image/png;base64,' . base64_encode(file_get_contents($signaturePath));
         }
@@ -95,7 +90,7 @@ class InvoicePrintService
 
     private function getStampBase64(): string
     {
-        $stampPath = public_path('images/jitsugen-stamp.png');
+        $stampPath = public_path('images/icon.png');
         if (file_exists($stampPath)) {
             return 'data:image/png;base64,' . base64_encode(file_get_contents($stampPath));
         }

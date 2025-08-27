@@ -6,7 +6,9 @@ use App\Models\Invoice;
 use App\Models\Client;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Livewire\Attributes\Computed;
 use TallStackUi\Traits\Interactions;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class Index extends Component
 {
@@ -14,7 +16,7 @@ class Index extends Component
 
     protected $listeners = [
         'invoice-updated' => '$refresh',
-        'payment-created' => '$refresh',
+        'payment-created' => '$refresh', 
         'invoice-payment-updated' => '$refresh',
         'invoice-created' => '$refresh',
     ];
@@ -23,6 +25,16 @@ class Index extends Component
     public array $selected = [];
     public array $sort = ['column' => 'invoice_number', 'direction' => 'desc'];
     public ?int $quantity = 10;
+    
+    public array $headers = [
+        ['index' => 'invoice_number', 'label' => 'No. Invoice'],
+        ['index' => 'client_name', 'label' => 'Klien'],
+        ['index' => 'issue_date', 'label' => 'Tanggal'],
+        ['index' => 'due_date', 'label' => 'Jatuh Tempo'],
+        ['index' => 'total_amount', 'label' => 'Jumlah'],
+        ['index' => 'status', 'label' => 'Status'],
+        ['index' => 'actions', 'label' => 'Aksi', 'sortable' => false],
+    ];
 
     // Filters
     public ?string $search = null;
@@ -33,134 +45,18 @@ class Index extends Component
     // Modal properties
     public bool $showBulkDeleteModal = false;
 
+    public function mount()
+    {
+        $this->dateRange = [];
+    }
+
     public function createInvoice(): void
     {
         $this->dispatch('create-invoice');
     }
 
-    public function printInvoice(int $invoiceId)
-    {
-        $invoice = Invoice::find($invoiceId);
-
-        if (!$invoice) {
-            $this->toast()->error('Error', 'Invoice tidak ditemukan')->send();
-            return;
-        }
-
-        // Buka preview di tab baru dengan delay
-        $this->dispatch('open-preview-delayed', [
-            'url' => route('invoice.pdf.preview', $invoiceId),
-            'delay' => 500
-        ]);
-
-        $service = new \App\Services\InvoicePrintService();
-        $pdf = $service->generateSingleInvoicePdf($invoice);
-
-        $filename = 'Invoice-' . str_replace(['/', '\\', ':', '*', '?', '"', '<', '>', '|'], '-', $invoice->invoice_number) . '.pdf';
-
-        return response()->streamDownload(function () use ($pdf) {
-            echo $pdf->output();
-        }, $filename, [
-            'Content-Type' => 'application/pdf'
-        ]);
-    }
-
-    /**
-     * Bulk Print Invoices - Sequential Download
-     */
-    public function bulkPrintInvoices()
-    {
-        if (empty($this->selected)) {
-            $this->toast()->warning('Warning', 'Pilih minimal satu invoice untuk di-print')->send();
-            return;
-        }
-
-        try {
-            $invoices = Invoice::whereIn('id', $this->selected)->get();
-
-            if ($invoices->isEmpty()) {
-                $this->toast()->error('Error', 'Invoice yang dipilih tidak ditemukan')->send();
-                return;
-            }
-
-            // Generate URLs for each invoice
-            $downloadUrls = [];
-            foreach ($invoices as $invoice) {
-                $downloadUrls[] = [
-                    'invoice_number' => $invoice->invoice_number,
-                    'url' => route('invoice.pdf.download', $invoice->id)
-                ];
-            }
-
-            // Dispatch event to JavaScript for sequential downloads
-            $this->dispatch('start-bulk-download', [
-                'urls' => $downloadUrls,
-                'delay' => 1000 // 1 second delay between downloads
-            ]);
-
-            $this->toast()
-                ->success('Bulk Download Started', "Memulai download {$invoices->count()} invoice PDF")
-                ->send();
-
-            // Clear selection after successful bulk print
-            $this->selected = [];
-
-        } catch (\Exception $e) {
-            $this->toast()->error('Error', 'Gagal memulai bulk download: ' . $e->getMessage())->send();
-        }
-    }
-
-    public function exportExcel()
-    {
-        $service = new \App\Services\InvoiceExportService();
-
-        $filters = [
-            'search' => $this->search,
-            'statusFilter' => $this->statusFilter,
-            'clientFilter' => $this->clientFilter,
-            'dateRange' => $this->dateRange,
-        ];
-
-        return $service->exportExcel($filters);
-    }
-
-    public function exportPdf()
-    {
-        $service = new \App\Services\InvoiceExportService();
-
-        $filters = [
-            'search' => $this->search,
-            'statusFilter' => $this->statusFilter,
-            'clientFilter' => $this->clientFilter,
-            'dateRange' => $this->dateRange,
-        ];
-
-        return response()->streamDownload(function () use ($service, $filters) {
-            echo $service->exportPdf($filters)->output();
-        }, 'invoices-' . now()->format('Y-m-d') . '.pdf', [
-            'Content-Type' => 'application/pdf'
-        ]);
-    }
-
-    public function with(): array
-    {
-        return [
-            'headers' => [
-                ['index' => 'invoice_number', 'label' => 'No. Invoice'],
-                ['index' => 'client_name', 'label' => 'Klien'],
-                ['index' => 'issue_date', 'label' => 'Tanggal'],
-                ['index' => 'due_date', 'label' => 'Jatuh Tempo'],
-                ['index' => 'total_amount', 'label' => 'Jumlah'],
-                ['index' => 'status', 'label' => 'Status'],
-                ['index' => 'actions', 'label' => 'Aksi', 'sortable' => false],
-            ],
-            'rows' => $this->getInvoices(),
-            'clients' => Client::select('id', 'name')->orderBy('name')->get(),
-            'stats' => $this->calculateStats(),
-        ];
-    }
-
-    private function getInvoices()
+    #[Computed]
+    public function invoices(): LengthAwarePaginator
     {
         $query = Invoice::query()
             ->join('clients', 'invoices.billed_to_id', '=', 'clients.id')
@@ -172,22 +68,12 @@ class Index extends Component
                 \DB::raw('COALESCE(SUM(payments.amount), 0) as amount_paid')
             ])
             ->groupBy([
-                'invoices.id',
-                'invoices.invoice_number',
-                'invoices.billed_to_id',
-                'invoices.total_amount',
-                'invoices.issue_date',
-                'invoices.due_date',
-                'invoices.status',
-                'invoices.created_at',
-                'invoices.updated_at',
-                'invoices.subtotal',
-                'invoices.discount_amount',
-                'invoices.discount_type',
-                'invoices.discount_value',
-                'invoices.discount_reason',
-                'clients.name',
-                'clients.type'
+                'invoices.id', 'invoices.invoice_number', 'invoices.billed_to_id',
+                'invoices.total_amount', 'invoices.issue_date', 'invoices.due_date',
+                'invoices.status', 'invoices.created_at', 'invoices.updated_at',
+                'invoices.subtotal', 'invoices.discount_amount', 'invoices.discount_type',
+                'invoices.discount_value', 'invoices.discount_reason',
+                'clients.name', 'clients.type'
             ]);
 
         // Apply filters
@@ -206,7 +92,6 @@ class Index extends Component
             $query->where('invoices.billed_to_id', $this->clientFilter);
         }
 
-        // Date range filter with null check
         if (!empty($this->dateRange) && is_array($this->dateRange) && count($this->dateRange) >= 2 && $this->dateRange[0] && $this->dateRange[1]) {
             $query->whereDate('invoices.issue_date', '>=', $this->dateRange[0])
                 ->whereDate('invoices.issue_date', '<=', $this->dateRange[1]);
@@ -224,58 +109,43 @@ class Index extends Component
         return $query->paginate($this->quantity)->withQueryString();
     }
 
-    private function calculateStats(): array
-    {
-        $baseQuery = Invoice::query();
-
-        return [
-            'total_invoices' => $baseQuery->count(),
-            'outstanding_amount' => $baseQuery->whereIn('status', ['sent', 'overdue', 'partially_paid'])
-                ->sum('total_amount') -
-                \DB::table('payments')
-                    ->join('invoices', 'payments.invoice_id', '=', 'invoices.id')
-                    ->whereIn('invoices.status', ['sent', 'overdue', 'partially_paid'])
-                    ->sum('payments.amount'),
-            'paid_this_month' => \DB::table('payments')
-                ->whereMonth('payment_date', now()->month)
-                ->whereYear('payment_date', now()->year)
-                ->sum('amount'),
-            'overdue_count' => $baseQuery->where('status', 'overdue')->count(),
-        ];
-    }
-
-    public function clearFilters(): void
-    {
-        $this->search = null;
-        $this->statusFilter = null;
-        $this->clientFilter = null;
-        $this->dateRange = [];
-        $this->resetPage();
-    }
-
-    public function openBulkDeleteModal(): void
+    public function bulkPrintInvoices()
     {
         if (empty($this->selected)) {
-            $this->toast()->warning('Warning', 'Pilih minimal satu invoice untuk dihapus')->send();
+            $this->toast()->warning('Warning', 'Pilih minimal satu invoice untuk di-print')->send();
             return;
         }
 
-        $this->showBulkDeleteModal = true;
-    }
+        try {
+            $invoices = Invoice::whereIn('id', $this->selected)->get();
 
-    public function updatedStatusFilter(): void
-    {
-        $this->resetPage();
-    }
+            if ($invoices->isEmpty()) {
+                $this->toast()->error('Error', 'Invoice yang dipilih tidak ditemukan')->send();
+                return;
+            }
 
-    public function updatedClientFilter(): void
-    {
-        $this->resetPage();
-    }
+            $downloadUrls = [];
+            foreach ($invoices as $invoice) {
+                $downloadUrls[] = [
+                    'invoice_number' => $invoice->invoice_number,
+                    'url' => route('invoice.pdf.download', $invoice->id)
+                ];
+            }
 
-    public function updatedDateRange(): void
-    {
-        $this->resetPage();
+            $this->dispatch('start-bulk-download', [
+                'urls' => $downloadUrls,
+                'delay' => 1000
+            ]);
+
+            $this->toast()
+                ->success('Bulk Download Started', "Memulai download {$invoices->count()} invoice PDF")
+                ->send();
+
+            $this->selected = [];
+
+        } catch (\Exception $e) {
+            $this->toast()->error('Error', 'Gagal memulai bulk download: ' . $e->getMessage())->send();
+        }
     }
 
     public function sendInvoice(int $invoiceId): void
@@ -299,6 +169,25 @@ class Index extends Component
         } catch (\Exception $e) {
             $this->toast()->error('Error', 'Gagal mengirim invoice: ' . $e->getMessage())->send();
         }
+    }
+
+    public function clearFilters(): void
+    {
+        $this->search = null;
+        $this->statusFilter = null;
+        $this->clientFilter = null;
+        $this->dateRange = [];
+        $this->resetPage();
+    }
+
+    public function openBulkDeleteModal(): void
+    {
+        if (empty($this->selected)) {
+            $this->toast()->warning('Warning', 'Pilih minimal satu invoice untuk dihapus')->send();
+            return;
+        }
+
+        $this->showBulkDeleteModal = true;
     }
 
     public function bulkDelete(): void
@@ -342,8 +231,65 @@ class Index extends Component
         }
     }
 
+    public function exportExcel()
+    {
+        $service = new \App\Services\InvoiceExportService();
+
+        return $service->exportExcel([
+            'search' => $this->search,
+            'statusFilter' => $this->statusFilter,
+            'clientFilter' => $this->clientFilter,
+            'dateRange' => $this->dateRange,
+        ]);
+    }
+
+    public function exportPdf()
+    {
+        $service = new \App\Services\InvoiceExportService();
+
+        return response()->streamDownload(function () use ($service) {
+            echo $service->exportPdf([
+                'search' => $this->search,
+                'statusFilter' => $this->statusFilter,
+                'clientFilter' => $this->clientFilter,
+                'dateRange' => $this->dateRange,
+            ])->output();
+        }, 'invoices-' . now()->format('Y-m-d') . '.pdf', [
+            'Content-Type' => 'application/pdf'
+        ]);
+    }
+
+    // Filter update methods
+    public function updatedStatusFilter(): void { $this->resetPage(); }
+    public function updatedClientFilter(): void { $this->resetPage(); }
+    public function updatedDateRange(): void { $this->resetPage(); }
+    public function updatedSearch(): void { $this->resetPage(); }
+
+    private function getStats(): array
+    {
+        $baseQuery = Invoice::query();
+
+        return [
+            'total_invoices' => $baseQuery->count(),
+            'outstanding_amount' => $baseQuery->whereIn('status', ['sent', 'overdue', 'partially_paid'])
+                ->sum('total_amount') -
+                \DB::table('payments')
+                    ->join('invoices', 'payments.invoice_id', '=', 'invoices.id')
+                    ->whereIn('invoices.status', ['sent', 'overdue', 'partially_paid'])
+                    ->sum('payments.amount'),
+            'paid_this_month' => \DB::table('payments')
+                ->whereMonth('payment_date', now()->month)
+                ->whereYear('payment_date', now()->year)
+                ->sum('amount'),
+            'overdue_count' => $baseQuery->where('status', 'overdue')->count(),
+        ];
+    }
+
     public function render()
     {
-        return view('livewire.invoices.index', $this->with());
+        return view('livewire.invoices.index', [
+            'clients' => Client::select('id', 'name')->orderBy('name')->get(),
+            'stats' => $this->getStats(),
+        ]);
     }
 }

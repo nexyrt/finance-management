@@ -1,1 +1,1 @@
-<img src={{ asset('images/icon-jkb.png') }} alt="JKB">
+<img src={{ asset('images/icon.png') }} alt="KISANTRA">

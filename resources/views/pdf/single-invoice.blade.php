@@ -354,7 +354,7 @@
             position: absolute;
             left: 210px;
             top: -15px;
-            width: 80px;
+            width: 40px;
             height: auto;
         }
     </style>
