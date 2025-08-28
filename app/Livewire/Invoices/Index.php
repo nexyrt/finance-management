@@ -272,19 +272,24 @@ class Index extends Component
         // Calculate total revenue and COGS
         $totalRevenue = $baseQuery->sum('total_amount');
         $totalCogs = \DB::table('invoice_items')->sum('cogs_amount');
-        $grossProfit = $totalRevenue - $totalCogs;
+        $totalProfit = $totalRevenue - $totalCogs;
+
+        // Calculate outstanding vs paid profit
+        $totalPaidAmount = \DB::table('payments')->sum('amount');
+        $outstandingAmount = $totalRevenue - $totalPaidAmount;
+        
+        // Simple ratio calculation for outstanding profit
+        $profitRatio = $totalRevenue > 0 ? $totalProfit / $totalRevenue : 0;
+        $outstandingProfit = $outstandingAmount * $profitRatio;
+        $paidProfit = $totalPaidAmount * $profitRatio;
 
         return [
             'total_revenue' => $totalRevenue,
             'total_cogs' => $totalCogs,
-            'gross_profit' => $grossProfit,
-            'gross_profit_margin' => $totalRevenue > 0 ? ($grossProfit / $totalRevenue) * 100 : 0,
-            'outstanding_amount' => $baseQuery->whereIn('status', ['sent', 'overdue', 'partially_paid'])
-                ->sum('total_amount') -
-                \DB::table('payments')
-                    ->join('invoices', 'payments.invoice_id', '=', 'invoices.id')
-                    ->whereIn('invoices.status', ['sent', 'overdue', 'partially_paid'])
-                    ->sum('payments.amount'),
+            'total_profit' => $totalProfit,
+            'profit_margin' => $totalRevenue > 0 ? ($totalProfit / $totalRevenue) * 100 : 0,
+            'outstanding_profit' => $outstandingProfit,
+            'paid_profit' => $paidProfit,
             'paid_this_month' => \DB::table('payments')
                 ->whereMonth('payment_date', now()->month)
                 ->whereYear('payment_date', now()->year)

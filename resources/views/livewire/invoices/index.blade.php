@@ -53,12 +53,12 @@
                     <x-icon name="arrow-trending-up" class="w-6 h-6 text-green-600 dark:text-green-400" />
                 </div>
                 <div>
-                    <p class="text-sm text-dark-600 dark:text-dark-400">Gross Profit</p>
+                    <p class="text-sm text-dark-600 dark:text-dark-400">Total Profit</p>
                     <p class="text-xl font-bold text-green-600 dark:text-green-400">
-                        Rp {{ number_format($stats['gross_profit'], 0, ',', '.') }}
+                        Rp {{ number_format($stats['total_profit'], 0, ',', '.') }}
                     </p>
                     <p class="text-xs text-green-500 dark:text-green-400">
-                        {{ number_format($stats['gross_profit_margin'], 1) }}% margin
+                        {{ number_format($stats['profit_margin'], 1) }}% margin
                     </p>
                 </div>
             </div>
@@ -70,9 +70,12 @@
                     <x-icon name="exclamation-triangle" class="w-6 h-6 text-orange-600 dark:text-orange-400" />
                 </div>
                 <div>
-                    <p class="text-sm text-dark-600 dark:text-dark-400">Outstanding</p>
+                    <p class="text-sm text-dark-600 dark:text-dark-400">Outstanding Profit</p>
                     <p class="text-xl font-bold text-orange-600 dark:text-orange-400">
-                        Rp {{ number_format($stats['outstanding_amount'], 0, ',', '.') }}
+                        Rp {{ number_format($stats['outstanding_profit'], 0, ',', '.') }}
+                    </p>
+                    <p class="text-xs text-orange-500 dark:text-orange-400">
+                        From Rp {{ number_format($stats['paid_profit'], 0, ',', '.') }} revenue
                     </p>
                 </div>
             </div>
