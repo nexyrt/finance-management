@@ -39,7 +39,7 @@
                     <x-icon name="currency-dollar" class="w-6 h-6 text-red-600 dark:text-red-400" />
                 </div>
                 <div>
-                    <p class="text-sm text-dark-600 dark:text-dark-400">Total COGS</p>
+                    <p class="text-sm text-dark-600 dark:text-dark-400">Total COSS (Cost of Services Sales)</p>
                     <p class="text-xl font-bold text-red-600 dark:text-red-400">
                         Rp {{ number_format($stats['total_cogs'], 0, ',', '.') }}
                     </p>
