@@ -25,7 +25,7 @@ class InvoicePrintService
             'terbilang' => $this->numberToWords($invoice->total_amount),
         ];
 
-        $pdf = Pdf::loadView('pdf.single-invoice', $data) // Ganti menyesuaikan dengan nama template PDF yang digunakan
+        $pdf = Pdf::loadView('pdf.jitsugen-invoice', $data) // Ganti menyesuaikan dengan nama template PDF yang digunakan
             ->setPaper('A4', 'portrait')
             ->setOptions([
                 'dpi' => 150,
@@ -49,9 +49,9 @@ class InvoicePrintService
     private function getCompanyInfo(): array
     {
         return [
-            'name' => 'PT. Kinara Sadayatra Nusantara',
+            'name' => 'CV. JITSUGEN ARTHA HARMONI',
             'address' => 'Jl. A. Wahab Syahranie Perum Pondok Alam Indah, Nomor 3D, Kel. Sempaja Barat, Kota Samarinda - Kalimantan Timur', // Update sesuai alamat
-            'email' => 'kisantra.official@gmail.com', // Update email
+            'email' => 'jitsugen@gmail.com', // Update email
             'phone' => '0852-8888-2600',
             'logo_base64' => $this->getLogoBase64(),
             'signature_base64' => $this->getSignatureBase64(),
@@ -59,8 +59,8 @@ class InvoicePrintService
             'bank_accounts' => [ 
                 [
                     'bank' => 'MANDIRI',
-                    'account_number' => '1480045452425',
-                    'account_name' => 'PT. Kinara Sadayatra Nusantara'
+                    'account_number' => '1480025066799',
+                    'account_name' => 'CV. JITSUGEN ARTHA HARMONI'
                 ]
             ],
             'signature' => [
@@ -72,7 +72,7 @@ class InvoicePrintService
 
     private function getLogoBase64(): string
     {
-        $logoPath = public_path('images/logo-header.png'); // Update path sesuai logo yang digunakan
+        $logoPath = public_path('images/jitsugen-logo.jpeg'); // Update path sesuai logo yang digunakan
         if (file_exists($logoPath)) {
             return 'data:image/png;base64,' . base64_encode(file_get_contents($logoPath));
         }
@@ -90,7 +90,7 @@ class InvoicePrintService
 
     private function getStampBase64(): string
     {
-        $stampPath = public_path('images/icon.png');
+        $stampPath = public_path('images/jitsugen-stamp.png');
         if (file_exists($stampPath)) {
             return 'data:image/png;base64,' . base64_encode(file_get_contents($stampPath));
         }

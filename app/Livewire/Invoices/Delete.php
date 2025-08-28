@@ -14,25 +14,35 @@ class Delete extends Component
 
     public ?Invoice $invoice = null;
 
-    #[On('delete-invoice')]
-    public function showDeleteDialog(int $invoiceId): void
+    public function render(): string
     {
-        $this->invoice = Invoice::with(['client', 'items', 'payments.bankAccount'])->find($invoiceId);
+        return <<<'HTML'
+        <div></div>
+        HTML;
+    }
+
+    #[On('delete-invoice')]
+    public function confirm(int $invoiceId): void
+    {
+        $this->invoice = Invoice::with(['client', 'items', 'payments'])->find($invoiceId);
 
         if (!$this->invoice) {
             $this->toast()->error('Error', 'Invoice tidak ditemukan')->send();
             return;
         }
 
-        // Show confirmation dialog
+        // Build confirmation message
+        $title = "Hapus Invoice {$this->invoice->invoice_number}?";
+        $description = $this->buildConfirmationMessage();
+
         $this->dialog()
-            ->question('Konfirmasi Hapus Invoice', $this->getConfirmationMessage())
-            ->confirm('Ya, Hapus Invoice', 'confirmDelete', 'Invoice berhasil dihapus')
+            ->question($title, $description)
+            ->confirm('Ya, Hapus Invoice', 'delete', 'Invoice berhasil dihapus')
             ->cancel('Batal')
             ->send();
     }
 
-    public function confirmDelete(): void
+    public function delete(): void
     {
         if (!$this->invoice) {
             $this->toast()->error('Error', 'Invoice tidak ditemukan')->send();
@@ -41,7 +51,7 @@ class Delete extends Component
 
         try {
             DB::transaction(function () {
-                // Delete related payments first
+                // Delete payments first
                 if ($this->invoice->payments->count() > 0) {
                     $this->invoice->payments()->delete();
                 }
@@ -53,52 +63,41 @@ class Delete extends Component
                 $this->invoice->delete();
             });
 
-            // Success feedback
-            $this->toast()->success('Berhasil', 'Invoice berhasil dihapus')->persistent()->send();
+            // Success notification
+            $this->toast()
+                ->success('Berhasil', 'Invoice berhasil dihapus')
+                ->send();
 
-            // Dispatch events to refresh other components
-            $this->dispatch('invoice-deleted');
+            // Dispatch refresh events
             $this->dispatch('invoice-updated');
+            $this->dispatch('invoice-deleted');
 
         } catch (\Exception $e) {
-            $this->toast()->error('Error', 'Gagal menghapus invoice: ' . $e->getMessage())->send();
+            $this->toast()
+                ->error('Error', 'Gagal menghapus invoice: ' . $e->getMessage())
+                ->send();
         }
 
-        // Reset data
-        $this->reset(['invoice']);
+        // Reset
+        $this->invoice = null;
     }
 
-    private function getConfirmationMessage(): string
+    private function buildConfirmationMessage(): string
     {
-        if (!$this->invoice) {
-            return 'Apakah Anda yakin ingin menghapus invoice ini?';
-        }
-
-        $invoiceNumber = $this->invoice->invoice_number;
         $clientName = $this->invoice->client->name;
         $totalAmount = number_format($this->invoice->total_amount, 0, ',', '.');
         $itemsCount = $this->invoice->items->count();
         $paymentsCount = $this->invoice->payments->count();
-        $totalPaid = $this->invoice->amount_paid;
-
-        $message = "Anda akan menghapus invoice {$invoiceNumber} untuk {$clientName}.\n\n";
-        $message .= "Detail yang akan dihapus:\n";
-        $message .= "• Total invoice: Rp {$totalAmount}\n";
-        $message .= "• {$itemsCount} item invoice\n";
+        
+        $message = "Invoice untuk {$clientName} senilai Rp {$totalAmount} dengan {$itemsCount} item";
         
         if ($paymentsCount > 0) {
-            $paidAmount = number_format($totalPaid, 0, ',', '.');
-            $message .= "• {$paymentsCount} pembayaran (Rp {$paidAmount})\n\n";
-            $message .= "⚠️ PERHATIAN: Semua pembayaran terkait juga akan dihapus!";
-        } else {
-            $message .= "• Belum ada pembayaran";
+            $totalPaid = number_format($this->invoice->amount_paid, 0, ',', '.');
+            $message .= " dan {$paymentsCount} pembayaran (Rp {$totalPaid})";
         }
-
+        
+        $message .= " akan dihapus permanen.";
+        
         return $message;
-    }
-
-    public function render()
-    {
-        return view('livewire.invoices.delete');
     }
 }

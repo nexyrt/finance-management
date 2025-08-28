@@ -71,7 +71,7 @@
         </div>
     </div>
 
-    {{-- Compact Filters Row --}}
+    {{-- Filters Row --}}
     <div class="flex flex-col lg:flex-row gap-4 items-start lg:items-end">
         <div class="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-3 gap-4 flex-1">
             <div>
@@ -120,7 +120,7 @@
     </div>
 
     {{-- Invoice Table --}}
-    <x-table :$headers :$sort :rows="$this->invoices" selectable wire:model="selected" paginate filter loading>>>>>
+    <x-table :$headers :$sort :rows="$this->invoices" selectable wire:model="selected" paginate filter loading>
 
         {{-- Invoice Number Column --}}
         @interact('column_invoice_number', $row)
@@ -247,7 +247,7 @@
                     wire:click="$dispatch('show-invoice', { invoiceId: {{ $row->id }} })" title="Lihat Detail" />
 
                 <x-button.circle icon="pencil" color="green" size="sm" href="{{ route('invoices.edit', $row->id) }}"
-                    title="Edit" wire:navigate/>
+                    title="Edit" />
 
                 @if ($row->status === 'draft')
                     <x-button.circle icon="paper-airplane" color="cyan" size="sm"
@@ -264,7 +264,7 @@
                     onclick="printInvoice({{ $row->id }})" title="Print" />
 
                 <x-button.circle icon="trash" color="red" size="sm"
-                    wire:click="$dispatch('delete-invoice', { invoiceId: {{ $row->id }} })" title="Hapus" />
+                    wire:click="$dispatch('delete-invoice', { invoiceId: {{ $row->id }} })" />
             </div>
         @endinteract
 
@@ -357,7 +357,6 @@
     <livewire:payments.edit />
 </div>
 
-{{-- JavaScript for bulk download --}}
 <script>
     // Print function with preview + auto download
     function printInvoice(invoiceId) {

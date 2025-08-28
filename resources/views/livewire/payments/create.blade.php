@@ -136,32 +136,7 @@
         {{-- Footer Actions --}}
         <x-slot:footer>
             <div class="flex items-center justify-between w-full">
-                {{-- Quick Actions --}}
-                @if($invoice && $invoice->amount_remaining > 0)
-                    <div class="flex items-center gap-2">
-                        <x-button 
-                            wire:click="$set('amount', {{ $invoice->amount_remaining }})"
-                            color="secondary" 
-                            size="sm" 
-                            outline
-                        >
-                            Bayar Lunas
-                        </x-button>
-                        
-                        @if($invoice->amount_remaining >= 1000000)
-                            <x-button 
-                                wire:click="$set('amount', {{ $invoice->amount_remaining / 2 }})"
-                                color="secondary" 
-                                size="sm" 
-                                outline
-                            >
-                                50%
-                            </x-button>
-                        @endif
-                    </div>
-                @else
-                    <div></div>
-                @endif
+                <div></div>
 
                 {{-- Main Actions --}}
                 <div class="flex items-center gap-3">
