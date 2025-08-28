@@ -3,9 +3,14 @@
 <div class="space-y-6">
     {{-- Header --}}
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-            <h1 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Manajemen Invoice</h1>
-            <p class="text-gray-600 dark:text-gray-400 text-sm">Kelola invoice, pembayaran, dan buat invoice baru</p>
+        <div class="space-y-1">
+            <h1
+                class="text-4xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-indigo-800 dark:from-white dark:via-blue-200 dark:to-indigo-200 bg-clip-text text-transparent">
+                Manajemen Klien
+            </h1>
+            <p class="text-gray-600 dark:text-zinc-400 text-lg">
+                Kelola klien Anda dan lacak hubungan bisnis mereka
+            </p>
         </div>
         <x-button wire:click="createInvoice" loading="createInvoice" color="primary" icon="plus">
             Buat Invoice Baru
@@ -246,7 +251,7 @@
                 <x-button.circle icon="eye" color="blue" size="sm"
                     wire:click="$dispatch('show-invoice', { invoiceId: {{ $row->id }} })" title="Lihat Detail" />
 
-                <x-button.circle icon="pencil" color="green" size="sm" href="{{ route('invoices.edit', $row->id) }}"
+                <x-button.circle icon="pencil" color="green" size="sm" href="{{ route('invoices.edit', $row->id) }}" wire:navigate
                     title="Edit" />
 
                 @if ($row->status === 'draft')
