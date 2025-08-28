@@ -21,13 +21,13 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6">
         <div class="bg-white dark:bg-dark-800 border border-zinc-200 dark:border-dark-600 rounded-xl p-6">
             <div class="flex items-center gap-4">
-                <div class="h-12 w-12 bg-zinc-100 dark:bg-zinc-900/30 rounded-xl flex items-center justify-center">
-                    <x-icon name="document-text" class="w-6 h-6 text-zinc-600 dark:text-zinc-400" />
+                <div class="h-12 w-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
+                    <x-icon name="chart-bar" class="w-6 h-6 text-blue-600 dark:text-blue-400" />
                 </div>
                 <div>
-                    <p class="text-sm text-dark-600 dark:text-dark-400">Total Invoice</p>
-                    <p class="text-2xl font-bold text-dark-900 dark:text-dark-50">
-                        {{ number_format($stats['total_invoices']) }}
+                    <p class="text-sm text-dark-600 dark:text-dark-400">Total Revenue</p>
+                    <p class="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                        Rp {{ number_format($stats['total_revenue'], 0, ',', '.') }}
                     </p>
                 </div>
             </div>
@@ -36,12 +36,12 @@
         <div class="bg-white dark:bg-dark-800 border border-zinc-200 dark:border-dark-600 rounded-xl p-6">
             <div class="flex items-center gap-4">
                 <div class="h-12 w-12 bg-red-100 dark:bg-red-900/30 rounded-xl flex items-center justify-center">
-                    <x-icon name="exclamation-triangle" class="w-6 h-6 text-red-600 dark:text-red-400" />
+                    <x-icon name="currency-dollar" class="w-6 h-6 text-red-600 dark:text-red-400" />
                 </div>
                 <div>
-                    <p class="text-sm text-dark-600 dark:text-dark-400">Outstanding</p>
+                    <p class="text-sm text-dark-600 dark:text-dark-400">Total COGS</p>
                     <p class="text-xl font-bold text-red-600 dark:text-red-400">
-                        Rp {{ number_format($stats['outstanding_amount'], 0, ',', '.') }}
+                        Rp {{ number_format($stats['total_cogs'], 0, ',', '.') }}
                     </p>
                 </div>
             </div>
@@ -50,12 +50,15 @@
         <div class="bg-white dark:bg-dark-800 border border-zinc-200 dark:border-dark-600 rounded-xl p-6">
             <div class="flex items-center gap-4">
                 <div class="h-12 w-12 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center">
-                    <x-icon name="check-circle" class="w-6 h-6 text-green-600 dark:text-green-400" />
+                    <x-icon name="arrow-trending-up" class="w-6 h-6 text-green-600 dark:text-green-400" />
                 </div>
                 <div>
-                    <p class="text-sm text-dark-600 dark:text-dark-400">Paid This Month</p>
+                    <p class="text-sm text-dark-600 dark:text-dark-400">Gross Profit</p>
                     <p class="text-xl font-bold text-green-600 dark:text-green-400">
-                        Rp {{ number_format($stats['paid_this_month'], 0, ',', '.') }}
+                        Rp {{ number_format($stats['gross_profit'], 0, ',', '.') }}
+                    </p>
+                    <p class="text-xs text-green-500 dark:text-green-400">
+                        {{ number_format($stats['gross_profit_margin'], 1) }}% margin
                     </p>
                 </div>
             </div>
@@ -64,12 +67,12 @@
         <div class="bg-white dark:bg-dark-800 border border-zinc-200 dark:border-dark-600 rounded-xl p-6">
             <div class="flex items-center gap-4">
                 <div class="h-12 w-12 bg-orange-100 dark:bg-orange-900/30 rounded-xl flex items-center justify-center">
-                    <x-icon name="clock" class="w-6 h-6 text-orange-600 dark:text-orange-400" />
+                    <x-icon name="exclamation-triangle" class="w-6 h-6 text-orange-600 dark:text-orange-400" />
                 </div>
                 <div>
-                    <p class="text-sm text-dark-600 dark:text-dark-400">Overdue</p>
-                    <p class="text-2xl font-bold text-orange-600 dark:text-orange-400">
-                        {{ $stats['overdue_count'] }}
+                    <p class="text-sm text-dark-600 dark:text-dark-400">Outstanding</p>
+                    <p class="text-xl font-bold text-orange-600 dark:text-orange-400">
+                        Rp {{ number_format($stats['outstanding_amount'], 0, ',', '.') }}
                     </p>
                 </div>
             </div>
@@ -251,8 +254,8 @@
                 <x-button.circle icon="eye" color="blue" size="sm"
                     wire:click="$dispatch('show-invoice', { invoiceId: {{ $row->id }} })" title="Lihat Detail" />
 
-                <x-button.circle icon="pencil" color="green" size="sm" href="{{ route('invoices.edit', $row->id) }}" wire:navigate
-                    title="Edit" />
+                <x-button.circle icon="pencil" color="green" size="sm" href="{{ route('invoices.edit', $row->id) }}"
+                    wire:navigate title="Edit" />
 
                 @if ($row->status === 'draft')
                     <x-button.circle icon="paper-airplane" color="cyan" size="sm"

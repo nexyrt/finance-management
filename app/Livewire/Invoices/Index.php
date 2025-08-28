@@ -268,9 +268,17 @@ class Index extends Component
     private function getStats(): array
     {
         $baseQuery = Invoice::query();
+        
+        // Calculate total revenue and COGS
+        $totalRevenue = $baseQuery->sum('total_amount');
+        $totalCogs = \DB::table('invoice_items')->sum('cogs_amount');
+        $grossProfit = $totalRevenue - $totalCogs;
 
         return [
-            'total_invoices' => $baseQuery->count(),
+            'total_revenue' => $totalRevenue,
+            'total_cogs' => $totalCogs,
+            'gross_profit' => $grossProfit,
+            'gross_profit_margin' => $totalRevenue > 0 ? ($grossProfit / $totalRevenue) * 100 : 0,
             'outstanding_amount' => $baseQuery->whereIn('status', ['sent', 'overdue', 'partially_paid'])
                 ->sum('total_amount') -
                 \DB::table('payments')
@@ -281,7 +289,6 @@ class Index extends Component
                 ->whereMonth('payment_date', now()->month)
                 ->whereYear('payment_date', now()->year)
                 ->sum('amount'),
-            'overdue_count' => $baseQuery->where('status', 'overdue')->count(),
         ];
     }
 

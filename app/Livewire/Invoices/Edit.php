@@ -44,7 +44,6 @@ class Edit extends Component
         }
         $this->loadOptions();
         
-        // Add initial item if no items loaded
         if (empty($this->items)) {
             $this->addItem();
         }
@@ -66,7 +65,6 @@ class Edit extends Component
         $this->due_date = $this->invoice->due_date->format('Y-m-d');
         $this->status = $this->invoice->status;
         
-        // Load discount data
         $this->discount_type = $this->invoice->discount_type;
         $this->discount_value = $this->invoice->discount_value;
         $this->discount_reason = $this->invoice->discount_reason ?? '';
@@ -79,6 +77,7 @@ class Edit extends Component
                     'service_name' => $item->service_name,
                     'quantity' => $item->quantity,
                     'price' => $item->unit_price,
+                    'cogs_amount' => $item->cogs_amount ?? 0,
                     'total' => $item->amount
                 ];
             })->toArray();
@@ -113,6 +112,7 @@ class Edit extends Component
             'service_name' => '',
             'quantity' => 1,
             'price' => 0,
+            'cogs_amount' => 0,
             'total' => 0
         ];
     }
@@ -138,11 +138,6 @@ class Edit extends Component
             if ($parts[2] === 'service_id') {
                 $this->setServiceDetails($index);
             }
-        }
-        
-        // Recalculate discount when discount fields change
-        if (in_array($propertyName, ['discount_type', 'discount_value'])) {
-            // Auto-update will trigger getGrandTotalProperty recalculation
         }
     }
 
@@ -171,13 +166,16 @@ class Edit extends Component
         return collect($this->items)->sum('total');
     }
 
+    public function getTotalCogsProperty()
+    {
+        return collect($this->items)->sum('cogs_amount');
+    }
+
     public function getDiscountAmountProperty()
     {
         if ($this->discount_type === 'percentage') {
-            // discount_value stored as percentage * 100 (e.g., 1500 = 15%)
             return (int) (($this->subtotal * $this->discount_value) / 10000);
         } else {
-            // Fixed amount discount
             return (int) $this->discount_value;
         }
     }
@@ -185,6 +183,17 @@ class Edit extends Component
     public function getGrandTotalProperty()
     {
         return max(0, $this->subtotal - $this->discountAmount);
+    }
+
+    public function getGrossProfitProperty()
+    {
+        return $this->grandTotal - $this->totalCogs;
+    }
+
+    public function getGrossProfitMarginProperty()
+    {
+        if ($this->grandTotal == 0) return 0;
+        return ($this->grossProfit / $this->grandTotal) * 100;
     }
 
     public function save()
@@ -198,6 +207,7 @@ class Edit extends Component
             'items.*.service_name' => 'required|string',
             'items.*.quantity' => 'required|integer|min:1',
             'items.*.price' => 'required|integer|min:0',
+            'items.*.cogs_amount' => 'integer|min:0',
         ]);
 
         try {
@@ -250,7 +260,8 @@ class Edit extends Component
                 'service_name' => $item['service_name'],
                 'quantity' => $item['quantity'],
                 'unit_price' => $item['price'],
-                'amount' => $item['total']
+                'amount' => $item['total'],
+                'cogs_amount' => $item['cogs_amount'] ?? 0,
             ]);
         }
     }
@@ -286,7 +297,6 @@ class Edit extends Component
     {
         if (!$this->invoice || !$this->invoiceId) return 'draft';
         
-        // Get fresh payments data
         $invoice = Invoice::find($this->invoiceId);
         if (!$invoice) return 'draft';
         
@@ -294,7 +304,6 @@ class Edit extends Component
         $newTotalAmount = $this->grandTotal;
         $newDueDate = \Carbon\Carbon::parse($this->due_date);
 
-        // Apply same logic as evaluateStatus but with new values
         if ($totalPaid >= $newTotalAmount && $totalPaid > 0) {
             return 'paid';
         }
@@ -305,27 +314,6 @@ class Edit extends Component
 
         if ($totalPaid == 0) {
             return $newDueDate->isPast() ? 'overdue' : 'sent';
-        }
-
-        return 'draft';
-    }
-
-    public function evaluateStatusForInvoice($invoice)
-    {
-        $totalPaid = $invoice->payments()->sum('amount');
-        $totalAmount = $invoice->total_amount;
-        $dueDate = \Carbon\Carbon::parse($invoice->due_date);
-
-        if ($totalPaid >= $totalAmount && $totalPaid > 0) {
-            return 'paid';
-        }
-
-        if ($totalPaid > 0 && $totalPaid < $totalAmount) {
-            return 'partially_paid';
-        }
-
-        if ($totalPaid == 0) {
-            return $dueDate->isPast() ? 'overdue' : 'sent';
         }
 
         return 'draft';

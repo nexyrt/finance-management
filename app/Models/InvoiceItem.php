@@ -16,13 +16,15 @@ class InvoiceItem extends Model
         'service_name',
         'quantity',
         'unit_price',
-        'amount'
+        'amount',
+        'cogs_amount'
     ];
 
     protected $casts = [
         'quantity' => 'integer',
         'unit_price' => 'integer',
         'amount' => 'integer',
+        'cogs_amount' => 'integer',
     ];
 
     public function invoice(): BelongsTo
@@ -44,6 +46,27 @@ class InvoiceItem extends Model
     public function getFormattedAmountAttribute(): string
     {
         return 'Rp ' . number_format($this->amount, 0, ',', '.');
+    }
+
+    public function getFormattedCogsAmountAttribute(): string
+    {
+        return 'Rp ' . number_format($this->cogs_amount, 0, ',', '.');
+    }
+
+    public function getProfitAmountAttribute(): int
+    {
+        return $this->amount - $this->cogs_amount;
+    }
+
+    public function getFormattedProfitAmountAttribute(): string
+    {
+        return 'Rp ' . number_format($this->profit_amount, 0, ',', '.');
+    }
+
+    public function getProfitMarginAttribute(): float
+    {
+        if ($this->amount == 0) return 0;
+        return ($this->profit_amount / $this->amount) * 100;
     }
 
     // Convert rupiah string to integer (remove formatting)

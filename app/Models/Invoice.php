@@ -49,6 +49,7 @@ class Invoice extends Model
         return $this->hasMany(Payment::class);
     }
 
+    // Payment attributes
     public function getAmountPaidAttribute()
     {
         return $this->payments()->sum('amount');
@@ -57,6 +58,39 @@ class Invoice extends Model
     public function getAmountRemainingAttribute()
     {
         return $this->total_amount - $this->amount_paid;
+    }
+
+    // Financial attributes for profit tracking
+    public function getTotalCogsAttribute(): int
+    {
+        return $this->items()->sum('cogs_amount');
+    }
+
+    public function getGrossProfitAttribute(): int
+    {
+        return $this->total_amount - $this->total_cogs;
+    }
+
+    public function getGrossProfitMarginAttribute(): float
+    {
+        if ($this->total_amount == 0) return 0;
+        return ($this->gross_profit / $this->total_amount) * 100;
+    }
+
+    // Formatted attributes for display
+    public function getFormattedTotalCogsAttribute(): string
+    {
+        return 'Rp ' . number_format($this->total_cogs, 0, ',', '.');
+    }
+
+    public function getFormattedGrossProfitAttribute(): string
+    {
+        return 'Rp ' . number_format($this->gross_profit, 0, ',', '.');
+    }
+
+    public function getFormattedTotalAmountAttribute(): string
+    {
+        return 'Rp ' . number_format($this->total_amount, 0, ',', '.');
     }
 
     // Convert rupiah string to integer (remove formatting)
