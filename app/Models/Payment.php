@@ -33,16 +33,4 @@ class Payment extends Model
     {
         return $this->belongsTo(BankAccount::class);
     }
-
-    // Format currency for display
-    public function getFormattedAmountAttribute(): string
-    {
-        return 'Rp ' . number_format($this->amount, 0, ',', '.');
-    }
-
-    // Convert rupiah string to integer (remove formatting)
-    public static function parseAmount(string $amount): int
-    {
-        return (int) preg_replace('/[^0-9]/', '', $amount);
-    }
 }

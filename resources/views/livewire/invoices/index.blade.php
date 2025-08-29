@@ -12,9 +12,7 @@
                 Kelola dan lacak semua invoice Anda di sini.
             </p>
         </div>
-        <x-button wire:click="createInvoice" loading="createInvoice" color="primary" icon="plus">
-            Buat Invoice Baru
-        </x-button>
+        <livewire:invoices.create @invoice-created="$refresh" />
     </div>
 
     {{-- Stats Cards --}}
@@ -362,7 +360,6 @@
 
     {{-- Livewire Components --}}
     <livewire:invoices.show />
-    <livewire:invoices.create />
     <livewire:invoices.delete />
     <livewire:payments.create />
     <livewire:payments.edit />

@@ -49,18 +49,18 @@ class Invoice extends Model
         return $this->hasMany(Payment::class);
     }
 
-    // Payment attributes
-    public function getAmountPaidAttribute()
+    // Essential payment tracking
+    public function getAmountPaidAttribute(): int
     {
         return $this->payments()->sum('amount');
     }
 
-    public function getAmountRemainingAttribute()
+    public function getAmountRemainingAttribute(): int
     {
         return $this->total_amount - $this->amount_paid;
     }
 
-    // Financial attributes for profit tracking
+    // Essential profit tracking
     public function getTotalCogsAttribute(): int
     {
         return $this->items()->sum('cogs_amount');
@@ -71,32 +71,25 @@ class Invoice extends Model
         return $this->total_amount - $this->total_cogs;
     }
 
-    public function getGrossProfitMarginAttribute(): float
+    // Corrected outstanding profit calculation
+    public function getOutstandingProfitAttribute(): int
     {
-        if ($this->total_amount == 0) return 0;
-        return ($this->gross_profit / $this->total_amount) * 100;
+        $totalPaid = $this->amount_paid;
+        $totalCogs = $this->total_cogs;
+
+        // If payment hasn't covered COGS yet, no profit realized
+        if ($totalPaid <= $totalCogs) {
+            return $this->gross_profit; // All profit still outstanding
+        }
+
+        // Payment exceeded COGS, some profit realized
+        $realizedProfit = $totalPaid - $totalCogs;
+        return $this->gross_profit - $realizedProfit;
     }
 
-    // Formatted attributes for display
-    public function getFormattedTotalCogsAttribute(): string
+    public function getPaidProfitAttribute(): int
     {
-        return 'Rp ' . number_format($this->total_cogs, 0, ',', '.');
-    }
-
-    public function getFormattedGrossProfitAttribute(): string
-    {
-        return 'Rp ' . number_format($this->gross_profit, 0, ',', '.');
-    }
-
-    public function getFormattedTotalAmountAttribute(): string
-    {
-        return 'Rp ' . number_format($this->total_amount, 0, ',', '.');
-    }
-
-    // Convert rupiah string to integer (remove formatting)
-    public static function parseAmount(string $amount): int
-    {
-        return (int) preg_replace('/[^0-9]/', '', $amount);
+        return $this->gross_profit - $this->outstanding_profit;
     }
 
     // Calculate discount amount and total amount

@@ -16,7 +16,7 @@ class Index extends Component
 
     protected $listeners = [
         'invoice-updated' => '$refresh',
-        'payment-created' => '$refresh', 
+        'payment-created' => '$refresh',
         'invoice-payment-updated' => '$refresh',
         'invoice-created' => '$refresh',
     ];
@@ -25,7 +25,7 @@ class Index extends Component
     public array $selected = [];
     public array $sort = ['column' => 'invoice_number', 'direction' => 'desc'];
     public ?int $quantity = 10;
-    
+
     public array $headers = [
         ['index' => 'invoice_number', 'label' => 'No. Invoice'],
         ['index' => 'client_name', 'label' => 'Klien'],
@@ -50,11 +50,6 @@ class Index extends Component
         $this->dateRange = [];
     }
 
-    public function createInvoice(): void
-    {
-        $this->dispatch('create-invoice');
-    }
-
     #[Computed]
     public function invoices(): LengthAwarePaginator
     {
@@ -68,12 +63,22 @@ class Index extends Component
                 \DB::raw('COALESCE(SUM(payments.amount), 0) as amount_paid')
             ])
             ->groupBy([
-                'invoices.id', 'invoices.invoice_number', 'invoices.billed_to_id',
-                'invoices.total_amount', 'invoices.issue_date', 'invoices.due_date',
-                'invoices.status', 'invoices.created_at', 'invoices.updated_at',
-                'invoices.subtotal', 'invoices.discount_amount', 'invoices.discount_type',
-                'invoices.discount_value', 'invoices.discount_reason',
-                'clients.name', 'clients.type'
+                'invoices.id',
+                'invoices.invoice_number',
+                'invoices.billed_to_id',
+                'invoices.total_amount',
+                'invoices.issue_date',
+                'invoices.due_date',
+                'invoices.status',
+                'invoices.created_at',
+                'invoices.updated_at',
+                'invoices.subtotal',
+                'invoices.discount_amount',
+                'invoices.discount_type',
+                'invoices.discount_value',
+                'invoices.discount_reason',
+                'clients.name',
+                'clients.type'
             ]);
 
         // Apply filters
@@ -260,29 +265,53 @@ class Index extends Component
     }
 
     // Filter update methods
-    public function updatedStatusFilter(): void { $this->resetPage(); }
-    public function updatedClientFilter(): void { $this->resetPage(); }
-    public function updatedDateRange(): void { $this->resetPage(); }
-    public function updatedSearch(): void { $this->resetPage(); }
+    public function updatedStatusFilter(): void
+    {
+        $this->resetPage();
+    }
+    public function updatedClientFilter(): void
+    {
+        $this->resetPage();
+    }
+    public function updatedDateRange(): void
+    {
+        $this->resetPage();
+    }
+    public function updatedSearch(): void
+    {
+        $this->resetPage();
+    }
 
     private function getStats(): array
     {
         $baseQuery = Invoice::query();
-        
+
         // Calculate total revenue and COGS
         $totalRevenue = $baseQuery->sum('total_amount');
         $totalCogs = \DB::table('invoice_items')->sum('cogs_amount');
         $totalProfit = $totalRevenue - $totalCogs;
 
-        // Calculate outstanding vs paid profit
-        $totalPaidAmount = \DB::table('payments')->sum('amount');
-        // Outstanding amount = total invoice (total_amount) - total paid invoice (amount) - total COGS
-        $outstandingAmount = ($totalRevenue - $totalPaidAmount) - $totalCogs;
-        
-        // Simple ratio calculation for outstanding profit
-        $profitRatio = $totalRevenue > 0 ? $totalProfit / $totalRevenue : 0;
-        $outstandingProfit = $outstandingAmount;
-        $paidProfit = $totalPaidAmount * $profitRatio;
+        // Get all invoices with their payments and COGS
+        $invoices = Invoice::with('payments', 'items')->get();
+
+        $outstandingProfit = 0;
+        $paidProfit = 0;
+
+        foreach ($invoices as $invoice) {
+            $totalPaid = $invoice->amount_paid;
+            $invoiceCogs = $invoice->total_cogs;
+            $invoiceProfit = $invoice->gross_profit;
+
+            // If payment hasn't covered COGS yet, no profit realized
+            if ($totalPaid <= $invoiceCogs) {
+                $outstandingProfit += $invoiceProfit;
+            } else {
+                // Payment exceeded COGS, some profit realized
+                $realizedProfit = min($totalPaid - $invoiceCogs, $invoiceProfit);
+                $paidProfit += $realizedProfit;
+                $outstandingProfit += ($invoiceProfit - $realizedProfit);
+            }
+        }
 
         return [
             'total_revenue' => $totalRevenue,

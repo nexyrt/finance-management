@@ -1,13 +1,18 @@
 <div>
-    <x-modal wire="showModal" size="7xl" center persistent>
+    <!-- Trigger Button -->
+    <x-button wire:click="$toggle('modal')" icon="plus" color="primary">
+        Buat Invoice Baru
+    </x-button>
+
+    <!-- Modal -->
+    <x-modal wire size="7xl" center persistent>
         <x-slot:title>
             Create New Invoice
         </x-slot:title>
 
         <div class="space-y-6">
             {{-- Invoice Details --}}
-            <div
-                class="bg-white dark:bg-dark-800 border border-secondary-200 dark:border-dark-600 rounded-lg p-4 sm:p-6">
+            <div class="bg-white dark:bg-dark-800 border border-secondary-200 dark:border-dark-600 rounded-lg p-4 sm:p-6">
                 <h3 class="text-lg font-semibold text-secondary-900 dark:text-dark-50 mb-4">Invoice Information</h3>
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <x-input wire:model="invoice_number" label="Invoice Number" />
@@ -31,8 +36,7 @@
                 <div class="hidden xl:block">
                     <!-- Table Header -->
                     <div class="bg-secondary-50 dark:bg-dark-900 border-b border-secondary-200 dark:border-dark-600">
-                        <div
-                            class="grid grid-cols-15 gap-4 p-4 text-sm font-semibold text-secondary-700 dark:text-dark-200">
+                        <div class="grid grid-cols-15 gap-4 p-4 text-sm font-semibold text-secondary-700 dark:text-dark-200">
                             <div class="col-span-1">#</div>
                             <div class="col-span-2">Client</div>
                             <div class="col-span-3">Service</div>
@@ -57,14 +61,14 @@
 
                                 <div class="col-span-2 flex items-center">
                                     <div class="w-full">
-                                        <x-select.styled wire:model.blur="items.{{ $index }}.client_id"
-                                            :options="$clients" placeholder="Select client..." searchable />
+                                        <x-select.styled wire:model.blur="items.{{ $index }}.client_id" :options="$clients"
+                                            placeholder="Select client..." searchable />
                                     </div>
                                 </div>
 
                                 <div class="col-span-3 space-y-2">
-                                    <x-select.styled wire:model.blur="items.{{ $index }}.service_id"
-                                        :options="$services" placeholder="Select service..." searchable />
+                                    <x-select.styled wire:model.blur="items.{{ $index }}.service_id" :options="$services"
+                                        placeholder="Select service..." searchable />
 
                                     @if (empty($item['service_id']))
                                         <x-input wire:model.blur="items.{{ $index }}.service_name"
@@ -86,15 +90,13 @@
 
                                 <div class="col-span-2 flex items-center">
                                     <div class="w-full">
-                                        <x-wireui-currency prefix="Rp "
-                                            wire:model.blur="items.{{ $index }}.price" />
+                                        <x-wireui-currency prefix="Rp " wire:model.blur="items.{{ $index }}.price" />
                                     </div>
                                 </div>
 
                                 <div class="col-span-2 flex items-center">
                                     <div class="w-full">
-                                        <x-wireui-currency prefix="Rp "
-                                            wire:model.blur="items.{{ $index }}.cogs_amount" />
+                                        <x-wireui-currency prefix="Rp " wire:model.blur="items.{{ $index }}.cogs_amount" />
                                     </div>
                                 </div>
 
@@ -136,17 +138,17 @@
                             <div class="flex justify-between items-center">
                                 <x-badge :text="'Item ' . ($index + 1)" color="primary" />
                                 @if (count($items) > 1)
-                                    <x-button.circle wire:click="removeItem({{ $index }})" icon="trash"
-                                        color="red" size="sm" />
+                                    <x-button.circle wire:click="removeItem({{ $index }})" icon="trash" color="red"
+                                        size="sm" />
                                 @endif
                             </div>
 
                             <div class="space-y-3">
-                                <x-select.styled wire:model.blur="items.{{ $index }}.client_id"
-                                    :options="$clients" placeholder="Select client..." searchable label="Client" />
+                                <x-select.styled wire:model.blur="items.{{ $index }}.client_id" :options="$clients"
+                                    placeholder="Select client..." searchable label="Client" />
 
-                                <x-select.styled wire:model.blur="items.{{ $index }}.service_id"
-                                    :options="$services" placeholder="Select service..." searchable label="Service" />
+                                <x-select.styled wire:model.blur="items.{{ $index }}.service_id" :options="$services"
+                                    placeholder="Select service..." searchable label="Service" />
 
                                 @if (empty($item['service_id']))
                                     <x-input wire:model.blur="items.{{ $index }}.service_name"
@@ -165,8 +167,8 @@
                                         label="Price" />
                                 </div>
 
-                                <x-wireui-currency prefix="Rp "
-                                    wire:model.blur="items.{{ $index }}.cogs_amount" label="COGS Amount" />
+                                <x-wireui-currency prefix="Rp " wire:model.blur="items.{{ $index }}.cogs_amount"
+                                    label="COGS Amount" />
 
                                 <div class="bg-secondary-50 dark:bg-dark-700 p-3 rounded-lg">
                                     <div class="flex justify-between items-center mb-2">
@@ -203,8 +205,7 @@
             </div>
 
             {{-- Discount Section --}}
-            <div
-                class="bg-white dark:bg-dark-800 border border-secondary-200 dark:border-dark-600 rounded-lg p-4 sm:p-6">
+            <div class="bg-white dark:bg-dark-800 border border-secondary-200 dark:border-dark-600 rounded-lg p-4 sm:p-6">
                 <h3 class="text-lg font-semibold text-secondary-900 dark:text-dark-50 mb-4">Discount</h3>
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     <x-select.styled wire:model.live="discount_type" :options="[
@@ -217,8 +218,7 @@
                             <x-input wire:model.live="discount_value" type="number" min="0" max="10000"
                                 step="100" label="Discount Value (%)" hint="Example: 1500 = 15%" />
                         @else
-                            <x-wireui-currency prefix="Rp " wire:model.blur="discount_value"
-                                label="Discount Amount" />
+                            <x-wireui-currency prefix="Rp " wire:model.blur="discount_value" label="Discount Amount" />
                         @endif
                     </div>
 
@@ -278,7 +278,7 @@
 
                 <!-- Actions -->
                 <div class="flex flex-wrap gap-3">
-                    <x-button wire:click="$set('showModal', false)" color="secondary">
+                    <x-button wire:click="$set('modal', false)" color="secondary">
                         Cancel
                     </x-button>
                     <x-button wire:click="save" color="primary" icon="check">

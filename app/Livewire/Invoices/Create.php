@@ -12,7 +12,7 @@ class Create extends Component
 {
     use Interactions;
 
-    public $showModal = false;
+    public bool $modal = false;
     public $clients = [];
     public $services = [];
 
@@ -30,13 +30,16 @@ class Create extends Component
     // Items array
     public $items = [];
 
-    protected $listeners = ['create-invoice' => 'openModal'];
-
-    public function openModal()
+    public function mount(): void
     {
         $this->resetForm();
         $this->loadOptions();
-        $this->showModal = true;
+    }
+
+    public function openModal(): void
+    {
+        $this->resetForm();
+        $this->modal = true;
     }
 
     public function resetForm()
@@ -66,7 +69,6 @@ class Create extends Component
 
         $maxSequence = 0;
         foreach ($invoices as $invoiceNumber) {
-            // Extract sequence from format INV/XX/JKB/MM.YY
             if (preg_match('/INV\/(\d+)\/JAH\/\d{2}\.\d{2}/', $invoiceNumber, $matches)) {
                 $sequence = (int) $matches[1];
                 $maxSequence = max($maxSequence, $sequence);
@@ -116,7 +118,7 @@ class Create extends Component
             'service_name' => '',
             'quantity' => 1,
             'price' => 0,
-            'cogs_amount' => 0, // Added COGS field
+            'cogs_amount' => 0,
             'total' => 0
         ];
     }
@@ -144,7 +146,6 @@ class Create extends Component
             }
         }
 
-        // Update all items client_id when main client changes
         if ($propertyName === 'billed_to_id') {
             foreach ($this->items as $index => $item) {
                 $this->items[$index]['client_id'] = $this->billed_to_id;
@@ -219,7 +220,7 @@ class Create extends Component
             'items.*.service_name' => 'required|string',
             'items.*.quantity' => 'required|integer|min:1',
             'items.*.price' => 'required|integer|min:0',
-            'items.*.cogs_amount' => 'integer|min:0', // Added COGS validation
+            'items.*.cogs_amount' => 'integer|min:0',
         ]);
 
         try {
@@ -245,18 +246,17 @@ class Create extends Component
                         'quantity' => $item['quantity'],
                         'unit_price' => $item['price'],
                         'amount' => $item['total'],
-                        'cogs_amount' => $item['cogs_amount'] ?? 0, // Added COGS field
+                        'cogs_amount' => $item['cogs_amount'] ?? 0,
                     ]);
                 }
 
-                // Force status back to draft (override model auto-evaluation)
                 $invoice->update(['status' => 'draft']);
             });
 
-            $this->showModal = false;
-            $this->toast()->success('Success', 'Invoice created successfully!')->flash()->send();
+            $this->modal = false;
+            $this->toast()->success('Success', 'Invoice created successfully!')->send();
             $this->dispatch('invoice-created');
-            return redirect()->route('invoices.index');
+            $this->resetForm();
 
         } catch (\Exception $e) {
             $this->toast()->error('Error', $e->getMessage())->send();

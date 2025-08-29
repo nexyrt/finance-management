@@ -1,5 +1,6 @@
 <?php
 
+// InvoiceItem.php
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -37,41 +38,9 @@ class InvoiceItem extends Model
         return $this->belongsTo(Client::class);
     }
 
-    // Format currency for display
-    public function getFormattedUnitPriceAttribute(): string
-    {
-        return 'Rp ' . number_format($this->unit_price, 0, ',', '.');
-    }
-
-    public function getFormattedAmountAttribute(): string
-    {
-        return 'Rp ' . number_format($this->amount, 0, ',', '.');
-    }
-
-    public function getFormattedCogsAmountAttribute(): string
-    {
-        return 'Rp ' . number_format($this->cogs_amount, 0, ',', '.');
-    }
-
+    // Essential business logic only
     public function getProfitAmountAttribute(): int
     {
         return $this->amount - $this->cogs_amount;
-    }
-
-    public function getFormattedProfitAmountAttribute(): string
-    {
-        return 'Rp ' . number_format($this->profit_amount, 0, ',', '.');
-    }
-
-    public function getProfitMarginAttribute(): float
-    {
-        if ($this->amount == 0) return 0;
-        return ($this->profit_amount / $this->amount) * 100;
-    }
-
-    // Convert rupiah string to integer (remove formatting)
-    public static function parseAmount(string $amount): int
-    {
-        return (int) preg_replace('/[^0-9]/', '', $amount);
     }
 }
