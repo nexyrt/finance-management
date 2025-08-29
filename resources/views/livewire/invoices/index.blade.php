@@ -6,10 +6,10 @@
         <div class="space-y-1">
             <h1
                 class="text-4xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-indigo-800 dark:from-white dark:via-blue-200 dark:to-indigo-200 bg-clip-text text-transparent">
-                Manajemen Klien
+                Manajemen Invoice
             </h1>
             <p class="text-gray-600 dark:text-zinc-400 text-lg">
-                Kelola klien Anda dan lacak hubungan bisnis mereka
+                Kelola dan lacak semua invoice Anda di sini.
             </p>
         </div>
         <x-button wire:click="createInvoice" loading="createInvoice" color="primary" icon="plus">

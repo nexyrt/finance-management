@@ -276,11 +276,12 @@ class Index extends Component
 
         // Calculate outstanding vs paid profit
         $totalPaidAmount = \DB::table('payments')->sum('amount');
-        $outstandingAmount = $totalRevenue - $totalPaidAmount;
+        // Outstanding amount = total invoice (total_amount) - total paid invoice (amount) - total COGS
+        $outstandingAmount = ($totalRevenue - $totalPaidAmount) - $totalCogs;
         
         // Simple ratio calculation for outstanding profit
         $profitRatio = $totalRevenue > 0 ? $totalProfit / $totalRevenue : 0;
-        $outstandingProfit = $outstandingAmount * $profitRatio;
+        $outstandingProfit = $outstandingAmount;
         $paidProfit = $totalPaidAmount * $profitRatio;
 
         return [

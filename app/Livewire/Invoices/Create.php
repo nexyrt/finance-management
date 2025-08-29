@@ -116,6 +116,7 @@ class Create extends Component
             'service_name' => '',
             'quantity' => 1,
             'price' => 0,
+            'cogs_amount' => 0, // Added COGS field
             'total' => 0
         ];
     }
@@ -171,15 +172,21 @@ class Create extends Component
         }
     }
 
+    // Financial calculations
     public function getSubtotalProperty()
     {
         return collect($this->items)->sum('total');
     }
 
+    public function getTotalCogsProperty()
+    {
+        return collect($this->items)->sum('cogs_amount');
+    }
+
     public function getDiscountAmountProperty()
     {
         if ($this->discount_type === 'percentage') {
-            return (int) (($this->subtotal * $this->discount_value) / 100);
+            return (int) (($this->subtotal * $this->discount_value) / 10000);
         } else {
             return (int) $this->discount_value;
         }
@@ -188,6 +195,17 @@ class Create extends Component
     public function getGrandTotalProperty()
     {
         return max(0, $this->subtotal - $this->discountAmount);
+    }
+
+    public function getGrossProfitProperty()
+    {
+        return $this->grandTotal - $this->totalCogs;
+    }
+
+    public function getGrossProfitMarginProperty()
+    {
+        if ($this->grandTotal == 0) return 0;
+        return ($this->grossProfit / $this->grandTotal) * 100;
     }
 
     public function save()
@@ -201,6 +219,7 @@ class Create extends Component
             'items.*.service_name' => 'required|string',
             'items.*.quantity' => 'required|integer|min:1',
             'items.*.price' => 'required|integer|min:0',
+            'items.*.cogs_amount' => 'integer|min:0', // Added COGS validation
         ]);
 
         try {
@@ -225,7 +244,8 @@ class Create extends Component
                         'service_name' => $item['service_name'],
                         'quantity' => $item['quantity'],
                         'unit_price' => $item['price'],
-                        'amount' => $item['total']
+                        'amount' => $item['total'],
+                        'cogs_amount' => $item['cogs_amount'] ?? 0, // Added COGS field
                     ]);
                 }
 

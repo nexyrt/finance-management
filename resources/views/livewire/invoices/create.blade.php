@@ -6,7 +6,8 @@
 
         <div class="space-y-6">
             {{-- Invoice Details --}}
-            <div class="bg-white dark:bg-dark-800 border border-secondary-200 dark:border-dark-600 rounded-lg p-4 sm:p-6">
+            <div
+                class="bg-white dark:bg-dark-800 border border-secondary-200 dark:border-dark-600 rounded-lg p-4 sm:p-6">
                 <h3 class="text-lg font-semibold text-secondary-900 dark:text-dark-50 mb-4">Invoice Information</h3>
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <x-input wire:model="invoice_number" label="Invoice Number" />
@@ -20,28 +21,26 @@
                 </div>
             </div>
 
-            <!-- Invoice Items -->
+            {{-- Invoice Items --}}
             <div class="bg-white dark:bg-dark-800 border border-secondary-200 dark:border-dark-600 rounded-lg">
                 <div class="p-4 border-b border-secondary-200 dark:border-dark-600">
-                    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-                        <h3 class="text-lg font-semibold text-secondary-900 dark:text-dark-50">Invoice Items</h3>
-                        <x-button wire:click="addItem" icon="plus" color="primary" size="sm">
-                            Add Item
-                        </x-button>
-                    </div>
+                    <h3 class="text-lg font-semibold text-secondary-900 dark:text-dark-50">Invoice Items</h3>
                 </div>
 
                 <!-- Desktop Table -->
-                <div class="hidden lg:block">
+                <div class="hidden xl:block">
                     <!-- Table Header -->
                     <div class="bg-secondary-50 dark:bg-dark-900 border-b border-secondary-200 dark:border-dark-600">
-                        <div class="grid grid-cols-13 gap-4 p-4 text-sm font-semibold text-secondary-700 dark:text-dark-200">
+                        <div
+                            class="grid grid-cols-15 gap-4 p-4 text-sm font-semibold text-secondary-700 dark:text-dark-200">
                             <div class="col-span-1">#</div>
-                            <div class="col-span-3">Client</div>
+                            <div class="col-span-2">Client</div>
                             <div class="col-span-3">Service</div>
                             <div class="col-span-1">Qty</div>
                             <div class="col-span-2">Price</div>
+                            <div class="col-span-2">COGS</div>
                             <div class="col-span-2">Total</div>
+                            <div class="col-span-1">Profit</div>
                             <div class="col-span-1 text-center">Actions</div>
                         </div>
                     </div>
@@ -49,14 +48,14 @@
                     <!-- Table Body -->
                     <div class="divide-y divide-secondary-100 dark:divide-dark-700">
                         @forelse($items as $index => $item)
-                            <div class="grid grid-cols-13 gap-4 p-4 hover:bg-secondary-50 dark:hover:bg-dark-700 transition-colors"
+                            <div class="grid grid-cols-15 gap-4 p-4 hover:bg-secondary-50 dark:hover:bg-dark-700 transition-colors"
                                 wire:key="item-{{ $index }}">
 
                                 <div class="col-span-1 flex items-center">
                                     <x-badge :text="$index + 1" color="primary" size="sm" />
                                 </div>
 
-                                <div class="col-span-3 flex items-center">
+                                <div class="col-span-2 flex items-center">
                                     <div class="w-full">
                                         <x-select.styled wire:model.blur="items.{{ $index }}.client_id"
                                             :options="$clients" placeholder="Select client..." searchable />
@@ -71,7 +70,8 @@
                                         <x-input wire:model.blur="items.{{ $index }}.service_name"
                                             placeholder="Custom service name" class="text-sm" />
                                     @else
-                                        <div class="px-3 py-1 bg-primary-50 dark:bg-primary-900/20 rounded text-xs text-primary-700 dark:text-primary-300 border border-primary-200 dark:border-primary-800">
+                                        <div
+                                            class="px-3 py-1 bg-primary-50 dark:bg-primary-900/20 rounded text-xs text-primary-700 dark:text-primary-300 border border-primary-200 dark:border-primary-800">
                                             Template: {{ $item['service_name'] }}
                                         </div>
                                     @endif
@@ -86,13 +86,31 @@
 
                                 <div class="col-span-2 flex items-center">
                                     <div class="w-full">
-                                        <x-wireui-currency prefix="Rp " wire:model.blur="items.{{ $index }}.price" />
+                                        <x-wireui-currency prefix="Rp "
+                                            wire:model.blur="items.{{ $index }}.price" />
                                     </div>
                                 </div>
 
-                                <div class="col-span-2 flex items-center w-full">
-                                    <div class="font-semibold text-secondary-900 dark:text-dark-100">
+                                <div class="col-span-2 flex items-center">
+                                    <div class="w-full">
+                                        <x-wireui-currency prefix="Rp "
+                                            wire:model.blur="items.{{ $index }}.cogs_amount" />
+                                    </div>
+                                </div>
+
+                                <div class="col-span-2 flex items-center">
+                                    <div class="font-semibold text-secondary-900 dark:text-dark-100 text-sm">
                                         Rp {{ number_format($item['total'], 0, ',', '.') }}
+                                    </div>
+                                </div>
+
+                                <div class="col-span-1 flex items-center">
+                                    @php
+                                        $profit = ($item['total'] ?? 0) - ($item['cogs_amount'] ?? 0);
+                                        $profitClass = $profit >= 0 ? 'text-green-600' : 'text-red-600';
+                                    @endphp
+                                    <div class="text-xs font-medium {{ $profitClass }}">
+                                        Rp {{ number_format($profit, 0, ',', '.') }}
                                     </div>
                                 </div>
 
@@ -112,7 +130,7 @@
                 </div>
 
                 <!-- Mobile Cards -->
-                <div class="lg:hidden divide-y divide-secondary-100 dark:divide-dark-700">
+                <div class="xl:hidden divide-y divide-secondary-100 dark:divide-dark-700">
                     @forelse($items as $index => $item)
                         <div class="p-4 space-y-4" wire:key="item-mobile-{{ $index }}">
                             <div class="flex justify-between items-center">
@@ -134,7 +152,8 @@
                                     <x-input wire:model.blur="items.{{ $index }}.service_name"
                                         placeholder="Custom service name" label="Service Name" />
                                 @else
-                                    <div class="px-3 py-1 bg-primary-50 dark:bg-primary-900/20 rounded text-xs text-primary-700 dark:text-primary-300 border border-primary-200 dark:border-primary-800">
+                                    <div
+                                        class="px-3 py-1 bg-primary-50 dark:bg-primary-900/20 rounded text-xs text-primary-700 dark:text-primary-300 border border-primary-200 dark:border-primary-800">
                                         Template: {{ $item['service_name'] }}
                                     </div>
                                 @endif
@@ -142,15 +161,28 @@
                                 <div class="grid grid-cols-2 gap-3">
                                     <x-input wire:model.blur="items.{{ $index }}.quantity" type="number"
                                         min="1" label="Quantity" />
-                                    <x-wireui-currency prefix="Rp " wire:model.blur="items.{{ $index }}.price" 
+                                    <x-wireui-currency prefix="Rp " wire:model.blur="items.{{ $index }}.price"
                                         label="Price" />
                                 </div>
 
+                                <x-wireui-currency prefix="Rp "
+                                    wire:model.blur="items.{{ $index }}.cogs_amount" label="COGS Amount" />
+
                                 <div class="bg-secondary-50 dark:bg-dark-700 p-3 rounded-lg">
-                                    <div class="flex justify-between items-center">
+                                    <div class="flex justify-between items-center mb-2">
                                         <span class="text-sm text-secondary-600 dark:text-dark-300">Total:</span>
                                         <span class="font-semibold text-secondary-900 dark:text-dark-100">
                                             Rp {{ number_format($item['total'], 0, ',', '.') }}
+                                        </span>
+                                    </div>
+                                    @php
+                                        $profit = ($item['total'] ?? 0) - ($item['cogs_amount'] ?? 0);
+                                        $profitClass = $profit >= 0 ? 'text-green-600' : 'text-red-600';
+                                    @endphp
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm text-secondary-600 dark:text-dark-300">Profit:</span>
+                                        <span class="font-semibold {{ $profitClass }}">
+                                            Rp {{ number_format($profit, 0, ',', '.') }}
                                         </span>
                                     </div>
                                 </div>
@@ -164,9 +196,16 @@
                 </div>
             </div>
 
-            <!-- Discount Section -->
-            <div class="bg-white dark:bg-dark-800 border border-secondary-200 dark:border-dark-600 rounded-lg p-4 sm:p-6">
-                <h3 class="text-lg font-semibold text-secondary-900 dark:text-dark-50 mb-4">Discount (Optional)</h3>
+            <div class="flex justify-end">
+                <x-button wire:click="addItem" icon="plus" color="primary" size="sm">
+                    Add Item
+                </x-button>
+            </div>
+
+            {{-- Discount Section --}}
+            <div
+                class="bg-white dark:bg-dark-800 border border-secondary-200 dark:border-dark-600 rounded-lg p-4 sm:p-6">
+                <h3 class="text-lg font-semibold text-secondary-900 dark:text-dark-50 mb-4">Discount</h3>
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     <x-select.styled wire:model.live="discount_type" :options="[
                         ['label' => 'Fixed Amount', 'value' => 'fixed'],
@@ -175,20 +214,30 @@
 
                     <div>
                         @if ($discount_type === 'percentage')
-                            <x-input wire:model.live="discount_value" type="number" min="0" max="100"
-                                step="0.1" label="Discount Value (%)" />
+                            <x-input wire:model.live="discount_value" type="number" min="0" max="10000"
+                                step="100" label="Discount Value (%)" hint="Example: 1500 = 15%" />
                         @else
-                            <x-wireui-currency wire:model.live="discount_value" label="Discount Amount" />
+                            <x-wireui-currency prefix="Rp " wire:model.blur="discount_value"
+                                label="Discount Amount" />
                         @endif
                     </div>
 
                     <x-input wire:model="discount_reason" label="Discount Reason" placeholder="Optional reason" />
                 </div>
 
+                <!-- Discount Preview -->
                 @if ($this->discountAmount > 0)
-                    <div class="mt-4 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                    <div
+                        class="mt-4 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
                         <div class="flex justify-between items-center text-sm">
-                            <span class="text-green-700 dark:text-green-300">Discount Applied:</span>
+                            <span class="text-green-700 dark:text-green-300">
+                                Discount Applied:
+                                @if ($discount_type === 'percentage')
+                                    {{ number_format($discount_value / 100, 2) }}%
+                                @else
+                                    Fixed Amount
+                                @endif
+                            </span>
                             <span class="font-semibold text-green-800 dark:text-green-200">
                                 -Rp {{ number_format($this->discountAmount, 0, ',', '.') }}
                             </span>
@@ -206,12 +255,21 @@
                         <span class="font-medium text-secondary-900 dark:text-dark-100">Rp
                             {{ number_format($this->subtotal, 0, ',', '.') }}</span>
                     </div>
+                    <div>Total COGS:
+                        <span class="font-medium text-red-600 dark:text-red-400">Rp
+                            {{ number_format($this->totalCogs, 0, ',', '.') }}</span>
+                    </div>
                     @if ($this->discountAmount > 0)
                         <div>Discount:
                             <span class="font-medium text-green-600 dark:text-green-400">-Rp
                                 {{ number_format($this->discountAmount, 0, ',', '.') }}</span>
                         </div>
                     @endif
+                    <div>Gross Profit:
+                        <span class="font-bold text-green-600 dark:text-green-400">Rp
+                            {{ number_format($this->grossProfit, 0, ',', '.') }}</span>
+                        <span class="text-xs">({{ number_format($this->grossProfitMargin, 1) }}%)</span>
+                    </div>
                     <div>Grand Total:
                         <span class="font-bold text-lg text-secondary-900 dark:text-dark-100">Rp
                             {{ number_format($this->grandTotal, 0, ',', '.') }}</span>
@@ -220,9 +278,6 @@
 
                 <!-- Actions -->
                 <div class="flex flex-wrap gap-3">
-                    <x-button wire:click="addItem" icon="plus" color="primary" size="sm">
-                        Add Item
-                    </x-button>
                     <x-button wire:click="$set('showModal', false)" color="secondary">
                         Cancel
                     </x-button>

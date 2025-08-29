@@ -9,7 +9,8 @@
 
     <!-- Status Change Warning -->
     @if ($this->getPreviewStatusProperty() !== $status)
-        <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mb-6">
+        <div
+            class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mb-6">
             <div class="flex items-center gap-2">
                 <x-icon name="exclamation-triangle" class="w-4 h-4 text-yellow-600 dark:text-yellow-400" />
                 <span class="text-sm text-yellow-800 dark:text-yellow-200 font-medium">
@@ -88,7 +89,8 @@
                                 <x-input wire:model.blur="items.{{ $index }}.service_name"
                                     placeholder="Custom service name" class="text-sm" />
                             @else
-                                <div class="px-3 py-1 bg-primary-50 dark:bg-primary-900/20 rounded text-xs text-primary-700 dark:text-primary-300 border border-primary-200 dark:border-primary-800">
+                                <div
+                                    class="px-3 py-1 bg-primary-50 dark:bg-primary-900/20 rounded text-xs text-primary-700 dark:text-primary-300 border border-primary-200 dark:border-primary-800">
                                     Template: {{ $item['service_name'] }}
                                 </div>
                             @endif
@@ -96,8 +98,8 @@
 
                         <div class="col-span-1 flex items-center">
                             <div class="w-full">
-                                <x-input wire:model.blur="items.{{ $index }}.quantity" type="number" min="1"
-                                    class="text-center" />
+                                <x-input wire:model.blur="items.{{ $index }}.quantity" type="number"
+                                    min="1" class="text-center" />
                             </div>
                         </div>
 
@@ -109,7 +111,8 @@
 
                         <div class="col-span-2 flex items-center">
                             <div class="w-full">
-                                <x-wireui-currency prefix="Rp " wire:model.blur="items.{{ $index }}.cogs_amount" />
+                                <x-wireui-currency prefix="Rp "
+                                    wire:model.blur="items.{{ $index }}.cogs_amount" />
                             </div>
                         </div>
 
@@ -131,8 +134,8 @@
 
                         <div class="col-span-1 flex justify-center items-center">
                             @if (count($items) > 1)
-                                <x-button.circle wire:click="removeItem({{ $index }})" icon="trash" color="red"
-                                    size="sm" />
+                                <x-button.circle wire:click="removeItem({{ $index }})" icon="trash"
+                                    color="red" size="sm" />
                             @endif
                         </div>
                     </div>
@@ -151,23 +154,24 @@
                     <div class="flex justify-between items-center">
                         <x-badge :text="'Item ' . ($index + 1)" color="primary" />
                         @if (count($items) > 1)
-                            <x-button.circle wire:click="removeItem({{ $index }})" icon="trash"
-                                color="red" size="sm" />
+                            <x-button.circle wire:click="removeItem({{ $index }})" icon="trash" color="red"
+                                size="sm" />
                         @endif
                     </div>
 
                     <div class="space-y-3">
-                        <x-select.styled wire:model.blur="items.{{ $index }}.client_id"
-                            :options="$clients" placeholder="Select client..." searchable label="Client" />
+                        <x-select.styled wire:model.blur="items.{{ $index }}.client_id" :options="$clients"
+                            placeholder="Select client..." searchable label="Client" />
 
-                        <x-select.styled wire:model.blur="items.{{ $index }}.service_id"
-                            :options="$services" placeholder="Select service..." searchable label="Service" />
+                        <x-select.styled wire:model.blur="items.{{ $index }}.service_id" :options="$services"
+                            placeholder="Select service..." searchable label="Service" />
 
                         @if (empty($item['service_id']))
                             <x-input wire:model.blur="items.{{ $index }}.service_name"
                                 placeholder="Custom service name" label="Service Name" />
                         @else
-                            <div class="px-3 py-1 bg-primary-50 dark:bg-primary-900/20 rounded text-xs text-primary-700 dark:text-primary-300 border border-primary-200 dark:border-primary-800">
+                            <div
+                                class="px-3 py-1 bg-primary-50 dark:bg-primary-900/20 rounded text-xs text-primary-700 dark:text-primary-300 border border-primary-200 dark:border-primary-800">
                                 Template: {{ $item['service_name'] }}
                             </div>
                         @endif
@@ -175,11 +179,11 @@
                         <div class="grid grid-cols-2 gap-3">
                             <x-input wire:model.blur="items.{{ $index }}.quantity" type="number"
                                 min="1" label="Quantity" />
-                            <x-wireui-currency prefix="Rp " wire:model.blur="items.{{ $index }}.price" 
+                            <x-wireui-currency prefix="Rp " wire:model.blur="items.{{ $index }}.price"
                                 label="Price" />
                         </div>
 
-                        <x-wireui-currency prefix="Rp " wire:model.blur="items.{{ $index }}.cogs_amount" 
+                        <x-wireui-currency prefix="Rp " wire:model.blur="items.{{ $index }}.cogs_amount"
                             label="COGS Amount" />
 
                         <div class="bg-secondary-50 dark:bg-dark-700 p-3 rounded-lg">
@@ -210,6 +214,12 @@
         </div>
     </div>
 
+    <div class="flex justify-end mb-5">
+        <x-button wire:click="addItem" icon="plus" color="primary" size="sm">
+            Add Item
+        </x-button>
+    </div>
+
     <!-- Discount Section -->
     <div class="bg-white dark:bg-dark-800 border border-secondary-200 dark:border-dark-600 rounded-lg p-4 sm:p-6 mb-6">
         <h3 class="text-lg font-semibold text-secondary-900 dark:text-dark-50 mb-4">Discount</h3>
@@ -233,7 +243,8 @@
 
         <!-- Discount Preview -->
         @if ($this->discountAmount > 0)
-            <div class="mt-4 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+            <div
+                class="mt-4 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
                 <div class="flex justify-between items-center text-sm">
                     <span class="text-green-700 dark:text-green-300">
                         Discount Applied:
@@ -283,9 +294,7 @@
             <x-button href="{{ route('invoices.index') }}" color="secondary dark:dark hover:secondary" outline>
                 Cancel
             </x-button>
-            <x-button wire:click="addItem" icon="plus" color="primary" size="sm" class="lg:hidden">
-                Add Item
-            </x-button>
+
             <x-button wire:click="save" color="primary" icon="check">
                 Update Invoice
             </x-button>
