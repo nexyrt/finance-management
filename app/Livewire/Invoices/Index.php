@@ -286,32 +286,12 @@ class Index extends Component
     {
         $baseQuery = Invoice::query();
 
-        // Calculate total revenue and COGS
+        // Calculate totals using model attributes
         $totalRevenue = $baseQuery->sum('total_amount');
-        $totalCogs = \DB::table('invoice_items')->sum('cogs_amount');
-        $totalProfit = $totalRevenue - $totalCogs;
-
-        // Get all invoices with their payments and COGS
-        $invoices = Invoice::with('payments', 'items')->get();
-
-        $outstandingProfit = 0;
-        $paidProfit = 0;
-
-        foreach ($invoices as $invoice) {
-            $totalPaid = $invoice->amount_paid;
-            $invoiceCogs = $invoice->total_cogs;
-            $invoiceProfit = $invoice->gross_profit;
-
-            // If payment hasn't covered COGS yet, no profit realized
-            if ($totalPaid <= $invoiceCogs) {
-                $outstandingProfit += $invoiceProfit;
-            } else {
-                // Payment exceeded COGS, some profit realized
-                $realizedProfit = min($totalPaid - $invoiceCogs, $invoiceProfit);
-                $paidProfit += $realizedProfit;
-                $outstandingProfit += ($invoiceProfit - $realizedProfit);
-            }
-        }
+        $totalCogs = $baseQuery->get()->sum('total_cogs');
+        $totalProfit = $baseQuery->get()->sum('gross_profit');
+        $outstandingProfit = $baseQuery->get()->sum('outstanding_profit');
+        $paidProfit = $baseQuery->get()->sum('paid_profit');
 
         return [
             'total_revenue' => $totalRevenue,
