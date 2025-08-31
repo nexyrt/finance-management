@@ -302,8 +302,8 @@
                         loading="bulkPrintInvoices" class="whitespace-nowrap">
                         Print All
                     </x-button>
-                    <x-button wire:click="openBulkDeleteModal" size="sm" color="red" icon="trash"
-                        class="whitespace-nowrap">
+                    <x-button wire:click="bulkDelete" size="sm" color="red" icon="trash"
+                        loading="bulkDelete" class="whitespace-nowrap">
                         Hapus
                     </x-button>
                     <x-button wire:click="$set('selected', [])" size="sm" color="gray" icon="x-mark"
@@ -314,49 +314,6 @@
             </div>
         </div>
     </div>
-
-    {{-- Bulk Delete Modal --}}
-    <x-modal wire:model="showBulkDeleteModal" size="lg" center persistent>
-        <x-slot:title>
-            <div class="flex items-center gap-4">
-                <div class="h-12 w-12 bg-red-100 dark:bg-red-900/30 rounded-xl flex items-center justify-center">
-                    <x-icon name="trash" class="w-6 h-6 text-red-600 dark:text-red-400" />
-                </div>
-                <div>
-                    <h3 class="text-xl font-bold text-dark-900 dark:text-dark-50">Konfirmasi Bulk Delete</h3>
-                    <p class="text-sm text-dark-600 dark:text-dark-400">Hapus beberapa invoice sekaligus</p>
-                </div>
-            </div>
-        </x-slot:title>
-
-        <div class="bg-red-50 dark:bg-red-900/20 rounded-xl p-4 border border-red-200 dark:border-red-800">
-            <div class="flex items-start gap-3">
-                <div
-                    class="h-8 w-8 bg-red-100 dark:bg-red-800/50 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <x-icon name="exclamation-triangle" class="w-4 h-4 text-red-600 dark:text-red-400" />
-                </div>
-                <div>
-                    <h4 class="font-semibold text-red-900 dark:text-red-100 mb-2">Perhatian!</h4>
-                    <p class="text-sm text-red-800 dark:text-red-200">
-                        Anda akan menghapus <strong>{{ count($selected) }}</strong> invoice secara permanen.
-                        Invoice, item, dan pembayaran terkait akan dihapus dan tidak dapat dikembalikan.
-                    </p>
-                </div>
-            </div>
-        </div>
-
-        <x-slot:footer>
-            <div class="flex flex-col sm:flex-row justify-end gap-3">
-                <x-button wire:click="$set('showBulkDeleteModal', false)" color="gray" class="w-full sm:w-auto">
-                    Batal
-                </x-button>
-                <x-button wire:click="bulkDelete" color="red" icon="trash" loading="bulkDelete"
-                    class="w-full sm:w-auto">
-                    Hapus Semua Invoice
-                </x-button>
-            </div>
-        </x-slot:footer>
-    </x-modal>
 
     {{-- Livewire Components --}}
     <livewire:invoices.show />
@@ -386,31 +343,71 @@
     document.addEventListener('livewire:init', () => {
         Livewire.on('start-bulk-download', (data) => {
             const {
-                urls,
-                delay
+                downloads,
+                delay,
+                method
             } = data[0];
             let currentIndex = 0;
+            let successCount = 0;
+
+            // Progress indicator
+            const showProgress = (current, total) => {
+                console.log(
+                    `Downloading ${current}/${total}: ${downloads[current-1]?.invoice_number}`);
+            };
 
             function downloadNext() {
-                if (currentIndex >= urls.length) return;
+                if (currentIndex >= downloads.length) {
+                    // All downloads completed
+                    console.log(`Bulk download completed: ${successCount}/${downloads.length} files`);
+                    return;
+                }
 
-                const current = urls[currentIndex];
-                const link = document.createElement('a');
-                link.href = current.url;
-                link.download = `Invoice-${current.invoice_number}.pdf`;
-                link.style.display = 'none';
+                const current = downloads[currentIndex];
+                showProgress(currentIndex + 1, downloads.length);
 
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
+                if (method === 'iframe') {
+                    // Method 1: Hidden iframe (bypass popup blocker)
+                    const iframe = document.createElement('iframe');
+                    iframe.style.display = 'none';
+                    iframe.src = current.url;
+
+                    iframe.onload = () => {
+                        successCount++;
+                        setTimeout(() => {
+                            document.body.removeChild(iframe);
+                        }, 1000);
+                    };
+
+                    iframe.onerror = () => {
+                        console.error(`Failed to download: ${current.invoice_number}`);
+                    };
+
+                    document.body.appendChild(iframe);
+
+                } else {
+                    // Method 2: Traditional link download (fallback)
+                    const link = document.createElement('a');
+                    link.href = current.url;
+                    link.download = `Invoice-${current.invoice_number}.pdf`;
+                    link.style.display = 'none';
+
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    successCount++;
+                }
 
                 currentIndex++;
 
-                if (currentIndex < urls.length) {
-                    setTimeout(downloadNext, delay || 1000);
+                // Continue with next download after delay
+                if (currentIndex < downloads.length) {
+                    setTimeout(downloadNext, delay || 2000);
                 }
             }
 
+            // Start bulk download with user interaction context
+            // This helps bypass popup blockers since it's triggered by user action
             downloadNext();
         });
     });

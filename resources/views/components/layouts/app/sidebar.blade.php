@@ -42,6 +42,9 @@
                     :current="request()->routeIs('services')" wire:navigate class="py-5">
                     {{ __('Services') }}
                 </flux:navlist.item>
+                <flux:navlist.item icon="loading" :href="route('test')" :current="request()->routeIs('test')" wire:navigate class="py-5">
+                    {{ __('Loading Test') }}
+                </flux:navlist.item>
             </flux:navlist>
 
             <flux:spacer />
@@ -51,6 +54,7 @@
                 <flux:radio value="light" icon="sun">{{ __('Light') }}</flux:radio>
                 <flux:radio value="dark" icon="moon">{{ __('Dark') }}</flux:radio>
             </flux:radio.group>
+
             <!-- Desktop User Menu -->
             <flux:dropdown position="bottom" align="start">
                 <flux:profile :name="auth()->user()->name" :initials="auth()->user()->initials()"

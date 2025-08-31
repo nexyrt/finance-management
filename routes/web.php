@@ -79,7 +79,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     // Testing (Development only)
-    Route::get('/testing/{invoiceId?}', TestingPage::class)->name('test');
+    Route::get('/test', TestingPage::class)->name('test');
 });
 
 require __DIR__ . '/auth.php';

@@ -12,7 +12,7 @@ class Show extends Component
     use Interactions;
 
     public ?Invoice $invoice = null;
-    public bool $showModal = false;
+    public bool $modal = false;
 
     #[On('show-invoice')]
     public function show(int $invoiceId): void
@@ -25,14 +25,13 @@ class Show extends Component
             return;
         }
 
-        $this->showModal = true;
+        $this->modal = true;
     }
 
-    // Method ini dipanggil setelah modal ditutup via Alpine
     public function resetData(): void
     {
         $this->invoice = null;
-        $this->showModal = false; // Pastikan sync dengan Alpine
+        $this->modal = false;
     }
 
     public function sendInvoice(): void
@@ -51,35 +50,35 @@ class Show extends Component
             return;
 
         $invoiceId = $this->invoice->id;
-        $this->resetData(); // Close modal first
         $this->dispatch('record-payment', invoiceId: $invoiceId);
+        // TallStackUI akan handle modal switching otomatis
     }
 
-    public function printInvoice()
+    public function editInvoice(): void
+    {
+        if (!$this->invoice)
+            return;
+
+        $invoiceId = $this->invoice->id;
+        $this->resetData(); // Reset hanya untuk navigation
+        $this->redirect(route('invoices.edit', $invoiceId), navigate: true);
+    }
+
+    public function printInvoice(): void
     {
         if (!$this->invoice) {
             $this->toast()->error('Error', 'Invoice tidak ditemukan')->send();
             return;
         }
 
-        $invoice = $this->invoice;
-
-        // Buka preview di tab baru dengan delay
-        $this->dispatch('open-preview-delayed', [
-            'url' => route('invoice.pdf.preview', $invoice->id),
-            'delay' => 500
+        // Dispatch JavaScript untuk print (preview + download)
+        $this->dispatch('print-invoice', [
+            'previewUrl' => route('invoice.pdf.preview', $this->invoice->id),
+            'downloadUrl' => route('invoice.pdf.download', $this->invoice->id),
+            'filename' => 'Invoice-' . $this->invoice->invoice_number . '.pdf'
         ]);
 
-        $service = new \App\Services\InvoicePrintService();
-        $pdf = $service->generateSingleInvoicePdf($invoice);
-
-        $filename = 'Invoice-' . str_replace(['/', '\\', ':', '*', '?', '"', '<', '>', '|'], '-', $invoice->invoice_number) . '.pdf';
-
-        return response()->streamDownload(function () use ($pdf) {
-            echo $pdf->output();
-        }, $filename, [
-            'Content-Type' => 'application/pdf'
-        ]);
+        $this->toast()->success('Print', 'PDF sedang diproses')->send();
     }
 
     public function render()

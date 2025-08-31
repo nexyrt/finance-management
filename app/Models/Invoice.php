@@ -71,18 +71,15 @@ class Invoice extends Model
         return $this->total_amount - $this->total_cogs;
     }
 
-    // Corrected outstanding profit calculation
     public function getOutstandingProfitAttribute(): int
     {
         $totalPaid = $this->amount_paid;
         $totalCogs = $this->total_cogs;
 
-        // If payment hasn't covered COGS yet, no profit realized
         if ($totalPaid <= $totalCogs) {
-            return $this->gross_profit; // All profit still outstanding
+            return $this->gross_profit;
         }
 
-        // Payment exceeded COGS, some profit realized
         $realizedProfit = $totalPaid - $totalCogs;
         return $this->gross_profit - $realizedProfit;
     }
@@ -90,24 +87,6 @@ class Invoice extends Model
     public function getPaidProfitAttribute(): int
     {
         return $this->gross_profit - $this->outstanding_profit;
-    }
-
-    // Calculate discount amount and total amount
-    public function calculateDiscount(): void
-    {
-        if ($this->discount_value > 0) {
-            if ($this->discount_type === 'percentage') {
-                // discount_value is stored in basis points (e.g., 1500 = 15%)
-                $this->discount_amount = (int) ($this->subtotal * ($this->discount_value / 10000));
-            } else {
-                // Fixed amount discount
-                $this->discount_amount = min($this->discount_value, $this->subtotal);
-            }
-        } else {
-            $this->discount_amount = 0;
-        }
-
-        $this->total_amount = $this->subtotal - $this->discount_amount;
     }
 
     // Update invoice status based on payments

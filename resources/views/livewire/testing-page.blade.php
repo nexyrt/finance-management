@@ -1,116 +1,135 @@
-<div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
-    <div class="flex justify-between items-center mb-6">
-        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Income vs Expense</h1>
-        <button wire:click="refreshData" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
-            Refresh Data
-        </button>
+<div class="max-w-3xl mx-auto p-6 space-y-6">
+    <h2 class="text-xl font-bold">Testing Page - Edit Invoice</h2>
+
+    <!-- Invoice Selection -->
+    <div class="grid grid-cols-1 gap-4">
+        <x-select.styled wire:model.live="selectedInvoiceId" :options="$invoiceOptions" label="Select Invoice to Edit"
+            placeholder="Choose an invoice..." searchable />
     </div>
 
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border dark:border-gray-700 p-6">
-        <div x-data="chartJsComponent(@js($chartData))" x-init="createChart()" wire:key="chart-{{ json_encode($chartData) }}">
-            <canvas id="income-expense-chart" class="w-full"></canvas>
+    <!-- Current Invoice Info -->
+    @if ($invoice)
+        <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+            <h3 class="font-semibold text-green-800">Current Invoice: #{{ $invoice->invoice_number }}</h3>
+            <p class="text-green-700">Client: {{ $invoice->client->name }}</p>
+            <p class="text-green-700">Items: {{ $invoice->items->count() }}</p>
+        </div>
+    @endif
+
+    <!-- Alpine.js Repeater -->
+    <div x-data="{
+        services: [
+            { name: '', price: 0, quantity: 1 }
+        ],
+    
+        addService() {
+            this.services.push({ name: '', price: 0, quantity: 1 });
+        },
+    
+        removeService(index) {
+            this.services.splice(index, 1);
+            if (this.services.length === 0) {
+                this.services = [{ name: '', price: 0, quantity: 1 }];
+            }
+        },
+    
+        getTotal() {
+            return this.services.reduce((sum, service) => {
+                return sum + ((parseInt(service.price) || 0) * (parseInt(service.quantity) || 1));
+            }, 0);
+        },
+    
+        submitToLivewire() {
+            const validServices = this.services.filter(s => s.name.trim() && s.price > 0);
+            $wire.saveServices(validServices);
+        }
+    }"
+        x-on:populate-repeater.window="
+        console.log('Event received:', $event.detail);
+        const data = Array.isArray($event.detail[0]) ? $event.detail[0] : $event.detail;
+        services = data.length > 0 ? data : [{ name: '', price: 0, quantity: 1 }];
+        console.log('Services after populate:', services);
+    "
+        x-on:reset-repeater.window="
+        services = [{ name: '', price: 0, quantity: 1 }];
+    ">
+
+        <!-- Controls -->
+        <div class="flex justify-between items-center">
+            <h3 class="font-semibold">Invoice Items</h3>
+            <x-button x-on:click="addService()" icon="plus" color="green" size="sm">
+                Add Item
+            </x-button>
+        </div>
+
+        <!-- Services List -->
+        <div class="space-y-3">
+            <template x-for="(service, index) in services" :key="index">
+                <div class="p-4 border rounded-lg bg-gray-50"
+                    x-transition:enter="transform transition ease-out duration-200"
+                    x-transition:enter-start="scale-95 opacity-0" x-transition:enter-end="scale-100 opacity-100">
+
+                    <div class="grid grid-cols-12 gap-3 items-center">
+                        <!-- Service Name -->
+                        <div class="col-span-5">
+                            <x-input x-model="service.name" label="Service Name" placeholder="Enter service name" />
+                        </div>
+
+                        <!-- Quantity -->
+                        <div class="col-span-2">
+                            <x-input x-model="service.quantity" label="Qty" type="number" min="1"
+                                placeholder="1" />
+                        </div>
+
+                        <!-- Unit Price -->
+                        <div class="col-span-3">
+                            <x-input x-model="service.price" label="Unit Price" type="number" min="0"
+                                placeholder="0" />
+                        </div>
+
+                        <!-- Remove Button -->
+                        <div class="col-span-2 pt-6">
+                            <x-button.circle x-on:click="removeService(index)" x-show="services.length > 1"
+                                icon="trash" color="red" size="sm" />
+                        </div>
+                    </div>
+
+                    <!-- Item Total -->
+                    <div x-show="service.name || service.price > 0"
+                        class="mt-2 text-sm text-gray-600 flex justify-between">
+                        <span x-text="service.name || 'Unnamed service'"></span>
+                        <span class="font-medium">
+                            <span x-text="service.quantity || 1"></span> × Rp <span
+                                x-text="parseInt(service.price || 0).toLocaleString('id-ID')"></span> =
+                            <strong>Rp <span
+                                    x-text="((service.quantity || 1) * (parseInt(service.price) || 0)).toLocaleString('id-ID')"></span></strong>
+                        </span>
+                    </div>
+                </div>
+            </template>
+        </div>
+
+        <!-- Grand Total -->
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div class="flex justify-between items-center">
+                <span class="font-semibold">Grand Total:</span>
+                <span class="text-lg font-bold text-blue-600">
+                    Rp <span x-text="getTotal().toLocaleString('id-ID')"></span>
+                </span>
+            </div>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="flex gap-3">
+            <x-button x-on:click="submitToLivewire()" color="primary" icon="check">
+                Update Invoice
+            </x-button>
+
+            <!-- Debug -->
+            <details class="flex-1">
+                <summary class="cursor-pointer text-sm text-gray-500">Debug Data</summary>
+                <pre class="text-xs bg-gray-100 p-2 rounded mt-1" x-text="JSON.stringify(services, null, 2)"></pre>
+            </details>
         </div>
     </div>
 </div>
-
-<!-- Chart.js CDN -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<script>
-    function chartJsComponent(data) {
-        return {
-            chart: null,
-
-            createChart() {
-                const ctx = document.getElementById('income-expense-chart');
-                if (!ctx) return;
-
-                const isDark = document.documentElement.classList.contains('dark');
-
-                const labels = data.map(item => item.month);
-                const incomeData = data.map(item => item.income);
-                const expenseData = data.map(item => item.expense);
-
-                if (this.chart) {
-                    this.chart.destroy();
-                }
-
-                this.chart = new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            label: 'Income',
-                            data: incomeData,
-                            backgroundColor: '#10B981',
-                            borderColor: '#059669',
-                            borderWidth: 1,
-                            borderRadius: 6,
-                            borderSkipped: false,
-                        }, {
-                            label: 'Expense',
-                            data: expenseData,
-                            backgroundColor: '#EF4444',
-                            borderColor: '#DC2626',
-                            borderWidth: 1,
-                            borderRadius: 6,
-                            borderSkipped: false,
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                labels: {
-                                    color: isDark ? '#F3F4F6' : '#1F2937'
-                                }
-                            },
-                            tooltip: {
-                                callbacks: {
-                                    label: function(context) {
-                                        return context.dataset.label + ': ' + context.parsed.y + 'K IDR';
-                                    }
-                                }
-                            }
-                        },
-                        scales: {
-                            x: {
-                                ticks: {
-                                    color: isDark ? '#D1D5DB' : '#374151'
-                                },
-                                grid: {
-                                    color: isDark ? '#374151' : '#E5E7EB'
-                                }
-                            },
-                            y: {
-                                ticks: {
-                                    color: isDark ? '#D1D5DB' : '#374151',
-                                    callback: function(value) {
-                                        return value + 'K';
-                                    }
-                                },
-                                grid: {
-                                    color: isDark ? '#374151' : '#E5E7EB'
-                                },
-                                title: {
-                                    display: true,
-                                    text: 'Amount (IDR)',
-                                    color: isDark ? '#D1D5DB' : '#374151'
-                                }
-                            }
-                        },
-                        elements: {
-                            bar: {
-                                borderRadius: 6
-                            }
-                        }
-                    }
-                });
-
-                // Set canvas height
-                ctx.style.height = '400px';
-            }
-        }
-    }
-</script>

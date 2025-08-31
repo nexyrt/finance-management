@@ -55,6 +55,9 @@ class InvoiceSeeder extends Seeder
                 $quantity = rand(1, 5);
                 $unitPrice = (int) $service->price + rand(-500000, 1000000); // Convert to integer
                 $amount = $quantity * $unitPrice;
+                
+                // Random COGS (40-80% of unit price)
+                $cogsAmount = (int) ($amount * rand(40, 80) / 100);
 
                 InvoiceItem::factory()->create([
                     'invoice_id' => $invoice->id,
@@ -63,21 +66,38 @@ class InvoiceSeeder extends Seeder
                     'quantity' => $quantity,
                     'unit_price' => $unitPrice,
                     'amount' => $amount,
+                    'cogs_amount' => $cogsAmount,
                 ]);
 
                 $subtotal += $amount;
             }
 
-            // Calculate discount and total
-            $invoice->subtotal = $subtotal;
-            $invoice->calculateDiscount(); // This will set discount_amount and total_amount
-            $invoice->save();
+            // Calculate discount amount and total manually
+            $discountAmount = 0;
+            if ($discountValue > 0) {
+                if ($discountType === 'percentage') {
+                    // Convert basis points to percentage (1500 = 15%)
+                    $discountAmount = (int) ($subtotal * $discountValue / 10000);
+                } else {
+                    // Fixed amount discount
+                    $discountAmount = min($discountValue, $subtotal); // Don't exceed subtotal
+                }
+            }
+
+            $totalAmount = $subtotal - $discountAmount;
+
+            // Update invoice with calculated values
+            $invoice->update([
+                'subtotal' => $subtotal,
+                'discount_amount' => $discountAmount,
+                'total_amount' => $totalAmount,
+            ]);
 
             // Create payments (70% chance)
             if (rand(1, 100) <= 70) {
                 $paymentAmount = rand(1, 100) <= 80
-                    ? $invoice->total_amount // Full payment
-                    : (int) ($invoice->total_amount * rand(30, 90) / 100); // Partial payment
+                    ? $totalAmount // Full payment
+                    : (int) ($totalAmount * rand(30, 90) / 100); // Partial payment
 
                 Payment::factory()->create([
                     'invoice_id' => $invoice->id,

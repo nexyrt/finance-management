@@ -91,22 +91,13 @@ class Index extends Component
         return $query->paginate($this->quantity)->withQueryString();
     }
 
-    public function bulkPrintInvoices()
+    public function bulkPrintInvoices(): void
     {
         if (empty($this->selected)) {
             $this->toast()->warning('Warning', 'Pilih minimal satu invoice untuk di-print')->send();
             return;
         }
 
-        $this->dialog()
-            ->question('Konfirmasi Bulk Print', "Download " . count($this->selected) . " invoice PDF?")
-            ->confirm('Ya, Download', 'confirmBulkPrint', 'Memulai download')
-            ->cancel('Batal')
-            ->send();
-    }
-
-    public function confirmBulkPrint(): void
-    {
         try {
             $invoices = Invoice::whereIn('id', $this->selected)->get(['id', 'invoice_number']);
 
@@ -115,12 +106,15 @@ class Index extends Component
                 return;
             }
 
+            // Dispatch ke JavaScript dengan delay yang lebih lama untuk browser modern
             $this->dispatch('start-bulk-download', [
-                'urls' => $invoices->map(fn($invoice) => [
+                'downloads' => $invoices->map(fn($invoice) => [
+                    'id' => $invoice->id,
                     'invoice_number' => $invoice->invoice_number,
                     'url' => route('invoice.pdf.download', $invoice->id)
                 ])->toArray(),
-                'delay' => 800
+                'delay' => 2000, // 2 detik delay antar download
+                'method' => 'iframe' // Gunakan method iframe untuk bypass popup blocker
             ]);
 
             $this->selected = [];
@@ -158,22 +152,13 @@ class Index extends Component
         $this->resetPage();
     }
 
-    public function openBulkDeleteModal(): void
+    public function bulkDelete(): void
     {
         if (empty($this->selected)) {
             $this->toast()->warning('Warning', 'Pilih minimal satu invoice untuk dihapus')->send();
             return;
         }
 
-        $this->dialog()
-            ->question('Konfirmasi Bulk Delete', "Yakin ingin menghapus " . count($this->selected) . " invoice?")
-            ->confirm('Ya, Hapus', 'bulkDelete', 'Proses penghapusan dimulai')
-            ->cancel('Batal')
-            ->send();
-    }
-
-    public function bulkDelete(): void
-    {
         try {
             DB::transaction(function () {
                 \App\Models\InvoiceItem::whereIn('invoice_id', $this->selected)->delete();
@@ -182,9 +167,9 @@ class Index extends Component
 
             $deletedCount = count($this->selected);
             $this->selected = [];
-            $this->dialog()->success('Berhasil', "Berhasil menghapus {$deletedCount} invoice")->send();
+            $this->toast()->success('Berhasil', "Berhasil menghapus {$deletedCount} invoice")->send();
         } catch (\Exception $e) {
-            $this->dialog()->error('Error', 'Gagal menghapus: ' . $e->getMessage())->send();
+            $this->toast()->error('Error', 'Gagal menghapus: ' . $e->getMessage())->send();
         }
     }
 
