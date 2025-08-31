@@ -7,297 +7,320 @@
         <p class="text-sm text-secondary-600 dark:text-dark-400 mt-1">Modify invoice details and line items</p>
     </div>
 
-    <!-- Status Change Warning -->
-    @if ($this->getPreviewStatusProperty() !== $status)
+    <!-- Alpine.js Container -->
+    <div x-data="{
+        items: [
+            { client_id: '', service_id: '', service_name: '', quantity: 1, price: 0, cogs_amount: 0 }
+        ],
+        clients: @js($clients),
+        services: @js($services),
+    
+        addItem() {
+            this.items.push({
+                client_id: '',
+                service_id: '',
+                service_name: '',
+                quantity: 1,
+                price: 0,
+                cogs_amount: 0
+            });
+        },
+    
+        removeItem(index) {
+            if (this.items.length > 1) {
+                this.items.splice(index, 1);
+            }
+        },
+    
+        setServiceDetails(index, serviceId) {
+            const service = this.services.find(s => s.value == serviceId);
+            if (service) {
+                this.items[index].service_name = service.label;
+                this.items[index].price = service.price;
+            }
+        },
+    
+        getItemTotal(item) {
+            return (item.quantity || 0) * (item.price || 0);
+        },
+    
+        getSubtotal() {
+            return this.items.reduce((sum, item) => sum + this.getItemTotal(item), 0);
+        },
+    
+        getTotalCogs() {
+            return this.items.reduce((sum, item) => sum + (item.cogs_amount || 0), 0);
+        },
+    
+        getDiscountAmount() {
+            const subtotal = this.getSubtotal();
+            if ($wire.discount_type === 'percentage') {
+                return Math.floor((subtotal * $wire.discount_value) / 10000);
+            } else {
+                return parseInt($wire.discount_value) || 0;
+            }
+        },
+    
+        getGrandTotal() {
+            return Math.max(0, this.getSubtotal() - this.getDiscountAmount());
+        },
+    
+        getGrossProfit() {
+            return this.getGrandTotal() - this.getTotalCogs();
+        },
+    
+        submitInvoice() {
+            const validItems = this.items.filter(item =>
+                item.client_id &&
+                item.service_name.trim() &&
+                item.quantity > 0 &&
+                item.price >= 0
+            );
+    
+            if (validItems.length === 0) {
+                alert('Please add at least one valid item');
+                return;
+            }
+    
+            $wire.saveInvoice(validItems, this.getSubtotal(), this.getGrandTotal());
+        }
+    }"
+        x-on:populate-invoice-items.window="
+        const data = Array.isArray($event.detail[0]) ? $event.detail[0] : $event.detail;
+        items = data.length > 0 ? data : [{ client_id: '', service_id: '', service_name: '', quantity: 1, price: 0, cogs_amount: 0 }];
+        console.log('Alpine populated with:', items);
+    "
+        x-init="// Trigger population after Alpine.js is ready
+        $nextTick(() => {
+            if (@js($invoice && $invoice->items->isNotEmpty())) {
+                $wire.$dispatch('populate-invoice-items', @js(
+    $invoice
+        ? $invoice->items
+            ->map(function ($item) {
+                return [
+                    'client_id' => $item->client_id,
+                    'service_id' => '',
+                    'service_name' => $item->service_name,
+                    'quantity' => $item->quantity,
+                    'price' => $item->unit_price,
+                    'cogs_amount' => $item->cogs_amount ?? 0,
+                ];
+            })
+            ->toArray()
+        : [],
+));
+            }
+        });">>
+
+        <!-- Invoice Details -->
         <div
-            class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mb-6">
-            <div class="flex items-center gap-2">
-                <x-icon name="exclamation-triangle" class="w-4 h-4 text-yellow-600 dark:text-yellow-400" />
-                <span class="text-sm text-yellow-800 dark:text-yellow-200 font-medium">
-                    Status will change from <strong>{{ ucfirst($status) }}</strong> to
-                    <strong>{{ ucfirst($this->getPreviewStatusProperty()) }}</strong>
-                </span>
-            </div>
-        </div>
-    @endif
+            class="bg-white dark:bg-dark-800 border border-secondary-200 dark:border-dark-600 rounded-lg p-4 sm:p-6 mb-6">
+            <h3 class="text-lg font-semibold text-secondary-900 dark:text-dark-50 mb-4">Invoice Information</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <x-input wire:model="invoice_number" label="Invoice Number" readonly />
 
-    <!-- Invoice Details -->
-    <div class="bg-white dark:bg-dark-800 border border-secondary-200 dark:border-dark-600 rounded-lg p-4 sm:p-6 mb-6">
-        <h3 class="text-lg font-semibold text-secondary-900 dark:text-dark-50 mb-4">Invoice Information</h3>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <x-input wire:model="invoice_number" label="Invoice Number" readonly />
+                <x-select.styled wire:model="billed_to_id" :options="$clients" label="Bill To"
+                    placeholder="Select client..." searchable required />
 
-            <x-select.styled wire:model="billed_to_id" :options="$clients" label="Bill To" placeholder="Select client..."
-                searchable required />
-
-            <x-date wire:model="issue_date" label="Issue Date" required />
-
-            <x-date wire:model="due_date" label="Due Date" required />
-        </div>
-    </div>
-
-    <!-- Invoice Items -->
-    <div class="bg-white dark:bg-dark-800 border border-secondary-200 dark:border-dark-600 rounded-lg mb-6">
-        <div class="p-4 border-b border-secondary-200 dark:border-dark-600">
-            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-                <h3 class="text-lg font-semibold text-secondary-900 dark:text-dark-50">Invoice Items</h3>
-                <x-button wire:click="addItem" icon="plus" color="primary" size="sm">
-                    Add Item
-                </x-button>
+                <x-date wire:model="issue_date" label="Issue Date" required />
+                <x-date wire:model="due_date" label="Due Date" required />
             </div>
         </div>
 
-        <!-- Desktop Table -->
-        <div class="hidden xl:block">
-            <!-- Table Header -->
-            <div class="bg-secondary-50 dark:bg-dark-900 border-b border-secondary-200 dark:border-dark-600">
-                <div class="grid grid-cols-15 gap-4 p-4 text-sm font-semibold text-secondary-700 dark:text-dark-200">
-                    <div class="col-span-1">#</div>
-                    <div class="col-span-2">Client</div>
-                    <div class="col-span-3">Service</div>
-                    <div class="col-span-1">Qty</div>
-                    <div class="col-span-2">Price</div>
-                    <div class="col-span-2">COGS</div>
-                    <div class="col-span-2">Total</div>
-                    <div class="col-span-1">Profit</div>
-                    <div class="col-span-1 text-center">Actions</div>
+        <!-- Invoice Items (Alpine.js Managed) -->
+        <div class="bg-white dark:bg-dark-800 border border-secondary-200 dark:border-dark-600 rounded-lg mb-6">
+            <div class="p-4 border-b border-secondary-200 dark:border-dark-600">
+                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+                    <h3 class="text-lg font-semibold text-secondary-900 dark:text-dark-50">Invoice Items</h3>
+                    <x-button x-on:click="addItem()" icon="plus" color="primary" size="sm">
+                        Add Item
+                    </x-button>
                 </div>
             </div>
 
-            <!-- Table Body -->
+            <!-- Items List -->
             <div class="divide-y divide-secondary-100 dark:divide-dark-700">
-                @forelse($items as $index => $item)
-                    <div class="grid grid-cols-15 gap-4 p-4 hover:bg-secondary-50 dark:hover:bg-dark-700 transition-colors"
-                        wire:key="item-{{ $index }}">
+                <template x-for="(item, index) in items" :key="index">
+                    <div class="p-4 space-y-4" x-transition:enter="transform transition ease-out duration-200"
+                        x-transition:enter-start="scale-95 opacity-0" x-transition:enter-end="scale-100 opacity-100">
 
-                        <div class="col-span-1 flex items-center">
-                            <x-badge :text="$index + 1" color="primary" size="sm" />
+                        <!-- Item Header -->
+                        <div class="flex justify-between items-center">
+                            <x-badge x-text="`Item ${index + 1}`" color="primary" />
+                            <x-button.circle x-on:click="removeItem(index)" x-show="items.length > 1" icon="trash"
+                                color="red" size="sm" />
                         </div>
 
-                        <div class="col-span-2 flex items-center">
-                            <div class="w-full">
-                                <x-select.styled wire:model.blur="items.{{ $index }}.client_id" :options="$clients"
-                                    placeholder="Select client..." searchable />
+                        <!-- Item Fields -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+                            <!-- Client -->
+                            <div class="lg:col-span-2">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Client</label>
+                                <select x-model="item.client_id"
+                                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                    <option value="">Select client...</option>
+                                    <template x-for="client in clients">
+                                        <option :value="client.value" x-text="client.label"></option>
+                                    </template>
+                                </select>
+                            </div>
+
+                            <!-- Service -->
+                            <div class="lg:col-span-2">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Service</label>
+                                <select x-model="item.service_id"
+                                    x-on:change="setServiceDetails(index, item.service_id)"
+                                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                    <option value="">Select service...</option>
+                                    <template x-for="service in services">
+                                        <option :value="service.value" x-text="service.label"></option>
+                                    </template>
+                                </select>
+
+                                <!-- Custom service name if no service selected -->
+                                <input x-show="!item.service_id" x-model="item.service_name" type="text"
+                                    placeholder="Custom service name"
+                                    class="mt-2 w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm" />
+                            </div>
+
+                            <!-- Quantity -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Qty</label>
+                                <input x-model="item.quantity" type="number" min="1"
+                                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+                            </div>
+
+                            <!-- Price -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Price</label>
+                                <input x-model="item.price" type="number" min="0"
+                                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
                             </div>
                         </div>
 
-                        <div class="col-span-3 space-y-2">
-                            <x-select.styled wire:model.blur="items.{{ $index }}.service_id" :options="$services"
-                                placeholder="Select service..." searchable />
+                        <!-- Additional Fields -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <!-- COGS -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">COGS Amount</label>
+                                <input x-model="item.cogs_amount" type="number" min="0"
+                                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+                            </div>
 
-                            @if (empty($item['service_id']))
-                                <x-input wire:model.blur="items.{{ $index }}.service_name"
-                                    placeholder="Custom service name" class="text-sm" />
-                            @else
-                                <div
-                                    class="px-3 py-1 bg-primary-50 dark:bg-primary-900/20 rounded text-xs text-primary-700 dark:text-primary-300 border border-primary-200 dark:border-primary-800">
-                                    Template: {{ $item['service_name'] }}
+                            <!-- Item Total (Read-only) -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Item Total</label>
+                                <div class="px-3 py-2 bg-gray-100 rounded-md font-medium">
+                                    Rp <span x-text="getItemTotal(item).toLocaleString('id-ID')"></span>
                                 </div>
-                            @endif
-                        </div>
-
-                        <div class="col-span-1 flex items-center">
-                            <div class="w-full">
-                                <x-input wire:model.blur="items.{{ $index }}.quantity" type="number"
-                                    min="1" class="text-center" />
                             </div>
-                        </div>
 
-                        <div class="col-span-2 flex items-center">
-                            <div class="w-full">
-                                <x-wireui-currency prefix="Rp " wire:model.blur="items.{{ $index }}.price" />
+                            <!-- Item Profit -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Item Profit</label>
+                                <div class="px-3 py-2 rounded-md font-medium"
+                                    x-bind:class="(getItemTotal(item) - (item.cogs_amount || 0)) >= 0 ?
+                                        'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
+                                    Rp <span
+                                        x-text="(getItemTotal(item) - (item.cogs_amount || 0)).toLocaleString('id-ID')"></span>
+                                </div>
                             </div>
-                        </div>
-
-                        <div class="col-span-2 flex items-center">
-                            <div class="w-full">
-                                <x-wireui-currency prefix="Rp "
-                                    wire:model.blur="items.{{ $index }}.cogs_amount" />
-                            </div>
-                        </div>
-
-                        <div class="col-span-2 flex items-center">
-                            <div class="font-semibold text-secondary-900 dark:text-dark-100 text-sm">
-                                Rp {{ number_format($item['total'], 0, ',', '.') }}
-                            </div>
-                        </div>
-
-                        <div class="col-span-1 flex items-center">
-                            @php
-                                $profit = ($item['total'] ?? 0) - ($item['cogs_amount'] ?? 0);
-                                $profitClass = $profit >= 0 ? 'text-green-600' : 'text-red-600';
-                            @endphp
-                            <div class="text-xs font-medium {{ $profitClass }}">
-                                Rp {{ number_format($profit, 0, ',', '.') }}
-                            </div>
-                        </div>
-
-                        <div class="col-span-1 flex justify-center items-center">
-                            @if (count($items) > 1)
-                                <x-button.circle wire:click="removeItem({{ $index }})" icon="trash"
-                                    color="red" size="sm" />
-                            @endif
                         </div>
                     </div>
-                @empty
-                    <div class="p-8 text-center text-secondary-500 dark:text-dark-400">
-                        <p class="font-medium">No items found</p>
-                    </div>
-                @endforelse
+                </template>
             </div>
         </div>
 
-        <!-- Mobile Cards -->
-        <div class="xl:hidden divide-y divide-secondary-100 dark:divide-dark-700">
-            @forelse($items as $index => $item)
-                <div class="p-4 space-y-4" wire:key="item-mobile-{{ $index }}">
-                    <div class="flex justify-between items-center">
-                        <x-badge :text="'Item ' . ($index + 1)" color="primary" />
-                        @if (count($items) > 1)
-                            <x-button.circle wire:click="removeItem({{ $index }})" icon="trash" color="red"
-                                size="sm" />
-                        @endif
-                    </div>
+        <!-- Discount Section -->
+        <div
+            class="bg-white dark:bg-dark-800 border border-secondary-200 dark:border-dark-600 rounded-lg p-4 sm:p-6 mb-6">
+            <h3 class="text-lg font-semibold text-secondary-900 dark:text-dark-50 mb-4">Discount</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <x-select.styled wire:model.live="discount_type" :options="[
+                    ['label' => 'Fixed Amount', 'value' => 'fixed'],
+                    ['label' => 'Percentage', 'value' => 'percentage'],
+                ]" label="Discount Type" />
 
-                    <div class="space-y-3">
-                        <x-select.styled wire:model.blur="items.{{ $index }}.client_id" :options="$clients"
-                            placeholder="Select client..." searchable label="Client" />
-
-                        <x-select.styled wire:model.blur="items.{{ $index }}.service_id" :options="$services"
-                            placeholder="Select service..." searchable label="Service" />
-
-                        @if (empty($item['service_id']))
-                            <x-input wire:model.blur="items.{{ $index }}.service_name"
-                                placeholder="Custom service name" label="Service Name" />
-                        @else
-                            <div
-                                class="px-3 py-1 bg-primary-50 dark:bg-primary-900/20 rounded text-xs text-primary-700 dark:text-primary-300 border border-primary-200 dark:border-primary-800">
-                                Template: {{ $item['service_name'] }}
-                            </div>
-                        @endif
-
-                        <div class="grid grid-cols-2 gap-3">
-                            <x-input wire:model.blur="items.{{ $index }}.quantity" type="number"
-                                min="1" label="Quantity" />
-                            <x-wireui-currency prefix="Rp " wire:model.blur="items.{{ $index }}.price"
-                                label="Price" />
-                        </div>
-
-                        <x-wireui-currency prefix="Rp " wire:model.blur="items.{{ $index }}.cogs_amount"
-                            label="COGS Amount" />
-
-                        <div class="bg-secondary-50 dark:bg-dark-700 p-3 rounded-lg">
-                            <div class="flex justify-between items-center mb-2">
-                                <span class="text-sm text-secondary-600 dark:text-dark-300">Total:</span>
-                                <span class="font-semibold text-secondary-900 dark:text-dark-100">
-                                    Rp {{ number_format($item['total'], 0, ',', '.') }}
-                                </span>
-                            </div>
-                            @php
-                                $profit = ($item['total'] ?? 0) - ($item['cogs_amount'] ?? 0);
-                                $profitClass = $profit >= 0 ? 'text-green-600' : 'text-red-600';
-                            @endphp
-                            <div class="flex justify-between items-center">
-                                <span class="text-sm text-secondary-600 dark:text-dark-300">Profit:</span>
-                                <span class="font-semibold {{ $profitClass }}">
-                                    Rp {{ number_format($profit, 0, ',', '.') }}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
+                <div>
+                    @if ($discount_type === 'percentage')
+                        <x-input wire:model.live="discount_value" type="number" min="0" max="10000"
+                            step="100" label="Discount Value (%)" hint="Example: 1500 = 15%" />
+                    @else
+                        <x-input wire:model.live="discount_value" type="number" min="0"
+                            label="Discount Amount" />
+                    @endif
                 </div>
-            @empty
-                <div class="p-8 text-center text-secondary-500 dark:text-dark-400">
-                    <p class="font-medium">No items found</p>
-                </div>
-            @endforelse
-        </div>
-    </div>
 
-    <div class="flex justify-end mb-5">
-        <x-button wire:click="addItem" icon="plus" color="primary" size="sm">
-            Add Item
-        </x-button>
-    </div>
-
-    <!-- Discount Section -->
-    <div class="bg-white dark:bg-dark-800 border border-secondary-200 dark:border-dark-600 rounded-lg p-4 sm:p-6 mb-6">
-        <h3 class="text-lg font-semibold text-secondary-900 dark:text-dark-50 mb-4">Discount</h3>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            <x-select.styled wire:model.live="discount_type" :options="[
-                ['label' => 'Fixed Amount', 'value' => 'fixed'],
-                ['label' => 'Percentage', 'value' => 'percentage'],
-            ]" label="Discount Type" />
-
-            <div>
-                @if ($discount_type === 'percentage')
-                    <x-input wire:model.live="discount_value" type="number" min="0" max="10000"
-                        step="100" label="Discount Value (%)" hint="Example: 1500 = 15%" />
-                @else
-                    <x-wireui-currency prefix="Rp " wire:model.blur="discount_value" label="Discount Amount" />
-                @endif
+                <x-input wire:model="discount_reason" label="Discount Reason" placeholder="Optional reason" />
             </div>
 
-            <x-input wire:model="discount_reason" label="Discount Reason" placeholder="Optional reason" />
-        </div>
-
-        <!-- Discount Preview -->
-        @if ($this->discountAmount > 0)
-            <div
+            <!-- Discount Preview (Alpine.js reactive) -->
+            <div x-show="getDiscountAmount() > 0" x-transition
                 class="mt-4 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
                 <div class="flex justify-between items-center text-sm">
-                    <span class="text-green-700 dark:text-green-300">
-                        Discount Applied:
-                        @if ($discount_type === 'percentage')
-                            {{ number_format($discount_value / 100, 2) }}%
-                        @else
-                            Fixed Amount
-                        @endif
-                    </span>
+                    <span class="text-green-700 dark:text-green-300">Discount Applied:</span>
                     <span class="font-semibold text-green-800 dark:text-green-200">
-                        -Rp {{ number_format($this->discountAmount, 0, ',', '.') }}
+                        -Rp <span x-text="getDiscountAmount().toLocaleString('id-ID')"></span>
                     </span>
                 </div>
-            </div>
-        @endif
-    </div>
-
-    <!-- Footer Actions -->
-    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4">
-        <div class="text-sm text-secondary-600 dark:text-dark-400 space-y-1">
-            <div>Total {{ count($items) }} item(s) • Subtotal:
-                <span class="font-medium text-secondary-900 dark:text-dark-100">Rp
-                    {{ number_format($this->subtotal, 0, ',', '.') }}</span>
-            </div>
-            <div>Total COGS:
-                <span class="font-medium text-red-600 dark:text-red-400">Rp
-                    {{ number_format($this->totalCogs, 0, ',', '.') }}</span>
-            </div>
-            @if ($this->discountAmount > 0)
-                <div>Discount:
-                    <span class="font-medium text-green-600 dark:text-green-400">-Rp
-                        {{ number_format($this->discountAmount, 0, ',', '.') }}</span>
-                </div>
-            @endif
-            <div>Gross Profit:
-                <span class="font-bold text-green-600 dark:text-green-400">Rp
-                    {{ number_format($this->grossProfit, 0, ',', '.') }}</span>
-                <span class="text-xs">({{ number_format($this->grossProfitMargin, 1) }}%)</span>
-            </div>
-            <div>Grand Total:
-                <span class="font-bold text-lg text-secondary-900 dark:text-dark-100">Rp
-                    {{ number_format($this->grandTotal, 0, ',', '.') }}</span>
             </div>
         </div>
 
-        <div class="flex flex-wrap gap-3">
-            <x-button href="{{ route('invoices.index') }}" color="secondary dark:dark hover:secondary" outline>
-                Cancel
-            </x-button>
+        <!-- Summary (Alpine.js Reactive) -->
+        <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
+            <h3 class="font-semibold text-blue-800 dark:text-blue-200 mb-3">Invoice Summary</h3>
 
-            <x-button wire:click="save" color="primary" icon="check">
-                Update Invoice
-            </x-button>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                <div>
+                    <span class="text-blue-600 dark:text-blue-300">Subtotal:</span>
+                    <div class="font-semibold">Rp <span x-text="getSubtotal().toLocaleString('id-ID')"></span></div>
+                </div>
+
+                <div>
+                    <span class="text-red-600 dark:text-red-400">Total COGS:</span>
+                    <div class="font-semibold text-red-600">Rp <span
+                            x-text="getTotalCogs().toLocaleString('id-ID')"></span></div>
+                </div>
+
+                <div x-show="getDiscountAmount() > 0">
+                    <span class="text-green-600 dark:text-green-400">Discount:</span>
+                    <div class="font-semibold text-green-600">-Rp <span
+                            x-text="getDiscountAmount().toLocaleString('id-ID')"></span></div>
+                </div>
+
+                <div>
+                    <span class="text-blue-600 dark:text-blue-300">Grand Total:</span>
+                    <div class="font-bold text-lg text-blue-800 dark:text-blue-200">Rp <span
+                            x-text="getGrandTotal().toLocaleString('id-ID')"></span></div>
+                </div>
+            </div>
+
+            <div class="mt-3 pt-3 border-t border-blue-200 dark:border-blue-700">
+                <div class="flex justify-between items-center">
+                    <span class="text-blue-600 dark:text-blue-300">Gross Profit:</span>
+                    <span class="font-bold text-green-600 dark:text-green-400">
+                        Rp <span x-text="getGrossProfit().toLocaleString('id-ID')"></span>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer Actions -->
+        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+            <div class="text-sm text-secondary-600 dark:text-dark-400">
+                <span x-text="items.length"></span> item(s) •
+                Real-time calculations powered by Alpine.js
+            </div>
+
+            <div class="flex flex-wrap gap-3">
+                <x-button href="{{ route('invoices.index') }}" wire:navigate color="secondary" outline>
+                    Cancel
+                </x-button>
+
+                <x-button x-on:click="submitInvoice()" color="primary" icon="check">
+                    Update Invoice
+                </x-button>
+            </div>
         </div>
     </div>
 </div>
