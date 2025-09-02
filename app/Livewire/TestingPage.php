@@ -8,92 +8,42 @@ use Livewire\Component;
 
 class TestingPage extends Component
 {
-    use Interactions;
+    // use Interactions;
     
-    public array $services = [];
-    public ?int $selectedInvoiceId = null;
-    public ?Invoice $invoice = null;
+    // public ?Invoice $invoice = null;
+    // public int $invoiceId;
     
-    public function updatedSelectedInvoiceId(): void
-    {
-        if (!$this->selectedInvoiceId) {
-            $this->invoice = null;
-            $this->dispatch('populate-repeater', []);
-            return;
-        }
-        
-        $this->invoice = Invoice::with('items')->find($this->selectedInvoiceId);
-        
-        if ($this->invoice) {
-            // Transform invoice items to Alpine.js format
-            $invoiceItems = $this->invoice->items->map(function($item) {
-                return [
-                    'name' => $item->service_name,
-                    'price' => $item->unit_price,
-                    'quantity' => $item->quantity
-                ];
-            })->toArray();
-            
-            // Send to Alpine.js
-            $this->dispatch('populate-repeater', $invoiceItems);
-            
-            $this->toast()
-                ->success('Invoice Loaded', "Invoice #{$this->invoice->invoice_number} loaded")
-                ->send();
-        }
-    }
+    // public function mount($id): void
+    // {
+    //     $this->invoiceId = $id;
+    //     $this->loadInvoice();
+    // }
     
-    public function saveServices($alpineData): void
-    {
-        $this->services = $alpineData;
+    // public function loadInvoice(): void
+    // {
+    //     $this->invoice = Invoice::with('items', 'client')->find($this->invoiceId);
         
-        if (!$this->invoice) {
-            $this->toast()->error('Error', 'No invoice selected')->send();
-            return;
-        }
+    //     if (!$this->invoice) {
+    //         abort(404, 'Invoice not found');
+    //     }
         
-        // Delete existing items
-        $this->invoice->items()->delete();
+    //     // Transform items untuk Alpine.js
+    //     $items = $this->invoice->items->map(fn($item) => [
+    //         'client_id' => $item->client_id,
+    //         'service_name' => $item->service_name,
+    //         'quantity' => $item->quantity,
+    //         'price' => $item->unit_price,
+    //         'cogs' => $item->cogs_amount ?? 0
+    //     ])->toArray();
         
-        // Create new items from Alpine data
-        foreach ($alpineData as $item) {
-            $this->invoice->items()->create([
-                'client_id' => $this->invoice->billed_to_id,
-                'service_name' => $item['name'],
-                'quantity' => $item['quantity'],
-                'unit_price' => $item['price'],
-                'amount' => $item['quantity'] * $item['price'],
-                'cogs_amount' => 0 // Default value
-            ]);
-        }
+    //     // Dispatch ke Alpine.js setelah component ready
+    //     $this->dispatch('populate-items', $items);
         
-        // Update invoice totals
-        $subtotal = array_sum(array_map(fn($item) => $item['quantity'] * $item['price'], $alpineData));
-        $this->invoice->update([
-            'subtotal' => $subtotal,
-            'total_amount' => $subtotal - $this->invoice->discount_amount
-        ]);
-        
-        // Reset all data
-        $this->reset(['services', 'selectedInvoiceId', 'invoice']);
-        $this->dispatch('reset-repeater');
-        
-        $this->toast()
-            ->success('Success', "Invoice updated successfully. Data has been reset.")
-            ->send();
-    }
+    //     $this->toast()->success('Loaded', "Invoice #{$this->invoice->invoice_number}")->send();
+    // }
     
     public function render()
     {
-        return view('livewire.testing-page', [
-            'invoiceOptions' => Invoice::with('client')
-                ->orderBy('created_at', 'desc')
-                ->get()
-                ->map(fn($invoice) => [
-                    'label' => "#{$invoice->invoice_number} - {$invoice->client->name}",
-                    'value' => $invoice->id
-                ])
-                ->toArray()
-        ]);
+        return view('livewire.testing-page');
     }
 }

@@ -29,8 +29,12 @@ class Edit extends Component
     public $discount_value = 0;
     public $discount_reason = '';
     
-    // Items - will be managed by Alpine.js
+    // Items array
     public $items = [];
+
+    protected $listeners = [
+        'edit-invoice' => 'loadInvoice'
+    ];
 
     public function mount($invoice = null)
     {
@@ -39,24 +43,9 @@ class Edit extends Component
             $this->loadInvoice($invoice);
         }
         $this->loadOptions();
-    }
-    
-    public function hydrate()
-    {
-        // Trigger Alpine.js populate after component is hydrated
-        if ($this->invoice && $this->invoice->items->isNotEmpty()) {
-            $invoiceItems = $this->invoice->items->map(function ($item) {
-                return [
-                    'client_id' => $item->client_id,
-                    'service_id' => '',
-                    'service_name' => $item->service_name,
-                    'quantity' => $item->quantity,
-                    'price' => $item->unit_price,
-                    'cogs_amount' => $item->cogs_amount ?? 0,
-                ];
-            })->toArray();
-            
-            $this->dispatch('populate-invoice-items', $invoiceItems);
+        
+        if (empty($this->items)) {
+            $this->addItem();
         }
     }
 
@@ -80,9 +69,8 @@ class Edit extends Component
         $this->discount_value = $this->invoice->discount_value;
         $this->discount_reason = $this->invoice->discount_reason ?? '';
         
-        // Transform items for Alpine.js
         if ($this->invoice->items->isNotEmpty()) {
-            $invoiceItems = $this->invoice->items->map(function ($item) {
+            $this->items = $this->invoice->items->map(function ($item) {
                 return [
                     'client_id' => $item->client_id,
                     'service_id' => '',
@@ -90,14 +78,9 @@ class Edit extends Component
                     'quantity' => $item->quantity,
                     'price' => $item->unit_price,
                     'cogs_amount' => $item->cogs_amount ?? 0,
+                    'total' => $item->amount
                 ];
             })->toArray();
-            
-            // Send to Alpine.js
-            $this->dispatch('populate-invoice-items', $invoiceItems);
-        } else {
-            // Send empty array to reset Alpine
-            $this->dispatch('populate-invoice-items', []);
         }
     }
 
@@ -121,30 +104,118 @@ class Edit extends Component
             ->toArray();
     }
 
-    public function saveInvoice($alpineItems, $alpineSubtotal, $alpineTotal)
+    public function addItem()
+    {
+        $this->items[] = [
+            'client_id' => '',
+            'service_id' => '',
+            'service_name' => '',
+            'quantity' => 1,
+            'price' => 0,
+            'cogs_amount' => 0,
+            'total' => 0
+        ];
+    }
+
+    public function removeItem($index)
+    {
+        if (count($this->items) > 1) {
+            unset($this->items[$index]);
+            $this->items = array_values($this->items);
+        }
+    }
+
+    public function updated($propertyName)
+    {
+        if (str_contains($propertyName, 'items.')) {
+            $parts = explode('.', $propertyName);
+            $index = $parts[1];
+            
+            if (in_array($parts[2], ['quantity', 'price'])) {
+                $this->calculateTotal($index);
+            }
+            
+            if ($parts[2] === 'service_id') {
+                $this->setServiceDetails($index);
+            }
+        }
+    }
+
+    public function calculateTotal($index)
+    {
+        $qty = (int) $this->items[$index]['quantity'];
+        $price = (int) $this->items[$index]['price'];
+        $this->items[$index]['total'] = $qty * $price;
+    }
+
+    public function setServiceDetails($index)
+    {
+        $serviceId = $this->items[$index]['service_id'];
+        if ($serviceId) {
+            $service = collect($this->services)->firstWhere('value', $serviceId);
+            if ($service) {
+                $this->items[$index]['service_name'] = $service['label'];
+                $this->items[$index]['price'] = $service['price'];
+                $this->calculateTotal($index);
+            }
+        }
+    }
+
+    public function getSubtotalProperty()
+    {
+        return collect($this->items)->sum('total');
+    }
+
+    public function getTotalCogsProperty()
+    {
+        return collect($this->items)->sum('cogs_amount');
+    }
+
+    public function getDiscountAmountProperty()
+    {
+        if ($this->discount_type === 'percentage') {
+            return (int) (($this->subtotal * $this->discount_value) / 10000);
+        } else {
+            return (int) $this->discount_value;
+        }
+    }
+
+    public function getGrandTotalProperty()
+    {
+        return max(0, $this->subtotal - $this->discountAmount);
+    }
+
+    public function getGrossProfitProperty()
+    {
+        return $this->grandTotal - $this->totalCogs;
+    }
+
+    public function getGrossProfitMarginProperty()
+    {
+        if ($this->grandTotal == 0) return 0;
+        return ($this->grossProfit / $this->grandTotal) * 100;
+    }
+
+    public function save()
     {
         $this->validate([
             'invoice_number' => 'required|string',
             'billed_to_id' => 'required|exists:clients,id',
             'issue_date' => 'required|date',
-            'due_date' => 'required|date|after_or_equal:issue_date',
+            'due_date' => 'required|date|after:issue_date',
+            'items.*.client_id' => 'required|exists:clients,id',
+            'items.*.service_name' => 'required|string',
+            'items.*.quantity' => 'required|integer|min:1',
+            'items.*.price' => 'required|integer|min:0',
+            'items.*.cogs_amount' => 'integer|min:0',
         ]);
 
-        // Validate Alpine items
-        foreach ($alpineItems as $index => $item) {
-            if (empty($item['client_id']) || empty($item['service_name']) || 
-                $item['quantity'] <= 0 || $item['price'] < 0) {
-                $this->toast()->error('Error', "Item " . ($index + 1) . " has invalid data")->send();
-                return;
-            }
-        }
-
         try {
-            \DB::transaction(function () use ($alpineItems, $alpineSubtotal, $alpineTotal) {
-                $this->updateInvoice($alpineItems, $alpineSubtotal, $alpineTotal);
+            \DB::transaction(function () {
+                $this->updateInvoice();
             });
 
-            $this->toast()->success('Success', 'Invoice updated successfully!')->send();
+            $this->toast()->success('Success', 'Invoice updated successfully!')->flash()->send();
             return redirect()->route('invoices.index');
             
         } catch (\Exception $e) {
@@ -152,32 +223,24 @@ class Edit extends Component
         }
     }
 
-    public function updateInvoice($alpineItems, $alpineSubtotal, $alpineTotal)
+    public function updateInvoice()
     {
         $oldStatus = $this->invoice->status;
-        
-        // Calculate discount amount
-        $discountAmount = 0;
-        if ($this->discount_type === 'percentage') {
-            $discountAmount = (int) (($alpineSubtotal * $this->discount_value) / 10000);
-        } else {
-            $discountAmount = (int) $this->discount_value;
-        }
 
         $this->invoice->update([
             'invoice_number' => $this->invoice_number,
             'billed_to_id' => $this->billed_to_id,
-            'subtotal' => $alpineSubtotal,
+            'subtotal' => $this->subtotal,
             'discount_type' => $this->discount_type,
             'discount_value' => $this->discount_value,
-            'discount_amount' => $discountAmount,
+            'discount_amount' => $this->discountAmount,
             'discount_reason' => $this->discount_reason,
-            'total_amount' => max(0, $alpineSubtotal - $discountAmount),
+            'total_amount' => $this->grandTotal,
             'issue_date' => $this->issue_date,
             'due_date' => $this->due_date,
         ]);
 
-        $this->updateInvoiceItems($alpineItems);
+        $this->updateInvoiceItems();
 
         $newStatus = $this->evaluateStatus();
         $this->invoice->update(['status' => $newStatus]);
@@ -187,17 +250,17 @@ class Edit extends Component
         }
     }
 
-    public function updateInvoiceItems($alpineItems)
+    public function updateInvoiceItems()
     {
         $this->invoice->items()->delete();
         
-        foreach ($alpineItems as $item) {
+        foreach ($this->items as $item) {
             $this->invoice->items()->create([
                 'client_id' => $item['client_id'],
                 'service_name' => $item['service_name'],
                 'quantity' => $item['quantity'],
                 'unit_price' => $item['price'],
-                'amount' => $item['quantity'] * $item['price'],
+                'amount' => $item['total'],
                 'cogs_amount' => $item['cogs_amount'] ?? 0,
             ]);
         }
@@ -228,6 +291,32 @@ class Edit extends Component
     public function logStatusChange($oldStatus, $newStatus)
     {
         \Log::info("Invoice {$this->invoice_number} status changed from {$oldStatus} to {$newStatus}");
+    }
+
+    public function getPreviewStatusProperty()
+    {
+        if (!$this->invoice || !$this->invoiceId) return 'draft';
+        
+        $invoice = Invoice::find($this->invoiceId);
+        if (!$invoice) return 'draft';
+        
+        $totalPaid = $invoice->payments()->sum('amount');
+        $newTotalAmount = $this->grandTotal;
+        $newDueDate = \Carbon\Carbon::parse($this->due_date);
+
+        if ($totalPaid >= $newTotalAmount && $totalPaid > 0) {
+            return 'paid';
+        }
+
+        if ($totalPaid > 0 && $totalPaid < $newTotalAmount) {
+            return 'partially_paid';
+        }
+
+        if ($totalPaid == 0) {
+            return $newDueDate->isPast() ? 'overdue' : 'sent';
+        }
+
+        return 'draft';
     }
 
     public function render()
