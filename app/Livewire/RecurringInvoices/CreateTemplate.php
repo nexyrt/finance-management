@@ -23,6 +23,8 @@ class CreateTemplate extends Component
     ];
 
     public array $items = [];
+    public array $selectedItems = [];
+    public int $itemsToAdd = 1;
     public bool $hasDiscount = false;
     public array $discount = ['type' => 'fixed', 'value' => 0, 'reason' => ''];
 
@@ -104,16 +106,52 @@ class CreateTemplate extends Component
             'service_id' => '',
             'service_name' => '',
             'quantity' => 1,
-            'unit_price' => 0,
+            'unit_price' => '',
             'amount' => 0,
-            'cogs_amount' => 0
+            'cogs_amount' => ''
         ];
+    }
+
+    public function addMultipleItems()
+    {
+        $count = max(1, $this->itemsToAdd);
+
+        for ($i = 0; $i < $count; $i++) {
+            $this->addItem();
+        }
+
+        $this->itemsToAdd = 1; // Reset to default
     }
 
     public function removeItem($index)
     {
         unset($this->items[$index]);
         $this->items = array_values($this->items);
+
+        // Update selected items indices
+        $this->selectedItems = array_values(
+            array_filter($this->selectedItems, fn($idx) => $idx < $index)
+        );
+    }
+
+    public function bulkDeleteItems()
+    {
+        if (empty($this->selectedItems)) {
+            $this->toast()->warning('Warning', 'Pilih item yang ingin dihapus')->send();
+            return;
+        }
+
+        // Sort indices in descending order to avoid index shifting
+        $indices = collect($this->selectedItems)->sort()->reverse();
+
+        foreach ($indices as $index) {
+            unset($this->items[$index]);
+        }
+
+        $this->items = array_values($this->items);
+        $this->selectedItems = [];
+
+        $this->toast()->success('Berhasil', 'Item berhasil dihapus')->send();
     }
 
     public function fillServiceData($itemIndex)
@@ -192,7 +230,8 @@ class CreateTemplate extends Component
         ]);
 
         $this->dispatch('template-created');
-        $this->reset(['template', 'items', 'hasDiscount', 'discount']);
+        $this->reset(['template', 'items', 'selectedItems', 'hasDiscount', 'discount']);
+        $this->itemsToAdd = 1;
         $this->modal = false;
 
         $this->toast()->success('Berhasil', 'Template recurring invoice berhasil dibuat')->send();
