@@ -17,6 +17,8 @@ class DatabaseSeeder extends Seeder
             ClientRelationshipSeeder::class,
             InvoiceSeeder::class,
             BankTransactionSeeder::class,
+            RecurringTemplateSeeder::class,
+            RecurringInvoiceSeeder::class,
         ]);
     }
 }

@@ -4,6 +4,7 @@ use App\Livewire\Dashboard;
 use App\Livewire\Clients\Index as Clients;
 use App\Livewire\Invoices\Index as InvoicesIndex;
 use App\Livewire\Invoices\Edit as EditInvoice;
+use App\Livewire\RecurringInvoices\Index as RecurringInvoicesIndex;
 use App\Livewire\Accounts\Index as BankAccountsIndex;
 use App\Livewire\Transactions\Index as TransactionsIndex;
 use App\Livewire\ServiceManagement;
@@ -39,7 +40,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::prefix('invoices')->name('invoices.')->group(function () {
         Route::get('/', InvoicesIndex::class)->name('index');
         Route::get('/{invoice}/edit', EditInvoice::class)->name('edit');
+    });
 
+    // Recurring Invoice Management
+    Route::prefix('recurring-invoices')->name('recurring-invoices.')->group(function () {
+        Route::get('/', RecurringInvoicesIndex::class)->name('index');
     });
 
     Route::get('test', TestingPage::class)->name('test');
