@@ -22,34 +22,33 @@
             <flux:navlist.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')"
                 wire:navigate class="py-5">{{ __('Dashboard') }}
             </flux:navlist.item>
-            <flux:navlist.group heading="Finance" expandable>
-                <flux:navlist.item icon="document-text" :href="route('invoices.index')"
-                    :current="request()->routeIs('invoices.index')" wire:navigate class="py-5">
-                    {{ __('Invoice') }}
-                </flux:navlist.item>
-                <flux:navlist.item icon="arrow-path" :href="route('recurring-invoices.index')"
-                    :current="request()->routeIs('recurring-invoices.*')" wire:navigate class="py-5">
-                    {{ __('Recurring Invoice') }}
-                </flux:navlist.item>
-                <flux:navlist.item icon="credit-card" :href="route('bank-accounts.index')"
-                    :current="request()->routeIs('bank-accounts.index')" wire:navigate class="py-5">
-                    {{ __('Bank Accounts') }}
-                </flux:navlist.item>
-                <flux:navlist.item icon="banknotes" :href="route('transactions.index')"
-                    :current="request()->routeIs('transactions.index')" wire:navigate class="py-5">
-                    {{ __('Transactions') }}
-                </flux:navlist.item>
-            </flux:navlist.group>
+
             <flux:navlist.item icon="users" :href="route('clients')" :current="request()->routeIs('clients')"
                 wire:navigate class="py-5">{{ __('Clients') }}
             </flux:navlist.item>
+
             <flux:navlist.item icon="puzzle-piece" :href="route('services')" :current="request()->routeIs('services')"
-                wire:navigate class="py-5">
-                {{ __('Services') }}
+                wire:navigate class="py-5">{{ __('Services') }}
             </flux:navlist.item>
-            {{-- <flux:navlist.item icon="loading" :href="route('test')" :current="request()->routeIs('test')" wire:navigate class="py-5">
-                    {{ __('Loading Test') }}
-                </flux:navlist.item> --}}
+
+            <flux:navlist.group heading="Finance" expandable class="mt-1">
+                <flux:navlist.item icon="document-text" :href="route('invoices.index')"
+                    :current="request()->routeIs('invoices.*')" wire:navigate class="py-5">
+                    {{ __('Invoices') }}
+                </flux:navlist.item>
+                <flux:navlist.item icon="arrow-path" :href="route('recurring-invoices.index')"
+                    :current="request()->routeIs('recurring-invoices.*')" wire:navigate class="py-5">
+                    {{ __('Recurring Invoices') }}
+                </flux:navlist.item>
+                <flux:navlist.item icon="credit-card" :href="route('bank-accounts.index')"
+                    :current="request()->routeIs('bank-accounts.*')" wire:navigate class="py-5">
+                    {{ __('Bank Accounts') }}
+                </flux:navlist.item>
+                <flux:navlist.item icon="banknotes" :href="route('transactions.index')"
+                    :current="request()->routeIs('transactions.*')" wire:navigate class="py-5">
+                    {{ __('Transactions') }}
+                </flux:navlist.item>
+            </flux:navlist.group>
         </flux:navlist>
 
         <flux:spacer />
