@@ -10,7 +10,7 @@
                 <x-input wire:model="template.template_name" label="Nama Template" placeholder="Template name"
                     required />
 
-                <x-select.styled wire:model="template.client_id" :options="$this->clientOptions" label="Client Utama" searchable
+                <x-select.styled wire:model.live="template.client_id" :options="$this->clientOptions" label="Client Utama" searchable
                     placeholder="Pilih client" required />
 
                 <x-select.styled wire:model="template.frequency" :options="[
@@ -34,7 +34,7 @@
                     <!-- Bulk Delete for selected items -->
                     <div x-data="{ selected: @entangle('selectedItems').live }" x-show="selected.length > 0" class="flex items-center gap-2">
                         <span class="text-xs text-gray-500" x-text="`${selected.length} terpilih`"></span>
-                        <x-button wire:click="bulkDeleteItems" color="red" size="xs" outline icon="trash">
+                        <x-button wire:click="bulkDeleteItems" loading="bulkDeleteItems" color="red" size="xs" outline icon="trash">
                             Hapus Terpilih
                         </x-button>
                     </div>
@@ -132,10 +132,11 @@
 
                                     <!-- Price & COGS -->
                                     <div class="col-span-4 space-y-1">
-                                        <x-input wire:model.blur="items.{{ $index }}.unit_price" prefix="Rp"
-                                            x-mask:dynamic="$money($input, ',')" placeholder="Harga" />
-                                        <x-input wire:model.blur="items.{{ $index }}.cogs_amount" prefix="Rp"
-                                            x-mask:dynamic="$money($input, ',')" placeholder="COGS" />
+                                        <x-input wire:model.blur="items.{{ $index }}.unit_price"
+                                            prefix="Rp" x-mask:dynamic="$money($input, ',')"
+                                            placeholder="Harga" />
+                                        <x-input wire:model.blur="items.{{ $index }}.cogs_amount"
+                                            prefix="Rp" x-mask:dynamic="$money($input, ',')" placeholder="COGS" />
                                     </div>
 
                                     <!-- Subtotal -->
@@ -166,7 +167,7 @@
                         </div>
 
                         <x-input wire:model="itemsToAdd" type="number" min="1" placeholder="1"
-                            class="w-16" />
+                            class="w-fit" />
                         <x-button wire:click="addMultipleItems" color="primary" size="xs" icon="plus"
                             loading="addMultipleItems">
                             Tambah Item

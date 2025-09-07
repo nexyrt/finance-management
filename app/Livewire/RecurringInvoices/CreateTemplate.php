@@ -102,7 +102,7 @@ class CreateTemplate extends Component
     public function addItem()
     {
         $this->items[] = [
-            'client_id' => $this->template['client_id'],
+            'client_id' => $this->template['client_id'] ?? '',
             'service_id' => '',
             'service_name' => '',
             'quantity' => 1,
@@ -110,6 +110,14 @@ class CreateTemplate extends Component
             'amount' => 0,
             'cogs_amount' => ''
         ];
+    }
+
+    public function updatedTemplateClientId()
+    {
+        // Update existing items with new client selection
+        foreach ($this->items as $index => $item) {
+            $this->items[$index]['client_id'] = $this->template['client_id'];
+        }
     }
 
     public function addMultipleItems()
