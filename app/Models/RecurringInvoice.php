@@ -44,7 +44,6 @@ class RecurringInvoice extends Model
     {
         return $this->invoice_data['total_amount'] ?? 0;
     }
-
     public function getFormattedTotalAmountAttribute(): string
     {
         return 'Rp ' . number_format($this->total_amount, 0, ',', '.');
@@ -132,7 +131,7 @@ class RecurringInvoice extends Model
     {
         $year = $year ?: now()->year;
         return $query->whereYear('scheduled_date', $year)
-                    ->whereMonth('scheduled_date', $month);
+            ->whereMonth('scheduled_date', $month);
     }
 
     // Scope for year filtering
