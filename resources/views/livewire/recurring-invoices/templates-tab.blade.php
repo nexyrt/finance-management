@@ -132,7 +132,4 @@
             </div>
         @endforelse
     </div>
-
-    <!-- Include Edit Component -->
-    <livewire:recurring-invoices.edit-template @template-updated="$refresh" />
 </div>
