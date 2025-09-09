@@ -47,21 +47,24 @@ class EditInvoice extends Component
             'scheduled_date' => $this->invoice->scheduled_date->format('Y-m-d'),
         ];
 
-        // Load items from invoice data
-        $this->items = $this->invoice->invoice_data['items'] ?? [];
+        // Load items dengan struktur yang benar
+        $this->items = [];
+        $invoiceItems = $this->invoice->invoice_data['items'] ?? [];
 
-        if (empty($this->items)) {
-            $this->items = [
-                [
-                    'client_id' => $this->invoice->client_id,
-                    'service_id' => '',
-                    'service_name' => '',
-                    'quantity' => 1,
-                    'unit_price' => '',
-                    'amount' => 0,
-                    'cogs_amount' => ''
-                ]
-            ];
+        if (!empty($invoiceItems)) {
+            foreach ($invoiceItems as $item) {
+                $this->items[] = [
+                    'client_id' => $item['client_id'] ?? $this->invoice->client_id,
+                    'service_id' => '', // Reset service_id
+                    'service_name' => $item['service_name'] ?? '',
+                    'quantity' => $item['quantity'] ?? 1,
+                    'unit_price' => $item['unit_price'] ?? 0,
+                    'amount' => $item['amount'] ?? 0,
+                    'cogs_amount' => $item['cogs_amount'] ?? 0
+                ];
+            }
+        } else {
+            $this->addItem();
         }
 
         // Load discount
@@ -82,7 +85,7 @@ class EditInvoice extends Component
     }
 
     #[Computed]
-    public function clientOptions()
+    public function clientOptions(): array
     {
         return Client::orderBy('name')
             ->get()
@@ -95,7 +98,7 @@ class EditInvoice extends Component
     }
 
     #[Computed]
-    public function serviceOptions()
+    public function serviceOptions(): array
     {
         return Service::orderBy('name')
             ->get()
@@ -108,43 +111,43 @@ class EditInvoice extends Component
     }
 
     #[Computed]
-    public function subtotal()
+    public function subtotal(): int
     {
         return collect($this->items)->sum('amount');
     }
 
     #[Computed]
-    public function discountAmount()
+    public function discountAmount(): int
     {
         if (!$this->hasDiscount)
             return 0;
 
         $subtotal = $this->subtotal;
         return $this->discount['type'] === 'percentage'
-            ? ($subtotal * $this->discount['value'] / 100)
-            : $this->discount['value'];
+            ? (int) ($subtotal * $this->discount['value'] / 100)
+            : (int) $this->discount['value'];
     }
 
     #[Computed]
-    public function totalAmount()
+    public function totalAmount(): int
     {
         return $this->subtotal - $this->discountAmount;
     }
 
-    public function addItem()
+    public function addItem(): void
     {
         $this->items[] = [
-            'client_id' => $this->invoice->client_id,
+            'client_id' => $this->invoice->client_id ?? '',
             'service_id' => '',
             'service_name' => '',
             'quantity' => 1,
-            'unit_price' => '',
+            'unit_price' => 0,
             'amount' => 0,
-            'cogs_amount' => ''
+            'cogs_amount' => 0
         ];
     }
 
-    public function addMultipleItems()
+    public function addMultipleItems(): void
     {
         $count = max(1, $this->itemsToAdd);
         for ($i = 0; $i < $count; $i++) {
@@ -153,16 +156,18 @@ class EditInvoice extends Component
         $this->itemsToAdd = 1;
     }
 
-    public function removeItem($index)
+    public function removeItem($index): void
     {
-        unset($this->items[$index]);
-        $this->items = array_values($this->items);
-        $this->selectedItems = array_values(
-            array_filter($this->selectedItems, fn($idx) => $idx < $index)
-        );
+        if (count($this->items) > 1) {
+            unset($this->items[$index]);
+            $this->items = array_values($this->items);
+            $this->selectedItems = array_values(
+                array_filter($this->selectedItems, fn($idx) => $idx < count($this->items))
+            );
+        }
     }
 
-    public function bulkDeleteItems()
+    public function bulkDeleteItems(): void
     {
         if (empty($this->selectedItems)) {
             $this->toast()->warning('Warning', 'Pilih item yang ingin dihapus')->send();
@@ -171,49 +176,73 @@ class EditInvoice extends Component
 
         $indices = collect($this->selectedItems)->sort()->reverse();
         foreach ($indices as $index) {
-            unset($this->items[$index]);
+            if (count($this->items) > 1) {
+                unset($this->items[$index]);
+            }
         }
 
         $this->items = array_values($this->items);
         $this->selectedItems = [];
+
+        if (empty($this->items)) {
+            $this->addItem();
+        }
+
         $this->toast()->success('Berhasil', 'Item berhasil dihapus')->send();
     }
 
-    public function fillServiceData($itemIndex)
+    // Auto-fill service data
+    public function fillServiceData($itemIndex): void
     {
-        $serviceId = $this->items[$itemIndex]['service_id'] ?? null;
-        if ($serviceId) {
-            $service = Service::find($serviceId);
-            if ($service) {
-                $this->items[$itemIndex]['service_name'] = $service->name;
-                $this->items[$itemIndex]['unit_price'] = number_format($service->price, 0, ',', '.');
-                $this->calculateAmount($itemIndex);
+        if (!isset($this->items[$itemIndex]['service_id']))
+            return;
+
+        $serviceId = $this->items[$itemIndex]['service_id'];
+        if (!$serviceId)
+            return;
+
+        $service = Service::find($serviceId);
+        if (!$service)
+            return;
+
+        $this->items[$itemIndex]['service_name'] = $service->name;
+        $this->items[$itemIndex]['unit_price'] = $service->price;
+        $this->calculateAmount($itemIndex);
+    }
+
+    // Handle manual field changes
+    public function updatedItems($value, $key): void
+    {
+        $parts = explode('.', $key);
+        if (count($parts) === 2) {
+            $index = (int) $parts[0];
+            $field = $parts[1];
+
+            if (in_array($field, ['quantity', 'unit_price'])) {
+                $this->calculateAmount($index);
             }
         }
     }
 
-    public function updatedItems($value, $key)
+    private function calculateAmount($index): void
     {
-        $parts = explode('.', $key);
-        if (count($parts) === 2 && in_array($parts[1], ['quantity', 'unit_price', 'cogs_amount'])) {
-            $this->calculateAmount($parts[0]);
-        }
+        if (!isset($this->items[$index]))
+            return;
+
+        $quantity = (int) ($this->items[$index]['quantity'] ?? 1);
+        $unitPrice = $this->parseAmount($this->items[$index]['unit_price'] ?? 0);
+
+        $this->items[$index]['amount'] = $quantity * $unitPrice;
     }
 
-    private function calculateAmount($index)
+    private function parseAmount($amount): int
     {
-        $item = &$this->items[$index];
-        $quantity = $item['quantity'] ?? 1;
-        $unitPrice = $this->parseAmount($item['unit_price'] ?? '0');
-        $item['amount'] = $quantity * $unitPrice;
-    }
-
-    private function parseAmount($amount)
-    {
+        if (is_numeric($amount))
+            return (int) $amount;
         return (int) preg_replace('/[^0-9]/', '', $amount);
     }
 
-    public function save()
+    public function save(): void
     {
         if ($this->invoice->status === 'published') {
             $this->toast()->error('Error', 'Invoice yang sudah dipublish tidak dapat diedit')->send();
@@ -222,8 +251,9 @@ class EditInvoice extends Component
 
         // Parse currency fields
         foreach ($this->items as $index => $item) {
-            $this->items[$index]['unit_price'] = $this->parseAmount($item['unit_price'] ?? '0');
-            $this->items[$index]['cogs_amount'] = $this->parseAmount($item['cogs_amount'] ?? '0');
+            $this->items[$index]['unit_price'] = $this->parseAmount($item['unit_price'] ?? 0);
+            $this->items[$index]['cogs_amount'] = $this->parseAmount($item['cogs_amount'] ?? 0);
+            $this->items[$index]['amount'] = $this->parseAmount($item['amount'] ?? 0);
         }
 
         $this->validate([
@@ -236,24 +266,27 @@ class EditInvoice extends Component
             'items.*.cogs_amount' => 'required|integer|min:0',
         ]);
 
-        $this->invoice->update([
-            'scheduled_date' => $this->invoiceData['scheduled_date'],
-            'invoice_data' => [
-                'items' => $this->items,
-                'subtotal' => $this->subtotal,
-                'discount_amount' => $this->discountAmount,
-                'discount_type' => $this->discount['type'],
-                'discount_value' => $this->discount['value'],
-                'discount_reason' => $this->discount['reason'],
-                'total_amount' => $this->totalAmount,
-            ]
-        ]);
+        try {
+            $this->invoice->update([
+                'scheduled_date' => $this->invoiceData['scheduled_date'],
+                'invoice_data' => [
+                    'items' => $this->items,
+                    'subtotal' => $this->subtotal,
+                    'discount_amount' => $this->discountAmount,
+                    'discount_type' => $this->discount['type'],
+                    'discount_value' => $this->discount['value'],
+                    'discount_reason' => $this->discount['reason'],
+                    'total_amount' => $this->totalAmount,
+                ]
+            ]);
 
-        $this->dispatch('invoice-updated');
-        $this->resetExcept('invoice');
-        $this->modal = false;
+            $this->dispatch('invoice-updated');
+            $this->modal = false;
+            $this->toast()->success('Berhasil', 'Invoice berhasil diperbarui')->send();
 
-        $this->toast()->success('Berhasil', 'Invoice berhasil diperbarui')->send();
+        } catch (\Exception $e) {
+            $this->toast()->error('Error', $e->getMessage())->send();
+        }
     }
 
     public function render()

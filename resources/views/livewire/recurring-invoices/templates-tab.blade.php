@@ -1,6 +1,8 @@
 <div class="space-y-6">
-    <!-- Create Action -->
-    <div class="flex justify-end">
+    <!-- Search & Create Action -->
+    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+        <x-input wire:model.live.debounce.300ms="search" placeholder="Search templates or clients..."
+            icon="magnifying-glass" class="h-full py-3" />
         <livewire:recurring-invoices.create-template />
     </div>
 
@@ -8,7 +10,7 @@
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         @forelse($this->templates as $template)
             <div
-                class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all duration-200 hover:-translate-y-1">
+                class="bg-white dark:bg-dark-800 rounded-xl border border-zinc-200 dark:border-dark-600 hover:shadow-lg transition-all duration-200 hover:-translate-y-1">
                 <!-- Status Indicator -->
                 <div class="absolute top-4 right-4">
                     <div
@@ -26,10 +28,10 @@
                             </span>
                         </div>
                         <div class="flex-1 min-w-0">
-                            <h3 class="font-bold text-gray-900 dark:text-white truncate">
+                            <h3 class="font-bold text-dark-900 dark:text-dark-50 truncate">
                                 {{ $template->client->name }}
                             </h3>
-                            <p class="text-gray-500 dark:text-gray-400 text-sm truncate">
+                            <p class="text-dark-500 dark:text-dark-400 text-sm truncate">
                                 {{ $template->template_name }}
                             </p>
                         </div>
@@ -56,11 +58,11 @@
                     @endphp
                     <div class="mb-4">
                         <div class="flex justify-between text-sm mb-2">
-                            <span class="text-gray-700 dark:text-gray-300">Progress</span>
+                            <span class="text-dark-700 dark:text-dark-300">Progress</span>
                             <span
-                                class="text-gray-500 dark:text-gray-400">{{ $published }}/{{ $total }}</span>
+                                class="text-dark-500 dark:text-dark-400">{{ $published }}/{{ $total }}</span>
                         </div>
-                        <div class="w-full h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                        <div class="w-full h-3 bg-zinc-200 dark:bg-dark-700 rounded-full overflow-hidden">
                             <div class="h-full bg-gradient-to-r from-primary-500 to-blue-500 transition-all duration-700"
                                 style="width: {{ $progress }}%"></div>
                         </div>
@@ -68,18 +70,18 @@
 
                     <!-- Stats -->
                     <div class="grid grid-cols-3 gap-2 mb-4">
-                        <div class="text-center p-2 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                        <div class="text-center p-2 bg-zinc-50 dark:bg-dark-700 rounded-lg">
                             <div class="font-bold text-green-600 dark:text-green-400">{{ $published }}</div>
-                            <div class="text-xs text-gray-500 dark:text-gray-400">Published</div>
+                            <div class="text-xs text-dark-500 dark:text-dark-400">Published</div>
                         </div>
-                        <div class="text-center p-2 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                        <div class="text-center p-2 bg-zinc-50 dark:bg-dark-700 rounded-lg">
                             <div class="font-bold text-amber-600 dark:text-amber-400">{{ $total - $published }}</div>
-                            <div class="text-xs text-gray-500 dark:text-gray-400">Draft</div>
+                            <div class="text-xs text-dark-500 dark:text-dark-400">Draft</div>
                         </div>
-                        <div class="text-center p-2 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                        <div class="text-center p-2 bg-zinc-50 dark:bg-dark-700 rounded-lg">
                             <div class="font-bold text-blue-600 dark:text-blue-400">{{ $template->remaining_invoices }}
                             </div>
-                            <div class="text-xs text-gray-500 dark:text-gray-400">Remaining</div>
+                            <div class="text-xs text-dark-500 dark:text-dark-400">Remaining</div>
                         </div>
                     </div>
 
@@ -104,20 +106,33 @@
             <!-- Empty State -->
             <div class="col-span-full">
                 <div
-                    class="bg-white dark:bg-gray-800 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 p-12 text-center">
+                    class="bg-white dark:bg-dark-800 rounded-xl border-2 border-dashed border-zinc-300 dark:border-dark-600 p-12 text-center">
                     <div
                         class="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-primary-500 to-blue-600 rounded-xl flex items-center justify-center">
                         <x-icon name="document-plus" class="w-8 h-8 text-white" />
                     </div>
-                    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">
-                        No Templates Yet
+                    <h3 class="text-xl font-bold text-dark-900 dark:text-dark-50 mb-2">
+                        @if ($search)
+                            No templates found for "{{ $search }}"
+                        @else
+                            No Templates Yet
+                        @endif
                     </h3>
-                    <p class="text-gray-500 dark:text-gray-400 mb-6">
-                        Create your first recurring invoice template
+                    <p class="text-dark-500 dark:text-dark-400 mb-6">
+                        @if ($search)
+                            Try adjusting your search criteria
+                        @else
+                            Create your first recurring invoice template
+                        @endif
                     </p>
-                    <livewire:recurring-invoices.create-template />
+                    @if (!$search)
+                        <livewire:recurring-invoices.create-template />
+                    @endif
                 </div>
             </div>
         @endforelse
     </div>
+
+    <!-- Include Edit Component -->
+    <livewire:recurring-invoices.edit-template @template-updated="$refresh" />
 </div>
