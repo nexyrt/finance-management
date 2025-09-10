@@ -31,7 +31,7 @@
     </div>
 
     <!-- Tab Navigation -->
-    <x-tab selected="Templates">
+    <x-tab selected="Analytics">
         <x-tab.items tab="Templates">
             <x-slot:right>
                 <x-icon name="document-text" class="w-5 h-5" />
