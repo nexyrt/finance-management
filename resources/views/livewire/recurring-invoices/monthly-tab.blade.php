@@ -108,6 +108,10 @@
                         loading="bulkPublish" class="whitespace-nowrap">
                         Bulk Publish
                     </x-button>
+                    <x-button wire:click="bulkDelete" size="sm" color="red" icon="trash" loading="bulkDelete"
+                        class="whitespace-nowrap">
+                        Bulk Delete
+                    </x-button>
                     <x-button wire:click="$set('selected', [])" size="sm" color="gray" icon="x-mark"
                         class="whitespace-nowrap">
                         Cancel

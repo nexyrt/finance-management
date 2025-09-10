@@ -132,12 +132,12 @@
                                     </div>
                                 </div>
 
-                                <div class="flex-1">
+                                <div class="flex-1 w-20">
                                     <x-select.styled wire:model="items.{{ $index }}.client_id"
                                         :options="$this->clientOptions" searchable placeholder="Client" />
                                 </div>
 
-                                <div class="flex-1 space-y-1">
+                                <div class="flex-1 space-y-1 w-20">
                                     <x-select.styled wire:model="items.{{ $index }}.service_id"
                                         :options="$this->serviceOptions" searchable placeholder="Layanan..."
                                         x-on:select="$wire.fillServiceData({{ $index }})" />

@@ -184,34 +184,41 @@ class MonthlyTab extends Component
         }
     }
 
-    public function bulkPublish(): void
+    public function bulkDelete(): void
     {
         if (empty($this->selected)) {
-            $this->toast()->warning('Warning', 'Please select invoices to publish')->send();
+            $this->toast()->warning('Warning', 'Please select invoices to delete')->send();
             return;
         }
 
-        $invoices = RecurringInvoice::whereIn('id', $this->selected)
-            ->where('status', 'draft')
-            ->get();
+        $this->toast()
+            ->question('Delete Selected?', count($this->selected) . ' invoices will be deleted permanently')
+            ->confirm('Delete', 'confirmBulkDelete', 'Invoices deleted successfully')
+            ->cancel('Cancel')
+            ->send();
+    }
 
-        $published = 0;
+    public function confirmBulkDelete(): void
+    {
+        $deleted = 0;
+        $invoices = RecurringInvoice::whereIn('id', $this->selected)->get();
+
         foreach ($invoices as $invoice) {
             try {
-                $invoice->publish();
-                $published++;
+                $invoice->delete();
+                $deleted++;
             } catch (\Exception $e) {
-                \Log::error("Failed to publish invoice {$invoice->id}: " . $e->getMessage());
+                \Log::error("Failed to delete invoice {$invoice->id}: " . $e->getMessage());
             }
         }
 
         $this->selected = [];
 
-        if ($published > 0) {
-            $this->toast()->success('Success', "$published invoices published successfully")->send();
+        if ($deleted > 0) {
+            $this->toast()->success('Success', "$deleted invoices deleted successfully")->send();
             $this->dispatch('$refresh');
         } else {
-            $this->toast()->error('Error', 'No invoices could be published')->send();
+            $this->toast()->error('Error', 'No invoices could be deleted')->send();
         }
     }
 

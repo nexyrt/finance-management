@@ -33,10 +33,22 @@
     <!-- Tab Navigation -->
     <x-tab selected="Templates">
         <x-tab.items tab="Templates">
+            <x-slot:right>
+                <x-icon name="document-text" class="w-5 h-5" />
+            </x-slot:right>
             <livewire:recurring-invoices.templates-tab />
         </x-tab.items>
         <x-tab.items tab="Monthly">
+            <x-slot:right>
+                <x-icon name="calendar" class="w-5 h-5" />
+            </x-slot:right>
             <livewire:recurring-invoices.monthly-tab />
+        </x-tab.items>
+        <x-tab.items tab="Analytics">
+            <x-slot:right>
+                <x-icon name="chart-bar" class="w-5 h-5" />
+            </x-slot:right>
+            <livewire:recurring-invoices.analytics-tab />
         </x-tab.items>
     </x-tab>
 
