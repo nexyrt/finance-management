@@ -6,9 +6,12 @@ use App\Models\RecurringInvoice;
 use Livewire\Component;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Computed;
+use TallStackUi\Traits\Interactions;
 
 class ViewInvoice extends Component
 {
+    use Interactions;
+
     public ?RecurringInvoice $invoice = null;
     public bool $modal = false;
 
@@ -22,6 +25,15 @@ class ViewInvoice extends Component
         }
 
         $this->modal = true;
+    }
+
+    public function viewPublishedInvoice($invoiceId): void
+    {
+        // Close current modal
+        $this->modal = false;
+
+        // Dispatch to open invoice modal from invoices module
+        $this->dispatch('show-invoice', invoiceId: $invoiceId);
     }
 
     #[Computed]

@@ -207,5 +207,6 @@
 
     <!-- Include Child Components -->
     <livewire:recurring-invoices.monthly.view-invoice />
+    <livewire:invoices.show />
     <livewire:recurring-invoices.monthly.edit-invoice @invoice-updated="$refresh" />
 </div>

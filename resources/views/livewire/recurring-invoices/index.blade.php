@@ -1,31 +1,31 @@
 <div class="space-y-6">
     <!-- Header -->
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-            <div>
-                <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
-                    Recurring Invoices
-                </h1>
-                <p class="text-gray-600 dark:text-gray-400 mt-1">
-                    Automate your billing process with smart templates
-                </p>
-            </div>
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <div>
+            <h1
+                class="text-4xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-indigo-800 dark:from-white dark:via-blue-200 dark:to-indigo-200 bg-clip-text text-transparent">
+                Recurring Invoices
+            </h1>
+            <p class="text-dark-600 dark:text-dark-400 text-lg">
+                Automate your billing process with smart templates
+            </p>
+        </div>
 
-            <!-- Key Metrics -->
-            <div class="flex gap-6">
-                <div class="text-center">
-                    <div class="text-2xl font-bold text-primary-600 dark:text-primary-400">
-                        {{ $this->activeTemplatesCount }}
-                    </div>
-                    <div class="text-sm text-gray-500 dark:text-gray-400">Active Templates</div>
+        <!-- Key Metrics -->
+        <div
+            class="flex gap-6 bg-white dark:bg-dark-800 rounded-xl shadow-sm border border-zinc-200 dark:border-dark-600 p-6">
+            <div class="text-center">
+                <div class="text-2xl font-bold text-primary-600 dark:text-primary-400">
+                    {{ number_format($this->activeTemplatesCount, 0, ',', '.') }}
                 </div>
-                <div class="w-px bg-gray-200 dark:bg-gray-600"></div>
-                <div class="text-center">
-                    <div class="text-xl font-bold text-green-600 dark:text-green-400">
-                        Rp {{ number_format($this->totalProjectedRevenue / 1000000, 1) }}M
-                    </div>
-                    <div class="text-sm text-gray-500 dark:text-gray-400">Projected {{ now()->year }}</div>
+                <div class="text-sm text-dark-600 dark:text-dark-400">Active Templates</div>
+            </div>
+            <div class="w-px bg-zinc-200 dark:bg-dark-600"></div>
+            <div class="text-center">
+                <div class="text-xl font-bold text-green-600 dark:text-green-400">
+                    Rp {{ number_format($this->totalProjectedRevenue, 0, ',', '.') }}
                 </div>
+                <div class="text-sm text-dark-600 dark:text-dark-400">Projected {{ now()->year }}</div>
             </div>
         </div>
     </div>

@@ -48,7 +48,7 @@ class ViewTemplate extends Component
         ];
     }
 
-    public function editTemplate()
+    public function editTemplate(): void
     {
         if (!$this->template) {
             $this->toast()->error('Error', 'Template tidak ditemukan')->send();
@@ -56,7 +56,6 @@ class ViewTemplate extends Component
         }
 
         $this->modal = false;
-
         $this->dispatch('edit-template', templateId: $this->template->id);
     }
 

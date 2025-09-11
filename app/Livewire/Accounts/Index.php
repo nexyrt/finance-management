@@ -4,8 +4,11 @@ namespace App\Livewire\Accounts;
 
 use App\Models\BankAccount;
 use App\Models\BankTransaction;
+use App\Models\Payment;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Livewire\Attributes\On;
+use Livewire\Attributes\Computed;
 use TallStackUi\Traits\Interactions;
 
 class Index extends Component
@@ -15,10 +18,13 @@ class Index extends Component
     // Selected account for main content
     public $selectedAccountId = null;
 
+    // Tab management
+    public string $activeTab = 'transactions';
+
     // Search and filters for main content
-    public $search = '';
-    public $transactionType = '';
-    public $dateRange = [];
+    public string $search = '';
+    public string $transactionType = '';
+    public array $dateRange = [];
 
     // Sorting for table
     public array $sort = [
@@ -29,112 +35,225 @@ class Index extends Component
     // Selection for bulk operations
     public array $selected = [];
 
-    // Stats cache
-    public $accountsData = [];
-    public $totalBalance = 0;
-    public $totalIncome = 0;
-    public $totalExpense = 0;
-
-    public function mount()
+    public function mount(): void
     {
-        $this->calculateStats();
-
         // Auto-select first account if available
         if ($this->accountsData->count() > 0) {
             $this->selectedAccountId = $this->accountsData->first()['id'];
         }
     }
 
-    public function selectAccount($accountId = null)
+    public function selectAccount($accountId = null): void
     {
         $this->selectedAccountId = $accountId;
-        $this->selected = []; // Reset selection when changing account
+        $this->selected = [];
+        $this->resetPage();
+
+        $this->toast()
+            ->success('Account Selected', 'Viewing data for selected account')
+            ->send();
+    }
+
+    public function switchTab($tab): void
+    {
+        $this->activeTab = $tab;
+        $this->selected = [];
         $this->resetPage();
     }
 
-    #[On('account-created', 'account-updated', 'account-deleted', 'transaction-created', 'transaction-deleted', 'transfer-completed')]
-    public function refreshData()
+    public function openCreateAccount(): void
+    {
+        $this->dispatch('open-create-account-modal');
+    }
+
+    public function openTransaction(): void
+    {
+        if (!$this->selectedAccountId) {
+            $this->toast()->warning('Warning', 'Please select an account first')->send();
+            return;
+        }
+
+        $this->dispatch('open-transaction-modal', accountId: $this->selectedAccountId);
+    }
+
+    public function openTransfer(): void
+    {
+        if (!$this->selectedAccountId) {
+            $this->toast()->warning('Warning', 'Please select an account first')->send();
+            return;
+        }
+
+        $this->dispatch('open-transfer-modal', fromAccountId: $this->selectedAccountId);
+    }
+
+    public function exportReport(): void
+    {
+        if (!$this->selectedAccountId) {
+            $this->toast()->warning('Warning', 'Please select an account first')->send();
+            return;
+        }
+
+        $this->toast()
+            ->info('Export Started', 'Your report is being generated')
+            ->send();
+    }
+
+    public function editAccount($accountId): void
+    {
+        $this->dispatch('edit-account', accountId: $accountId);
+    }
+
+    public function deleteAccount($accountId): void
+    {
+        $this->dispatch('delete-account', accountId: $accountId);
+    }
+
+    public function deleteTransaction($transactionId): void
+    {
+        $this->dispatch('delete-transaction', transactionId: $transactionId);
+    }
+
+    public function deletePayment($paymentId): void
+    {
+        $this->dispatch('delete-payment', paymentId: $paymentId);
+    }
+
+    #[On('account-created', 'account-updated', 'account-deleted', 'transaction-created', 'transaction-deleted', 'transfer-completed', 'payment-deleted')]
+    public function refreshData(): void
     {
         $this->resetPage();
-        $this->selected = []; // Reset selection on refresh
-        $this->calculateStats();
+        $this->selected = [];
+
+        $this->toast()
+            ->success('Data Updated', 'Information has been refreshed')
+            ->send();
     }
 
-    public function bulkDelete()
+    public function bulkDelete(): void
     {
         if (empty($this->selected)) {
-            $this->toast()->error('Error', 'Tidak ada transaksi yang dipilih.')->send();
+            $this->toast()->warning('Warning', 'Please select items to delete')->send();
             return;
         }
 
         $count = count($this->selected);
-        $selectedTransactions = BankTransaction::whereIn('id', $this->selected)->get();
 
-        // Calculate total amount for preview
+        if ($this->activeTab === 'transactions') {
+            $this->bulkDeleteTransactions($count);
+        } else {
+            $this->bulkDeletePayments($count);
+        }
+    }
+
+    private function bulkDeleteTransactions($count): void
+    {
+        $selectedTransactions = BankTransaction::whereIn('id', $this->selected)->get();
         $totalAmount = $selectedTransactions->sum('amount');
         $incomeCount = $selectedTransactions->where('transaction_type', 'credit')->count();
         $expenseCount = $selectedTransactions->where('transaction_type', 'debit')->count();
 
-        $message = "Yakin ingin menghapus <strong>{$count} transaksi</strong> yang dipilih?";
-        $message .= "<br><br><div class='bg-zinc-50 dark:bg-dark-700 rounded-lg p-4 my-3'>";
+        $message = "Delete <strong>{$count} transactions</strong>?<br><br>";
+        $message .= "<div class='bg-zinc-50 dark:bg-dark-700 rounded-lg p-4'>";
         $message .= "<div class='grid grid-cols-3 gap-4 text-center'>";
-        $message .= "<div><div class='text-sm text-dark-600 dark:text-dark-400'>Total</div><div class='font-bold'>{$count}</div></div>";
-        $message .= "<div><div class='text-sm text-green-600 dark:text-green-400'>Pemasukan</div><div class='font-bold text-green-600'>{$incomeCount}</div></div>";
-        $message .= "<div><div class='text-sm text-red-600 dark:text-red-400'>Pengeluaran</div><div class='font-bold text-red-600'>{$expenseCount}</div></div>";
-        $message .= "</div>";
-        $message .= "<div class='mt-2 pt-2 border-t border-zinc-200 dark:border-dark-600 text-center'>";
-        $message .= "<div class='text-xs text-dark-500 dark:text-dark-400'>Total Nilai</div>";
-        $message .= "<div class='font-bold text-lg'>Rp " . number_format($totalAmount, 0, ',', '.') . "</div>";
+        $message .= "<div><div class='text-sm text-dark-600'>Total</div><div class='font-bold'>{$count}</div></div>";
+        $message .= "<div><div class='text-sm text-green-600'>Income</div><div class='font-bold text-green-600'>{$incomeCount}</div></div>";
+        $message .= "<div><div class='text-sm text-red-600'>Expense</div><div class='font-bold text-red-600'>{$expenseCount}</div></div>";
         $message .= "</div></div>";
-        $message .= "<div class='text-sm text-red-600 dark:text-red-400'><strong>Peringatan:</strong> Aksi ini akan mempengaruhi saldo rekening dan tidak dapat dibatalkan.</div>";
 
         $this->dialog()
-            ->question('Hapus Transaksi Massal?', $message)
-            ->confirm('Hapus Semua', 'executeBulkDelete', "Berhasil menghapus {$count} transaksi")
-            ->cancel('Batal')
+            ->question('Bulk Delete Transactions?', $message)
+            ->confirm('Delete All', 'executeBulkDeleteTransactions')
+            ->cancel('Cancel')
             ->send();
     }
 
-    public function executeBulkDelete()
+    private function bulkDeletePayments($count): void
+    {
+        $selectedPayments = Payment::whereIn('id', $this->selected)->get();
+        $totalAmount = $selectedPayments->sum('amount');
+
+        $message = "Delete <strong>{$count} payments</strong>?<br><br>";
+        $message .= "<div class='bg-zinc-50 dark:bg-dark-700 rounded-lg p-4 text-center'>";
+        $message .= "<div class='text-sm text-dark-600'>Total Amount</div>";
+        $message .= "<div class='font-bold text-lg'>Rp " . number_format($totalAmount, 0, ',', '.') . "</div>";
+        $message .= "</div>";
+
+        $this->dialog()
+            ->question('Bulk Delete Payments?', $message)
+            ->confirm('Delete All', 'executeBulkDeletePayments')
+            ->cancel('Cancel')
+            ->send();
+    }
+
+    public function executeBulkDeleteTransactions(): void
     {
         try {
             $deletedCount = 0;
-
             foreach ($this->selected as $transactionId) {
                 $transaction = BankTransaction::find($transactionId);
-
                 if (!$transaction)
                     continue;
 
-                // Check if this is a transfer transaction
                 if ($transaction->reference_number && str_starts_with($transaction->reference_number, 'TRF')) {
-                    // Delete all transactions with same reference number
                     $deleted = BankTransaction::where('reference_number', $transaction->reference_number)->delete();
                     $deletedCount += $deleted;
                 } else {
-                    // Regular single transaction delete
                     $transaction->delete();
                     $deletedCount++;
                 }
             }
 
             $this->selected = [];
-            $this->refreshData();
+            $this->dispatch('$refresh');
 
             $this->toast()
-                ->success('Berhasil!', "Berhasil menghapus transaksi dan transfer terkait.")
+                ->success('Success!', "Deleted {$deletedCount} transactions.")
                 ->send();
 
         } catch (\Exception $e) {
             $this->toast()
-                ->error('Gagal!', 'Terjadi kesalahan saat menghapus transaksi.')
+                ->error('Failed!', 'Error occurred while deleting transactions.')
                 ->send();
         }
     }
 
-    private function calculateStats()
+    public function executeBulkDeletePayments(): void
     {
-        $this->accountsData = BankAccount::with([
+        try {
+            $deletedCount = Payment::whereIn('id', $this->selected)->count();
+            Payment::whereIn('id', $this->selected)->delete();
+
+            $this->selected = [];
+            $this->dispatch('$refresh');
+
+            $this->toast()
+                ->success('Success!', "Deleted {$deletedCount} payments.")
+                ->send();
+
+        } catch (\Exception $e) {
+            $this->toast()
+                ->error('Failed!', 'Error occurred while deleting payments.')
+                ->send();
+        }
+    }
+
+    public function clearFilters(): void
+    {
+        $this->search = '';
+        $this->transactionType = '';
+        $this->dateRange = [];
+        $this->selected = [];
+        $this->resetPage();
+
+        $this->toast()
+            ->info('Filters Cleared', 'All filters have been reset')
+            ->send();
+    }
+
+    #[Computed]
+    public function accountsData()
+    {
+        return BankAccount::with([
             'transactions' => function ($query) {
                 $query->latest()->take(3);
             }
@@ -149,35 +268,28 @@ class Index extends Component
                 'trend' => $this->calculateTrend($account->id)
             ];
         });
-
-        $this->totalBalance = $this->accountsData->sum('balance');
-        $this->totalIncome = BankTransaction::where('transaction_type', 'credit')->sum('amount');
-        $this->totalExpense = BankTransaction::where('transaction_type', 'debit')->sum('amount');
     }
 
-    private function calculateTrend($accountId)
+    #[Computed]
+    public function totalBalance(): int
     {
-        $thisMonth = BankTransaction::where('bank_account_id', $accountId)
-            ->where('transaction_type', 'credit')
-            ->whereMonth('transaction_date', now()->month)
-            ->sum('amount');
-        $lastMonth = BankTransaction::where('bank_account_id', $accountId)
-            ->where('transaction_type', 'credit')
-            ->whereMonth('transaction_date', now()->subMonth()->month)
-            ->sum('amount');
-
-        return $thisMonth >= $lastMonth ? 'up' : 'down';
+        return $this->accountsData->sum('balance');
     }
 
-    public function with(): array
+    #[Computed]
+    public function totalIncome(): int
     {
-        return [
-            'transactions' => $this->getTransactions(),
-            'headers' => $this->getTableHeaders(),
-        ];
+        return BankTransaction::where('transaction_type', 'credit')->sum('amount');
     }
 
-    private function getTransactions()
+    #[Computed]
+    public function totalExpense(): int
+    {
+        return BankTransaction::where('transaction_type', 'debit')->sum('amount');
+    }
+
+    #[Computed]
+    public function transactions()
     {
         $query = BankTransaction::with('bankAccount')
             ->when($this->selectedAccountId, fn($q) => $q->where('bank_account_id', $this->selectedAccountId))
@@ -195,28 +307,68 @@ class Index extends Component
         return $query->orderBy(...array_values($this->sort))->get();
     }
 
-    private function getTableHeaders()
+    #[Computed]
+    public function payments()
+    {
+        $query = Payment::with(['invoice.client', 'bankAccount'])
+            ->when($this->selectedAccountId, fn($q) => $q->where('bank_account_id', $this->selectedAccountId))
+            ->when($this->search, function ($q) {
+                $q->where(function ($query) {
+                    $query->where('reference_number', 'like', "%{$this->search}%")
+                        ->orWhereHas('invoice', fn($q) => $q->where('invoice_number', 'like', "%{$this->search}%"))
+                        ->orWhereHas('invoice.client', fn($q) => $q->where('name', 'like', "%{$this->search}%"));
+                });
+            })
+            ->when(!empty($this->dateRange) && count($this->dateRange) >= 2, function ($q) {
+                $q->whereBetween('payment_date', $this->dateRange);
+            });
+
+        // Adjust sort column for payments
+        $sortColumn = $this->sort['column'] === 'transaction_date' ? 'payment_date' : $this->sort['column'];
+        return $query->orderBy($sortColumn, $this->sort['direction'])->get();
+    }
+
+    #[Computed]
+    public function transactionHeaders(): array
     {
         return [
-            ['index' => 'description', 'label' => 'Deskripsi'],
-            ['index' => 'reference_number', 'label' => 'Referensi'],
-            ['index' => 'transaction_date', 'label' => 'Tanggal'],
-            ['index' => 'amount', 'label' => 'Jumlah'],
-            ['index' => 'action', 'label' => 'Aksi'],
+            ['index' => 'description', 'label' => 'Description'],
+            ['index' => 'reference_number', 'label' => 'Reference'],
+            ['index' => 'transaction_date', 'label' => 'Date'],
+            ['index' => 'amount', 'label' => 'Amount'],
+            ['index' => 'action', 'label' => 'Action'],
         ];
     }
 
-    public function clearFilters()
+    #[Computed]
+    public function paymentHeaders(): array
     {
-        $this->search = '';
-        $this->transactionType = '';
-        $this->dateRange = [];
-        $this->selected = []; // Reset selection when clearing filters
-        $this->resetPage();
+        return [
+            ['index' => 'invoice', 'label' => 'Invoice'],
+            ['index' => 'client', 'label' => 'Client'],
+            ['index' => 'payment_date', 'label' => 'Date'],
+            ['index' => 'amount', 'label' => 'Amount'],
+            ['index' => 'payment_method', 'label' => 'Method'],
+            ['index' => 'action', 'label' => 'Action'],
+        ];
+    }
+
+    private function calculateTrend($accountId): string
+    {
+        $thisMonth = BankTransaction::where('bank_account_id', $accountId)
+            ->where('transaction_type', 'credit')
+            ->whereMonth('transaction_date', now()->month)
+            ->sum('amount');
+        $lastMonth = BankTransaction::where('bank_account_id', $accountId)
+            ->where('transaction_type', 'credit')
+            ->whereMonth('transaction_date', now()->subMonth()->month)
+            ->sum('amount');
+
+        return $thisMonth >= $lastMonth ? 'up' : 'down';
     }
 
     public function render()
     {
-        return view('livewire.accounts.index', $this->with());
+        return view('livewire.accounts.index');
     }
 }
