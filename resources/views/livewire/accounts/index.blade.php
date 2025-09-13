@@ -118,41 +118,27 @@
                 <livewire:accounts.quick-actions-overview :selectedAccountId="$selectedAccountId" />
 
                 {{-- Tab Navigation & Tables --}}
-                <div
-                    class="bg-white dark:bg-dark-800 border border-zinc-200 dark:border-dark-600 rounded-xl overflow-hidden">
-                    <div class="p-6 border-b border-zinc-200 dark:border-dark-600">
-                        <div class="flex items-center justify-between mb-4">
-                            <h3 class="text-lg font-semibold text-dark-900 dark:text-dark-50">Account Activity</h3>
-
-                            {{-- Tab Buttons --}}
-                            <div class="flex items-center gap-2 bg-zinc-100 dark:bg-dark-700 p-1 rounded-lg">
-                                <button wire:click="switchTab('transactions')" loading="switchTab('transactions')"
-                                    class="px-4 py-2 text-sm font-medium rounded-md cursor-pointer transition-all {{ $activeTab === 'transactions' ? 'bg-white dark:bg-dark-600 text-primary-600 dark:text-primary-400 shadow-sm' : 'text-dark-600 dark:text-dark-400 hover:text-dark-900 dark:hover:text-dark-200' }}">
-                                    <div class="flex items-center gap-2">
-                                        <x-icon name="arrows-right-left" class="w-4 h-4" />
-                                        Transactions
-                                    </div>
-                                </button>
-                                <button wire:click="switchTab('payments')" loading="switchTab('payments')"
-                                    class="px-4 py-2 text-sm font-medium rounded-md cursor-pointer transition-all {{ $activeTab === 'payments' ? 'bg-white dark:bg-dark-600 text-primary-600 dark:text-primary-400 shadow-sm' : 'text-dark-600 dark:text-dark-400 hover:text-dark-900 dark:hover:text-dark-200' }}">
-                                    <div class="flex items-center gap-2">
-                                        <x-icon name="banknotes" class="w-4 h-4" />
-                                        Payments
-                                    </div>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    {{-- Table Components --}}
-                    <div class="p-6">
-                        @if ($activeTab === 'transactions')
+                <x-tab wire:model.live="activeTab">
+                    <x-tab.items tab="transactions">
+                        <x-slot:left>
+                            <x-icon name="arrows-right-left" class="w-4 h-4" />
+                        </x-slot:left>
+                        {{-- Transactions Table Content --}}
+                        <div>
                             <livewire:accounts.tables.transactions-table :selectedAccountId="$selectedAccountId" :key="uniqid()" />
-                        @else
+                        </div>
+                    </x-tab.items>
+
+                    <x-tab.items tab="payments">
+                        <x-slot:left>
+                            <x-icon name="banknotes" class="w-4 h-4" />
+                        </x-slot:left>
+                        {{-- Payments Table Content --}}
+                        <div>
                             <livewire:accounts.tables.payments-table :selectedAccountId="$selectedAccountId" :key="uniqid()" />
-                        @endif
-                    </div>
-                </div>
+                        </div>
+                    </x-tab.items>
+                </x-tab>
             @else
                 {{-- No Account Selected --}}
                 <div
