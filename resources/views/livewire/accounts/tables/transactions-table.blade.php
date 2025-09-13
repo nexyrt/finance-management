@@ -1,110 +1,171 @@
-<div>
-    {{-- Transactions Table --}}
-    <x-table :$headers :$sort :rows="$this->rows" selectable wire:model="selected" paginate filter loading>
+{{-- resources/views/livewire/accounts/tables/transactions-table.blade.php --}}
 
-        @interact('column_description', $row)
-            <div class="flex items-center gap-3">
-                <div
-                    class="h-10 w-10 {{ $row->transaction_type === 'credit' ? 'bg-green-100 dark:bg-green-900/30' : 'bg-red-100 dark:bg-red-900/30' }} rounded-lg flex items-center justify-center">
-                    <x-icon name="{{ $row->transaction_type === 'credit' ? 'arrow-down' : 'arrow-up' }}"
-                        class="w-5 h-5 {{ $row->transaction_type === 'credit' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }}" />
-                </div>
-                <div>
-                    <p class="font-medium text-dark-900 dark:text-dark-50">{{ $row->description }}</p>
-                    <p class="text-sm text-dark-600 dark:text-dark-400">
-                        {{ $row->transaction_type === 'credit' ? 'Income' : 'Expense' }}
-                    </p>
-                </div>
-            </div>
-        @endinteract
+<div x-data="{}" @reinit-alpine.window="$nextTick(() => Alpine.initTree($el))" class="space-y-4">
+    {{-- Internal Filters --}}
+    <div class="flex flex-col sm:flex-row gap-4">
+        <div class="flex gap-3">
+            <x-select.styled wire:model.live="transactionType" 
+                           :options="$this->transactionTypeOptions"
+                           placeholder="Filter by type..." 
+                           class="w-48" />
+            
+            <x-date wire:model.live="dateRange" 
+                   range 
+                   placeholder="Select date range..."
+                   class="w-64" />
+            
+            @if ($transactionType || !empty($dateRange) || $search)
+                <x-button wire:click="clearFilters" 
+                         loading="clearFilters" 
+                         icon="x-mark"
+                         color="secondary" 
+                         outline>
+                    Clear
+                </x-button>
+            @endif
+        </div>
+        
+        <x-input wire:model.live.debounce.300ms="search"
+                placeholder="Search transactions..."
+                icon="magnifying-glass" 
+                class="flex-1" />
+    </div>
 
-        @interact('column_reference_number', $row)
-            <span class="font-mono text-sm text-dark-600 dark:text-dark-400">
-                {{ $row->reference_number ?: 'TXN' . str_pad($row->id, 6, '0', STR_PAD_LEFT) }}
-            </span>
-        @endinteract
-
-        @interact('column_transaction_date', $row)
-            <div>
-                <p class="text-sm font-medium text-dark-900 dark:text-dark-50">
-                    {{ $row->transaction_date->format('d M Y') }}
-                </p>
-                <p class="text-xs text-dark-600 dark:text-dark-400">
-                    {{ $row->created_at->format('H:i') }}
-                </p>
-            </div>
-        @endinteract
-
-        @interact('column_amount', $row)
-            <div class="text-right">
-                <p
-                    class="font-bold {{ $row->transaction_type === 'credit' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }}">
-                    {{ $row->transaction_type === 'credit' ? '+' : '-' }}Rp
-                    {{ number_format($row->amount, 0, ',', '.') }}
-                </p>
-            </div>
-        @endinteract
-
-        @interact('column_action', $row)
-            <div class="flex justify-center">
-                <x-button.circle wire:click="deleteTransaction({{ $row->id }})"
-                    loading="deleteTransaction({{ $row->id }})" color="red" icon="trash" size="sm" />
-            </div>
-        @endinteract
-    </x-table>
-
-    {{-- Empty State --}}
-    @if ($this->rows->count() === 0)
-        <div class="text-center py-12">
-            <div
-                class="h-16 w-16 bg-zinc-100 dark:bg-zinc-800 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <x-icon name="arrows-right-left" class="w-8 h-8 text-zinc-400" />
-            </div>
-            <h3 class="text-lg font-semibold text-dark-900 dark:text-dark-50 mb-2">
-                No transactions found
-            </h3>
-            <p class="text-dark-600 dark:text-dark-400 mb-6">
-                Start by adding your first transaction to track account activity.
-            </p>
-            <x-button wire:click="$dispatch('add-transaction')" color="primary" icon="plus">
+    {{-- Action Bar --}}
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div class="flex items-center gap-3">
+            <x-button wire:click="addTransaction" 
+                     loading="addTransaction" 
+                     color="primary" 
+                     icon="plus"
+                     size="sm">
                 Add Transaction
             </x-button>
+            
+            @if (!empty($selected))
+                <x-badge color="blue" :text="count($selected) . ' selected'" />
+            @endif
+        </div>
+
+        @if (!empty($selected))
+            <div class="flex items-center gap-2">
+                <x-button wire:click="exportSelected" 
+                         loading="exportSelected" 
+                         color="green" 
+                         icon="document-arrow-down"
+                         size="sm">
+                    Export
+                </x-button>
+                
+                <x-button wire:click="confirmBulkDelete" 
+                         loading="confirmBulkDelete" 
+                         color="red" 
+                         icon="trash"
+                         size="sm">
+                    Delete Selected
+                </x-button>
+            </div>
+        @endif
+    </div>
+
+    {{-- Table --}}
+    <div wire:loading.class="opacity-50" wire:target="search,transactionType,dateRange">
+        <x-table :$headers 
+                 :$sort 
+                 :rows="$this->rows" 
+                 selectable 
+                 wire:model="selected" 
+                 paginate 
+                 loading>
+            
+            {{-- Description Column --}}
+            @interact('column_description', $row)
+                <div class="max-w-xs">
+                    <div class="font-medium text-dark-900 dark:text-white truncate">
+                        {{ $row->description }}
+                    </div>
+                    @if ($row->reference_number && str_starts_with($row->reference_number, 'TRF'))
+                        <x-badge color="blue" text="Transfer" size="sm" class="mt-1" />
+                    @endif
+                </div>
+            @endinteract
+
+            {{-- Reference Column --}}
+            @interact('column_reference_number', $row)
+                @if ($row->reference_number)
+                    <span class="font-mono text-sm text-dark-600 dark:text-dark-400">
+                        {{ $row->reference_number }}
+                    </span>
+                @else
+                    <span class="text-dark-400 italic">-</span>
+                @endif
+            @endinteract
+
+            {{-- Date Column --}}
+            @interact('column_transaction_date', $row)
+                <div class="text-sm">
+                    <div class="text-dark-900 dark:text-white">
+                        {{ $row->transaction_date->format('d M Y') }}
+                    </div>
+                    <div class="text-xs text-dark-500 dark:text-dark-400">
+                        {{ $row->transaction_date->diffForHumans() }}
+                    </div>
+                </div>
+            @endinteract
+
+            {{-- Amount Column --}}
+            @interact('column_amount', $row)
+                <div class="text-right">
+                    <div class="font-semibold {{ $row->transaction_type === 'credit' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }}">
+                        {{ $row->transaction_type === 'credit' ? '+' : '-' }}Rp {{ number_format($row->amount, 0, ',', '.') }}
+                    </div>
+                    <div class="text-xs text-dark-500 dark:text-dark-400">
+                        {{ $row->transaction_type === 'credit' ? 'Income' : 'Expense' }}
+                    </div>
+                </div>
+            @endinteract
+
+            {{-- Actions Column --}}
+            @interact('column_action', $row)
+                <div class="flex items-center gap-1">
+                    <x-button.circle icon="pencil" 
+                                   color="blue" 
+                                   size="sm"
+                                   wire:click="editTransaction({{ $row->id }})"
+                                   title="Edit" />
+                    
+                    <x-button.circle icon="trash" 
+                                   color="red" 
+                                   size="sm"
+                                   wire:click="deleteTransaction({{ $row->id }})"
+                                   title="Delete" />
+                </div>
+            @endinteract
+        </x-table>
+    </div>
+
+    {{-- Empty State --}}
+    @if ($this->rows->isEmpty() && $selectedAccountId)
+        <div class="text-center py-12">
+            <x-icon name="banknotes" class="w-12 h-12 text-dark-400 mx-auto mb-3" />
+            
+            @if ($search || $transactionType || !empty($dateRange))
+                <h3 class="text-lg font-semibold text-dark-900 dark:text-white mb-2">No transactions found</h3>
+                <p class="text-dark-600 dark:text-dark-400 mb-4">Try adjusting your search criteria</p>
+                <x-button wire:click="clearFilters" color="primary" outline>Clear Filters</x-button>
+            @else
+                <h3 class="text-lg font-semibold text-dark-900 dark:text-white mb-2">No transactions yet</h3>
+                <p class="text-dark-600 dark:text-dark-400 mb-4">Start by adding your first transaction</p>
+                <x-button wire:click="addTransaction" color="primary" icon="plus">Add Transaction</x-button>
+            @endif
         </div>
     @endif
 
-    {{-- Bulk Actions Bar --}}
-    <div x-data="{ show: @entangle('selected').live }" x-show="show.length > 0" x-transition
-        class="fixed bottom-4 sm:bottom-6 left-4 right-4 sm:left-1/2 sm:right-auto sm:transform sm:-translate-x-1/2 z-50">
-        <div
-            class="bg-white dark:bg-dark-800 rounded-xl shadow-lg border border-zinc-200 dark:border-dark-600 px-4 sm:px-6 py-4 sm:min-w-80">
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-6">
-                {{-- Selection Info --}}
-                <div class="flex items-center gap-3">
-                    <div class="h-10 w-10 bg-zinc-50 dark:bg-zinc-900/20 rounded-xl flex items-center justify-center">
-                        <x-icon name="check-circle" class="w-5 h-5 text-zinc-600 dark:text-zinc-400" />
-                    </div>
-                    <div>
-                        <div class="font-semibold text-dark-900 dark:text-dark-50"
-                            x-text="`${show.length} transaction${show.length !== 1 ? 's' : ''} selected`"></div>
-                        <div class="text-xs text-dark-600 dark:text-dark-400">Choose action for selected items</div>
-                    </div>
-                </div>
-                {{-- Actions --}}
-                <div class="flex items-center gap-2 justify-end">
-                    <x-button wire:click="exportSelected" loading="exportSelected" size="sm" color="green"
-                        icon="document-arrow-down" class="whitespace-nowrap">
-                        Export
-                    </x-button>
-                    <x-button wire:click="confirmBulkDelete" loading="confirmBulkDelete" size="sm" color="red"
-                        icon="trash" class="whitespace-nowrap">
-                        Delete
-                    </x-button>
-                    <x-button wire:click="$set('selected', [])" size="sm" color="zinc" icon="x-mark"
-                        class="whitespace-nowrap">
-                        Cancel
-                    </x-button>
-                </div>
-            </div>
+    @if (!$selectedAccountId)
+        <div class="text-center py-12">
+            <x-icon name="building-library" class="w-12 h-12 text-dark-400 mx-auto mb-3" />
+            <h3 class="text-lg font-semibold text-dark-900 dark:text-white mb-2">Select an Account</h3>
+            <p class="text-dark-600 dark:text-dark-400">Choose an account to view its transactions</p>
         </div>
-    </div>
+    @endif
 </div>

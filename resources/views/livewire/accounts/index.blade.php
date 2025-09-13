@@ -114,47 +114,8 @@
         {{-- Main Content --}}
         <div class="flex-1 space-y-6">
             @if ($selectedAccountId)
-                {{-- Quick Actions & Chart Section --}}
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    {{-- Quick Actions --}}
-                    <div class="bg-white dark:bg-dark-800 border border-zinc-200 dark:border-dark-600 rounded-xl p-6">
-                        <h3 class="text-lg font-semibold text-dark-900 dark:text-dark-50 mb-4">Quick Actions</h3>
-                        <div class="space-y-3">
-                            <x-button wire:click="addTransaction" loading="addTransaction" color="primary"
-                                icon="plus" class="w-full justify-start">
-                                <div class="text-left">
-                                    <div class="font-semibold">Add Transaction</div>
-                                    <div class="text-xs opacity-70">Record income or expense</div>
-                                </div>
-                            </x-button>
-                            <x-button wire:click="transferFunds" loading="transferFunds" color="blue" outline
-                                icon="arrow-path" class="w-full justify-start">
-                                <div class="text-left">
-                                    <div class="font-semibold">Transfer</div>
-                                    <div class="text-xs opacity-70">Move between accounts</div>
-                                </div>
-                            </x-button>
-                            <x-button wire:click="exportReport" loading="exportReport" color="green" outline
-                                icon="document-arrow-down" class="w-full justify-start">
-                                <div class="text-left">
-                                    <div class="font-semibold">Export Report</div>
-                                    <div class="text-xs opacity-70">Download history</div>
-                                </div>
-                            </x-button>
-                        </div>
-                    </div>
-
-                    {{-- Financial Overview Chart --}}
-                    <div class="lg:col-span-2">
-                        <div
-                            class="bg-white dark:bg-dark-800 border border-zinc-200 dark:border-dark-600 rounded-xl p-6 h-[400px]">
-                            <h2 class="text-xl font-bold text-dark-900 dark:text-dark-50 mb-4">Financial Overview</h2>
-                            <div class="h-80">
-                                <canvas id="cashflowChart"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                {{-- Quick Actions & Chart Component --}}
+                <livewire:accounts.quick-actions-overview :selectedAccountId="$selectedAccountId" />
 
                 {{-- Tab Navigation & Tables --}}
                 <div
@@ -165,17 +126,15 @@
 
                             {{-- Tab Buttons --}}
                             <div class="flex items-center gap-2 bg-zinc-100 dark:bg-dark-700 p-1 rounded-lg">
-                                <button wire:click="switchTab('transactions')" wire:loading.attr="disabled"
-                                    wire:target="switchTab"
-                                    class="px-4 py-2 text-sm font-medium rounded-md transition-all {{ $activeTab === 'transactions' ? 'bg-white dark:bg-dark-600 text-primary-600 dark:text-primary-400 shadow-sm' : 'text-dark-600 dark:text-dark-400 hover:text-dark-900 dark:hover:text-dark-200' }}">
+                                <button wire:click="switchTab('transactions')" loading="switchTab('transactions')"
+                                    class="px-4 py-2 text-sm font-medium rounded-md cursor-pointer transition-all {{ $activeTab === 'transactions' ? 'bg-white dark:bg-dark-600 text-primary-600 dark:text-primary-400 shadow-sm' : 'text-dark-600 dark:text-dark-400 hover:text-dark-900 dark:hover:text-dark-200' }}">
                                     <div class="flex items-center gap-2">
                                         <x-icon name="arrows-right-left" class="w-4 h-4" />
                                         Transactions
                                     </div>
                                 </button>
-                                <button wire:click="switchTab('payments')" wire:loading.attr="disabled"
-                                    wire:target="switchTab"
-                                    class="px-4 py-2 text-sm font-medium rounded-md transition-all {{ $activeTab === 'payments' ? 'bg-white dark:bg-dark-600 text-primary-600 dark:text-primary-400 shadow-sm' : 'text-dark-600 dark:text-dark-400 hover:text-dark-900 dark:hover:text-dark-200' }}">
+                                <button wire:click="switchTab('payments')" loading="switchTab('payments')"
+                                    class="px-4 py-2 text-sm font-medium rounded-md cursor-pointer transition-all {{ $activeTab === 'payments' ? 'bg-white dark:bg-dark-600 text-primary-600 dark:text-primary-400 shadow-sm' : 'text-dark-600 dark:text-dark-400 hover:text-dark-900 dark:hover:text-dark-200' }}">
                                     <div class="flex items-center gap-2">
                                         <x-icon name="banknotes" class="w-4 h-4" />
                                         Payments
@@ -183,41 +142,14 @@
                                 </button>
                             </div>
                         </div>
-
-                        {{-- Filters --}}
-                        <div class="flex flex-col sm:flex-row gap-4">
-                            <div class="flex gap-3">
-                                @if ($activeTab === 'transactions')
-                                    <x-select.styled wire:model.live="transactionType" :options="[
-                                        ['label' => 'All Types', 'value' => ''],
-                                        ['label' => 'Income', 'value' => 'credit'],
-                                        ['label' => 'Expense', 'value' => 'debit'],
-                                    ]"
-                                        placeholder="Filter by type..." class="w-48" />
-                                @endif
-                                <x-date wire:model.live="dateRange" range placeholder="Select date range..."
-                                    class="w-64" />
-                                @if ($transactionType || !empty($dateRange) || $search)
-                                    <x-button wire:click="clearFilters" loading="clearFilters" icon="x-mark"
-                                        color="secondary" outline>
-                                        Clear
-                                    </x-button>
-                                @endif
-                            </div>
-                            <x-input wire:model.live.debounce.300ms="search"
-                                placeholder="{{ $activeTab === 'transactions' ? 'Search transactions...' : 'Search payments...' }}"
-                                icon="magnifying-glass" class="flex-1" />
-                        </div>
                     </div>
 
                     {{-- Table Components --}}
                     <div class="p-6">
                         @if ($activeTab === 'transactions')
-                            <livewire:accounts.tables.transactions-table :selectedAccountId="$selectedAccountId" :search="$search"
-                                :transactionType="$transactionType" :dateRange="$dateRange" :key="'transactions-' . $selectedAccountId" />
+                            <livewire:accounts.tables.transactions-table :selectedAccountId="$selectedAccountId" :key="uniqid()" />
                         @else
-                            <livewire:accounts.tables.payments-table :selectedAccountId="$selectedAccountId" :search="$search"
-                                :dateRange="$dateRange" :key="'payments-' . $selectedAccountId" />
+                            <livewire:accounts.tables.payments-table :selectedAccountId="$selectedAccountId" :key="uniqid()" />
                         @endif
                     </div>
                 </div>
@@ -245,135 +177,4 @@
     <livewire:transactions.delete @transaction-deleted="refreshData" />
     <livewire:transactions.transfer @transfer-completed="refreshData" />
     <livewire:payments.delete @payment-deleted="refreshData" />
-
-    @push('scripts')
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.min.js"></script>
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                let chart;
-
-                function isDarkMode() {
-                    return document.documentElement.classList.contains('dark');
-                }
-
-                function createChart(chartData) {
-                    const ctx = document.getElementById('cashflowChart');
-                    if (!ctx || !chartData || chartData.length === 0) return;
-
-                    if (chart) {
-                        chart.destroy();
-                    }
-
-                    const isDark = isDarkMode();
-
-                    chart = new Chart(ctx, {
-                        type: 'line',
-                        data: {
-                            labels: chartData.map(item => item.month),
-                            datasets: [{
-                                label: 'Income',
-                                data: chartData.map(item => item.income),
-                                borderColor: '#10b981',
-                                backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                                borderWidth: 3,
-                                fill: false,
-                                tension: 0.4,
-                            }, {
-                                label: 'Expense',
-                                data: chartData.map(item => item.expense),
-                                borderColor: '#ef4444',
-                                backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                                borderWidth: 3,
-                                fill: false,
-                                tension: 0.4,
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                tooltip: {
-                                    backgroundColor: isDark ? '#374151' : '#ffffff',
-                                    titleColor: isDark ? '#f3f4f6' : '#111827',
-                                    bodyColor: isDark ? '#d1d5db' : '#374151',
-                                    borderColor: isDark ? '#6b7280' : '#e5e7eb',
-                                    borderWidth: 1,
-                                    callbacks: {
-                                        label: function(context) {
-                                            return context.dataset.label + ': Rp ' +
-                                                new Intl.NumberFormat('id-ID').format(context.parsed.y);
-                                        }
-                                    }
-                                },
-                                legend: {
-                                    labels: {
-                                        color: isDark ? '#9ca3af' : '#6b7280'
-                                    }
-                                }
-                            },
-                            scales: {
-                                y: {
-                                    ticks: {
-                                        color: isDark ? '#9ca3af' : '#6b7280',
-                                        callback: function(value) {
-                                            return 'Rp ' + (value / 1000000).toFixed(1) + 'M';
-                                        }
-                                    },
-                                    grid: {
-                                        color: isDark ? '#374151' : '#f3f4f6'
-                                    }
-                                },
-                                x: {
-                                    ticks: {
-                                        color: isDark ? '#9ca3af' : '#6b7280'
-                                    },
-                                    grid: {
-                                        color: isDark ? '#374151' : '#f3f4f6'
-                                    }
-                                }
-                            }
-                        }
-                    });
-                }
-
-                // Initial render
-                const initialData = @json($this->chartData);
-                createChart(initialData);
-
-                // Listen for Livewire updates
-                document.addEventListener('chartDataUpdated', event => {
-                    const chartData = event.detail[0].chartData;
-                    createChart(chartData);
-                });
-
-                // Handle theme changes
-                const observer = new MutationObserver(function(mutations) {
-                    mutations.forEach(function(mutation) {
-                        if (mutation.attributeName === 'class' && chart) {
-                            const currentData = chart.data.datasets[0].data;
-                            const currentLabels = chart.data.labels;
-
-                            setTimeout(() => {
-                                createChart(currentLabels.map((label, index) => ({
-                                    month: label,
-                                    income: chart.data.datasets[0].data[index],
-                                    expense: chart.data.datasets[1].data[index]
-                                })));
-                            }, 100);
-                        }
-                    });
-                });
-
-                observer.observe(document.documentElement, {
-                    attributes: true,
-                    attributeFilter: ['class']
-                });
-
-                // Cleanup
-                window.addEventListener('beforeunload', () => {
-                    if (chart) chart.destroy();
-                });
-            });
-        </script>
-    @endpush
 </div>

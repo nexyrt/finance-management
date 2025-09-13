@@ -7,18 +7,21 @@ use Livewire\Component;
 use Livewire\WithPagination;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Renderless;
+use Livewire\Attributes\On;
 use TallStackUi\Traits\Interactions;
 
 class PaymentsTable extends Component
 {
     use WithPagination, Interactions;
 
-    // Parent props
+    // Account selection
     public $selectedAccountId;
+
+    // Internal filters (self-contained)
     public string $search = '';
     public array $dateRange = [];
 
-    // Table specific props
+    // Table props
     public array $sort = [
         'column' => 'payment_date',
         'direction' => 'desc',
@@ -41,12 +44,28 @@ class PaymentsTable extends Component
         return view('livewire.accounts.tables.payments-table');
     }
 
+    // Listen to account changes from parent
+    #[On('account-selected')]
+    public function handleAccountChange($accountId): void
+    {
+        $this->selectedAccountId = $accountId;
+        $this->clearFilters();
+        $this->resetPage();
+
+        // Dispatch Alpine reinit
+        $this->dispatch('reinit-alpine');
+    }
+
     // Data loading
     #[Computed]
     public function rows()
     {
+        if (!$this->selectedAccountId) {
+            return collect();
+        }
+
         $query = Payment::with(['invoice.client', 'bankAccount'])
-            ->when($this->selectedAccountId, fn($q) => $q->where('bank_account_id', $this->selectedAccountId))
+            ->where('bank_account_id', $this->selectedAccountId)
             ->when($this->search, function ($q) {
                 $q->where(function ($query) {
                     $query->where('reference_number', 'like', "%{$this->search}%")
@@ -63,7 +82,28 @@ class PaymentsTable extends Component
             ->withQueryString();
     }
 
+    // Filter management
+    public function clearFilters(): void
+    {
+        $this->search = '';
+        $this->dateRange = [];
+        $this->resetPage();
+
+        $this->toast()
+            ->info('Filters Cleared', 'All payment filters reset')
+            ->send();
+    }
+
     // Actions
+    public function addPayment(): void
+    {
+        if (!$this->selectedAccountId) {
+            $this->toast()->warning('Warning', 'No account selected')->send();
+            return;
+        }
+        $this->dispatch('open-payment-modal', accountId: $this->selectedAccountId);
+    }
+
     public function deletePayment($paymentId): void
     {
         $this->dispatch('delete-payment', paymentId: $paymentId);
@@ -128,7 +168,7 @@ class PaymentsTable extends Component
             ->send();
     }
 
-    // Listen to parent updates
+    // Auto-reset pagination on filter changes
     public function updatedSearch(): void
     {
         $this->resetPage();

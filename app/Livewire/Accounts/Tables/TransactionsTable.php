@@ -7,19 +7,22 @@ use Livewire\Component;
 use Livewire\WithPagination;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Renderless;
+use Livewire\Attributes\On;
 use TallStackUi\Traits\Interactions;
 
 class TransactionsTable extends Component
 {
     use WithPagination, Interactions;
 
-    // Parent props
+    // Account selection
     public $selectedAccountId;
+
+    // Internal filters (self-contained)
     public string $search = '';
     public string $transactionType = '';
     public array $dateRange = [];
 
-    // Table specific props
+    // Table props
     public array $sort = [
         'column' => 'transaction_date',
         'direction' => 'desc',
@@ -41,12 +44,28 @@ class TransactionsTable extends Component
         return view('livewire.accounts.tables.transactions-table');
     }
 
+    // Listen to account changes from parent
+    #[On('account-selected')]
+    public function handleAccountChange($accountId): void
+    {
+        $this->selectedAccountId = $accountId;
+        $this->clearFilters();
+        $this->resetPage();
+
+        // Dispatch Alpine reinit
+        $this->dispatch('reinit-alpine');
+    }
+
     // Data loading
     #[Computed]
     public function rows()
     {
+        if (!$this->selectedAccountId) {
+            return collect();
+        }
+
         $query = BankTransaction::with('bankAccount')
-            ->when($this->selectedAccountId, fn($q) => $q->where('bank_account_id', $this->selectedAccountId))
+            ->where('bank_account_id', $this->selectedAccountId)
             ->when($this->search, function ($q) {
                 $q->where(function ($query) {
                     $query->where('description', 'like', "%{$this->search}%")
@@ -63,7 +82,40 @@ class TransactionsTable extends Component
             ->withQueryString();
     }
 
+    // Filter management
+    public function clearFilters(): void
+    {
+        $this->search = '';
+        $this->transactionType = '';
+        $this->dateRange = [];
+        $this->resetPage();
+
+        $this->toast()
+            ->info('Filters Cleared', 'All transaction filters reset')
+            ->send();
+    }
+
+    // Filter options
+    #[Computed]
+    public function transactionTypeOptions(): array
+    {
+        return [
+            ['label' => 'All Types', 'value' => ''],
+            ['label' => 'Income', 'value' => 'credit'],
+            ['label' => 'Expense', 'value' => 'debit'],
+        ];
+    }
+
     // Actions
+    public function addTransaction(): void
+    {
+        if (!$this->selectedAccountId) {
+            $this->toast()->warning('Warning', 'No account selected')->send();
+            return;
+        }
+        $this->dispatch('open-transaction-modal', accountId: $this->selectedAccountId);
+    }
+
     public function deleteTransaction($transactionId): void
     {
         $this->dispatch('delete-transaction', transactionId: $transactionId);
@@ -144,7 +196,7 @@ class TransactionsTable extends Component
             ->send();
     }
 
-    // Listen to parent updates
+    // Auto-reset pagination on filter changes
     public function updatedSearch(): void
     {
         $this->resetPage();

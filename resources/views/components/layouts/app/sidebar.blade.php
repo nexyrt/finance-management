@@ -41,7 +41,7 @@
                     {{ __('Recurring Invoices') }}
                 </flux:navlist.item>
                 <flux:navlist.item icon="credit-card" :href="route('bank-accounts.index')"
-                    :current="request()->routeIs('bank-accounts.*')" wire:navigate class="py-5">
+                    :current="request()->routeIs('bank-accounts.*')" class="py-5">
                     {{ __('Bank Accounts') }}
                 </flux:navlist.item>
                 <flux:navlist.item icon="banknotes" :href="route('transactions.index')"

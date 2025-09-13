@@ -18,11 +18,6 @@ class Index extends Component
     public $selectedAccountId = null;
     public string $activeTab = 'transactions';
 
-    // Filters (passed to child table components)
-    public string $search = '';
-    public string $transactionType = '';
-    public array $dateRange = [];
-
     public function mount(): void
     {
         if ($this->accountsData->count() > 0) {
@@ -39,6 +34,10 @@ class Index extends Component
     public function selectAccount($accountId = null): void
     {
         $this->selectedAccountId = $accountId;
+
+        // Notify all child components
+        $this->dispatch('account-selected', accountId: $accountId);
+
         $this->toast()->success('Account Selected', 'Viewing data for selected account')->send();
     }
 
@@ -64,121 +63,11 @@ class Index extends Component
         $this->activeTab = $tab;
     }
 
-    // Quick actions
-    public function addTransaction(): void
-    {
-        if (!$this->selectedAccountId) {
-            $this->toast()->warning('Warning', 'Please select an account first')->send();
-            return;
-        }
-        $this->dispatch('open-transaction-modal', accountId: $this->selectedAccountId);
-    }
-
-    public function transferFunds(): void
-    {
-        if (!$this->selectedAccountId) {
-            $this->toast()->warning('Warning', 'Please select an account first')->send();
-            return;
-        }
-        $this->dispatch('open-transfer-modal', fromAccountId: $this->selectedAccountId);
-    }
-
-    public function exportReport(): void
-    {
-        if (!$this->selectedAccountId) {
-            $this->toast()->warning('Warning', 'Please select an account first')->send();
-            return;
-        }
-        $this->toast()->info('Export Started', 'Your report is being generated')->send();
-    }
-
-    // Filter management
-    public function clearFilters(): void
-    {
-        $this->search = '';
-        $this->transactionType = '';
-        $this->dateRange = [];
-        $this->toast()->info('Filters Cleared', 'All filters have been reset')->send();
-    }
-
-    // Event listeners from child components and modals
+    // Event listeners from child components
     #[On('account-created', 'account-updated', 'account-deleted', 'transaction-created', 'transaction-deleted', 'transfer-completed', 'payment-deleted', 'transactions-updated', 'payments-updated')]
     public function refreshData(): void
     {
-        // Dispatch chart update when data changes
-        $this->dispatch('chartDataUpdated', [
-            'chartData' => $this->chartData,
-        ]);
-
         $this->toast()->success('Data Updated', 'Information has been refreshed')->send();
-    }
-
-    // Handle account selection change for chart
-    public function updatedSelectedAccountId(): void
-    {
-        $this->dispatch('chartDataUpdated', [
-            'chartData' => $this->chartData,
-        ]);
-    }
-
-    // Handle events from child table components
-    #[On('add-transaction')]
-    public function handleAddTransaction(): void
-    {
-        $this->addTransaction();
-    }
-
-    #[On('delete-transaction')]
-    public function handleDeleteTransaction($transactionId): void
-    {
-        $this->dispatch('delete-transaction', transactionId: $transactionId);
-    }
-
-    #[On('delete-payment')]
-    public function handleDeletePayment($paymentId): void
-    {
-        $this->dispatch('delete-payment', paymentId: $paymentId);
-    }
-
-    // Chart data
-    #[Computed]
-    public function chartData(): array
-    {
-        if (!$this->selectedAccountId) {
-            return [];
-        }
-
-        $months = collect();
-        $currentDate = now()->startOfMonth()->subMonths(11); // Last 12 months
-
-        for ($i = 0; $i < 12; $i++) {
-            $monthStart = $currentDate->copy()->addMonths($i);
-            $monthEnd = $monthStart->copy()->endOfMonth();
-
-            // Income dari payments + credit transactions
-            $paymentsIncome = \App\Models\Payment::where('bank_account_id', $this->selectedAccountId)
-                ->whereBetween('payment_date', [$monthStart, $monthEnd])
-                ->sum('amount');
-
-            $transactionsIncome = \App\Models\BankTransaction::where('bank_account_id', $this->selectedAccountId)
-                ->where('transaction_type', 'credit')
-                ->whereBetween('transaction_date', [$monthStart, $monthEnd])
-                ->sum('amount');
-
-            // Expense dari debit transactions
-            $expense = \App\Models\BankTransaction::where('bank_account_id', $this->selectedAccountId)
-                ->where('transaction_type', 'debit')
-                ->whereBetween('transaction_date', [$monthStart, $monthEnd])
-                ->sum('amount');
-
-            $months->push([
-                'month' => $monthStart->format('M Y'),
-                'income' => $paymentsIncome + $transactionsIncome,
-                'expense' => $expense
-            ]);
-        }
-
-        return $months->toArray();
     }
 
     // Computed properties
