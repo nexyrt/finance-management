@@ -1,6 +1,6 @@
 {{-- resources/views/livewire/accounts/tables/payments-table.blade.php --}}
 
-<div class="space-y-4">
+<div class="space-y-6">
     {{-- Filters --}}
     <div class="flex flex-col sm:flex-row mt-2 gap-4">
         <div class="flex gap-3">
