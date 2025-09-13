@@ -2,7 +2,7 @@
 
 <div class="space-y-4">
     {{-- Filters --}}
-    <div class="flex flex-col sm:flex-row gap-4">
+    <div class="flex flex-col sm:flex-row mt-2 gap-4">
         <div class="flex gap-3">
             <div wire:ignore>
                 <x-date wire:model.live="dateRange" range placeholder="Select date range..." class="w-64" />
@@ -20,7 +20,7 @@
     </div>
 
     {{-- Table with Bulk Actions --}}
-    <x-table :$headers :$sort :rows="$this->rows" selectable wire:model="selected" paginate filter loading>
+    <x-table :$headers :$sort :rows="$this->rows" selectable wire:model="selected" paginate loading>
 
         {{-- Invoice --}}
         @interact('column_invoice', $row)
