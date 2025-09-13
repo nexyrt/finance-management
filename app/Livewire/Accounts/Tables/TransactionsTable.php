@@ -23,7 +23,7 @@ class TransactionsTable extends Component
     // Table state
     public array $sort = ['column' => 'transaction_date', 'direction' => 'desc'];
     public array $selected = [];
-    public ?int $quantity = 10;
+    public ?int $quantity = 50;
 
     // Headers
     public array $headers = [

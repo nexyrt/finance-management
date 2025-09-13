@@ -20,7 +20,7 @@
     </div>
 
     {{-- Table with Bulk Actions --}}
-    <x-table :$headers :$sort :rows="$this->rows" selectable wire:model="selected" paginate loading>
+    <x-table :$headers :$sort :rows="$this->rows" selectable wire:model="selected" paginate filter loading>
 
         {{-- Invoice --}}
         @interact('column_invoice', $row)

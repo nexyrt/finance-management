@@ -1,8 +1,8 @@
 {{-- resources/views/livewire/accounts/tables/transactions-table.blade.php --}}
 
-<div class="space-y-4">
+<div class="space-y-6">
     {{-- Filters --}}
-    <div class="flex flex-col sm:flex-row gap-4">
+    <div class="flex flex-col sm:flex-row gap-4 mt-2">
         <div class="flex gap-3">
             <div wire:ignore>
                 <x-select.styled wire:model.live="transactionType" :options="$this->transactionTypeOptions" placeholder="Filter by type..."
