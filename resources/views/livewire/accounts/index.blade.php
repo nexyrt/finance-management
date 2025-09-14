@@ -118,7 +118,7 @@
                 <livewire:accounts.quick-actions-overview :selectedAccountId="$selectedAccountId" />
 
                 {{-- Tab Navigation & Tables --}}
-                <x-tab selected="transactions">
+                <x-tab selected="transactions" scroll-on-mobile>
                     <x-tab.items tab="transactions">
                         <x-slot:left>
                             <x-icon name="arrows-right-left" class="w-4 h-4" />
