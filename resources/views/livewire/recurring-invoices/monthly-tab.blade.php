@@ -198,7 +198,7 @@
                             icon="arrow-up-tray" />
                     @endif
 
-                    <livewire:recurring-invoices.monthly.delete-invoice :invoice="$row" :key="'delete-' . $row->id"
+                    <livewire:recurring-invoices.monthly.delete-invoice :invoice="$row" :key="uniqid()"
                         @invoice-deleted="$refresh" />
                 </div>
             @endinteract

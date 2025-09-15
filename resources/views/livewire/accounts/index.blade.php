@@ -118,14 +118,16 @@
                 <livewire:accounts.quick-actions-overview :selectedAccountId="$selectedAccountId" />
 
                 {{-- Tab Navigation & Tables --}}
-                <x-tab selected="transactions" scroll-on-mobile>
+                <x-tab wire:model.live="activeTab">
                     <x-tab.items tab="transactions">
                         <x-slot:left>
                             <x-icon name="arrows-right-left" class="w-4 h-4" />
                         </x-slot:left>
+                        Transactions
+
                         {{-- Transactions Table Content --}}
-                        <div>
-                            <livewire:accounts.tables.transactions-table :selectedAccountId="$selectedAccountId" :key="uniqid()" />
+                        <div class="mt-6">
+                            <livewire:accounts.tables.transactions-table :selectedAccountId="$selectedAccountId" :key="'transactions-' . $selectedAccountId" />
                         </div>
                     </x-tab.items>
 
@@ -133,9 +135,11 @@
                         <x-slot:left>
                             <x-icon name="banknotes" class="w-4 h-4" />
                         </x-slot:left>
+                        Payments
+
                         {{-- Payments Table Content --}}
-                        <div>
-                            <livewire:accounts.tables.payments-table :selectedAccountId="$selectedAccountId" :key="uniqid()" />
+                        <div class="mt-6">
+                            <livewire:accounts.tables.payments-table :selectedAccountId="$selectedAccountId" :key="'payments-' . $selectedAccountId" />
                         </div>
                     </x-tab.items>
                 </x-tab>

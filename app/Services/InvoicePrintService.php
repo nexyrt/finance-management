@@ -49,9 +49,9 @@ class InvoicePrintService
     private function getCompanyInfo(): array
     {
         return [
-            'name' => 'CV. JITSUGEN ARTHA HARMONI',
+            'name' => 'PT. KINARA SADAYATRA NUSANTARA',
             'address' => 'Jl. A. Wahab Syahranie Perum Pondok Alam Indah, Nomor 3D, Kel. Sempaja Barat, Kota Samarinda - Kalimantan Timur', // Update sesuai alamat
-            'email' => 'jitsugen@gmail.com', // Update email
+            'email' => 'kisantra.official@gmail.com', // Update email
             'phone' => '0852-8888-2600',
             'logo_base64' => $this->getLogoBase64(),
             'signature_base64' => $this->getSignatureBase64(),
@@ -59,8 +59,8 @@ class InvoicePrintService
             'bank_accounts' => [ 
                 [
                     'bank' => 'MANDIRI',
-                    'account_number' => '1480025066799',
-                    'account_name' => 'CV. JITSUGEN ARTHA HARMONI'
+                    'account_number' => '1480045452425',
+                    'account_name' => 'PT. KINARA SADAYATRA NUSANTARA'
                 ]
             ],
             'signature' => [
@@ -72,7 +72,7 @@ class InvoicePrintService
 
     private function getLogoBase64(): string
     {
-        $logoPath = public_path('images/jitsugen-logo.jpeg'); // Update path sesuai logo yang digunakan
+        $logoPath = public_path('images/letter-head.png'); // Update path sesuai logo yang digunakan
         if (file_exists($logoPath)) {
             return 'data:image/png;base64,' . base64_encode(file_get_contents($logoPath));
         }
@@ -90,7 +90,7 @@ class InvoicePrintService
 
     private function getStampBase64(): string
     {
-        $stampPath = public_path('images/jitsugen-stamp.png');
+        $stampPath = public_path('images/dark-logo.png');
         if (file_exists($stampPath)) {
             return 'data:image/png;base64,' . base64_encode(file_get_contents($stampPath));
         }

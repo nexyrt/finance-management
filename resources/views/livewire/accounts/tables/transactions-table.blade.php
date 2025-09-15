@@ -1,8 +1,8 @@
 {{-- resources/views/livewire/accounts/tables/transactions-table.blade.php --}}
 
-<div class="space-y-6">
+<div class="space-y-4">
     {{-- Filters --}}
-    <div class="flex flex-col sm:flex-row gap-4 mt-2">
+    <div class="flex flex-col sm:flex-row gap-4">
         <div class="flex gap-3">
             <div wire:ignore>
                 <x-select.styled wire:model.live="transactionType" :options="$this->transactionTypeOptions" placeholder="Filter by type..."
@@ -25,60 +25,67 @@
     </div>
 
     {{-- Table with Bulk Actions --}}
-    <x-table :$headers :$sort :rows="$this->rows" selectable wire:model="selected" paginate loading>
+    <div class="overflow-x-auto">
+        <x-table :$headers :$sort :rows="$this->rows" selectable wire:model="selected" paginate loading
+            class="w-full table-fixed">
 
-        {{-- Description --}}
-        @interact('column_description', $row)
-            <div class="max-w-xs">
-                <div class="font-medium text-dark-900 dark:text-white truncate">
-                    {{ $row->description }}
+            {{-- Description (3/12) --}}
+            @interact('column_description', $row)
+                <div class="w-full max-w-[200px]">
+                    <div class="font-medium text-dark-900 dark:text-white truncate">
+                        {{ $row->description }}
+                    </div>
+                    @if ($row->reference_number && str_starts_with($row->reference_number, 'TRF'))
+                        <x-badge color="blue" text="Transfer" size="sm" class="mt-1" />
+                    @endif
                 </div>
-                @if ($row->reference_number && str_starts_with($row->reference_number, 'TRF'))
-                    <x-badge color="blue" text="Transfer" size="sm" class="mt-1" />
-                @endif
-            </div>
-        @endinteract
+            @endinteract
 
-        {{-- Reference --}}
-        @interact('column_reference_number', $row)
-            @if ($row->reference_number)
-                <span class="font-mono text-sm text-dark-600 dark:text-dark-400">
-                    {{ $row->reference_number }}
-                </span>
-            @else
-                <span class="text-dark-400 italic">-</span>
-            @endif
-        @endinteract
-
-        {{-- Date --}}
-        @interact('column_transaction_date', $row)
-            <div class="text-sm">
-                <div class="text-dark-900 dark:text-white">{{ $row->transaction_date->format('d M Y') }}</div>
-                <div class="text-xs text-dark-500 dark:text-dark-400">{{ $row->transaction_date->diffForHumans() }}</div>
-            </div>
-        @endinteract
-
-        {{-- Amount --}}
-        @interact('column_amount', $row)
-            <div class="text-right">
-                <div
-                    class="font-semibold {{ $row->transaction_type === 'credit' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }}">
-                    {{ $row->transaction_type === 'credit' ? '+' : '-' }}Rp {{ number_format($row->amount, 0, ',', '.') }}
+            {{-- Reference (2/12) --}}
+            @interact('column_reference_number', $row)
+                <div class="w-full max-w-[130px]">
+                    @if ($row->reference_number)
+                        <span class="font-mono text-sm text-dark-600 dark:text-dark-400 truncate block">
+                            {{ $row->reference_number }}
+                        </span>
+                    @else
+                        <span class="text-dark-400 italic">-</span>
+                    @endif
                 </div>
-                <div class="text-xs text-dark-500 dark:text-dark-400">
-                    {{ $row->transaction_type === 'credit' ? 'Income' : 'Expense' }}
-                </div>
-            </div>
-        @endinteract
+            @endinteract
 
-        {{-- Actions --}}
-        @interact('column_action', $row)
-            <div class="flex items-center gap-1">
-                <x-button.circle icon="trash" color="red" size="sm"
-                    wire:click="deleteTransaction({{ $row->id }})" title="Delete" />
-            </div>
-        @endinteract
-    </x-table>
+            {{-- Date (2/12) --}}
+            @interact('column_transaction_date', $row)
+                <div class="text-sm w-full max-w-[130px]">
+                    <div class="text-dark-900 dark:text-white">{{ $row->transaction_date->format('d M Y') }}</div>
+                    <div class="text-xs text-dark-500 dark:text-dark-400">{{ $row->transaction_date->diffForHumans() }}
+                    </div>
+                </div>
+            @endinteract
+
+            {{-- Amount (2/12) --}}
+            @interact('column_amount', $row)
+                <div class="text-right w-full max-w-[130px]">
+                    <div
+                        class="font-semibold {{ $row->transaction_type === 'credit' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }}">
+                        {{ $row->transaction_type === 'credit' ? '+' : '-' }}Rp
+                        {{ number_format($row->amount, 0, ',', '.') }}
+                    </div>
+                    <div class="text-xs text-dark-500 dark:text-dark-400">
+                        {{ $row->transaction_type === 'credit' ? 'Income' : 'Expense' }}
+                    </div>
+                </div>
+            @endinteract
+
+            {{-- Actions (3/12) --}}
+            @interact('column_action', $row)
+                <div class="flex items-center gap-1 w-full max-w-[200px]">
+                    <x-button.circle icon="trash" color="red" size="sm"
+                        wire:click="deleteTransaction({{ $row->id }})" title="Delete" />
+                </div>
+            @endinteract
+        </x-table>
+    </div>
 
     {{-- Bulk Actions Bar --}}
     <div x-data="{ show: @entangle('selected').live }" x-show="show.length > 0" x-transition
@@ -95,6 +102,7 @@
                     </div>
                 </div>
                 <div class="flex items-center gap-2">
+                    <x-button wire:click="addTransaction" size="sm" color="primary" icon="plus">Add</x-button>
                     <x-button wire:click="exportSelected" size="sm" color="green"
                         icon="document-arrow-down">Export</x-button>
                     <x-button wire:click="confirmBulkDelete" size="sm" color="red"
