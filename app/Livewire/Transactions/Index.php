@@ -8,6 +8,7 @@ use Livewire\Component;
 use Livewire\WithPagination;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Renderless;
+use Storage;
 use TallStackUi\Traits\Interactions;
 
 class Index extends Component
@@ -16,7 +17,7 @@ class Index extends Component
 
     // Table properties
     public ?string $search = null;
-    public ?int $quantity = 50;
+    public ?int $quantity = 10;
     public array $sort = ['column' => 'transaction_date', 'direction' => 'desc'];
     public array $selected = [];
 
@@ -29,30 +30,41 @@ class Index extends Component
         ['index' => 'bank_account_id', 'label' => 'Bank Account', 'sortable' => false],
         ['index' => 'transaction_date', 'label' => 'Date'],
         ['index' => 'amount', 'label' => 'Amount'],
-        ['index' => 'action', 'label' => 'Action', 'sortable' => false],
+        ['index' => 'action', 'sortable' => false],
     ];
 
     #[Computed]
     public function transactions()
     {
         return BankTransaction::with('bankAccount')
-            ->when($this->search, fn($query) => 
-                $query->whereHas('bankAccount', fn($q) => 
+            ->when(
+                $this->search,
+                fn($query) =>
+                $query->whereHas(
+                    'bankAccount',
+                    fn($q) =>
                     $q->where('account_name', 'like', "%{$this->search}%")
                 )->orWhere('description', 'like', "%{$this->search}%")
-                  ->orWhere('reference_number', 'like', "%{$this->search}%")
+                    ->orWhere('reference_number', 'like', "%{$this->search}%")
             )
-            ->when($this->account_id, fn($query) => 
+            ->when(
+                $this->account_id,
+                fn($query) =>
                 $query->where('bank_account_id', $this->account_id)
             )
-            ->when($this->transaction_type, fn($query) => 
+            ->when(
+                $this->transaction_type,
+                fn($query) =>
                 $query->where('transaction_type', $this->transaction_type)
             )
-            ->when($this->sort['column'] === 'bank_account_id', fn ($query) =>
+            ->when(
+                $this->sort['column'] === 'bank_account_id',
+                fn($query) =>
                 $query->join('bank_accounts', 'bank_transactions.bank_account_id', '=', 'bank_accounts.id')
-                      ->orderBy('bank_accounts.account_name', $this->sort['direction'])
-                      ->select('bank_transactions.*')
-            , fn ($query) => 
+                    ->orderBy('bank_accounts.account_name', $this->sort['direction'])
+                    ->select('bank_transactions.*')
+                ,
+                fn($query) =>
                 $query->orderBy($this->sort['column'], $this->sort['direction'])
             )
             ->paginate($this->quantity)
@@ -81,7 +93,8 @@ class Index extends Component
     #[Renderless]
     public function confirmBulkDelete(): void
     {
-        if (empty($this->selected)) return;
+        if (empty($this->selected))
+            return;
 
         $count = count($this->selected);
         $this->dialog()
@@ -93,13 +106,15 @@ class Index extends Component
 
     public function bulkDelete(): void
     {
-        if (empty($this->selected)) return;
+        if (empty($this->selected))
+            return;
 
         $count = count($this->selected);
-        
+
         foreach ($this->selected as $transactionId) {
             $transaction = BankTransaction::find($transactionId);
-            if (!$transaction) continue;
+            if (!$transaction)
+                continue;
 
             if ($transaction->reference_number && str_starts_with($transaction->reference_number, 'TRF')) {
                 BankTransaction::where('reference_number', $transaction->reference_number)->delete();
@@ -107,7 +122,7 @@ class Index extends Component
                 $transaction->delete();
             }
         }
-        
+
         $this->selected = [];
         $this->resetPage();
         $this->toast()->success("{$count} transaksi berhasil dihapus")->send();
@@ -129,17 +144,26 @@ class Index extends Component
         $this->dispatch('delete-transaction', transactionId: $transactionId);
     }
 
+    // Modal state
+    public bool $attachmentModal = false;
+    public ?BankTransaction $selectedTransaction = null;
+
     public function viewAttachment(int $transactionId): void
     {
         $transaction = BankTransaction::find($transactionId);
-        
+
         if (!$transaction || !$transaction->hasAttachment()) {
             $this->toast()->error('Bukti transaksi tidak ditemukan')->send();
             return;
         }
 
-        // Open in new tab
-        $this->dispatch('open-attachment', url: $transaction->attachment_url);
+        $this->selectedTransaction = $transaction;
+        $this->attachmentModal = true;
+    }
+
+    public function hasAttachment(): bool
+    {
+        return !empty($this->attachment_path) && Storage::exists($this->attachment_path);
     }
 
     public function render()

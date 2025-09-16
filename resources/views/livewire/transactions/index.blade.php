@@ -111,8 +111,7 @@
                         class="w-5 h-5 {{ $row->transaction_type === 'credit' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }}" />
                 </div>
                 <div>
-                    <p class="font-medium text-gray-900 dark:text-gray-50">{{ $row->description ?: 'No description' }}
-                    </p>
+                    <p class="font-medium text-gray-900 dark:text-gray-50">{{ $row->description ?: 'No description' }}</p>
                     @if ($row->reference_number)
                         <p class="text-xs text-gray-500 dark:text-gray-400 font-mono">{{ $row->reference_number }}</p>
                     @endif
@@ -145,8 +144,7 @@
             <div class="text-right">
                 <p
                     class="font-bold {{ $row->transaction_type === 'credit' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }}">
-                    {{ $row->transaction_type === 'credit' ? '+' : '-' }}Rp
-                    {{ number_format($row->amount, 0, ',', '.') }}
+                    {{ $row->transaction_type === 'credit' ? '+' : '-' }}Rp {{ number_format($row->amount, 0, ',', '.') }}
                 </p>
                 <p class="text-xs text-gray-500 dark:text-gray-400">
                     {{ $row->transaction_type === 'credit' ? 'Pemasukan' : 'Pengeluaran' }}
@@ -157,8 +155,9 @@
         {{-- Actions --}}
         @interact('column_action', $row)
             <div class="flex justify-center gap-1">
-                <x-button.circle wire:click="viewAttachment({{ $row->id }})"
-                    loading="viewAttachment({{ $row->id }})" color="blue" icon="paper-clip" size="sm" />
+                <a href="{{ Storage::url($row->attachment_path) }}" target="_blank" class="text-blue-600 hover:underline">
+                    {{ $row->attachment_name }}
+                </a>
                 <x-button.circle wire:click="deleteTransaction({{ $row->id }})"
                     loading="deleteTransaction({{ $row->id }})" color="red" icon="trash" size="sm" />
             </div>
@@ -202,12 +201,25 @@
     <livewire:transactions.delete @transaction-deleted="$refresh" />
     <livewire:transactions.transfer @transfer-completed="$refresh" />
 
-    {{-- JavaScript for attachment viewing --}}
-    <script>
-        document.addEventListener('livewire:init', () => {
-            Livewire.on('open-attachment', (event) => {
-                window.open(event.url, '_blank');
-            });
-        });
-    </script>
+    {{-- Attachment Modal --}}
+    <x-modal title="Bukti Transaksi" wire:model="attachmentModal" size="4xl">
+        @if ($selectedTransaction)
+            <div class="text-center space-y-4">
+                <h3 class="text-lg font-semibold">{{ $selectedTransaction->description }}</h3>
+                <p class="text-sm text-gray-500">{{ $selectedTransaction->attachment_name }}</p>
+
+                @if ($selectedTransaction->isImageAttachment())
+                    <img src="{{ $selectedTransaction->attachment_url }}" alt="Bukti Transaksi"
+                        class="max-w-full max-h-96 mx-auto rounded-lg shadow">
+                @elseif($selectedTransaction->isPdfAttachment())
+                    <embed src="{{ $selectedTransaction->attachment_url }}" type="application/pdf" width="100%"
+                        height="600px" class="rounded-lg">
+                @endif
+            </div>
+        @endif
+
+        <x-slot:footer>
+            <x-button wire:click="$set('attachmentModal', false)" color="gray">Tutup</x-button>
+        </x-slot:footer>
+    </x-modal>
 </div>
