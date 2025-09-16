@@ -6,148 +6,70 @@ use App\Models\BankAccount;
 use App\Models\BankTransaction;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Livewire\Attributes\Computed;
+use Livewire\Attributes\Renderless;
 use TallStackUi\Traits\Interactions;
 
 class Index extends Component
 {
     use WithPagination, Interactions;
 
-    // Filters
-    public $search = '';
-    public $account_id = '';
-    public $transaction_type = '';
-    public $dateRange = [];
-
-    // Sorting
-    public array $sort = [
-        'column' => 'transaction_date',
-        'direction' => 'desc',
-    ];
-
-    // Selection for bulk actions
+    // Table properties
+    public ?string $search = null;
+    public ?int $quantity = 50;
+    public array $sort = ['column' => 'transaction_date', 'direction' => 'desc'];
     public array $selected = [];
 
-    public function mount()
+    // Filters
+    public ?string $account_id = null;
+    public ?string $transaction_type = null;
+
+    public array $headers = [
+        ['index' => 'description', 'label' => 'Transaction'],
+        ['index' => 'bank_account_id', 'label' => 'Bank Account', 'sortable' => false],
+        ['index' => 'transaction_date', 'label' => 'Date'],
+        ['index' => 'amount', 'label' => 'Amount'],
+        ['index' => 'action', 'label' => 'Action', 'sortable' => false],
+    ];
+
+    #[Computed]
+    public function transactions()
     {
-        $this->resetPage();
+        return BankTransaction::with('bankAccount')
+            ->when($this->search, fn($query) => 
+                $query->whereHas('bankAccount', fn($q) => 
+                    $q->where('account_name', 'like', "%{$this->search}%")
+                )->orWhere('description', 'like', "%{$this->search}%")
+                  ->orWhere('reference_number', 'like', "%{$this->search}%")
+            )
+            ->when($this->account_id, fn($query) => 
+                $query->where('bank_account_id', $this->account_id)
+            )
+            ->when($this->transaction_type, fn($query) => 
+                $query->where('transaction_type', $this->transaction_type)
+            )
+            ->when($this->sort['column'] === 'bank_account_id', fn ($query) =>
+                $query->join('bank_accounts', 'bank_transactions.bank_account_id', '=', 'bank_accounts.id')
+                      ->orderBy('bank_accounts.account_name', $this->sort['direction'])
+                      ->select('bank_transactions.*')
+            , fn ($query) => 
+                $query->orderBy($this->sort['column'], $this->sort['direction'])
+            )
+            ->paginate($this->quantity)
+            ->withQueryString();
     }
 
-    #[On('transaction-created', 'transaction-deleted', 'transfer-completed')]
-    public function refreshData()
+    #[Computed]
+    public function accounts()
     {
-        $this->selected = [];
-        $this->resetPage();
+        return BankAccount::orderBy('account_name')->get();
     }
 
-    public function clearFilters()
-    {
-        $this->search = '';
-        $this->account_id = '';
-        $this->transaction_type = '';
-        $this->dateRange = [];
-        $this->selected = [];
-        $this->resetPage();
-    }
-
-    public function bulkDelete()
-    {
-        if (empty($this->selected)) {
-            $this->toast()->error('Error', 'Tidak ada transaksi yang dipilih.')->send();
-            return;
-        }
-
-        $count = count($this->selected);
-        $selectedTransactions = BankTransaction::whereIn('id', $this->selected)->get();
-        $totalAmount = $selectedTransactions->sum('amount');
-
-        $message = "Yakin ingin menghapus <strong>{$count} transaksi</strong> yang dipilih?";
-        $message .= "<br><br><div class='bg-zinc-50 dark:bg-dark-700 rounded-lg p-4 my-3'>";
-        $message .= "<div class='text-center'><div class='font-bold text-lg'>Rp " . number_format($totalAmount, 0, ',', '.') . "</div></div>";
-        $message .= "</div>";
-        $message .= "<div class='text-sm text-red-600 dark:text-red-400'><strong>Peringatan:</strong> Transfer akan dihapus beserta pasangannya.</div>";
-
-        $this->dialog()
-            ->question('Hapus Transaksi Massal?', $message)
-            ->confirm('Hapus Semua', 'executeBulkDelete', "Berhasil menghapus {$count} transaksi")
-            ->cancel('Batal')
-            ->send();
-    }
-
-    public function executeBulkDelete()
-    {
-        try {
-            foreach ($this->selected as $transactionId) {
-                $transaction = BankTransaction::find($transactionId);
-                if (!$transaction)
-                    continue;
-
-                if ($transaction->reference_number && str_starts_with($transaction->reference_number, 'TRF')) {
-                    BankTransaction::where('reference_number', $transaction->reference_number)->delete();
-                } else {
-                    $transaction->delete();
-                }
-            }
-
-            $this->selected = [];
-            $this->refreshData();
-
-            $this->toast()
-                ->success('Berhasil!', 'Transaksi berhasil dihapus.')
-                ->send();
-
-        } catch (\Exception $e) {
-            $this->toast()
-                ->error('Gagal!', 'Terjadi kesalahan saat menghapus transaksi.')
-                ->send();
-        }
-    }
-
-    public function with(): array
-    {
-        return [
-            'transactions' => $this->getTransactions(),
-            'accounts' => BankAccount::orderBy('account_name')->get(),
-            'headers' => $this->getTableHeaders(),
-            'stats' => $this->getStats(),
-        ];
-    }
-
-    private function getTransactions()
-    {
-        $query = BankTransaction::with('bankAccount')
-            ->when($this->account_id, fn($q) => $q->where('bank_account_id', $this->account_id))
-            ->when($this->search, function ($q) {
-                $q->where(function ($query) {
-                    $query->where('description', 'like', "%{$this->search}%")
-                        ->orWhere('reference_number', 'like', "%{$this->search}%");
-                });
-            })
-            ->when($this->transaction_type, fn($q) => $q->where('transaction_type', $this->transaction_type))
-            ->when(!empty($this->dateRange) && count($this->dateRange) >= 2, function ($q) {
-                $q->whereBetween('transaction_date', $this->dateRange);
-            });
-
-        return $query->orderBy(...array_values($this->sort))->get();
-    }
-
-    private function getTableHeaders()
-    {
-        return [
-            ['index' => 'description', 'label' => 'Deskripsi'],
-            ['index' => 'bank_account_id', 'label' => 'Rekening'],
-            ['index' => 'transaction_date', 'label' => 'Tanggal'],
-            ['index' => 'amount', 'label' => 'Jumlah'],
-            ['index' => 'action', 'label' => 'Aksi'],
-        ];
-    }
-
-    private function getStats()
+    #[Computed]
+    public function stats()
     {
         $baseQuery = BankTransaction::query()
-            ->when($this->account_id, fn($q) => $q->where('bank_account_id', $this->account_id))
-            ->when(!empty($this->dateRange) && count($this->dateRange) >= 2, function ($q) {
-                $q->whereBetween('transaction_date', $this->dateRange);
-            });
+            ->when($this->account_id, fn($q) => $q->where('bank_account_id', $this->account_id));
 
         return [
             'total_income' => $baseQuery->clone()->where('transaction_type', 'credit')->sum('amount'),
@@ -156,8 +78,72 @@ class Index extends Component
         ];
     }
 
+    #[Renderless]
+    public function confirmBulkDelete(): void
+    {
+        if (empty($this->selected)) return;
+
+        $count = count($this->selected);
+        $this->dialog()
+            ->question("Hapus {$count} transaksi?", "Data transaksi yang dihapus tidak dapat dikembalikan.")
+            ->confirm(method: 'bulkDelete')
+            ->cancel()
+            ->send();
+    }
+
+    public function bulkDelete(): void
+    {
+        if (empty($this->selected)) return;
+
+        $count = count($this->selected);
+        
+        foreach ($this->selected as $transactionId) {
+            $transaction = BankTransaction::find($transactionId);
+            if (!$transaction) continue;
+
+            if ($transaction->reference_number && str_starts_with($transaction->reference_number, 'TRF')) {
+                BankTransaction::where('reference_number', $transaction->reference_number)->delete();
+            } else {
+                $transaction->delete();
+            }
+        }
+        
+        $this->selected = [];
+        $this->resetPage();
+        $this->toast()->success("{$count} transaksi berhasil dihapus")->send();
+    }
+
+    public function clearFilters(): void
+    {
+        $this->reset(['search', 'account_id', 'transaction_type', 'selected']);
+        $this->resetPage();
+    }
+
+    public function openTransfer(): void
+    {
+        $this->dispatch('open-transfer-modal');
+    }
+
+    public function deleteTransaction(int $transactionId): void
+    {
+        $this->dispatch('delete-transaction', transactionId: $transactionId);
+    }
+
+    public function viewAttachment(int $transactionId): void
+    {
+        $transaction = BankTransaction::find($transactionId);
+        
+        if (!$transaction || !$transaction->hasAttachment()) {
+            $this->toast()->error('Bukti transaksi tidak ditemukan')->send();
+            return;
+        }
+
+        // Open in new tab
+        $this->dispatch('open-attachment', url: $transaction->attachment_url);
+    }
+
     public function render()
     {
-        return view('livewire.transactions.index', $this->with());
+        return view('livewire.transactions.index');
     }
 }

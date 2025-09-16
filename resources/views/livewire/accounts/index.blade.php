@@ -123,10 +123,9 @@
                         <x-slot:left>
                             <x-icon name="arrows-right-left" class="w-4 h-4" />
                         </x-slot:left>
-                        Transactions
 
                         {{-- Transactions Table Content --}}
-                        <div class="mt-6">
+                        <div class="mt-3">
                             <livewire:accounts.tables.transactions-table :selectedAccountId="$selectedAccountId" :key="'transactions-' . $selectedAccountId" />
                         </div>
                     </x-tab.items>
@@ -135,10 +134,9 @@
                         <x-slot:left>
                             <x-icon name="banknotes" class="w-4 h-4" />
                         </x-slot:left>
-                        Payments
 
                         {{-- Payments Table Content --}}
-                        <div class="mt-6">
+                        <div class="mt-3">
                             <livewire:accounts.tables.payments-table :selectedAccountId="$selectedAccountId" :key="'payments-' . $selectedAccountId" />
                         </div>
                     </x-tab.items>

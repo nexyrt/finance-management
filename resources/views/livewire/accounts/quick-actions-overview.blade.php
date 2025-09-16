@@ -5,13 +5,7 @@
     <div class="bg-white dark:bg-dark-800 border border-zinc-200 dark:border-dark-600 rounded-xl p-6">
         <h3 class="text-lg font-semibold text-dark-900 dark:text-dark-50 mb-4">Quick Actions</h3>
         <div class="space-y-3">
-            <x-button wire:click="addTransaction" loading="addTransaction" color="primary" icon="plus"
-                class="w-full justify-start">
-                <div class="text-left">
-                    <div class="font-semibold">Add Transaction</div>
-                    <div class="text-xs opacity-70">Record income or expense</div>
-                </div>
-            </x-button>
+            <livewire:transactions.create @transaction-created="$refresh" />
 
             <x-button wire:click="transferFunds" loading="transferFunds" color="blue" outline icon="arrow-path"
                 class="w-full justify-start">
