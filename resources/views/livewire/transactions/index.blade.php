@@ -18,8 +18,8 @@
         </div>
     </div>
 
-    {{-- this->stats Cards --}}
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    {{-- Stats Cards --}}
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div class="bg-white dark:bg-dark-800 border border-zinc-200 dark:border-dark-600 rounded-xl p-6">
             <div class="flex items-center gap-4">
                 <div class="h-12 w-12 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center">
@@ -155,9 +155,10 @@
         {{-- Actions --}}
         @interact('column_action', $row)
             <div class="flex justify-center gap-1">
-                <a href="{{ Storage::url($row->attachment_path) }}" target="_blank" class="text-blue-600 hover:underline">
-                    {{ $row->attachment_name }}
-                </a>
+                @if ($row->attachment_path)
+                    <x-button.circle wire:click="viewAttachment({{ $row->id }})" color="blue" icon="paper-clip"
+                        size="sm" />
+                @endif
                 <x-button.circle wire:click="deleteTransaction({{ $row->id }})"
                     loading="deleteTransaction({{ $row->id }})" color="red" icon="trash" size="sm" />
             </div>
@@ -197,23 +198,34 @@
         </div>
     </div>
 
-    {{-- Components --}}
-    <livewire:transactions.delete @transaction-deleted="$refresh" />
-    <livewire:transactions.transfer @transfer-completed="$refresh" />
-
     {{-- Attachment Modal --}}
-    <x-modal title="Bukti Transaksi" wire:model="attachmentModal" size="4xl">
-        @if ($selectedTransaction)
+    <x-modal title="Bukti Transaksi" wire="attachmentModal" center size="4xl">
+        @if ($selectedTransaction && $selectedTransaction->attachment_path)
             <div class="text-center space-y-4">
                 <h3 class="text-lg font-semibold">{{ $selectedTransaction->description }}</h3>
-                <p class="text-sm text-gray-500">{{ $selectedTransaction->attachment_name }}</p>
+                <p class="text-sm text-gray-500">{{ $selectedTransaction->attachment_name ?? 'File attachment' }}</p>
 
-                @if ($selectedTransaction->isImageAttachment())
-                    <img src="{{ $selectedTransaction->attachment_url }}" alt="Bukti Transaksi"
+                @php
+                    $extension = pathinfo($selectedTransaction->attachment_path, PATHINFO_EXTENSION);
+                    $isImage = in_array(strtolower($extension), ['jpg', 'jpeg', 'png']);
+                    $isPdf = strtolower($extension) === 'pdf';
+                @endphp
+
+                @if ($isImage)
+                    <img src="{{ asset('storage/' . $selectedTransaction->attachment_path) }}" alt="Bukti Transaksi"
                         class="max-w-full max-h-96 mx-auto rounded-lg shadow">
-                @elseif($selectedTransaction->isPdfAttachment())
-                    <embed src="{{ $selectedTransaction->attachment_url }}" type="application/pdf" width="100%"
-                        height="600px" class="rounded-lg">
+                @elseif($isPdf)
+                    <embed src="{{ asset('storage/' . $selectedTransaction->attachment_path) }}"
+                        type="application/pdf" width="100%" height="600px" class="rounded-lg border">
+                @else
+                    <div class="text-center py-12">
+                        <x-icon name="document" class="w-16 h-16 mx-auto text-gray-400 mb-4" />
+                        <p class="text-gray-500">Preview tidak tersedia untuk file ini</p>
+                        <a href="{{ asset('storage/' . $selectedTransaction->attachment_path) }}" target="_blank"
+                            class="text-blue-600 hover:text-blue-800 underline">
+                            Download file
+                        </a>
+                    </div>
                 @endif
             </div>
         @endif
@@ -222,4 +234,8 @@
             <x-button wire:click="$set('attachmentModal', false)" color="gray">Tutup</x-button>
         </x-slot:footer>
     </x-modal>
+
+    {{-- Components --}}
+    <livewire:transactions.delete @transaction-deleted="$refresh" />
+    <livewire:transactions.transfer @transfer-completed="$refresh" />
 </div>

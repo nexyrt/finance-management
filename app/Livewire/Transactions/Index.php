@@ -8,7 +8,6 @@ use Livewire\Component;
 use Livewire\WithPagination;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Renderless;
-use Storage;
 use TallStackUi\Traits\Interactions;
 
 class Index extends Component
@@ -24,6 +23,10 @@ class Index extends Component
     // Filters
     public ?string $account_id = null;
     public ?string $transaction_type = null;
+
+    // Attachment modal
+    public bool $attachmentModal = false;
+    public ?BankTransaction $selectedTransaction = null;
 
     public array $headers = [
         ['index' => 'description', 'label' => 'Transaction'],
@@ -90,6 +93,12 @@ class Index extends Component
         ];
     }
 
+    public function viewAttachment(int $id): void
+    {
+        $this->selectedTransaction = BankTransaction::find($id);
+        $this->attachmentModal = true;
+    }
+
     #[Renderless]
     public function confirmBulkDelete(): void
     {
@@ -142,28 +151,6 @@ class Index extends Component
     public function deleteTransaction(int $transactionId): void
     {
         $this->dispatch('delete-transaction', transactionId: $transactionId);
-    }
-
-    // Modal state
-    public bool $attachmentModal = false;
-    public ?BankTransaction $selectedTransaction = null;
-
-    public function viewAttachment(int $transactionId): void
-    {
-        $transaction = BankTransaction::find($transactionId);
-
-        if (!$transaction || !$transaction->hasAttachment()) {
-            $this->toast()->error('Bukti transaksi tidak ditemukan')->send();
-            return;
-        }
-
-        $this->selectedTransaction = $transaction;
-        $this->attachmentModal = true;
-    }
-
-    public function hasAttachment(): bool
-    {
-        return !empty($this->attachment_path) && Storage::exists($this->attachment_path);
     }
 
     public function render()
