@@ -198,7 +198,7 @@
         </div>
     </div>
 
-    {{-- Attachment Modal --}}
+    {{-- Attachment Modal dengan Zoom --}}
     <x-modal title="Bukti Transaksi" wire="attachmentModal" center size="4xl">
         @if ($selectedTransaction && $selectedTransaction->attachment_path)
             <div class="text-center space-y-4">
@@ -212,8 +212,39 @@
                 @endphp
 
                 @if ($isImage)
-                    <img src="{{ asset('storage/' . $selectedTransaction->attachment_path) }}" alt="Bukti Transaksi"
-                        class="max-w-full max-h-96 mx-auto rounded-lg shadow">
+                    <div x-data="{ scale: 1, isDragging: false, startX: 0, startY: 0, translateX: 0, translateY: 0 }" class="relative overflow-hidden bg-gray-50 rounded-lg border"
+                        style="height: 500px;">
+
+                        {{-- Zoom Controls --}}
+                        <div class="absolute top-2 right-2 z-10 flex gap-2">
+                            <x-button.circle @click="scale = Math.min(scale + 0.2, 3)" icon="plus" size="sm"
+                                color="white" />
+                            <x-button.circle @click="scale = Math.max(scale - 0.2, 0.5)" icon="minus"
+                                size="sm" color="white" />
+                            <x-button.circle @click="scale = 1; translateX = 0; translateY = 0" icon="arrow-path"
+                                size="sm" color="white" />
+                        </div>
+
+                        {{-- Image with Pan & Zoom --}}
+                        <img src="{{ asset('storage/' . $selectedTransaction->attachment_path) }}"
+                            alt="Bukti Transaksi"
+                            class="absolute inset-0 w-full h-full object-contain cursor-move select-none"
+                            :style="`transform: scale(${scale}) translate(${translateX}px, ${translateY}px); transition: ${isDragging ? 'none' : 'transform 0.2s'}`"
+                            @mousedown="isDragging = true; startX = $event.clientX - translateX; startY = $event.clientY - translateY"
+                            @mousemove="if (isDragging && scale > 1) { translateX = $event.clientX - startX; translateY = $event.clientY - startY }"
+                            @mouseup="isDragging = false" @mouseleave="isDragging = false"
+                            @wheel.prevent="
+                            const delta = $event.deltaY > 0 ? -0.1 : 0.1;
+                            scale = Math.min(Math.max(scale + delta, 0.5), 3);
+                            if (scale === 1) { translateX = 0; translateY = 0; }
+                         ">
+
+                        {{-- Zoom Level Indicator --}}
+                        <div
+                            class="absolute bottom-2 left-2 bg-black bg-opacity-50 text-white px-2 py-1 rounded text-xs">
+                            <span x-text="`${Math.round(scale * 100)}%`"></span>
+                        </div>
+                    </div>
                 @elseif($isPdf)
                     <embed src="{{ asset('storage/' . $selectedTransaction->attachment_path) }}"
                         type="application/pdf" width="100%" height="600px" class="rounded-lg border">
@@ -233,7 +264,7 @@
         <x-slot:footer>
             <x-button wire:click="$set('attachmentModal', false)" color="gray">Tutup</x-button>
         </x-slot:footer>
-    </x-modal>
+    </x-modal> 
 
     {{-- Components --}}
     <livewire:transactions.delete @transaction-deleted="$refresh" />

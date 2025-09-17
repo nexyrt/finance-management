@@ -16,7 +16,7 @@ class Index extends Component
 
     // Table properties
     public ?string $search = null;
-    public ?int $quantity = 10;
+    public ?int $quantity = 50;
     public array $sort = ['column' => 'transaction_date', 'direction' => 'desc'];
     public array $selected = [];
 
