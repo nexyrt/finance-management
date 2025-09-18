@@ -230,16 +230,9 @@ class EditInvoice extends Component
             return;
 
         $quantity = (int) ($this->items[$index]['quantity'] ?? 1);
-        $unitPrice = $this->parseAmount($this->items[$index]['unit_price'] ?? 0);
+        $unitPrice = (int) ($this->items[$index]['unit_price'] ?? 0);
 
         $this->items[$index]['amount'] = $quantity * $unitPrice;
-    }
-
-    private function parseAmount($amount): int
-    {
-        if (is_numeric($amount))
-            return (int) $amount;
-        return (int) preg_replace('/[^0-9]/', '', $amount);
     }
 
     public function save(): void
@@ -249,13 +242,7 @@ class EditInvoice extends Component
             return;
         }
 
-        // Parse currency fields
-        foreach ($this->items as $index => $item) {
-            $this->items[$index]['unit_price'] = $this->parseAmount($item['unit_price'] ?? 0);
-            $this->items[$index]['cogs_amount'] = $this->parseAmount($item['cogs_amount'] ?? 0);
-            $this->items[$index]['amount'] = $this->parseAmount($item['amount'] ?? 0);
-        }
-
+        // WireUI Currency sudah handle parsing, tidak perlu parseAmount()
         $this->validate([
             'invoiceData.scheduled_date' => 'required|date',
             'items' => 'required|array|min:1',

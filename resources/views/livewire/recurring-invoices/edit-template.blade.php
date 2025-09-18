@@ -106,15 +106,20 @@
                                 </div>
 
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                    <x-input wire:model="items.{{ $index }}.unit_price" prefix="Rp"
-                                        x-mask:dynamic="$money($input, ',')" placeholder="Harga" />
-                                    <x-input wire:model="items.{{ $index }}.cogs_amount" prefix="Rp"
-                                        x-mask:dynamic="$money($input, ',')" placeholder="COGS" />
+                                    <x-wireui-currency prefix="Rp "
+                                        wire:model.blur="items.{{ $index }}.unit_price" placeholder="Harga" />
+                                    <x-wireui-currency prefix="Rp "
+                                        wire:model.blur="items.{{ $index }}.cogs_amount" placeholder="COGS" />
                                 </div>
 
+                                <!-- Mobile Layout -->
                                 <div class="text-center">
-                                    <x-badge text="Rp {{ number_format($item['amount'] ?? 0, 0, ',', '.') }}"
-                                        color="primary" light />
+                                    @php
+                                        $profit = ($item['amount'] ?? 0) - ($item['cogs_amount'] ?? 0);
+                                        $profitClass = $profit >= 0 ? 'green' : 'red';
+                                    @endphp
+                                    <x-badge text="Rp {{ number_format($profit, 0, ',', '.') }}"
+                                        color="{{ $profitClass }}" light />
                                 </div>
                             </div>
 
@@ -133,8 +138,8 @@
                                 </div>
 
                                 <div class="flex-1 w-20">
-                                    <x-select.styled wire:model="items.{{ $index }}.client_id"
-                                        :options="$this->clientOptions" searchable placeholder="Client" />
+                                    <x-select.styled wire:model="items.{{ $index }}.client_id" :options="$this->clientOptions"
+                                        searchable placeholder="Client" />
                                 </div>
 
                                 <div class="flex-1 space-y-1 w-20">
@@ -151,15 +156,20 @@
                                 </div>
 
                                 <div class="flex-1 space-y-1">
-                                    <x-input wire:model.blur="items.{{ $index }}.unit_price" prefix="Rp"
-                                        x-mask:dynamic="$money($input, ',')" placeholder="Harga" />
-                                    <x-input wire:model.blur="items.{{ $index }}.cogs_amount" prefix="Rp"
-                                        x-mask:dynamic="$money($input, ',')" placeholder="COGS" />
+                                    <x-wireui-currency prefix="Rp "
+                                        wire:model.blur="items.{{ $index }}.unit_price" placeholder="Harga" />
+                                    <x-wireui-currency prefix="Rp "
+                                        wire:model.blur="items.{{ $index }}.cogs_amount" placeholder="COGS" />
                                 </div>
 
+                                <!-- Desktop Layout -->
                                 <div class="w-24 flex justify-center">
-                                    <x-badge text="Rp {{ number_format($item['amount'] ?? 0, 0, ',', '.') }}"
-                                        color="primary" light />
+                                    @php
+                                        $profit = ($item['amount'] ?? 0) - ($item['cogs_amount'] ?? 0);
+                                        $profitClass = $profit >= 0 ? 'green' : 'red';
+                                    @endphp
+                                    <x-badge text="Rp {{ number_format($profit, 0, ',', '.') }}"
+                                        color="{{ $profitClass }}" light />
                                 </div>
 
                                 <div class="w-16 flex justify-center">
@@ -199,8 +209,12 @@
                                 ['label' => '%', 'value' => 'percentage'],
                             ]" class="w-20" />
 
-                            <x-input wire:model="discount.value" :prefix="$discount['type'] === 'percentage' ? '' : 'Rp'" :suffix="$discount['type'] === 'percentage' ? '%' : ''" placeholder="0"
-                                class="w-24" />
+                            @if ($discount['type'] === 'percentage')
+                                <x-input wire:model="discount.value" suffix="%" placeholder="0"
+                                    class="w-24" />
+                            @else
+                                <x-wireui-currency prefix="Rp " wire:model="discount.value" class="w-24" />
+                            @endif
 
                             <x-input wire:model="discount.reason" placeholder="Alasan diskon" class="flex-1" />
                         </div>
