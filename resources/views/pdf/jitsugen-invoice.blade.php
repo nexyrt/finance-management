@@ -38,7 +38,7 @@
             width: 100%;
             text-align: center;
             padding-left: 10px;
-            padding-top:10px;
+            padding-top: 10px;
         }
 
         .letterhead-image {
@@ -253,6 +253,41 @@
             width: 100%;
         }
 
+        /* PPh Final Section - New styling */
+        .pph-section {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        .pph-row {
+            display: table;
+            width: 100%;
+            margin-bottom: 5px;
+        }
+
+        .pph-label {
+            display: table-cell;
+            font-weight: bold;
+            padding: 8px;
+            color: black;
+            background: #f59e0b;
+            border: 1px solid #f59e0b;
+            font-style: italic;
+            font-size: 14px;
+        }
+
+        .pph-value {
+            display: table-cell;
+            font-weight: bold;
+            padding: 8px;
+            background: #fbbf24;
+            color: black;
+            border: 1px solid #fbbf24;
+            font-style: italic;
+            text-align: right;
+            font-size: 14px;
+        }
+
         /* Footer Section Grid */
         .footer-section {
             display: table;
@@ -369,6 +404,17 @@
             width: 60px;
             height: auto;
             opacity: 0.4;
+        }
+
+        /* Tax info note */
+        .tax-info {
+            background: #fef3cd;
+            border: 1px solid #f59e0b;
+            border-left: 4px solid #f59e0b;
+            padding: 8px;
+            margin-bottom: 10px;
+            font-size: 12px;
+            color: #92400e;
         }
     </style>
 </head>
@@ -546,6 +592,11 @@
                     Terbilang:<br>
                     <strong>{{ $terbilang }} Rupiah</strong>
                 </div>
+
+                <!-- Tax Information -->
+                <div class="tax-info">
+                    <strong>Catatan:</strong> PPh Final 0,5% sesuai PP No. 23/2018 untuk UMKM
+                </div>
             </div>
 
             <!-- Kolom Kanan: Grand Total dan Signature -->
@@ -580,6 +631,17 @@
                                 <span>{{ number_format($invoice->total_amount, 0, ',', '.') }}</span>
                             </div>
                         </div>
+                    </div>
+                </div>
+
+                <!-- PPh Final 0.5% Section -->
+                @php
+                    $pphAmount = $invoice->total_amount * 0.005; // 0.5% calculation
+                @endphp
+                <div class="pph-section">
+                    <div class="pph-row">
+                        <div class="pph-label">PPh FINAL 0,5%</div>
+                        <div class="pph-value">IDR {{ number_format($pphAmount, 0, ',', '.') }}</div>
                     </div>
                 </div>
 
