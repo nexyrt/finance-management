@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Storage;
 
 class Payment extends Model
 {
@@ -17,6 +18,8 @@ class Payment extends Model
         'payment_date',
         'payment_method',
         'reference_number',
+        'attachment_path',
+        'attachment_name',
     ];
 
     protected $casts = [
@@ -32,5 +35,28 @@ class Payment extends Model
     public function bankAccount(): BelongsTo
     {
         return $this->belongsTo(BankAccount::class);
+    }
+
+    // Attachment helpers
+    public function hasAttachment(): bool
+    {
+        return !empty($this->attachment_path) && Storage::exists($this->attachment_path);
+    }
+
+    public function getAttachmentUrlAttribute(): ?string
+    {
+        return $this->attachment_path ? Storage::url($this->attachment_path) : null;
+    }
+
+    // Delete attachment when model is deleted
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::deleting(function ($payment) {
+            if ($payment->attachment_path && Storage::exists($payment->attachment_path)) {
+                Storage::delete($payment->attachment_path);
+            }
+        });
     }
 }

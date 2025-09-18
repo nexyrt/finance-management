@@ -35,18 +35,18 @@ class MonthlyTab extends Component
     public function stats(): array
     {
         $invoices = $this->getFilteredInvoices()->get();
-        
+
         $totalRevenue = $invoices->sum(function ($invoice) {
             return $invoice->invoice_data['total_amount'] ?? 0;
         });
-        
+
         $totalCogs = $invoices->sum(function ($invoice) {
             return collect($invoice->invoice_data['items'] ?? [])->sum('cogs_amount');
         });
-        
+
         $totalProfit = $totalRevenue - $totalCogs;
         $profitMargin = $totalRevenue > 0 ? ($totalProfit / $totalRevenue) * 100 : 0;
-        
+
         // Outstanding profit (from unpublished invoices)
         $draftInvoices = $invoices->where('status', 'draft');
         $draftRevenue = $draftInvoices->sum(function ($invoice) {
@@ -87,7 +87,7 @@ class MonthlyTab extends Component
             ->toArray();
     }
 
-    #[Computed] 
+    #[Computed]
     public function monthOptions(): array
     {
         return collect(range(1, 12))->map(fn($month) => [
@@ -169,7 +169,7 @@ class MonthlyTab extends Component
     public function publishInvoice($invoiceId): void
     {
         $invoice = RecurringInvoice::find($invoiceId);
-        
+
         if (!$invoice || $invoice->status === 'published') {
             $this->toast()->error('Error', 'Invoice cannot be published')->send();
             return;
@@ -202,7 +202,7 @@ class MonthlyTab extends Component
     {
         $deleted = 0;
         $invoices = RecurringInvoice::whereIn('id', $this->selected)->get();
-        
+
         foreach ($invoices as $invoice) {
             try {
                 $invoice->delete();
@@ -213,7 +213,7 @@ class MonthlyTab extends Component
         }
 
         $this->selected = [];
-        
+
         if ($deleted > 0) {
             $this->toast()->success('Success', "$deleted invoices deleted successfully")->send();
             $this->dispatch('$refresh');
@@ -223,44 +223,44 @@ class MonthlyTab extends Component
     }
 
     public function bulkPublish(): void
-{
-    if (empty($this->selected)) {
-        $this->toast()->warning('Warning', 'Please select invoices to publish')->send();
-        return;
+    {
+        if (empty($this->selected)) {
+            $this->toast()->warning('Warning', 'Please select invoices to publish')->send();
+            return;
+        }
+
+        $this->toast()
+            ->question('Publish Selected?', count($this->selected) . ' invoices will be published')
+            ->confirm('Publish', 'confirmBulkPublish', 'Invoices published successfully')
+            ->cancel('Cancel')
+            ->send();
     }
 
-    $this->toast()
-        ->question('Publish Selected?', count($this->selected) . ' invoices will be published')
-        ->confirm('Publish', 'confirmBulkPublish', 'Invoices published successfully')
-        ->cancel('Cancel')
-        ->send();
-}
+    public function confirmBulkPublish(): void
+    {
+        $published = 0;
+        $invoices = RecurringInvoice::whereIn('id', $this->selected)
+            ->where('status', 'draft')
+            ->get();
 
-public function confirmBulkPublish(): void
-{
-    $published = 0;
-    $invoices = RecurringInvoice::whereIn('id', $this->selected)
-        ->where('status', 'draft')
-        ->get();
+        foreach ($invoices as $invoice) {
+            try {
+                $invoice->publish();
+                $published++;
+            } catch (\Exception $e) {
+                \Log::error("Failed to publish invoice {$invoice->id}: " . $e->getMessage());
+            }
+        }
 
-    foreach ($invoices as $invoice) {
-        try {
-            $invoice->publish();
-            $published++;
-        } catch (\Exception $e) {
-            \Log::error("Failed to publish invoice {$invoice->id}: " . $e->getMessage());
+        $this->selected = [];
+
+        if ($published > 0) {
+            $this->toast()->success('Success', "$published invoices published successfully")->send();
+            $this->dispatch('$refresh');
+        } else {
+            $this->toast()->error('Error', 'No invoices could be published')->send();
         }
     }
-
-    $this->selected = [];
-
-    if ($published > 0) {
-        $this->toast()->success('Success', "$published invoices published successfully")->send();
-        $this->dispatch('$refresh');
-    } else {
-        $this->toast()->error('Error', 'No invoices could be published')->send();
-    }
-}
 
     public function createInvoice(): void
     {
