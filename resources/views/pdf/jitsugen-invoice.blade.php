@@ -4,6 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel="icon" href="{{ asset('images/kisantra.png') }}" type="image/png">
     <title>Invoice {{ $invoice->invoice_number }}</title>
     <style>
         * {
@@ -399,11 +400,11 @@
 
         .company-stamp {
             position: absolute;
-            left: 250px;
-            top: -5px;
-            width: 60px;
+            left: 210px;
+            top: -25px;
+            width: 120px;
             height: auto;
-            opacity: 0.4;
+            opacity: 0.6;
         }
 
         /* Tax info note */

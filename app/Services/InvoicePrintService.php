@@ -90,7 +90,7 @@ class InvoicePrintService
 
     private function getStampBase64(): string
     {
-        $stampPath = public_path('images/dark-logo.png');
+        $stampPath = public_path('images/kisantra-stamp.png');
         if (file_exists($stampPath)) {
             return 'data:image/png;base64,' . base64_encode(file_get_contents($stampPath));
         }
