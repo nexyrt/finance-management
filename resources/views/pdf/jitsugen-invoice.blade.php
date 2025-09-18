@@ -601,6 +601,12 @@
 
             <!-- Kolom Kanan: Grand Total dan Signature -->
             <div class="footer-right">
+                @php
+                    // Calculations based on subtotal
+                    $pph05Percent = $invoice->subtotal * 0.005; // 0.5% of subtotal
+                    $dpp = $invoice->subtotal - $pph05Percent; // DPP = subtotal - 0.5%
+                @endphp
+
                 <!-- Discount Section (if applicable) -->
                 @if ($invoice->discount_amount > 0)
                     <div class="grand-total-section">
@@ -612,11 +618,27 @@
                     </div>
                 @endif
 
-                <!-- Grand Total -->
+                <!-- DPP (Dasar Pengenaan Pajak) -->
+                <div class="grand-total-section">
+                    <div class="grand-total-row">
+                        <div class="grand-total-label">DPP</div>
+                        <div class="grand-total-value">IDR {{ number_format($dpp, 0, ',', '.') }}</div>
+                    </div>
+                </div>
+
+                <!-- PP 55 (0.5% dari subtotal) -->
+                <div class="grand-total-section">
+                    <div class="grand-total-row">
+                        <div class="grand-total-label">PP 55 (0,5%)</div>
+                        <div class="grand-total-value">IDR {{ number_format($pph05Percent, 0, ',', '.') }}</div>
+                    </div>
+                </div>
+
+                <!-- Grand Total (sama dengan subtotal) -->
                 <div class="grand-total-section">
                     <div class="grand-total-row">
                         <div class="grand-total-label">GRAND TOTAL</div>
-                        <div class="grand-total-value">IDR {{ number_format($invoice->total_amount, 0, ',', '.') }}
+                        <div class="grand-total-value">IDR {{ number_format($invoice->subtotal, 0, ',', '.') }}
                         </div>
                     </div>
                 </div>
@@ -628,20 +650,9 @@
                         <div class="total-value">
                             <div class="total-value-content">
                                 <span>IDR</span>
-                                <span>{{ number_format($invoice->total_amount, 0, ',', '.') }}</span>
+                                <span>{{ number_format($invoice->subtotal, 0, ',', '.') }}</span>
                             </div>
                         </div>
-                    </div>
-                </div>
-
-                <!-- PPh Final 0.5% Section -->
-                @php
-                    $pphAmount = $invoice->total_amount * 0.005; // 0.5% calculation
-                @endphp
-                <div class="pph-section">
-                    <div class="pph-row">
-                        <div class="pph-label">PPh FINAL 0,5%</div>
-                        <div class="pph-value">IDR {{ number_format($pphAmount, 0, ',', '.') }}</div>
                     </div>
                 </div>
 
