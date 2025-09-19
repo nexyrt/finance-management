@@ -133,21 +133,17 @@
             color: white;
             border: 2px solid #36a3bd;
             padding: 10px 8px;
-            /* Default spacing */
             text-align: center;
             font-weight: bold;
             font-size: 15px;
-            /* Default size */
             line-height: 1.2;
         }
 
         .items-table td {
             border: 1px solid #374151;
             padding: 10px 8px;
-            /* Default spacing */
             text-align: center;
             font-size: 15px;
-            /* Default size */
             line-height: 1.3;
             vertical-align: middle;
         }
@@ -155,16 +151,12 @@
         /* Compact spacing only for multiple clients */
         .compact-table th {
             padding: 6px 4px;
-            /* Reduced padding */
             font-size: 13px;
-            /* Reduced font size */
         }
 
         .compact-table td {
             padding: 5px 4px;
-            /* Reduced padding */
             font-size: 13px;
-            /* Reduced font size */
         }
 
         .items-table .text-left {
@@ -184,7 +176,22 @@
             padding: 3px 4px;
         }
 
-        /* Currency formatting - responsive to table type */
+        /* Tax deposit styling */
+        .tax-deposit-row {
+            background: #fef3cd !important;
+        }
+
+        .tax-deposit-label {
+            background: #f59e0b;
+            color: white;
+            font-size: 9px;
+            padding: 1px 4px;
+            border-radius: 2px;
+            font-weight: bold;
+            margin-left: 5px;
+        }
+
+        /* Currency formatting */
         .currency-cell {
             display: table;
             width: 100%;
@@ -195,7 +202,6 @@
             text-align: left;
             width: 30%;
             font-size: 13px;
-            /* Default size */
         }
 
         .currency-right {
@@ -203,10 +209,8 @@
             text-align: right;
             width: 70%;
             font-size: 13px;
-            /* Default size */
         }
 
-        /* Smaller currency text for compact tables */
         .compact-table .currency-left {
             font-size: 11px;
         }
@@ -252,41 +256,6 @@
             justify-content: space-between;
             align-items: center;
             width: 100%;
-        }
-
-        /* PPh Final Section - New styling */
-        .pph-section {
-            width: 100%;
-            margin-bottom: 10px;
-        }
-
-        .pph-row {
-            display: table;
-            width: 100%;
-            margin-bottom: 5px;
-        }
-
-        .pph-label {
-            display: table-cell;
-            font-weight: bold;
-            padding: 8px;
-            color: black;
-            background: #f59e0b;
-            border: 1px solid #f59e0b;
-            font-style: italic;
-            font-size: 14px;
-        }
-
-        .pph-value {
-            display: table-cell;
-            font-weight: bold;
-            padding: 8px;
-            background: #fbbf24;
-            color: black;
-            border: 1px solid #fbbf24;
-            font-style: italic;
-            text-align: right;
-            font-size: 14px;
         }
 
         /* Footer Section Grid */
@@ -429,7 +398,6 @@
                     <img src="{{ $company['logo_base64'] }}" class="letterhead-image"
                         alt="PT. Kinara Sadayatra Nusantara Letterhead">
                 @else
-                    <!-- Fallback jika letterhead tidak tersedia -->
                     <div style="padding: 20px; text-align: center; border: 2px dashed #42b2cc; color: #42b2cc;">
                         PT. KINARA SADAYATRA NUSANTARA<br>
                         LETTERHEAD PLACEHOLDER
@@ -448,7 +416,6 @@
                 <div class="client-name">{{ strtoupper($client->name) }}</div>
 
                 @php
-                    // Check if there are multiple clients in invoice items
                     $uniqueClients = $items->pluck('client.name')->unique();
                     $hasMultipleClients = $uniqueClients->count() > 1;
                 @endphp
@@ -456,6 +423,12 @@
                 @if ($hasMultipleClients)
                     <div style="margin-top: 10px; font-size: 12px; color: #666; font-style: italic;">
                         * Invoice ini mencakup tagihan untuk {{ $uniqueClients->count() }} klien
+                    </div>
+                @endif
+
+                @if ($financial_summary['has_tax_deposits'])
+                    <div style="margin-top: 10px; font-size: 12px; color: #f59e0b; font-style: italic;">
+                        * Termasuk titipan pajak sebesar Rp {{ number_format($financial_summary['tax_deposits_total'], 0, ',', '.') }}
                     </div>
                 @endif
             </div>
@@ -482,7 +455,7 @@
             </div>
         </div>
 
-        <!-- Items Table - MERGED CLIENT CELLS -->
+        <!-- Items Table -->
         <table class="items-table {{ $hasMultipleClients ? 'compact-table' : '' }}">
             <thead>
                 <tr>
@@ -500,7 +473,6 @@
             </thead>
             <tbody>
                 @php
-                    // Group items by client for merging consecutive same clients
                     $groupedItems = [];
                     $currentClient = null;
                     $currentGroup = [];
@@ -509,11 +481,9 @@
                         $clientName = $item->client->name ?? 'N/A';
 
                         if ($currentClient === null || $currentClient === $clientName) {
-                            // Same client or first item, add to current group
                             $currentClient = $clientName;
                             $currentGroup[] = $item;
                         } else {
-                            // Different client, finalize current group and start new one
                             $groupedItems[] = [
                                 'client' => $currentClient,
                                 'items' => $currentGroup,
@@ -524,7 +494,6 @@
                         }
                     }
 
-                    // Add last group
                     if (!empty($currentGroup)) {
                         $groupedItems[] = [
                             'client' => $currentClient,
@@ -538,31 +507,33 @@
 
                 @foreach ($groupedItems as $group)
                     @foreach ($group['items'] as $itemIndex => $item)
-                        <tr>
+                        <tr class="{{ $item->is_tax_deposit ? 'tax-deposit-row' : '' }}">
                             <td>{{ $rowIndex }}</td>
                             @if ($hasMultipleClients)
                                 @if ($itemIndex === 0)
-                                    {{-- Only show client name on first row of each group with rowspan --}}
                                     <td class="client-cell" rowspan="{{ $group['count'] }}"
                                         style="vertical-align: middle; border-right: 2px solid #42b2cc; font-weight: bold; color: #42b2cc;">
                                         {{ $group['client'] }}
                                     </td>
                                 @endif
                             @endif
-                            <td class="text-left">{{ $item->service_name }}</td>
+                            <td class="text-left">
+                                {{ $item->service_name }}
+                                @if ($item->is_tax_deposit)
+                                    <span class="tax-deposit-label">TITIPAN PAJAK</span>
+                                @endif
+                            </td>
                             <td>{{ number_format($item->quantity) }}</td>
                             <td>
                                 <div class="currency-cell">
                                     <div class="currency-left">IDR</div>
-                                    <div class="currency-right">{{ number_format($item->unit_price, 0, ',', '.') }}
-                                    </div>
+                                    <div class="currency-right">{{ number_format($item->unit_price, 0, ',', '.') }}</div>
                                 </div>
                             </td>
                             <td>
                                 <div class="currency-cell">
                                     <div class="currency-left">IDR</div>
-                                    <div class="currency-right">{{ number_format($item->amount, 0, ',', '.') }}
-                                    </div>
+                                    <div class="currency-right">{{ number_format($item->amount, 0, ',', '.') }}</div>
                                 </div>
                             </td>
                         </tr>
@@ -574,7 +545,6 @@
 
         <!-- Footer Section Grid -->
         <div class="footer-section">
-            <!-- Kolom Kiri: Payment Methods, Terbilang, Jumlah Ditagih -->
             <div class="footer-left">
                 <!-- Payment Methods -->
                 @foreach ($company['bank_accounts'] as $index => $bank)
@@ -597,29 +567,49 @@
                 <!-- Tax Information -->
                 <div class="tax-info">
                     <strong>Catatan:</strong> PPh Final 0,5% sesuai PP No. 23/2018 untuk UMKM
+                    @if ($financial_summary['has_tax_deposits'])
+                        <br><strong>*</strong> Titipan pajak tidak termasuk dalam perhitungan PPh Final
+                    @endif
                 </div>
             </div>
 
-            <!-- Kolom Kanan: Grand Total dan Signature -->
             <div class="footer-right">
                 @php
-                    // Calculations based on subtotal
-                    $pph05Percent = $invoice->subtotal * 0.005; // 0.5% of subtotal
-                    $dpp = $invoice->subtotal - $pph05Percent; // DPP = subtotal - 0.5%
+                    // Use net revenue (excluding tax deposits) for tax calculations
+                    $netRevenue = $financial_summary['net_revenue'];
+                    $netRevenueAfterDiscount = $netRevenue - ($invoice->discount_amount ?? 0);
+                    $pph05Percent = $netRevenueAfterDiscount * 0.005;
+                    $dpp = $netRevenueAfterDiscount - $pph05Percent;
                 @endphp
 
-                <!-- Discount Section (if applicable) -->
-                @if ($invoice->discount_amount > 0)
+                <!-- Subtotal Breakdown -->
+                @if ($financial_summary['has_tax_deposits'])
                     <div class="grand-total-section">
                         <div class="grand-total-row">
-                            <div class="grand-total-label">DISKON</div>
-                            <div class="grand-total-value">IDR
-                                -{{ number_format($invoice->discount_amount, 0, ',', '.') }}</div>
+                            <div class="grand-total-label">SUBTOTAL LAYANAN</div>
+                            <div class="grand-total-value">IDR {{ number_format($netRevenue, 0, ',', '.') }}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="grand-total-section">
+                        <div class="grand-total-row">
+                            <div class="grand-total-label">TITIPAN PAJAK</div>
+                            <div class="grand-total-value">IDR {{ number_format($financial_summary['tax_deposits_total'], 0, ',', '.') }}</div>
                         </div>
                     </div>
                 @endif
 
-                <!-- DPP (Dasar Pengenaan Pajak) -->
+                <!-- Discount Section -->
+                @if ($invoice->discount_amount > 0)
+                    <div class="grand-total-section">
+                        <div class="grand-total-row">
+                            <div class="grand-total-label">DISKON</div>
+                            <div class="grand-total-value">IDR -{{ number_format($invoice->discount_amount, 0, ',', '.') }}</div>
+                        </div>
+                    </div>
+                @endif
+
+                <!-- DPP (based on net revenue after discount) -->
                 <div class="grand-total-section">
                     <div class="grand-total-row">
                         <div class="grand-total-label">DPP</div>
@@ -627,7 +617,7 @@
                     </div>
                 </div>
 
-                <!-- PP 55 (0.5% dari subtotal) -->
+                <!-- PP 55 (0.5% from net revenue) -->
                 <div class="grand-total-section">
                     <div class="grand-total-row">
                         <div class="grand-total-label">PP 55 (0,5%)</div>
@@ -635,23 +625,22 @@
                     </div>
                 </div>
 
-                <!-- Grand Total (sama dengan subtotal) -->
+                <!-- Grand Total -->
                 <div class="grand-total-section">
                     <div class="grand-total-row">
                         <div class="grand-total-label">GRAND TOTAL</div>
-                        <div class="grand-total-value">IDR {{ number_format($invoice->subtotal, 0, ',', '.') }}
-                        </div>
+                        <div class="grand-total-value">IDR {{ number_format($netRevenueAfterDiscount, 0, ',', '.') }}</div>
                     </div>
                 </div>
 
-                <!-- Jumlah Ditagih -->
+                <!-- Jumlah Ditagih (full invoice amount including tax deposits) -->
                 <div class="total-section">
                     <div class="total-row">
                         <div class="total-label">JUMLAH DITAGIH</div>
                         <div class="total-value">
                             <div class="total-value-content">
                                 <span>IDR</span>
-                                <span>{{ number_format($invoice->subtotal, 0, ',', '.') }}</span>
+                                <span>{{ number_format($invoice->total_amount, 0, ',', '.') }}</span>
                             </div>
                         </div>
                     </div>
@@ -670,8 +659,7 @@
                             <img src="{{ $company['stamp_base64'] }}" class="company-stamp" alt="Company Stamp">
                         @endif
 
-                        <div class="signature-name">{{ $company['signature']['name'] ?? 'Nama Penandatangan' }}
-                        </div>
+                        <div class="signature-name">{{ $company['signature']['name'] ?? 'Nama Penandatangan' }}</div>
                         <div class="signature-position">{{ $company['signature']['position'] ?? 'Direktur' }}</div>
                     </div>
                 </div>
