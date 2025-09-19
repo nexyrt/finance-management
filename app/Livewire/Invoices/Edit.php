@@ -16,19 +16,19 @@ class Edit extends Component
     public $invoice;
     public $clients = [];
     public $services = [];
-    
+
     // Invoice fields
     public $invoice_number = '';
     public $billed_to_id = '';
     public $issue_date = '';
     public $due_date = '';
     public $status = 'draft';
-    
+
     // Discount fields
     public $discount_type = 'fixed';
     public $discount_value = 0;
     public $discount_reason = '';
-    
+
     // Items array
     public $items = [];
 
@@ -43,7 +43,7 @@ class Edit extends Component
             $this->loadInvoice($invoice);
         }
         $this->loadOptions();
-        
+
         if (empty($this->items)) {
             $this->addItem();
         }
@@ -53,22 +53,22 @@ class Edit extends Component
     {
         $id = $invoiceId ?? $this->invoiceId;
         $this->invoice = Invoice::with('items', 'client')->find($id);
-        
+
         if (!$this->invoice) {
             abort(404, 'Invoice not found');
         }
-        
+
         $this->invoiceId = $this->invoice->id;
         $this->invoice_number = $this->invoice->invoice_number;
         $this->billed_to_id = $this->invoice->billed_to_id;
         $this->issue_date = $this->invoice->issue_date->format('Y-m-d');
         $this->due_date = $this->invoice->due_date->format('Y-m-d');
         $this->status = $this->invoice->status;
-        
+
         $this->discount_type = $this->invoice->discount_type;
         $this->discount_value = $this->invoice->discount_value;
         $this->discount_reason = $this->invoice->discount_reason ?? '';
-        
+
         if ($this->invoice->items->isNotEmpty()) {
             $this->items = $this->invoice->items->map(function ($item) {
                 return [
@@ -78,6 +78,7 @@ class Edit extends Component
                     'quantity' => $item->quantity,
                     'price' => $item->unit_price,
                     'cogs_amount' => $item->cogs_amount ?? 0,
+                    'is_tax_deposit' => $item->is_tax_deposit ?? false,
                     'total' => $item->amount
                 ];
             })->toArray();
@@ -93,7 +94,7 @@ class Edit extends Component
                 'value' => $client->id
             ])
             ->toArray();
-            
+
         $this->services = Service::all()
             ->map(fn($service) => [
                 'label' => $service->name,
@@ -113,6 +114,7 @@ class Edit extends Component
             'quantity' => 1,
             'price' => 0,
             'cogs_amount' => 0,
+            'is_tax_deposit' => false,
             'total' => 0
         ];
     }
@@ -130,14 +132,26 @@ class Edit extends Component
         if (str_contains($propertyName, 'items.')) {
             $parts = explode('.', $propertyName);
             $index = $parts[1];
-            
+
             if (in_array($parts[2], ['quantity', 'price'])) {
                 $this->calculateTotal($index);
             }
-            
+
             if ($parts[2] === 'service_id') {
                 $this->setServiceDetails($index);
             }
+
+            if ($parts[2] === 'is_tax_deposit') {
+                $this->handleTaxDepositToggle($index);
+            }
+        }
+    }
+
+    public function handleTaxDepositToggle($index)
+    {
+        if ($this->items[$index]['is_tax_deposit']) {
+            $this->items[$index]['cogs_amount'] = 0;
+            $this->items[$index]['quantity'] = 1;
         }
     }
 
@@ -166,9 +180,18 @@ class Edit extends Component
         return collect($this->items)->sum('total');
     }
 
+    public function getNetRevenueProperty()
+    {
+        return collect($this->items)
+            ->filter(fn($item) => !($item['is_tax_deposit'] ?? false))
+            ->sum('total');
+    }
+
     public function getTotalCogsProperty()
     {
-        return collect($this->items)->sum('cogs_amount');
+        return collect($this->items)
+            ->filter(fn($item) => !($item['is_tax_deposit'] ?? false))
+            ->sum('cogs_amount');
     }
 
     public function getDiscountAmountProperty()
@@ -187,13 +210,15 @@ class Edit extends Component
 
     public function getGrossProfitProperty()
     {
-        return $this->grandTotal - $this->totalCogs;
+        return $this->netRevenue - $this->totalCogs - $this->discountAmount;
     }
 
     public function getGrossProfitMarginProperty()
     {
-        if ($this->grandTotal == 0) return 0;
-        return ($this->grossProfit / $this->grandTotal) * 100;
+        if ($this->netRevenue == 0)
+            return 0;
+        $netAfterDiscount = $this->netRevenue - $this->discountAmount;
+        return $netAfterDiscount > 0 ? ($this->grossProfit / $netAfterDiscount) * 100 : 0;
     }
 
     public function save()
@@ -208,6 +233,7 @@ class Edit extends Component
             'items.*.quantity' => 'required|integer|min:1',
             'items.*.price' => 'required|integer|min:0',
             'items.*.cogs_amount' => 'integer|min:0',
+            'items.*.is_tax_deposit' => 'boolean',
         ]);
 
         try {
@@ -217,7 +243,7 @@ class Edit extends Component
 
             $this->toast()->success('Success', 'Invoice updated successfully!')->flash()->send();
             return redirect()->route('invoices.index');
-            
+
         } catch (\Exception $e) {
             $this->toast()->error('Error', $e->getMessage())->send();
         }
@@ -253,7 +279,7 @@ class Edit extends Component
     public function updateInvoiceItems()
     {
         $this->invoice->items()->delete();
-        
+
         foreach ($this->items as $item) {
             $this->invoice->items()->create([
                 'client_id' => $item['client_id'],
@@ -262,6 +288,7 @@ class Edit extends Component
                 'unit_price' => $item['price'],
                 'amount' => $item['total'],
                 'cogs_amount' => $item['cogs_amount'] ?? 0,
+                'is_tax_deposit' => $item['is_tax_deposit'] ?? false,
             ]);
         }
     }
@@ -295,11 +322,13 @@ class Edit extends Component
 
     public function getPreviewStatusProperty()
     {
-        if (!$this->invoice || !$this->invoiceId) return 'draft';
-        
+        if (!$this->invoice || !$this->invoiceId)
+            return 'draft';
+
         $invoice = Invoice::find($this->invoiceId);
-        if (!$invoice) return 'draft';
-        
+        if (!$invoice)
+            return 'draft';
+
         $totalPaid = $invoice->payments()->sum('amount');
         $newTotalAmount = $this->grandTotal;
         $newDueDate = \Carbon\Carbon::parse($this->due_date);

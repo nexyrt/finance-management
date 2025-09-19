@@ -12,7 +12,8 @@
 
         <div class="space-y-6">
             {{-- Invoice Details --}}
-            <div class="bg-white dark:bg-dark-800 border border-secondary-200 dark:border-dark-600 rounded-lg p-4 sm:p-6">
+            <div
+                class="bg-white dark:bg-dark-800 border border-secondary-200 dark:border-dark-600 rounded-lg p-4 sm:p-6">
                 <h3 class="text-lg font-semibold text-secondary-900 dark:text-dark-50 mb-4">Invoice Information</h3>
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <x-input wire:model="invoice_number" label="Invoice Number" />
@@ -36,13 +37,15 @@
                 <div class="hidden xl:block">
                     <!-- Table Header -->
                     <div class="bg-secondary-50 dark:bg-dark-900 border-b border-secondary-200 dark:border-dark-600">
-                        <div class="grid grid-cols-15 gap-4 p-4 text-sm font-semibold text-secondary-700 dark:text-dark-200">
+                        <div
+                            class="grid grid-cols-16 gap-4 p-4 text-sm font-semibold text-secondary-700 dark:text-dark-200">
                             <div class="col-span-1">#</div>
                             <div class="col-span-2">Client</div>
                             <div class="col-span-3">Service</div>
                             <div class="col-span-1">Qty</div>
                             <div class="col-span-2">Price</div>
                             <div class="col-span-2">COGS</div>
+                            <div class="col-span-1">Tax Deposit</div>
                             <div class="col-span-2">Total</div>
                             <div class="col-span-1">Profit</div>
                             <div class="col-span-1 text-center">Actions</div>
@@ -52,7 +55,7 @@
                     <!-- Table Body -->
                     <div class="divide-y divide-secondary-100 dark:divide-dark-700">
                         @forelse($items as $index => $item)
-                            <div class="grid grid-cols-15 gap-4 p-4 hover:bg-secondary-50 dark:hover:bg-dark-700 transition-colors"
+                            <div class="grid grid-cols-16 gap-4 p-4 hover:bg-secondary-50 dark:hover:bg-dark-700 transition-colors"
                                 wire:key="item-{{ $index }}">
 
                                 <div class="col-span-1 flex items-center">
@@ -61,14 +64,14 @@
 
                                 <div class="col-span-2 flex items-center">
                                     <div class="w-full">
-                                        <x-select.styled wire:model.blur="items.{{ $index }}.client_id" :options="$clients"
-                                            placeholder="Select client..." searchable />
+                                        <x-select.styled wire:model.blur="items.{{ $index }}.client_id"
+                                            :options="$clients" placeholder="Select client..." searchable />
                                     </div>
                                 </div>
 
                                 <div class="col-span-3 space-y-2">
-                                    <x-select.styled wire:model.blur="items.{{ $index }}.service_id" :options="$services"
-                                        placeholder="Select service..." searchable />
+                                    <x-select.styled wire:model.blur="items.{{ $index }}.service_id"
+                                        :options="$services" placeholder="Select service..." searchable />
 
                                     @if (empty($item['service_id']))
                                         <x-input wire:model.blur="items.{{ $index }}.service_name"
@@ -84,20 +87,27 @@
                                 <div class="col-span-1 flex items-center">
                                     <div class="w-full">
                                         <x-input wire:model.blur="items.{{ $index }}.quantity" type="number"
-                                            min="1" class="text-center" />
+                                            min="1" class="text-center" :disabled="$item['is_tax_deposit']" />
                                     </div>
                                 </div>
 
                                 <div class="col-span-2 flex items-center">
                                     <div class="w-full">
-                                        <x-wireui-currency prefix="Rp " wire:model.blur="items.{{ $index }}.price" />
+                                        <x-wireui-currency prefix="Rp "
+                                            wire:model.blur="items.{{ $index }}.price" />
                                     </div>
                                 </div>
 
                                 <div class="col-span-2 flex items-center">
                                     <div class="w-full">
-                                        <x-wireui-currency prefix="Rp " wire:model.blur="items.{{ $index }}.cogs_amount" />
+                                        <x-wireui-currency prefix="Rp "
+                                            wire:model.blur="items.{{ $index }}.cogs_amount" :disabled="$item['is_tax_deposit']" />
                                     </div>
+                                </div>
+
+                                <div class="col-span-1 flex items-center justify-center">
+                                    <x-checkbox wire:model.live="items.{{ $index }}.is_tax_deposit"
+                                        label="Tax Deposit" position="left" />
                                 </div>
 
                                 <div class="col-span-2 flex items-center">
@@ -107,13 +117,17 @@
                                 </div>
 
                                 <div class="col-span-1 flex items-center">
-                                    @php
-                                        $profit = ($item['total'] ?? 0) - ($item['cogs_amount'] ?? 0);
-                                        $profitClass = $profit >= 0 ? 'text-green-600' : 'text-red-600';
-                                    @endphp
-                                    <div class="text-xs font-medium {{ $profitClass }}">
-                                        Rp {{ number_format($profit, 0, ',', '.') }}
-                                    </div>
+                                    @if ($item['is_tax_deposit'])
+                                        <span class="text-xs text-amber-600 dark:text-amber-400">N/A</span>
+                                    @else
+                                        @php
+                                            $profit = ($item['total'] ?? 0) - ($item['cogs_amount'] ?? 0);
+                                            $profitClass = $profit >= 0 ? 'text-green-600' : 'text-red-600';
+                                        @endphp
+                                        <div class="text-xs font-medium {{ $profitClass }}">
+                                            Rp {{ number_format($profit, 0, ',', '.') }}
+                                        </div>
+                                    @endif
                                 </div>
 
                                 <div class="col-span-1 flex justify-center items-center">
@@ -138,17 +152,17 @@
                             <div class="flex justify-between items-center">
                                 <x-badge :text="'Item ' . ($index + 1)" color="primary" />
                                 @if (count($items) > 1)
-                                    <x-button.circle wire:click="removeItem({{ $index }})" icon="trash" color="red"
-                                        size="sm" />
+                                    <x-button.circle wire:click="removeItem({{ $index }})" icon="trash"
+                                        color="red" size="sm" />
                                 @endif
                             </div>
 
                             <div class="space-y-3">
-                                <x-select.styled wire:model.blur="items.{{ $index }}.client_id" :options="$clients"
-                                    placeholder="Select client..." searchable label="Client" />
+                                <x-select.styled wire:model.blur="items.{{ $index }}.client_id"
+                                    :options="$clients" placeholder="Select client..." searchable label="Client" />
 
-                                <x-select.styled wire:model.blur="items.{{ $index }}.service_id" :options="$services"
-                                    placeholder="Select service..." searchable label="Service" />
+                                <x-select.styled wire:model.blur="items.{{ $index }}.service_id"
+                                    :options="$services" placeholder="Select service..." searchable label="Service" />
 
                                 @if (empty($item['service_id']))
                                     <x-input wire:model.blur="items.{{ $index }}.service_name"
@@ -162,13 +176,17 @@
 
                                 <div class="grid grid-cols-2 gap-3">
                                     <x-input wire:model.blur="items.{{ $index }}.quantity" type="number"
-                                        min="1" label="Quantity" />
-                                    <x-wireui-currency prefix="Rp " wire:model.blur="items.{{ $index }}.price"
-                                        label="Price" />
+                                        min="1" label="Quantity" :disabled="$item['is_tax_deposit']" />
+                                    <x-wireui-currency prefix="Rp "
+                                        wire:model.blur="items.{{ $index }}.price" label="Price" />
                                 </div>
 
-                                <x-wireui-currency prefix="Rp " wire:model.blur="items.{{ $index }}.cogs_amount"
-                                    label="COGS Amount" />
+                                <x-wireui-currency prefix="Rp "
+                                    wire:model.blur="items.{{ $index }}.cogs_amount" label="COGS Amount"
+                                    :disabled="$item['is_tax_deposit']" />
+
+                                <x-checkbox wire:model.live="items.{{ $index }}.is_tax_deposit"
+                                    label="Tax Deposit" position="left" />
 
                                 <div class="bg-secondary-50 dark:bg-dark-700 p-3 rounded-lg">
                                     <div class="flex justify-between items-center mb-2">
@@ -177,15 +195,20 @@
                                             Rp {{ number_format($item['total'], 0, ',', '.') }}
                                         </span>
                                     </div>
-                                    @php
-                                        $profit = ($item['total'] ?? 0) - ($item['cogs_amount'] ?? 0);
-                                        $profitClass = $profit >= 0 ? 'text-green-600' : 'text-red-600';
-                                    @endphp
                                     <div class="flex justify-between items-center">
                                         <span class="text-sm text-secondary-600 dark:text-dark-300">Profit:</span>
-                                        <span class="font-semibold {{ $profitClass }}">
-                                            Rp {{ number_format($profit, 0, ',', '.') }}
-                                        </span>
+                                        @if ($item['is_tax_deposit'])
+                                            <span class="text-xs text-amber-600 dark:text-amber-400">N/A (Tax
+                                                Deposit)</span>
+                                        @else
+                                            @php
+                                                $profit = ($item['total'] ?? 0) - ($item['cogs_amount'] ?? 0);
+                                                $profitClass = $profit >= 0 ? 'text-green-600' : 'text-red-600';
+                                            @endphp
+                                            <span class="font-semibold {{ $profitClass }}">
+                                                Rp {{ number_format($profit, 0, ',', '.') }}
+                                            </span>
+                                        @endif
                                     </div>
                                 </div>
                             </div>
@@ -205,7 +228,8 @@
             </div>
 
             {{-- Discount Section --}}
-            <div class="bg-white dark:bg-dark-800 border border-secondary-200 dark:border-dark-600 rounded-lg p-4 sm:p-6">
+            <div
+                class="bg-white dark:bg-dark-800 border border-secondary-200 dark:border-dark-600 rounded-lg p-4 sm:p-6">
                 <h3 class="text-lg font-semibold text-secondary-900 dark:text-dark-50 mb-4">Discount</h3>
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     <x-select.styled wire:model.live="discount_type" :options="[
@@ -218,7 +242,8 @@
                             <x-input wire:model.live="discount_value" type="number" min="0" max="10000"
                                 step="100" label="Discount Value (%)" hint="Example: 1500 = 15%" />
                         @else
-                            <x-wireui-currency prefix="Rp " wire:model.blur="discount_value" label="Discount Amount" />
+                            <x-wireui-currency prefix="Rp " wire:model.blur="discount_value"
+                                label="Discount Amount" />
                         @endif
                     </div>
 
@@ -254,6 +279,10 @@
                     <div>Total {{ count($items) }} item(s) • Subtotal:
                         <span class="font-medium text-secondary-900 dark:text-dark-100">Rp
                             {{ number_format($this->subtotal, 0, ',', '.') }}</span>
+                    </div>
+                    <div>Net Revenue (excl. tax deposits):
+                        <span class="font-medium text-blue-600 dark:text-blue-400">Rp
+                            {{ number_format($this->netRevenue, 0, ',', '.') }}</span>
                     </div>
                     <div>Total COGS:
                         <span class="font-medium text-red-600 dark:text-red-400">Rp

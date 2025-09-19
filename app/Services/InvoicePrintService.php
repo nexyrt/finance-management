@@ -12,20 +12,39 @@ class InvoicePrintService
         // Load relationships including client relationship for each item
         $invoice->load([
             'client',
-            'items.client',  // Added client relationship for items
+            'items.client',
             'payments.bankAccount'
         ]);
+
+        // Calculate net amounts excluding tax deposits
+        $netRevenue = $invoice->items->where('is_tax_deposit', false)->sum('amount');
+        $totalCogs = $invoice->items->where('is_tax_deposit', false)->sum('cogs_amount');
+        $grossProfit = $netRevenue - $totalCogs - ($invoice->discount_amount ?? 0);
+
+        // Separate items by type
+        $regularItems = $invoice->items->where('is_tax_deposit', false);
+        $taxDepositItems = $invoice->items->where('is_tax_deposit', true);
 
         $data = [
             'invoice' => $invoice,
             'client' => $invoice->client,
             'items' => $invoice->items,
+            'regular_items' => $regularItems,
+            'tax_deposit_items' => $taxDepositItems,
             'payments' => $invoice->payments,
             'company' => $this->getCompanyInfo(),
             'terbilang' => $this->numberToWords($invoice->total_amount),
+            'financial_summary' => [
+                'net_revenue' => $netRevenue,
+                'total_cogs' => $totalCogs,
+                'gross_profit' => $grossProfit,
+                'tax_deposits_total' => $taxDepositItems->sum('amount'),
+                'has_tax_deposits' => $taxDepositItems->isNotEmpty(),
+                'profit_margin' => $netRevenue > 0 ? ($grossProfit / $netRevenue) * 100 : 0
+            ]
         ];
 
-        $pdf = Pdf::loadView('pdf.jitsugen-invoice', $data) // Ganti menyesuaikan dengan nama template PDF yang digunakan
+        $pdf = Pdf::loadView('pdf.kisantra-invoice', $data)
             ->setPaper('A4', 'portrait')
             ->setOptions([
                 'dpi' => 150,
@@ -50,13 +69,13 @@ class InvoicePrintService
     {
         return [
             'name' => 'PT. KINARA SADAYATRA NUSANTARA',
-            'address' => 'Jl. A. Wahab Syahranie Perum Pondok Alam Indah, Nomor 3D, Kel. Sempaja Barat, Kota Samarinda - Kalimantan Timur', // Update sesuai alamat
-            'email' => 'kisantra.official@gmail.com', // Update email
+            'address' => 'Jl. A. Wahab Syahranie Perum Pondok Alam Indah, Nomor 3D, Kel. Sempaja Barat, Kota Samarinda - Kalimantan Timur',
+            'email' => 'kisantra.official@gmail.com',
             'phone' => '0852-8888-2600',
             'logo_base64' => $this->getLogoBase64(),
             'signature_base64' => $this->getSignatureBase64(),
             'stamp_base64' => $this->getStampBase64(),
-            'bank_accounts' => [ 
+            'bank_accounts' => [
                 [
                     'bank' => 'MANDIRI',
                     'account_number' => '1480045452425',
@@ -72,7 +91,7 @@ class InvoicePrintService
 
     private function getLogoBase64(): string
     {
-        $logoPath = public_path('images/letter-head.png'); // Update path sesuai logo yang digunakan
+        $logoPath = public_path('images/letter-head.png');
         if (file_exists($logoPath)) {
             return 'data:image/png;base64,' . base64_encode(file_get_contents($logoPath));
         }

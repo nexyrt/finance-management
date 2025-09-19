@@ -69,7 +69,7 @@ class Create extends Component
 
         $maxSequence = 0;
         foreach ($invoices as $invoiceNumber) {
-            if (preg_match('/INV\/(\d+)\/JAH\/\d{2}\.\d{2}/', $invoiceNumber, $matches)) {
+            if (preg_match('/INV\/(\d+)\/KSN\/\d{2}\.\d{2}/', $invoiceNumber, $matches)) {
                 $sequence = (int) $matches[1];
                 $maxSequence = max($maxSequence, $sequence);
             }
@@ -78,7 +78,7 @@ class Create extends Component
         $nextSequence = $maxSequence + 1;
 
         $this->invoice_number = sprintf(
-            'INV/%02d/JAH/%02d.%s',
+            'INV/%02d/KSN/%02d.%s',
             $nextSequence,
             (int) $currentMonth,
             $currentYear
@@ -119,6 +119,7 @@ class Create extends Component
             'quantity' => 1,
             'price' => 0,
             'cogs_amount' => 0,
+            'is_tax_deposit' => false,
             'total' => 0
         ];
     }
@@ -144,12 +145,24 @@ class Create extends Component
             if ($parts[2] === 'service_id') {
                 $this->setServiceDetails($index);
             }
+
+            if ($parts[2] === 'is_tax_deposit') {
+                $this->handleTaxDepositToggle($index);
+            }
         }
 
         if ($propertyName === 'billed_to_id') {
             foreach ($this->items as $index => $item) {
                 $this->items[$index]['client_id'] = $this->billed_to_id;
             }
+        }
+    }
+
+    public function handleTaxDepositToggle($index)
+    {
+        if ($this->items[$index]['is_tax_deposit']) {
+            $this->items[$index]['cogs_amount'] = 0;
+            $this->items[$index]['quantity'] = 1;
         }
     }
 
@@ -179,9 +192,18 @@ class Create extends Component
         return collect($this->items)->sum('total');
     }
 
+    public function getNetRevenueProperty()
+    {
+        return collect($this->items)
+            ->filter(fn($item) => !($item['is_tax_deposit'] ?? false))
+            ->sum('total');
+    }
+
     public function getTotalCogsProperty()
     {
-        return collect($this->items)->sum('cogs_amount');
+        return collect($this->items)
+            ->filter(fn($item) => !($item['is_tax_deposit'] ?? false))
+            ->sum('cogs_amount');
     }
 
     public function getDiscountAmountProperty()
@@ -200,13 +222,15 @@ class Create extends Component
 
     public function getGrossProfitProperty()
     {
-        return $this->grandTotal - $this->totalCogs;
+        return $this->netRevenue - $this->totalCogs - $this->discountAmount;
     }
 
     public function getGrossProfitMarginProperty()
     {
-        if ($this->grandTotal == 0) return 0;
-        return ($this->grossProfit / $this->grandTotal) * 100;
+        if ($this->netRevenue == 0)
+            return 0;
+        $netAfterDiscount = $this->netRevenue - $this->discountAmount;
+        return $netAfterDiscount > 0 ? ($this->grossProfit / $netAfterDiscount) * 100 : 0;
     }
 
     public function save()
@@ -221,6 +245,7 @@ class Create extends Component
             'items.*.quantity' => 'required|integer|min:1',
             'items.*.price' => 'required|integer|min:0',
             'items.*.cogs_amount' => 'integer|min:0',
+            'items.*.is_tax_deposit' => 'boolean',
         ]);
 
         try {
@@ -247,6 +272,7 @@ class Create extends Component
                         'unit_price' => $item['price'],
                         'amount' => $item['total'],
                         'cogs_amount' => $item['cogs_amount'] ?? 0,
+                        'is_tax_deposit' => $item['is_tax_deposit'] ?? false,
                     ]);
                 }
 

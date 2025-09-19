@@ -39,6 +39,11 @@
                                 ],
                             ];
                             $config = $statusConfig[$invoice->status] ?? $statusConfig['draft'];
+
+                            // Calculate net revenue excluding tax deposits
+                            $netRevenue = $invoice->items->where('is_tax_deposit', false)->sum('amount');
+                            $totalCogs = $invoice->items->where('is_tax_deposit', false)->sum('cogs_amount');
+                            $grossProfit = $netRevenue - $totalCogs - ($invoice->discount_amount ?? 0);
                         @endphp
                         <x-badge :text="$config['text']" :color="$config['color']" :icon="$config['icon']" />
 
@@ -46,6 +51,11 @@
                             <p class="text-xl sm:text-2xl font-bold text-secondary-900 dark:text-dark-50">
                                 Rp {{ number_format($invoice->total_amount, 0, ',', '.') }}
                             </p>
+                            @if ($grossProfit > 0)
+                                <p class="text-xs text-green-600 dark:text-green-400">
+                                    Profit: Rp {{ number_format($grossProfit, 0, ',', '.') }}
+                                </p>
+                            @endif
                             @if ($invoice->amount_paid > 0)
                                 @php $percentage = ($invoice->amount_paid / $invoice->total_amount) * 100; @endphp
                                 <div class="flex items-center gap-2 mt-1">
@@ -93,9 +103,10 @@
                                     {{ $invoice->items->count() }} item</p>
                             </div>
                             <div class="bg-secondary-50 dark:bg-dark-800 rounded-lg p-3">
-                                <p class="text-xs text-secondary-500 dark:text-dark-400">Pembayaran</p>
-                                <p class="font-medium text-secondary-900 dark:text-dark-50 text-sm">
-                                    {{ $invoice->payments->count() }}x</p>
+                                <p class="text-xs text-secondary-500 dark:text-dark-400">Gross Profit</p>
+                                <p class="font-medium text-green-600 dark:text-green-400 text-sm">
+                                    Rp {{ number_format($grossProfit, 0, ',', '.') }}
+                                </p>
                             </div>
                         </div>
 
@@ -120,11 +131,22 @@
                                                     class="w-4 h-4" />
                                             </div>
                                             <div class="min-w-0 flex-1">
-                                                <p
-                                                    class="font-medium text-secondary-900 dark:text-dark-50 text-sm truncate">
-                                                    {{ $item->service_name }}</p>
+                                                <div class="flex items-center gap-2">
+                                                    <p
+                                                        class="font-medium text-secondary-900 dark:text-dark-50 text-sm truncate">
+                                                        {{ $item->service_name }}
+                                                    </p>
+                                                    @if ($item->is_tax_deposit)
+                                                        <x-badge text="Tax Deposit" color="amber" size="xs" />
+                                                    @endif
+                                                </div>
                                                 <p class="text-xs text-secondary-500 dark:text-dark-400 truncate">
-                                                    {{ $item->client->name }} • Qty: {{ $item->quantity }}</p>
+                                                    {{ $item->client->name }} • Qty: {{ $item->quantity }}
+                                                    @if (!$item->is_tax_deposit && $item->cogs_amount > 0)
+                                                        • Profit: Rp
+                                                        {{ number_format($item->profit_amount, 0, ',', '.') }}
+                                                    @endif
+                                                </p>
                                             </div>
                                         </div>
                                         <div class="text-right flex-shrink-0 ml-3">
@@ -138,10 +160,26 @@
                             </div>
                             <div
                                 class="bg-secondary-50 dark:bg-dark-800 px-4 py-3 border-t border-secondary-200 dark:border-dark-700">
-                                <div class="flex justify-between items-center">
-                                    <span class="font-medium text-secondary-900 dark:text-dark-50">Total Invoice</span>
-                                    <span class="text-lg font-bold text-secondary-900 dark:text-dark-50">Rp
-                                        {{ number_format($invoice->total_amount, 0, ',', '.') }}</span>
+                                <div class="space-y-2">
+                                    <div class="flex justify-between items-center text-sm">
+                                        <span class="text-secondary-600 dark:text-dark-400">Subtotal</span>
+                                        <span class="text-secondary-900 dark:text-dark-50">Rp
+                                            {{ number_format($invoice->subtotal, 0, ',', '.') }}</span>
+                                    </div>
+                                    @if ($invoice->discount_amount > 0)
+                                        <div class="flex justify-between items-center text-sm">
+                                            <span class="text-secondary-600 dark:text-dark-400">Discount</span>
+                                            <span class="text-green-600 dark:text-green-400">-Rp
+                                                {{ number_format($invoice->discount_amount, 0, ',', '.') }}</span>
+                                        </div>
+                                    @endif
+                                    <div
+                                        class="flex justify-between items-center border-t border-secondary-200 dark:border-dark-700 pt-2">
+                                        <span class="font-medium text-secondary-900 dark:text-dark-50">Total
+                                            Invoice</span>
+                                        <span class="text-lg font-bold text-secondary-900 dark:text-dark-50">Rp
+                                            {{ number_format($invoice->total_amount, 0, ',', '.') }}</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -153,6 +191,7 @@
                     <x-slot:left>
                         <x-icon name="credit-card" class="w-4 h-4" />
                     </x-slot:left>
+                    Pembayaran
 
                     @if ($invoice->payments->count() > 0)
                         {{-- Payment Summary --}}
@@ -209,7 +248,8 @@
                                                 <p class="text-sm font-medium text-secondary-900 dark:text-white">
                                                     {{ $payment->bankAccount->bank_name }}</p>
                                                 <p class="text-xs text-secondary-500 dark:text-secondary-400">
-                                                    {{ ucfirst($payment->payment_method) }}</p>
+                                                    {{ ucfirst(str_replace('_', ' ', $payment->payment_method)) }}
+                                                </p>
                                                 @if ($payment->reference_number)
                                                     <p class="text-xs font-mono text-secondary-400">
                                                         {{ $payment->reference_number }}</p>
@@ -247,6 +287,7 @@
                     <x-slot:left>
                         <x-icon name="information-circle" class="w-4 h-4" />
                     </x-slot:left>
+                    Detail
 
                     <div class="space-y-4 sm:space-y-6">
                         {{-- Client Details --}}
@@ -282,6 +323,40 @@
                                             {{ $invoice->client->NPWP }}</p>
                                     </div>
                                 @endif
+                            </div>
+                        </div>
+
+                        {{-- Financial Breakdown --}}
+                        <div class="border border-secondary-200 dark:border-dark-700 rounded-lg p-4">
+                            <h4 class="font-medium text-secondary-900 dark:text-white mb-3 flex items-center gap-2">
+                                <x-icon name="calculator" class="w-4 h-4" />
+                                Rincian Keuangan
+                            </h4>
+                            <div class="space-y-2 text-sm">
+                                <div class="flex justify-between">
+                                    <span class="text-secondary-600 dark:text-secondary-400">Net Revenue (excl. tax
+                                        deposits)</span>
+                                    <span class="text-secondary-900 dark:text-white">Rp
+                                        {{ number_format($netRevenue, 0, ',', '.') }}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-secondary-600 dark:text-secondary-400">Total COGS</span>
+                                    <span class="text-red-600 dark:text-red-400">Rp
+                                        {{ number_format($totalCogs, 0, ',', '.') }}</span>
+                                </div>
+                                @if ($invoice->discount_amount > 0)
+                                    <div class="flex justify-between">
+                                        <span class="text-secondary-600 dark:text-secondary-400">Discount</span>
+                                        <span class="text-green-600 dark:text-green-400">-Rp
+                                            {{ number_format($invoice->discount_amount, 0, ',', '.') }}</span>
+                                    </div>
+                                @endif
+                                <div
+                                    class="flex justify-between border-t border-secondary-200 dark:border-secondary-700 pt-2">
+                                    <span class="font-medium text-secondary-900 dark:text-white">Gross Profit</span>
+                                    <span class="font-medium text-green-600 dark:text-green-400">Rp
+                                        {{ number_format($grossProfit, 0, ',', '.') }}</span>
+                                </div>
                             </div>
                         </div>
 

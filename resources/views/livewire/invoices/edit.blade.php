@@ -51,13 +51,14 @@
         <div class="hidden xl:block">
             <!-- Table Header -->
             <div class="bg-secondary-50 dark:bg-dark-900 border-b border-secondary-200 dark:border-dark-600">
-                <div class="grid grid-cols-15 gap-4 p-4 text-sm font-semibold text-secondary-700 dark:text-dark-200">
+                <div class="grid grid-cols-16 gap-4 p-4 text-sm font-semibold text-secondary-700 dark:text-dark-200">
                     <div class="col-span-1">#</div>
                     <div class="col-span-2">Client</div>
                     <div class="col-span-3">Service</div>
                     <div class="col-span-1">Qty</div>
                     <div class="col-span-2">Price</div>
                     <div class="col-span-2">COGS</div>
+                    <div class="col-span-1">Tax Deposit</div>
                     <div class="col-span-2">Total</div>
                     <div class="col-span-1">Profit</div>
                     <div class="col-span-1 text-center">Actions</div>
@@ -67,7 +68,7 @@
             <!-- Table Body -->
             <div class="divide-y divide-secondary-100 dark:divide-dark-700">
                 @forelse($items as $index => $item)
-                    <div class="grid grid-cols-15 gap-4 p-4 hover:bg-secondary-50 dark:hover:bg-dark-700 transition-colors"
+                    <div class="grid grid-cols-16 gap-4 p-4 hover:bg-secondary-50 dark:hover:bg-dark-700 transition-colors"
                         wire:key="item-{{ $index }}">
 
                         <div class="col-span-1 flex items-center">
@@ -99,7 +100,7 @@
                         <div class="col-span-1 flex items-center">
                             <div class="w-full">
                                 <x-input wire:model.blur="items.{{ $index }}.quantity" type="number"
-                                    min="1" class="text-center" />
+                                    min="1" class="text-center" :disabled="$item['is_tax_deposit']" />
                             </div>
                         </div>
 
@@ -112,8 +113,13 @@
                         <div class="col-span-2 flex items-center">
                             <div class="w-full">
                                 <x-wireui-currency prefix="Rp "
-                                    wire:model.blur="items.{{ $index }}.cogs_amount" />
+                                    wire:model.blur="items.{{ $index }}.cogs_amount" :disabled="$item['is_tax_deposit']" />
                             </div>
+                        </div>
+
+                        <div class="col-span-1 flex items-center justify-center">
+                            <x-checkbox wire:model.live="items.{{ $index }}.is_tax_deposit" label="Tax Deposit"
+                                position="left" />
                         </div>
 
                         <div class="col-span-2 flex items-center">
@@ -123,13 +129,17 @@
                         </div>
 
                         <div class="col-span-1 flex items-center">
-                            @php
-                                $profit = ($item['total'] ?? 0) - ($item['cogs_amount'] ?? 0);
-                                $profitClass = $profit >= 0 ? 'text-green-600' : 'text-red-600';
-                            @endphp
-                            <div class="text-xs font-medium {{ $profitClass }}">
-                                Rp {{ number_format($profit, 0, ',', '.') }}
-                            </div>
+                            @if ($item['is_tax_deposit'])
+                                <span class="text-xs text-amber-600 dark:text-amber-400">N/A</span>
+                            @else
+                                @php
+                                    $profit = ($item['total'] ?? 0) - ($item['cogs_amount'] ?? 0);
+                                    $profitClass = $profit >= 0 ? 'text-green-600' : 'text-red-600';
+                                @endphp
+                                <div class="text-xs font-medium {{ $profitClass }}">
+                                    Rp {{ number_format($profit, 0, ',', '.') }}
+                                </div>
+                            @endif
                         </div>
 
                         <div class="col-span-1 flex justify-center items-center">
@@ -178,13 +188,16 @@
 
                         <div class="grid grid-cols-2 gap-3">
                             <x-input wire:model.blur="items.{{ $index }}.quantity" type="number"
-                                min="1" label="Quantity" />
+                                min="1" label="Quantity" :disabled="$item['is_tax_deposit']" />
                             <x-wireui-currency prefix="Rp " wire:model.blur="items.{{ $index }}.price"
                                 label="Price" />
                         </div>
 
                         <x-wireui-currency prefix="Rp " wire:model.blur="items.{{ $index }}.cogs_amount"
-                            label="COGS Amount" />
+                            label="COGS Amount" :disabled="$item['is_tax_deposit']" />
+
+                        <x-checkbox wire:model.live="items.{{ $index }}.is_tax_deposit" label="Tax Deposit"
+                            position="left" />
 
                         <div class="bg-secondary-50 dark:bg-dark-700 p-3 rounded-lg">
                             <div class="flex justify-between items-center mb-2">
@@ -193,15 +206,19 @@
                                     Rp {{ number_format($item['total'], 0, ',', '.') }}
                                 </span>
                             </div>
-                            @php
-                                $profit = ($item['total'] ?? 0) - ($item['cogs_amount'] ?? 0);
-                                $profitClass = $profit >= 0 ? 'text-green-600' : 'text-red-600';
-                            @endphp
                             <div class="flex justify-between items-center">
                                 <span class="text-sm text-secondary-600 dark:text-dark-300">Profit:</span>
-                                <span class="font-semibold {{ $profitClass }}">
-                                    Rp {{ number_format($profit, 0, ',', '.') }}
-                                </span>
+                                @if ($item['is_tax_deposit'])
+                                    <span class="text-xs text-amber-600 dark:text-amber-400">N/A (Tax Deposit)</span>
+                                @else
+                                    @php
+                                        $profit = ($item['total'] ?? 0) - ($item['cogs_amount'] ?? 0);
+                                        $profitClass = $profit >= 0 ? 'text-green-600' : 'text-red-600';
+                                    @endphp
+                                    <span class="font-semibold {{ $profitClass }}">
+                                        Rp {{ number_format($profit, 0, ',', '.') }}
+                                    </span>
+                                @endif
                             </div>
                         </div>
                     </div>
@@ -265,9 +282,13 @@
     <!-- Footer Actions -->
     <div class="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4">
         <div class="text-sm text-secondary-600 dark:text-dark-400 space-y-1">
-            <div>Total {{ count($items) }} item(s) â€¢ Subtotal:
+            <div>Total {{ count($items) }} item(s) • Subtotal:
                 <span class="font-medium text-secondary-900 dark:text-dark-100">Rp
                     {{ number_format($this->subtotal, 0, ',', '.') }}</span>
+            </div>
+            <div>Net Revenue (excl. tax deposits):
+                <span class="font-medium text-blue-600 dark:text-blue-400">Rp
+                    {{ number_format($this->netRevenue, 0, ',', '.') }}</span>
             </div>
             <div>Total COGS:
                 <span class="font-medium text-red-600 dark:text-red-400">Rp

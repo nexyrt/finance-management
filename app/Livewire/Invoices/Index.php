@@ -17,7 +17,7 @@ class Index extends Component
 
     protected $listeners = [
         'invoice-updated' => '$refresh',
-        'payment-created' => '$refresh', 
+        'payment-created' => '$refresh',
         'invoice-payment-updated' => '$refresh',
         'invoice-created' => '$refresh',
     ];
@@ -58,33 +58,47 @@ class Index extends Component
                 DB::raw('COALESCE(SUM(payments.amount), 0) as amount_paid')
             ])
             ->groupBy(array_merge(
-                ['invoices.id', 'invoices.invoice_number', 'invoices.billed_to_id', 'invoices.total_amount', 
-                 'invoices.issue_date', 'invoices.due_date', 'invoices.status', 'invoices.created_at', 
-                 'invoices.updated_at', 'invoices.subtotal', 'invoices.discount_amount', 'invoices.discount_type', 
-                 'invoices.discount_value', 'invoices.discount_reason'],
+                [
+                    'invoices.id',
+                    'invoices.invoice_number',
+                    'invoices.billed_to_id',
+                    'invoices.total_amount',
+                    'invoices.issue_date',
+                    'invoices.due_date',
+                    'invoices.status',
+                    'invoices.created_at',
+                    'invoices.updated_at',
+                    'invoices.subtotal',
+                    'invoices.discount_amount',
+                    'invoices.discount_type',
+                    'invoices.discount_value',
+                    'invoices.discount_reason'
+                ],
                 ['clients.name', 'clients.type']
             ));
 
         // Filters
-        $query->when($this->search, fn($q) => 
+        $query->when(
+            $this->search,
+            fn($q) =>
             $q->where('invoices.invoice_number', 'like', "%{$this->search}%")
-              ->orWhere('clients.name', 'like', "%{$this->search}%")
+                ->orWhere('clients.name', 'like', "%{$this->search}%")
         );
-        
+
         $query->when($this->statusFilter, fn($q) => $q->where('invoices.status', $this->statusFilter));
         $query->when($this->clientFilter, fn($q) => $q->where('invoices.billed_to_id', $this->clientFilter));
-        
+
         $query->when(
             !empty($this->dateRange) && count($this->dateRange) >= 2 && $this->dateRange[0] && $this->dateRange[1],
             fn($q) => $q->whereDate('invoices.issue_date', '>=', $this->dateRange[0])
-                      ->whereDate('invoices.issue_date', '<=', $this->dateRange[1])
+                ->whereDate('invoices.issue_date', '<=', $this->dateRange[1])
         );
 
         // Sorting
-        match($this->sort['column']) {
+        match ($this->sort['column']) {
             'client_name' => $query->orderBy('clients.name', $this->sort['direction']),
-            'invoice_number', 'issue_date', 'due_date', 'total_amount', 'status' => 
-                $query->orderBy('invoices.' . $this->sort['column'], $this->sort['direction']),
+            'invoice_number', 'issue_date', 'due_date', 'total_amount', 'status' =>
+            $query->orderBy('invoices.' . $this->sort['column'], $this->sort['direction']),
             default => $query->orderBy(...array_values($this->sort))
         };
 
@@ -192,34 +206,80 @@ class Index extends Component
     {
         return [
             'search' => $this->search,
-            'statusFilter' => $this->statusFilter, 
+            'statusFilter' => $this->statusFilter,
             'clientFilter' => $this->clientFilter,
             'dateRange' => $this->dateRange,
         ];
     }
 
     // Reset page on filter updates
-    public function updatedStatusFilter() { $this->resetPage(); }
-    public function updatedClientFilter() { $this->resetPage(); }
-    public function updatedDateRange() { $this->resetPage(); }
-    public function updatedSearch() { $this->resetPage(); }
+    public function updatedStatusFilter()
+    {
+        $this->resetPage();
+    }
+    public function updatedClientFilter()
+    {
+        $this->resetPage();
+    }
+    public function updatedDateRange()
+    {
+        $this->resetPage();
+    }
+    public function updatedSearch()
+    {
+        $this->resetPage();
+    }
 
     private function getStats(): array
     {
-        $baseQuery = Invoice::query();
+        // Get all invoices with their items
+        $invoices = Invoice::with('items')->get();
 
-        // Calculate totals using model attributes
-        $totalRevenue = $baseQuery->sum('total_amount');
-        $totalCogs = $baseQuery->get()->sum('total_cogs');
-        $totalProfit = $baseQuery->get()->sum('gross_profit');
-        $outstandingProfit = $baseQuery->get()->sum('outstanding_profit');
-        $paidProfit = $baseQuery->get()->sum('paid_profit');
+        // Calculate net revenue (excluding tax deposits)
+        $netRevenue = $invoices->sum(function ($invoice) {
+            return $invoice->items->where('is_tax_deposit', false)->sum('amount');
+        });
+
+        // Calculate total COGS (excluding tax deposits)
+        $totalCogs = $invoices->sum(function ($invoice) {
+            return $invoice->items->where('is_tax_deposit', false)->sum('cogs_amount');
+        });
+
+        // Calculate total gross profit (net revenue - cogs - discounts)
+        $totalProfit = $invoices->sum(function ($invoice) {
+            $itemNetRevenue = $invoice->items->where('is_tax_deposit', false)->sum('amount');
+            $itemCogs = $invoice->items->where('is_tax_deposit', false)->sum('cogs_amount');
+            return $itemNetRevenue - $itemCogs - ($invoice->discount_amount ?? 0);
+        });
+
+        // Calculate outstanding profit (profit from unpaid invoices)
+        $outstandingProfit = $invoices->sum(function ($invoice) {
+            $itemNetRevenue = $invoice->items->where('is_tax_deposit', false)->sum('amount');
+            $itemCogs = $invoice->items->where('is_tax_deposit', false)->sum('cogs_amount');
+            $grossProfit = $itemNetRevenue - $itemCogs - ($invoice->discount_amount ?? 0);
+
+            $totalPaid = $invoice->amount_paid;
+            $totalAmount = $invoice->total_amount;
+
+            if ($totalPaid <= $itemCogs) {
+                return $grossProfit;
+            }
+
+            $realizedProfit = $totalPaid - $itemCogs;
+            return max(0, $grossProfit - $realizedProfit);
+        });
+
+        // Calculate paid profit
+        $paidProfit = $totalProfit - $outstandingProfit;
+
+        // Total invoice amount (including tax deposits for billing)
+        $totalInvoiceAmount = $invoices->sum('total_amount');
 
         return [
-            'total_revenue' => $totalRevenue,
+            'total_revenue' => $netRevenue, // Net revenue excluding tax deposits
             'total_cogs' => $totalCogs,
             'total_profit' => $totalProfit,
-            'profit_margin' => $totalRevenue > 0 ? ($totalProfit / $totalRevenue) * 100 : 0,
+            'profit_margin' => $netRevenue > 0 ? ($totalProfit / $netRevenue) * 100 : 0,
             'outstanding_profit' => $outstandingProfit,
             'paid_profit' => $paidProfit,
             'paid_this_month' => DB::table('payments')

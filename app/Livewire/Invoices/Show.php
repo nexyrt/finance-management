@@ -5,6 +5,7 @@ namespace App\Livewire\Invoices;
 use App\Models\Invoice;
 use Livewire\Component;
 use Livewire\Attributes\On;
+use Livewire\Attributes\Computed;
 use TallStackUi\Traits\Interactions;
 
 class Show extends Component
@@ -32,6 +33,37 @@ class Show extends Component
     {
         $this->invoice = null;
         $this->modal = false;
+    }
+
+    #[Computed]
+    public function netRevenue(): int
+    {
+        if (!$this->invoice)
+            return 0;
+
+        return $this->invoice->items
+            ->where('is_tax_deposit', false)
+            ->sum('amount');
+    }
+
+    #[Computed]
+    public function totalCogs(): int
+    {
+        if (!$this->invoice)
+            return 0;
+
+        return $this->invoice->items
+            ->where('is_tax_deposit', false)
+            ->sum('cogs_amount');
+    }
+
+    #[Computed]
+    public function grossProfit(): int
+    {
+        if (!$this->invoice)
+            return 0;
+
+        return $this->netRevenue - $this->totalCogs - ($this->invoice->discount_amount ?? 0);
     }
 
     public function sendInvoice(): void

@@ -1,6 +1,5 @@
 <?php
 
-// InvoiceItem.php
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -18,7 +17,8 @@ class InvoiceItem extends Model
         'quantity',
         'unit_price',
         'amount',
-        'cogs_amount'
+        'cogs_amount',
+        'is_tax_deposit'
     ];
 
     protected $casts = [
@@ -26,6 +26,7 @@ class InvoiceItem extends Model
         'unit_price' => 'integer',
         'amount' => 'integer',
         'cogs_amount' => 'integer',
+        'is_tax_deposit' => 'boolean',
     ];
 
     public function invoice(): BelongsTo
@@ -38,7 +39,19 @@ class InvoiceItem extends Model
         return $this->belongsTo(Client::class);
     }
 
-    // Essential business logic only
+    // Net revenue excluding tax deposits
+    public function getNetRevenueAttribute(): int
+    {
+        return $this->is_tax_deposit ? 0 : $this->amount;
+    }
+
+    // Net profit excluding tax deposits
+    public function getNetProfitAttribute(): int
+    {
+        return $this->is_tax_deposit ? 0 : ($this->amount - $this->cogs_amount);
+    }
+
+    // Original profit calculation (for backwards compatibility)
     public function getProfitAmountAttribute(): int
     {
         return $this->amount - $this->cogs_amount;
