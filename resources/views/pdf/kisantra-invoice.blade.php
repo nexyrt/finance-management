@@ -219,10 +219,11 @@
             font-size: 11px;
         }
 
-        /* Total Section */
+        /* Total Section - ENHANCED */
         .total-section {
             width: 100%;
-            margin-bottom: 20px;
+            margin: 30px 0;
+            /* Increased margin */
         }
 
         .total-row {
@@ -234,21 +235,34 @@
         .total-label {
             display: table-cell;
             font-weight: bold;
-            padding: 8px;
+            padding: 15px 12px;
+            /* Increased padding */
             color: black;
-            border-top: 1px solid #374151;
-            border-bottom: 3px double #374151;
+            background: #f3f4f6;
+            /* Keep original light background */
+            border-top: 3px solid #374151;
+            border-bottom: 4px double #374151;
             font-style: italic;
+            font-size: 22px;
+            /* Increased font size */
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         .total-value {
             display: table-cell;
             font-weight: bold;
-            padding: 8px;
+            padding: 15px 12px;
+            /* Increased padding */
             background: #42b2cc;
+            /* Keep original blue background */
             color: white;
-            border: 1px solid #42b2cc;
+            border: 3px solid #42b2cc;
             font-style: italic;
+            font-size: 22px;
+            /* Increased font size */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            /* Added shadow */
         }
 
         .total-value-content {
@@ -256,6 +270,8 @@
             justify-content: space-between;
             align-items: center;
             width: 100%;
+            font-weight: 900;
+            /* Extra bold */
         }
 
         /* Footer Section Grid */
@@ -428,7 +444,8 @@
 
                 @if ($financial_summary['has_tax_deposits'])
                     <div style="margin-top: 10px; font-size: 12px; color: #f59e0b; font-style: italic;">
-                        * Termasuk titipan pajak sebesar Rp {{ number_format($financial_summary['tax_deposits_total'], 0, ',', '.') }}
+                        * Termasuk titipan pajak sebesar Rp
+                        {{ number_format($financial_summary['tax_deposits_total'], 0, ',', '.') }}
                     </div>
                 @endif
             </div>
@@ -527,7 +544,8 @@
                             <td>
                                 <div class="currency-cell">
                                     <div class="currency-left">IDR</div>
-                                    <div class="currency-right">{{ number_format($item->unit_price, 0, ',', '.') }}</div>
+                                    <div class="currency-right">{{ number_format($item->unit_price, 0, ',', '.') }}
+                                    </div>
                                 </div>
                             </td>
                             <td>
@@ -590,11 +608,12 @@
                             <div class="grand-total-value">IDR {{ number_format($netRevenue, 0, ',', '.') }}</div>
                         </div>
                     </div>
-                    
+
                     <div class="grand-total-section">
                         <div class="grand-total-row">
                             <div class="grand-total-label">TITIPAN PAJAK</div>
-                            <div class="grand-total-value">IDR {{ number_format($financial_summary['tax_deposits_total'], 0, ',', '.') }}</div>
+                            <div class="grand-total-value">IDR
+                                {{ number_format($financial_summary['tax_deposits_total'], 0, ',', '.') }}</div>
                         </div>
                     </div>
                 @endif
@@ -604,7 +623,8 @@
                     <div class="grand-total-section">
                         <div class="grand-total-row">
                             <div class="grand-total-label">DISKON</div>
-                            <div class="grand-total-value">IDR -{{ number_format($invoice->discount_amount, 0, ',', '.') }}</div>
+                            <div class="grand-total-value">IDR
+                                -{{ number_format($invoice->discount_amount, 0, ',', '.') }}</div>
                         </div>
                     </div>
                 @endif
@@ -629,11 +649,12 @@
                 <div class="grand-total-section">
                     <div class="grand-total-row">
                         <div class="grand-total-label">GRAND TOTAL</div>
-                        <div class="grand-total-value">IDR {{ number_format($netRevenueAfterDiscount, 0, ',', '.') }}</div>
+                        <div class="grand-total-value">IDR {{ number_format($netRevenueAfterDiscount, 0, ',', '.') }}
+                        </div>
                     </div>
                 </div>
 
-                <!-- Jumlah Ditagih (full invoice amount including tax deposits) -->
+                <!-- Jumlah Ditagih (ENHANCED - full invoice amount including tax deposits) -->
                 <div class="total-section">
                     <div class="total-row">
                         <div class="total-label">JUMLAH DITAGIH</div>
