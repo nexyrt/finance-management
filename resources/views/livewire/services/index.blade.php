@@ -165,7 +165,7 @@
                 <x-button.circle icon="pencil" color="green" size="sm" wire:click="edit({{ $row->id }})"
                     title="Edit" />
 
-                <livewire:services.delete :service="$row" :key="'delete-service-' . $row->id" @service-deleted="$refresh" />
+                <livewire:services.delete :service="$row" :key="uniqid()" @service-deleted="$refresh" />
             </div>
         @endinteract
 
