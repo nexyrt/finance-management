@@ -1,11 +1,6 @@
 <div>
-    {{-- Trigger Button --}}
-    <x-button wire:click="$toggle('modal')" color="blue" icon="plus" class="w-full sm:w-auto">
-        Tambah Transaksi
-    </x-button>
-
-    {{-- Modal --}}
-    <x-modal title="Tambah Transaksi" wire size="xl" center>
+    {{-- Modal (triggered by event) --}}
+    <x-modal title="Tambah Transaksi" wire="modal" size="xl" center>
         <x-slot:title>
             <div class="flex items-center gap-4 my-3">
                 <div class="h-12 w-12 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center">

@@ -11,7 +11,9 @@
             </p>
         </div>
         <div class="flex gap-3">
-            <livewire:transactions.create @transaction-created="$refresh" />
+            <x-button wire:click="createTransaction(1)" loading="createTransaction" color="blue" icon="plus">
+                Tambah Transaksi
+            </x-button>
             <x-button wire:click="openTransfer" loading="openTransfer" color="blue" icon="arrow-path">
                 Transfer Dana
             </x-button>
@@ -68,4 +70,5 @@
 
     {{-- Additional Components --}}
     <livewire:transactions.transfer @transfer-completed="$refresh" />
+    <livewire:transactions.create @transaction-created="$refresh" />
 </div>

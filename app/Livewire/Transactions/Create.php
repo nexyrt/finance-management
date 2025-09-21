@@ -6,6 +6,7 @@ use App\Models\BankAccount;
 use App\Models\BankTransaction;
 use Livewire\Component;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\On;
 use Livewire\WithFileUploads;
 use TallStackUi\Traits\Interactions;
 
@@ -14,7 +15,7 @@ class Create extends Component
     use Interactions, WithFileUploads;
 
     public bool $modal = false;
-    
+
     // Form properties
     public ?int $bank_account_id = null;
     public ?string $amount = null;
@@ -26,6 +27,26 @@ class Create extends Component
 
     public function mount()
     {
+        $this->transaction_date = now()->format('Y-m-d');
+        $this->transaction_type = 'credit';
+    }
+
+    #[On('create-transaction')]
+    public function open(?int $bankAccountId = null): void
+    {
+        $this->resetForm();
+
+        // Auto-fill bank account if provided
+        if ($bankAccountId) {
+            $this->bank_account_id = $bankAccountId;
+        }
+
+        $this->modal = true;
+    }
+
+    private function resetForm(): void
+    {
+        $this->reset(['bank_account_id', 'amount', 'description', 'reference_number', 'attachment']);
         $this->transaction_date = now()->format('Y-m-d');
         $this->transaction_type = 'credit';
     }
@@ -82,7 +103,7 @@ class Create extends Component
             if ($this->attachment) {
                 $filename = time() . '_' . $this->attachment->getClientOriginalName();
                 $path = $this->attachment->storeAs('transaction-attachments', $filename, 'public');
-                
+
                 $data['attachment_path'] = $path;
                 $data['attachment_name'] = $this->attachment->getClientOriginalName();
             }
@@ -90,12 +111,11 @@ class Create extends Component
             BankTransaction::create($data);
 
             $this->dispatch('transaction-created');
-            $this->reset();
-            $this->transaction_date = now()->format('Y-m-d');
-            $this->transaction_type = 'credit';
-            
+            $this->resetForm();
+            $this->modal = false;
+
             $this->toast()->success('Berhasil!', 'Transaksi berhasil ditambahkan.')->send();
-            
+
         } catch (\Exception $e) {
             $this->toast()->error('Gagal!', 'Terjadi kesalahan saat menyimpan transaksi.')->send();
         }

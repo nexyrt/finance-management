@@ -80,6 +80,11 @@ class Index extends Component
         $this->dispatch('open-transfer-modal');
     }
 
+    public function createTransaction(?int $bankAccountId = null): void
+    {
+        $this->dispatch('create-transaction', bankAccountId: $bankAccountId);
+    }
+
     public function render()
     {
         return view('livewire.transactions.index');

@@ -450,7 +450,7 @@
                             Edit
                         </x-button>
                     @endif
-                    <x-button wire:click="resetData" color="secondary">
+                    <x-button wire:click="$toggle('modal')" color="secondary">
                         Tutup
                     </x-button>
                 </div>
