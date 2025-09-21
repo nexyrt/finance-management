@@ -58,9 +58,6 @@ class Index extends Component
     #[On('refresh-data')]
     public function handleRefresh(): void
     {
-        // Broadcast ke semua child components
-        $this->dispatch('refresh-child-components');
-
         // Atau dispatch ke komponen spesifik
         $this->dispatch('refresh-transactions');
         $this->dispatch('refresh-payments');

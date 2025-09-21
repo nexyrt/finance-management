@@ -1,6 +1,6 @@
 <div>
     {{-- Modal (triggered by event) --}}
-    <x-modal title="Tambah Transaksi" wire="modal" size="xl" center>
+    <x-modal title="Tambah Transaksi" wire="modal" size="xl" center persistent>
         <x-slot:title>
             <div class="flex items-center gap-4 my-3">
                 <div class="h-12 w-12 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center">

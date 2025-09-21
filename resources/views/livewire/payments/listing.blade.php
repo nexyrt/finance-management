@@ -1,58 +1,104 @@
 <div class="space-y-6">
-    {{-- Filters --}}
-    <div class="flex flex-col lg:flex-row gap-4 items-start lg:items-end">
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 flex-1">
-            <div>
-                <x-select.styled wire:model.live="paymentMethodFilter" label="Metode Pembayaran" :options="[
-                    ['label' => 'Transfer Bank', 'value' => 'bank_transfer'],
-                    ['label' => 'Tunai', 'value' => 'cash'],
-                ]"
-                    placeholder="Semua metode..." />
+    {{-- Responsive Filters untuk Payments --}}
+    <div class="space-y-4">
+        {{-- Filter Section --}}
+        <div class="flex flex-col gap-4">
+            {{-- Main Filters Grid - Responsive --}}
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3">
+                {{-- Payment Method --}}
+                <div class="sm:col-span-1">
+                    <x-select.styled wire:model.live="paymentMethodFilter" label="Metode" :options="[
+                        ['label' => 'Transfer Bank', 'value' => 'bank_transfer'],
+                        ['label' => 'Tunai', 'value' => 'cash'],
+                    ]"
+                        placeholder="Semua metode..." />
+                </div>
+
+                {{-- Bank Account --}}
+                <div class="sm:col-span-1 lg:col-span-1">
+                    <x-select.styled wire:model.live="bankAccountFilter" label="Rekening" :disabled="$constrainedBankAccountId !== null"
+                        :options="$this->bankAccounts
+                            ->map(
+                                fn($account) => [
+                                    'label' => $account->bank_name . ' - ' . $account->account_name,
+                                    'value' => $account->id,
+                                ],
+                            )
+                            ->toArray()" placeholder="Semua rekening..." searchable />
+                </div>
+
+                {{-- Invoice Status --}}
+                <div class="sm:col-span-1 lg:col-span-1">
+                    <x-select.styled wire:model.live="invoiceStatusFilter" label="Status Invoice" :options="[
+                        ['label' => 'Dibayar', 'value' => 'paid'],
+                        ['label' => 'Sebagian', 'value' => 'partially_paid'],
+                        ['label' => 'Terkirim', 'value' => 'sent'],
+                        ['label' => 'Terlambat', 'value' => 'overdue'],
+                    ]"
+                        placeholder="Semua status..." />
+                </div>
+
+                {{-- Month Picker --}}
+                <div class="sm:col-span-1 lg:col-span-1">
+                    <x-date month-year-only wire:model.live="selectedMonth" label="Bulan"
+                        placeholder="Pilih bulan..." />
+                </div>
+
+                {{-- Date Range --}}
+                <div class="sm:col-span-2 lg:col-span-1">
+                    <x-date wire:model.live="dateRange" label="Range Tanggal" range placeholder="Pilih range..." />
+                </div>
             </div>
 
-            <div>
-                <x-select.styled wire:model.live="bankAccountFilter" label="Rekening Bank" :disabled="$constrainedBankAccountId !== null"
-                    :options="$this->bankAccounts
-                        ->map(
-                            fn($account) => [
-                                'label' => $account->bank_name . ' - ' . $account->account_name,
-                                'value' => $account->id,
-                            ],
-                        )
-                        ->toArray()" placeholder="Semua rekening..." searchable />
+            {{-- Search & Actions Row --}}
+            <div class="flex flex-col sm:flex-row gap-3">
+                {{-- Search Bar --}}
+                <div class="flex-1">
+                    <x-input wire:model.live.debounce.300ms="search" label="Cari Pembayaran"
+                        placeholder="Cari invoice, klien, referensi..." icon="magnifying-glass" />
+                </div>
+
+                {{-- Export Actions --}}
+                <div class="flex items-end gap-2">
+                    <x-button wire:click="exportExcel" size="sm" color="green" icon="document-text" outline>
+                        <span class="hidden sm:inline">Excel</span>
+                        <span class="sm:hidden">XLS</span>
+                    </x-button>
+                    <x-button wire:click="exportPdf" size="sm" color="red" icon="document" outline>
+                        PDF
+                    </x-button>
+                </div>
             </div>
 
-            <div>
-                <x-select.styled wire:model.live="invoiceStatusFilter" label="Status Invoice" :options="[
-                    ['label' => 'Dibayar', 'value' => 'paid'],
-                    ['label' => 'Sebagian', 'value' => 'partially_paid'],
-                    ['label' => 'Terkirim', 'value' => 'sent'],
-                    ['label' => 'Terlambat', 'value' => 'overdue'],
-                ]"
-                    placeholder="Semua status..." />
-            </div>
+            {{-- Filter Status Indicator --}}
+            @php
+                $activeFilters = collect([
+                    $paymentMethodFilter,
+                    $bankAccountFilter && !$constrainedBankAccountId,
+                    $invoiceStatusFilter,
+                    $selectedMonth,
+                    !empty($dateRange),
+                    $search,
+                ])
+                    ->filter()
+                    ->count();
+            @endphp
 
-            <div>
-                <x-date month-year-only wire:model.live="selectedMonth" label="Bulan" placeholder="Pilih bulan..." />
-            </div>
+            @if ($activeFilters > 0)
+                <div class="flex items-center justify-between">
+                    <x-badge text="{{ $activeFilters }} filter aktif" color="primary" size="sm" />
 
-            <div>
-                <x-date wire:model.live="dateRange" label="Range Tanggal" range placeholder="Pilih range..." />
-            </div>
-        </div>
-
-        <div class="flex gap-2">
-            <x-button wire:click="exportExcel" size="sm" color="green" icon="document-text" outline>
-                Excel
-            </x-button>
-            <x-button wire:click="exportPdf" size="sm" color="red" icon="document" outline>
-                PDF
-            </x-button>
+                    <div class="text-sm text-gray-500 dark:text-gray-400">
+                        <span class="hidden sm:inline">Menampilkan </span>{{ $this->payments->count() }}
+                        <span class="hidden sm:inline">dari {{ $this->payments->total() }}</span> pembayaran
+                    </div>
+                </div>
+            @endif
         </div>
     </div>
 
     {{-- Table --}}
-    <x-table :$headers :$sort :rows="$this->payments" selectable wire:model="selected" paginate filter loading>
+    <x-table :$headers :$sort :rows="$this->payments" selectable wire:model="selected" paginate loading>
 
         {{-- Payment Date Column --}}
         @interact('column_payment_date', $row)

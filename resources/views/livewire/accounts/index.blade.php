@@ -31,9 +31,10 @@
         </div>
     </div>
 
-    <div class="flex flex-col xl:flex-row gap-6">
-        {{-- Left Sidebar - Account Cards --}}
-        <div class="w-full xl:w-80 2xl:w-96 xl:flex-shrink-0 space-y-4">
+    {{-- Ganti flex layout dengan grid --}}
+    <div class="grid grid-cols-1 xl:grid-cols-[320px_1fr] 2xl:grid-cols-[384px_1fr] gap-6">
+        {{-- Left Sidebar - Fixed Width --}}
+        <div class="space-y-4">
             <div class="flex items-center justify-between">
                 <div>
                     <h2 class="text-xl font-bold text-dark-900 dark:text-dark-50">My Cards</h2>
@@ -47,21 +48,25 @@
 
             {{-- Account Cards --}}
             @foreach ($this->accountsData as $account)
-                <div wire:click="selectAccount({{ $account['id'] }})"
-                    class="p-4 bg-white dark:bg-dark-800 border-2 border-zinc-200 dark:border-dark-600 rounded-xl cursor-pointer transition-all hover:shadow-md {{ $selectedAccountId == $account['id'] ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20' : '' }}">
+                <div wire:click="selectAccount({{ $account['id'] }})" wire:loading.class="opacity-60 scale-[0.98]"
+                    wire:target="selectAccount({{ $account['id'] }})"
+                    class="relative p-4 bg-white dark:bg-dark-800 border-2 border-zinc-200 dark:border-dark-600 rounded-xl cursor-pointer transition-all duration-200 hover:shadow-md transform hover:scale-[1.02] {{ $selectedAccountId == $account['id'] ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 ring-2 ring-primary-500/20' : '' }}">
 
+                    {{-- Loading Overlay --}}
                     <div wire:loading wire:target="selectAccount({{ $account['id'] }})"
-                        class="absolute inset-0 bg-white/50 dark:bg-dark-800/50 rounded-xl flex items-center justify-center">
-                        <div class="flex items-center gap-2">
+                        class="absolute inset-0 rounded-xl backdrop-blur-md bg-white/20 dark:bg-dark-900/20 z-10">
+                        <div
+                            class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex items-center gap-2 px-4 py-2 bg-white/80 dark:bg-dark-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-white/30 dark:border-dark-600/30">
                             <x-icon name="arrow-path" class="w-4 h-4 text-primary-600 animate-spin" />
-                            <span class="text-sm text-primary-600">Loading...</span>
+                            <span class="text-sm text-primary-600 dark:text-primary-400 font-medium">Loading...</span>
                         </div>
                     </div>
 
+                    {{-- Card Content sama seperti sebelumnya --}}
                     <div class="flex items-start justify-between mb-3">
                         <div class="flex items-center gap-3">
                             <div
-                                class="h-12 w-12 bg-gradient-to-br from-primary-400 to-primary-600 rounded-lg flex items-center justify-center">
+                                class="h-12 w-12 bg-gradient-to-br from-primary-400 to-primary-600 rounded-lg flex items-center justify-center shadow-sm">
                                 <x-icon name="building-library" class="w-6 h-6 text-white" />
                             </div>
                             <div>
@@ -69,8 +74,15 @@
                                 <p class="text-sm text-dark-600 dark:text-dark-400">{{ $account['bank'] }}</p>
                             </div>
                         </div>
-                        <x-icon name="{{ $account['trend'] === 'up' ? 'arrow-trending-up' : 'arrow-trending-down' }}"
-                            class="w-4 h-4 {{ $account['trend'] === 'up' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }}" />
+
+                        <div class="flex items-center gap-2">
+                            @if ($selectedAccountId == $account['id'])
+                                <div class="w-2 h-2 bg-primary-500 rounded-full animate-pulse"></div>
+                            @endif
+                            <x-icon
+                                name="{{ $account['trend'] === 'up' ? 'arrow-trending-up' : 'arrow-trending-down' }}"
+                                class="w-4 h-4 {{ $account['trend'] === 'up' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }}" />
+                        </div>
                     </div>
 
                     <div class="mb-3">
@@ -111,36 +123,42 @@
             @endif
         </div>
 
-        {{-- Main Content --}}
-        <div class="flex-1 space-y-6">
+        {{-- Main Content - Constrained Width --}}
+        <div class="min-w-0 space-y-6"> {{-- min-w-0 mencegah overflow --}}
             @if ($selectedAccountId)
                 {{-- Quick Actions & Chart Component --}}
                 <livewire:accounts.quick-actions-overview :selectedAccountId="$selectedAccountId" />
 
-                {{-- Tab Navigation & Tables --}}
-                <x-tab selected="payments" class="max-w-sm">
-                    <x-tab.items tab="transactions">
-                        <x-slot:left>
-                            <x-icon name="arrows-right-left" class="w-4 h-4" />
-                        </x-slot:left>
+                {{-- Tab Navigation & Tables dengan Container --}}
+                <div class="overflow-hidden"> {{-- Container untuk mencegah overflow --}}
+                    <x-tab selected="payments" scroll-on-mobile>
+                        <x-tab.items tab="transactions">
+                            <x-slot:left>
+                                <x-icon name="arrows-right-left" class="w-4 h-4" />
+                            </x-slot:left>
 
-                        {{-- Transactions Table Content --}}
-                        <div class="mt-3">
-                            <livewire:transactions.listing :constrainedBankAccountId="$selectedAccountId" :key="uniqid()" />
-                        </div>
-                    </x-tab.items>
+                            {{-- Transactions Table dengan overflow handling --}}
+                            <div class="mt-3 overflow-x-auto">
+                                <div class="min-w-full px-1">
+                                    <livewire:transactions.listing :constrainedBankAccountId="$selectedAccountId" :key="'transactions-' . $selectedAccountId" />
+                                </div>
+                            </div>
+                        </x-tab.items>
 
-                    <x-tab.items tab="payments">
-                        <x-slot:left>
-                            <x-icon name="banknotes" class="w-4 h-4" />
-                        </x-slot:left>
+                        <x-tab.items tab="payments">
+                            <x-slot:left>
+                                <x-icon name="banknotes" class="w-4 h-4" />
+                            </x-slot:left>
 
-                        {{-- Payments Table Content --}}
-                        <div class="mt-3">
-                            <livewire:payments.listing :constrainedBankAccountId="$selectedAccountId" :key="uniqid()" />
-                        </div>
-                    </x-tab.items>
-                </x-tab>
+                            {{-- Payments Table dengan overflow handling --}}
+                            <div class="mt-3 overflow-x-auto">
+                                <div class="min-w-full px-1">
+                                    <livewire:payments.listing :constrainedBankAccountId="$selectedAccountId" :key="'payments-' . $selectedAccountId" />
+                                </div>
+                            </div>
+                        </x-tab.items>
+                    </x-tab>
+                </div>
             @else
                 {{-- No Account Selected --}}
                 <div
@@ -148,7 +166,8 @@
                     <x-icon name="building-library" class="w-16 h-16 text-zinc-400 mx-auto mb-4" />
                     <h3 class="text-xl font-semibold text-dark-900 dark:text-dark-50 mb-2">Select an Account</h3>
                     <p class="text-dark-600 dark:text-dark-400 mb-6">Choose an account from the sidebar to view
-                        transactions and manage settings</p>
+                        transactions
+                        and manage settings</p>
                     <x-button wire:click="createAccount" loading="createAccount" color="primary" icon="plus">
                         Create New Account
                     </x-button>

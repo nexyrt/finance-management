@@ -1,41 +1,82 @@
 <div class="space-y-6">
-    {{-- Filters --}}
-    <div class="flex flex-col lg:flex-row gap-4">
-        <div class="flex flex-col sm:flex-row gap-4 lg:flex-1">
-            <div class="w-full sm:w-48">
-                <x-select.styled wire:model.live="account_id" label="Bank Account" :disabled="$constrainedBankAccountId !== null" :options="$this->accounts
-                    ->map(
-                        fn($account) => [
-                            'label' => $account->account_name,
-                            'value' => $account->id,
-                        ],
-                    )
-                    ->prepend(['label' => 'Semua Rekening', 'value' => ''])
-                    ->toArray()"
-                    placeholder="Filter rekening..." />
+    {{-- Responsive Filters untuk Transactions --}}
+    <div class="space-y-4">
+        {{-- Filter Section --}}
+        <div class="flex flex-col gap-4">
+            {{-- Main Filters Grid --}}
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                {{-- Bank Account --}}
+                <div class="sm:col-span-1">
+                    <x-select.styled wire:model.live="account_id" label="Rekening" :disabled="$constrainedBankAccountId !== null" :options="$this->accounts
+                        ->map(
+                            fn($account) => [
+                                'label' => $account->account_name,
+                                'value' => $account->id,
+                            ],
+                        )
+                        ->prepend(['label' => 'Semua Rekening', 'value' => ''])
+                        ->toArray()"
+                        placeholder="Filter rekening..." />
+                </div>
+
+                {{-- Transaction Type --}}
+                <div class="sm:col-span-1">
+                    <x-select.styled wire:model.live="transaction_type" label="Jenis" :options="[
+                        ['label' => 'Semua Jenis', 'value' => ''],
+                        ['label' => 'Pemasukan', 'value' => 'credit'],
+                        ['label' => 'Pengeluaran', 'value' => 'debit'],
+                    ]"
+                        placeholder="Filter jenis..." />
+                </div>
+
+                {{-- Month Picker --}}
+                <div class="sm:col-span-1">
+                    <x-date month-year-only wire:model.live="selected_month" label="Bulan"
+                        placeholder="Pilih bulan..." />
+                </div>
+
+                {{-- Date Range --}}
+                <div class="sm:col-span-1">
+                    <x-date range wire:model.live="date_range" label="Range Tanggal" placeholder="Pilih range..." />
+                </div>
             </div>
 
-            <div class="w-full sm:w-48">
-                <x-select.styled wire:model.live="transaction_type" label="Transaction Type" :options="[
-                    ['label' => 'Semua Jenis', 'value' => ''],
-                    ['label' => 'Pemasukan', 'value' => 'credit'],
-                    ['label' => 'Pengeluaran', 'value' => 'debit'],
-                ]"
-                    placeholder="Filter jenis..." />
-            </div>
+            {{-- Filter Status & Search Row --}}
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                {{-- Left: Filter Status & Search --}}
+                <div class="flex flex-col sm:flex-row sm:items-center gap-3 flex-1">
+                    {{-- Search Field --}}
+                    <div class="w-full sm:w-64">
+                        <x-input wire:model.live.debounce.300ms="search" placeholder="Cari transaksi..."
+                            icon="magnifying-glass" class="h-8" />
+                    </div>
+                    {{-- Filter Status --}}
+                    @php
+                        $activeFilters = collect([
+                            $account_id && $account_id !== '',
+                            $transaction_type && $transaction_type !== '',
+                            $selected_month,
+                            !empty($date_range),
+                            $search,
+                        ])
+                            ->filter()
+                            ->count();
+                    @endphp
 
-            <div class="w-full sm:w-48">
-                <x-date month-year-only wire:model.live="selected_month" label="Bulan" placeholder="Pilih bulan..." />
-            </div>
+                    <div class="flex items-center gap-3">
+                        @if ($activeFilters > 0)
+                            <x-badge text="{{ $activeFilters }} filter aktif" color="primary" size="sm" />
+                        @endif
 
-            <div class="w-full sm:w-56">
-                <x-date range wire:model.live="date_range" label="Range Tanggal" placeholder="Pilih range..." />
-            </div>
-        </div>
+                        <div class="text-sm text-gray-500 dark:text-gray-400">
+                            <span class="hidden sm:inline">Menampilkan </span>{{ $this->transactions->count() }}
+                            <span class="hidden sm:inline">dari {{ $this->transactions->total() }}</span> transaksi
+                        </div>
+                    </div>
 
-        <div class="w-full lg:w-80">
-            <x-input wire:model.live.debounce.300ms="search" label="Search" placeholder="Cari transaksi..."
-                icon="magnifying-glass" />
+
+                </div>
+            </div>
         </div>
     </div>
 

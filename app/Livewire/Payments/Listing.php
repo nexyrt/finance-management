@@ -28,6 +28,7 @@ class Listing extends Component
     public ?string $bankAccountFilter = null;
     public ?string $invoiceStatusFilter = null;
     public ?string $selectedMonth = null;
+    public ?string $search = null;
     public $dateRange = [];
 
     public array $headers = [
@@ -69,7 +70,20 @@ class Listing extends Component
                 'bank_accounts.account_name',
             ]);
 
-        // Filters (with constraint)
+        // Search filter - tambahkan ini setelah select
+        $query->when(
+            $this->search,
+            fn($q) =>
+            $q->where(function ($searchQuery) {
+                $searchQuery->where('invoices.invoice_number', 'like', '%' . $this->search . '%')
+                    ->orWhere('clients.name', 'like', '%' . $this->search . '%')
+                    ->orWhere('payments.reference_number', 'like', '%' . $this->search . '%')
+                    ->orWhere('bank_accounts.bank_name', 'like', '%' . $this->search . '%')
+                    ->orWhere('bank_accounts.account_name', 'like', '%' . $this->search . '%');
+            })
+        );
+
+        // Filters (with constraint) - sisanya tetap sama
         $query->when($this->paymentMethodFilter, fn($q) => $q->where('payments.payment_method', $this->paymentMethodFilter));
 
         // Bank account filter - constrained or user-selected
@@ -117,6 +131,7 @@ class Listing extends Component
     protected function dispatchFilterChange(): void
     {
         $this->dispatch('filter-changed', [
+            'search' => $this->search, // tambahkan ini
             'paymentMethodFilter' => $this->paymentMethodFilter,
             'bankAccountFilter' => $this->bankAccountFilter,
             'invoiceStatusFilter' => $this->invoiceStatusFilter,
@@ -156,6 +171,12 @@ class Listing extends Component
         $this->dispatchFilterChange();
     }
 
+    public function updatedSearch(): void
+    {
+        $this->resetPage();
+        $this->dispatchFilterChange();
+    }
+
     // Action methods for loading states
     public function editPayment(int $paymentId): void
     {
@@ -170,20 +191,6 @@ class Listing extends Component
     public function deletePayment(int $paymentId): void
     {
         $this->dispatch('delete-payment', paymentId: $paymentId);
-    }
-
-    // Utility methods
-    public function clearFilters(): void
-    {
-        $this->fill([
-            'paymentMethodFilter' => null,
-            'bankAccountFilter' => null,
-            'invoiceStatusFilter' => null,
-            'selectedMonth' => null,
-            'dateRange' => []
-        ]);
-        $this->resetPage();
-        $this->dispatchFilterChange();
     }
 
     public function exportExcel()
