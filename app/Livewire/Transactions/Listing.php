@@ -14,6 +14,9 @@ class Listing extends Component
 {
     use WithPagination, Interactions;
 
+    #[Reactive]
+    public ?int $constrainedBankAccountId = null;
+
     // Table properties
     public ?string $search = null;
     public ?int $quantity = 25;
@@ -40,7 +43,11 @@ class Listing extends Component
 
     public function mount()
     {
-        // Emit initial filter state
+        // Auto-set account filter if constrained
+        if ($this->constrainedBankAccountId) {
+            $this->account_id = (string) $this->constrainedBankAccountId;
+        }
+
         $this->dispatchFilterChange();
     }
 
@@ -59,9 +66,9 @@ class Listing extends Component
                     ->orWhere('reference_number', 'like', "%{$this->search}%")
             )
             ->when(
-                $this->account_id,
+                $this->account_id || $this->constrainedBankAccountId,
                 fn($query) =>
-                $query->where('bank_account_id', $this->account_id)
+                $query->where('bank_account_id', $this->constrainedBankAccountId ?? $this->account_id)
             )
             ->when(
                 $this->transaction_type,

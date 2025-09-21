@@ -39,7 +39,12 @@ class QuickActionsOverview extends Component
             $this->toast()->warning('Warning', 'Please select an account first')->send();
             return;
         }
-        $this->dispatch('open-transaction-modal', accountId: $this->selectedAccountId);
+        $this->dispatch('create-transaction', bankAccountId: $this->selectedAccountId);
+
+        // Re-initialize chart after action
+        $this->dispatch('reinitialize-chart', [
+            'chartData' => $this->chartData,
+        ]);
     }
 
     public function transferFunds(): void
@@ -49,6 +54,11 @@ class QuickActionsOverview extends Component
             return;
         }
         $this->dispatch('open-transfer-modal', fromAccountId: $this->selectedAccountId);
+
+        // Re-initialize chart after action
+        $this->dispatch('reinitialize-chart', [
+            'chartData' => $this->chartData,
+        ]);
     }
 
     public function exportReport(): void

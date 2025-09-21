@@ -5,7 +5,13 @@
     <div class="bg-white dark:bg-dark-800 border border-zinc-200 dark:border-dark-600 rounded-xl p-6">
         <h3 class="text-lg font-semibold text-dark-900 dark:text-dark-50 mb-4">Quick Actions</h3>
         <div class="space-y-3">
-            <livewire:transactions.create @transaction-created="$refresh" />
+            <x-button wire:click="addTransaction" loading="addTransaction" color="blue" icon="plus"
+                class="w-full justify-start">
+                <div class="text-left">
+                    <div class="font-semibold">Add Transaction</div>
+                    <div class="text-xs opacity-70">Record new transaction</div>
+                </div>
+            </x-button>
 
             <x-button wire:click="transferFunds" loading="transferFunds" color="blue" outline icon="arrow-path"
                 class="w-full justify-start">
@@ -31,13 +37,13 @@
                 <div class="grid grid-cols-2 gap-4">
                     <div class="text-center">
                         <div class="text-lg font-bold text-green-600 dark:text-green-400">
-                            +{{ number_format($this->accountStats['total_income'] / 1000, 0) }}K
+                            Rp {{ number_format($this->accountStats['total_income'], 0, ',', '.') }}
                         </div>
                         <div class="text-xs text-dark-500 dark:text-dark-400">Income</div>
                     </div>
                     <div class="text-center">
                         <div class="text-lg font-bold text-red-600 dark:text-red-400">
-                            -{{ number_format($this->accountStats['total_expense'] / 1000, 0) }}K
+                            Rp {{ number_format($this->accountStats['total_expense'], 0, ',', '.') }}
                         </div>
                         <div class="text-xs text-dark-500 dark:text-dark-400">Expense</div>
                     </div>
@@ -179,6 +185,14 @@
             document.addEventListener('chartDataUpdated', event => {
                 const chartData = event.detail[0].chartData;
                 createChart(chartData);
+            });
+
+            // Listen for chart reinitialization after actions
+            document.addEventListener('reinitialize-chart', event => {
+                const chartData = event.detail[0].chartData;
+                setTimeout(() => {
+                    createChart(chartData);
+                }, 100);
             });
 
             // Handle theme changes

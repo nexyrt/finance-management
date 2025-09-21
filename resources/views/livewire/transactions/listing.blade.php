@@ -3,7 +3,7 @@
     <div class="flex flex-col lg:flex-row gap-4">
         <div class="flex flex-col sm:flex-row gap-4 lg:flex-1">
             <div class="w-full sm:w-48">
-                <x-select.styled wire:model.live="account_id" label="Bank Account" :options="$this->accounts
+                <x-select.styled wire:model.live="account_id" label="Bank Account" :disabled="$constrainedBankAccountId !== null" :options="$this->accounts
                     ->map(
                         fn($account) => [
                             'label' => $account->account_name,
@@ -31,13 +31,6 @@
             <div class="w-full sm:w-56">
                 <x-date range wire:model.live="date_range" label="Range Tanggal" placeholder="Pilih range..." />
             </div>
-
-            @if ($account_id || $transaction_type || $search || $selected_month || $date_range)
-                <x-button wire:click="clearFilters" icon="x-mark" color="gray" size="sm"
-                    class="h-[36px] whitespace-nowrap">
-                    Clear
-                </x-button>
-            @endif
         </div>
 
         <div class="w-full lg:w-80">

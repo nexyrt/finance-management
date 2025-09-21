@@ -16,7 +16,6 @@ class Index extends Component
 
     // Core state
     public $selectedAccountId = null;
-    public string $activeTab = 'transactions';
 
     public function mount(): void
     {
@@ -56,15 +55,27 @@ class Index extends Component
         $this->dispatch('delete-account', accountId: $accountId);
     }
 
-    // Tab switching
-    #[Renderless]
-    public function switchTab($tab): void
+    #[On('refresh-data')]
+    public function handleRefresh(): void
     {
-        $this->activeTab = $tab;
+        // Broadcast ke semua child components
+        $this->dispatch('refresh-child-components');
+
+        // Atau dispatch ke komponen spesifik
+        $this->dispatch('refresh-transactions');
+        $this->dispatch('refresh-payments');
+        $this->dispatch('refresh-quick-actions');
+    }
+
+    // Method untuk manual refresh
+    public function refreshAllData(): void
+    {
+        $this->dispatch('refresh-child-components');
+        $this->toast()->success('All Data Refreshed')->send();
     }
 
     // Event listeners from child components
-    #[On('account-created', 'account-updated', 'account-deleted', 'transaction-created', 'transaction-deleted', 'transfer-completed', 'payment-deleted', 'transactions-updated', 'payments-updated')]
+    #[On('account-created', 'account-updated', 'account-deleted', 'transaction-created', 'transaction-deleted', 'transfer-completed', 'payment-deleted', 'transactions-updated', 'payments-updated', 'refresh-child-components')]
     public function refreshData(): void
     {
         $this->toast()->success('Data Updated', 'Information has been refreshed')->send();

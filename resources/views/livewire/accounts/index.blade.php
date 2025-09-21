@@ -118,7 +118,7 @@
                 <livewire:accounts.quick-actions-overview :selectedAccountId="$selectedAccountId" />
 
                 {{-- Tab Navigation & Tables --}}
-                <x-tab wire:model.live="activeTab">
+                <x-tab selected="payments" class="max-w-sm">
                     <x-tab.items tab="transactions">
                         <x-slot:left>
                             <x-icon name="arrows-right-left" class="w-4 h-4" />
@@ -126,7 +126,7 @@
 
                         {{-- Transactions Table Content --}}
                         <div class="mt-3">
-                            <livewire:accounts.tables.transactions-table :selectedAccountId="$selectedAccountId" :key="'transactions-' . $selectedAccountId" />
+                            <livewire:transactions.listing :constrainedBankAccountId="$selectedAccountId" :key="uniqid()" />
                         </div>
                     </x-tab.items>
 
@@ -137,7 +137,7 @@
 
                         {{-- Payments Table Content --}}
                         <div class="mt-3">
-                            <livewire:accounts.tables.payments-table :selectedAccountId="$selectedAccountId" :key="'payments-' . $selectedAccountId" />
+                            <livewire:payments.listing :constrainedBankAccountId="$selectedAccountId" :key="uniqid()" />
                         </div>
                     </x-tab.items>
                 </x-tab>

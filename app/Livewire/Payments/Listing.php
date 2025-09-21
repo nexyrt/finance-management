@@ -3,53 +3,57 @@
 namespace App\Livewire\Payments;
 
 use App\Models\Payment;
-use App\Models\Invoice;
 use App\Models\BankAccount;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Livewire\Attributes\Computed;
 use TallStackUi\Traits\Interactions;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class Listing extends Component
 {
     use WithPagination, Interactions;
 
-    protected $listeners = [
-        'payment-created' => '$refresh',
-        'payment-deleted' => '$refresh',
-        'payment-updated' => '$refresh',
-    ];
+    // Optional bank account constraint
+    #[Reactive]
+    public ?int $constrainedBankAccountId = null;
 
     // Table properties
     public array $selected = [];
     public array $sort = ['column' => 'payment_date', 'direction' => 'desc'];
-    public ?int $quantity = 10;
+    public ?int $quantity = 25;
 
     // Filters
-    public ?string $search = null;
     public ?string $paymentMethodFilter = null;
     public ?string $bankAccountFilter = null;
     public ?string $invoiceStatusFilter = null;
+    public ?string $selectedMonth = null;
     public $dateRange = [];
 
-    public function with(): array
+    public array $headers = [
+        ['index' => 'payment_date', 'label' => 'Tanggal'],
+        ['index' => 'invoice_number', 'label' => 'Invoice'],
+        ['index' => 'client_name', 'label' => 'Klien'],
+        ['index' => 'amount', 'label' => 'Jumlah'],
+        ['index' => 'payment_method', 'label' => 'Metode'],
+        ['index' => 'bank_account', 'label' => 'Rekening'],
+        ['index' => 'actions', 'label' => 'Aksi', 'sortable' => false],
+    ];
+
+    public function mount()
     {
-        return [
-            'headers' => [
-                ['index' => 'payment_date', 'label' => 'Tanggal'],
-                ['index' => 'invoice_number', 'label' => 'Invoice'],
-                ['index' => 'client_name', 'label' => 'Klien'],
-                ['index' => 'amount', 'label' => 'Jumlah'],
-                ['index' => 'payment_method', 'label' => 'Metode'],
-                ['index' => 'bank_account', 'label' => 'Rekening'],
-                ['index' => 'actions', 'label' => 'Aksi', 'sortable' => false],
-            ],
-            'rows' => $this->getPayments(),
-            'bankAccounts' => BankAccount::select('id', 'bank_name', 'account_name')->orderBy('bank_name')->get(),
-            'stats' => $this->calculateStats(),
-        ];
+        $this->dateRange = [];
+
+        // Auto-set bank account filter if constrained
+        if ($this->constrainedBankAccountId) {
+            $this->bankAccountFilter = (string) $this->constrainedBankAccountId;
+        }
+
+        $this->dispatchFilterChange();
     }
 
-    private function getPayments()
+    #[Computed]
+    public function payments(): LengthAwarePaginator
     {
         $query = Payment::query()
             ->join('invoices', 'payments.invoice_id', '=', 'invoices.id')
@@ -65,93 +69,94 @@ class Listing extends Component
                 'bank_accounts.account_name',
             ]);
 
-        // Apply filters
-        if ($this->search) {
-            $query->where(function ($q) {
-                $q->where('invoices.invoice_number', 'like', "%{$this->search}%")
-                    ->orWhere('clients.name', 'like', "%{$this->search}%")
-                    ->orWhere('payments.reference_number', 'like', "%{$this->search}%");
-            });
-        }
+        // Filters (with constraint)
+        $query->when($this->paymentMethodFilter, fn($q) => $q->where('payments.payment_method', $this->paymentMethodFilter));
 
-        if ($this->paymentMethodFilter) {
-            $query->where('payments.payment_method', $this->paymentMethodFilter);
-        }
+        // Bank account filter - constrained or user-selected
+        $bankAccountId = $this->constrainedBankAccountId ?? $this->bankAccountFilter;
+        $query->when($bankAccountId, fn($q) => $q->where('payments.bank_account_id', $bankAccountId));
 
-        if ($this->bankAccountFilter) {
-            $query->where('payments.bank_account_id', $this->bankAccountFilter);
-        }
+        $query->when($this->invoiceStatusFilter, fn($q) => $q->where('invoices.status', $this->invoiceStatusFilter));
 
-        if ($this->invoiceStatusFilter) {
-            $query->where('invoices.status', $this->invoiceStatusFilter);
-        }
+        // Date filtering - range overrides month
+        $query->when(
+            $this->dateRange && count($this->dateRange) >= 2 && $this->dateRange[0] && $this->dateRange[1],
+            fn($q) => $q->whereBetween('payments.payment_date', [
+                $this->dateRange[0],
+                $this->dateRange[1]
+            ])
+        )->unless(
+                $this->dateRange,
+                fn($q) => $q->when(
+                    $this->selectedMonth,
+                    fn($query) => $query->whereYear('payments.payment_date', substr($this->selectedMonth, 0, 4))
+                        ->whereMonth('payments.payment_date', substr($this->selectedMonth, 5, 2))
+                )
+            );
 
-        // Date range filter
-        if (!empty($this->dateRange) && is_array($this->dateRange) && count($this->dateRange) >= 2 && $this->dateRange[0] && $this->dateRange[1]) {
-            $query->whereDate('payments.payment_date', '>=', $this->dateRange[0])
-                ->whereDate('payments.payment_date', '<=', $this->dateRange[1]);
-        }
-
-        // Handle sorting
-        if ($this->sort['column'] === 'invoice_number') {
-            $query->orderBy('invoices.invoice_number', $this->sort['direction']);
-        } elseif ($this->sort['column'] === 'client_name') {
-            $query->orderBy('clients.name', $this->sort['direction']);
-        } elseif ($this->sort['column'] === 'bank_account') {
-            $query->orderBy('bank_accounts.bank_name', $this->sort['direction']);
-        } elseif (in_array($this->sort['column'], ['payment_date', 'amount', 'payment_method'])) {
-            $query->orderBy('payments.' . $this->sort['column'], $this->sort['direction']);
-        } else {
-            $query->orderBy(...array_values($this->sort));
-        }
+        // Sorting
+        match ($this->sort['column']) {
+            'invoice_number' => $query->orderBy('invoices.invoice_number', $this->sort['direction']),
+            'client_name' => $query->orderBy('clients.name', $this->sort['direction']),
+            'bank_account' => $query->orderBy('bank_accounts.bank_name', $this->sort['direction']),
+            'payment_date', 'amount', 'payment_method' =>
+            $query->orderBy('payments.' . $this->sort['column'], $this->sort['direction']),
+            default => $query->orderBy(...array_values($this->sort))
+        };
 
         return $query->paginate($this->quantity)->withQueryString();
     }
 
-    private function calculateStats(): array
+    #[Computed]
+    public function bankAccounts()
     {
-        $baseQuery = Payment::query();
-        $thisMonth = now()->month;
-        $thisYear = now()->year;
-
-        return [
-            'total_payments' => $baseQuery->count(),
-            'total_amount' => $baseQuery->sum('amount'),
-            'this_month_count' => $baseQuery->whereMonth('payment_date', $thisMonth)->whereYear('payment_date', $thisYear)->count(),
-            'this_month_amount' => $baseQuery->whereMonth('payment_date', $thisMonth)->whereYear('payment_date', $thisYear)->sum('amount'),
-        ];
+        return BankAccount::select('id', 'bank_name', 'account_name')->orderBy('bank_name')->get();
     }
 
-    public function clearFilters(): void
+    // Filter change dispatcher
+    protected function dispatchFilterChange(): void
     {
-        $this->search = null;
-        $this->paymentMethodFilter = null;
-        $this->bankAccountFilter = null;
-        $this->invoiceStatusFilter = null;
-        $this->dateRange = [];
-        $this->resetPage();
+        $this->dispatch('filter-changed', [
+            'paymentMethodFilter' => $this->paymentMethodFilter,
+            'bankAccountFilter' => $this->bankAccountFilter,
+            'invoiceStatusFilter' => $this->invoiceStatusFilter,
+            'selectedMonth' => $this->selectedMonth,
+            'dateRange' => $this->dateRange,
+        ]);
     }
 
-    public function updatedPaymentMethodFilter(): void
+    // Filter watchers
+    public function updatedPaymentMethodFilter()
     {
         $this->resetPage();
+        $this->dispatchFilterChange();
     }
 
-    public function updatedBankAccountFilter(): void
+    public function updatedBankAccountFilter()
     {
         $this->resetPage();
+        $this->dispatchFilterChange();
     }
 
-    public function updatedInvoiceStatusFilter(): void
+    public function updatedInvoiceStatusFilter()
     {
         $this->resetPage();
+        $this->dispatchFilterChange();
     }
 
-    public function updatedDateRange(): void
+    public function updatedSelectedMonth()
     {
         $this->resetPage();
+        $this->dispatchFilterChange();
     }
 
+    public function updatedDateRange()
+    {
+        $this->resetPage();
+        $this->dispatchFilterChange();
+    }
+
+    // Action methods for loading states
     public function editPayment(int $paymentId): void
     {
         $this->dispatch('edit-payment', paymentId: $paymentId);
@@ -162,42 +167,53 @@ class Listing extends Component
         $this->dispatch('show-invoice', invoiceId: $invoiceId);
     }
 
+    public function deletePayment(int $paymentId): void
+    {
+        $this->dispatch('delete-payment', paymentId: $paymentId);
+    }
+
+    // Utility methods
+    public function clearFilters(): void
+    {
+        $this->fill([
+            'paymentMethodFilter' => null,
+            'bankAccountFilter' => null,
+            'invoiceStatusFilter' => null,
+            'selectedMonth' => null,
+            'dateRange' => []
+        ]);
+        $this->resetPage();
+        $this->dispatchFilterChange();
+    }
+
     public function exportExcel()
     {
-        $service = new \App\Services\PaymentExportService();
-        
-        $filters = [
-            'search' => $this->search,
-            'paymentMethodFilter' => $this->paymentMethodFilter,
-            'bankAccountFilter' => $this->bankAccountFilter,
-            'invoiceStatusFilter' => $this->invoiceStatusFilter,
-            'dateRange' => $this->dateRange,
-        ];
-        
-        return $service->exportExcel($filters);
+        return (new \App\Services\PaymentExportService())->exportExcel($this->getFilters());
     }
 
     public function exportPdf()
     {
         $service = new \App\Services\PaymentExportService();
+        return response()->streamDownload(
+            fn() => print $service->exportPdf($this->getFilters())->output(),
+            'payments-' . now()->format('Y-m-d') . '.pdf',
+            ['Content-Type' => 'application/pdf']
+        );
+    }
 
-        $filters = [
-            'search' => $this->search,
+    private function getFilters(): array
+    {
+        return [
             'paymentMethodFilter' => $this->paymentMethodFilter,
             'bankAccountFilter' => $this->bankAccountFilter,
             'invoiceStatusFilter' => $this->invoiceStatusFilter,
+            'selectedMonth' => $this->selectedMonth,
             'dateRange' => $this->dateRange,
         ];
-
-        return response()->streamDownload(function () use ($service, $filters) {
-            echo $service->exportPdf($filters)->output();
-        }, 'payments-' . now()->format('Y-m-d') . '.pdf', [
-            'Content-Type' => 'application/pdf'
-        ]);
     }
 
     public function render()
     {
-        return view('livewire.payments.listing', $this->with());
+        return view('livewire.payments.listing');
     }
 }
