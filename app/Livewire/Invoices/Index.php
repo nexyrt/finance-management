@@ -21,6 +21,7 @@ class Index extends Component
     public ?string $statusFilter = null;
     public ?string $clientFilter = null;
     public ?string $selectedMonth = null;
+    public $search = '';
     public $dateRange = [];
 
     #[On('filter-changed')]
@@ -30,6 +31,7 @@ class Index extends Component
         $this->clientFilter = $filters['clientFilter'];
         $this->selectedMonth = $filters['selectedMonth'];
         $this->dateRange = $filters['dateRange'];
+        $this->search = $filters['search'] ?? '';
     }
 
     #[On('invoice-sent')]
@@ -42,10 +44,17 @@ class Index extends Component
     #[Computed]
     public function stats(): array
     {
-        // Base query with filters applied
         $invoiceQuery = Invoice::query()
-            ->when($this->statusFilter, fn($q) => $q->where('status', $this->statusFilter))
-            ->when($this->clientFilter, fn($q) => $q->where('billed_to_id', $this->clientFilter))
+            ->join('clients', 'invoices.billed_to_id', '=', 'clients.id')
+            ->select('invoices.*') // Specify columns to avoid conflicts
+            ->when($this->statusFilter, fn($q) => $q->where('invoices.status', $this->statusFilter))
+            ->when($this->clientFilter, fn($q) => $q->where('invoices.billed_to_id', $this->clientFilter))
+            ->when($this->search, function ($q) {
+                $q->where(function ($query) {
+                    $query->where('invoices.invoice_number', 'like', '%' . $this->search . '%')
+                        ->orWhere('clients.name', 'like', '%' . $this->search . '%');
+                });
+            })
             // Date filtering - range overrides month
             ->when(
                 $this->dateRange && count($this->dateRange) >= 2 && $this->dateRange[0] && $this->dateRange[1],
