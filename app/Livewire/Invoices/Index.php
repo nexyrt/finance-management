@@ -44,9 +44,10 @@ class Index extends Component
     #[Computed]
     public function stats(): array
     {
+        // Base query with filters applied (same as Listing component)
         $invoiceQuery = Invoice::query()
             ->join('clients', 'invoices.billed_to_id', '=', 'clients.id')
-            ->select('invoices.*') // Specify columns to avoid conflicts
+            ->select('invoices.*')
             ->when($this->statusFilter, fn($q) => $q->where('invoices.status', $this->statusFilter))
             ->when($this->clientFilter, fn($q) => $q->where('invoices.billed_to_id', $this->clientFilter))
             ->when($this->search, function ($q) {
@@ -58,7 +59,7 @@ class Index extends Component
             // Date filtering - range overrides month
             ->when(
                 $this->dateRange && count($this->dateRange) >= 2 && $this->dateRange[0] && $this->dateRange[1],
-                fn($q) => $q->whereBetween('issue_date', [
+                fn($q) => $q->whereBetween('invoices.issue_date', [
                     $this->dateRange[0],
                     $this->dateRange[1]
                 ])
@@ -67,61 +68,78 @@ class Index extends Component
                 $this->dateRange,
                 fn($q) => $q->when(
                     $this->selectedMonth,
-                    fn($query) => $query->whereYear('issue_date', substr($this->selectedMonth, 0, 4))
-                        ->whereMonth('issue_date', substr($this->selectedMonth, 5, 2))
+                    fn($query) => $query->whereYear('invoices.issue_date', substr($this->selectedMonth, 0, 4))
+                        ->whereMonth('invoices.issue_date', substr($this->selectedMonth, 5, 2))
                 )
             );
 
-        // Get invoices with their items
-        $invoices = $invoiceQuery->with('items')->get();
+        // Get invoices with their items and payments
+        $invoices = $invoiceQuery->with(['items', 'payments'])->get();
 
-        // Calculate net revenue (excluding tax deposits)
-        $netRevenue = $invoices->sum(function ($invoice) {
-            return $invoice->items->where('is_tax_deposit', false)->sum('amount');
-        });
+        // Total Revenue: sum of all invoice total_amount (already includes discount calculation)
+        $totalRevenue = $invoices->sum('total_amount');
 
-        // Calculate total COGS (excluding tax deposits)
+        // Total COGS: sum of cogs_amount from invoice items (excluding tax deposits)
         $totalCogs = $invoices->sum(function ($invoice) {
             return $invoice->items->where('is_tax_deposit', false)->sum('cogs_amount');
         });
 
-        // Calculate total gross profit (net revenue - cogs - discounts)
-        $totalProfit = $invoices->sum(function ($invoice) {
-            $itemNetRevenue = $invoice->items->where('is_tax_deposit', false)->sum('amount');
-            $itemCogs = $invoice->items->where('is_tax_deposit', false)->sum('cogs_amount');
-            return $itemNetRevenue - $itemCogs - ($invoice->discount_amount ?? 0);
-        });
+        // Total Profit: Revenue - COGS
+        $totalProfit = $totalRevenue - $totalCogs;
 
-        // Calculate outstanding profit (profit from unpaid invoices)
+        // Calculate profit margin
+        $profitMargin = $totalRevenue > 0 ? ($totalProfit / $totalRevenue) * 100 : 0;
+
+        // Calculate outstanding profit (profit from unpaid/partially paid invoices)
         $outstandingProfit = $invoices->sum(function ($invoice) {
-            $itemNetRevenue = $invoice->items->where('is_tax_deposit', false)->sum('amount');
+            // Get COGS for this invoice (excluding tax deposits)
             $itemCogs = $invoice->items->where('is_tax_deposit', false)->sum('cogs_amount');
-            $grossProfit = $itemNetRevenue - $itemCogs - ($invoice->discount_amount ?? 0);
 
-            $totalPaid = $invoice->amount_paid;
+            // Use invoice total_amount directly (already includes discount)
+            $invoiceRevenue = $invoice->total_amount;
 
-            if ($totalPaid <= $itemCogs) {
-                return $grossProfit;
+            // Calculate profit for this invoice
+            $invoiceProfit = $invoiceRevenue - $itemCogs;
+
+            // If no profit, return 0
+            if ($invoiceProfit <= 0) {
+                return 0;
             }
 
-            $realizedProfit = $totalPaid - $itemCogs;
-            return max(0, $grossProfit - $realizedProfit);
+            // Calculate how much of this profit is still outstanding
+            $totalPaid = $invoice->payments->sum('amount');
+
+            if ($totalPaid <= $itemCogs) {
+                // If payment hasn't covered COGS yet, all profit is outstanding
+                return $invoiceProfit;
+            }
+
+            // Calculate realized profit from payments above COGS
+            $realizedProfit = min($totalPaid - $itemCogs, $invoiceProfit);
+
+            // Outstanding profit is what's left
+            return max(0, $invoiceProfit - $realizedProfit);
         });
 
-        // Calculate paid profit
+        // Paid profit is the difference
         $paidProfit = $totalProfit - $outstandingProfit;
 
+        // Calculate payments made this month (for all invoices, not filtered)
+        $paidThisMonth = DB::table('payments')
+            ->whereMonth('payment_date', now()->month)
+            ->whereYear('payment_date', now()->year)
+            ->sum('amount');
+
         return [
-            'total_revenue' => $netRevenue,
+            'total_revenue' => $totalRevenue,
             'total_cogs' => $totalCogs,
             'total_profit' => $totalProfit,
-            'profit_margin' => $netRevenue > 0 ? ($totalProfit / $netRevenue) * 100 : 0,
+            'profit_margin' => $profitMargin,
             'outstanding_profit' => $outstandingProfit,
             'paid_profit' => $paidProfit,
-            'paid_this_month' => DB::table('payments')
-                ->whereMonth('payment_date', now()->month)
-                ->whereYear('payment_date', now()->year)
-                ->sum('amount'),
+            'paid_this_month' => $paidThisMonth,
+            'invoice_count' => $invoices->count(),
+            'average_invoice_value' => $invoices->count() > 0 ? $totalRevenue / $invoices->count() : 0,
         ];
     }
 
