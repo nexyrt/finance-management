@@ -79,13 +79,18 @@ class Index extends Component
         // Total Revenue: sum of all invoice total_amount (already includes discount calculation)
         $totalRevenue = $invoices->sum('total_amount');
 
+        // Total Tax Deposits: sum of tax deposit amounts (not real revenue)
+        $totalTaxDeposits = $invoices->sum(function ($invoice) {
+            return $invoice->items->where('is_tax_deposit', true)->sum('amount');
+        });
+
         // Total COGS: sum of cogs_amount from invoice items (excluding tax deposits)
         $totalCogs = $invoices->sum(function ($invoice) {
             return $invoice->items->where('is_tax_deposit', false)->sum('cogs_amount');
         });
 
-        // Total Profit: Revenue - COGS
-        $totalProfit = $totalRevenue - $totalCogs;
+        // Total Profit: Revenue - Tax Deposits - COGS
+        $totalProfit = $totalRevenue - $totalTaxDeposits - $totalCogs;
 
         // Calculate profit margin
         $profitMargin = $totalRevenue > 0 ? ($totalProfit / $totalRevenue) * 100 : 0;
