@@ -25,6 +25,7 @@ class Listing extends Component
     public ?string $clientFilter = null;
     public ?string $selectedMonth = null;
     public $dateRange = [];
+    public $search = '';
 
     public array $headers = [
         ['index' => 'invoice_number', 'label' => 'No. Invoice'],
@@ -73,6 +74,14 @@ class Listing extends Component
                 'clients.type'
             ]);
 
+        // Add search functionality
+        $query->when($this->search, function ($q) {
+            $q->where(function ($query) {
+                $query->where('invoices.invoice_number', 'like', '%' . $this->search . '%')
+                    ->orWhere('clients.name', 'like', '%' . $this->search . '%');
+            });
+        });
+
         // Basic filters
         $query->when($this->statusFilter, fn($q) => $q->where('invoices.status', $this->statusFilter));
         $query->when($this->clientFilter, fn($q) => $q->where('invoices.billed_to_id', $this->clientFilter));
@@ -118,6 +127,7 @@ class Listing extends Component
             'clientFilter' => $this->clientFilter,
             'selectedMonth' => $this->selectedMonth,
             'dateRange' => $this->dateRange,
+            'search' => $this->search, // Add this
         ]);
     }
 
@@ -141,6 +151,12 @@ class Listing extends Component
     }
 
     public function updatedDateRange()
+    {
+        $this->resetPage();
+        $this->dispatchFilterChange();
+    }
+
+    public function updatedSearch()
     {
         $this->resetPage();
         $this->dispatchFilterChange();

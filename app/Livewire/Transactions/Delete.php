@@ -6,6 +6,7 @@ use App\Models\BankTransaction;
 use Livewire\Attributes\On;
 use Livewire\Component;
 use TallStackUi\Traits\Interactions;
+use Illuminate\Support\Facades\Storage;
 
 class Delete extends Component
 {
@@ -40,6 +41,12 @@ class Delete extends Component
         $message .= "<div class='text-lg font-bold text-{$this->getColorClass()}'>{$amountFormatted}</div>";
         $message .= "<div class='text-xs text-dark-500 dark:text-dark-400'>Rekening: {$transaction->bankAccount->account_name}</div>";
         $message .= "</div>";
+
+        // Add attachment warning if exists
+        if ($transaction->hasAttachment()) {
+            $message .= "<div class='text-sm text-orange-600 dark:text-orange-400 mb-2'><strong>Info:</strong> Attachment akan ikut terhapus.</div>";
+        }
+
         $message .= "<div class='text-sm text-amber-600 dark:text-amber-400'><strong>Peringatan:</strong> Penghapusan akan mempengaruhi saldo rekening dan tidak dapat dibatalkan.</div>";
 
         $this->dialog()
@@ -59,21 +66,11 @@ class Delete extends Component
                 return;
             }
 
-            // Check if this is a transfer transaction (has reference number starting with TRF)
+            // Check if this is a transfer transaction
             if ($transaction->reference_number && str_starts_with($transaction->reference_number, 'TRF')) {
-                // Delete all transactions with same reference number (transfer pair)
-                BankTransaction::where('reference_number', $transaction->reference_number)->delete();
-
-                $this->toast()
-                    ->success('Berhasil!', 'Transfer dan transaksi terkait berhasil dihapus.')
-                    ->send();
+                $this->deleteTransferGroup($transaction);
             } else {
-                // Regular single transaction delete
-                $transaction->delete();
-
-                $this->toast()
-                    ->success('Berhasil!', 'Transaksi berhasil dihapus.')
-                    ->send();
+                $this->deleteSingleTransaction($transaction);
             }
 
             $this->dispatch('transaction-deleted');
@@ -83,6 +80,34 @@ class Delete extends Component
                 ->error('Gagal!', 'Terjadi kesalahan saat menghapus transaksi.')
                 ->send();
         }
+    }
+
+    private function deleteTransferGroup(BankTransaction $transaction): void
+    {
+        // Get all transactions with same reference number
+        $relatedTransactions = BankTransaction::where('reference_number', $transaction->reference_number)->get();
+
+        // Delete shared attachment only once
+        if ($transaction->hasAttachment() && Storage::exists($transaction->attachment_path)) {
+            Storage::delete($transaction->attachment_path);
+        }
+
+        // Delete all related transactions
+        BankTransaction::where('reference_number', $transaction->reference_number)->delete();
+
+        $this->toast()
+            ->success('Berhasil!', 'Transfer dan transaksi terkait berhasil dihapus.')
+            ->send();
+    }
+
+    private function deleteSingleTransaction(BankTransaction $transaction): void
+    {
+        // Delete attachment if exists (handled by model boot method)
+        $transaction->delete();
+
+        $this->toast()
+            ->success('Berhasil!', 'Transaksi berhasil dihapus.')
+            ->send();
     }
 
     private function getColorClass()

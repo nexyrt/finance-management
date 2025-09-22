@@ -131,7 +131,7 @@
 
                 {{-- Tab Navigation & Tables dengan Container --}}
                 <div class="overflow-hidden"> {{-- Container untuk mencegah overflow --}}
-                    <x-tab selected="payments" scroll-on-mobile>
+                    <x-tab selected="transactions" scroll-on-mobile>
                         <x-tab.items tab="transactions">
                             <x-slot:left>
                                 <x-icon name="arrows-right-left" class="w-4 h-4" />

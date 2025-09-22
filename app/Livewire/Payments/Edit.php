@@ -6,12 +6,14 @@ use App\Models\Payment;
 use App\Models\BankAccount;
 use Livewire\Component;
 use Livewire\Attributes\On;
+use Livewire\WithFileUploads;
 use TallStackUi\Traits\Interactions;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class Edit extends Component
 {
-    use Interactions;
+    use Interactions, WithFileUploads;
 
     public ?Payment $payment = null;
     public bool $showModal = false;
@@ -22,6 +24,7 @@ class Edit extends Component
     public string $payment_method = 'bank_transfer';
     public string $bank_account_id = '';
     public string $reference_number = '';
+    public $attachment = null;
 
     protected array $rules = [
         'amount' => 'required|numeric|min:1',
@@ -29,13 +32,14 @@ class Edit extends Component
         'payment_method' => 'required|in:cash,bank_transfer',
         'bank_account_id' => 'required|exists:bank_accounts,id',
         'reference_number' => 'nullable|string|max:255',
+        'attachment' => 'nullable|file|max:5120|mimes:jpg,jpeg,png,pdf'
     ];
 
     #[On('edit-payment')]
     public function editPayment(int $paymentId): void
     {
         $this->payment = Payment::with(['invoice.client', 'bankAccount'])->find($paymentId);
-        
+
         if (!$this->payment) {
             $this->toast()->error('Error', 'Payment tidak ditemukan')->send();
             return;
@@ -47,7 +51,7 @@ class Edit extends Component
         $this->payment_method = $this->payment->payment_method;
         $this->bank_account_id = $this->payment->bank_account_id;
         $this->reference_number = $this->payment->reference_number ?? '';
-        
+
         $this->showModal = true;
     }
 
@@ -65,6 +69,7 @@ class Edit extends Component
         $this->payment_method = 'bank_transfer';
         $this->bank_account_id = '';
         $this->reference_number = '';
+        $this->attachment = null;
         $this->resetValidation();
     }
 
@@ -80,18 +85,32 @@ class Edit extends Component
         try {
             DB::transaction(function () {
                 $oldStatus = $this->payment->invoice->status;
-                
-                // Amount sudah dalam format numeric
+
                 $amountInteger = (int) $this->amount;
-                
+
                 // Validate payment amount doesn't exceed invoice total
                 $invoice = $this->payment->invoice;
                 $otherPayments = $invoice->payments()->where('id', '!=', $this->payment->id)->sum('amount');
                 $maxAllowed = $invoice->total_amount - $otherPayments;
-                
+
                 if ($amountInteger > $maxAllowed) {
                     $this->addError('amount', 'Jumlah pembayaran tidak boleh melebihi sisa tagihan: Rp ' . number_format($maxAllowed, 0, ',', '.'));
                     return;
+                }
+
+                // Handle attachment upload
+                $attachmentPath = $this->payment->attachment_path;
+                $attachmentName = $this->payment->attachment_name;
+
+                if ($this->attachment) {
+                    // Delete old attachment if exists
+                    if ($attachmentPath && Storage::exists($attachmentPath)) {
+                        Storage::delete($attachmentPath);
+                    }
+
+                    // Store new attachment
+                    $attachmentPath = $this->attachment->store('payments', 'public');
+                    $attachmentName = $this->attachment->getClientOriginalName();
                 }
 
                 // Update payment
@@ -101,6 +120,8 @@ class Edit extends Component
                     'payment_method' => $this->payment_method,
                     'bank_account_id' => $this->bank_account_id,
                     'reference_number' => $this->reference_number ?: null,
+                    'attachment_path' => $attachmentPath,
+                    'attachment_name' => $attachmentName,
                 ]);
 
                 // Recalculate invoice status
@@ -116,13 +137,48 @@ class Edit extends Component
 
             $this->toast()->success('Berhasil', 'Pembayaran berhasil diperbarui')->send();
             $this->resetData();
-            
-            // Dispatch events untuk refresh components
+
+            // Dispatch events
             $this->dispatch('payment-updated');
             $this->dispatch('invoice-updated');
 
         } catch (\Exception $e) {
             $this->toast()->error('Error', 'Gagal memperbarui pembayaran: ' . $e->getMessage())->send();
+        }
+    }
+
+    // Delete uploaded attachment
+    public function deleteUpload(array $content): void
+    {
+        $this->attachment = null;
+        $this->resetValidation('attachment');
+    }
+
+    // Delete existing attachment
+    public function deleteExistingAttachment(): void
+    {
+        if (!$this->payment || !$this->payment->hasAttachment()) {
+            return;
+        }
+
+        try {
+            // Delete file from storage
+            if (Storage::exists($this->payment->attachment_path)) {
+                Storage::delete($this->payment->attachment_path);
+            }
+
+            // Update payment record
+            $this->payment->update([
+                'attachment_path' => null,
+                'attachment_name' => null,
+            ]);
+
+            $this->payment->refresh();
+
+            $this->toast()->success('Berhasil', 'Attachment berhasil dihapus')->send();
+
+        } catch (\Exception $e) {
+            $this->toast()->error('Error', 'Gagal menghapus attachment')->send();
         }
     }
 
@@ -132,22 +188,19 @@ class Edit extends Component
         $totalAmount = $invoice->total_amount;
         $dueDate = $invoice->due_date;
 
-        // Paid (including overpaid)
         if ($totalPaid >= $totalAmount && $totalPaid > 0) {
             return 'paid';
         }
 
-        // Partially paid
         if ($totalPaid > 0 && $totalPaid < $totalAmount) {
             return 'partially_paid';
         }
 
-        // No payment yet
         if ($totalPaid == 0) {
             return $dueDate->isPast() ? 'overdue' : 'sent';
         }
 
-        return 'sent'; // Fallback
+        return 'sent';
     }
 
     private function logStatusChange($invoice, string $oldStatus, string $newStatus): void
