@@ -37,10 +37,9 @@ class Payment extends Model
         return $this->belongsTo(BankAccount::class);
     }
 
-    // Attachment helpers
     public function hasAttachment(): bool
     {
-        return !empty($this->attachment_path) && Storage::exists($this->attachment_path);
+        return !empty($this->attachment_path);
     }
 
     public function getAttachmentUrlAttribute(): ?string
@@ -50,7 +49,7 @@ class Payment extends Model
 
     public function getAttachmentTypeAttribute(): ?string
     {
-        if (!$this->hasAttachment())
+        if (!$this->attachment_path)
             return null;
 
         $extension = pathinfo($this->attachment_name, PATHINFO_EXTENSION);

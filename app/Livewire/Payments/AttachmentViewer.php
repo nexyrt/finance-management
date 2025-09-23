@@ -5,6 +5,7 @@ namespace App\Livewire\Payments;
 use App\Models\Payment;
 use Livewire\Component;
 use Livewire\Attributes\On;
+use Storage;
 use TallStackUi\Traits\Interactions;
 
 class AttachmentViewer extends Component
@@ -42,10 +43,13 @@ class AttachmentViewer extends Component
             return;
         }
 
-        return response()->download(
-            storage_path('app/' . $this->payment->attachment_path),
-            $this->payment->attachment_name
-        );
+        // Gunakan disk public secara eksplisit
+        if (!Storage::disk('public')->exists($this->payment->attachment_path)) {
+            $this->toast()->error('Error', 'File tidak ditemukan')->send();
+            return;
+        }
+
+        return Storage::disk('public')->download($this->payment->attachment_path, $this->payment->attachment_name);
     }
 
     public function resetData(): void
