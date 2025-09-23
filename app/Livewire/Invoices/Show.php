@@ -40,10 +40,7 @@ class Show extends Component
     {
         if (!$this->invoice)
             return 0;
-
-        return $this->invoice->items
-            ->where('is_tax_deposit', false)
-            ->sum('amount');
+        return $this->invoice->items->where('is_tax_deposit', false)->sum('amount');
     }
 
     #[Computed]
@@ -51,10 +48,15 @@ class Show extends Component
     {
         if (!$this->invoice)
             return 0;
+        return $this->invoice->items->where('is_tax_deposit', false)->sum('cogs_amount');
+    }
 
-        return $this->invoice->items
-            ->where('is_tax_deposit', false)
-            ->sum('cogs_amount');
+    #[Computed]
+    public function totalTaxDeposits(): int
+    {
+        if (!$this->invoice)
+            return 0;
+        return $this->invoice->items->where('is_tax_deposit', true)->sum('amount');
     }
 
     #[Computed]
@@ -62,8 +64,7 @@ class Show extends Component
     {
         if (!$this->invoice)
             return 0;
-
-        return $this->netRevenue - $this->totalCogs - ($this->invoice->discount_amount ?? 0);
+        return $this->invoice->total_amount - $this->totalTaxDeposits - $this->totalCogs;
     }
 
     public function sendInvoice(): void
@@ -80,37 +81,20 @@ class Show extends Component
     {
         if (!$this->invoice)
             return;
-
-        $invoiceId = $this->invoice->id;
-        $this->dispatch('record-payment', invoiceId: $invoiceId);
-        // TallStackUI akan handle modal switching otomatis
+        $this->dispatch('record-payment', invoiceId: $this->invoice->id);
     }
 
     public function editInvoice(): void
     {
         if (!$this->invoice)
             return;
-
-        $invoiceId = $this->invoice->id;
-        $this->resetData(); // Reset hanya untuk navigation
-        $this->redirect(route('invoices.edit', $invoiceId), navigate: true);
+        $this->resetData();
+        $this->redirect(route('invoices.edit', $this->invoice->id), navigate: true);
     }
 
-    public function printInvoice(): void
+    public function showPaymentAttachment(int $paymentId): void
     {
-        if (!$this->invoice) {
-            $this->toast()->error('Error', 'Invoice tidak ditemukan')->send();
-            return;
-        }
-
-        // Dispatch JavaScript untuk print (preview + download)
-        $this->dispatch('print-invoice', [
-            'previewUrl' => route('invoice.pdf.preview', $this->invoice->id),
-            'downloadUrl' => route('invoice.pdf.download', $this->invoice->id),
-            'filename' => 'Invoice-' . $this->invoice->invoice_number . '.pdf'
-        ]);
-
-        $this->toast()->success('Print', 'PDF sedang diproses')->send();
+        $this->dispatch('show-payment-attachment', paymentId: $paymentId);
     }
 
     public function render()

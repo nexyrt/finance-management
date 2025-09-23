@@ -100,11 +100,14 @@ class Index extends Component
             // Get COGS for this invoice (excluding tax deposits)
             $itemCogs = $invoice->items->where('is_tax_deposit', false)->sum('cogs_amount');
 
+            // Get tax deposits for this invoice
+            $taxDeposits = $invoice->items->where('is_tax_deposit', true)->sum('amount');
+
             // Use invoice total_amount directly (already includes discount)
             $invoiceRevenue = $invoice->total_amount;
 
-            // Calculate profit for this invoice
-            $invoiceProfit = $invoiceRevenue - $itemCogs;
+            // Calculate profit for this invoice: Revenue - Tax Deposits - COGS
+            $invoiceProfit = $invoiceRevenue - $taxDeposits - $itemCogs;
 
             // If no profit, return 0
             if ($invoiceProfit <= 0) {
@@ -114,13 +117,13 @@ class Index extends Component
             // Calculate how much of this profit is still outstanding
             $totalPaid = $invoice->payments->sum('amount');
 
-            if ($totalPaid <= $itemCogs) {
-                // If payment hasn't covered COGS yet, all profit is outstanding
+            if ($totalPaid <= ($itemCogs + $taxDeposits)) {
+                // If payment hasn't covered COGS + tax deposits, all profit is outstanding
                 return $invoiceProfit;
             }
 
-            // Calculate realized profit from payments above COGS
-            $realizedProfit = min($totalPaid - $itemCogs, $invoiceProfit);
+            // Calculate realized profit from payments above COGS + tax deposits
+            $realizedProfit = min($totalPaid - ($itemCogs + $taxDeposits), $invoiceProfit);
 
             // Outstanding profit is what's left
             return max(0, $invoiceProfit - $realizedProfit);
