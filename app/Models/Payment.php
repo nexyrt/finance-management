@@ -48,6 +48,25 @@ class Payment extends Model
         return $this->attachment_path ? Storage::url($this->attachment_path) : null;
     }
 
+    public function getAttachmentTypeAttribute(): ?string
+    {
+        if (!$this->hasAttachment())
+            return null;
+
+        $extension = pathinfo($this->attachment_name, PATHINFO_EXTENSION);
+        return strtolower($extension);
+    }
+
+    public function isImageAttachment(): bool
+    {
+        return in_array($this->attachment_type, ['jpg', 'jpeg', 'png', 'gif']);
+    }
+
+    public function isPdfAttachment(): bool
+    {
+        return $this->attachment_type === 'pdf';
+    }
+
     // Delete attachment when model is deleted
     protected static function boot()
     {

@@ -73,7 +73,6 @@
                     <x-slot:left>
                         <x-icon name="document-text" class="w-4 h-4" />
                     </x-slot:left>
-                    Ringkasan
 
                     <div class="space-y-6">
                         {{-- Quick Stats Grid --}}
@@ -194,7 +193,6 @@
                     <x-slot:left>
                         <x-icon name="credit-card" class="w-4 h-4" />
                     </x-slot:left>
-                    Pembayaran
 
                     @if ($invoice->payments->count() > 0)
                         {{-- Payment Summary --}}
@@ -244,34 +242,49 @@
                                                     class="w-5 h-5 text-green-600 dark:text-green-400" />
                                             </div>
                                             <div class="min-w-0 flex-1">
-                                                <p class="font-medium text-dark-900 dark:text-dark-50">
+                                                <p class="font-medium text-gray-900 dark:text-gray-50">
                                                     Rp {{ number_format($payment->amount, 0, ',', '.') }}
                                                 </p>
-                                                <p class="text-sm text-dark-600 dark:text-dark-400">
+                                                <p class="text-sm text-gray-600 dark:text-gray-400">
                                                     {{ $payment->payment_date->format('d M Y') }}
                                                 </p>
                                             </div>
                                         </div>
                                         <div class="flex items-center gap-3 flex-shrink-0">
                                             <div class="text-left sm:text-right">
-                                                <p class="text-sm font-medium text-dark-900 dark:text-dark-50">
+                                                <p class="text-sm font-medium text-gray-900 dark:text-gray-50">
                                                     {{ $payment->bankAccount->bank_name }}
                                                 </p>
-                                                <p class="text-xs text-dark-600 dark:text-dark-400">
+                                                <p class="text-xs text-gray-600 dark:text-gray-400">
                                                     {{ ucfirst(str_replace('_', ' ', $payment->payment_method)) }}
                                                 </p>
                                                 @if ($payment->reference_number)
-                                                    <p class="text-xs font-mono text-dark-500 dark:text-dark-400">
+                                                    <p class="text-xs font-mono text-gray-500 dark:text-gray-400">
                                                         {{ $payment->reference_number }}
                                                     </p>
                                                 @endif
+                                                {{-- Attachment indicator --}}
+                                                @if ($payment->hasAttachment())
+                                                    <div class="flex items-center gap-1 mt-1">
+                                                        <x-icon name="paper-clip" class="w-3 h-3 text-blue-500" />
+                                                        <span class="text-xs text-blue-600 dark:text-blue-400">
+                                                            {{ $payment->attachment_name }}
+                                                        </span>
+                                                    </div>
+                                                @endif
                                             </div>
-                                            <x-button.circle wire:click="showPaymentAttachment({{ $payment->id }})"
-                                                loading="showPaymentAttachment({{ $payment->id }})" color="blue"
-                                                icon="eye" size="sm" outline />
-                                            <x-button.circle
-                                                wire:click="$dispatch('delete-payment', { paymentId: {{ $payment->id }} })"
-                                                color="red" icon="trash" size="sm" outline />
+                                            {{-- Action buttons --}}
+                                            <div class="flex items-center gap-1">
+                                                <x-button.circle
+                                                    wire:click="showPaymentAttachment({{ $payment->id }})"
+                                                    loading="showPaymentAttachment({{ $payment->id }})"
+                                                    color="blue" icon="eye" size="sm" outline
+                                                    title="Lihat Lampiran" />
+                                                <x-button.circle
+                                                    wire:click="$dispatch('delete-payment', { paymentId: {{ $payment->id }} })"
+                                                    color="red" icon="trash" size="sm" outline
+                                                    title="Hapus Pembayaran" />
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -301,7 +314,6 @@
                     <x-slot:left>
                         <x-icon name="information-circle" class="w-4 h-4" />
                     </x-slot:left>
-                    Detail
 
                     <div class="space-y-6">
                         {{-- Client Details --}}

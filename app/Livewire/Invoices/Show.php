@@ -97,6 +97,17 @@ class Show extends Component
         $this->dispatch('show-payment-attachment', paymentId: $paymentId);
     }
 
+    public function printInvoice(): void
+    {
+        if (!$this->invoice)
+            return;
+
+        $this->dispatch('print-invoice', [
+            'invoiceId' => $this->invoice->id,
+            'invoiceNumber' => $this->invoice->invoice_number
+        ]);
+    }
+
     public function render()
     {
         return view('livewire.invoices.show');
