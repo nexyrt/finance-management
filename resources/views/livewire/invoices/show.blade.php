@@ -275,11 +275,14 @@
                                             </div>
                                             {{-- Action buttons --}}
                                             <div class="flex items-center gap-1">
-                                                <x-button.circle
-                                                    wire:click="showPaymentAttachment({{ $payment->id }})"
-                                                    loading="showPaymentAttachment({{ $payment->id }})"
-                                                    color="blue" icon="eye" size="sm" outline
-                                                    title="Lihat Lampiran" />
+                                                @if ($payment->hasAttachment())
+                                                    <x-button.circle
+                                                        wire:click="showPaymentAttachment({{ $payment->id }})"
+                                                        loading="showPaymentAttachment({{ $payment->id }})"
+                                                        color="blue" icon="eye" size="sm" outline
+                                                        title="Lihat Lampiran" />
+                                                @endif
+
                                                 <x-button.circle
                                                     wire:click="$dispatch('delete-payment', { paymentId: {{ $payment->id }} })"
                                                     color="red" icon="trash" size="sm" outline
