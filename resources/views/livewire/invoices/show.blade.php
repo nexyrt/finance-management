@@ -67,7 +67,7 @@
             </div>
 
             {{-- Tabs Content --}}
-            <x-tab selected="overview">
+            <x-tab selected="payments">
                 {{-- Tab 1: Overview --}}
                 <x-tab.items tab="overview">
                     <x-slot:left>

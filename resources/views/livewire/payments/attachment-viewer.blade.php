@@ -28,41 +28,40 @@
             {{-- Attachment Preview --}}
             <div class="space-y-4">
                 @if ($payment->isImageAttachment())
-                    {{-- Image Preview with Zoom --}}
-                    <div class="bg-gray-50 dark:bg-gray-800 rounded-xl p-4" x-data="{ zoomed: false }">
-                        <div class="flex justify-center">
-                            <div class="relative group">
-                                <img src="{{ $payment->attachment_url }}" alt="{{ $payment->attachment_name }}"
-                                    class="max-w-full h-auto max-h-96 rounded-lg shadow-md cursor-pointer transition-transform duration-300 group-hover:scale-105"
-                                    @click="zoomed = true">
-                                <div
-                                    class="absolute inset-0 bg-black/0 group-hover:bg-black/10 rounded-lg transition-colors duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
-                                    <div class="bg-black/70 text-white px-3 py-2 rounded-lg text-sm font-medium">
-                                        <x-icon name="magnifying-glass-plus" class="w-4 h-4 inline mr-1" />
-                                        Klik untuk zoom
-                                    </div>
-                                </div>
-                            </div>
+                    {{-- Image Preview with Cursor-Based Zoom --}}
+                    <div class="bg-gray-50 dark:bg-gray-800 rounded-xl p-4" x-data="{
+                        scale: 1,
+                        maxScale: 5,
+                        minScale: 0.5,
+                        originX: 50,
+                        originY: 50,
+                        zoom(event, delta) {
+                            const rect = event.target.getBoundingClientRect();
+                            this.originX = ((event.clientX - rect.left) / rect.width) * 100;
+                            this.originY = ((event.clientY - rect.top) / rect.height) * 100;
+                    
+                            if (delta > 0) this.scale = Math.min(this.scale * 1.2, this.maxScale);
+                            else this.scale = Math.max(this.scale / 1.2, this.minScale);
+                        },
+                        reset() {
+                            this.scale = 1;
+                            this.originX = 50;
+                            this.originY = 50;
+                        }
+                    }">
+                        <div class="mb-2 text-center text-sm text-gray-600 dark:text-gray-400">
+                            Tahan Ctrl + scroll untuk zoom ke kursor • Klik untuk reset
                         </div>
-
-                        {{-- Zoom Modal --}}
-                        <div x-show="zoomed" x-transition:enter="transition ease-out duration-300"
-                            x-transition:enter-start="opacity-0 scale-90" x-transition:enter-end="opacity-100 scale-100"
-                            x-transition:leave="transition ease-in duration-200"
-                            x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-90"
-                            class="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4"
-                            @click="zoomed = false" @keydown.escape.window="zoomed = false" style="display: none;">
-                            <div class="relative max-w-screen-lg max-h-screen" @click.stop>
-                                <img src="{{ $payment->attachment_url }}" alt="{{ $payment->attachment_name }}"
-                                    class="max-w-full max-h-full rounded-lg shadow-2xl">
-                                <button @click="zoomed = false"
-                                    class="absolute -top-12 right-0 bg-white/20 hover:bg-white/30 text-white rounded-full p-2 transition-colors">
-                                    <x-icon name="x-mark" class="w-6 h-6" />
-                                </button>
-                                <div class="absolute -bottom-12 left-0 text-white text-sm">
-                                    {{ $payment->attachment_name }}
-                                </div>
-                            </div>
+                        <div class="flex justify-center overflow-hidden">
+                            <img src="{{ Storage::url($payment->attachment_path) }}"
+                                alt="{{ $payment->attachment_name }}"
+                                class="max-w-full h-auto max-h-96 rounded-lg shadow-md cursor-pointer transition-transform duration-200"
+                                :style="`transform: scale(${scale}); transform-origin: ${originX}% ${originY}%`"
+                                @wheel.prevent="if ($event.ctrlKey) zoom($event, $event.deltaY > 0 ? -1 : 1)"
+                                @click="reset()">
+                        </div>
+                        <div class="mt-2 text-center text-xs text-gray-500" x-show="scale !== 1">
+                            Zoom: <span x-text="Math.round(scale * 100)"></span>%
                         </div>
                     </div>
                 @elseif ($payment->isPdfAttachment())
