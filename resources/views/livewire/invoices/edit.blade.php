@@ -14,8 +14,8 @@
             <div class="flex items-center gap-2">
                 <x-icon name="exclamation-triangle" class="w-4 h-4 text-yellow-600 dark:text-yellow-400" />
                 <span class="text-sm text-yellow-800 dark:text-yellow-200 font-medium">
-                    Status will change from <strong>{{ ucfirst($status) }}</strong> to
-                    <strong>{{ ucfirst($this->getPreviewStatusProperty()) }}</strong>
+                    Status will change from <strong>{{ ucfirst(str_replace('_', ' ', $status)) }}</strong> to
+                    <strong>{{ ucfirst(str_replace('_', ' ', $this->getPreviewStatusProperty())) }}</strong>
                 </span>
             </div>
         </div>

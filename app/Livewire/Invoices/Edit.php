@@ -300,19 +300,27 @@ class Edit extends Component
         $totalAmount = $this->invoice->total_amount;
         $dueDate = \Carbon\Carbon::parse($this->invoice->due_date);
 
+        // Jika sudah fully paid
         if ($totalPaid >= $totalAmount && $totalPaid > 0) {
             return 'paid';
         }
 
+        // Jika partial payment
         if ($totalPaid > 0 && $totalPaid < $totalAmount) {
             return 'partially_paid';
         }
 
+        // Jika belum ada payment
         if ($totalPaid == 0) {
-            return $dueDate->isPast() ? 'overdue' : 'sent';
+            // Pertahankan status draft atau overdue berdasarkan due date
+            if ($this->invoice->status === 'draft') {
+                return $dueDate->isPast() ? 'overdue' : 'draft';
+            }
+            // Untuk status sent yang sudah overdue
+            return $dueDate->isPast() ? 'overdue' : $this->invoice->status;
         }
 
-        return 'draft';
+        return $this->invoice->status;
     }
 
     public function logStatusChange($oldStatus, $newStatus)
@@ -342,10 +350,14 @@ class Edit extends Component
         }
 
         if ($totalPaid == 0) {
-            return $newDueDate->isPast() ? 'overdue' : 'sent';
+            // Pertahankan draft status
+            if ($invoice->status === 'draft') {
+                return $newDueDate->isPast() ? 'overdue' : 'draft';
+            }
+            return $newDueDate->isPast() ? 'overdue' : $invoice->status;
         }
 
-        return 'draft';
+        return $invoice->status;
     }
 
     public function render()

@@ -7,7 +7,7 @@
 
     <livewire:transactions.create @transaction-created="$refresh" />
 
-    {{-- Table --}}
+{{-- Table --}}
     <x-table :$headers :$sort :rows="$this->transactions" selectable wire:model="selected" paginate filter loading>
 
         {{-- Transaction Description with Icon --}}

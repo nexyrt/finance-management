@@ -37,6 +37,13 @@ class Listing extends Component
         ['index' => 'actions', 'label' => 'Aksi', 'sortable' => false],
     ];
 
+    protected $listeners = [
+        'invoice-created' => '$refresh',
+        'invoice-updated' => '$refresh',
+        'invoice-deleted' => '$refresh',
+        'invoice-sent' => '$refresh'
+    ];
+
     public function mount()
     {
         $this->dateRange = [];
@@ -248,6 +255,24 @@ class Listing extends Component
             $this->dispatch('invoice-deleted');
         } catch (\Exception $e) {
             $this->toast()->error('Error', 'Gagal menghapus: ' . $e->getMessage())->send();
+        }
+    }
+
+    public function rollbackTodraft(int $invoiceId): void
+    {
+        try {
+            $invoice = Invoice::find($invoiceId);
+
+            if (!$invoice || $invoice->status !== 'sent') {
+                $this->toast()->warning('Warning', 'Hanya invoice terkirim yang bisa dikembalikan ke draft')->send();
+                return;
+            }
+
+            $invoice->update(['status' => 'draft']);
+            $this->toast()->success('Berhasil', "Invoice {$invoice->invoice_number} dikembalikan ke draft")->send();
+            $this->dispatch('invoice-updated');
+        } catch (\Exception $e) {
+            $this->toast()->error('Error', 'Gagal rollback: ' . $e->getMessage())->send();
         }
     }
 

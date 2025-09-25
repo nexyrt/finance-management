@@ -49,6 +49,10 @@
                     {{ __('Transactions') }}
                 </flux:navlist.item>
             </flux:navlist.group>
+
+            <flux:navlist.item icon="loading" :href="route('test')" :current="request()->routeIs('test')"
+                wire:navigate class="py-5">{{ __('Testing Component') }}
+            </flux:navlist.item>
         </flux:navlist>
 
         <flux:spacer />

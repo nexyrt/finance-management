@@ -185,6 +185,12 @@
                         title="Kirim" />
                 @endif
 
+                @if ($row->status === 'sent')
+                    <x-button.circle icon="arrow-uturn-left" color="orange" size="sm"
+                        wire:click='rollbackTodraft({{ $row->id }})' loading="rollbackToraft({{ $row->id }})"
+                        title="Kembali ke Draft" />
+                @endif
+
                 @if (in_array($row->status, ['sent', 'overdue', 'partially_paid']))
                     <x-button.circle icon="currency-dollar" color="yellow" size="sm"
                         wire:click="recordPayment({{ $row->id }})" loading="recordPayment({{ $row->id }})"
