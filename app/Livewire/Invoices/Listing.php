@@ -23,7 +23,7 @@ class Listing extends Component
     // Filters
     public ?string $statusFilter = null;
     public ?string $clientFilter = null;
-    public ?string $selectedMonth = null;
+    public ?string $selectedMonth = '2025-09';
     public $dateRange = [];
     public $search = '';
 
