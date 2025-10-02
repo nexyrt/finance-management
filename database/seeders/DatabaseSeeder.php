@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             BankTransactionSeeder::class,
             RecurringTemplateSeeder::class,
             RecurringInvoiceSeeder::class,
+            TransactionCategorySeeder::class,
         ]);
     }
 }

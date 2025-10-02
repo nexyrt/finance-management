@@ -19,7 +19,8 @@ class BankTransaction extends Model
         'description',
         'reference_number',
         'attachment_path',
-        'attachment_name'
+        'attachment_name',
+        'category_id',
     ];
 
     protected $casts = [

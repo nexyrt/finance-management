@@ -48,6 +48,11 @@
                     :current="request()->routeIs('transactions.*')" wire:navigate class="py-5">
                     {{ __('Transactions') }}
                 </flux:navlist.item>
+
+                <flux:navlist.item icon="tag" :href="route('transaction-categories.index')"
+                    :current="request()->routeIs('transaction-categories.*')" wire:navigate class="py-5">
+                    {{ __('Transaction Categories') }}
+                </flux:navlist.item>
             </flux:navlist.group>
 
             {{-- <flux:navlist.item icon="loading" :href="route('test')" :current="request()->routeIs('test')"
