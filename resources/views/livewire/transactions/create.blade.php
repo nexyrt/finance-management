@@ -74,10 +74,33 @@
                         ->toArray()" label="Rekening Bank"
                         placeholder="Pilih rekening..." searchable />
 
-                    <x-wireui-currency prefix="Rp " wire:model.blur="amount" label="Jumlah" placeholder="0"
-                        color="dark:dark" hint="Jumlah transaksi dalam Rupiah" />
+                    <x-select.styled wire:model.live="category_id" :options="$this->categoriesOptions" placeholder="Pilih kategori..."
+                        searchable>
+                        <x-slot:label>
+                            <div class="flex items-center gap-2">
+                                <span>Kategori Transaksi</span>
+                                <x-tooltip color="zinc" text="Kategori disesuaikan dengan jenis transaksi" position="top" />
+                            </div>
+                        </x-slot:label>
+                    </x-select.styled>
 
-                    <x-date wire:model.live="transaction_date" label="Tanggal Transaksi" helpers />
+                    <x-wireui-currency prefix="Rp " wire:model.blur="amount" placeholder="0" color="dark:dark">
+                        <x-slot:label>
+                            <div class="flex items-center gap-2">
+                                <span>Jumlah</span>
+                                <x-tooltip color="zinc" text="Jumlah transaksi dalam Rupiah" position="top" />
+                            </div>
+                        </x-slot:label>
+                    </x-wireui-currency>
+
+                    <x-date wire:model.live="transaction_date" helpers>
+                        <x-slot:label>
+                            <div class="flex items-center gap-2">
+                                <span>Tanggal Transaksi</span>
+                                <x-tooltip color="zinc" text="Pilih tanggal saat transaksi terjadi" position="top" />
+                            </div>
+                        </x-slot:label>
+                    </x-date>
                 </div>
 
                 {{-- Right Column --}}
@@ -87,15 +110,32 @@
                         <p class="text-xs text-gray-500 dark:text-gray-400">Deskripsi dan referensi</p>
                     </div>
 
-                    <x-input wire:model.live="description" label="Deskripsi"
-                        placeholder="Contoh: Pembayaran gaji karyawan..." hint="Jelaskan tujuan transaksi" />
+                    <x-input wire:model.live="description" placeholder="Contoh: Pembayaran gaji karyawan...">
+                        <x-slot:label>
+                            <div class="flex items-center gap-2">
+                                <span>Deskripsi</span>
+                                <x-tooltip color="zinc" text="Jelaskan tujuan transaksi" position="top" />
+                            </div>
+                        </x-slot:label>
+                    </x-input>
 
-                    <x-input wire:model.live="reference_number" label="Nomor Referensi (Opsional)"
-                        placeholder="Contoh: TRX20240101001" hint="Nomor referensi atau kode transaksi" />
+                    <x-input wire:model.live="reference_number" placeholder="Contoh: TRX20240101001">
+                        <x-slot:label>
+                            <div class="flex items-center gap-2">
+                                <span>Nomor Referensi (Opsional)</span>
+                                <x-tooltip color="zinc" text="Nomor referensi atau kode transaksi" position="top" />
+                            </div>
+                        </x-slot:label>
+                    </x-input>
 
-                    <x-upload wire:model="attachment" label="Bukti Transaksi (Opsional)"
-                        hint="Upload PDF, JPG, JPEG, atau PNG (max 2MB)"
-                        accept="application/pdf,image/jpeg,image/jpg,image/png" />
+                    <x-upload wire:model="attachment" accept="application/pdf,image/jpeg,image/jpg,image/png">
+                        <x-slot:label>
+                            <div class="flex items-center gap-2">
+                                <span>Bukti Transaksi (Opsional)</span>
+                                <x-tooltip color="zinc" text="Upload PDF, JPG, JPEG, atau PNG (max 2MB)" position="top" />
+                            </div>
+                        </x-slot:label>
+                    </x-upload>
                 </div>
             </div>
 

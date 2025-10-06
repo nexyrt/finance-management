@@ -33,6 +33,11 @@ class BankTransaction extends Model
         return $this->belongsTo(BankAccount::class);
     }
 
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(TransactionCategory::class);
+    }
+
     // Format currency for display
     public function getFormattedAmountAttribute(): string
     {

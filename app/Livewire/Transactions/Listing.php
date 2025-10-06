@@ -4,10 +4,12 @@ namespace App\Livewire\Transactions;
 
 use App\Models\BankAccount;
 use App\Models\BankTransaction;
+use App\Models\TransactionCategory;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Renderless;
+use Livewire\Attributes\Reactive;
 use TallStackUi\Traits\Interactions;
 
 class Listing extends Component
@@ -26,6 +28,7 @@ class Listing extends Component
     // Filters
     public ?string $account_id = null;
     public ?string $transaction_type = null;
+    public ?int $category_id = null;
     public ?string $selected_month = null;
     public ?array $date_range = null;
 
@@ -36,6 +39,7 @@ class Listing extends Component
     public array $headers = [
         ['index' => 'description', 'label' => 'Transaction'],
         ['index' => 'bank_account_id', 'label' => 'Bank Account'],
+        ['index' => 'category_id', 'label' => 'Category', 'sortable' => false],
         ['index' => 'transaction_date', 'label' => 'Date'],
         ['index' => 'amount', 'label' => 'Amount'],
         ['index' => 'action', 'sortable' => false],
@@ -54,7 +58,7 @@ class Listing extends Component
     #[Computed]
     public function transactions()
     {
-        return BankTransaction::with('bankAccount')
+        return BankTransaction::with(['bankAccount', 'category.parent'])
             ->when(
                 $this->search,
                 fn($query) =>
@@ -74,6 +78,11 @@ class Listing extends Component
                 $this->transaction_type,
                 fn($query) =>
                 $query->where('transaction_type', $this->transaction_type)
+            )
+            ->when(
+                $this->category_id,
+                fn($query) =>
+                $query->where('category_id', $this->category_id)
             )
             // Date filtering - range overrides month
             ->when(
@@ -113,12 +122,28 @@ class Listing extends Component
         return BankAccount::orderBy('account_name')->get();
     }
 
+    #[Computed]
+    public function categories()
+    {
+        return TransactionCategory::with('parent')
+            ->orderBy('type')
+            ->orderBy('label')
+            ->get()
+            ->map(fn($cat) => [
+                'label' => $cat->parent ? $cat->parent->label . ' → ' . $cat->label : $cat->label,
+                'value' => $cat->id,
+            ])
+            ->prepend(['label' => 'Semua Kategori', 'value' => null])
+            ->toArray();
+    }
+
     // Dispatch filter changes to parent components
     protected function dispatchFilterChange(): void
     {
         $this->dispatch('filter-changed', [
             'account_id' => $this->account_id,
             'transaction_type' => $this->transaction_type,
+            'category_id' => $this->category_id,
             'search' => $this->search,
             'selected_month' => $this->selected_month,
             'date_range' => $this->date_range,
@@ -133,6 +158,12 @@ class Listing extends Component
     }
 
     public function updatedTransactionType(): void
+    {
+        $this->resetPage();
+        $this->dispatchFilterChange();
+    }
+
+    public function updatedCategoryId(): void
     {
         $this->resetPage();
         $this->dispatchFilterChange();
@@ -206,7 +237,7 @@ class Listing extends Component
 
     public function clearFilters(): void
     {
-        $this->reset(['search', 'account_id', 'transaction_type', 'selected_month', 'date_range', 'selected']);
+        $this->reset(['search', 'account_id', 'transaction_type', 'category_id', 'selected_month', 'date_range', 'selected']);
         $this->resetPage();
         $this->dispatchFilterChange();
     }

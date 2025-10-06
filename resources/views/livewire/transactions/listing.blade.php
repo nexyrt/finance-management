@@ -4,7 +4,7 @@
         {{-- Filter Section --}}
         <div class="flex flex-col gap-4">
             {{-- Main Filters Grid --}}
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
                 {{-- Bank Account --}}
                 <div class="sm:col-span-1">
                     <x-select.styled wire:model.live="account_id" label="Rekening" :disabled="$constrainedBankAccountId !== null" :options="$this->accounts
@@ -27,6 +27,12 @@
                         ['label' => 'Pengeluaran', 'value' => 'debit'],
                     ]"
                         placeholder="Filter jenis..." />
+                </div>
+
+                {{-- Category Filter --}}
+                <div class="sm:col-span-1">
+                    <x-select.styled wire:model.live="category_id" :options="$this->categories" label="Kategori"
+                        placeholder="Filter kategori..." searchable />
                 </div>
 
                 {{-- Month Picker --}}
@@ -55,6 +61,7 @@
                         $activeFilters = collect([
                             $account_id && $account_id !== '',
                             $transaction_type && $transaction_type !== '',
+                            $category_id,
                             $selected_month,
                             !empty($date_range),
                             $search,
@@ -73,8 +80,6 @@
                             <span class="hidden sm:inline">dari {{ $this->transactions->total() }}</span> transaksi
                         </div>
                     </div>
-
-
                 </div>
             </div>
         </div>
@@ -106,6 +111,30 @@
                 <p class="font-medium text-gray-900 dark:text-gray-50">{{ $row->bankAccount->account_name }}</p>
                 <p class="text-sm text-gray-500 dark:text-gray-400">{{ $row->bankAccount->bank_name }}</p>
             </div>
+        @endinteract
+
+        {{-- Category --}}
+        @interact('column_category_id', $row)
+            @if ($row->category)
+                <x-badge :text="$row->category->label" :color="match ($row->category->type) {
+                    'income' => 'green',
+                    'expense' => 'red',
+                    'adjustment' => 'yellow',
+                    'transfer' => 'blue',
+                    default => 'gray',
+                }" :icon="match ($row->category->type) {
+                    'income' => 'arrow-trending-up',
+                    'expense' => 'arrow-trending-down',
+                    'adjustment' => 'adjustments-horizontal',
+                    'transfer' => 'arrows-right-left',
+                    default => 'tag',
+                }" size="sm" />
+                @if ($row->category->parent)
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ $row->category->parent->label }}</p>
+                @endif
+            @else
+                <x-badge text="Uncategorized" color="gray" size="sm" />
+            @endif
         @endinteract
 
         {{-- Transaction Date --}}
@@ -200,8 +229,8 @@
                         <div class="absolute top-2 right-2 z-10 flex gap-2">
                             <x-button.circle @click="scale = Math.min(scale + 0.2, 3)" icon="plus" size="sm"
                                 color="white" />
-                            <x-button.circle @click="scale = Math.max(scale - 0.2, 0.5)" icon="minus" size="sm"
-                                color="white" />
+                            <x-button.circle @click="scale = Math.max(scale - 0.2, 0.5)" icon="minus"
+                                size="sm" color="white" />
                             <x-button.circle @click="scale = 1; translateX = 0; translateY = 0" icon="arrow-path"
                                 size="sm" color="white" />
                         </div>

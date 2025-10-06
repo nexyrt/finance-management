@@ -4,6 +4,7 @@ namespace App\Livewire\Transactions;
 
 use App\Models\BankAccount;
 use App\Models\BankTransaction;
+use App\Models\TransactionCategory;
 use Livewire\Component;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
@@ -18,6 +19,7 @@ class Create extends Component
 
     // Form properties
     public ?int $bank_account_id = null;
+    public ?int $category_id = null;
     public ?string $amount = null;
     public ?string $transaction_date = null;
     public string $transaction_type = 'credit';
@@ -46,15 +48,60 @@ class Create extends Component
 
     private function resetForm(): void
     {
-        $this->reset(['bank_account_id', 'amount', 'description', 'reference_number', 'attachment']);
+        $this->reset(['bank_account_id', 'category_id', 'amount', 'description', 'reference_number', 'attachment']);
         $this->transaction_date = now()->format('Y-m-d');
         $this->transaction_type = 'credit';
+    }
+
+    public function updatedTransactionType(): void
+    {
+        // Reset category when transaction type changes
+        $this->category_id = null;
+    }
+
+    #[Computed]
+    public function categoriesOptions(): array
+    {
+        // Map transaction_type to category types
+        $categoryTypes = match ($this->transaction_type) {
+            'credit' => ['income', 'adjustment', 'transfer'],
+            'debit' => ['expense', 'adjustment', 'transfer'],
+            default => []
+        };
+
+        // Get parent categories
+        $parents = TransactionCategory::whereNull('parent_code')
+            ->whereIn('type', $categoryTypes)
+            ->orderBy('type')
+            ->orderBy('label')
+            ->get();
+
+        $options = [];
+
+        foreach ($parents as $parent) {
+            // Add parent
+            $options[] = [
+                'label' => $parent->label,
+                'value' => $parent->id,
+            ];
+
+            // Add children
+            foreach ($parent->children as $child) {
+                $options[] = [
+                    'label' => '  ↳ ' . $child->label,
+                    'value' => $child->id,
+                ];
+            }
+        }
+
+        return $options;
     }
 
     public function rules()
     {
         return [
             'bank_account_id' => 'required|exists:bank_accounts,id',
+            'category_id' => 'required|exists:transaction_categories,id',
             'amount' => 'required|string',
             'transaction_date' => 'required|date',
             'transaction_type' => 'required|in:credit,debit',
@@ -67,6 +114,8 @@ class Create extends Component
     protected $messages = [
         'bank_account_id.required' => 'Pilih rekening bank.',
         'bank_account_id.exists' => 'Rekening tidak valid.',
+        'category_id.required' => 'Pilih kategori transaksi.',
+        'category_id.exists' => 'Kategori tidak valid.',
         'amount.required' => 'Jumlah wajib diisi.',
         'transaction_date.required' => 'Tanggal transaksi wajib diisi.',
         'transaction_date.date' => 'Format tanggal tidak valid.',
@@ -92,6 +141,7 @@ class Create extends Component
         try {
             $data = [
                 'bank_account_id' => $this->bank_account_id,
+                'category_id' => $this->category_id,
                 'amount' => BankTransaction::parseAmount($this->amount),
                 'transaction_date' => $this->transaction_date,
                 'transaction_type' => $this->transaction_type,
