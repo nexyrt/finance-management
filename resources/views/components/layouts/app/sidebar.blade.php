@@ -32,23 +32,32 @@
             </flux:navlist.item>
 
             <flux:navlist.group heading="Finance" expandable class="mt-1">
+                {{-- NEW: Cash Flow Menu --}}
+                <flux:navlist.item icon="chart-bar" :href="route('cash-flow.index')"
+                    :current="request()->routeIs('cash-flow.*')" wire:navigate class="py-5">
+                    {{ __('Cash Flow') }}
+                </flux:navlist.item>
+
                 <flux:navlist.item icon="document-text" :href="route('invoices.index')"
                     :current="request()->routeIs('invoices.*')" wire:navigate class="py-5">
                     {{ __('Invoices') }}
                 </flux:navlist.item>
+
                 <flux:navlist.item icon="arrow-path" :href="route('recurring-invoices.index')"
                     :current="request()->routeIs('recurring-invoices.*')" class="py-5">
                     {{ __('Recurring Invoices') }}
                 </flux:navlist.item>
+
                 <flux:navlist.item icon="credit-card" :href="route('bank-accounts.index')"
                     :current="request()->routeIs('bank-accounts.*')" class="py-5">
                     {{ __('Bank Accounts') }}
                 </flux:navlist.item>
-                <flux:navlist.item icon="banknotes" :href="route('transactions.index')"
-                    :current="request()->routeIs('transactions.*')" wire:navigate class="py-5">
-                    {{ __('Transactions') }}
-                </flux:navlist.item>
 
+                {{-- REMOVED: Transactions menu (moved to Cash Flow tabs) --}}
+                {{-- <flux:navlist.item icon="banknotes" :href="route('transactions.index')"
+            :current="request()->routeIs('transactions.*')" wire:navigate class="py-5">
+            {{ __('Transactions') }}
+        </flux:navlist.item> --}}
             </flux:navlist.group>
 
             <flux:navlist.item icon="tag" :href="route('transaction-categories.index')"
@@ -57,8 +66,8 @@
             </flux:navlist.item>
 
             {{-- <flux:navlist.item icon="loading" :href="route('test')" :current="request()->routeIs('test')"
-                wire:navigate class="py-5">{{ __('Testing Component') }}
-            </flux:navlist.item> --}}
+        wire:navigate class="py-5">{{ __('Testing Component') }}
+    </flux:navlist.item> --}}
         </flux:navlist>
 
         <flux:spacer />

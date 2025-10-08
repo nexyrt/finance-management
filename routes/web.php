@@ -14,6 +14,7 @@ use App\Livewire\Transactions\Index as TransactionsIndex;
 use App\Livewire\Invoices\Index as InvoicesIndex;
 use App\Livewire\Invoices\Edit as InvoicesEdit;
 use App\Livewire\RecurringInvoices\Index as RecurringInvoicesIndex;
+use App\Livewire\CashFlow\Index as CashFlowIndex;
 use App\Livewire\TransactionsCategories\Index as TransactionsCategoriesIndex;
 use App\Livewire\Settings\Profile;
 use App\Livewire\Settings\Password;
@@ -48,6 +49,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Recurring Invoice Management
     Route::get('/recurring-invoices', RecurringInvoicesIndex::class)->name('recurring-invoices.index');
+
+    // Cash Flow Management
+    Route::get('/cash-flow', CashFlowIndex::class)->name('cash-flow.index');
 
     // Invoice PDF Operations
     Route::prefix('invoice')->name('invoice.')->group(function () {
