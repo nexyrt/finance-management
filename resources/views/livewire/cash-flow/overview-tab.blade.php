@@ -213,7 +213,7 @@
                         {{-- Amount --}}
                         <div class="flex-shrink-0 text-right">
                             <p class="text-base font-bold {{ $amountColorClass }}">
-                                {{ $isIncome ? '+' : '−' }}
+                                {{ $isIncome ? '+' : '-' }}
                                 Rp {{ number_format($transaction->amount, 0, ',', '.') }}
                             </p>
                             <p class="text-xs text-zinc-600 dark:text-zinc-300 mt-1">
@@ -474,12 +474,12 @@
                             if (trendChart) {
                                 createTrendChart(trendChart.data.labels.map((label,
                                     index) => ({
-                                        month: label,
-                                        income: trendChart.data.datasets[0]
-                                            .data[index],
-                                        expenses: trendChart.data.datasets[1]
-                                            .data[index]
-                                    })));
+                                    month: label,
+                                    income: trendChart.data.datasets[0]
+                                        .data[index],
+                                    expenses: trendChart.data.datasets[1]
+                                        .data[index]
+                                })));
                             }
                             if (categoryChart) {
                                 createCategoryChart(categoryChart.data.labels.map((label,

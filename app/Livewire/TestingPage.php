@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Models\BankTransaction;
 use App\Models\Invoice;
+use App\Models\InvoiceItem;
 use Livewire\Component;
 
 class TestingPage extends Component
@@ -16,48 +17,18 @@ class TestingPage extends Component
             $query->where('type', 'income');
         })->sum('amount');
 
-        // Ambil semua invoice dengan items dan payments
-        $invoices = Invoice::with(['items', 'payments'])->get();
+        $totalRevenue = Invoice::sum('total_amount');
+        $totalCogs = InvoiceItem::where('is_tax_deposit', false)->sum('cogs_amount');
+        $totalTaxDeposits = InvoiceItem::where('is_tax_deposit', true)->sum('amount');
 
-        // Hitung total profit
-        $totalProfit = $invoices->sum(function ($invoice) {
-            $taxDeposits = $invoice->items->where('is_tax_deposit', true)->sum('amount');
-            $itemCogs = $invoice->items->where('is_tax_deposit', false)->sum('cogs_amount');
+        $totalProfit = $totalRevenue - $totalCogs - $totalTaxDeposits;
 
-            return $invoice->total_amount - $taxDeposits - $itemCogs;
-        });
-
-        // Hitung outstanding profit (sama persis dengan stats)
-        $outstandingProfit = $invoices->sum(function ($invoice) {
-            $itemCogs = $invoice->items->where('is_tax_deposit', false)->sum('cogs_amount');
-            $taxDeposits = $invoice->items->where('is_tax_deposit', true)->sum('amount');
-            $invoiceRevenue = $invoice->total_amount;
-            $invoiceProfit = $invoiceRevenue - $taxDeposits - $itemCogs;
-
-            if ($invoiceProfit <= 0) {
-                return 0;
-            }
-
-            $totalPaid = $invoice->payments->sum('amount');
-
-            if ($totalPaid <= ($itemCogs + $taxDeposits)) {
-                return $invoiceProfit;
-            }
-
-            $realizedProfit = min($totalPaid - ($itemCogs + $taxDeposits), $invoiceProfit);
-
-            return max(0, $invoiceProfit - $realizedProfit);
-        });
-
-        // Paid profit = total profit - outstanding profit
-        $paidProfit = $totalProfit - $outstandingProfit;
-
-        $this->totalIncome = $bankIncome + $paidProfit;
+        $this->totalIncome = $bankIncome + $totalProfit;
 
         dd([
-            'bank_income' => 'Rp '.number_format($bankIncome, 0, ',', '.'),
-            'payments_income' => 'Rp '.number_format($paidProfit, 0, ',', '.'),
-            'total_income' => 'Rp '.number_format($totalProfit, 0, ',', '.'),
+            'bank_income' => 'Rp ' . number_format($bankIncome, 0, ',', '.'),
+            'total_profit' => 'Rp ' . number_format($totalProfit, 0, ',', '.'),
+            'total_income' => 'Rp ' . number_format($this->totalIncome, 0, ',', '.')
         ]);
     }
 

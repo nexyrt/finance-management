@@ -4,6 +4,8 @@ namespace App\Livewire\CashFlow;
 
 use App\Models\BankTransaction;
 use App\Models\Payment;
+use App\Models\Invoice;
+use App\Models\InvoiceItem;
 use Livewire\Component;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Computed;
@@ -19,23 +21,35 @@ class OverviewTab extends Component
         $startDate = $this->getStartDate();
         $endDate = now();
 
-        // βœ… INCOME CALCULATION (Fixed)
-        // 1. Payments dari Invoice (revenue recognition)
-        $paymentsIncome = Payment::whereBetween('payment_date', [$startDate, $endDate])
-            ->sum('amount');
-
-        // 2. Direct Income: BankTransaction credit dengan category type='income'
-        //    (pendapatan lain-lain, bunga bank, refund, dll)
-        $directIncome = BankTransaction::where('transaction_type', 'credit')
+        // 💰 INCOME CALCULATION (Fixed - Total Profit based)
+        // 1. Bank Income: BankTransaction credit dengan category type='income'
+        $bankIncome = BankTransaction::where('transaction_type', 'credit')
             ->whereHas('category', function ($query) {
                 $query->where('type', 'income');
             })
             ->whereBetween('transaction_date', [$startDate, $endDate])
             ->sum('amount');
 
-        $totalIncome = $paymentsIncome + $directIncome;
+        // 2. Invoice Profit: Total Revenue - COGS - Tax Deposits
+        $totalRevenue = Invoice::whereBetween('issue_date', [$startDate, $endDate])
+            ->sum('total_amount');
 
-        // βœ… EXPENSE CALCULATION (Sudah benar)
+        $totalCogs = InvoiceItem::whereHas('invoice', function ($query) use ($startDate, $endDate) {
+            $query->whereBetween('issue_date', [$startDate, $endDate]);
+        })
+            ->where('is_tax_deposit', false)
+            ->sum('cogs_amount');
+
+        $totalTaxDeposits = InvoiceItem::whereHas('invoice', function ($query) use ($startDate, $endDate) {
+            $query->whereBetween('issue_date', [$startDate, $endDate]);
+        })
+            ->where('is_tax_deposit', true)
+            ->sum('amount');
+
+        $invoiceProfit = $totalRevenue - $totalCogs - $totalTaxDeposits;
+        $totalIncome = $bankIncome + $invoiceProfit;
+
+        // 💸 EXPENSE CALCULATION
         $totalExpenses = BankTransaction::where('transaction_type', 'debit')
             ->whereHas('category', function ($query) {
                 $query->where('type', 'expense');
@@ -43,10 +57,10 @@ class OverviewTab extends Component
             ->whereBetween('transaction_date', [$startDate, $endDate])
             ->sum('amount');
 
-        // βœ… NET CASH FLOW
+        // 📊 NET CASH FLOW
         $netCashFlow = $totalIncome - $totalExpenses;
 
-        // βœ… TRANSFERS (Fixed - hanya hitung outgoing/debit untuk avoid double)
+        // 🔄 TRANSFERS
         $totalTransfers = BankTransaction::where('transaction_type', 'debit')
             ->whereHas('category', function ($query) {
                 $query->where('type', 'transfer');
@@ -74,22 +88,35 @@ class OverviewTab extends Component
             $monthStart = Carbon::parse($month['start']);
             $monthEnd = Carbon::parse($month['end']);
 
-            // βœ… INCOME for this month
-            // 1. Payments
-            $payments = Payment::whereBetween('payment_date', [$monthStart, $monthEnd])
-                ->sum('amount');
-
-            // 2. Direct Income (BankTransaction credit dengan category income)
-            $directIncome = BankTransaction::where('transaction_type', 'credit')
+            // 💰 INCOME for this month
+            // 1. Bank Income
+            $bankIncome = BankTransaction::where('transaction_type', 'credit')
                 ->whereHas('category', function ($query) {
                     $query->where('type', 'income');
                 })
                 ->whereBetween('transaction_date', [$monthStart, $monthEnd])
                 ->sum('amount');
 
-            $income = $payments + $directIncome;
+            // 2. Invoice Profit untuk bulan ini
+            $monthRevenue = Invoice::whereBetween('issue_date', [$monthStart, $monthEnd])
+                ->sum('total_amount');
 
-            // βœ… EXPENSES for this month
+            $monthCogs = InvoiceItem::whereHas('invoice', function ($query) use ($monthStart, $monthEnd) {
+                $query->whereBetween('issue_date', [$monthStart, $monthEnd]);
+            })
+                ->where('is_tax_deposit', false)
+                ->sum('cogs_amount');
+
+            $monthTaxDeposits = InvoiceItem::whereHas('invoice', function ($query) use ($monthStart, $monthEnd) {
+                $query->whereBetween('issue_date', [$monthStart, $monthEnd]);
+            })
+                ->where('is_tax_deposit', true)
+                ->sum('amount');
+
+            $monthProfit = $monthRevenue - $monthCogs - $monthTaxDeposits;
+            $income = $bankIncome + $monthProfit;
+
+            // 💸 EXPENSES for this month
             $expenses = BankTransaction::where('transaction_type', 'debit')
                 ->whereHas('category', function ($query) {
                     $query->where('type', 'expense');
@@ -113,7 +140,7 @@ class OverviewTab extends Component
         $startDate = $this->getStartDate();
         $endDate = now();
 
-        // βœ… Category breakdown hanya untuk EXPENSES
+        // 📊 Category breakdown hanya untuk EXPENSES
         $expenses = BankTransaction::with('category')
             ->where('transaction_type', 'debit')
             ->whereHas('category', function ($query) {
@@ -136,7 +163,7 @@ class OverviewTab extends Component
     #[Computed]
     public function recentTransactions()
     {
-        // βœ… Recent transactions: exclude transfers & adjustments untuk clarity
+        // 📝 Recent transactions: exclude transfers & adjustments untuk clarity
         return BankTransaction::with(['bankAccount', 'category'])
             ->whereHas('category', function ($query) {
                 $query->whereIn('type', ['income', 'expense']);
