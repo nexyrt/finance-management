@@ -19,28 +19,38 @@ class OverviewTab extends Component
         $startDate = $this->getStartDate();
         $endDate = now();
 
-        // Total Income: Credits + Payments
-        $creditTransactions = BankTransaction::where('transaction_type', 'credit')
+        // βœ… INCOME CALCULATION (Fixed)
+        // 1. Payments dari Invoice (revenue recognition)
+        $paymentsIncome = Payment::whereBetween('payment_date', [$startDate, $endDate])
+            ->sum('amount');
+
+        // 2. Direct Income: BankTransaction credit dengan category type='income'
+        //    (pendapatan lain-lain, bunga bank, refund, dll)
+        $directIncome = BankTransaction::where('transaction_type', 'credit')
+            ->whereHas('category', function ($query) {
+                $query->where('type', 'income');
+            })
             ->whereBetween('transaction_date', [$startDate, $endDate])
             ->sum('amount');
 
-        $payments = Payment::whereBetween('payment_date', [$startDate, $endDate])
-            ->sum('amount');
+        $totalIncome = $paymentsIncome + $directIncome;
 
-        $totalIncome = $creditTransactions + $payments;
-
-        // Total Expenses: Debits
+        // βœ… EXPENSE CALCULATION (Sudah benar)
         $totalExpenses = BankTransaction::where('transaction_type', 'debit')
+            ->whereHas('category', function ($query) {
+                $query->where('type', 'expense');
+            })
             ->whereBetween('transaction_date', [$startDate, $endDate])
             ->sum('amount');
 
-        // Net Cash Flow
+        // βœ… NET CASH FLOW
         $netCashFlow = $totalIncome - $totalExpenses;
 
-        // Total Transfers: Transactions with transfer category
-        $totalTransfers = BankTransaction::whereHas('category', function ($query) {
-            $query->where('type', 'transfer');
-        })
+        // βœ… TRANSFERS (Fixed - hanya hitung outgoing/debit untuk avoid double)
+        $totalTransfers = BankTransaction::where('transaction_type', 'debit')
+            ->whereHas('category', function ($query) {
+                $query->where('type', 'transfer');
+            })
             ->whereBetween('transaction_date', [$startDate, $endDate])
             ->sum('amount');
 
@@ -57,8 +67,6 @@ class OverviewTab extends Component
     {
         $startDate = $this->getStartDate();
         $endDate = now();
-
-        // Generate month labels based on period
         $months = $this->generateMonthLabels($startDate, $endDate);
 
         $chartData = [];
@@ -66,18 +74,26 @@ class OverviewTab extends Component
             $monthStart = Carbon::parse($month['start']);
             $monthEnd = Carbon::parse($month['end']);
 
-            // Income for this month
-            $creditTransactions = BankTransaction::where('transaction_type', 'credit')
-                ->whereBetween('transaction_date', [$monthStart, $monthEnd])
-                ->sum('amount');
-
+            // βœ… INCOME for this month
+            // 1. Payments
             $payments = Payment::whereBetween('payment_date', [$monthStart, $monthEnd])
                 ->sum('amount');
 
-            $income = $creditTransactions + $payments;
+            // 2. Direct Income (BankTransaction credit dengan category income)
+            $directIncome = BankTransaction::where('transaction_type', 'credit')
+                ->whereHas('category', function ($query) {
+                    $query->where('type', 'income');
+                })
+                ->whereBetween('transaction_date', [$monthStart, $monthEnd])
+                ->sum('amount');
 
-            // Expenses for this month
+            $income = $payments + $directIncome;
+
+            // βœ… EXPENSES for this month
             $expenses = BankTransaction::where('transaction_type', 'debit')
+                ->whereHas('category', function ($query) {
+                    $query->where('type', 'expense');
+                })
                 ->whereBetween('transaction_date', [$monthStart, $monthEnd])
                 ->sum('amount');
 
@@ -97,8 +113,12 @@ class OverviewTab extends Component
         $startDate = $this->getStartDate();
         $endDate = now();
 
+        // βœ… Category breakdown hanya untuk EXPENSES
         $expenses = BankTransaction::with('category')
             ->where('transaction_type', 'debit')
+            ->whereHas('category', function ($query) {
+                $query->where('type', 'expense');
+            })
             ->whereBetween('transaction_date', [$startDate, $endDate])
             ->get()
             ->groupBy(fn($t) => $t->category?->label ?? 'Uncategorized')
@@ -116,7 +136,11 @@ class OverviewTab extends Component
     #[Computed]
     public function recentTransactions()
     {
+        // βœ… Recent transactions: exclude transfers & adjustments untuk clarity
         return BankTransaction::with(['bankAccount', 'category'])
+            ->whereHas('category', function ($query) {
+                $query->whereIn('type', ['income', 'expense']);
+            })
             ->latest('transaction_date')
             ->take(10)
             ->get();

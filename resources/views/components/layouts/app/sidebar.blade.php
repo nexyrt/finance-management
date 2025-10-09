@@ -34,7 +34,7 @@
             <flux:navlist.group heading="Finance" expandable class="mt-1">
                 {{-- NEW: Cash Flow Menu --}}
                 <flux:navlist.item icon="chart-bar" :href="route('cash-flow.index')"
-                    :current="request()->routeIs('cash-flow.*')" wire:navigate class="py-5">
+                    :current="request()->routeIs('cash-flow.*')" class="py-5">
                     {{ __('Cash Flow') }}
                 </flux:navlist.item>
 
