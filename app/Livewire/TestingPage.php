@@ -3,8 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\BankTransaction;
-use App\Models\InvoiceItem;
-use App\Models\Payment;
+use App\Models\Invoice;
 use Livewire\Component;
 
 class TestingPage extends Component
@@ -17,34 +16,48 @@ class TestingPage extends Component
             $query->where('type', 'income');
         })->sum('amount');
 
-        // Ambil semua payments dengan invoice items-nya
-        $payments = Payment::with('invoice.items')->get();
+        // Ambil semua invoice dengan items dan payments
+        $invoices = Invoice::with(['items', 'payments'])->get();
 
-        $paymentsIncome = $payments->sum(function ($payment) {
-            $invoice = $payment->invoice;
+        // Hitung total profit
+        $totalProfit = $invoices->sum(function ($invoice) {
+            $taxDeposits = $invoice->items->where('is_tax_deposit', true)->sum('amount');
+            $itemCogs = $invoice->items->where('is_tax_deposit', false)->sum('cogs_amount');
 
-            // Hitung COGS dan Tax Deposits untuk invoice ini
+            return $invoice->total_amount - $taxDeposits - $itemCogs;
+        });
+
+        // Hitung outstanding profit (sama persis dengan stats)
+        $outstandingProfit = $invoices->sum(function ($invoice) {
             $itemCogs = $invoice->items->where('is_tax_deposit', false)->sum('cogs_amount');
             $taxDeposits = $invoice->items->where('is_tax_deposit', true)->sum('amount');
+            $invoiceRevenue = $invoice->total_amount;
+            $invoiceProfit = $invoiceRevenue - $taxDeposits - $itemCogs;
 
-            // Total yang harus ditutupi dulu sebelum jadi income
-            $costsToCover = $itemCogs + $taxDeposits;
-
-            // Jika payment belum menutupi costs, tidak ada income
-            if ($payment->amount <= $costsToCover) {
+            if ($invoiceProfit <= 0) {
                 return 0;
             }
 
-            // Income adalah payment dikurangi costs yang harus ditutupi
-            return $payment->amount - $costsToCover;
+            $totalPaid = $invoice->payments->sum('amount');
+
+            if ($totalPaid <= ($itemCogs + $taxDeposits)) {
+                return $invoiceProfit;
+            }
+
+            $realizedProfit = min($totalPaid - ($itemCogs + $taxDeposits), $invoiceProfit);
+
+            return max(0, $invoiceProfit - $realizedProfit);
         });
 
-        $this->totalIncome = $bankIncome + $paymentsIncome;
+        // Paid profit = total profit - outstanding profit
+        $paidProfit = $totalProfit - $outstandingProfit;
+
+        $this->totalIncome = $bankIncome + $paidProfit;
 
         dd([
-            'bank_income' => 'Rp ' . number_format($bankIncome, 0, ',', '.'),
-            'payments_income' => 'Rp ' . number_format($paymentsIncome, 0, ',', '.'),
-            'total_income' => 'Rp ' . number_format($this->totalIncome, 0, ',', '.')
+            'bank_income' => 'Rp '.number_format($bankIncome, 0, ',', '.'),
+            'payments_income' => 'Rp '.number_format($paidProfit, 0, ',', '.'),
+            'total_income' => 'Rp '.number_format($totalProfit, 0, ',', '.'),
         ]);
     }
 
