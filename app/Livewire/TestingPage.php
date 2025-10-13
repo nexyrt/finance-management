@@ -15,6 +15,8 @@ class TestingPage extends Component
 {
     public ?string $search = null;
     public array $sort = ['column' => 'date', 'direction' => 'desc'];
+
+    public $dateRange = null;
     
     // Filter properties
     public ?string $dateFrom = null;
@@ -50,6 +52,11 @@ class TestingPage extends Component
             ['label' => 'Payment', 'value' => 'payment'],
             ['label' => 'Transaction', 'value' => 'transaction'],
         ];
+    }
+
+    public function filter(): void
+    {
+        dd($this->dateRange);
     }
 
     #[Computed]

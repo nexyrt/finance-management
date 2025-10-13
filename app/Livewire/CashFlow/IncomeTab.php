@@ -2,41 +2,29 @@
 
 namespace App\Livewire\CashFlow;
 
-use App\Models\BankTransaction;
 use App\Models\Payment;
-use App\Models\Invoice;
-use App\Models\InvoiceItem;
+use App\Models\BankTransaction;
 use App\Models\TransactionCategory;
+use App\Models\Client;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Livewire\Attributes\Computed;
-use TallStackUi\Traits\Interactions;
+use Illuminate\Support\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Facades\DB;
 
 class IncomeTab extends Component
 {
-    use WithPagination, Interactions;
-
-    // Table properties
-    public array $selected = [];
-    public array $sort = ['column' => 'date', 'direction' => 'desc'];
-    public ?int $quantity = 25;
+    use WithPagination;
 
     // Filters
-    public ?string $categoryFilter = null;
-    public ?string $sourceFilter = null; // bank_transaction or payment
-    public array $dateRange = [];
-    public string $search = '';
+    public $dateRange = [];
+    public $categoryFilters = [];
+    public $clientFilters = [];
+    public ?string $search = null;
+    public ?int $quantity = 25;
 
-    public array $headers = [
-        ['index' => 'date', 'label' => 'Date'],
-        ['index' => 'description', 'label' => 'Description'],
-        ['index' => 'source_type', 'label' => 'Source', 'sortable' => false],
-        ['index' => 'bank_account', 'label' => 'Account', 'sortable' => false],
-        ['index' => 'category', 'label' => 'Category', 'sortable' => false],
-        ['index' => 'amount', 'label' => 'Amount', 'sortable' => false],
-    ];
+    // Sorting
+    public array $sort = ['column' => 'date', 'direction' => 'desc'];
 
     public function mount()
     {
@@ -44,226 +32,179 @@ class IncomeTab extends Component
     }
 
     #[Computed]
-    public function incomeTransactions(): LengthAwarePaginator
+    public function clients()
     {
-        // Create base queries using Query Builder directly
-        $bankIncomeQuery = DB::table('bank_transactions')
-            ->join('bank_accounts', 'bank_transactions.bank_account_id', '=', 'bank_accounts.id')
-            ->leftJoin('transaction_categories', 'bank_transactions.category_id', '=', 'transaction_categories.id')
-            ->where('bank_transactions.transaction_type', 'credit')
-            ->whereExists(function ($query) {
-                $query->select(DB::raw(1))
-                    ->from('transaction_categories as tc')
-                    ->whereRaw('tc.id = bank_transactions.category_id')
-                    ->where('tc.type', 'income');
-            })
-            ->select([
-                'bank_transactions.id',
-                'bank_transactions.transaction_date as date',
-                'bank_transactions.description',
-                'bank_transactions.reference_number',
-                'bank_transactions.amount',
-                'bank_accounts.account_name',
-                'transaction_categories.label as category_label',
-                DB::raw("'Bank Income' as source_type"),
-                DB::raw("'bank_transaction' as source"),
-                'bank_transactions.category_id'
-            ]);
-
-        $paymentQuery = DB::table('payments')
-            ->join('invoices', 'payments.invoice_id', '=', 'invoices.id')
-            ->join('bank_accounts', 'payments.bank_account_id', '=', 'bank_accounts.id')
-            ->join('clients', 'invoices.billed_to_id', '=', 'clients.id')
-            ->select([
-                'payments.id',
-                'payments.payment_date as date',
-                DB::raw("CONCAT('Payment from ', clients.name, ' - Invoice #', invoices.invoice_number) as description"),
-                'payments.reference_number',
-                'payments.amount',
-                'bank_accounts.account_name',
-                DB::raw("NULL as category_label"),
-                DB::raw("'Invoice Payment' as source_type"),
-                DB::raw("'payment' as source"),
-                DB::raw("NULL as category_id")
-            ]);
-
-        // Apply filters to both queries
-        $this->applyFiltersToQueryBuilder($bankIncomeQuery, $paymentQuery);
-
-        // Union the queries
-        $unionQuery = $bankIncomeQuery->union($paymentQuery);
-
-        // Apply sorting
-        match ($this->sort['column']) {
-            'date' => $unionQuery->orderBy('date', $this->sort['direction']),
-            'description' => $unionQuery->orderBy('description', $this->sort['direction']),
-            default => $unionQuery->orderBy('date', 'desc')
-        };
-
-        return $unionQuery->paginate($this->quantity)->withQueryString();
-    }
-
-    private function applyFiltersToQueryBuilder($bankQuery, $paymentQuery): void
-    {
-        // Date range filter
-        if (!empty($this->dateRange) && count($this->dateRange) >= 2) {
-            $bankQuery->whereBetween('bank_transactions.transaction_date', $this->dateRange);
-            $paymentQuery->whereBetween('payments.payment_date', $this->dateRange);
-        }
-
-        // Search filter
-        if ($this->search) {
-            $bankQuery->where(function ($q) {
-                $q->where('bank_transactions.description', 'like', '%' . $this->search . '%')
-                    ->orWhere('bank_transactions.reference_number', 'like', '%' . $this->search . '%')
-                    ->orWhere('bank_accounts.account_name', 'like', '%' . $this->search . '%');
-            });
-
-            $paymentQuery->where(function ($q) {
-                $q->where('payments.reference_number', 'like', '%' . $this->search . '%')
-                    ->orWhere('invoices.invoice_number', 'like', '%' . $this->search . '%')
-                    ->orWhere('clients.name', 'like', '%' . $this->search . '%')
-                    ->orWhere('bank_accounts.account_name', 'like', '%' . $this->search . '%');
-            });
-        }
-
-        // Category filter (only applies to bank transactions)
-        if ($this->categoryFilter) {
-            $bankQuery->where('bank_transactions.category_id', $this->categoryFilter);
-        }
-
-        // Source filter
-        if ($this->sourceFilter === 'bank_transaction') {
-            // We'll need to handle this differently since we can't modify union after creation
-        } elseif ($this->sourceFilter === 'payment') {
-            // We'll need to handle this differently since we can't modify union after creation
-        }
-    }
-
-
-
-    #[Computed]
-    public function stats(): array
-    {
-        // Use same filtering logic for stats
-        $dateFilter = !empty($this->dateRange) ? $this->dateRange : null;
-
-        // Bank Income
-        $bankIncome = BankTransaction::where('transaction_type', 'credit')
-            ->whereHas('category', fn($q) => $q->where('type', 'income'))
-            ->when($dateFilter, fn($q) => $q->whereBetween('transaction_date', $dateFilter))
-            ->when($this->categoryFilter, fn($q) => $q->where('category_id', $this->categoryFilter))
-            ->sum('amount');
-
-        // Payment Income
-        $paymentIncome = Payment::when($dateFilter, fn($q) => $q->whereBetween('payment_date', $dateFilter))
-            ->sum('amount');
-
-        // Calculate profit
-        $totalCogs = InvoiceItem::whereHas('invoice', function ($query) use ($dateFilter) {
-            $query->when($dateFilter, fn($q) => $q->whereBetween('issue_date', $dateFilter));
-        })->where('is_tax_deposit', false)->sum('cogs_amount');
-
-        $totalTaxDeposits = InvoiceItem::whereHas('invoice', function ($query) use ($dateFilter) {
-            $query->when($dateFilter, fn($q) => $q->whereBetween('issue_date', $dateFilter));
-        })->where('is_tax_deposit', true)->sum('amount');
-
-        $netPaymentProfit = $paymentIncome - $totalCogs - $totalTaxDeposits;
-        $totalIncome = $bankIncome + $netPaymentProfit;
-
-        return [
-            'bank_income' => $bankIncome,
-            'payment_income' => $paymentIncome,
-            'net_payment_profit' => $netPaymentProfit,
-            'total_income' => $totalIncome,
-            'total_transactions' => $this->incomeTransactions->total(),
-        ];
+        return Client::orderBy('name')
+            ->get()
+            ->map(fn($client) => [
+                'label' => $client->name,
+                'value' => $client->id
+            ])
+            ->toArray();
     }
 
     #[Computed]
-    public function categories(): array
+    public function incomeCategories()
     {
         return TransactionCategory::where('type', 'income')
             ->orderBy('label')
             ->get()
-            ->map(fn($cat) => ['label' => $cat->full_path, 'value' => $cat->id])
+            ->map(fn($cat) => [
+                'label' => $cat->full_path,
+                'value' => $cat->id
+            ])
             ->toArray();
     }
 
-    // Filter watchers following Invoice pattern
-    public function updatedSearch()
+    #[Computed]
+    public function incomeData(): LengthAwarePaginator
     {
-        $this->resetPage();
+        // Get payments
+        $payments = Payment::query()
+            ->join('invoices', 'payments.invoice_id', '=', 'invoices.id')
+            ->join('clients', 'invoices.billed_to_id', '=', 'clients.id')
+            ->join('bank_accounts', 'payments.bank_account_id', '=', 'bank_accounts.id')
+            ->select([
+                'payments.id',
+                'payments.payment_date as date',
+                'payments.amount',
+                'payments.reference_number',
+                'payments.attachment_path',
+                'payments.attachment_name',
+                'invoices.invoice_number',
+                'clients.id as client_id',
+                'clients.name as client_name',
+                'bank_accounts.bank_name',
+                \DB::raw("'payment' as source_type"),
+                \DB::raw("NULL as category_id"),
+                \DB::raw("NULL as category_label"),
+                \DB::raw("NULL as description")
+            ]);
+
+        // Apply filters to payments before union
+        if (!empty($this->clientFilters)) {
+            $payments->whereIn('clients.id', $this->clientFilters);
+        }
+
+        if (!empty($this->dateRange) && count($this->dateRange) >= 2 && $this->dateRange[0] && $this->dateRange[1]) {
+            $payments->whereBetween('payments.payment_date', [$this->dateRange[0], $this->dateRange[1]]);
+        }
+
+        if ($this->search) {
+            $payments->where(function($q) {
+                $q->where('invoices.invoice_number', 'like', '%' . $this->search . '%')
+                  ->orWhere('clients.name', 'like', '%' . $this->search . '%')
+                  ->orWhere('payments.reference_number', 'like', '%' . $this->search . '%')
+                  ->orWhere('bank_accounts.bank_name', 'like', '%' . $this->search . '%');
+            });
+        }
+
+        // Get bank transactions (credit + income category)
+        $transactions = BankTransaction::query()
+            ->join('bank_accounts', 'bank_transactions.bank_account_id', '=', 'bank_accounts.id')
+            ->join('transaction_categories', 'bank_transactions.category_id', '=', 'transaction_categories.id')
+            ->where('bank_transactions.transaction_type', 'credit')
+            ->where('transaction_categories.type', 'income')
+            ->select([
+                'bank_transactions.id',
+                'bank_transactions.transaction_date as date',
+                'bank_transactions.amount',
+                'bank_transactions.reference_number',
+                'bank_transactions.attachment_path',
+                'bank_transactions.attachment_name',
+                \DB::raw("NULL as invoice_number"),
+                \DB::raw("NULL as client_id"),
+                \DB::raw("NULL as client_name"),
+                'bank_accounts.bank_name',
+                \DB::raw("'transaction' as source_type"),
+                'transaction_categories.id as category_id',
+                'transaction_categories.label as category_label',
+                'bank_transactions.description'
+            ]);
+
+        // Apply filters to transactions before union
+        if (!empty($this->categoryFilters)) {
+            $transactions->whereIn('bank_transactions.category_id', $this->categoryFilters);
+        }
+
+        if (!empty($this->dateRange) && count($this->dateRange) >= 2 && $this->dateRange[0] && $this->dateRange[1]) {
+            $transactions->whereBetween('bank_transactions.transaction_date', [$this->dateRange[0], $this->dateRange[1]]);
+        }
+
+        if ($this->search) {
+            $transactions->where(function($q) {
+                $q->where('bank_transactions.description', 'like', '%' . $this->search . '%')
+                  ->orWhere('bank_transactions.reference_number', 'like', '%' . $this->search . '%')
+                  ->orWhere('bank_accounts.bank_name', 'like', '%' . $this->search . '%');
+            });
+        }
+
+        // Union and sort
+        $query = $payments->union($transactions);
+
+        // Get all results and convert to collection
+        $results = $query->get();
+
+        // Sort in memory
+        $sortColumn = $this->sort['column'] === 'date' ? 'date' : $this->sort['column'];
+        $results = $this->sort['direction'] === 'desc' 
+            ? $results->sortByDesc($sortColumn)
+            : $results->sortBy($sortColumn);
+
+        // Manual pagination
+        $total = $results->count();
+        $currentPage = $this->getPage();
+        $offset = ($currentPage - 1) * $this->quantity;
+
+        $items = $results->slice($offset, $this->quantity)->values();
+
+        return new LengthAwarePaginator(
+            $items,
+            $total,
+            $this->quantity,
+            $currentPage,
+            ['path' => request()->url(), 'query' => request()->query()]
+        );
     }
 
-    public function updatedCategoryFilter()
-    {
-        $this->resetPage();
-    }
-
-    public function updatedSourceFilter()
-    {
-        $this->resetPage();
-    }
-
+    // Filter watchers
     public function updatedDateRange()
     {
         $this->resetPage();
     }
 
-    public function clearFilters(): void
+    public function updatedCategoryFilters()
     {
-        $this->fill([
-            'categoryFilter' => null,
-            'sourceFilter' => null,
-            'dateRange' => [],
-            'search' => ''
-        ]);
         $this->resetPage();
     }
 
-    // Export methods following Invoice pattern
-    public function exportExcel()
+    public function updatedClientFilters()
     {
-        if (empty($this->selected)) {
-            $this->toast()->warning('Warning', 'Select transactions to export')->send();
-            return;
-        }
-
-        $count = count($this->selected);
-        $this->toast()->success('Export Started', "Exporting {$count} transactions")->send();
+        $this->resetPage();
     }
 
-    public function exportAll()
+    public function updatedSearch()
     {
-        $this->toast()->success('Export Started', 'Exporting all income transactions')->send();
+        $this->resetPage();
     }
 
-    public function bulkDelete(): void
+    // Actions
+    public function viewAttachment($sourceType, $id)
     {
-        if (empty($this->selected)) {
-            $this->toast()->warning('Warning', 'Select transactions to delete')->send();
-            return;
-        }
+        $this->dispatch('view-attachment', sourceType: $sourceType, id: $id);
+    }
 
-        try {
-            DB::transaction(function () {
-                // Delete selected bank transactions
-                BankTransaction::whereIn('id', $this->selected)
-                    ->where('transaction_type', 'credit')
-                    ->whereHas('category', fn($q) => $q->where('type', 'income'))
-                    ->delete();
+    public function editPayment($id)
+    {
+        $this->dispatch('edit-payment', paymentId: $id);
+    }
 
-                // Note: We don't delete payments as they are tied to invoices
-                // This bulk delete only applies to bank transactions
-            });
-
-            $deletedCount = count($this->selected);
-            $this->selected = [];
-            $this->resetPage();
-            $this->toast()->success('Success', "Successfully deleted {$deletedCount} bank transactions")->send();
-        } catch (\Exception $e) {
-            $this->toast()->error('Error', 'Failed to delete: ' . $e->getMessage())->send();
+    public function deleteItem($sourceType, $id)
+    {
+        if ($sourceType === 'payment') {
+            $this->dispatch('delete-payment', paymentId: $id);
+        } else {
+            $this->dispatch('delete-transaction', transactionId: $id);
         }
     }
 
