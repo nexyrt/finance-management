@@ -58,7 +58,7 @@ class BankTransaction extends Model
 
     public function hasAttachment(): bool
     {
-        return !empty($this->attachment_path) && Storage::exists($this->attachment_path);
+       return !empty($this->attachment_path);
     }
 
     public function getAttachmentTypeAttribute(): ?string

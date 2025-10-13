@@ -13,7 +13,7 @@
     </div>
 
     {{-- Tab Navigation --}}
-    <x-tab selected="Overview">
+    <x-tab selected="Income">
         <x-tab.items tab="Overview">
             <x-slot:right>
                 <x-icon name="chart-bar" class="w-5 h-5" />

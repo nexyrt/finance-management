@@ -1,128 +1,235 @@
 <div class="space-y-6">
-    {{-- Filters --}}
-    <div class="bg-white dark:bg-dark-800 border border-zinc-200 dark:border-dark-600 rounded-xl p-6">
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-            <div>
-                <x-input type="date" label="Start Date" wire:model="startDate" />
-            </div>
-            <div>
-                <x-input type="date" label="End Date" wire:model="endDate" />
-            </div>
-            <div>
-                <x-select.styled label="Category" wire:model="categoryId" :options="$this->categories"
-                    placeholder="All Categories" />
-            </div>
-            <div>
-                <x-select.styled label="Bank Account" wire:model="bankAccountId" :options="$this->bankAccounts"
-                    placeholder="All Accounts" />
-            </div>
-            <div>
-                <x-input label="Search" wire:model.live.debounce.500ms="search" placeholder="Search..."
-                    icon="magnifying-glass" />
+    {{-- Summary Cards --}}
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {{-- Total Income --}}
+        <div class="relative overflow-hidden bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl p-6 text-white">
+            <div class="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-white/10 rounded-full"></div>
+            <div class="absolute bottom-0 left-0 -mb-4 -ml-4 w-16 h-16 bg-white/5 rounded-full"></div>
+            <div class="relative">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                        <x-icon name="banknotes" class="w-6 h-6 text-white" />
+                    </div>
+                    <div class="text-right">
+                        <p class="text-green-100 text-sm font-medium">Total Income</p>
+                        <p class="text-3xl font-bold">
+                            Rp {{ number_format($this->stats['total_income'], 0, ',', '.') }}
+                        </p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 text-green-100">
+                    <x-icon name="arrow-trending-up" class="w-4 h-4" />
+                    <span class="text-sm">All income sources combined</span>
+                </div>
             </div>
         </div>
-        <div class="flex gap-2 mt-4">
-            <x-button wire:click="applyFilters" color="blue" icon="funnel" size="sm">Apply Filters</x-button>
-            <x-button wire:click="resetFilters" color="gray" outline icon="x-mark" size="sm">Reset</x-button>
+
+        {{-- Bank Income --}}
+        <div class="relative overflow-hidden bg-gradient-to-br from-blue-500 to-cyan-600 rounded-2xl p-6 text-white">
+            <div class="absolute top-0 right-0 -mt-4 -mr-4 w-20 h-20 bg-white/10 rounded-full"></div>
+            <div class="relative">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                        <x-icon name="building-library" class="w-6 h-6 text-white" />
+                    </div>
+                    <div class="text-right">
+                        <p class="text-blue-100 text-sm font-medium">Bank Income</p>
+                        <p class="text-2xl font-bold">
+                            Rp {{ number_format($this->stats['bank_income'], 0, ',', '.') }}
+                        </p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 text-blue-100">
+                    <x-icon name="credit-card" class="w-4 h-4" />
+                    <span class="text-sm">Direct bank transactions</span>
+                </div>
+            </div>
+        </div>
+
+        {{-- Payment Profit --}}
+        <div
+            class="relative overflow-hidden bg-gradient-to-br from-purple-500 to-violet-600 rounded-2xl p-6 text-white">
+            <div class="absolute top-0 right-0 -mt-4 -mr-4 w-18 h-18 bg-white/10 rounded-full"></div>
+            <div class="relative">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                        <x-icon name="chart-pie" class="w-6 h-6 text-white" />
+                    </div>
+                    <div class="text-right">
+                        <p class="text-purple-100 text-sm font-medium">Net Profit</p>
+                        <p class="text-2xl font-bold">
+                            Rp {{ number_format($this->stats['net_payment_profit'], 0, ',', '.') }}
+                        </p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 text-purple-100">
+                    <x-icon name="receipt-percent" class="w-4 h-4" />
+                    <span class="text-sm">After COGS & tax deposits</span>
+                </div>
+            </div>
+        </div>
+
+        {{-- Total Transactions --}}
+        <div class="relative overflow-hidden bg-gradient-to-br from-gray-700 to-gray-800 rounded-2xl p-6 text-white">
+            <div class="absolute top-0 right-0 -mt-4 -mr-4 w-16 h-16 bg-white/10 rounded-full"></div>
+            <div class="relative">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                        <x-icon name="queue-list" class="w-6 h-6 text-white" />
+                    </div>
+                    <div class="text-right">
+                        <p class="text-gray-300 text-sm font-medium">Transactions</p>
+                        <p class="text-2xl font-bold">
+                            {{ number_format($this->stats['total_transactions'], 0, ',', '.') }}
+                        </p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 text-gray-300">
+                    <x-icon name="document-text" class="w-4 h-4" />
+                    <span class="text-sm">Total records</span>
+                </div>
+            </div>
         </div>
     </div>
 
-    {{-- Summary Card --}}
-    <div class="bg-white dark:bg-dark-800 border border-zinc-200 dark:border-dark-600 rounded-xl p-6">
-        <div class="flex items-center justify-between">
-            <div class="flex items-center gap-4">
-                <div class="h-12 w-12 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center">
-                    <x-icon name="arrow-trending-up" class="w-6 h-6 text-green-600 dark:text-green-400" />
+    {{-- Filters following Invoice pattern --}}
+    <div class="flex flex-col lg:flex-row gap-4 items-start lg:items-end">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 flex-1">
+            <div>
+                <x-select.styled wire:model.live="categoryFilter" label="Category" :options="$this->categories"
+                    placeholder="All categories..." />
+            </div>
+
+            <div>
+                <x-select.styled wire:model.live="sourceFilter" label="Source" :options="[
+                    ['label' => 'Bank Income', 'value' => 'bank_transaction'],
+                    ['label' => 'Invoice Payment', 'value' => 'payment'],
+                ]"
+                    placeholder="All sources..." />
+            </div>
+
+            <div>
+                <x-date wire:model.live="dateRange" label="Date Range" range placeholder="Select period..." />
+            </div>
+
+            <div class="lg:col-span-1">
+                <!-- Space for additional filter if needed -->
+            </div>
+        </div>
+
+        <div class="flex gap-2">
+            @if ($categoryFilter || $sourceFilter || !empty($dateRange) || $search)
+                <x-button wire:click="clearFilters" icon="x-mark" color="gray" outline size="sm">
+                    Clear
+                </x-button>
+            @endif
+            <x-button wire:click="exportExcel" size="sm" color="green" icon="document-text" outline>
+                Excel
+            </x-button>
+        </div>
+    </div>
+
+    {{-- Table following Invoice pattern --}}
+    <x-table :headers="$headers" :sort="$sort" :rows="$this->incomeTransactions" selectable wire:model="selected" paginate filter
+        loading="incomeTransactions">
+
+        {{-- Date Column --}}
+        @interact('column_date', $row)
+            <div>
+                <div class="font-medium text-zinc-900 dark:text-zinc-100">
+                    {{ \Carbon\Carbon::parse($row->date)->format('d M Y') }}
+                </div>
+                <div class="text-xs text-zinc-500 dark:text-zinc-400">
+                    {{ \Carbon\Carbon::parse($row->date)->diffForHumans() }}
+                </div>
+            </div>
+        @endinteract
+
+        {{-- Description Column --}}
+        @interact('column_description', $row)
+            <div>
+                <div class="font-medium text-zinc-900 dark:text-zinc-100">
+                    {{ $row->description ?: 'No description' }}
+                </div>
+                @if ($row->reference_number)
+                    <div class="text-xs text-zinc-500 dark:text-zinc-400">
+                        Ref: {{ $row->reference_number }}
+                    </div>
+                @endif
+            </div>
+        @endinteract
+
+        {{-- Source Type Column --}}
+        @interact('column_source_type', $row)
+            <x-badge :text="$row->source_type" :color="$row->source === 'bank_transaction' ? 'blue' : 'green'" />
+        @endinteract
+
+        {{-- Bank Account Column --}}
+        @interact('column_bank_account', $row)
+            <div class="flex items-center gap-3">
+                <div
+                    class="w-8 h-8 bg-gradient-to-br from-gray-400 to-gray-600 rounded-lg flex items-center justify-center">
+                    <x-icon name="building-library" class="w-4 h-4 text-white" />
                 </div>
                 <div>
-                    <p class="text-sm text-dark-600 dark:text-dark-400">Total Income (Filtered)</p>
-                    <p class="text-3xl font-bold text-green-600 dark:text-green-400">
-                        Rp {{ number_format($this->totalIncome, 0, ',', '.') }}
-                    </p>
-                    <p class="text-xs text-green-500 dark:text-green-400 mt-1">
-                        {{ $this->incomeTransactions->count() }} transactions
-                    </p>
+                    <p class="font-medium text-zinc-900 dark:text-zinc-100">{{ $row->account_name }}</p>
                 </div>
             </div>
-            <div class="flex gap-2">
-                <x-button size="sm" color="green" icon="plus">Add Income</x-button>
-                <x-button size="sm" color="gray" outline icon="document-arrow-down">Export</x-button>
+        @endinteract
+
+        {{-- Category Column --}}
+        @interact('column_category', $row)
+            @if ($row->category_label)
+                <x-badge :text="$row->category_label" color="emerald" />
+            @else
+                <span class="text-sm text-zinc-400 dark:text-zinc-500">Invoice Payment</span>
+            @endif
+        @endinteract
+
+        {{-- Amount Column --}}
+        @interact('column_amount', $row)
+            <div class="text-right">
+                <div class="font-bold text-lg text-green-600 dark:text-green-400">
+                    +Rp {{ number_format($row->amount, 0, ',', '.') }}
+                </div>
+            </div>
+        @endinteract
+
+    </x-table>
+
+    {{-- Bulk Actions Bar following Invoice pattern --}}
+    <div x-data="{ show: @entangle('selected').live }" x-show="show.length > 0" x-transition
+        class="fixed bottom-4 sm:bottom-6 left-4 right-4 sm:left-1/2 sm:right-auto sm:transform sm:-translate-x-1/2 z-50">
+        <div
+            class="bg-white dark:bg-zinc-800 rounded-xl shadow-lg border border-zinc-200 dark:border-zinc-600 px-4 sm:px-6 py-4 sm:min-w-96">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-6">
+                <div class="flex items-center gap-3">
+                    <div class="h-10 w-10 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center">
+                        <x-icon name="check-circle" class="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <div>
+                        <div class="font-semibold text-zinc-900 dark:text-zinc-50"
+                            x-text="`${show.length} transactions selected`"></div>
+                        <div class="text-xs text-zinc-500 dark:text-zinc-400">
+                            Choose action for selected transactions
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 justify-end">
+                    <x-button wire:click="exportExcel" size="sm" color="green" icon="document-arrow-down"
+                        loading="exportExcel" class="whitespace-nowrap">
+                        Export Selected
+                    </x-button>
+                    <x-button wire:click="bulkDelete" size="sm" color="red" icon="trash"
+                        loading="bulkDelete" class="whitespace-nowrap">
+                        Delete
+                    </x-button>
+                    <x-button wire:click="$set('selected', [])" size="sm" color="gray" icon="x-mark"
+                        class="whitespace-nowrap">
+                        Cancel
+                    </x-button>
+                </div>
             </div>
         </div>
-    </div>
-
-    {{-- Income Listing --}}
-    <div class="bg-white dark:bg-dark-800 border border-zinc-200 dark:border-dark-600 rounded-xl p-6">
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-6">Income Transactions</h3>
-
-        @if ($this->incomeTransactions->isEmpty())
-            <div class="text-center py-12">
-                <x-icon name="arrow-trending-up" class="w-16 h-16 text-zinc-300 dark:text-dark-700 mx-auto mb-4" />
-                <p class="text-zinc-500 dark:text-dark-400">No income transactions found</p>
-                <p class="text-zinc-400 dark:text-dark-600 text-sm mt-1">Try adjusting your filters</p>
-            </div>
-        @else
-            <div class="overflow-x-auto">
-                <table class="w-full">
-                    <thead class="border-b border-zinc-200 dark:border-dark-600">
-                        <tr>
-                            <th class="text-left py-3 px-4 text-sm font-semibold text-dark-600 dark:text-dark-400">Date
-                            </th>
-                            <th class="text-left py-3 px-4 text-sm font-semibold text-dark-600 dark:text-dark-400">Type
-                            </th>
-                            <th class="text-left py-3 px-4 text-sm font-semibold text-dark-600 dark:text-dark-400">
-                                Description</th>
-                            <th class="text-left py-3 px-4 text-sm font-semibold text-dark-600 dark:text-dark-400">
-                                Category</th>
-                            <th class="text-left py-3 px-4 text-sm font-semibold text-dark-600 dark:text-dark-400">Bank
-                                Account</th>
-                            <th class="text-left py-3 px-4 text-sm font-semibold text-dark-600 dark:text-dark-400">
-                                Reference</th>
-                            <th class="text-right py-3 px-4 text-sm font-semibold text-dark-600 dark:text-dark-400">
-                                Amount</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-zinc-200 dark:divide-dark-600">
-                        @foreach ($this->incomeTransactions as $transaction)
-                            <tr class="hover:bg-zinc-50 dark:hover:bg-dark-700 transition-colors">
-                                <td class="py-3 px-4 text-sm text-dark-900 dark:text-white whitespace-nowrap">
-                                    {{ \Carbon\Carbon::parse($transaction['date'])->format('d M Y') }}
-                                </td>
-                                <td class="py-3 px-4 text-sm">
-                                    <x-badge :text="$transaction['type'] === 'payment' ? 'Payment' : 'Transaction'" size="sm" :color="$transaction['type'] === 'payment' ? 'blue' : 'green'" />
-                                </td>
-                                <td class="py-3 px-4 text-sm text-dark-900 dark:text-white">
-                                    {{ $transaction['description'] }}
-                                </td>
-                                <td class="py-3 px-4 text-sm">
-                                    <x-badge :text="$transaction['category']" size="sm" color="green" />
-                                </td>
-                                <td class="py-3 px-4 text-sm text-dark-900 dark:text-white">
-                                    {{ $transaction['bank_account'] }}
-                                </td>
-                                <td class="py-3 px-4 text-sm text-dark-600 dark:text-dark-400">
-                                    {{ $transaction['reference'] ?? '-' }}
-                                </td>
-                                <td
-                                    class="py-3 px-4 text-sm text-right font-semibold text-green-600 dark:text-green-400">
-                                    + Rp {{ number_format($transaction['amount'], 0, ',', '.') }}
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                    <tfoot class="border-t-2 border-zinc-300 dark:border-dark-500">
-                        <tr>
-                            <td colspan="6"
-                                class="py-3 px-4 text-sm font-semibold text-right text-dark-900 dark:text-white">
-                                Total:
-                            </td>
-                            <td class="py-3 px-4 text-sm text-right font-bold text-green-600 dark:text-green-400">
-                                Rp {{ number_format($this->totalIncome, 0, ',', '.') }}
-                            </td>
-                        </tr>
-                    </tfoot>
-                </table>
-            </div>
-        @endif
     </div>
 </div>
