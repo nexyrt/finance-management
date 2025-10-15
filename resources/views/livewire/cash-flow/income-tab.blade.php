@@ -61,7 +61,7 @@
         {{-- Loading Overlay --}}
         <div wire:loading.flex
             wire:target="dateRange,categoryFilters,clientFilters,search,sortBy,gotoPage,nextPage,previousPage"
-            class="sticky top-0 inset-x-0 h-screen bg-white/75 dark:bg-dark-800/75 backdrop-blur-sm z-50 items-center justify-center">
+            class="fixed inset-0 bg-white/75 dark:bg-dark-800/75 backdrop-blur-sm z-50 items-center justify-center">
             <div class="flex flex-col items-center gap-3">
                 <x-icon name="arrow-path" class="w-8 h-8 text-primary-600 dark:text-primary-400 animate-spin" />
                 <span class="text-sm font-medium text-dark-700 dark:text-dark-300">Memuat data...</span>
@@ -69,12 +69,31 @@
         </div>
 
         <div class="overflow-x-auto relative">
-            <table class="w-full">
+            <table class="w-full" x-data="{
+                selected: @entangle('selected').live,
+                lastIndex: null,
+                handleCheck(event, value, index) {
+                    const checkbox = event.target;
+            
+                    if (event.shiftKey && this.lastIndex !== null) {
+                        const start = Math.min(this.lastIndex, index);
+                        const end = Math.max(this.lastIndex, index);
+                        const checkboxes = document.querySelectorAll('[data-bulk-index]');
+            
+                        for (let i = start; i <= end; i++) {
+                            const cb = checkboxes[i];
+                            if (cb && checkbox.checked && !this.selected.includes(cb.value)) {
+                                this.selected.push(cb.value);
+                            }
+                        }
+                    }
+            
+                    this.lastIndex = index;
+                }
+            }">
                 <thead class="bg-zinc-50 dark:bg-dark-700">
                     <tr>
-                        <th class="px-4 py-3 text-left w-12">
-                            {{-- <input type="checkbox" class="rounded border-zinc-300 dark:border-dark-600" disabled> --}}
-                        </th>
+                        <th class="px-4 py-3 text-left w-12"></th>
                         <th wire:click="sortBy('date')"
                             class="px-4 py-3 text-left text-xs font-medium text-dark-600 dark:text-dark-400 uppercase tracking-wider cursor-pointer hover:bg-zinc-100 dark:hover:bg-dark-600 transition-colors">
                             <div class="flex items-center gap-2">
@@ -118,12 +137,14 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-zinc-200 dark:divide-dark-600">
-                    @forelse($this->incomeData as $item)
+                    @forelse($this->incomeData as $index => $item)
                         <tr class="hover:bg-zinc-50 dark:hover:bg-dark-700 transition-colors"
                             wire:key="income-{{ $item->source_type }}-{{ $item->id }}">
                             <td class="px-4 py-4">
                                 <input type="checkbox" value="{{ $item->source_type }}-{{ $item->id }}"
-                                    wire:model.live="selected" class="rounded border-zinc-300 dark:border-dark-600">
+                                    wire:model.live="selected" data-bulk-index="{{ $index }}"
+                                    @click="handleCheck($event, '{{ $item->source_type }}-{{ $item->id }}', {{ $index }})"
+                                    class="rounded border-zinc-300 dark:border-dark-600">
                             </td>
 
                             <td class="px-4 py-4 whitespace-nowrap">
@@ -241,7 +262,7 @@
 
         @if ($this->incomeData->hasPages())
             <div class="px-4 lg:px-6 py-4 border-t border-zinc-200 dark:border-dark-600">
-                {{ $this->incomeData->links(data: ['scrollTo' => false]) }}
+                {{ $this->incomeData->links() }}
             </div>
         @endif
     </div>
@@ -279,7 +300,6 @@
 
     {{-- Child Components --}}
     <livewire:cash-flow.attachment-viewer />
-    <livewire:cash-flow.create-income @income-created="$refresh" />
     <livewire:payments.edit @payment-updated="$refresh" />
     <livewire:payments.delete @payment-deleted="$refresh" />
     <livewire:transactions.delete @transaction-deleted="$refresh" />
