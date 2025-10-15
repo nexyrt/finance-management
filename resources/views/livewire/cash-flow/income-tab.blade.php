@@ -61,7 +61,7 @@
         {{-- Loading Overlay --}}
         <div wire:loading.flex
             wire:target="dateRange,categoryFilters,clientFilters,search,sortBy,gotoPage,nextPage,previousPage"
-            class="absolute inset-0 bg-white/75 dark:bg-dark-800/75 backdrop-blur-sm z-10 items-center justify-center">
+            class="sticky top-0 inset-x-0 h-screen bg-white/75 dark:bg-dark-800/75 backdrop-blur-sm z-50 items-center justify-center">
             <div class="flex flex-col items-center gap-3">
                 <x-icon name="arrow-path" class="w-8 h-8 text-primary-600 dark:text-primary-400 animate-spin" />
                 <span class="text-sm font-medium text-dark-700 dark:text-dark-300">Memuat data...</span>
