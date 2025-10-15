@@ -2,26 +2,32 @@
 
 namespace App\Livewire\CashFlow;
 
-use App\Models\Payment;
 use App\Models\BankTransaction;
-use App\Models\TransactionCategory;
 use App\Models\Client;
+use App\Models\Payment;
+use App\Models\TransactionCategory;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Livewire\Attributes\Computed;
 use Livewire\Component;
 use Livewire\WithPagination;
-use Livewire\Attributes\Computed;
-use Illuminate\Support\Collection;
-use Illuminate\Pagination\LengthAwarePaginator;
+use TallStackUi\Traits\Interactions;
 
 class IncomeTab extends Component
 {
-    use WithPagination;
+    use Interactions, WithPagination;
 
     // Filters
     public $dateRange = [];
+
     public $categoryFilters = [];
+
     public $clientFilters = [];
+
     public ?string $search = null;
+
     public ?int $quantity = 25;
+
+    public array $selected = [];
 
     // Sorting
     public array $sort = ['column' => 'date', 'direction' => 'desc'];
@@ -36,9 +42,9 @@ class IncomeTab extends Component
     {
         return Client::orderBy('name')
             ->get()
-            ->map(fn($client) => [
+            ->map(fn ($client) => [
                 'label' => $client->name,
-                'value' => $client->id
+                'value' => $client->id,
             ])
             ->toArray();
     }
@@ -49,9 +55,9 @@ class IncomeTab extends Component
         return TransactionCategory::where('type', 'income')
             ->orderBy('label')
             ->get()
-            ->map(fn($cat) => [
+            ->map(fn ($cat) => [
                 'label' => $cat->full_path,
-                'value' => $cat->id
+                'value' => $cat->id,
             ])
             ->toArray();
     }
@@ -59,7 +65,6 @@ class IncomeTab extends Component
     #[Computed]
     public function incomeData(): LengthAwarePaginator
     {
-        // Get payments
         $payments = Payment::query()
             ->join('invoices', 'payments.invoice_id', '=', 'invoices.id')
             ->join('clients', 'invoices.billed_to_id', '=', 'clients.id')
@@ -72,34 +77,31 @@ class IncomeTab extends Component
                 'payments.attachment_path',
                 'payments.attachment_name',
                 'invoices.invoice_number',
-                'clients.id as client_id',
                 'clients.name as client_name',
                 'bank_accounts.bank_name',
                 \DB::raw("'payment' as source_type"),
-                \DB::raw("NULL as category_id"),
-                \DB::raw("NULL as category_label"),
-                \DB::raw("NULL as description")
+                \DB::raw('NULL as category_id'),
+                \DB::raw('NULL as category_label'),
+                \DB::raw('NULL as description'),
             ]);
 
-        // Apply filters to payments before union
-        if (!empty($this->clientFilters)) {
+        if (! empty($this->clientFilters)) {
             $payments->whereIn('clients.id', $this->clientFilters);
         }
 
-        if (!empty($this->dateRange) && count($this->dateRange) >= 2 && $this->dateRange[0] && $this->dateRange[1]) {
+        if (! empty($this->dateRange) && count($this->dateRange) >= 2 && $this->dateRange[0] && $this->dateRange[1]) {
             $payments->whereBetween('payments.payment_date', [$this->dateRange[0], $this->dateRange[1]]);
         }
 
         if ($this->search) {
-            $payments->where(function($q) {
-                $q->where('invoices.invoice_number', 'like', '%' . $this->search . '%')
-                  ->orWhere('clients.name', 'like', '%' . $this->search . '%')
-                  ->orWhere('payments.reference_number', 'like', '%' . $this->search . '%')
-                  ->orWhere('bank_accounts.bank_name', 'like', '%' . $this->search . '%');
+            $payments->where(function ($q) {
+                $q->where('invoices.invoice_number', 'like', '%'.$this->search.'%')
+                    ->orWhere('clients.name', 'like', '%'.$this->search.'%')
+                    ->orWhere('payments.reference_number', 'like', '%'.$this->search.'%')
+                    ->orWhere('bank_accounts.bank_name', 'like', '%'.$this->search.'%');
             });
         }
 
-        // Get bank transactions (credit + income category)
         $transactions = BankTransaction::query()
             ->join('bank_accounts', 'bank_transactions.bank_account_id', '=', 'bank_accounts.id')
             ->join('transaction_categories', 'bank_transactions.category_id', '=', 'transaction_categories.id')
@@ -112,50 +114,44 @@ class IncomeTab extends Component
                 'bank_transactions.reference_number',
                 'bank_transactions.attachment_path',
                 'bank_transactions.attachment_name',
-                \DB::raw("NULL as invoice_number"),
-                \DB::raw("NULL as client_id"),
-                \DB::raw("NULL as client_name"),
+                \DB::raw('NULL as invoice_number'),
+                \DB::raw('NULL as client_name'),
                 'bank_accounts.bank_name',
                 \DB::raw("'transaction' as source_type"),
                 'transaction_categories.id as category_id',
                 'transaction_categories.label as category_label',
-                'bank_transactions.description'
+                'bank_transactions.description',
             ]);
 
-        // Apply filters to transactions before union
-        if (!empty($this->categoryFilters)) {
+        if (! empty($this->categoryFilters)) {
             $transactions->whereIn('bank_transactions.category_id', $this->categoryFilters);
         }
 
-        if (!empty($this->dateRange) && count($this->dateRange) >= 2 && $this->dateRange[0] && $this->dateRange[1]) {
+        if (! empty($this->dateRange) && count($this->dateRange) >= 2 && $this->dateRange[0] && $this->dateRange[1]) {
             $transactions->whereBetween('bank_transactions.transaction_date', [$this->dateRange[0], $this->dateRange[1]]);
         }
 
         if ($this->search) {
-            $transactions->where(function($q) {
-                $q->where('bank_transactions.description', 'like', '%' . $this->search . '%')
-                  ->orWhere('bank_transactions.reference_number', 'like', '%' . $this->search . '%')
-                  ->orWhere('bank_accounts.bank_name', 'like', '%' . $this->search . '%');
+            $transactions->where(function ($q) {
+                $q->where('bank_transactions.description', 'like', '%'.$this->search.'%')
+                    ->orWhere('bank_transactions.reference_number', 'like', '%'.$this->search.'%')
+                    ->orWhere('bank_accounts.bank_name', 'like', '%'.$this->search.'%');
             });
         }
 
-        // Union and sort
         $query = $payments->union($transactions);
-
-        // Get all results and convert to collection
         $results = $query->get();
 
-        // Sort in memory
-        $sortColumn = $this->sort['column'] === 'date' ? 'date' : $this->sort['column'];
-        $results = $this->sort['direction'] === 'desc' 
+        // Sorting
+        $sortColumn = $this->sort['column'];
+        $results = $this->sort['direction'] === 'desc'
             ? $results->sortByDesc($sortColumn)
             : $results->sortBy($sortColumn);
 
-        // Manual pagination
+        // Pagination
         $total = $results->count();
         $currentPage = $this->getPage();
         $offset = ($currentPage - 1) * $this->quantity;
-
         $items = $results->slice($offset, $this->quantity)->values();
 
         return new LengthAwarePaginator(
@@ -188,6 +184,19 @@ class IncomeTab extends Component
         $this->resetPage();
     }
 
+    // Sorting
+    public function sortBy($column)
+    {
+        if ($this->sort['column'] === $column) {
+            $this->sort['direction'] = $this->sort['direction'] === 'asc' ? 'desc' : 'asc';
+        } else {
+            $this->sort['column'] = $column;
+            $this->sort['direction'] = 'asc';
+        }
+
+        $this->resetPage();
+    }
+
     // Actions
     public function viewAttachment($sourceType, $id)
     {
@@ -206,6 +215,44 @@ class IncomeTab extends Component
         } else {
             $this->dispatch('delete-transaction', transactionId: $id);
         }
+    }
+
+    // Bulk delete
+    public function bulkDelete()
+    {
+        if (empty($this->selected)) {
+            return;
+        }
+
+        $this->dialog()
+            ->question('Hapus '.count($this->selected).' item?', 'Data yang dihapus tidak dapat dikembalikan.')
+            ->confirm(method: 'executeBulkDelete')
+            ->cancel()
+            ->send();
+    }
+
+    public function executeBulkDelete()
+    {
+        $deleted = 0;
+
+        foreach ($this->selected as $item) {
+            [$type, $id] = explode('-', $item);
+
+            if ($type === 'payment') {
+                Payment::find($id)?->delete();
+                $deleted++;
+            } elseif ($type === 'transaction') {
+                BankTransaction::find($id)?->delete();
+                $deleted++;
+            }
+        }
+
+        $this->selected = [];
+        $this->resetPage();
+
+        $this->toast()
+            ->success('Berhasil', $deleted.' item telah dihapus')
+            ->send();
     }
 
     public function render()

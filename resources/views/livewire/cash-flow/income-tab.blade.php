@@ -2,31 +2,26 @@
     {{-- Filters Section --}}
     <div class="bg-white dark:bg-dark-800 border border-zinc-200 dark:border-dark-600 rounded-xl p-4 lg:p-6">
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-            {{-- Date Range --}}
             <div class="sm:col-span-2 lg:col-span-1">
                 <x-date wire:model.live="dateRange" label="Periode" range placeholder="Pilih range tanggal..." />
             </div>
 
-            {{-- Client Filter (Multiple) --}}
             <div class="lg:col-span-2">
                 <x-select.styled wire:model.live="clientFilters" label="Klien" :options="$this->clients"
                     placeholder="Semua klien..." multiple searchable />
             </div>
 
-            {{-- Category Filter (Multiple) --}}
             <div class="lg:col-span-1">
                 <x-select.styled wire:model.live="categoryFilters" label="Kategori" :options="$this->incomeCategories"
                     placeholder="Semua kategori..." multiple searchable />
             </div>
 
-            {{-- Search --}}
             <div class="lg:col-span-1">
                 <x-input wire:model.live.debounce.300ms="search" label="Cari" placeholder="Cari data..."
                     icon="magnifying-glass" />
             </div>
         </div>
 
-        {{-- Active Filters Indicator --}}
         @php
             $activeFilters = collect([
                 !empty($dateRange) && count($dateRange) >= 1,
@@ -52,20 +47,45 @@
 
     {{-- Income Table --}}
     <div class="bg-white dark:bg-dark-800 border border-zinc-200 dark:border-dark-600 rounded-xl overflow-hidden">
-        {{-- Table Header --}}
         <div class="px-4 lg:px-6 py-4 border-b border-zinc-200 dark:border-dark-600">
-            <h3 class="text-lg font-semibold text-dark-900 dark:text-dark-50">Daftar Pemasukan</h3>
-            <p class="text-sm text-dark-600 dark:text-dark-400">Gabungan pembayaran invoice dan transaksi langsung</p>
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-lg font-semibold text-dark-900 dark:text-dark-50">Daftar Pemasukan</h3>
+                    <p class="text-sm text-dark-600 dark:text-dark-400">Gabungan pembayaran invoice dan transaksi
+                        langsung</p>
+                </div>
+                <livewire:cash-flow.create-income @income-created="$refresh" />
+            </div>
         </div>
 
-        {{-- Table Content --}}
-        <div class="overflow-x-auto">
+        {{-- Loading Overlay --}}
+        <div wire:loading.flex
+            wire:target="dateRange,categoryFilters,clientFilters,search,sortBy,gotoPage,nextPage,previousPage"
+            class="absolute inset-0 bg-white/75 dark:bg-dark-800/75 backdrop-blur-sm z-10 items-center justify-center">
+            <div class="flex flex-col items-center gap-3">
+                <x-icon name="arrow-path" class="w-8 h-8 text-primary-600 dark:text-primary-400 animate-spin" />
+                <span class="text-sm font-medium text-dark-700 dark:text-dark-300">Memuat data...</span>
+            </div>
+        </div>
+
+        <div class="overflow-x-auto relative">
             <table class="w-full">
                 <thead class="bg-zinc-50 dark:bg-dark-700">
                     <tr>
-                        <th
-                            class="px-4 py-3 text-left text-xs font-medium text-dark-600 dark:text-dark-400 uppercase tracking-wider">
-                            Tanggal
+                        <th class="px-4 py-3 text-left w-12">
+                            {{-- <input type="checkbox" class="rounded border-zinc-300 dark:border-dark-600" disabled> --}}
+                        </th>
+                        <th wire:click="sortBy('date')"
+                            class="px-4 py-3 text-left text-xs font-medium text-dark-600 dark:text-dark-400 uppercase tracking-wider cursor-pointer hover:bg-zinc-100 dark:hover:bg-dark-600 transition-colors">
+                            <div class="flex items-center gap-2">
+                                Tanggal
+                                @if ($sort['column'] === 'date')
+                                    <x-icon name="{{ $sort['direction'] === 'asc' ? 'chevron-up' : 'chevron-down' }}"
+                                        class="w-4 h-4" />
+                                @else
+                                    <x-icon name="chevron-up-down" class="w-4 h-4 opacity-30" />
+                                @endif
+                            </div>
                         </th>
                         <th
                             class="px-4 py-3 text-left text-xs font-medium text-dark-600 dark:text-dark-400 uppercase tracking-wider">
@@ -79,9 +99,17 @@
                             class="px-4 py-3 text-left text-xs font-medium text-dark-600 dark:text-dark-400 uppercase tracking-wider">
                             Kategori
                         </th>
-                        <th
-                            class="px-4 py-3 text-right text-xs font-medium text-dark-600 dark:text-dark-400 uppercase tracking-wider">
-                            Jumlah
+                        <th wire:click="sortBy('amount')"
+                            class="px-4 py-3 text-right text-xs font-medium text-dark-600 dark:text-dark-400 uppercase tracking-wider cursor-pointer hover:bg-zinc-100 dark:hover:bg-dark-600 transition-colors">
+                            <div class="flex items-center justify-end gap-2">
+                                Jumlah
+                                @if ($sort['column'] === 'amount')
+                                    <x-icon name="{{ $sort['direction'] === 'asc' ? 'chevron-up' : 'chevron-down' }}"
+                                        class="w-4 h-4" />
+                                @else
+                                    <x-icon name="chevron-up-down" class="w-4 h-4 opacity-30" />
+                                @endif
+                            </div>
                         </th>
                         <th
                             class="px-4 py-3 text-center text-xs font-medium text-dark-600 dark:text-dark-400 uppercase tracking-wider">
@@ -91,8 +119,13 @@
                 </thead>
                 <tbody class="divide-y divide-zinc-200 dark:divide-dark-600">
                     @forelse($this->incomeData as $item)
-                        <tr class="hover:bg-zinc-50 dark:hover:bg-dark-700 transition-colors">
-                            {{-- Date --}}
+                        <tr class="hover:bg-zinc-50 dark:hover:bg-dark-700 transition-colors"
+                            wire:key="income-{{ $item->source_type }}-{{ $item->id }}">
+                            <td class="px-4 py-4">
+                                <input type="checkbox" value="{{ $item->source_type }}-{{ $item->id }}"
+                                    wire:model.live="selected" class="rounded border-zinc-300 dark:border-dark-600">
+                            </td>
+
                             <td class="px-4 py-4 whitespace-nowrap">
                                 <div class="text-sm font-medium text-dark-900 dark:text-dark-50">
                                     {{ \Carbon\Carbon::parse($item->date)->format('d M Y') }}
@@ -102,7 +135,6 @@
                                 </div>
                             </td>
 
-                            {{-- Source Type --}}
                             <td class="px-4 py-4 whitespace-nowrap">
                                 @if ($item->source_type === 'payment')
                                     <x-badge text="Payment" color="blue" icon="document-text" size="sm" />
@@ -120,7 +152,6 @@
                                 @endif
                             </td>
 
-                            {{-- Client/Description --}}
                             <td class="px-4 py-4">
                                 <div class="max-w-xs">
                                     @if ($item->source_type === 'payment')
@@ -145,7 +176,6 @@
                                 </div>
                             </td>
 
-                            {{-- Category --}}
                             <td class="px-4 py-4 whitespace-nowrap">
                                 @if ($item->category_label)
                                     <x-badge text="{{ $item->category_label }}" color="purple" outline
@@ -155,39 +185,37 @@
                                 @endif
                             </td>
 
-                            {{-- Amount --}}
                             <td class="px-4 py-4 whitespace-nowrap text-right">
                                 <div class="text-lg font-bold text-green-600 dark:text-green-400">
                                     Rp {{ number_format($item->amount, 0, ',', '.') }}
                                 </div>
                             </td>
 
-                            {{-- Actions --}}
                             <td class="px-4 py-4 whitespace-nowrap">
                                 <div class="flex items-center justify-center gap-1">
-                                    {{-- View Attachment --}}
                                     @if ($item->attachment_path)
                                         <x-button.circle icon="paper-clip" color="blue" size="sm"
                                             wire:click="viewAttachment('{{ $item->source_type }}', {{ $item->id }})"
+                                            loading="viewAttachment('{{ $item->source_type }}', {{ $item->id }})"
                                             title="Lihat Lampiran" />
                                     @endif
 
-                                    {{-- Edit (Payment only) --}}
                                     @if ($item->source_type === 'payment')
                                         <x-button.circle icon="pencil" color="green" size="sm"
-                                            wire:click="editPayment({{ $item->id }})" title="Edit Payment" />
+                                            wire:click="editPayment({{ $item->id }})"
+                                            loading="editPayment({{ $item->id }})" title="Edit Payment" />
                                     @endif
 
-                                    {{-- Delete --}}
                                     <x-button.circle icon="trash" color="red" size="sm"
                                         wire:click="deleteItem('{{ $item->source_type }}', {{ $item->id }})"
+                                        loading="deleteItem('{{ $item->source_type }}', {{ $item->id }})"
                                         title="Hapus" />
                                 </div>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="px-4 py-12 text-center">
+                            <td colspan="7" class="px-4 py-12 text-center">
                                 <div class="flex flex-col items-center justify-center">
                                     <div
                                         class="h-16 w-16 bg-dark-100 dark:bg-dark-700 rounded-full flex items-center justify-center mb-4">
@@ -211,16 +239,47 @@
             </table>
         </div>
 
-        {{-- Pagination --}}
         @if ($this->incomeData->hasPages())
             <div class="px-4 lg:px-6 py-4 border-t border-zinc-200 dark:border-dark-600">
-                {{ $this->incomeData->links() }}
+                {{ $this->incomeData->links(data: ['scrollTo' => false]) }}
             </div>
         @endif
     </div>
 
+    {{-- Bulk Actions Bar --}}
+    <div x-data="{ show: @entangle('selected').live }" x-show="show.length > 0" x-transition
+        class="fixed bottom-4 sm:bottom-6 left-4 right-4 sm:left-1/2 sm:right-auto sm:transform sm:-translate-x-1/2 z-50">
+        <div
+            class="bg-white dark:bg-dark-800 rounded-xl shadow-lg border border-zinc-200 dark:border-dark-600 px-4 sm:px-6 py-4 sm:min-w-96">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-6">
+                <div class="flex items-center gap-3">
+                    <div class="h-10 w-10 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center">
+                        <x-icon name="check-circle" class="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <div>
+                        <div class="font-semibold text-dark-900 dark:text-dark-50"
+                            x-text="`${show.length} item dipilih`"></div>
+                        <div class="text-xs text-dark-500 dark:text-dark-400">Pilih aksi untuk item yang dipilih</div>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2 justify-end">
+                    <x-button wire:click="bulkDelete" size="sm" color="red" icon="trash"
+                        loading="executeBulkDelete" class="whitespace-nowrap">
+                        Hapus
+                    </x-button>
+                    <x-button wire:click="$set('selected', [])" size="sm" color="gray" icon="x-mark"
+                        class="whitespace-nowrap">
+                        Batal
+                    </x-button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     {{-- Child Components --}}
     <livewire:cash-flow.attachment-viewer />
+    <livewire:cash-flow.create-income @income-created="$refresh" />
     <livewire:payments.edit @payment-updated="$refresh" />
     <livewire:payments.delete @payment-deleted="$refresh" />
     <livewire:transactions.delete @transaction-deleted="$refresh" />
