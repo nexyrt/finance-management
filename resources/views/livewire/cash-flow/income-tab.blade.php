@@ -1,6 +1,6 @@
 <div class="space-y-6">
     {{-- Filters Section --}}
-    <div class="bg-white dark:bg-dark-800 border border-zinc-200 dark:border-dark-600 rounded-xl p-4 lg:p-6">
+    <div class="bg-white dark:bg-dark-800 border border-secondary-200 dark:border-dark-600 rounded-xl p-4 lg:p-6">
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
             <div class="sm:col-span-2 lg:col-span-1">
                 <x-date wire:model.live="dateRange" label="Periode" range placeholder="Pilih range tanggal..." />
@@ -34,7 +34,7 @@
         @endphp
 
         @if ($activeFilters > 0)
-            <div class="mt-4 pt-4 border-t border-zinc-200 dark:border-dark-600">
+            <div class="mt-4 pt-4 border-t border-secondary-200 dark:border-dark-600">
                 <div class="flex items-center justify-between">
                     <x-badge text="{{ $activeFilters }} filter aktif" color="primary" size="sm" />
                     <div class="text-sm text-dark-500 dark:text-dark-400">
@@ -46,21 +46,26 @@
     </div>
 
     {{-- Income Table --}}
-    <div class="bg-white dark:bg-dark-800 border border-zinc-200 dark:border-dark-600 rounded-xl overflow-hidden">
-        <div class="px-4 lg:px-6 py-4 border-b border-zinc-200 dark:border-dark-600">
+    <div class="bg-white dark:bg-dark-800 border border-secondary-200 dark:border-dark-600 rounded-xl overflow-hidden">
+        <div class="px-4 lg:px-6 py-4 border-b border-secondary-200 dark:border-dark-600">
             <div class="flex items-center justify-between">
                 <div>
                     <h3 class="text-lg font-semibold text-dark-900 dark:text-dark-50">Daftar Pemasukan</h3>
                     <p class="text-sm text-dark-600 dark:text-dark-400">Gabungan pembayaran invoice dan transaksi
                         langsung</p>
                 </div>
-                <livewire:cash-flow.create-income @income-created="$refresh" />
+                <div class="flex items-center gap-2">
+                    <x-button wire:click="export" color="green" icon="arrow-down-tray" size="sm" loading="export">
+                        Export
+                    </x-button>
+                    <livewire:cash-flow.create-income @income-created="$refresh" />
+                </div>
             </div>
         </div>
 
         {{-- Loading Overlay --}}
         <div wire:loading.flex
-            wire:target="dateRange,categoryFilters,clientFilters,search,sortBy,gotoPage,nextPage,previousPage"
+            wire:target="dateRange,categoryFilters,clientFilters,search,sortBy,gotoPage,nextPage,previousPage,export"
             class="fixed inset-0 bg-white/75 dark:bg-dark-800/75 backdrop-blur-sm z-50 items-center justify-center">
             <div class="flex flex-col items-center gap-3">
                 <x-icon name="arrow-path" class="w-8 h-8 text-primary-600 dark:text-primary-400 animate-spin" />
@@ -91,11 +96,11 @@
                     this.lastIndex = index;
                 }
             }">
-                <thead class="bg-zinc-50 dark:bg-dark-700 border-b-2 border-zinc-200 dark:border-dark-600">
+                <thead class="bg-secondary-50 dark:bg-dark-700 border-b-2 border-secondary-200 dark:border-dark-600">
                     <tr>
                         <th class="px-4 py-3 text-left w-12"></th>
                         <th wire:click="sortBy('date')"
-                            class="px-4 py-3 text-left text-xs font-semibold text-dark-700 dark:text-dark-300 uppercase tracking-wider cursor-pointer hover:bg-zinc-100 dark:hover:bg-dark-600 transition-colors">
+                            class="px-4 py-3 text-left text-xs font-semibold text-dark-700 dark:text-dark-300 uppercase tracking-wider cursor-pointer hover:bg-secondary-100 dark:hover:bg-dark-600 transition-colors">
                             <div class="flex items-center gap-2">
                                 Tanggal
                                 @if ($sort['column'] === 'date')
@@ -119,7 +124,7 @@
                             Kategori
                         </th>
                         <th wire:click="sortBy('amount')"
-                            class="px-4 py-3 text-right text-xs font-semibold text-dark-700 dark:text-dark-300 uppercase tracking-wider cursor-pointer hover:bg-zinc-100 dark:hover:bg-dark-600 transition-colors">
+                            class="px-4 py-3 text-right text-xs font-semibold text-dark-700 dark:text-dark-300 uppercase tracking-wider cursor-pointer hover:bg-secondary-100 dark:hover:bg-dark-600 transition-colors">
                             <div class="flex items-center justify-end gap-2">
                                 Jumlah
                                 @if ($sort['column'] === 'amount')
@@ -136,23 +141,24 @@
                         </th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-zinc-200 dark:divide-dark-600">
+                <tbody class="divide-y divide-secondary-200 dark:divide-dark-600">
                     @forelse($this->incomeData as $index => $item)
-                        <tr class="group hover:bg-gradient-to-r hover:from-zinc-50 hover:to-transparent dark:hover:from-dark-700 dark:hover:to-transparent transition-all duration-200 hover:shadow-sm"
+                        <tr class="group hover:bg-gradient-to-r hover:from-secondary-50 hover:to-transparent dark:hover:from-dark-700 dark:hover:to-transparent transition-all duration-200 hover:shadow-sm"
                             wire:key="income-{{ $item->source_type }}-{{ $item->id }}">
 
                             <td class="px-4 py-5">
                                 <input type="checkbox" value="{{ $item->source_type }}-{{ $item->id }}"
                                     wire:model.live="selected" data-bulk-index="{{ $index }}"
                                     @click="handleCheck($event, '{{ $item->source_type }}-{{ $item->id }}', {{ $index }})"
-                                    class="rounded border-zinc-300 dark:border-dark-600 transition-all duration-200 hover:scale-110">
+                                    class="rounded border-secondary-300 dark:border-dark-600 transition-all duration-200 hover:scale-110">
                             </td>
 
                             <td class="px-4 py-5 whitespace-nowrap">
                                 <div class="flex items-center gap-3">
                                     <div
-                                        class="flex-shrink-0 h-10 w-10 bg-gradient-to-br from-zinc-100 to-zinc-200 dark:from-dark-700 dark:to-dark-600 rounded-lg flex items-center justify-center">
-                                        <x-icon name="calendar" class="w-5 h-5 text-zinc-600 dark:text-zinc-400" />
+                                        class="flex-shrink-0 h-10 w-10 bg-gradient-to-br from-secondary-100 to-secondary-200 dark:from-dark-700 dark:to-dark-600 rounded-lg flex items-center justify-center">
+                                        <x-icon name="calendar"
+                                            class="w-5 h-5 text-secondary-600 dark:text-secondary-400" />
                                     </div>
                                     <div>
                                         <div class="text-sm font-semibold text-dark-900 dark:text-dark-50">
@@ -168,12 +174,12 @@
                             <td class="px-4 py-5 whitespace-nowrap">
                                 @if ($item->source_type === 'payment')
                                     <div class="space-y-2">
-                                        <x-badge text="Payment" color="blue" icon="document-text" size="sm" />
+                                        <x-badge text="Payment" color="primary" icon="document-text" size="sm" />
                                         @if ($item->invoice_number)
                                             <div class="flex items-center gap-1.5">
-                                                <x-icon name="hashtag" class="w-3 h-3 text-blue-500" />
+                                                <x-icon name="hashtag" class="w-3 h-3 text-primary-500" />
                                                 <span
-                                                    class="text-xs text-blue-600 dark:text-blue-400 font-mono font-semibold">
+                                                    class="text-xs text-primary-600 dark:text-primary-400 font-mono font-semibold">
                                                     {{ $item->invoice_number }}
                                                 </span>
                                             </div>
@@ -198,9 +204,9 @@
                                     @if ($item->source_type === 'payment')
                                         <div class="flex items-center gap-2 mb-1">
                                             <div
-                                                class="h-8 w-8 bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900/30 dark:to-blue-800/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                                                class="h-8 w-8 bg-gradient-to-br from-primary-100 to-primary-200 dark:from-primary-900/30 dark:to-primary-800/30 rounded-lg flex items-center justify-center flex-shrink-0">
                                                 <x-icon name="user"
-                                                    class="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                                                    class="w-4 h-4 text-primary-600 dark:text-primary-400" />
                                             </div>
                                             <div class="font-semibold text-dark-900 dark:text-dark-50 truncate">
                                                 {{ $item->client_name }}
@@ -254,7 +260,8 @@
                                         Rp {{ number_format($item->amount, 0, ',', '.') }}
                                     </div>
                                     @if ($item->attachment_path)
-                                        <div class="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400">
+                                        <div
+                                            class="flex items-center gap-1 text-xs text-primary-600 dark:text-primary-400">
                                             <x-icon name="paper-clip" class="w-3 h-3" />
                                             <span class="font-medium">Ada lampiran</span>
                                         </div>
@@ -266,7 +273,7 @@
                                 <div
                                     class="flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                                     @if ($item->attachment_path)
-                                        <x-button.circle icon="paper-clip" color="blue" size="sm"
+                                        <x-button.circle icon="paper-clip" color="primary" size="sm"
                                             wire:click="viewAttachment('{{ $item->source_type }}', {{ $item->id }})"
                                             loading="viewAttachment('{{ $item->source_type }}', {{ $item->id }})"
                                             title="Lihat Lampiran" />
@@ -290,8 +297,9 @@
                             <td colspan="7" class="px-4 py-16 text-center">
                                 <div class="flex flex-col items-center justify-center">
                                     <div
-                                        class="h-20 w-20 bg-gradient-to-br from-zinc-100 to-zinc-200 dark:from-dark-700 dark:to-dark-600 rounded-full flex items-center justify-center mb-4">
-                                        <x-icon name="inbox" class="w-10 h-10 text-zinc-400 dark:text-zinc-500" />
+                                        class="h-20 w-20 bg-gradient-to-br from-secondary-100 to-secondary-200 dark:from-dark-700 dark:to-dark-600 rounded-full flex items-center justify-center mb-4">
+                                        <x-icon name="inbox"
+                                            class="w-10 h-10 text-secondary-400 dark:text-secondary-500" />
                                     </div>
                                     <h3 class="text-lg font-semibold text-dark-900 dark:text-dark-50 mb-2">
                                         Tidak ada data pemasukan
@@ -313,7 +321,7 @@
 
         @if ($this->incomeData->hasPages())
             <div
-                class="px-4 lg:px-6 py-4 border-t border-zinc-200 dark:border-dark-600 bg-zinc-50 dark:bg-dark-700/50">
+                class="px-4 lg:px-6 py-4 border-t border-secondary-200 dark:border-dark-600 bg-secondary-50 dark:bg-dark-700/50">
                 {{ $this->incomeData->links() }}
             </div>
         @endif
@@ -323,11 +331,12 @@
     <div x-data="{ show: @entangle('selected').live }" x-show="show.length > 0" x-transition
         class="fixed bottom-4 sm:bottom-6 left-4 right-4 sm:left-1/2 sm:right-auto sm:transform sm:-translate-x-1/2 z-50">
         <div
-            class="bg-white dark:bg-dark-800 rounded-xl shadow-lg border border-zinc-200 dark:border-dark-600 px-4 sm:px-6 py-4 sm:min-w-96">
+            class="bg-white dark:bg-dark-800 rounded-xl shadow-lg border border-secondary-200 dark:border-dark-600 px-4 sm:px-6 py-4 sm:min-w-96">
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-6">
                 <div class="flex items-center gap-3">
-                    <div class="h-10 w-10 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center">
-                        <x-icon name="check-circle" class="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                    <div
+                        class="h-10 w-10 bg-primary-50 dark:bg-primary-900/20 rounded-xl flex items-center justify-center">
+                        <x-icon name="check-circle" class="w-5 h-5 text-primary-600 dark:text-primary-400" />
                     </div>
                     <div>
                         <div class="font-semibold text-dark-900 dark:text-dark-50"
@@ -337,11 +346,15 @@
                 </div>
 
                 <div class="flex items-center gap-2 justify-end">
+                    <x-button wire:click="exportSelected" size="sm" color="green" icon="arrow-down-tray"
+                        loading="exportSelected" class="whitespace-nowrap">
+                        Export
+                    </x-button>
                     <x-button wire:click="bulkDelete" size="sm" color="red" icon="trash"
                         loading="executeBulkDelete" class="whitespace-nowrap">
                         Hapus
                     </x-button>
-                    <x-button wire:click="$set('selected', [])" size="sm" color="gray" icon="x-mark"
+                    <x-button wire:click="$set('selected', [])" size="sm" color="secondary" icon="x-mark"
                         class="whitespace-nowrap">
                         Batal
                     </x-button>
