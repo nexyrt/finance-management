@@ -16,6 +16,7 @@ class Create extends Component
     use Interactions, WithFileUploads;
 
     public bool $modal = false;
+    public array $allowedTypes = ['credit', 'debit']; // default both
 
     // Form properties
     public ?int $bank_account_id = null;
@@ -27,18 +28,26 @@ class Create extends Component
     public ?string $reference_number = null;
     public $attachment = null;
 
-    public function mount()
+    public function mount(?array $allowedTypes = null)
     {
+        if ($allowedTypes) {
+            $this->allowedTypes = $allowedTypes;
+            $this->transaction_type = $allowedTypes[0];
+        }
+
         $this->transaction_date = now()->format('Y-m-d');
-        $this->transaction_type = 'credit';
     }
 
     #[On('create-transaction')]
-    public function open(?int $bankAccountId = null): void
+    public function open(?int $bankAccountId = null, ?array $allowedTypes = null): void
     {
         $this->resetForm();
 
-        // Auto-fill bank account if provided
+        if ($allowedTypes) {
+            $this->allowedTypes = $allowedTypes;
+            $this->transaction_type = $allowedTypes[0];
+        }
+
         if ($bankAccountId) {
             $this->bank_account_id = $bankAccountId;
         }
@@ -50,26 +59,26 @@ class Create extends Component
     {
         $this->reset(['bank_account_id', 'category_id', 'amount', 'description', 'reference_number', 'attachment']);
         $this->transaction_date = now()->format('Y-m-d');
-        $this->transaction_type = 'credit';
+
+        if (!empty($this->allowedTypes)) {
+            $this->transaction_type = $this->allowedTypes[0];
+        }
     }
 
     public function updatedTransactionType(): void
     {
-        // Reset category when transaction type changes
         $this->category_id = null;
     }
 
     #[Computed]
     public function categoriesOptions(): array
     {
-        // Map transaction_type to category types
         $categoryTypes = match ($this->transaction_type) {
             'credit' => ['income', 'adjustment', 'transfer'],
             'debit' => ['expense', 'adjustment', 'transfer'],
             default => []
         };
 
-        // Get parent categories
         $parents = TransactionCategory::whereNull('parent_code')
             ->whereIn('type', $categoryTypes)
             ->orderBy('type')
@@ -79,13 +88,11 @@ class Create extends Component
         $options = [];
 
         foreach ($parents as $parent) {
-            // Add parent
             $options[] = [
                 'label' => $parent->label,
                 'value' => $parent->id,
             ];
 
-            // Add children
             foreach ($parent->children as $child) {
                 $options[] = [
                     'label' => '  ↳ ' . $child->label,
@@ -111,23 +118,6 @@ class Create extends Component
         ];
     }
 
-    protected $messages = [
-        'bank_account_id.required' => 'Pilih rekening bank.',
-        'bank_account_id.exists' => 'Rekening tidak valid.',
-        'category_id.required' => 'Pilih kategori transaksi.',
-        'category_id.exists' => 'Kategori tidak valid.',
-        'amount.required' => 'Jumlah wajib diisi.',
-        'transaction_date.required' => 'Tanggal transaksi wajib diisi.',
-        'transaction_date.date' => 'Format tanggal tidak valid.',
-        'transaction_type.required' => 'Pilih jenis transaksi.',
-        'description.required' => 'Deskripsi wajib diisi.',
-        'description.max' => 'Deskripsi maksimal 255 karakter.',
-        'reference_number.max' => 'Nomor referensi maksimal 255 karakter.',
-        'attachment.file' => 'File harus berupa file.',
-        'attachment.mimes' => 'File harus berformat PDF, JPG, JPEG, atau PNG.',
-        'attachment.max' => 'Ukuran file maksimal 2MB.'
-    ];
-
     #[Computed]
     public function accounts()
     {
@@ -149,7 +139,6 @@ class Create extends Component
                 'reference_number' => $this->reference_number ?: null,
             ];
 
-            // Handle file upload
             if ($this->attachment) {
                 $filename = time() . '_' . $this->attachment->getClientOriginalName();
                 $path = $this->attachment->storeAs('transaction-attachments', $filename, 'public');
