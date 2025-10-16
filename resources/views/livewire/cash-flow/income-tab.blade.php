@@ -91,129 +91,180 @@
                     this.lastIndex = index;
                 }
             }">
-                <thead class="bg-zinc-50 dark:bg-dark-700">
+                <thead class="bg-zinc-50 dark:bg-dark-700 border-b-2 border-zinc-200 dark:border-dark-600">
                     <tr>
                         <th class="px-4 py-3 text-left w-12"></th>
                         <th wire:click="sortBy('date')"
-                            class="px-4 py-3 text-left text-xs font-medium text-dark-600 dark:text-dark-400 uppercase tracking-wider cursor-pointer hover:bg-zinc-100 dark:hover:bg-dark-600 transition-colors">
+                            class="px-4 py-3 text-left text-xs font-semibold text-dark-700 dark:text-dark-300 uppercase tracking-wider cursor-pointer hover:bg-zinc-100 dark:hover:bg-dark-600 transition-colors">
                             <div class="flex items-center gap-2">
                                 Tanggal
                                 @if ($sort['column'] === 'date')
                                     <x-icon name="{{ $sort['direction'] === 'asc' ? 'chevron-up' : 'chevron-down' }}"
-                                        class="w-4 h-4" />
+                                        class="w-4 h-4 text-primary-600" />
                                 @else
                                     <x-icon name="chevron-up-down" class="w-4 h-4 opacity-30" />
                                 @endif
                             </div>
                         </th>
                         <th
-                            class="px-4 py-3 text-left text-xs font-medium text-dark-600 dark:text-dark-400 uppercase tracking-wider">
+                            class="px-4 py-3 text-left text-xs font-semibold text-dark-700 dark:text-dark-300 uppercase tracking-wider">
                             Sumber
                         </th>
                         <th
-                            class="px-4 py-3 text-left text-xs font-medium text-dark-600 dark:text-dark-400 uppercase tracking-wider">
+                            class="px-4 py-3 text-left text-xs font-semibold text-dark-700 dark:text-dark-300 uppercase tracking-wider">
                             Klien/Deskripsi
                         </th>
                         <th
-                            class="px-4 py-3 text-left text-xs font-medium text-dark-600 dark:text-dark-400 uppercase tracking-wider">
+                            class="px-4 py-3 text-left text-xs font-semibold text-dark-700 dark:text-dark-300 uppercase tracking-wider">
                             Kategori
                         </th>
                         <th wire:click="sortBy('amount')"
-                            class="px-4 py-3 text-right text-xs font-medium text-dark-600 dark:text-dark-400 uppercase tracking-wider cursor-pointer hover:bg-zinc-100 dark:hover:bg-dark-600 transition-colors">
+                            class="px-4 py-3 text-right text-xs font-semibold text-dark-700 dark:text-dark-300 uppercase tracking-wider cursor-pointer hover:bg-zinc-100 dark:hover:bg-dark-600 transition-colors">
                             <div class="flex items-center justify-end gap-2">
                                 Jumlah
                                 @if ($sort['column'] === 'amount')
                                     <x-icon name="{{ $sort['direction'] === 'asc' ? 'chevron-up' : 'chevron-down' }}"
-                                        class="w-4 h-4" />
+                                        class="w-4 h-4 text-primary-600" />
                                 @else
                                     <x-icon name="chevron-up-down" class="w-4 h-4 opacity-30" />
                                 @endif
                             </div>
                         </th>
                         <th
-                            class="px-4 py-3 text-center text-xs font-medium text-dark-600 dark:text-dark-400 uppercase tracking-wider">
+                            class="px-4 py-3 text-center text-xs font-semibold text-dark-700 dark:text-dark-300 uppercase tracking-wider">
                             Aksi
                         </th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-zinc-200 dark:divide-dark-600">
                     @forelse($this->incomeData as $index => $item)
-                        <tr class="hover:bg-zinc-50 dark:hover:bg-dark-700 transition-colors"
+                        <tr class="group hover:bg-gradient-to-r hover:from-zinc-50 hover:to-transparent dark:hover:from-dark-700 dark:hover:to-transparent transition-all duration-200 hover:shadow-sm"
                             wire:key="income-{{ $item->source_type }}-{{ $item->id }}">
-                            <td class="px-4 py-4">
+
+                            <td class="px-4 py-5">
                                 <input type="checkbox" value="{{ $item->source_type }}-{{ $item->id }}"
                                     wire:model.live="selected" data-bulk-index="{{ $index }}"
                                     @click="handleCheck($event, '{{ $item->source_type }}-{{ $item->id }}', {{ $index }})"
-                                    class="rounded border-zinc-300 dark:border-dark-600">
+                                    class="rounded border-zinc-300 dark:border-dark-600 transition-all duration-200 hover:scale-110">
                             </td>
 
-                            <td class="px-4 py-4 whitespace-nowrap">
-                                <div class="text-sm font-medium text-dark-900 dark:text-dark-50">
-                                    {{ \Carbon\Carbon::parse($item->date)->format('d M Y') }}
-                                </div>
-                                <div class="text-xs text-dark-500 dark:text-dark-400">
-                                    {{ \Carbon\Carbon::parse($item->date)->diffForHumans() }}
-                                </div>
-                            </td>
-
-                            <td class="px-4 py-4 whitespace-nowrap">
-                                @if ($item->source_type === 'payment')
-                                    <x-badge text="Payment" color="blue" icon="document-text" size="sm" />
-                                    @if ($item->invoice_number)
-                                        <div class="text-xs text-dark-500 dark:text-dark-400 font-mono mt-1">
-                                            {{ $item->invoice_number }}
+                            <td class="px-4 py-5 whitespace-nowrap">
+                                <div class="flex items-center gap-3">
+                                    <div
+                                        class="flex-shrink-0 h-10 w-10 bg-gradient-to-br from-zinc-100 to-zinc-200 dark:from-dark-700 dark:to-dark-600 rounded-lg flex items-center justify-center">
+                                        <x-icon name="calendar" class="w-5 h-5 text-zinc-600 dark:text-zinc-400" />
+                                    </div>
+                                    <div>
+                                        <div class="text-sm font-semibold text-dark-900 dark:text-dark-50">
+                                            {{ \Carbon\Carbon::parse($item->date)->format('d M Y') }}
                                         </div>
-                                    @endif
+                                        <div class="text-xs text-dark-500 dark:text-dark-400">
+                                            {{ \Carbon\Carbon::parse($item->date)->diffForHumans() }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <td class="px-4 py-5 whitespace-nowrap">
+                                @if ($item->source_type === 'payment')
+                                    <div class="space-y-2">
+                                        <x-badge text="Payment" color="blue" icon="document-text" size="sm" />
+                                        @if ($item->invoice_number)
+                                            <div class="flex items-center gap-1.5">
+                                                <x-icon name="hashtag" class="w-3 h-3 text-blue-500" />
+                                                <span
+                                                    class="text-xs text-blue-600 dark:text-blue-400 font-mono font-semibold">
+                                                    {{ $item->invoice_number }}
+                                                </span>
+                                            </div>
+                                        @endif
+                                    </div>
                                 @else
-                                    <x-badge text="Direct Income" color="green" icon="arrow-trending-up"
-                                        size="sm" />
-                                    <div class="text-xs text-dark-500 dark:text-dark-400 mt-1">
-                                        {{ $item->bank_name }}
+                                    <div class="space-y-2">
+                                        <x-badge text="Direct Income" color="green" icon="arrow-trending-up"
+                                            size="sm" />
+                                        <div class="flex items-center gap-1.5">
+                                            <x-icon name="building-library" class="w-3 h-3 text-green-500" />
+                                            <span class="text-xs text-green-600 dark:text-green-400 font-medium">
+                                                {{ $item->bank_name }}
+                                            </span>
+                                        </div>
                                     </div>
                                 @endif
                             </td>
 
-                            <td class="px-4 py-4">
+                            <td class="px-4 py-5">
                                 <div class="max-w-xs">
                                     @if ($item->source_type === 'payment')
-                                        <div class="font-medium text-dark-900 dark:text-dark-50">
-                                            {{ $item->client_name }}
+                                        <div class="flex items-center gap-2 mb-1">
+                                            <div
+                                                class="h-8 w-8 bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900/30 dark:to-blue-800/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                                                <x-icon name="user"
+                                                    class="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                                            </div>
+                                            <div class="font-semibold text-dark-900 dark:text-dark-50 truncate">
+                                                {{ $item->client_name }}
+                                            </div>
                                         </div>
                                         @if ($item->reference_number)
-                                            <div class="text-xs text-dark-500 dark:text-dark-400 font-mono">
-                                                Ref: {{ $item->reference_number }}
+                                            <div class="flex items-center gap-1.5 ml-10">
+                                                <x-icon name="document-duplicate" class="w-3 h-3 text-dark-400" />
+                                                <span class="text-xs text-dark-500 dark:text-dark-400 font-mono">
+                                                    {{ $item->reference_number }}
+                                                </span>
                                             </div>
                                         @endif
                                     @else
-                                        <div class="text-sm text-dark-900 dark:text-dark-50">
-                                            {{ $item->description ?? '-' }}
-                                        </div>
-                                        @if ($item->reference_number)
-                                            <div class="text-xs text-dark-500 dark:text-dark-400 font-mono">
-                                                Ref: {{ $item->reference_number }}
+                                        <div class="space-y-1">
+                                            <div
+                                                class="text-sm font-medium text-dark-900 dark:text-dark-50 line-clamp-2">
+                                                {{ $item->description ?? '-' }}
                                             </div>
-                                        @endif
+                                            @if ($item->reference_number)
+                                                <div class="flex items-center gap-1.5">
+                                                    <x-icon name="document-duplicate" class="w-3 h-3 text-dark-400" />
+                                                    <span class="text-xs text-dark-500 dark:text-dark-400 font-mono">
+                                                        {{ $item->reference_number }}
+                                                    </span>
+                                                </div>
+                                            @endif
+                                        </div>
                                     @endif
                                 </div>
                             </td>
 
-                            <td class="px-4 py-4 whitespace-nowrap">
+                            <td class="px-4 py-5 whitespace-nowrap">
                                 @if ($item->category_label)
-                                    <x-badge text="{{ $item->category_label }}" color="purple" outline
-                                        size="sm" />
+                                    <div
+                                        class="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg">
+                                        <x-icon name="tag"
+                                            class="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
+                                        <span class="text-xs font-medium text-purple-700 dark:text-purple-300">
+                                            {{ $item->category_label }}
+                                        </span>
+                                    </div>
                                 @else
-                                    <span class="text-xs text-dark-400 dark:text-dark-500">-</span>
+                                    <span class="text-xs text-dark-400 dark:text-dark-500 italic">Tidak ada</span>
                                 @endif
                             </td>
 
-                            <td class="px-4 py-4 whitespace-nowrap text-right">
-                                <div class="text-lg font-bold text-green-600 dark:text-green-400">
-                                    Rp {{ number_format($item->amount, 0, ',', '.') }}
+                            <td class="px-4 py-5 whitespace-nowrap text-right">
+                                <div class="inline-flex flex-col items-end gap-0.5">
+                                    <div class="text-xl font-bold text-green-600 dark:text-green-400">
+                                        Rp {{ number_format($item->amount, 0, ',', '.') }}
+                                    </div>
+                                    @if ($item->attachment_path)
+                                        <div class="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400">
+                                            <x-icon name="paper-clip" class="w-3 h-3" />
+                                            <span class="font-medium">Ada lampiran</span>
+                                        </div>
+                                    @endif
                                 </div>
                             </td>
 
-                            <td class="px-4 py-4 whitespace-nowrap">
-                                <div class="flex items-center justify-center gap-1">
+                            <td class="px-4 py-5 whitespace-nowrap">
+                                <div
+                                    class="flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                                     @if ($item->attachment_path)
                                         <x-button.circle icon="paper-clip" color="blue" size="sm"
                                             wire:click="viewAttachment('{{ $item->source_type }}', {{ $item->id }})"
@@ -236,13 +287,13 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="px-4 py-12 text-center">
+                            <td colspan="7" class="px-4 py-16 text-center">
                                 <div class="flex flex-col items-center justify-center">
                                     <div
-                                        class="h-16 w-16 bg-dark-100 dark:bg-dark-700 rounded-full flex items-center justify-center mb-4">
-                                        <x-icon name="inbox" class="w-8 h-8 text-dark-400" />
+                                        class="h-20 w-20 bg-gradient-to-br from-zinc-100 to-zinc-200 dark:from-dark-700 dark:to-dark-600 rounded-full flex items-center justify-center mb-4">
+                                        <x-icon name="inbox" class="w-10 h-10 text-zinc-400 dark:text-zinc-500" />
                                     </div>
-                                    <h3 class="text-lg font-medium text-dark-900 dark:text-dark-50 mb-2">
+                                    <h3 class="text-lg font-semibold text-dark-900 dark:text-dark-50 mb-2">
                                         Tidak ada data pemasukan
                                     </h3>
                                     <p class="text-sm text-dark-600 dark:text-dark-400">
@@ -261,7 +312,8 @@
         </div>
 
         @if ($this->incomeData->hasPages())
-            <div class="px-4 lg:px-6 py-4 border-t border-zinc-200 dark:border-dark-600">
+            <div
+                class="px-4 lg:px-6 py-4 border-t border-zinc-200 dark:border-dark-600 bg-zinc-50 dark:bg-dark-700/50">
                 {{ $this->incomeData->links() }}
             </div>
         @endif
