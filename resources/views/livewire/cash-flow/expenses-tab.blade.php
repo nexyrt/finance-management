@@ -1,4 +1,72 @@
 <div class="space-y-6">
+    {{-- Summary Cards --}}
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {{-- Total Pengeluaran --}}
+        <div class="bg-white dark:bg-dark-800 border border-secondary-200 dark:border-dark-600 rounded-xl p-6">
+            <div class="flex items-start justify-between">
+                <div class="flex-1">
+                    <p class="text-sm font-medium text-dark-600 dark:text-dark-400 mb-1">Total Pengeluaran</p>
+                    <p class="text-2xl font-bold text-red-600 dark:text-red-400">
+                        Rp {{ number_format($this->totalExpense, 0, ',', '.') }}
+                    </p>
+                    <p class="text-xs text-dark-500 dark:text-dark-400 mt-2">
+                        {{ $this->rows->total() }} transaksi
+                    </p>
+                </div>
+                <div
+                    class="h-12 w-12 bg-red-50 dark:bg-red-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <x-icon name="arrow-trending-down" class="w-6 h-6 text-red-600 dark:text-red-400" />
+                </div>
+            </div>
+        </div>
+
+        {{-- Quick Stats --}}
+        <div class="bg-white dark:bg-dark-800 border border-secondary-200 dark:border-dark-600 rounded-xl p-6">
+            <div class="flex items-start justify-between">
+                <div class="flex-1">
+                    <p class="text-sm font-medium text-dark-600 dark:text-dark-400 mb-1">Rata-rata per Transaksi</p>
+                    <p class="text-2xl font-bold text-dark-900 dark:text-dark-50">
+                        @php
+                            $avg = $this->rows->total() > 0 ? $this->totalExpense / $this->rows->total() : 0;
+                        @endphp
+                        Rp {{ number_format($avg, 0, ',', '.') }}
+                    </p>
+                    <p class="text-xs text-dark-500 dark:text-dark-400 mt-2">
+                        Berdasarkan filter aktif
+                    </p>
+                </div>
+                <div
+                    class="h-12 w-12 bg-primary-50 dark:bg-primary-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <x-icon name="calculator" class="w-6 h-6 text-primary-600 dark:text-primary-400" />
+                </div>
+            </div>
+        </div>
+
+        {{-- Period Info --}}
+        <div class="bg-white dark:bg-dark-800 border border-secondary-200 dark:border-dark-600 rounded-xl p-6">
+            <div class="flex items-start justify-between">
+                <div class="flex-1">
+                    <p class="text-sm font-medium text-dark-600 dark:text-dark-400 mb-1">Periode</p>
+                    <p class="text-2xl font-bold text-dark-900 dark:text-dark-50">
+                        @if (!empty($dateRange) && count($dateRange) >= 2)
+                            {{ \Carbon\Carbon::parse($dateRange[0])->format('d M') }} -
+                            {{ \Carbon\Carbon::parse($dateRange[1])->format('d M Y') }}
+                        @else
+                            Semua Waktu
+                        @endif
+                    </p>
+                    <p class="text-xs text-dark-500 dark:text-dark-400 mt-2">
+                        Filter: {{ !empty($dateRange) ? 'Custom range' : 'Tidak ada filter' }}
+                    </p>
+                </div>
+                <div
+                    class="h-12 w-12 bg-green-50 dark:bg-green-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <x-icon name="calendar" class="w-6 h-6 text-green-600 dark:text-green-400" />
+                </div>
+            </div>
+        </div>
+    </div>
+
     {{-- Filters Section --}}
     <div class="bg-white dark:bg-dark-800 border border-secondary-200 dark:border-dark-600 rounded-xl p-4 lg:p-6">
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -36,7 +104,14 @@
         @if ($activeFilters > 0)
             <div class="mt-4 pt-4 border-t border-secondary-200 dark:border-dark-600">
                 <div class="flex items-center justify-between">
-                    <x-badge text="{{ $activeFilters }} filter aktif" color="primary" size="sm" />
+                    <div class="flex items-center gap-3">
+                        <x-badge text="{{ $activeFilters }} filter aktif" color="primary" size="sm" />
+                        <button
+                            wire:click="$set('dateRange', []); $set('bankAccountFilters', []); $set('categoryFilters', []); $set('search', null);"
+                            class="text-sm text-primary-600 dark:text-primary-400 hover:underline">
+                            Reset semua filter
+                        </button>
+                    </div>
                     <div class="text-sm text-dark-500 dark:text-dark-400">
                         Menampilkan {{ $this->rows->count() }} dari {{ $this->rows->total() }} pengeluaran
                     </div>
@@ -45,10 +120,11 @@
         @endif
     </div>
 
-    {{-- Expense Table --}}
-    <x-card class="">
-        <x-slot:header>
-            <div class="flex items-center justify-between">
+    {{-- Table Section --}}
+    <div class="bg-white dark:bg-dark-800 border border-secondary-200 dark:border-dark-600 rounded-xl overflow-hidden">
+        {{-- Header --}}
+        <div class="px-4 lg:px-6 py-4 border-b border-secondary-200 dark:border-dark-600">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                     <h3 class="text-lg font-semibold text-dark-900 dark:text-dark-50">Daftar Pengeluaran</h3>
                     <p class="text-sm text-dark-600 dark:text-dark-400">Transaksi pengeluaran operasional</p>
@@ -57,15 +133,15 @@
                     <x-button wire:click="export" color="green" icon="arrow-down-tray" size="sm" loading="export">
                         Export
                     </x-button>
-                    {{-- Tombol yang dispatch event --}}
                     <x-button wire:click="$dispatch('create-transaction', {allowedTypes: ['debit']})" color="red"
                         icon="plus" size="sm">
                         Tambah Pengeluaran
                     </x-button>
                 </div>
             </div>
-        </x-slot:header>
+        </div>
 
+        {{-- Table --}}
         <x-table :$headers :$sort :rows="$this->rows" selectable wire:model="selected" paginate filter loading>
 
             {{-- Date Column --}}
@@ -97,7 +173,7 @@
                         </span>
                     </div>
                 @else
-                    <span class="text-xs text-dark-400 dark:text-dark-500 italic">Tidak ada</span>
+                    <x-badge text="Belum dikategorikan" color="amber" icon="exclamation-triangle" size="sm" />
                 @endif
             @endinteract
 
@@ -156,20 +232,29 @@
             {{-- Action Column --}}
             @interact('column_action', $row)
                 <div class="flex items-center justify-center gap-1">
+                    @if (!$row->category_id)
+                        <x-button.circle icon="tag" color="amber" size="sm"
+                            wire:click="$dispatch('categorize-transaction', {id: {{ $row->id }}})"
+                            title="Kategorikan" />
+                    @endif
+
                     @if ($row->attachment_path)
                         <x-button.circle icon="paper-clip" color="primary" size="sm"
-                            wire:click="$dispatch('view-attachment', {transactionId: {{ $row->id }}})"
+                            wire:click="$dispatch('view-attachment', {type: 'transaction', id: {{ $row->id }}})"
                             title="Lihat Lampiran" />
                     @endif
 
                     <x-button.circle icon="pencil" color="green" size="sm"
-                        wire:click="$dispatch('edit::expense', {id: {{ $row->id }}})" title="Edit" />
+                        wire:click="$dispatch('edit-transaction', {transactionId: {{ $row->id }}})"
+                        title="Edit" />
 
-                    <livewire:cash-flow.delete-expense :expense="$row" :key="'delete-' . $row->id" @deleted="$refresh" />
+                    <x-button.circle icon="trash" color="red" size="sm"
+                        wire:click="$dispatch('delete-transaction', {transactionId: {{ $row->id }}})"
+                        title="Hapus" />
                 </div>
             @endinteract
         </x-table>
-    </x-card>
+    </div>
 
     {{-- Bulk Actions Bar --}}
     <div x-data="{ show: @entangle('selected').live }" x-show="show.length > 0" x-transition
@@ -193,6 +278,10 @@
                         loading="exportSelected" class="whitespace-nowrap">
                         Export
                     </x-button>
+                    <x-button wire:click="$dispatch('bulk-categorize', {ids: selected})" size="sm"
+                        color="amber" icon="tag" class="whitespace-nowrap">
+                        Kategorikan
+                    </x-button>
                     <x-button wire:click="bulkDelete" size="sm" color="red" icon="trash"
                         loading="executeBulkDelete" class="whitespace-nowrap">
                         Hapus
@@ -207,7 +296,7 @@
     </div>
 
     {{-- Child Components --}}
-    {{-- <livewire:cash-flow.update-expense @updated="$refresh" /> --}}
     <livewire:transactions.create :allowedTypes="['debit']" @transaction-created="$refresh" />
+    <livewire:transactions.categorize @transaction-categorized="$refresh" />
     <livewire:cash-flow.attachment-viewer />
 </div>

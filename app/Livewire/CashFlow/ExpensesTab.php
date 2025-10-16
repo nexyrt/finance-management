@@ -35,7 +35,7 @@ class ExpensesTab extends Component
         ['index' => 'description', 'label' => 'Deskripsi'],
         ['index' => 'bank_account', 'label' => 'Bank', 'sortable' => false],
         ['index' => 'amount', 'label' => 'Jumlah'],
-        ['index' => 'action', 'sortable' => false],
+        ['index' => 'action', 'label' => 'Aksi', 'sortable' => false],
     ];
 
     #[Computed]
@@ -68,7 +68,10 @@ class ExpensesTab extends Component
     {
         return BankTransaction::with(['bankAccount', 'category'])
             ->where('transaction_type', 'debit')
-            ->whereHas('category', fn($q) => $q->where('type', 'expense'))
+            ->where(function ($query) {
+                $query->whereHas('category', fn($q) => $q->where('type', 'expense'))
+                    ->orWhereNull('category_id');
+            })
             ->when(
                 $this->search,
                 fn(Builder $q) =>
@@ -79,6 +82,7 @@ class ExpensesTab extends Component
                             'bankAccount',
                             fn($bank) =>
                             $bank->where('bank_name', 'like', "%{$this->search}%")
+                                ->orWhere('account_name', 'like', "%{$this->search}%")
                         );
                 })
             )
@@ -102,12 +106,49 @@ class ExpensesTab extends Component
             ->withQueryString();
     }
 
+    #[Computed]
+    public function totalExpense(): int
+    {
+        return BankTransaction::where('transaction_type', 'debit')
+            ->where(function ($query) {
+                $query->whereHas('category', fn($q) => $q->where('type', 'expense'))
+                    ->orWhereNull('category_id');
+            })
+            ->when(
+                $this->search,
+                fn(Builder $q) =>
+                $q->where(function ($query) {
+                    $query->where('description', 'like', "%{$this->search}%")
+                        ->orWhere('reference_number', 'like', "%{$this->search}%");
+                })
+            )
+            ->when(
+                !empty($this->categoryFilters),
+                fn(Builder $q) =>
+                $q->whereIn('category_id', $this->categoryFilters)
+            )
+            ->when(
+                !empty($this->bankAccountFilters),
+                fn(Builder $q) =>
+                $q->whereIn('bank_account_id', $this->bankAccountFilters)
+            )
+            ->when(
+                !empty($this->dateRange) && count($this->dateRange) >= 2,
+                fn(Builder $q) =>
+                $q->whereBetween('transaction_date', [$this->dateRange[0], $this->dateRange[1]])
+            )
+            ->sum('amount');
+    }
+
     // Export functionality
     public function export()
     {
         $data = BankTransaction::with(['bankAccount', 'category'])
             ->where('transaction_type', 'debit')
-            ->whereHas('category', fn($q) => $q->where('type', 'expense'))
+            ->where(function ($query) {
+                $query->whereHas('category', fn($q) => $q->where('type', 'expense'))
+                    ->orWhereNull('category_id');
+            })
             ->when(
                 $this->search,
                 fn(Builder $q) =>
@@ -258,11 +299,6 @@ class ExpensesTab extends Component
         $this->toast()
             ->success('Berhasil', $count . ' pengeluaran telah dihapus')
             ->send();
-    }
-
-    public function createExpense()
-    {
-        $this->dispatch('create-transaction', allowedTypes: ['debit']);
     }
 
     public function render()
