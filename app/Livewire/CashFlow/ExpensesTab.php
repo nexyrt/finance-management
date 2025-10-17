@@ -38,12 +38,6 @@ class ExpensesTab extends Component
         ['index' => 'action', 'label' => 'Aksi', 'sortable' => false],
     ];
 
-    #[On('clear-selection')]
-    public function clearSelection()
-    {
-        $this->selected = [];
-    }
-
     #[Computed]
     public function bankAccounts()
     {
@@ -59,7 +53,7 @@ class ExpensesTab extends Component
     #[Computed]
     public function expenseCategories()
     {
-        return TransactionCategory::where('type', 'expense')
+        $categories = TransactionCategory::where('type', 'expense')
             ->orderBy('label')
             ->get()
             ->map(fn($cat) => [
@@ -67,6 +61,14 @@ class ExpensesTab extends Component
                 'value' => $cat->id,
             ])
             ->toArray();
+
+        // Add uncategorized option at the beginning
+        array_unshift($categories, [
+            'label' => '❌ Belum Dikategorikan',
+            'value' => 'uncategorized'
+        ]);
+
+        return $categories;
     }
 
     #[Computed]
@@ -95,7 +97,22 @@ class ExpensesTab extends Component
             ->when(
                 !empty($this->categoryFilters),
                 fn(Builder $q) =>
-                $q->whereIn('category_id', $this->categoryFilters)
+                $q->where(function ($query) {
+                    $hasUncategorized = in_array('uncategorized', $this->categoryFilters);
+                    $categoryIds = array_filter($this->categoryFilters, fn($val) => $val !== 'uncategorized');
+
+                    if ($hasUncategorized && !empty($categoryIds)) {
+                        // Both uncategorized and specific categories
+                        $query->whereNull('category_id')
+                            ->orWhereIn('category_id', $categoryIds);
+                    } elseif ($hasUncategorized) {
+                        // Only uncategorized
+                        $query->whereNull('category_id');
+                    } else {
+                        // Only specific categories
+                        $query->whereIn('category_id', $categoryIds);
+                    }
+                })
             )
             ->when(
                 !empty($this->bankAccountFilters),
@@ -131,7 +148,19 @@ class ExpensesTab extends Component
             ->when(
                 !empty($this->categoryFilters),
                 fn(Builder $q) =>
-                $q->whereIn('category_id', $this->categoryFilters)
+                $q->where(function ($query) {
+                    $hasUncategorized = in_array('uncategorized', $this->categoryFilters);
+                    $categoryIds = array_filter($this->categoryFilters, fn($val) => $val !== 'uncategorized');
+
+                    if ($hasUncategorized && !empty($categoryIds)) {
+                        $query->whereNull('category_id')
+                            ->orWhereIn('category_id', $categoryIds);
+                    } elseif ($hasUncategorized) {
+                        $query->whereNull('category_id');
+                    } else {
+                        $query->whereIn('category_id', $categoryIds);
+                    }
+                })
             )
             ->when(
                 !empty($this->bankAccountFilters),
