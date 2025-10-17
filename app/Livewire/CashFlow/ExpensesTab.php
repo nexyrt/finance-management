@@ -38,6 +38,12 @@ class ExpensesTab extends Component
         ['index' => 'action', 'label' => 'Aksi', 'sortable' => false],
     ];
 
+    #[On('clear-selection')]
+    public function clearSelection()
+    {
+        $this->selected = [];
+    }
+
     #[Computed]
     public function bankAccounts()
     {
@@ -290,9 +296,10 @@ class ExpensesTab extends Component
 
     public function executeBulkDelete()
     {
+        $count = count($this->selected);
+
         BankTransaction::whereIn('id', $this->selected)->delete();
 
-        $count = count($this->selected);
         $this->selected = [];
         $this->resetPage();
 

@@ -142,118 +142,120 @@
         </div>
 
         {{-- Table --}}
-        <x-table :$headers :$sort :rows="$this->rows" selectable wire:model="selected" paginate filter loading>
+        <div class="px-4 lg:px-6 py-4">
+            <x-table :$headers :$sort :rows="$this->rows" selectable wire:model="selected" paginate filter loading>
 
-            {{-- Date Column --}}
-            @interact('column_transaction_date', $row)
-                <div class="flex items-center gap-3">
-                    <div
-                        class="flex-shrink-0 h-10 w-10 bg-gradient-to-br from-secondary-100 to-secondary-200 dark:from-dark-700 dark:to-dark-600 rounded-lg flex items-center justify-center">
-                        <x-icon name="calendar" class="w-5 h-5 text-secondary-600 dark:text-secondary-400" />
-                    </div>
-                    <div>
-                        <div class="text-sm font-semibold text-dark-900 dark:text-dark-50">
-                            {{ $row->transaction_date->format('d M Y') }}
-                        </div>
-                        <div class="text-xs text-dark-500 dark:text-dark-400">
-                            {{ $row->transaction_date->diffForHumans() }}
-                        </div>
-                    </div>
-                </div>
-            @endinteract
-
-            {{-- Category Column --}}
-            @interact('column_category', $row)
-                @if ($row->category)
-                    <div
-                        class="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg">
-                        <x-icon name="tag" class="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
-                        <span class="text-xs font-medium text-purple-700 dark:text-purple-300">
-                            {{ $row->category->label }}
-                        </span>
-                    </div>
-                @else
-                    <x-badge text="Belum dikategorikan" color="amber" icon="exclamation-triangle" size="sm" />
-                @endif
-            @endinteract
-
-            {{-- Description Column --}}
-            @interact('column_description', $row)
-                <div class="max-w-xs">
-                    <div class="text-sm font-medium text-dark-900 dark:text-dark-50 line-clamp-2 mb-1">
-                        {{ $row->description }}
-                    </div>
-                    @if ($row->reference_number)
-                        <div class="flex items-center gap-1.5">
-                            <x-icon name="document-duplicate" class="w-3 h-3 text-dark-400" />
-                            <span class="text-xs text-dark-500 dark:text-dark-400 font-mono">
-                                {{ $row->reference_number }}
-                            </span>
-                        </div>
-                    @endif
-                    @if ($row->attachment_path)
-                        <div class="flex items-center gap-1 text-xs text-primary-600 dark:text-primary-400 mt-1">
-                            <x-icon name="paper-clip" class="w-3 h-3" />
-                            <span class="font-medium">Ada lampiran</span>
-                        </div>
-                    @endif
-                </div>
-            @endinteract
-
-            {{-- Bank Account Column --}}
-            @interact('column_bank_account', $row)
-                @if ($row->bankAccount)
-                    <div class="flex items-center gap-2">
+                {{-- Date Column --}}
+                @interact('column_transaction_date', $row)
+                    <div class="flex items-center gap-3">
                         <div
-                            class="h-8 w-8 bg-gradient-to-br from-primary-100 to-primary-200 dark:from-primary-900/30 dark:to-primary-800/30 rounded-lg flex items-center justify-center flex-shrink-0">
-                            <x-icon name="building-library" class="w-4 h-4 text-primary-600 dark:text-primary-400" />
+                            class="flex-shrink-0 h-10 w-10 bg-gradient-to-br from-secondary-100 to-secondary-200 dark:from-dark-700 dark:to-dark-600 rounded-lg flex items-center justify-center">
+                            <x-icon name="calendar" class="w-5 h-5 text-secondary-600 dark:text-secondary-400" />
                         </div>
                         <div>
                             <div class="text-sm font-semibold text-dark-900 dark:text-dark-50">
-                                {{ $row->bankAccount->bank_name }}
+                                {{ $row->transaction_date->format('d M Y') }}
                             </div>
                             <div class="text-xs text-dark-500 dark:text-dark-400">
-                                {{ $row->bankAccount->account_number }}
+                                {{ $row->transaction_date->diffForHumans() }}
                             </div>
                         </div>
                     </div>
-                @endif
-            @endinteract
+                @endinteract
 
-            {{-- Amount Column --}}
-            @interact('column_amount', $row)
-                <div class="text-right">
-                    <div class="text-xl font-bold text-red-600 dark:text-red-400">
-                        Rp {{ number_format($row->amount, 0, ',', '.') }}
+                {{-- Category Column --}}
+                @interact('column_category', $row)
+                    @if ($row->category)
+                        <div
+                            class="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg">
+                            <x-icon name="tag" class="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
+                            <span class="text-xs font-medium text-purple-700 dark:text-purple-300">
+                                {{ $row->category->label }}
+                            </span>
+                        </div>
+                    @else
+                        <x-badge text="Belum dikategorikan" color="amber" icon="exclamation-triangle" size="sm" />
+                    @endif
+                @endinteract
+
+                {{-- Description Column --}}
+                @interact('column_description', $row)
+                    <div class="max-w-xs">
+                        <div class="text-sm font-medium text-dark-900 dark:text-dark-50 line-clamp-2 mb-1">
+                            {{ $row->description }}
+                        </div>
+                        @if ($row->reference_number)
+                            <div class="flex items-center gap-1.5">
+                                <x-icon name="document-duplicate" class="w-3 h-3 text-dark-400" />
+                                <span class="text-xs text-dark-500 dark:text-dark-400 font-mono">
+                                    {{ $row->reference_number }}
+                                </span>
+                            </div>
+                        @endif
+                        @if ($row->attachment_path)
+                            <div class="flex items-center gap-1 text-xs text-primary-600 dark:text-primary-400 mt-1">
+                                <x-icon name="paper-clip" class="w-3 h-3" />
+                                <span class="font-medium">Ada lampiran</span>
+                            </div>
+                        @endif
                     </div>
-                </div>
-            @endinteract
+                @endinteract
 
-            {{-- Action Column --}}
-            @interact('column_action', $row)
-                <div class="flex items-center justify-center gap-1">
-                    @if (!$row->category_id)
-                        <x-button.circle icon="tag" color="amber" size="sm"
-                            wire:click="$dispatch('categorize-transaction', {id: {{ $row->id }}})"
-                            title="Kategorikan" />
+                {{-- Bank Account Column --}}
+                @interact('column_bank_account', $row)
+                    @if ($row->bankAccount)
+                        <div class="flex items-center gap-2">
+                            <div
+                                class="h-8 w-8 bg-gradient-to-br from-primary-100 to-primary-200 dark:from-primary-900/30 dark:to-primary-800/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                                <x-icon name="building-library" class="w-4 h-4 text-primary-600 dark:text-primary-400" />
+                            </div>
+                            <div>
+                                <div class="text-sm font-semibold text-dark-900 dark:text-dark-50">
+                                    {{ $row->bankAccount->bank_name }}
+                                </div>
+                                <div class="text-xs text-dark-500 dark:text-dark-400">
+                                    {{ $row->bankAccount->account_number }}
+                                </div>
+                            </div>
+                        </div>
                     @endif
+                @endinteract
 
-                    @if ($row->attachment_path)
-                        <x-button.circle icon="paper-clip" color="primary" size="sm"
-                            wire:click="$dispatch('view-attachment', {type: 'transaction', id: {{ $row->id }}})"
-                            title="Lihat Lampiran" />
-                    @endif
+                {{-- Amount Column --}}
+                @interact('column_amount', $row)
+                    <div class="text-right">
+                        <div class="text-xl font-bold text-red-600 dark:text-red-400">
+                            Rp {{ number_format($row->amount, 0, ',', '.') }}
+                        </div>
+                    </div>
+                @endinteract
 
-                    <x-button.circle icon="pencil" color="green" size="sm"
-                        wire:click="$dispatch('edit-transaction', {transactionId: {{ $row->id }}})"
-                        title="Edit" />
+                {{-- Action Column --}}
+                @interact('column_action', $row)
+                    <div class="flex items-center justify-center gap-1">
+                        @if (!$row->category_id)
+                            <x-button.circle icon="tag" color="amber" size="sm"
+                                wire:click="$dispatch('categorize-transaction', {id: {{ $row->id }}})"
+                                title="Kategorikan" />
+                        @endif
 
-                    <x-button.circle icon="trash" color="red" size="sm"
-                        wire:click="$dispatch('delete-transaction', {transactionId: {{ $row->id }}})"
-                        title="Hapus" />
-                </div>
-            @endinteract
-        </x-table>
+                        @if ($row->attachment_path)
+                            <x-button.circle icon="paper-clip" color="primary" size="sm"
+                                wire:click="$dispatch('view-attachment', {type: 'transaction', id: {{ $row->id }}})"
+                                title="Lihat Lampiran" />
+                        @endif
+
+                        <x-button.circle icon="pencil" color="green" size="sm"
+                            wire:click="$dispatch('edit-transaction', {transactionId: {{ $row->id }}})"
+                            title="Edit" />
+
+                        <x-button.circle icon="trash" color="red" size="sm"
+                            wire:click="$dispatch('delete-transaction', {transactionId: {{ $row->id }}})"
+                            title="Hapus" />
+                    </div>
+                @endinteract
+            </x-table>
+        </div>
     </div>
 
     {{-- Bulk Actions Bar --}}
@@ -278,7 +280,7 @@
                         loading="exportSelected" class="whitespace-nowrap">
                         Export
                     </x-button>
-                    <x-button wire:click="$dispatch('bulk-categorize', {ids: selected})" size="sm"
+                    <x-button x-on:click="$dispatch('bulk-categorize', {ids: $wire.selected})" size="sm"
                         color="amber" icon="tag" class="whitespace-nowrap">
                         Kategorikan
                     </x-button>
@@ -297,6 +299,6 @@
 
     {{-- Child Components --}}
     <livewire:transactions.create :allowedTypes="['debit']" @transaction-created="$refresh" />
-    <livewire:transactions.categorize @transaction-categorized="$refresh" />
+    <livewire:transactions.categorize @transaction-categorized="$refresh; $wire.selected = []" />
     <livewire:cash-flow.attachment-viewer />
 </div>

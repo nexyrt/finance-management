@@ -46,8 +46,13 @@ class Categorize extends Component
     }
 
     #[On('bulk-categorize')]
-    public function openBulk(array $ids): void
+    public function openBulk($ids): void
     {
+        // Handle both array and string (from Alpine x-data)
+        if (is_string($ids)) {
+            $ids = json_decode($ids, true) ?? [];
+        }
+
         if (empty($ids)) {
             $this->toast()
                 ->warning('Perhatian', 'Pilih transaksi yang ingin dikategorikan')
@@ -125,14 +130,17 @@ class Categorize extends Component
         $this->validate();
 
         try {
+            // Di method save() - bagian bulk update
             if ($this->isBulk) {
-                // Bulk update
                 BankTransaction::whereIn('id', $this->transactionIds)
                     ->update(['category_id' => $this->category_id]);
 
                 $count = count($this->transactionIds);
 
+                // Dispatch event agar parent clear selection
                 $this->dispatch('transaction-categorized');
+                $this->dispatch('clear-selection'); // Tambahkan ini
+
                 $this->reset();
                 $this->modal = false;
 
