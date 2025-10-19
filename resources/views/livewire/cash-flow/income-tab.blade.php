@@ -364,7 +364,6 @@
     </div>
 
     {{-- Child Components --}}
-    <livewire:cash-flow.attachment-viewer />
     <livewire:payments.edit @payment-updated="$refresh" />
     <livewire:payments.delete @payment-deleted="$refresh" />
     <livewire:transactions.delete @transaction-deleted="$refresh" />

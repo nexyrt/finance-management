@@ -241,13 +241,9 @@
 
                         @if ($row->attachment_path)
                             <x-button.circle icon="paper-clip" color="primary" size="sm"
-                                wire:click="$dispatch('view-attachment', {type: 'transaction', id: {{ $row->id }}})"
+                                wire:click="$dispatch('view-attachment', {sourceType: 'transaction', id: {{ $row->id }}})"
                                 title="Lihat Lampiran" />
                         @endif
-
-                        <x-button.circle icon="pencil" color="green" size="sm"
-                            wire:click="$dispatch('edit-transaction', {transactionId: {{ $row->id }}})"
-                            title="Edit" />
 
                         <x-button.circle icon="trash" color="red" size="sm"
                             wire:click="$dispatch('delete-transaction', {transactionId: {{ $row->id }}})"
@@ -300,5 +296,4 @@
     {{-- Child Components --}}
     <livewire:transactions.create :allowedTypes="['debit']" @transaction-created="$refresh" />
     <livewire:transactions.categorize @transaction-categorized="$refresh; $wire.selected = []" />
-    <livewire:cash-flow.attachment-viewer />
 </div>

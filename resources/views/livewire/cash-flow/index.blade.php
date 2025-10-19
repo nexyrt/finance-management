@@ -13,7 +13,7 @@
     </div>
 
     {{-- Tab Navigation --}}
-    <x-tab selected="Income">
+    <x-tab selected="Expenses">
         <x-tab.items tab="Overview">
             <x-slot:right>
                 <x-icon name="chart-bar" class="w-5 h-5" />
@@ -49,4 +49,6 @@
             <livewire:cash-flow.adjustments-tab />
         </x-tab.items>
     </x-tab>
+
+    <livewire:cash-flow.attachment-viewer />
 </div>
