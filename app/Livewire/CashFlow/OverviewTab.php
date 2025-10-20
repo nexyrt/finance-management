@@ -15,159 +15,136 @@ class OverviewTab extends Component
 {
     public ?string $period = 'last_year';
 
+    // Dispatch event when period changes
+    public function updatedPeriod(): void
+    {
+        $this->dispatch('charts-updated', [
+            'monthlyData' => $this->monthlyTrendData,
+            'categoryData' => $this->expenseByCategoryData
+        ]);
+    }
+
     #[Computed]
     public function stats(): array
     {
         $startDate = $this->getStartDate();
         $endDate = now();
 
-        // 💰 INCOME CALCULATION (Fixed - Total Profit based)
-        // 1. Bank Income: BankTransaction credit dengan category type='income'
+        // Income: Bank income + Invoice profit
         $bankIncome = BankTransaction::where('transaction_type', 'credit')
-            ->whereHas('category', function ($query) {
-                $query->where('type', 'income');
-            })
+            ->whereHas('category', fn($q) => $q->where('type', 'income'))
             ->whereBetween('transaction_date', [$startDate, $endDate])
             ->sum('amount');
 
-        // 2. Invoice Profit: Total Revenue - COGS - Tax Deposits
-        $totalRevenue = Invoice::whereBetween('issue_date', [$startDate, $endDate])
-            ->sum('total_amount');
-
-        $totalCogs = InvoiceItem::whereHas('invoice', function ($query) use ($startDate, $endDate) {
-            $query->whereBetween('issue_date', [$startDate, $endDate]);
-        })
+        $totalRevenue = Invoice::whereBetween('issue_date', [$startDate, $endDate])->sum('total_amount');
+        $totalCogs = InvoiceItem::whereHas('invoice', fn($q) => $q->whereBetween('issue_date', [$startDate, $endDate]))
             ->where('is_tax_deposit', false)
             ->sum('cogs_amount');
-
-        $totalTaxDeposits = InvoiceItem::whereHas('invoice', function ($query) use ($startDate, $endDate) {
-            $query->whereBetween('issue_date', [$startDate, $endDate]);
-        })
+        $totalTaxDeposits = InvoiceItem::whereHas('invoice', fn($q) => $q->whereBetween('issue_date', [$startDate, $endDate]))
             ->where('is_tax_deposit', true)
             ->sum('amount');
 
         $invoiceProfit = $totalRevenue - $totalCogs - $totalTaxDeposits;
         $totalIncome = $bankIncome + $invoiceProfit;
 
-        // 💸 EXPENSE CALCULATION
+        // Expenses
         $totalExpenses = BankTransaction::where('transaction_type', 'debit')
-            ->whereHas('category', function ($query) {
-                $query->where('type', 'expense');
-            })
+            ->whereHas('category', fn($q) => $q->where('type', 'expense'))
             ->whereBetween('transaction_date', [$startDate, $endDate])
             ->sum('amount');
 
-        // 📊 NET CASH FLOW
-        $netCashFlow = $totalIncome - $totalExpenses;
-
-        // 🔄 TRANSFERS
+        // Transfers
         $totalTransfers = BankTransaction::where('transaction_type', 'debit')
-            ->whereHas('category', function ($query) {
-                $query->where('type', 'transfer');
-            })
+            ->whereHas('category', fn($q) => $q->where('type', 'transfer'))
             ->whereBetween('transaction_date', [$startDate, $endDate])
             ->sum('amount');
 
         return [
             'total_income' => $totalIncome,
             'total_expenses' => $totalExpenses,
-            'net_cash_flow' => $netCashFlow,
+            'net_cash_flow' => $totalIncome - $totalExpenses,
             'total_transfers' => $totalTransfers,
         ];
     }
 
     #[Computed]
-    public function trendChartData(): array
+    public function monthlyTrendData(): array
     {
         $startDate = $this->getStartDate();
         $endDate = now();
         $months = $this->generateMonthLabels($startDate, $endDate);
 
-        $chartData = [];
-        foreach ($months as $month) {
-            $monthStart = Carbon::parse($month['start']);
-            $monthEnd = Carbon::parse($month['end']);
+        return array_map(function ($month) {
+            $start = Carbon::parse($month['start']);
+            $end = Carbon::parse($month['end']);
 
-            // 💰 INCOME for this month
-            // 1. Bank Income
+            // Bank Income
             $bankIncome = BankTransaction::where('transaction_type', 'credit')
-                ->whereHas('category', function ($query) {
-                    $query->where('type', 'income');
-                })
-                ->whereBetween('transaction_date', [$monthStart, $monthEnd])
+                ->whereHas('category', fn($q) => $q->where('type', 'income'))
+                ->whereBetween('transaction_date', [$start, $end])
                 ->sum('amount');
 
-            // 2. Invoice Profit untuk bulan ini
-            $monthRevenue = Invoice::whereBetween('issue_date', [$monthStart, $monthEnd])
-                ->sum('total_amount');
-
-            $monthCogs = InvoiceItem::whereHas('invoice', function ($query) use ($monthStart, $monthEnd) {
-                $query->whereBetween('issue_date', [$monthStart, $monthEnd]);
-            })
+            // Invoice Profit
+            $revenue = Invoice::whereBetween('issue_date', [$start, $end])->sum('total_amount');
+            $cogs = InvoiceItem::whereHas('invoice', fn($q) => $q->whereBetween('issue_date', [$start, $end]))
                 ->where('is_tax_deposit', false)
                 ->sum('cogs_amount');
-
-            $monthTaxDeposits = InvoiceItem::whereHas('invoice', function ($query) use ($monthStart, $monthEnd) {
-                $query->whereBetween('issue_date', [$monthStart, $monthEnd]);
-            })
+            $taxDeposits = InvoiceItem::whereHas('invoice', fn($q) => $q->whereBetween('issue_date', [$start, $end]))
                 ->where('is_tax_deposit', true)
                 ->sum('amount');
 
-            $monthProfit = $monthRevenue - $monthCogs - $monthTaxDeposits;
-            $income = $bankIncome + $monthProfit;
+            $income = $bankIncome + ($revenue - $cogs - $taxDeposits);
 
-            // 💸 EXPENSES for this month
+            // Expenses
             $expenses = BankTransaction::where('transaction_type', 'debit')
-                ->whereHas('category', function ($query) {
-                    $query->where('type', 'expense');
-                })
-                ->whereBetween('transaction_date', [$monthStart, $monthEnd])
+                ->whereHas('category', fn($q) => $q->where('type', 'expense'))
+                ->whereBetween('transaction_date', [$start, $end])
                 ->sum('amount');
 
-            $chartData[] = [
+            return [
                 'month' => $month['label'],
                 'income' => $income,
                 'expenses' => $expenses,
             ];
-        }
-
-        return $chartData;
+        }, $months);
     }
 
     #[Computed]
-    public function categoryChartData(): array
+    public function expenseByCategoryData(): array
     {
         $startDate = $this->getStartDate();
         $endDate = now();
 
-        // 📊 Category breakdown hanya untuk EXPENSES
-        $expenses = BankTransaction::with('category')
+        return BankTransaction::with('category.parent')
             ->where('transaction_type', 'debit')
-            ->whereHas('category', function ($query) {
-                $query->where('type', 'expense');
-            })
+            ->whereHas('category', fn($q) => $q->where('type', 'expense'))
             ->whereBetween('transaction_date', [$startDate, $endDate])
             ->get()
-            ->groupBy(fn($t) => $t->category?->label ?? 'Uncategorized')
-            ->map(fn($transactions) => [
-                'category' => $transactions->first()->category?->label ?? 'Uncategorized',
-                'total' => $transactions->sum('amount'),
+            ->groupBy(function ($t) {
+                if (!$t->category)
+                    return 'Uncategorized';
+                return $t->category->parent ? $t->category->parent->label : $t->category->label;
+            })
+            ->map(fn($items) => [
+                'category' => $items->first()->category?->parent?->label ?? $items->first()->category?->label ?? 'Uncategorized',
+                'total' => $items->sum('amount'),
             ])
             ->sortByDesc('total')
             ->values()
             ->toArray();
+    }
 
-        return $expenses;
+    #[Computed]
+    public function top5Expenses(): array
+    {
+        return collect($this->expenseByCategoryData)->take(5)->toArray();
     }
 
     #[Computed]
     public function recentTransactions()
     {
-        // 📝 Recent transactions: exclude transfers & adjustments untuk clarity
         return BankTransaction::with(['bankAccount', 'category'])
-            ->whereHas('category', function ($query) {
-                $query->whereIn('type', ['income', 'expense']);
-            })
+            ->whereHas('category', fn($q) => $q->whereIn('type', ['income', 'expense']))
             ->latest('transaction_date')
             ->take(10)
             ->get();
@@ -198,14 +175,6 @@ class OverviewTab extends Component
         }
 
         return $months;
-    }
-
-    public function updatedPeriod(): void
-    {
-        $this->dispatch('chartDataUpdated', [
-            'trendData' => $this->trendChartData,
-            'categoryData' => $this->categoryChartData,
-        ]);
     }
 
     public function render(): View

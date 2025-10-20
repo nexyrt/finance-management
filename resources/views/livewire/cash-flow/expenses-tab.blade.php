@@ -133,6 +133,14 @@
                     <x-button wire:click="export" color="green" icon="arrow-down-tray" size="sm" loading="export">
                         Export
                     </x-button>
+                    <x-button wire:click="exportWithCategoryBreakdown" color="purple" icon="chart-bar" size="sm"
+                        loading="exportWithCategoryBreakdown">
+                        Breakdown
+                    </x-button>
+                    <x-button wire:click="exportComparison" color="blue" icon="arrow-trending-up" size="sm"
+                        loading="exportComparison">
+                        Comparison
+                    </x-button>
                     <x-button wire:click="$dispatch('create-transaction', {allowedTypes: ['debit']})" color="red"
                         icon="plus" size="sm">
                         Tambah Pengeluaran
@@ -241,9 +249,13 @@
 
                         @if ($row->attachment_path)
                             <x-button.circle icon="paper-clip" color="primary" size="sm"
-                                wire:click="$dispatch('view-attachment', {sourceType: 'transaction', id: {{ $row->id }}})"
+                                wire:click="$dispatch('view-attachment', {type: 'transaction', id: {{ $row->id }}})"
                                 title="Lihat Lampiran" />
                         @endif
+
+                        <x-button.circle icon="pencil" color="green" size="sm"
+                            wire:click="$dispatch('edit-transaction', {transactionId: {{ $row->id }}})"
+                            title="Edit" />
 
                         <x-button.circle icon="trash" color="red" size="sm"
                             wire:click="$dispatch('delete-transaction', {transactionId: {{ $row->id }}})"
@@ -252,6 +264,7 @@
                 @endinteract
             </x-table>
         </div>
+
     </div>
 
     {{-- Bulk Actions Bar --}}
@@ -276,8 +289,8 @@
                         loading="exportSelected" class="whitespace-nowrap">
                         Export
                     </x-button>
-                    <x-button x-on:click="$dispatch('bulk-categorize', {ids: $wire.selected})" size="sm"
-                        color="amber" icon="tag" class="whitespace-nowrap">
+                    <x-button wire:click="openBulkCategorize" size="sm" color="amber" icon="tag"
+                        loading="openBulkCategorize" class="whitespace-nowrap">
                         Kategorikan
                     </x-button>
                     <x-button wire:click="bulkDelete" size="sm" color="red" icon="trash"
