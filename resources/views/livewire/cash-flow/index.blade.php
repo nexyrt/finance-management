@@ -42,12 +42,12 @@
             <livewire:cash-flow.transfers-tab />
         </x-tab.items>
 
-        <x-tab.items tab="Adjustments">
+        {{-- <x-tab.items tab="Adjustments">
             <x-slot:right>
                 <x-icon name="adjustments-horizontal" class="w-5 h-5" />
             </x-slot:right>
             <livewire:cash-flow.adjustments-tab />
-        </x-tab.items>
+        </x-tab.items> --}}
     </x-tab>
 
     <livewire:cash-flow.attachment-viewer />
