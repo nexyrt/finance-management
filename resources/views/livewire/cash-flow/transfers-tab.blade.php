@@ -244,7 +244,7 @@
                     <div class="flex items-center justify-center gap-1">
                         @if ($row->attachment_path)
                             <x-button.circle icon="paper-clip" color="primary" size="sm"
-                                wire:click="$dispatch('view-attachment', {type: 'transaction', id: {{ $row->id }}})"
+                                wire:click="$dispatch('view-attachment', {sourceType: 'transaction', id: {{ $row->id }}})"
                                 title="Lihat Lampiran" />
                         @endif
 
