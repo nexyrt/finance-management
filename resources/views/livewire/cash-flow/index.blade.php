@@ -13,13 +13,13 @@
     </div>
 
     {{-- Tab Navigation --}}
-    <x-tab selected="Overview">
-        <x-tab.items tab="Overview">
+    <x-tab selected="Expenses">
+        {{-- <x-tab.items tab="Overview">
             <x-slot:right>
                 <x-icon name="chart-bar" class="w-5 h-5" />
             </x-slot:right>
             <livewire:cash-flow.overview-tab />
-        </x-tab.items>
+        </x-tab.items> --}}
 
         <x-tab.items tab="Income">
             <x-slot:right>
