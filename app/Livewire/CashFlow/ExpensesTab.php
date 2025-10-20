@@ -7,7 +7,9 @@ use App\Models\BankTransaction;
 use App\Models\TransactionCategory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Maatwebsite\Excel\Facades\Excel;
@@ -38,8 +40,18 @@ class ExpensesTab extends Component
         ['index' => 'action', 'label' => 'Aksi', 'sortable' => false],
     ];
 
+    #[On('transaction-created')]
+    #[On('transaction-updated')]
+    #[On('transaction-deleted')]
+    #[On('transaction-categorized')]
+    public function refreshData(): void
+    {
+        $this->reset('selected');
+        $this->resetPage();
+    }
+
     #[Computed]
-    public function bankAccounts()
+    public function bankAccounts(): array
     {
         return BankAccount::orderBy('bank_name')
             ->get()
@@ -51,7 +63,7 @@ class ExpensesTab extends Component
     }
 
     #[Computed]
-    public function expenseCategories()
+    public function expenseCategories(): array
     {
         $categories = TransactionCategory::where('type', 'expense')
             ->orderBy('label')
@@ -62,9 +74,8 @@ class ExpensesTab extends Component
             ])
             ->toArray();
 
-        // Add uncategorized option at the beginning
         array_unshift($categories, [
-            'label' => '❌ Belum Dikategorikan',
+            'label' => '⚠ Belum Dikategorikan',
             'value' => 'uncategorized'
         ]);
 
@@ -172,52 +183,9 @@ class ExpensesTab extends Component
             ->sum('amount');
     }
 
-    // Export functionality
     public function export()
     {
-        $data = BankTransaction::with(['bankAccount', 'category'])
-            ->where('transaction_type', 'debit')
-            ->where(function ($query) {
-                $query->whereHas('category', fn($q) => $q->where('type', 'expense'))
-                    ->orWhereNull('category_id');
-            })
-            ->when(
-                $this->search,
-                fn(Builder $q) =>
-                $q->where(function ($query) {
-                    $query->where('description', 'like', "%{$this->search}%")
-                        ->orWhere('reference_number', 'like', "%{$this->search}%");
-                })
-            )
-            ->when(
-                !empty($this->categoryFilters),
-                fn(Builder $q) =>
-                $q->where(function ($query) {
-                    $hasUncategorized = in_array('uncategorized', $this->categoryFilters);
-                    $categoryIds = array_filter($this->categoryFilters, fn($val) => $val !== 'uncategorized');
-
-                    if ($hasUncategorized && !empty($categoryIds)) {
-                        $query->whereNull('category_id')
-                            ->orWhereIn('category_id', $categoryIds);
-                    } elseif ($hasUncategorized) {
-                        $query->whereNull('category_id');
-                    } else {
-                        $query->whereIn('category_id', $categoryIds);
-                    }
-                })
-            )
-            ->when(
-                !empty($this->bankAccountFilters),
-                fn(Builder $q) =>
-                $q->whereIn('bank_account_id', $this->bankAccountFilters)
-            )
-            ->when(
-                !empty($this->dateRange) && count($this->dateRange) >= 2,
-                fn(Builder $q) =>
-                $q->whereBetween('transaction_date', [$this->dateRange[0], $this->dateRange[1]])
-            )
-            ->orderBy('transaction_date', 'desc')
-            ->get();
+        $data = $this->getFilteredQuery()->get();
 
         if ($data->isEmpty()) {
             $this->toast()
@@ -263,20 +231,22 @@ class ExpensesTab extends Component
         }, $filename);
     }
 
-    // Export with category breakdown
     public function exportWithCategoryBreakdown()
     {
+        if (empty($this->dateRange) || count($this->dateRange) < 2) {
+            $this->toast()
+                ->warning('Perhatian', 'Pilih periode untuk breakdown kategori')
+                ->send();
+            return;
+        }
+
         $data = BankTransaction::with(['bankAccount', 'category.parent'])
             ->where('transaction_type', 'debit')
             ->where(function ($query) {
                 $query->whereHas('category', fn($q) => $q->where('type', 'expense'))
                     ->orWhereNull('category_id');
             })
-            ->when(
-                !empty($this->dateRange) && count($this->dateRange) >= 2,
-                fn(Builder $q) =>
-                $q->whereBetween('transaction_date', [$this->dateRange[0], $this->dateRange[1]])
-            )
+            ->whereBetween('transaction_date', [$this->dateRange[0], $this->dateRange[1]])
             ->orderBy('transaction_date', 'desc')
             ->get();
 
@@ -287,7 +257,6 @@ class ExpensesTab extends Component
             return;
         }
 
-        // Group by category
         $grouped = $data->groupBy(function ($item) {
             if (!$item->category)
                 return 'Belum Dikategorikan';
@@ -312,7 +281,6 @@ class ExpensesTab extends Component
             {
                 $sheets = [];
 
-                // Summary sheet
                 $sheets[] = new class ($this->grouped) implements
                     \Maatwebsite\Excel\Concerns\FromCollection,
                     \Maatwebsite\Excel\Concerns\WithHeadings,
@@ -347,7 +315,6 @@ class ExpensesTab extends Component
                     }
                 };
 
-                // Detail sheets per category
                 foreach ($this->grouped as $category => $items) {
                     $sheets[] = new class ($items, $category) implements
                         \Maatwebsite\Excel\Concerns\FromCollection,
@@ -396,7 +363,6 @@ class ExpensesTab extends Component
         }, $filename);
     }
 
-    // Export comparison report
     public function exportComparison()
     {
         if (empty($this->dateRange) || count($this->dateRange) < 2) {
@@ -410,11 +376,9 @@ class ExpensesTab extends Component
         $currentEnd = \Carbon\Carbon::parse($this->dateRange[1]);
         $daysDiff = $currentStart->diffInDays($currentEnd) + 1;
 
-        // Previous period (same duration)
         $previousStart = $currentStart->copy()->subDays($daysDiff);
         $previousEnd = $currentStart->copy()->subDay();
 
-        // Current period data
         $currentData = BankTransaction::with('category.parent')
             ->where('transaction_type', 'debit')
             ->whereHas('category', fn($q) => $q->where('type', 'expense'))
@@ -428,7 +392,6 @@ class ExpensesTab extends Component
                     : $item->category->label;
             });
 
-        // Previous period data
         $previousData = BankTransaction::with('category.parent')
             ->where('transaction_type', 'debit')
             ->whereHas('category', fn($q) => $q->where('type', 'expense'))
@@ -442,7 +405,6 @@ class ExpensesTab extends Component
                     : $item->category->label;
             });
 
-        // Combine categories
         $allCategories = $currentData->keys()->merge($previousData->keys())->unique();
 
         $comparison = $allCategories->map(function ($category) use ($currentData, $previousData) {
@@ -562,7 +524,7 @@ class ExpensesTab extends Component
             {
                 return [
                     \Carbon\Carbon::parse($row->transaction_date)->format('d/m/Y'),
-                    $row->category->full_path ?? '-',
+                    $row->category->full_path ?? 'Belum Dikategorikan',
                     $row->description,
                     $row->bankAccount->bank_name ?? '-',
                     $row->reference_number ?? '-',
@@ -572,8 +534,19 @@ class ExpensesTab extends Component
         }, $filename);
     }
 
-    // Bulk delete
-    public function bulkDelete()
+    public function openBulkCategorize(): void
+    {
+        if (empty($this->selected)) {
+            $this->toast()
+                ->warning('Perhatian', 'Pilih transaksi yang ingin dikategorikan')
+                ->send();
+            return;
+        }
+
+        $this->dispatch('bulk-categorize', ids: $this->selected);
+    }
+
+    public function bulkDelete(): void
     {
         if (empty($this->selected)) {
             return;
@@ -586,18 +559,76 @@ class ExpensesTab extends Component
             ->send();
     }
 
-    public function executeBulkDelete()
+    public function executeBulkDelete(): void
     {
-        $count = count($this->selected);
+        if (empty($this->selected)) {
+            return;
+        }
 
+        $transactions = BankTransaction::whereIn('id', $this->selected)->get();
+
+        // Delete attachments
+        foreach ($transactions as $transaction) {
+            if ($transaction->attachment_path && Storage::exists($transaction->attachment_path)) {
+                Storage::delete($transaction->attachment_path);
+            }
+        }
+
+        $count = $transactions->count();
         BankTransaction::whereIn('id', $this->selected)->delete();
 
         $this->selected = [];
         $this->resetPage();
 
         $this->toast()
-            ->success('Berhasil', $count . ' pengeluaran telah dihapus')
+            ->success('Berhasil', "{$count} pengeluaran telah dihapus")
             ->send();
+    }
+
+    private function getFilteredQuery()
+    {
+        return BankTransaction::with(['bankAccount', 'category'])
+            ->where('transaction_type', 'debit')
+            ->where(function ($query) {
+                $query->whereHas('category', fn($q) => $q->where('type', 'expense'))
+                    ->orWhereNull('category_id');
+            })
+            ->when(
+                $this->search,
+                fn(Builder $q) =>
+                $q->where(function ($query) {
+                    $query->where('description', 'like', "%{$this->search}%")
+                        ->orWhere('reference_number', 'like', "%{$this->search}%");
+                })
+            )
+            ->when(
+                !empty($this->categoryFilters),
+                fn(Builder $q) =>
+                $q->where(function ($query) {
+                    $hasUncategorized = in_array('uncategorized', $this->categoryFilters);
+                    $categoryIds = array_filter($this->categoryFilters, fn($val) => $val !== 'uncategorized');
+
+                    if ($hasUncategorized && !empty($categoryIds)) {
+                        $query->whereNull('category_id')
+                            ->orWhereIn('category_id', $categoryIds);
+                    } elseif ($hasUncategorized) {
+                        $query->whereNull('category_id');
+                    } else {
+                        $query->whereIn('category_id', $categoryIds);
+                    }
+                })
+            )
+            ->when(
+                !empty($this->bankAccountFilters),
+                fn(Builder $q) =>
+                $q->whereIn('bank_account_id', $this->bankAccountFilters)
+            )
+            ->when(
+                !empty($this->dateRange) && count($this->dateRange) >= 2,
+                fn(Builder $q) =>
+                $q->whereBetween('transaction_date', [$this->dateRange[0], $this->dateRange[1]])
+            )
+            ->orderBy('transaction_date', 'desc');
     }
 
     public function render()
