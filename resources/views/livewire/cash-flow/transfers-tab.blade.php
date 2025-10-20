@@ -1,168 +1,298 @@
 <div class="space-y-6">
-    {{-- Filters --}}
-    <div class="bg-white dark:bg-dark-800 border border-zinc-200 dark:border-dark-600 rounded-xl p-6">
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div>
-                <x-input type="date" label="Start Date" wire:model="startDate" />
-            </div>
-            <div>
-                <x-input type="date" label="End Date" wire:model="endDate" />
-            </div>
-            <div>
-                <x-select.styled label="From Account" wire:model="fromAccountId" :options="$this->bankAccounts"
-                    placeholder="All Accounts" />
-            </div>
-            <div>
-                <x-select.styled label="To Account" wire:model="toAccountId" :options="$this->bankAccounts"
-                    placeholder="All Accounts" />
+    {{-- Summary Cards --}}
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {{-- Total Transfer --}}
+        <div class="bg-white dark:bg-dark-800 border border-secondary-200 dark:border-dark-600 rounded-xl p-6">
+            <div class="flex items-start justify-between">
+                <div class="flex-1">
+                    <p class="text-sm font-medium text-dark-600 dark:text-dark-400 mb-1">Total Transfer</p>
+                    <p class="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                        Rp {{ number_format($this->totalTransfers, 0, ',', '.') }}
+                    </p>
+                    <p class="text-xs text-dark-500 dark:text-dark-400 mt-2">
+                        {{ $this->rows->total() }} transaksi
+                    </p>
+                </div>
+                <div
+                    class="h-12 w-12 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <x-icon name="arrow-path" class="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                </div>
             </div>
         </div>
-        <div class="grid grid-cols-1 mt-4">
+
+        {{-- Total Admin Fee --}}
+        <div class="bg-white dark:bg-dark-800 border border-secondary-200 dark:border-dark-600 rounded-xl p-6">
+            <div class="flex items-start justify-between">
+                <div class="flex-1">
+                    <p class="text-sm font-medium text-dark-600 dark:text-dark-400 mb-1">Total Biaya Admin</p>
+                    <p class="text-2xl font-bold text-orange-600 dark:text-orange-400">
+                        Rp {{ number_format($this->totalAdminFees, 0, ',', '.') }}
+                    </p>
+                    <p class="text-xs text-dark-500 dark:text-dark-400 mt-2">
+                        Biaya transfer internal
+                    </p>
+                </div>
+                <div
+                    class="h-12 w-12 bg-orange-50 dark:bg-orange-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <x-icon name="banknotes" class="w-6 h-6 text-orange-600 dark:text-orange-400" />
+                </div>
+            </div>
+        </div>
+
+        {{-- Period Info --}}
+        <div class="bg-white dark:bg-dark-800 border border-secondary-200 dark:border-dark-600 rounded-xl p-6">
+            <div class="flex items-start justify-between">
+                <div class="flex-1">
+                    <p class="text-sm font-medium text-dark-600 dark:text-dark-400 mb-1">Periode</p>
+                    <p class="text-2xl font-bold text-dark-900 dark:text-dark-50">
+                        @if (!empty($dateRange) && count($dateRange) >= 2)
+                            {{ \Carbon\Carbon::parse($dateRange[0])->format('d M') }} -
+                            {{ \Carbon\Carbon::parse($dateRange[1])->format('d M Y') }}
+                        @else
+                            Semua Waktu
+                        @endif
+                    </p>
+                    <p class="text-xs text-dark-500 dark:text-dark-400 mt-2">
+                        Filter: {{ !empty($dateRange) ? 'Custom range' : 'Tidak ada filter' }}
+                    </p>
+                </div>
+                <div
+                    class="h-12 w-12 bg-green-50 dark:bg-green-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <x-icon name="calendar" class="w-6 h-6 text-green-600 dark:text-green-400" />
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Filters Section --}}
+    <div class="bg-white dark:bg-dark-800 border border-secondary-200 dark:border-dark-600 rounded-xl p-4 lg:p-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <div>
-                <x-input label="Search" wire:model.live.debounce.500ms="search" placeholder="Search..."
+                <x-date wire:model.live="dateRange" label="Periode" range placeholder="Pilih range tanggal..." />
+            </div>
+
+            <div>
+                <x-select.styled wire:model.live="bankAccountFilters" label="Bank Account" :options="$this->bankAccounts"
+                    placeholder="Semua bank..." multiple searchable />
+            </div>
+
+            <div>
+                <x-input wire:model.live.debounce.300ms="search" label="Cari" placeholder="Cari data..."
                     icon="magnifying-glass" />
             </div>
         </div>
-        <div class="flex gap-2 mt-4">
-            <x-button wire:click="applyFilters" color="blue" icon="funnel" size="sm">Apply Filters</x-button>
-            <x-button wire:click="resetFilters" color="gray" outline icon="x-mark" size="sm">Reset</x-button>
-        </div>
-    </div>
 
-    {{-- Summary Cards --}}
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {{-- Total Transfers --}}
-        <div class="bg-white dark:bg-dark-800 border border-zinc-200 dark:border-dark-600 rounded-xl p-6">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center gap-4">
-                    <div
-                        class="h-12 w-12 bg-purple-100 dark:bg-purple-900/30 rounded-xl flex items-center justify-center">
-                        <x-icon name="arrow-path" class="w-6 h-6 text-purple-600 dark:text-purple-400" />
+        @php
+            $activeFilters = collect([
+                !empty($dateRange) && count($dateRange) >= 1,
+                !empty($bankAccountFilters),
+                $search,
+            ])
+                ->filter()
+                ->count();
+        @endphp
+
+        @if ($activeFilters > 0)
+            <div class="mt-4 pt-4 border-t border-secondary-200 dark:border-dark-600">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <x-badge text="{{ $activeFilters }} filter aktif" color="primary" size="sm" />
+                        <button
+                            wire:click="$set('dateRange', []); $set('bankAccountFilters', []); $set('search', null);"
+                            class="text-sm text-primary-600 dark:text-primary-400 hover:underline">
+                            Reset semua filter
+                        </button>
                     </div>
-                    <div>
-                        <p class="text-sm text-dark-600 dark:text-dark-400">Total Transfers (Filtered)</p>
-                        <p class="text-3xl font-bold text-purple-600 dark:text-purple-400">
-                            Rp {{ number_format($this->totalTransfers, 0, ',', '.') }}
-                        </p>
-                        <p class="text-xs text-purple-500 dark:text-purple-400 mt-1">
-                            {{ $this->transferTransactions->count() }} transactions
-                        </p>
+                    <div class="text-sm text-dark-500 dark:text-dark-400">
+                        Menampilkan {{ $this->rows->count() }} dari {{ $this->rows->total() }} transfer
                     </div>
                 </div>
-                <div class="flex gap-2">
-                    <x-button size="sm" color="purple" icon="plus">New Transfer</x-button>
-                    <x-button size="sm" color="gray" outline icon="document-arrow-down">Export</x-button>
-                </div>
-            </div>
-        </div>
-
-        {{-- Account Summary --}}
-        <div class="bg-white dark:bg-dark-800 border border-zinc-200 dark:border-dark-600 rounded-xl p-6">
-            <h4 class="text-sm font-semibold text-dark-600 dark:text-dark-400 mb-4">Transfers by Account</h4>
-            @if ($this->transfersByAccount->isEmpty())
-                <p class="text-zinc-500 dark:text-dark-400 text-sm text-center py-4">No data</p>
-            @else
-                <div class="space-y-3 max-h-48 overflow-y-auto">
-                    @foreach ($this->transfersByAccount as $item)
-                        <div class="flex items-center justify-between p-3 bg-zinc-50 dark:bg-dark-700 rounded-lg">
-                            <div class="flex-1">
-                                <p class="text-sm font-medium text-dark-900 dark:text-white">{{ $item['account'] }}</p>
-                                <div class="flex items-center gap-4 mt-1">
-                                    <span class="text-xs text-red-600 dark:text-red-400">
-                                        Out: Rp {{ number_format($item['debits'], 0, ',', '.') }}
-                                    </span>
-                                    <span class="text-xs text-green-600 dark:text-green-400">
-                                        In: Rp {{ number_format($item['credits'], 0, ',', '.') }}
-                                    </span>
-                                </div>
-                            </div>
-                            <x-badge :text="$item['count'] . ' txn'" size="sm" color="purple" />
-                        </div>
-                    @endforeach
-                </div>
-            @endif
-        </div>
-    </div>
-
-    {{-- Transfers Listing --}}
-    <div class="bg-white dark:bg-dark-800 border border-zinc-200 dark:border-dark-600 rounded-xl p-6">
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-6">Transfer Transactions</h3>
-
-        @if ($this->transferTransactions->isEmpty())
-            <div class="text-center py-12">
-                <x-icon name="arrow-path" class="w-16 h-16 text-zinc-300 dark:text-dark-700 mx-auto mb-4" />
-                <p class="text-zinc-500 dark:text-dark-400">No transfer transactions found</p>
-                <p class="text-zinc-400 dark:text-dark-600 text-sm mt-1">Try adjusting your filters</p>
-            </div>
-        @else
-            <div class="overflow-x-auto">
-                <table class="w-full">
-                    <thead class="border-b border-zinc-200 dark:border-dark-600">
-                        <tr>
-                            <th class="text-left py-3 px-4 text-sm font-semibold text-dark-600 dark:text-dark-400">Date
-                            </th>
-                            <th class="text-left py-3 px-4 text-sm font-semibold text-dark-600 dark:text-dark-400">Type
-                            </th>
-                            <th class="text-left py-3 px-4 text-sm font-semibold text-dark-600 dark:text-dark-400">
-                                Description</th>
-                            <th class="text-left py-3 px-4 text-sm font-semibold text-dark-600 dark:text-dark-400">
-                                Category</th>
-                            <th class="text-left py-3 px-4 text-sm font-semibold text-dark-600 dark:text-dark-400">Bank
-                                Account</th>
-                            <th class="text-left py-3 px-4 text-sm font-semibold text-dark-600 dark:text-dark-400">
-                                Reference</th>
-                            <th class="text-right py-3 px-4 text-sm font-semibold text-dark-600 dark:text-dark-400">
-                                Amount</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-zinc-200 dark:divide-dark-600">
-                        @foreach ($this->transferTransactions as $transaction)
-                            <tr class="hover:bg-zinc-50 dark:hover:bg-dark-700 transition-colors">
-                                <td class="py-3 px-4 text-sm text-dark-900 dark:text-white whitespace-nowrap">
-                                    {{ $transaction->transaction_date->format('d M Y') }}
-                                </td>
-                                <td class="py-3 px-4 text-sm">
-                                    <x-badge :text="$transaction->transaction_type === 'debit' ? 'Transfer Out' : 'Transfer In'" size="sm" :color="$transaction->transaction_type === 'debit' ? 'red' : 'green'" />
-                                </td>
-                                <td class="py-3 px-4 text-sm text-dark-900 dark:text-white">
-                                    {{ $transaction->description ?? '-' }}
-                                </td>
-                                <td class="py-3 px-4 text-sm">
-                                    @if ($transaction->category)
-                                        <x-badge :text="$transaction->category->label" size="sm" color="purple" />
-                                    @else
-                                        <x-badge text="Uncategorized" size="sm" color="gray" />
-                                    @endif
-                                </td>
-                                <td class="py-3 px-4 text-sm text-dark-900 dark:text-white">
-                                    {{ $transaction->bankAccount->account_name }}
-                                </td>
-                                <td class="py-3 px-4 text-sm text-dark-600 dark:text-dark-400">
-                                    {{ $transaction->reference_number ?? '-' }}
-                                </td>
-                                <td class="py-3 px-4 text-sm text-right font-semibold">
-                                    <span
-                                        class="{{ $transaction->transaction_type === 'debit' ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400' }}">
-                                        {{ $transaction->transaction_type === 'debit' ? '-' : '+' }}
-                                        Rp {{ number_format($transaction->amount, 0, ',', '.') }}
-                                    </span>
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                    <tfoot class="border-t-2 border-zinc-300 dark:border-dark-500">
-                        <tr>
-                            <td colspan="6"
-                                class="py-3 px-4 text-sm font-semibold text-right text-dark-900 dark:text-white">
-                                Total:
-                            </td>
-                            <td class="py-3 px-4 text-sm text-right font-bold text-purple-600 dark:text-purple-400">
-                                Rp {{ number_format($this->totalTransfers, 0, ',', '.') }}
-                            </td>
-                        </tr>
-                    </tfoot>
-                </table>
             </div>
         @endif
     </div>
+
+    {{-- Table Section --}}
+    <div class="bg-white dark:bg-dark-800 border border-secondary-200 dark:border-dark-600 rounded-xl overflow-hidden">
+        {{-- Header --}}
+        <div class="px-4 lg:px-6 py-4 border-b border-secondary-200 dark:border-dark-600">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                    <h3 class="text-lg font-semibold text-dark-900 dark:text-dark-50">Daftar Transfer Internal</h3>
+                    <p class="text-sm text-dark-600 dark:text-dark-400">Transfer antar rekening bank</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <x-button wire:click="export" color="green" icon="arrow-down-tray" size="sm" loading="export">
+                        Export
+                    </x-button>
+                    <x-button wire:click="$dispatch('open-transfer-modal')" color="blue" icon="plus"
+                        size="sm">
+                        Transfer Baru
+                    </x-button>
+                </div>
+            </div>
+        </div>
+
+        {{-- Table --}}
+        <div class="px-4 lg:px-6 py-4">
+            <x-table :$headers :$sort :rows="$this->rows" selectable wire:model="selected" paginate filter loading>
+
+                {{-- Date Column --}}
+                @interact('column_transaction_date', $row)
+                    <div class="flex items-center gap-3">
+                        <div
+                            class="flex-shrink-0 h-10 w-10 bg-gradient-to-br from-secondary-100 to-secondary-200 dark:from-dark-700 dark:to-dark-600 rounded-lg flex items-center justify-center">
+                            <x-icon name="calendar" class="w-5 h-5 text-secondary-600 dark:text-secondary-400" />
+                        </div>
+                        <div>
+                            <div class="text-sm font-semibold text-dark-900 dark:text-dark-50">
+                                {{ $row->transaction_date->format('d M Y') }}
+                            </div>
+                            <div class="text-xs text-dark-500 dark:text-dark-400">
+                                {{ $row->transaction_date->diffForHumans() }}
+                            </div>
+                        </div>
+                    </div>
+                @endinteract
+
+                {{-- From Account Column --}}
+                @interact('column_from_account', $row)
+                    @if ($row->from_account)
+                        <div class="flex items-center gap-2">
+                            <div
+                                class="h-8 w-8 bg-gradient-to-br from-red-100 to-red-200 dark:from-red-900/30 dark:to-red-800/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                                <x-icon name="arrow-up" class="w-4 h-4 text-red-600 dark:text-red-400" />
+                            </div>
+                            <div>
+                                <div class="text-sm font-semibold text-dark-900 dark:text-dark-50">
+                                    {{ $row->from_account->bank_name }}
+                                </div>
+                                <div class="text-xs text-dark-500 dark:text-dark-400">
+                                    {{ $row->from_account->account_number }}
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+                @endinteract
+
+                {{-- To Account Column --}}
+                @interact('column_to_account', $row)
+                    <div class="flex items-center gap-2">
+                        <div
+                            class="h-8 w-8 bg-gradient-to-br from-green-100 to-green-200 dark:from-green-900/30 dark:to-green-800/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <x-icon name="arrow-down" class="w-4 h-4 text-green-600 dark:text-green-400" />
+                        </div>
+                        <div>
+                            <div class="text-sm font-semibold text-dark-900 dark:text-dark-50">
+                                {{ $row->bankAccount->bank_name }}
+                            </div>
+                            <div class="text-xs text-dark-500 dark:text-dark-400">
+                                {{ $row->bankAccount->account_number }}
+                            </div>
+                        </div>
+                    </div>
+                @endinteract
+
+                {{-- Description Column --}}
+                @interact('column_description', $row)
+                    <div class="max-w-xs">
+                        <div class="text-sm font-medium text-dark-900 dark:text-dark-50 line-clamp-2 mb-1">
+                            {{ $row->description }}
+                        </div>
+                        @if ($row->reference_number)
+                            <div class="flex items-center gap-1.5">
+                                <x-icon name="document-duplicate" class="w-3 h-3 text-dark-400" />
+                                <span class="text-xs text-dark-500 dark:text-dark-400 font-mono">
+                                    {{ $row->reference_number }}
+                                </span>
+                            </div>
+                        @endif
+                        @if ($row->attachment_path)
+                            <div class="flex items-center gap-1 text-xs text-primary-600 dark:text-primary-400 mt-1">
+                                <x-icon name="paper-clip" class="w-3 h-3" />
+                                <span class="font-medium">Ada lampiran</span>
+                            </div>
+                        @endif
+                    </div>
+                @endinteract
+
+                {{-- Amount Column --}}
+                @interact('column_amount', $row)
+                    <div class="text-right">
+                        <div class="text-lg font-bold text-blue-600 dark:text-blue-400">
+                            Rp {{ number_format($row->amount, 0, ',', '.') }}
+                        </div>
+                        <div class="text-xs text-dark-500 dark:text-dark-400">
+                            Transfer bersih
+                        </div>
+                    </div>
+                @endinteract
+
+                {{-- Total Debit Column --}}
+                @interact('column_total_debit', $row)
+                    <div class="text-right">
+                        <div class="text-lg font-bold text-red-600 dark:text-red-400">
+                            Rp {{ number_format($row->total_debit, 0, ',', '.') }}
+                        </div>
+                        <div class="text-xs text-orange-600 dark:text-orange-400">
+                            + Rp {{ number_format($row->total_debit - $row->amount, 0, ',', '.') }} admin
+                        </div>
+                    </div>
+                @endinteract
+
+                {{-- Action Column --}}
+                @interact('column_action', $row)
+                    <div class="flex items-center justify-center gap-1">
+                        @if ($row->attachment_path)
+                            <x-button.circle icon="paper-clip" color="primary" size="sm"
+                                wire:click="$dispatch('view-attachment', {type: 'transaction', id: {{ $row->id }}})"
+                                title="Lihat Lampiran" />
+                        @endif
+
+                        <x-button.circle icon="trash" color="red" size="sm"
+                            wire:click="$dispatch('delete-transaction', {transactionId: {{ $row->id }}})"
+                            title="Hapus" />
+                    </div>
+                @endinteract
+            </x-table>
+        </div>
+    </div>
+
+    {{-- Bulk Actions Bar --}}
+    <div x-data="{ show: @entangle('selected').live }" x-show="show.length > 0" x-transition
+        class="fixed bottom-4 sm:bottom-6 left-4 right-4 sm:left-1/2 sm:right-auto sm:transform sm:-translate-x-1/2 z-50">
+        <div
+            class="bg-white dark:bg-dark-800 rounded-xl shadow-lg border border-secondary-200 dark:border-dark-600 px-4 sm:px-6 py-4 sm:min-w-96">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-6">
+                <div class="flex items-center gap-3">
+                    <div class="h-10 w-10 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center">
+                        <x-icon name="check-circle" class="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <div>
+                        <div class="font-semibold text-dark-900 dark:text-dark-50"
+                            x-text="`${show.length} transfer dipilih`"></div>
+                        <div class="text-xs text-dark-500 dark:text-dark-400">Pilih aksi untuk item yang dipilih</div>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2 justify-end">
+                    <x-button wire:click="exportSelected" size="sm" color="green" icon="arrow-down-tray"
+                        loading="exportSelected" class="whitespace-nowrap">
+                        Export
+                    </x-button>
+                    <x-button wire:click="bulkDelete" size="sm" color="red" icon="trash"
+                        loading="executeBulkDelete" class="whitespace-nowrap">
+                        Hapus
+                    </x-button>
+                    <x-button wire:click="$set('selected', [])" size="sm" color="secondary" icon="x-mark"
+                        class="whitespace-nowrap">
+                        Batal
+                    </x-button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Child Components --}}
+    <livewire:transactions.transfer @transfer-completed="$refresh" />
+    <livewire:transactions.delete @transaction-deleted="$refresh" />
 </div>
