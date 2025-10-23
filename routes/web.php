@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\Admin\RoleManagement;
 use App\Livewire\Dashboard;
 use App\Livewire\TestingPage;
 use App\Models\Invoice;
@@ -85,6 +86,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/profile', Profile::class)->name('profile');
         Route::get('/password', Password::class)->name('password');
         Route::get('/appearance', Appearance::class)->name('appearance');
+    });
+
+    // Role & Permission Management - Admin only
+    Route::middleware(['role:admin'])->prefix('admin')->name('admin.')->group(function () {
+        Route::get('/roles', RoleManagement::class)->name('roles');
     });
 
     // Development Routes (Remove in production)

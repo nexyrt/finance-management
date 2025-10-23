@@ -19,66 +19,84 @@
         </a>
 
         <flux:navlist variant="outline">
+            {{-- Dashboard - Always visible --}}
             <flux:navlist.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')"
                 wire:navigate class="py-5">{{ __('Dashboard') }}
             </flux:navlist.item>
 
-            <flux:navlist.item icon="users" :href="route('clients')" :current="request()->routeIs('clients')"
-                wire:navigate class="py-5">{{ __('Clients') }}
-            </flux:navlist.item>
-
-            <flux:navlist.item icon="puzzle-piece" :href="route('services')" :current="request()->routeIs('services')"
-                wire:navigate class="py-5">{{ __('Services') }}
-            </flux:navlist.item>
-
-            <flux:navlist.group heading="Finance" expandable class="mt-1">
-                {{-- NEW: Cash Flow Menu --}}
-                <flux:navlist.item icon="chart-bar" :href="route('cash-flow.index')"
-                    :current="request()->routeIs('cash-flow.*')" wire:navigate class="py-5">
-                    {{ __('Cash Flow') }}
+            {{-- Clients --}}
+            @can('view clients')
+                <flux:navlist.item icon="users" :href="route('clients')" :current="request()->routeIs('clients')"
+                    wire:navigate class="py-5">{{ __('Clients') }}
                 </flux:navlist.item>
+            @endcan
 
-                <flux:navlist.item icon="document-text" :href="route('invoices.index')"
-                    :current="request()->routeIs('invoices.*')" wire:navigate class="py-5">
-                    {{ __('Invoices') }}
+            {{-- Services --}}
+            @can('view services')
+                <flux:navlist.item icon="puzzle-piece" :href="route('services')" :current="request()->routeIs('services')"
+                    wire:navigate class="py-5">{{ __('Services') }}
                 </flux:navlist.item>
+            @endcan
 
-                <flux:navlist.item icon="arrow-path" :href="route('recurring-invoices.index')"
-                    :current="request()->routeIs('recurring-invoices.*')" class="py-5">
-                    {{ __('Recurring Invoices') }}
+            {{-- Finance Group - Show if user has ANY finance permission --}}
+            @canany(['view cash-flow', 'view invoices', 'view recurring-invoices', 'view bank-accounts'])
+                <flux:navlist.group heading="Finance" expandable class="mt-1">
+
+                    @can('view cash-flow')
+                        <flux:navlist.item icon="chart-bar" :href="route('cash-flow.index')"
+                            :current="request()->routeIs('cash-flow.*')" wire:navigate class="py-5">
+                            {{ __('Cash Flow') }}
+                        </flux:navlist.item>
+                    @endcan
+
+                    @can('view invoices')
+                        <flux:navlist.item icon="document-text" :href="route('invoices.index')"
+                            :current="request()->routeIs('invoices.*')" wire:navigate class="py-5">
+                            {{ __('Invoices') }}
+                        </flux:navlist.item>
+                    @endcan
+
+                    @can('view recurring-invoices')
+                        <flux:navlist.item icon="arrow-path" :href="route('recurring-invoices.index')"
+                            :current="request()->routeIs('recurring-invoices.*')" class="py-5">
+                            {{ __('Recurring Invoices') }}
+                        </flux:navlist.item>
+                    @endcan
+
+                    @can('view bank-accounts')
+                        <flux:navlist.item icon="credit-card" :href="route('bank-accounts.index')"
+                            :current="request()->routeIs('bank-accounts.*')" class="py-5">
+                            {{ __('Bank Accounts') }}
+                        </flux:navlist.item>
+                    @endcan
+                </flux:navlist.group>
+            @endcanany
+
+            {{-- Transaction Categories --}}
+            @can('view categories')
+                <flux:navlist.item icon="tag" :href="route('transaction-categories.index')"
+                    :current="request()->routeIs('transaction-categories.*')" wire:navigate class="py-5">
+                    {{ __('Transaction Categories') }}
                 </flux:navlist.item>
+            @endcan
 
-                <flux:navlist.item icon="credit-card" :href="route('bank-accounts.index')"
-                    :current="request()->routeIs('bank-accounts.*')" class="py-5">
-                    {{ __('Bank Accounts') }}
+            @role('admin')
+                <flux:navlist.item icon="shield-check" :href="route('admin.roles')"
+                    :current="request()->routeIs('admin.roles')" wire:navigate class="py-5">
+                    {{ __('Role Management') }}
                 </flux:navlist.item>
-
-                {{-- REMOVED: Transactions menu (moved to Cash Flow tabs) --}}
-                {{-- <flux:navlist.item icon="banknotes" :href="route('transactions.index')"
-            :current="request()->routeIs('transactions.*')" wire:navigate class="py-5">
-            {{ __('Transactions') }}
-        </flux:navlist.item> --}}
-            </flux:navlist.group>
-
-            <flux:navlist.item icon="tag" :href="route('transaction-categories.index')"
-                :current="request()->routeIs('transaction-categories.*')" wire:navigate class="py-5">
-                {{ __('Transaction Categories') }}
-            </flux:navlist.item>
-
-            {{-- <flux:navlist.item icon="loading" :href="route('test')" :current="request()->routeIs('test')"
-        wire:navigate class="py-5">{{ __('Testing Component') }}
-    </flux:navlist.item> --}}
+            @endrole
         </flux:navlist>
 
         <flux:spacer />
 
-
+        {{-- Theme Switcher --}}
         <flux:radio.group x-data variant="segmented" x-model="$flux.appearance">
             <flux:radio value="light" icon="sun">{{ __('Light') }}</flux:radio>
             <flux:radio value="dark" icon="moon">{{ __('Dark') }}</flux:radio>
         </flux:radio.group>
 
-        <!-- Desktop User Menu -->
+        {{-- User Menu --}}
         <flux:dropdown position="bottom" align="start">
             <flux:profile :name="auth()->user()->name" :initials="auth()->user()->initials()"
                 icon-trailing="chevrons-up-down" />
@@ -106,7 +124,8 @@
 
                 <flux:menu.radio.group>
                     <flux:menu.item :href="route('settings.profile')" icon="cog" wire:navigate>
-                        {{ __('Settings') }}</flux:menu.item>
+                        {{ __('Settings') }}
+                    </flux:menu.item>
                 </flux:menu.radio.group>
 
                 <flux:menu.separator />
