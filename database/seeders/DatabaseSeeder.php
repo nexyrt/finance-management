@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
             RecurringTemplateSeeder::class,
             RecurringInvoiceSeeder::class,
             TransactionCategorySeeder::class,
+            RolePermissionSeeder::class,
         ]);
     }
 }
