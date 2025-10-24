@@ -86,5 +86,6 @@ class Edit extends Component
         $this->dispatch('updated');
         $this->reset(['password', 'password_confirmation']);
         $this->success('User updated successfully');
+        $this->modal = false;
     }
 }
