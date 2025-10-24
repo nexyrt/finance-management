@@ -89,8 +89,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     // Role & Permission Management - Admin only
+    // User Management - Admin only
     Route::middleware(['role:admin'])->prefix('admin')->name('admin.')->group(function () {
         Route::get('/roles', RoleManagement::class)->name('roles');
+        Route::get('/users', \App\Livewire\Users\Index::class)->name('users');
     });
 
     // Development Routes (Remove in production)

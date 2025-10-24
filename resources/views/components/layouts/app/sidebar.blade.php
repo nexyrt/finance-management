@@ -81,10 +81,16 @@
             @endcan
 
             @role('admin')
-                <flux:navlist.item icon="shield-check" :href="route('admin.roles')"
-                    :current="request()->routeIs('admin.roles')" wire:navigate class="py-5">
-                    {{ __('Role Management') }}
-                </flux:navlist.item>
+                <flux:navlist.group heading="Admin" expandable class="mt-1">
+                    <flux:navlist.item icon="users" :href="route('admin.users')"
+                        :current="request()->routeIs('admin.users')" wire:navigate class="py-5">
+                        {{ __('Users') }}
+                    </flux:navlist.item>
+                    <flux:navlist.item icon="shield-check" :href="route('admin.roles')"
+                        :current="request()->routeIs('admin.roles')" wire:navigate class="py-5">
+                        {{ __('Roles') }}
+                    </flux:navlist.item>
+                </flux:navlist.group>
             @endrole
         </flux:navlist>
 
