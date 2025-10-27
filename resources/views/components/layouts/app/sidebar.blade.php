@@ -80,6 +80,27 @@
                 </flux:navlist.item>
             @endcan
 
+            {{-- 🆕 REIMBURSEMENTS - Add here --}}
+            @can('view reimbursements')
+                <flux:navlist.item icon="banknotes" :href="route('reimbursements.index')"
+                    :current="request()->routeIs('reimbursements.*')" wire:navigate class="py-5">
+                    <div class="flex items-center justify-between w-full">
+                        <span>{{ __('Reimbursements') }}</span>
+
+                        {{-- Pending Badge for Finance --}}
+                        @can('approve reimbursements')
+                            @php
+                                $pendingCount = \App\Models\Reimbursement::pending()->count();
+                            @endphp
+                            @if ($pendingCount > 0)
+                                <flux:badge color="yellow" size="sm">{{ $pendingCount }}</flux:badge>
+                            @endif
+                        @endcan
+                    </div>
+                </flux:navlist.item>
+            @endcan
+
+            {{-- Admin Section --}}
             @role('admin')
                 <flux:navlist.group heading="Admin" expandable class="mt-1">
                     <flux:navlist.item icon="users" :href="route('admin.users')"
