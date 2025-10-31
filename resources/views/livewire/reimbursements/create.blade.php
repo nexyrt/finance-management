@@ -1,86 +1,85 @@
 <div>
     {{-- Trigger Button --}}
     <x-button wire:click="$toggle('modal')" color="blue" icon="plus" class="w-full sm:w-auto">
-        Buat Pengajuan
+        New Request
     </x-button>
 
     {{-- Modal --}}
-    <x-modal title="Buat Pengajuan Reimbursement" wire size="2xl">
-        <form id="reimbursement-create" wire:submit="save" class="space-y-4">
-            {{-- Title --}}
-            <div>
-                <x-input label="Judul Pengajuan *" wire:model="title" placeholder="Contoh: Transportasi ke klien"
-                    required />
-            </div>
-
-            {{-- Description --}}
-            <div>
-                <x-textarea label="Deskripsi" wire:model="description" placeholder="Detail pengeluaran..."
-                    rows="3" />
-            </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {{-- Amount --}}
-                <div>
-                    <x-wireui-currency label="Jumlah *" wire:model="amount" prefix="Rp" thousands="." decimal=","
-                        placeholder="0" required />
+    <x-modal wire="modal" size="xl" center persistent>
+        {{-- Custom Title --}}
+        <x-slot:title>
+            <div class="flex items-center gap-4 my-3">
+                <div class="h-12 w-12 bg-primary-50 dark:bg-primary-900/20 rounded-xl flex items-center justify-center">
+                    <x-icon name="document-plus" class="w-6 h-6 text-primary-600 dark:text-primary-400" />
                 </div>
-
-                {{-- Expense Date --}}
                 <div>
-                    <x-date label="Tanggal Pengeluaran *" wire:model="expense_date" :max-date="now()" required />
+                    <h3 class="text-xl font-bold text-dark-900 dark:text-dark-50">New Reimbursement</h3>
+                    <p class="text-sm text-dark-600 dark:text-dark-400">Submit your expense reimbursement request</p>
                 </div>
             </div>
+        </x-slot:title>
 
-            {{-- Category --}}
-            <div>
-                <x-select.styled label="Kategori *" wire:model="category" :options="$this->categories" placeholder="Pilih kategori"
-                    required />
-            </div>
+        {{-- Form --}}
+        <form id="reimbursement-create" wire:submit="save" class="space-y-6">
+            {{-- Section: Basic Information --}}
+            <div class="space-y-4">
+                <div class="border-b border-secondary-200 dark:border-dark-600 pb-4">
+                    <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-1">Expense Details</h4>
+                    <p class="text-xs text-dark-500 dark:text-dark-400">Provide information about your expense</p>
+                </div>
 
-            {{-- Attachment Upload --}}
-            <div>
-                <x-upload wire:model="attachment" label="Bukti Pengeluaran"
-                    hint="Upload struk/nota (JPG, PNG, PDF - Max 2MB)" tip="Drag & drop file atau klik untuk upload"
-                    accept="image/jpeg,image/png,application/pdf" delete delete-method="deleteUpload" />
-            </div>
-
-            {{-- Info Box --}}
-            <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg p-4">
-                <div class="flex items-start space-x-3">
-                    <x-icon name="information-circle" class="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5" />
-                    <div class="text-sm text-blue-800 dark:text-blue-200">
-                        <p class="font-medium mb-1">Informasi:</p>
-                        <ul class="list-disc list-inside space-y-1 text-xs">
-                            <li>Simpan sebagai draft untuk melanjutkan nanti</li>
-                            <li>Submit untuk langsung mengirim ke finance</li>
-                            <li>Draft dapat diedit dan dihapus kapan saja</li>
-                        </ul>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <div class="lg:col-span-2">
+                        <x-input wire:model="title" label="Title *" placeholder="e.g., Taxi to client meeting" />
                     </div>
+
+                    <x-wireui-currency wire:model="amount" label="Amount *" prefix="Rp" thousands="." decimal=","
+                        placeholder="0" />
+
+                    <x-date wire:model="expense_date" label="Expense Date *" placeholder="Select date" />
+
+                    <div class="lg:col-span-2">
+                        <x-select.styled wire:model="category" :options="$this->categories" label="Category *"
+                            placeholder="Select category..." searchable />
+                    </div>
+
+                    <div class="lg:col-span-2">
+                        <x-textarea wire:model="description" label="Description" rows="3"
+                            placeholder="Optional: Add more details about this expense" />
+                    </div>
+                </div>
+            </div>
+
+            {{-- Section: Attachment --}}
+            <div class="space-y-4">
+                <div class="border-b border-secondary-200 dark:border-dark-600 pb-4">
+                    <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-1">Attachment</h4>
+                    <p class="text-xs text-dark-500 dark:text-dark-400">Upload receipt or supporting document (optional)
+                    </p>
+                </div>
+
+                <div>
+                    <x-upload wire:model="attachment" label="Receipt/Document" tip="JPG, PNG, or PDF (Max 5MB)"
+                        accept="image/jpeg,image/png,application/pdf" />
                 </div>
             </div>
         </form>
 
+        {{-- Footer --}}
         <x-slot:footer>
-            <div class="flex flex-col sm:flex-row justify-between w-full gap-3">
-                {{-- Cancel --}}
-                <x-button color="gray" wire:click="$set('modal', false)">
-                    Batal
+            <div class="flex flex-col sm:flex-row justify-end gap-3">
+                <x-button wire:click="$set('modal', false)" color="secondary" outline
+                    class="w-full sm:w-auto order-3 sm:order-1">
+                    Cancel
                 </x-button>
-
-                <div class="flex gap-2">
-                    {{-- Save as Draft --}}
-                    <x-button type="submit" form="reimbursement-create" wire:click="$set('submitOnSave', false)"
-                        color="secondary" loading="save" icon="document">
-                        Simpan Draft
-                    </x-button>
-
-                    {{-- Submit --}}
-                    <x-button type="submit" form="reimbursement-create" wire:click="$set('submitOnSave', true)"
-                        color="blue" loading="save" icon="paper-airplane">
-                        Submit
-                    </x-button>
-                </div>
+                <x-button wire:click="saveAsDraft" color="gray" icon="document" loading="saveAsDraft"
+                    class="w-full sm:w-auto order-2 sm:order-2">
+                    Save as Draft
+                </x-button>
+                <x-button wire:click="submitForApproval" color="blue" icon="paper-airplane"
+                    loading="submitForApproval" class="w-full sm:w-auto order-1 sm:order-3">
+                    Submit for Approval
+                </x-button>
             </div>
         </x-slot:footer>
     </x-modal>

@@ -1,98 +1,121 @@
 <div>
-    <x-modal :title="$reimbursement ? 'Edit: ' . $reimbursement->title : 'Edit Pengajuan'" wire size="2xl">
-        @if ($reimbursement)
-            <form id="reimbursement-update" wire:submit="save" class="space-y-4">
-                {{-- Title --}}
+    {{-- Modal --}}
+    <x-modal wire="modal" size="xl" center persistent>
+        {{-- Custom Title --}}
+        <x-slot:title>
+            <div class="flex items-center gap-4 my-3">
+                <div class="h-12 w-12 bg-primary-50 dark:bg-primary-900/20 rounded-xl flex items-center justify-center">
+                    <x-icon name="pencil" class="w-6 h-6 text-primary-600 dark:text-primary-400" />
+                </div>
                 <div>
-                    <x-input label="Judul Pengajuan *" wire:model="title" placeholder="Contoh: Transportasi ke klien"
-                        required />
-                </div>
+                    <h3 class="text-xl font-bold text-dark-900 dark:text-dark-50">Edit Reimbursement</h3>
+                    <p class="text-sm text-dark-600 dark:text-dark-400">Update your expense reimbursement request</p>
 
-                {{-- Description --}}
-                <div>
-                    <x-textarea label="Deskripsi" wire:model="description" placeholder="Detail pengeluaran..."
-                        rows="3" />
-                </div>
-
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {{-- Amount --}}
-                    <div>
-                        <x-wireui-currency label="Jumlah *" wire:model="amount" prefix="Rp" thousands="."
-                            decimal="," placeholder="0" required />
-                    </div>
-
-                    {{-- Expense Date --}}
-                    <div>
-                        <x-date label="Tanggal Pengeluaran *" wire:model="expense_date" :max-date="now()" required />
-                    </div>
-                </div>
-
-                {{-- Category --}}
-                <div>
-                    <x-select.styled label="Kategori *" wire:model="category" :options="$this->categories"
-                        placeholder="Pilih kategori" required />
-                </div>
-
-                {{-- Existing Attachment --}}
-                @if ($reimbursement->hasAttachment() && !$removeExistingAttachment)
-                    <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center space-x-3">
-                                @if ($reimbursement->isImageAttachment())
-                                    <img src="{{ $reimbursement->attachment_url }}" alt="Attachment"
-                                        class="w-16 h-16 rounded object-cover">
-                                @else
-                                    <div
-                                        class="w-16 h-16 bg-red-100 dark:bg-red-900/20 rounded flex items-center justify-center">
-                                        <x-icon name="document" class="w-8 h-8 text-red-600 dark:text-red-400" />
-                                    </div>
-                                @endif
+                    {{-- Show rejection note if status is rejected --}}
+                    @if ($this->reimbursement && $this->reimbursement->isRejected())
+                        <div
+                            class="mt-3 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                            <div class="flex items-start gap-2">
+                                <x-icon name="exclamation-circle"
+                                    class="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
                                 <div>
-                                    <p class="text-sm font-medium text-gray-900 dark:text-white">
-                                        {{ $reimbursement->attachment_name }}</p>
-                                    <p class="text-xs text-gray-500 dark:text-gray-400">File saat ini</p>
+                                    <div class="text-sm font-semibold text-red-900 dark:text-red-200">Rejection Reason:
+                                    </div>
+                                    <div class="text-sm text-red-800 dark:text-red-300">
+                                        {{ $this->reimbursement->review_notes ?? 'No reason provided' }}
+                                    </div>
                                 </div>
                             </div>
-                            <x-button.circle wire:click="removeAttachment" color="red" size="sm"
-                                icon="trash" />
                         </div>
-                    </div>
-                @endif
+                    @endif
+                </div>
+            </div>
+        </x-slot:title>
 
-                {{-- New Attachment Upload --}}
-                <div>
-                    <x-upload wire:model="attachment" label="Bukti Pengeluaran"
-                        hint="Upload struk/nota baru (JPG, PNG, PDF - Max 2MB)"
-                        tip="Drag & drop file atau klik untuk upload" accept="image/jpeg,image/png,application/pdf"
-                        delete delete-method="deleteUpload" />
+        {{-- Form --}}
+        <form id="reimbursement-update" wire:submit="save" class="space-y-6">
+            {{-- Section: Basic Information --}}
+            <div class="space-y-4">
+                <div class="border-b border-secondary-200 dark:border-dark-600 pb-4">
+                    <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-1">Expense Details</h4>
+                    <p class="text-xs text-dark-500 dark:text-dark-400">Update information about your expense</p>
                 </div>
 
-                {{-- Status Info --}}
-                @if ($reimbursement->isRejected())
-                    <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-lg p-4">
-                        <div class="flex items-start space-x-3">
-                            <x-icon name="exclamation-circle" class="w-5 h-5 text-red-600 dark:text-red-400 mt-0.5" />
-                            <div class="text-sm text-red-800 dark:text-red-200">
-                                <p class="font-medium mb-1">Pengajuan Ditolak</p>
-                                @if ($reimbursement->review_notes)
-                                    <p class="text-xs">{{ $reimbursement->review_notes }}</p>
-                                @endif
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <div class="lg:col-span-2">
+                        <x-input wire:model="title" label="Title *" placeholder="e.g., Taxi to client meeting" />
+                    </div>
+
+                    <x-wireui-currency wire:model="amount" label="Amount *" prefix="Rp" thousands="." decimal=","
+                        placeholder="0" />
+
+                    <x-date wire:model="expense_date" label="Expense Date *" placeholder="Select date" />
+
+                    <div class="lg:col-span-2">
+                        <x-select.styled wire:model="category" :options="$this->categories" label="Category *"
+                            placeholder="Select category..." searchable />
+                    </div>
+
+                    <div class="lg:col-span-2">
+                        <x-textarea wire:model="description" label="Description" rows="3"
+                            placeholder="Optional: Add more details about this expense" />
+                    </div>
+                </div>
+            </div>
+
+            {{-- Section: Attachment --}}
+            <div class="space-y-4">
+                <div class="border-b border-secondary-200 dark:border-dark-600 pb-4">
+                    <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-1">Attachment</h4>
+                    <p class="text-xs text-dark-500 dark:text-dark-400">Update receipt or supporting document</p>
+                </div>
+
+                <div class="space-y-3">
+                    {{-- Existing Attachment --}}
+                    @if ($existingAttachment && !$removeAttachment)
+                        <div
+                            class="p-4 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <x-icon name="paper-clip" class="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                                    <div>
+                                        <div class="text-sm font-medium text-dark-900 dark:text-dark-50">
+                                            {{ $existingAttachment }}
+                                        </div>
+                                        <div class="text-xs text-dark-500 dark:text-dark-400">Current attachment</div>
+                                    </div>
+                                </div>
+                                <x-button.circle icon="trash" color="red" size="sm"
+                                    wire:click="removeExistingAttachment" title="Remove" />
                             </div>
                         </div>
-                    </div>
-                @endif
-            </form>
+                    @endif
 
-            <x-slot:footer>
-                <div class="flex justify-between w-full">
-                    <x-button color="gray" wire:click="$set('modal', false)">
-                        Batal
-                    </x-button>
-                    <x-button type="submit" form="reimbursement-update" color="green" loading="save" icon="check">
-                        Update Pengajuan
-                    </x-button>
+                    {{-- Upload New Attachment --}}
+                    <div>
+                        <x-upload wire:model="attachment" label="Upload New Receipt/Document"
+                            tip="JPG, PNG, or PDF (Max 5MB)" accept="image/jpeg,image/png,application/pdf" />
+                    </div>
                 </div>
-            </x-slot:footer>
-        @endif
+            </div>
+        </form>
+
+        {{-- Footer --}}
+        <x-slot:footer>
+            <div class="flex flex-col sm:flex-row justify-end gap-3">
+                <x-button wire:click="$set('modal', false)" color="secondary" outline
+                    class="w-full sm:w-auto order-3 sm:order-1">
+                    Cancel
+                </x-button>
+                <x-button wire:click="saveAsDraft" color="gray" icon="document" loading="saveAsDraft"
+                    class="w-full sm:w-auto order-2 sm:order-2">
+                    Save as Draft
+                </x-button>
+                <x-button wire:click="submitForApproval" color="blue" icon="paper-airplane"
+                    loading="submitForApproval" class="w-full sm:w-auto order-1 sm:order-3">
+                    Submit for Approval
+                </x-button>
+            </div>
+        </x-slot:footer>
     </x-modal>
 </div>

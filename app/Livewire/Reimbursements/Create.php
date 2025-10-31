@@ -5,7 +5,7 @@ namespace App\Livewire\Reimbursements;
 use App\Livewire\Traits\Alert;
 use App\Models\Reimbursement;
 use Illuminate\Contracts\View\View;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -14,17 +14,29 @@ class Create extends Component
 {
     use Alert, WithFileUploads;
 
-    // Form fields
-    public ?string $title = null;
-    public ?string $description = null;
-    public ?int $amount = null;
-    public ?string $expense_date = null;
-    public ?string $category = null;
-    public $attachment;
-
-    // UI state
+    // Modal Control
     public bool $modal = false;
-    public bool $submitOnSave = false;
+
+    // Form Fields
+    public ?string $title = null;
+
+    public ?string $description = null;
+
+    public ?string $amount = null;
+
+    public ?string $expense_date = null;
+
+    public ?string $category = null;
+
+    public $attachment = null;
+
+    // Action Type
+    public string $action = 'draft'; // 'draft' or 'submit'
+
+    public function mount(): void
+    {
+        $this->expense_date = now()->format('Y-m-d');
+    }
 
     public function render(): View
     {
@@ -41,60 +53,69 @@ class Create extends Component
     {
         return [
             'title' => ['required', 'string', 'max:255'],
-            'description' => ['nullable', 'string'],
-            'amount' => ['required', 'integer', 'min:1'],
-            'expense_date' => ['required', 'date', 'before_or_equal:today'],
+            'description' => ['nullable', 'string', 'max:1000'],
+            'amount' => ['required', 'string'],
+            'expense_date' => ['required', 'date'],
             'category' => ['required', 'string', 'in:transport,meals,office_supplies,communication,accommodation,medical,other'],
-            'attachment' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:2048'],
-        ];
-    }
-
-    public function messages(): array
-    {
-        return [
-            'expense_date.before_or_equal' => 'Tanggal pengeluaran tidak boleh melebihi hari ini.',
-            'attachment.mimes' => 'File harus berformat JPG, PNG, atau PDF.',
-            'attachment.max' => 'Ukuran file maksimal 2MB.',
+            'attachment' => ['nullable', 'file', 'max:5120', 'mimes:jpg,jpeg,png,pdf'], // 5MB max
         ];
     }
 
     public function save(): void
     {
-        $this->validate();
+        $validated = $this->validate();
 
-        $reimbursement = new Reimbursement();
-        $reimbursement->user_id = Auth::id();
-        $reimbursement->title = $this->title;
-        $reimbursement->description = $this->description;
-        $reimbursement->amount = $this->amount;
-        $reimbursement->expense_date = $this->expense_date;
-        $reimbursement->category = $this->category;
-        $reimbursement->status = $this->submitOnSave ? 'pending' : 'draft';
+        DB::transaction(function () use ($validated) {
+            // Parse amount
+            $amount = Reimbursement::parseAmount($validated['amount']);
 
-        // Handle attachment upload
-        if ($this->attachment) {
-            $path = $this->attachment->store('reimbursements', 'public');
-            $reimbursement->attachment_path = $path;
-            $reimbursement->attachment_name = $this->attachment->getClientOriginalName();
-        }
+            // Handle attachment upload
+            $attachmentPath = null;
+            $attachmentName = null;
 
-        $reimbursement->save();
+            if ($this->attachment) {
+                $attachmentPath = $this->attachment->store('reimbursements', 'public');
+                $attachmentName = $this->attachment->getClientOriginalName();
+            }
+
+            // Create reimbursement
+            $reimbursement = Reimbursement::create([
+                'user_id' => auth()->id(),
+                'title' => $validated['title'],
+                'description' => $validated['description'],
+                'amount' => $amount,
+                'expense_date' => $validated['expense_date'],
+                'category' => $validated['category'],
+                'attachment_path' => $attachmentPath,
+                'attachment_name' => $attachmentName,
+                'status' => 'draft',
+            ]);
+
+            // If action is submit, auto-submit
+            if ($this->action === 'submit') {
+                $reimbursement->submit();
+            }
+        });
 
         $this->dispatch('created');
         $this->reset();
-        
-        $message = $this->submitOnSave 
-            ? 'Pengajuan reimbursement berhasil disubmit'
-            : 'Pengajuan reimbursement berhasil disimpan sebagai draft';
-        
-        $this->success($message);
+
+        if ($this->action === 'submit') {
+            $this->success('Reimbursement submitted for approval');
+        } else {
+            $this->success('Reimbursement saved as draft');
+        }
     }
 
-    public function deleteUpload(array $content): void
+    public function saveAsDraft(): void
     {
-        if ($this->attachment) {
-            rescue(fn () => $this->attachment->delete(), report: false);
-            $this->attachment = null;
-        }
+        $this->action = 'draft';
+        $this->save();
+    }
+
+    public function submitForApproval(): void
+    {
+        $this->action = 'submit';
+        $this->save();
     }
 }
