@@ -37,27 +37,22 @@ class Show extends Component
             : null;
     }
 
-    public function closeModal(): void
-    {
-        $this->modal = false;
-    }
-
     // Quick actions from show modal
     public function editReimbursement(): void
     {
         $this->dispatch('edit::reimbursement', id: $this->reimbursementId);
-        $this->closeModal();
+        $this->modal = false;
     }
 
     public function reviewReimbursement(): void
     {
         $this->dispatch('review::reimbursement', id: $this->reimbursementId);
-        $this->closeModal();
+        $this->modal = false;
     }
 
     public function payReimbursement(): void
     {
         $this->dispatch('pay::reimbursement', id: $this->reimbursementId);
-        $this->closeModal();
+        $this->modal = false;
     }
 }
