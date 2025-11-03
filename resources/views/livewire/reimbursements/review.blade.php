@@ -69,7 +69,7 @@
                         <div class="mt-4 pt-4 border-t border-primary-200 dark:border-primary-800">
                             <label
                                 class="text-xs font-medium text-primary-700 dark:text-primary-300">Description</label>
-                            <div class="text-sm text-dark-900 dark:text-dark-50 mt-1 whitespace-pre-wrap">
+                            <div class="text-sm text-dark-900 dark:text-dark-50 mt-1">
                                 {{ $this->reimbursement->description }}
                             </div>
                         </div>

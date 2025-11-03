@@ -16,8 +16,7 @@
                             </p>
                         </div>
                     </div>
-                    <x-badge :text="$this->reimbursement->status_label"
-                        :color="$this->reimbursement->status_badge_color" size="lg" />
+                    <x-badge :text="$this->reimbursement->status_label" :color="$this->reimbursement->status_badge_color" size="lg" />
                 </div>
             </x-slot:title>
 
@@ -94,11 +93,11 @@
                             </div>
                         </div>
 
-                        {{-- Description --}}
+                        {{-- Description - FIX: whitespace-pre-line instead of pre-wrap --}}
                         @if ($this->reimbursement->description)
                             <div class="md:col-span-2">
                                 <label class="text-xs font-medium text-dark-500 dark:text-dark-400">Description</label>
-                                <div class="text-sm text-dark-900 dark:text-dark-50 mt-1 whitespace-pre-wrap">
+                                <div class="text-sm text-dark-900 dark:text-dark-50 mt-1 whitespace-pre-line">
                                     {{ $this->reimbursement->description }}
                                 </div>
                             </div>
@@ -106,19 +105,23 @@
                     </div>
                 </div>
 
-                {{-- Attachment --}}
+                {{-- Attachment - FIX: Clickable image --}}
                 @if ($this->reimbursement->hasAttachment())
                     <div class="space-y-4">
                         <div class="border-b border-secondary-200 dark:border-dark-600 pb-3">
                             <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50">Attachment</h4>
                         </div>
 
-                        <div class="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+                        <div
+                            class="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
                             @if ($this->reimbursement->isImageAttachment())
-                                {{-- Image Preview --}}
-                                <img src="{{ $this->reimbursement->attachment_url }}"
-                                    alt="{{ $this->reimbursement->attachment_name }}"
-                                    class="w-full h-auto max-h-96 object-contain">
+                                {{-- Image Preview - Now Clickable --}}
+                                <a href="{{ $this->reimbursement->attachment_url }}" target="_blank"
+                                    class="block hover:opacity-90 transition-opacity">
+                                    <img src="{{ $this->reimbursement->attachment_url }}"
+                                        alt="{{ $this->reimbursement->attachment_name }}"
+                                        class="w-full h-auto max-h-96 object-contain cursor-pointer">
+                                </a>
                             @elseif ($this->reimbursement->isPdfAttachment())
                                 {{-- PDF Preview --}}
                                 <div class="p-6 text-center">
@@ -138,77 +141,94 @@
                     </div>
                 @endif
 
-                {{-- Workflow History --}}
+                {{-- Workflow History - FIX: Empty state --}}
                 @if ($this->reimbursement->status !== 'draft')
                     <div class="space-y-4">
                         <div class="border-b border-secondary-200 dark:border-dark-600 pb-3">
                             <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50">Workflow History</h4>
                         </div>
 
-                        <div class="space-y-3">
-                            {{-- Review Information --}}
-                            @if ($this->reimbursement->reviewed_at)
-                                <div
-                                    class="p-4 bg-{{ $this->reimbursement->isApproved() ? 'blue' : 'red' }}-50 dark:bg-{{ $this->reimbursement->isApproved() ? 'blue' : 'red' }}-900/20 border border-{{ $this->reimbursement->isApproved() ? 'blue' : 'red' }}-200 dark:border-{{ $this->reimbursement->isApproved() ? 'blue' : 'red' }}-800 rounded-lg">
-                                    <div class="flex items-start gap-3">
-                                        <x-icon
-                                            name="{{ $this->reimbursement->isApproved() ? 'check-circle' : 'x-circle' }}"
-                                            class="w-5 h-5 text-{{ $this->reimbursement->isApproved() ? 'blue' : 'red' }}-600 dark:text-{{ $this->reimbursement->isApproved() ? 'blue' : 'red' }}-400 flex-shrink-0 mt-0.5" />
-                                        <div class="flex-1">
-                                            <div
-                                                class="text-sm font-semibold text-{{ $this->reimbursement->isApproved() ? 'blue' : 'red' }}-900 dark:text-{{ $this->reimbursement->isApproved() ? 'blue' : 'red' }}-200">
-                                                {{ $this->reimbursement->isApproved() ? 'Approved' : 'Rejected' }} by
-                                                {{ $this->reimbursement->reviewer->name }}
-                                            </div>
-                                            <div
-                                                class="text-xs text-{{ $this->reimbursement->isApproved() ? 'blue' : 'red' }}-700 dark:text-{{ $this->reimbursement->isApproved() ? 'blue' : 'red' }}-300">
-                                                {{ $this->reimbursement->reviewed_at->format('d M Y H:i') }}
-                                            </div>
-                                            @if ($this->reimbursement->review_notes)
+                        @if ($this->reimbursement->reviewed_at || $this->reimbursement->paid_at)
+                            <div class="space-y-3">
+                                {{-- Review Information --}}
+                                @if ($this->reimbursement->reviewed_at)
+                                    <div
+                                        class="p-4 bg-{{ $this->reimbursement->isApproved() ? 'blue' : 'red' }}-50 dark:bg-{{ $this->reimbursement->isApproved() ? 'blue' : 'red' }}-900/20 border border-{{ $this->reimbursement->isApproved() ? 'blue' : 'red' }}-200 dark:border-{{ $this->reimbursement->isApproved() ? 'blue' : 'red' }}-800 rounded-lg">
+                                        <div class="flex items-start gap-3">
+                                            <x-icon
+                                                name="{{ $this->reimbursement->isApproved() ? 'check-circle' : 'x-circle' }}"
+                                                class="w-5 h-5 text-{{ $this->reimbursement->isApproved() ? 'blue' : 'red' }}-600 dark:text-{{ $this->reimbursement->isApproved() ? 'blue' : 'red' }}-400 flex-shrink-0 mt-0.5" />
+                                            <div class="flex-1">
                                                 <div
-                                                    class="text-sm text-{{ $this->reimbursement->isApproved() ? 'blue' : 'red' }}-800 dark:text-{{ $this->reimbursement->isApproved() ? 'blue' : 'red' }}-300 mt-2">
-                                                    {{ $this->reimbursement->review_notes }}
+                                                    class="text-sm font-semibold text-{{ $this->reimbursement->isApproved() ? 'blue' : 'red' }}-900 dark:text-{{ $this->reimbursement->isApproved() ? 'blue' : 'red' }}-200">
+                                                    {{ $this->reimbursement->isApproved() ? 'Approved' : 'Rejected' }}
+                                                    by
+                                                    {{ $this->reimbursement->reviewer->name }}
                                                 </div>
-                                            @endif
-                                        </div>
-                                    </div>
-                                </div>
-                            @endif
-
-                            {{-- Payment Information --}}
-                            @if ($this->reimbursement->paid_at)
-                                <div
-                                    class="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
-                                    <div class="flex items-start gap-3">
-                                        <x-icon name="banknotes"
-                                            class="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
-                                        <div class="flex-1">
-                                            <div class="text-sm font-semibold text-green-900 dark:text-green-200">
-                                                Payment Processed by {{ $this->reimbursement->payer->name }}
-                                            </div>
-                                            <div class="text-xs text-green-700 dark:text-green-300">
-                                                {{ $this->reimbursement->paid_at->format('d M Y H:i') }}
-                                            </div>
-                                            @if ($this->reimbursement->bankTransaction)
-                                                <div class="text-sm text-green-800 dark:text-green-300 mt-2">
-                                                    <div class="flex items-center gap-2">
-                                                        <span>Bank Account:</span>
-                                                        <span class="font-medium">
-                                                            {{ $this->reimbursement->bankTransaction->bankAccount->account_name }}
-                                                        </span>
+                                                <div
+                                                    class="text-xs text-{{ $this->reimbursement->isApproved() ? 'blue' : 'red' }}-700 dark:text-{{ $this->reimbursement->isApproved() ? 'blue' : 'red' }}-300">
+                                                    {{ $this->reimbursement->reviewed_at->format('d M Y H:i') }}
+                                                </div>
+                                                @if ($this->reimbursement->review_notes)
+                                                    <div
+                                                        class="text-sm text-{{ $this->reimbursement->isApproved() ? 'blue' : 'red' }}-800 dark:text-{{ $this->reimbursement->isApproved() ? 'blue' : 'red' }}-300 mt-2">
+                                                        {{ $this->reimbursement->review_notes }}
                                                     </div>
-                                                    @if ($this->reimbursement->bankTransaction->reference_number)
-                                                        <div class="text-xs text-green-700 dark:text-green-400 mt-1">
-                                                            Ref: {{ $this->reimbursement->bankTransaction->reference_number }}
-                                                        </div>
-                                                    @endif
-                                                </div>
-                                            @endif
+                                                @endif
+                                            </div>
                                         </div>
                                     </div>
+                                @endif
+
+                                {{-- Payment Information --}}
+                                @if ($this->reimbursement->paid_at)
+                                    <div
+                                        class="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                                        <div class="flex items-start gap-3">
+                                            <x-icon name="banknotes"
+                                                class="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
+                                            <div class="flex-1">
+                                                <div class="text-sm font-semibold text-green-900 dark:text-green-200">
+                                                    Payment Processed by {{ $this->reimbursement->payer->name }}
+                                                </div>
+                                                <div class="text-xs text-green-700 dark:text-green-300">
+                                                    {{ $this->reimbursement->paid_at->format('d M Y H:i') }}
+                                                </div>
+                                                @if ($this->reimbursement->bankTransaction)
+                                                    <div class="text-sm text-green-800 dark:text-green-300 mt-2">
+                                                        <div class="flex items-center gap-2">
+                                                            <span>Bank Account:</span>
+                                                            <span class="font-medium">
+                                                                {{ $this->reimbursement->bankTransaction->bankAccount->account_name }}
+                                                            </span>
+                                                        </div>
+                                                        @if ($this->reimbursement->bankTransaction->reference_number)
+                                                            <div
+                                                                class="text-xs text-green-700 dark:text-green-400 mt-1">
+                                                                Ref:
+                                                                {{ $this->reimbursement->bankTransaction->reference_number }}
+                                                            </div>
+                                                        @endif
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endif
+                            </div>
+                        @else
+                            {{-- Empty State for Workflow History --}}
+                            <div
+                                class="p-8 text-center bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg">
+                                <x-icon name="clock" class="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                                <div class="text-sm font-medium text-dark-900 dark:text-dark-50 mb-1">
+                                    Awaiting Review
                                 </div>
-                            @endif
-                        </div>
+                                <div class="text-xs text-dark-500 dark:text-dark-400">
+                                    This reimbursement is pending approval from finance team
+                                </div>
+                            </div>
+                        @endif
                     </div>
                 @endif
             </div>

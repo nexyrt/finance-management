@@ -13,8 +13,8 @@ class Show extends Component
     // Modal Control
     public bool $modal = false;
 
-    // Reimbursement ID
-    public ?int $reimbursementId = null;
+    // Reimbursement ID - NO type declaration untuk konsistensi
+    public $reimbursementId = null;
 
     public function render(): View
     {
@@ -31,7 +31,7 @@ class Show extends Component
     #[Computed]
     public function reimbursement(): ?Reimbursement
     {
-        return $this->reimbursementId 
+        return $this->reimbursementId
             ? Reimbursement::with(['user', 'reviewer', 'payer', 'bankTransaction.bankAccount'])
                 ->find($this->reimbursementId)
             : null;
