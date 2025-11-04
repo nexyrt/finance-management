@@ -157,7 +157,7 @@ class Reimbursement extends Model
 
     public function canSubmit(): bool
     {
-        return $this->status === 'draft';
+        return in_array($this->status, ['draft', 'rejected']);
     }
 
     public function canReview(): bool

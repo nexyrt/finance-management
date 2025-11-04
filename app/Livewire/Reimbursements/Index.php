@@ -7,6 +7,8 @@ use Livewire\Component;
 
 class Index extends Component
 {
+    public bool $workflowGuideModal = false;
+
     public function render(): View
     {
         return view('livewire.reimbursements.index');

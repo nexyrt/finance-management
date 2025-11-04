@@ -145,7 +145,7 @@ class MyRequests extends Component
 
         if ($count === 0) {
             $this->error('No deletable reimbursements selected');
-
+            
             return;
         }
 
@@ -160,9 +160,11 @@ class MyRequests extends Component
 
     // Listen to refresh events from child components
     #[On('refreshed')]
+    #[On('created')]
     #[On('updated')]
     #[On('deleted')]
-    #[On('created')]
+    #[On('reviewed')]
+    #[On('paid')]
     public function refresh(): void
     {
         unset($this->stats, $this->rows);

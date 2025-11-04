@@ -17,9 +17,9 @@ class AllRequests extends Component
     use Alert, WithPagination;
 
     // Filter & Sorting
-    public ?int $quantity = 10;
+    public $quantity = 10;
 
-    public ?string $search = null;
+    public $search = null;
 
     public array $sort = ['column' => 'created_at', 'direction' => 'desc'];
 
@@ -96,11 +96,13 @@ class AllRequests extends Component
 
     // Listen to refresh events from child components
     #[On('refreshed')]
+    #[On('created')]
+    #[On('updated')]
+    #[On('deleted')]
     #[On('reviewed')]
     #[On('paid')]
     public function refresh(): void
     {
-        \Log::info('Refresh triggered');
         unset($this->stats, $this->rows);
     }
 }
