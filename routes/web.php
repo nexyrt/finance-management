@@ -26,46 +26,34 @@ use App\Livewire\Settings\Appearance;
 Route::redirect('/', '/login')->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    // Dashboard
     Route::get('/dashboard', Dashboard::class)->name('dashboard');
-
-    // Client Management
     Route::get('/clients', ClientsIndex::class)->name('clients');
-
-    // Service Management
     Route::get('/services', ServicesIndex::class)->name('services');
-
-    // Bank Account Management
     Route::get('/bank-accounts', AccountsIndex::class)->name('bank-accounts.index');
-
-    // Transaction Management
     Route::get('/transactions', TransactionsIndex::class)->name('transactions.index');
+    Route::get('/transaction-categories', TransactionsCategoriesIndex::class)->name('transaction-categories.index');
 
-    Route::get('/transaction-categories', TransactionsCategoriesIndex::class)
-        ->name('transaction-categories.index');
-
-    // Invoice Management
     Route::prefix('invoices')->name('invoices.')->group(function () {
         Route::get('/', InvoicesIndex::class)->name('index');
         Route::get('/{invoice}/edit', InvoicesEdit::class)->name('edit');
     });
 
-    // Recurring Invoice Management
     Route::get('/recurring-invoices', RecurringInvoicesIndex::class)->name('recurring-invoices.index');
-
-    // Cash Flow Management
     Route::get('/cash-flow', CashFlowIndex::class)->name('cash-flow.index');
-
-    Route::get('/reimbursements', ReimbursementIndex::class)
-        ->middleware('can:view reimbursements')
-        ->name('reimbursements.index');
+    Route::get('/reimbursements', ReimbursementIndex::class)->middleware('can:view reimbursements')->name('reimbursements.index');
 
     // Invoice PDF Operations
     Route::prefix('invoice')->name('invoice.')->group(function () {
-        Route::get('/{invoice}/download', function (Invoice $invoice) {
+        Route::get('/{invoice}/download', function (Invoice $invoice, Request $request) {
             $service = new InvoicePrintService();
-            $pdf = $service->generateSingleInvoicePdf($invoice);
-            $filename = 'Invoice-' . str_replace(['/', '\\', ':', '*', '?', '"', '<', '>', '|'], '-', $invoice->invoice_number) . '.pdf';
+
+            $dpAmount = $request->query('dp_amount') ? (int) $request->query('dp_amount') : null;
+            $pelunasanAmount = $request->query('pelunasan_amount') ? (int) $request->query('pelunasan_amount') : null;
+
+            $pdf = $service->generateSingleInvoicePdf($invoice, $dpAmount, $pelunasanAmount);
+
+            $invoiceType = $dpAmount ? 'DP-' : ($pelunasanAmount ? 'Pelunasan-' : '');
+            $filename = $invoiceType . 'Invoice-' . str_replace(['/', '\\', ':', '*', '?', '"', '<', '>', '|'], '-', $invoice->invoice_number) . '.pdf';
 
             return response()->streamDownload(function () use ($pdf) {
                 echo $pdf->output();
@@ -78,10 +66,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/{invoice}/preview', function (Invoice $invoice, Request $request) {
             $service = new InvoicePrintService();
 
-            // Pastikan ada ini:
             $dpAmount = $request->query('dp_amount') ? (int) $request->query('dp_amount') : null;
+            $pelunasanAmount = $request->query('pelunasan_amount') ? (int) $request->query('pelunasan_amount') : null;
 
-            $pdf = $service->generateSingleInvoicePdf($invoice, $dpAmount); // Pass $dpAmount
+            $pdf = $service->generateSingleInvoicePdf($invoice, $dpAmount, $pelunasanAmount);
 
             return response($pdf->output(), 200, [
                 'Content-Type' => 'application/pdf',
@@ -90,7 +78,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         })->name('preview');
     });
 
-    // Settings Management
     Route::prefix('settings')->name('settings.')->group(function () {
         Route::redirect('/', '/settings/profile');
         Route::get('/profile', Profile::class)->name('profile');
@@ -98,14 +85,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/appearance', Appearance::class)->name('appearance');
     });
 
-    // Role & Permission Management - Admin only
-    // User Management - Admin only
     Route::middleware(['role:admin'])->prefix('admin')->name('admin.')->group(function () {
         Route::get('/roles', RoleManagement::class)->name('roles');
         Route::get('/users', \App\Livewire\Users\Index::class)->name('users');
     });
 
-    // Development Routes (Remove in production)
     Route::get('/test', TestingPage::class)->name('test');
 });
 

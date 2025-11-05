@@ -429,6 +429,9 @@
                 <span
                     style="background: #f59e0b; padding: 3px 12px; margin-left: 15px; border-radius: 4px; font-size: 14px; letter-spacing: 1px;">DOWN
                     PAYMENT</span>
+            @elseif($is_pelunasan)
+                <span
+                    style="background: #10b981; padding: 3px 12px; margin-left: 15px; border-radius: 4px; font-size: 14px; letter-spacing: 1px;">PELUNASAN</span>
             @endif
         </div>
 
@@ -618,6 +621,38 @@
                             </tr>
                         </table>
                     </div>
+                @elseif ($is_pelunasan)
+                    <div
+                        style="margin-top: 20px; padding: 15px; background: #d1fae5; border: 2px solid #10b981; border-radius: 6px;">
+                        <div style="font-weight: bold; color: #065f46; margin-bottom: 8px; font-size: 14px;">
+                            ✅ INFORMASI PELUNASAN
+                        </div>
+                        <table style="width: 100%; font-size: 13px; color: #065f46;">
+                            <tr>
+                                <td style="padding: 3px 0; width: 40%;">Total Invoice:</td>
+                                <td style="padding: 3px 0; font-weight: bold; text-align: right;">
+                                    Rp {{ number_format($invoice->total_amount, 0, ',', '.') }}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 3px 0;">Sudah Dibayar:</td>
+                                <td style="padding: 3px 0; font-weight: bold; text-align: right; color: #059669;">
+                                    Rp {{ number_format($total_paid, 0, ',', '.') }}
+                                </td>
+                            </tr>
+                            <tr style="border-top: 2px dashed #10b981;">
+                                <td style="padding: 8px 0 3px 0; font-weight: bold;">Pelunasan (Sisa):</td>
+                                <td
+                                    style="padding: 8px 0 3px 0; font-weight: bold; text-align: right; color: #10b981; font-size: 15px;">
+                                    Rp {{ number_format($pelunasan_amount, 0, ',', '.') }}
+                                </td>
+                            </tr>
+                        </table>
+                        <div
+                            style="margin-top: 10px; padding: 8px; background: white; border-radius: 4px; font-size: 12px; text-align: center; color: #059669;">
+                            <strong>Invoice ini merupakan tagihan pelunasan terakhir</strong>
+                        </div>
+                    </div>
                 @endif
 
                 <!-- Tax Information -->
@@ -699,6 +734,8 @@
                         <div class="total-label">
                             @if ($is_down_payment)
                                 TOTAL DOWN PAYMENT
+                            @elseif ($is_pelunasan)
+                                TOTAL PELUNASAN
                             @else
                                 TOTAL
                             @endif

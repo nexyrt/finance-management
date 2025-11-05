@@ -31,6 +31,7 @@ class Listing extends Component
     public bool $printModal = false;
     public $printInvoiceId = null;
     public $printTotalAmount = 0;
+    public $printAmountPaid = 0;
     public $printType = 'full';
     public $dpAmount = null;
 
@@ -58,10 +59,11 @@ class Listing extends Component
     }
 
     // Open print modal
-    public function openPrintModal(int $invoiceId, int $totalAmount): void
+    public function openPrintModal(int $invoiceId, int $totalAmount, int $amountPaid = 0): void
     {
         $this->printInvoiceId = $invoiceId;
         $this->printTotalAmount = $totalAmount;
+        $this->printAmountPaid = $amountPaid;
         $this->printType = 'full';
         $this->dpAmount = null;
         $this->printModal = true;
@@ -88,6 +90,16 @@ class Listing extends Component
 
             $previewUrl .= '?dp_amount=' . $dpParsed;
             $downloadUrl .= '?dp_amount=' . $dpParsed;
+        } elseif ($this->printType === 'pelunasan') {
+            $sisaPembayaran = $this->printTotalAmount - $this->printAmountPaid;
+
+            if ($sisaPembayaran <= 0) {
+                $this->toast()->error('Error', 'Invoice sudah lunas')->send();
+                return;
+            }
+
+            $previewUrl .= '?pelunasan_amount=' . $sisaPembayaran;
+            $downloadUrl .= '?pelunasan_amount=' . $sisaPembayaran;
         }
 
         $this->dispatch('execute-print', [
@@ -96,7 +108,7 @@ class Listing extends Component
         ]);
 
         $this->printModal = false;
-        $this->reset(['printInvoiceId', 'printTotalAmount', 'printType', 'dpAmount']);
+        $this->reset(['printInvoiceId', 'printTotalAmount', 'printAmountPaid', 'printType', 'dpAmount']);
     }
 
     #[Computed]

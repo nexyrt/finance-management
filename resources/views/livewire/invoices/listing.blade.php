@@ -150,7 +150,8 @@
 
                 {{-- Print Button - Trigger Modal --}}
                 <x-button.circle icon="printer" color="gray" size="sm"
-                    wire:click="openPrintModal({{ $row->id }}, {{ $row->total_amount }})" title="Print" />
+                    wire:click="openPrintModal({{ $row->id }}, {{ $row->total_amount }}, {{ $row->amount_paid }})"
+                    title="Print" />
 
                 <x-button.circle icon="trash" color="red" size="sm"
                     wire:click="deleteInvoice({{ $row->id }})" loading="deleteInvoice({{ $row->id }})" />
@@ -243,12 +244,43 @@
                         <div class="text-sm text-dark-600 dark:text-dark-400 mb-3">Cetak invoice dengan nominal DP
                         </div>
                         @if ($printType === 'dp')
-                            <x-wireui-currency wire:model="dpAmount" type="text" label="Nominal DP *" placeholder="0"
-                                prefix="Rp"  />
+                            <x-input wire:model="dpAmount" type="text" label="Nominal DP *" placeholder="0"
+                                prefix="Rp" x-mask:dynamic="$money($input, ',')" />
                         @endif
                     </div>
                 </div>
             </div>
+
+            {{-- Pelunasan Option --}}
+            @if ($printAmountPaid > 0 && $printAmountPaid < $printTotalAmount)
+                <div wire:click="$set('printType', 'pelunasan')"
+                    class="p-4 border-2 rounded-lg cursor-pointer transition-all hover:border-primary-300 {{ $printType === 'pelunasan' ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20' : 'border-gray-200 dark:border-dark-600' }}">
+                    <div class="flex items-start gap-3">
+                        <div class="pt-1">
+                            <div
+                                class="w-5 h-5 rounded-full border-2 flex items-center justify-center {{ $printType === 'pelunasan' ? 'bg-primary-500 border-primary-500' : 'border-gray-300 dark:border-dark-500' }}">
+                                @if ($printType === 'pelunasan')
+                                    <div class="w-2.5 h-2.5 bg-white rounded-full"></div>
+                                @endif
+                            </div>
+                        </div>
+                        <div class="flex-1">
+                            <div class="font-semibold text-dark-900 dark:text-dark-50 mb-1">Pelunasan</div>
+                            <div class="text-sm text-dark-600 dark:text-dark-400 mb-2">Cetak invoice untuk sisa
+                                pembayaran</div>
+                            <div class="grid grid-cols-2 gap-2 text-xs mb-2">
+                                <div class="text-dark-500 dark:text-dark-400">Sudah dibayar:</div>
+                                <div class="text-right text-green-600 dark:text-green-400 font-semibold">
+                                    Rp {{ number_format($printAmountPaid, 0, ',', '.') }}
+                                </div>
+                            </div>
+                            <div class="text-lg font-bold text-orange-600 dark:text-orange-400">
+                                Rp {{ number_format($printTotalAmount - $printAmountPaid, 0, ',', '.') }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            @endif
         </div>
 
         <x-slot:footer>
