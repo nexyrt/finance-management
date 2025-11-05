@@ -7,21 +7,18 @@ use Barryvdh\DomPDF\Facade\Pdf;
 
 class InvoicePrintService
 {
-    public function generateSingleInvoicePdf(Invoice $invoice)
+    public function generateSingleInvoicePdf(Invoice $invoice, ?int $dpAmount = null)
     {
-        // Load relationships including client relationship for each item
-        $invoice->load([
-            'client',
-            'items.client',
-            'payments.bankAccount'
-        ]);
+        $invoice->load(['client', 'items.client', 'payments.bankAccount']);
 
-        // Calculate net amounts excluding tax deposits
+        // DP Logic
+        $isDownPayment = !is_null($dpAmount) && $dpAmount > 0;
+        $displayAmount = $isDownPayment ? $dpAmount : $invoice->total_amount;
+
         $netRevenue = $invoice->items->where('is_tax_deposit', false)->sum('amount');
         $totalCogs = $invoice->items->where('is_tax_deposit', false)->sum('cogs_amount');
         $grossProfit = $netRevenue - $totalCogs - ($invoice->discount_amount ?? 0);
 
-        // Separate items by type
         $regularItems = $invoice->items->where('is_tax_deposit', false);
         $taxDepositItems = $invoice->items->where('is_tax_deposit', true);
 
@@ -33,7 +30,10 @@ class InvoicePrintService
             'tax_deposit_items' => $taxDepositItems,
             'payments' => $invoice->payments,
             'company' => $this->getCompanyInfo(),
-            'terbilang' => $this->numberToWords($invoice->total_amount),
+            'terbilang' => $this->numberToWords($displayAmount), // Changed
+            'is_down_payment' => $isDownPayment,                // Added
+            'dp_amount' => $dpAmount,                           // Added
+            'display_amount' => $displayAmount,                 // Added
             'financial_summary' => [
                 'net_revenue' => $netRevenue,
                 'total_cogs' => $totalCogs,

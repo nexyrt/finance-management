@@ -1,102 +1,65 @@
 <div class="space-y-6">
-    {{-- Filters --}}
+    {{-- Filters (unchanged) --}}
     <div class="flex flex-col lg:flex-row gap-4 items-start lg:items-end">
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 flex-1">
-            <div>
-                <x-select.styled wire:model.live="statusFilter" label="Status" :options="[
-                    ['label' => 'Draft', 'value' => 'draft'],
-                    ['label' => 'Terkirim', 'value' => 'sent'],
-                    ['label' => 'Dibayar', 'value' => 'paid'],
-                    ['label' => 'Sebagian', 'value' => 'partially_paid'],
-                    ['label' => 'Terlambat', 'value' => 'overdue'],
-                ]"
-                    placeholder="Semua status..." />
-            </div>
-
-            <div>
-                <x-select.styled wire:model.live="clientFilter" label="Klien" :options="$this->clients
-                    ->map(
-                        fn($client) => [
-                            'label' => $client->name,
-                            'value' => $client->id,
-                        ],
-                    )
-                    ->toArray()"
-                    placeholder="Semua klien..." searchable />
-            </div>
-
-            <div>
-                <x-date month-year-only wire:model.live="selectedMonth" label="Bulan" placeholder="Pilih bulan..." />
-            </div>
-
-            <div>
-                <x-date wire:model.live="dateRange" label="Range Tanggal" range placeholder="Pilih range..." />
-            </div>
+            <x-select.styled wire:model.live="statusFilter" label="Status" :options="[
+                ['label' => 'Draft', 'value' => 'draft'],
+                ['label' => 'Terkirim', 'value' => 'sent'],
+                ['label' => 'Dibayar', 'value' => 'paid'],
+                ['label' => 'Sebagian', 'value' => 'partially_paid'],
+                ['label' => 'Terlambat', 'value' => 'overdue'],
+            ]"
+                placeholder="Semua status..." />
+            <x-select.styled wire:model.live="clientFilter" label="Klien" :options="$this->clients
+                ->map(fn($client) => ['label' => $client->name, 'value' => $client->id])
+                ->toArray()" placeholder="Semua klien..."
+                searchable />
+            <x-date month-year-only wire:model.live="selectedMonth" label="Bulan" placeholder="Pilih bulan..." />
+            <x-date wire:model.live="dateRange" label="Range Tanggal" range placeholder="Pilih range..." />
         </div>
-
         <div class="flex gap-2">
             @if ($statusFilter || $clientFilter || !empty($dateRange) || $selectedMonth)
-                <x-button wire:click="clearFilters" icon="x-mark" color="gray" outline size="sm">
-                    Clear
-                </x-button>
+                <x-button wire:click="clearFilters" icon="x-mark" color="gray" outline
+                    size="sm">Clear</x-button>
             @endif
-            <x-button wire:click="exportExcel" size="sm" color="green" icon="document-text" outline>
-                Excel
-            </x-button>
-            <x-button wire:click="exportPdf" size="sm" color="red" icon="document" outline>
-                PDF
-            </x-button>
+            <x-button wire:click="exportExcel" size="sm" color="green" icon="document-text"
+                outline>Excel</x-button>
+            <x-button wire:click="exportPdf" size="sm" color="red" icon="document" outline>PDF</x-button>
         </div>
     </div>
 
     {{-- Table --}}
     <x-table :$headers :$sort :rows="$this->invoices" selectable wire:model="selected" paginate filter loading>
-
-        {{-- Invoice Number Column --}}
         @interact('column_invoice_number', $row)
             <div>
-                <div class="font-mono font-bold text-zinc-600 dark:text-zinc-400">
-                    {{ $row->invoice_number }}
-                </div>
-                <div class="text-xs text-dark-500 dark:text-dark-400">
-                    {{ $row->issue_date->format('d/m/Y') }}
-                </div>
+                <div class="font-mono font-bold text-zinc-600 dark:text-zinc-400">{{ $row->invoice_number }}</div>
+                <div class="text-xs text-dark-500 dark:text-dark-400">{{ $row->issue_date->format('d/m/Y') }}</div>
             </div>
         @endinteract
 
-        {{-- Client Column --}}
         @interact('column_client_name', $row)
             <div class="flex items-center gap-3">
                 <div
-                    class="w-10 h-10 {{ $row->client_type === 'individual'
-                        ? 'bg-gradient-to-br from-zinc-400 to-zinc-600'
-                        : 'bg-gradient-to-br from-purple-400 to-purple-600' }} 
-                    rounded-2xl flex items-center justify-center shadow-lg">
+                    class="w-10 h-10 {{ $row->client_type === 'individual' ? 'bg-gradient-to-br from-zinc-400 to-zinc-600' : 'bg-gradient-to-br from-purple-400 to-purple-600' }} rounded-2xl flex items-center justify-center shadow-lg">
                     <x-icon name="{{ $row->client_type === 'individual' ? 'user' : 'building-office' }}"
                         class="w-5 h-5 text-white" />
                 </div>
                 <div>
                     <p class="font-semibold text-dark-900 dark:text-dark-50">{{ $row->client_name }}</p>
                     <div class="text-xs text-dark-500 dark:text-dark-400 capitalize">
-                        {{ $row->client_type === 'individual' ? 'Individu' : 'Perusahaan' }}
-                    </div>
+                        {{ $row->client_type === 'individual' ? 'Individu' : 'Perusahaan' }}</div>
                 </div>
             </div>
         @endinteract
 
-        {{-- Issue Date Column --}}
         @interact('column_issue_date', $row)
             <div>
-                <div class="text-sm font-medium text-dark-900 dark:text-dark-50">
-                    {{ $row->issue_date->format('d M Y') }}
+                <div class="text-sm font-medium text-dark-900 dark:text-dark-50">{{ $row->issue_date->format('d M Y') }}
                 </div>
-                <div class="text-xs text-dark-500 dark:text-dark-400">
-                    {{ $row->issue_date->diffForHumans() }}
-                </div>
+                <div class="text-xs text-dark-500 dark:text-dark-400">{{ $row->issue_date->diffForHumans() }}</div>
             </div>
         @endinteract
 
-        {{-- Due Date Column --}}
         @interact('column_due_date', $row)
             @php
                 $isOverdue = $row->due_date->isPast() && !in_array($row->status, ['paid']);
@@ -111,35 +74,26 @@
                     {{ $row->due_date->format('d M Y') }}
                 </div>
                 @if ($isOverdue)
-                    <div class="text-xs text-red-600 dark:text-red-400">
-                        {{ (int) abs($row->due_date->diffInDays(now())) }} hari lewat
-                    </div>
+                    <div class="text-xs text-red-600 dark:text-red-400">{{ (int) abs($row->due_date->diffInDays(now())) }}
+                        hari lewat</div>
                 @elseif($isDueSoon)
-                    <div class="text-xs text-yellow-600 dark:text-yellow-400">
-                        {{ (int) $row->due_date->diffInDays(now()) }} hari lagi
-                    </div>
+                    <div class="text-xs text-yellow-600 dark:text-yellow-400">{{ (int) $row->due_date->diffInDays(now()) }}
+                        hari lagi</div>
                 @else
-                    <div class="text-xs text-dark-500 dark:text-dark-400">
-                        {{ $row->due_date->diffForHumans() }}
-                    </div>
+                    <div class="text-xs text-dark-500 dark:text-dark-400">{{ $row->due_date->diffForHumans() }}</div>
                 @endif
             </div>
         @endinteract
 
-        {{-- Amount Column --}}
         @interact('column_total_amount', $row)
             <div class="text-right">
-                <div class="font-bold text-lg text-dark-900 dark:text-dark-50">
-                    Rp {{ number_format($row->total_amount, 0, ',', '.') }}
-                </div>
+                <div class="font-bold text-lg text-dark-900 dark:text-dark-50">Rp
+                    {{ number_format($row->total_amount, 0, ',', '.') }}</div>
                 @if ($row->amount_paid > 0)
-                    @php
-                        $paymentPercentage = ($row->amount_paid / $row->total_amount) * 100;
-                    @endphp
+                    @php $paymentPercentage = ($row->amount_paid / $row->total_amount) * 100; @endphp
                     <div class="mt-1">
-                        <div class="text-xs text-green-600 dark:text-green-400">
-                            {{ number_format($paymentPercentage, 1) }}% Dibayar
-                        </div>
+                        <div class="text-xs text-green-600 dark:text-green-400">{{ number_format($paymentPercentage, 1) }}%
+                            Dibayar</div>
                         <div class="w-full bg-zinc-200 dark:bg-dark-700 rounded-full h-1 mt-1">
                             <div class="bg-green-500 h-1 rounded-full" style="width: {{ min($paymentPercentage, 100) }}%">
                             </div>
@@ -151,7 +105,6 @@
             </div>
         @endinteract
 
-        {{-- Status Column --}}
         @interact('column_status', $row)
             <x-badge :text="match ($row->status) {
                 'draft' => 'Draft',
@@ -170,12 +123,10 @@
             }" />
         @endinteract
 
-        {{-- Actions Column --}}
         @interact('column_actions', $row)
             <div class="flex items-center gap-1">
                 <x-button.circle icon="eye" color="blue" size="sm" wire:click="showInvoice({{ $row->id }})"
                     loading="showInvoice({{ $row->id }})" title="Lihat Detail" />
-
                 <x-button.circle icon="pencil" color="green" size="sm" href="{{ route('invoices.edit', $row->id) }}"
                     wire:navigate title="Edit" />
 
@@ -197,17 +148,17 @@
                         title="Catat Pembayaran" />
                 @endif
 
-                <x-button.circle icon="printer" color="gray" size="sm" onclick="printInvoice({{ $row->id }})"
-                    title="Print" />
+                {{-- Print Button - Trigger Modal --}}
+                <x-button.circle icon="printer" color="gray" size="sm"
+                    wire:click="openPrintModal({{ $row->id }}, {{ $row->total_amount }})" title="Print" />
 
                 <x-button.circle icon="trash" color="red" size="sm"
                     wire:click="deleteInvoice({{ $row->id }})" loading="deleteInvoice({{ $row->id }})" />
             </div>
         @endinteract
-
     </x-table>
 
-    {{-- Bulk Actions Bar --}}
+    {{-- Bulk Actions Bar (unchanged) --}}
     <div x-data="{ show: @entangle('selected').live }" x-show="show.length > 0" x-transition
         class="fixed bottom-4 sm:bottom-6 left-4 right-4 sm:left-1/2 sm:right-auto sm:transform sm:-translate-x-1/2 z-50">
         <div
@@ -220,45 +171,115 @@
                     <div>
                         <div class="font-semibold text-dark-900 dark:text-dark-50"
                             x-text="`${show.length} invoice dipilih`"></div>
-                        <div class="text-xs text-dark-500 dark:text-dark-400">
-                            Pilih aksi untuk invoice yang dipilih
+                        <div class="text-xs text-dark-500 dark:text-dark-400">Pilih aksi untuk invoice yang dipilih
                         </div>
                     </div>
                 </div>
                 <div class="flex items-center gap-2 justify-end">
                     <x-button wire:click="bulkPrintInvoices" size="sm" color="blue" icon="printer"
-                        loading="bulkPrintInvoices" class="whitespace-nowrap">
-                        Print All
-                    </x-button>
+                        loading="bulkPrintInvoices" class="whitespace-nowrap">Print All</x-button>
                     <x-button wire:click="bulkDelete" size="sm" color="red" icon="trash"
-                        loading="bulkDelete" class="whitespace-nowrap">
-                        Hapus
-                    </x-button>
+                        loading="bulkDelete" class="whitespace-nowrap">Hapus</x-button>
                     <x-button wire:click="$set('selected', [])" size="sm" color="gray" icon="x-mark"
-                        class="whitespace-nowrap">
-                        Batal
-                    </x-button>
+                        class="whitespace-nowrap">Batal</x-button>
                 </div>
             </div>
         </div>
     </div>
+
+    {{-- Print Options Modal --}}
+    <x-modal wire="printModal" size="md" center>
+        <x-slot:title>
+            <div class="flex items-center gap-4 my-3">
+                <div
+                    class="h-12 w-12 bg-primary-50 dark:bg-primary-900/20 rounded-xl flex items-center justify-center">
+                    <x-icon name="printer" class="w-6 h-6 text-primary-600 dark:text-primary-400" />
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold text-dark-900 dark:text-dark-50">Print Invoice</h3>
+                    <p class="text-sm text-dark-600 dark:text-dark-400">Pilih tipe invoice yang akan dicetak</p>
+                </div>
+            </div>
+        </x-slot:title>
+
+        <div class="space-y-4">
+            {{-- Full Invoice Option --}}
+            <div wire:click="$set('printType', 'full')"
+                class="p-4 border-2 rounded-lg cursor-pointer transition-all hover:border-primary-300 {{ $printType === 'full' ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20' : 'border-gray-200 dark:border-dark-600' }}">
+                <div class="flex items-start gap-3">
+                    <div class="pt-1">
+                        <div
+                            class="w-5 h-5 rounded-full border-2 flex items-center justify-center {{ $printType === 'full' ? 'bg-primary-500 border-primary-500' : 'border-gray-300 dark:border-dark-500' }}">
+                            @if ($printType === 'full')
+                                <div class="w-2.5 h-2.5 bg-white rounded-full"></div>
+                            @endif
+                        </div>
+                    </div>
+                    <div class="flex-1">
+                        <div class="font-semibold text-dark-900 dark:text-dark-50 mb-1">Full Invoice</div>
+                        <div class="text-sm text-dark-600 dark:text-dark-400 mb-2">Cetak invoice dengan nilai penuh
+                        </div>
+                        <div class="text-lg font-bold text-primary-600 dark:text-primary-400">
+                            Rp {{ number_format($printTotalAmount, 0, ',', '.') }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Down Payment Option --}}
+            <div wire:click="$set('printType', 'dp')"
+                class="p-4 border-2 rounded-lg cursor-pointer transition-all hover:border-primary-300 {{ $printType === 'dp' ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20' : 'border-gray-200 dark:border-dark-600' }}">
+                <div class="flex items-start gap-3">
+                    <div class="pt-1">
+                        <div
+                            class="w-5 h-5 rounded-full border-2 flex items-center justify-center {{ $printType === 'dp' ? 'bg-primary-500 border-primary-500' : 'border-gray-300 dark:border-dark-500' }}">
+                            @if ($printType === 'dp')
+                                <div class="w-2.5 h-2.5 bg-white rounded-full"></div>
+                            @endif
+                        </div>
+                    </div>
+                    <div class="flex-1">
+                        <div class="font-semibold text-dark-900 dark:text-dark-50 mb-1">Down Payment (DP)</div>
+                        <div class="text-sm text-dark-600 dark:text-dark-400 mb-3">Cetak invoice dengan nominal DP
+                        </div>
+                        @if ($printType === 'dp')
+                            <x-wireui-currency wire:model="dpAmount" type="text" label="Nominal DP *" placeholder="0"
+                                prefix="Rp"  />
+                        @endif
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <x-slot:footer>
+            <div class="flex flex-col sm:flex-row justify-end gap-3">
+                <x-button wire:click="$set('printModal', false)" color="secondary" outline
+                    class="w-full sm:w-auto">Batal</x-button>
+                <x-button wire:click="executePrint" color="primary" icon="printer" loading="executePrint"
+                    class="w-full sm:w-auto">Print</x-button>
+            </div>
+        </x-slot:footer>
+    </x-modal>
 </div>
 
 <script>
-    function printInvoice(invoiceId) {
-        window.open(`/invoice/${invoiceId}/preview`, '_blank');
-        setTimeout(() => {
-            const link = document.createElement('a');
-            link.href = `/invoice/${invoiceId}/download`;
-            link.download = `Invoice-${invoiceId}.pdf`;
-            link.style.display = 'none';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }, 500);
-    }
-
     document.addEventListener('livewire:init', () => {
+        Livewire.on('execute-print', (data) => {
+            const {
+                previewUrl,
+                downloadUrl
+            } = data[0];
+            window.open(previewUrl, '_blank');
+            setTimeout(() => {
+                const link = document.createElement('a');
+                link.href = downloadUrl;
+                link.style.display = 'none';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }, 500);
+        });
+
         Livewire.on('start-bulk-download', (data) => {
             const {
                 downloads,
@@ -268,24 +289,15 @@
 
             function downloadNext() {
                 if (currentIndex >= downloads.length) return;
-
                 const current = downloads[currentIndex];
                 const iframe = document.createElement('iframe');
                 iframe.style.display = 'none';
                 iframe.src = current.url;
-
-                iframe.onload = () => {
-                    setTimeout(() => document.body.removeChild(iframe), 1000);
-                };
-
+                iframe.onload = () => setTimeout(() => document.body.removeChild(iframe), 1000);
                 document.body.appendChild(iframe);
                 currentIndex++;
-
-                if (currentIndex < downloads.length) {
-                    setTimeout(downloadNext, delay || 2000);
-                }
+                if (currentIndex < downloads.length) setTimeout(downloadNext, delay || 2000);
             }
-
             downloadNext();
         });
     });

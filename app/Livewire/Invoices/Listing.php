@@ -18,14 +18,21 @@ class Listing extends Component
     // Table properties
     public array $selected = [];
     public array $sort = ['column' => 'invoice_number', 'direction' => 'desc'];
-    public ?int $quantity = 25;
+    public $quantity = 25;
 
     // Filters
-    public ?string $statusFilter = null;
-    public ?string $clientFilter = null;
-    public ?string $selectedMonth = '2025-10';
+    public $statusFilter = null;
+    public $clientFilter = null;
+    public $selectedMonth = '2025-10';
     public $dateRange = [];
     public $search = '';
+
+    // Print Modal
+    public bool $printModal = false;
+    public $printInvoiceId = null;
+    public $printTotalAmount = 0;
+    public $printType = 'full';
+    public $dpAmount = null;
 
     public array $headers = [
         ['index' => 'invoice_number', 'label' => 'No. Invoice'],
@@ -48,6 +55,48 @@ class Listing extends Component
     {
         $this->dateRange = [];
         $this->dispatchFilterChange();
+    }
+
+    // Open print modal
+    public function openPrintModal(int $invoiceId, int $totalAmount): void
+    {
+        $this->printInvoiceId = $invoiceId;
+        $this->printTotalAmount = $totalAmount;
+        $this->printType = 'full';
+        $this->dpAmount = null;
+        $this->printModal = true;
+    }
+
+    // Execute print
+    public function executePrint(): void
+    {
+        if (!$this->printInvoiceId) {
+            $this->toast()->error('Error', 'Invoice tidak ditemukan')->send();
+            return;
+        }
+
+        $previewUrl = route('invoice.preview', $this->printInvoiceId);
+        $downloadUrl = route('invoice.download', $this->printInvoiceId);
+
+        if ($this->printType === 'dp') {
+            $dpParsed = $this->dpAmount ? (int) preg_replace('/[^0-9]/', '', $this->dpAmount) : 0;
+
+            if ($dpParsed <= 0 || $dpParsed > $this->printTotalAmount) {
+                $this->toast()->error('Error', 'Nominal DP tidak valid')->send();
+                return;
+            }
+
+            $previewUrl .= '?dp_amount=' . $dpParsed;
+            $downloadUrl .= '?dp_amount=' . $dpParsed;
+        }
+
+        $this->dispatch('execute-print', [
+            'previewUrl' => $previewUrl,
+            'downloadUrl' => $downloadUrl
+        ]);
+
+        $this->printModal = false;
+        $this->reset(['printInvoiceId', 'printTotalAmount', 'printType', 'dpAmount']);
     }
 
     #[Computed]
@@ -81,7 +130,6 @@ class Listing extends Component
                 'clients.type'
             ]);
 
-        // Add search functionality
         $query->when($this->search, function ($q) {
             $q->where(function ($query) {
                 $query->where('invoices.invoice_number', 'like', '%' . $this->search . '%')
@@ -89,11 +137,9 @@ class Listing extends Component
             });
         });
 
-        // Basic filters
         $query->when($this->statusFilter, fn($q) => $q->where('invoices.status', $this->statusFilter));
         $query->when($this->clientFilter, fn($q) => $q->where('invoices.billed_to_id', $this->clientFilter));
 
-        // Date filtering - range overrides month
         $query->when(
             $this->dateRange && count($this->dateRange) >= 2 && $this->dateRange[0] && $this->dateRange[1],
             fn($q) => $q->whereBetween('invoices.issue_date', [
@@ -109,7 +155,6 @@ class Listing extends Component
                 )
             );
 
-        // Sorting
         match ($this->sort['column']) {
             'client_name' => $query->orderBy('clients.name', $this->sort['direction']),
             'invoice_number', 'issue_date', 'due_date', 'total_amount', 'status' =>
@@ -126,7 +171,6 @@ class Listing extends Component
         return Client::select('id', 'name')->orderBy('name')->get();
     }
 
-    // Filter change dispatcher
     protected function dispatchFilterChange(): void
     {
         $this->dispatch('filter-changed', [
@@ -134,11 +178,10 @@ class Listing extends Component
             'clientFilter' => $this->clientFilter,
             'selectedMonth' => $this->selectedMonth,
             'dateRange' => $this->dateRange,
-            'search' => $this->search, // Add this
+            'search' => $this->search,
         ]);
     }
 
-    // Filter watchers
     public function updatedStatusFilter()
     {
         $this->resetPage();
@@ -169,7 +212,6 @@ class Listing extends Component
         $this->dispatchFilterChange();
     }
 
-    // Action methods for loading states
     public function showInvoice(int $invoiceId): void
     {
         $this->dispatch('show-invoice', invoiceId: $invoiceId);
@@ -203,7 +245,6 @@ class Listing extends Component
         }
     }
 
-    // Bulk operations
     public function bulkPrintInvoices(): void
     {
         if (empty($this->selected)) {
@@ -276,7 +317,6 @@ class Listing extends Component
         }
     }
 
-    // Utility methods
     public function clearFilters(): void
     {
         $this->fill([

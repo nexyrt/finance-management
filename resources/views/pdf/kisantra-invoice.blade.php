@@ -423,7 +423,14 @@
         </div>
 
         <!-- Invoice Title -->
-        <div class="invoice-title">INVOICE</div>
+        <div class="invoice-title">
+            INVOICE
+            @if ($is_down_payment)
+                <span
+                    style="background: #f59e0b; padding: 3px 12px; margin-left: 15px; border-radius: 4px; font-size: 14px; letter-spacing: 1px;">DOWN
+                    PAYMENT</span>
+            @endif
+        </div>
 
         <!-- Main Content -->
         <div class="main-content">
@@ -577,10 +584,41 @@
                 @endforeach
 
                 <!-- Terbilang -->
-                <div class="terbilang">
-                    Terbilang:<br>
-                    <strong>{{ $terbilang }} Rupiah</strong>
+                <div
+                    style="font-style: italic; margin-top: 10px; padding: 10px; background: #f8f9fa; border-left: 3px solid #42b2cc;">
+                    <strong style="color: #42b2cc;">Terbilang:</strong> {{ $terbilang }} Rupiah
                 </div>
+
+                <!-- DP Information Box -->
+                @if ($is_down_payment)
+                    <div
+                        style="margin-top: 20px; padding: 15px; background: #fff3cd; border: 2px solid #ffc107; border-radius: 6px;">
+                        <div style="font-weight: bold; color: #856404; margin-bottom: 8px; font-size: 14px;">
+                            📋 INFORMASI PEMBAYARAN DOWN PAYMENT
+                        </div>
+                        <table style="width: 100%; font-size: 13px; color: #856404;">
+                            <tr>
+                                <td style="padding: 3px 0; width: 40%;">Total Invoice:</td>
+                                <td style="padding: 3px 0; font-weight: bold; text-align: right;">
+                                    Rp {{ number_format($invoice->total_amount, 0, ',', '.') }}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 3px 0;">Down Payment (Dibayar):</td>
+                                <td style="padding: 3px 0; font-weight: bold; text-align: right; color: #28a745;">
+                                    Rp {{ number_format($dp_amount, 0, ',', '.') }}
+                                </td>
+                            </tr>
+                            <tr style="border-top: 2px dashed #ffc107;">
+                                <td style="padding: 8px 0 3px 0; font-weight: bold;">Sisa Pembayaran:</td>
+                                <td
+                                    style="padding: 8px 0 3px 0; font-weight: bold; text-align: right; color: #dc3545; font-size: 15px;">
+                                    Rp {{ number_format($invoice->total_amount - $dp_amount, 0, ',', '.') }}
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                @endif
 
                 <!-- Tax Information -->
                 <div class="tax-info">
@@ -655,13 +693,20 @@
                 </div>
 
                 <!-- Jumlah Ditagih (ENHANCED - full invoice amount including tax deposits) -->
+                <!-- Total Row -->
                 <div class="total-section">
                     <div class="total-row">
-                        <div class="total-label">JUMLAH DITAGIH</div>
+                        <div class="total-label">
+                            @if ($is_down_payment)
+                                TOTAL DOWN PAYMENT
+                            @else
+                                TOTAL
+                            @endif
+                        </div>
                         <div class="total-value">
                             <div class="total-value-content">
                                 <span>IDR</span>
-                                <span>{{ number_format($invoice->total_amount, 0, ',', '.') }}</span>
+                                <span>{{ number_format($display_amount, 0, ',', '.') }}</span>
                             </div>
                         </div>
                     </div>

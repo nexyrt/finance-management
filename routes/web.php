@@ -5,6 +5,7 @@ use App\Livewire\Dashboard;
 use App\Livewire\TestingPage;
 use App\Models\Invoice;
 use App\Services\InvoicePrintService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 // Livewire Components
@@ -74,9 +75,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ]);
         })->name('download');
 
-        Route::get('/{invoice}/preview', function (Invoice $invoice) {
+        Route::get('/{invoice}/preview', function (Invoice $invoice, Request $request) {
             $service = new InvoicePrintService();
-            $pdf = $service->generateSingleInvoicePdf($invoice);
+
+            // Pastikan ada ini:
+            $dpAmount = $request->query('dp_amount') ? (int) $request->query('dp_amount') : null;
+
+            $pdf = $service->generateSingleInvoicePdf($invoice, $dpAmount); // Pass $dpAmount
 
             return response($pdf->output(), 200, [
                 'Content-Type' => 'application/pdf',
