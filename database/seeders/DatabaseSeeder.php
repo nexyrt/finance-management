@@ -11,16 +11,17 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             UserSeeder::class,
-            ServiceSeeder::class,
-            BankAccountSeeder::class,
-            ClientSeeder::class,
-            ClientRelationshipSeeder::class,
-            InvoiceSeeder::class,
-            BankTransactionSeeder::class,
-            RecurringTemplateSeeder::class,
-            RecurringInvoiceSeeder::class,
-            TransactionCategorySeeder::class,
+            // ServiceSeeder::class,
+            // BankAccountSeeder::class,
+            // ClientSeeder::class,
+            // ClientRelationshipSeeder::class,
+            // InvoiceSeeder::class,
+            // BankTransactionSeeder::class,
+            // RecurringTemplateSeeder::class,
+            // RecurringInvoiceSeeder::class,
+            // TransactionCategorySeeder::class,
             RolePermissionSeeder::class,
+            ReimbursementPermissionSeeder::class,
         ]);
     }
 }
