@@ -113,6 +113,14 @@
                     </flux:navlist.item>
                 </flux:navlist.group>
             @endrole
+
+            {{-- Testing Page --}}
+            @env('local')
+                <flux:navlist.item icon="beaker" :href="route('test')"
+                    :current="request()->routeIs('test')" wire:navigate class="py-5">
+                    {{ __('Testing Page') }}
+                </flux:navlist.item>
+            @endenv
         </flux:navlist>
 
         <flux:spacer />
