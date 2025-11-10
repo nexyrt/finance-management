@@ -1,4 +1,4 @@
-<div class="max-w-7xl mx-auto p-6" x-data="{
+<div class="mx-auto p-6" x-data="{
     // Invoice data
     invoice: {
         client_id: null,
@@ -11,12 +11,21 @@
     items: [],
     nextId: 1,
 
-    // Clients data dari server
-    clients: @js($this->clients),
+    // Bulk add state
+    bulkAddCount: 1,
+    showBulkAdd: false,
 
-    // Select dropdown state
+    // Clients & Services data dari server
+    clients: @js($this->clients),
+    services: @js($this->services),
+
+    // Select dropdown states
     selectOpen: false,
     selectSearch: '',
+    itemSelectOpen: {}, // Track open state per item (client)
+    itemSelectSearch: {}, // Track search per item (client)
+    serviceSelectOpen: {}, // Track open state per item (service)
+    serviceSelectSearch: {}, // Track search per item (service)
 
     // Loading state
     saving: false,
@@ -29,6 +38,16 @@
         this.invoice.due_date = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
     },
 
+    // Watch invoice client changes
+    watchInvoiceClient() {
+        this.items.forEach(item => {
+            if (!item.client_id) {
+                item.client_id = this.invoice.client_id;
+                item.client_name = this.invoice.client_name;
+            }
+        });
+    },
+
     // Filtered clients based on search
     get filteredClients() {
         if (!this.selectSearch) return this.clients;
@@ -39,24 +58,86 @@
         );
     },
 
-    // Select client
+    // Filtered clients for item dropdown
+    filteredItemClients(itemId) {
+        const search = this.itemSelectSearch[itemId] || '';
+        if (!search) return this.clients;
+        const searchLower = search.toLowerCase();
+        return this.clients.filter(client =>
+            client.name.toLowerCase().includes(searchLower) ||
+            (client.email && client.email.toLowerCase().includes(searchLower))
+        );
+    },
+
+    // Filtered services for item dropdown
+    filteredItemServices(itemId) {
+        const search = this.serviceSelectSearch[itemId] || '';
+        if (!search) return this.services;
+        const searchLower = search.toLowerCase();
+        return this.services.filter(service =>
+            service.name.toLowerCase().includes(searchLower) ||
+            (service.type && service.type.toLowerCase().includes(searchLower))
+        );
+    },
+
+    // Select client for invoice
     selectClient(client) {
         this.invoice.client_id = client.id;
         this.invoice.client_name = client.name;
         this.selectOpen = false;
         this.selectSearch = '';
+
+        // Auto-fill semua items yang belum ada client
+        this.watchInvoiceClient();
     },
 
-    // Clear selection
+    // Clear invoice client selection
     clearClient() {
         this.invoice.client_id = null;
         this.invoice.client_name = '';
     },
 
-    // Add item
+    // Select client for specific item
+    selectItemClient(item, client) {
+        item.client_id = client.id;
+        item.client_name = client.name;
+        this.itemSelectOpen[item.id] = false;
+        this.itemSelectSearch[item.id] = '';
+    },
+
+    // Clear item client
+    clearItemClient(item) {
+        item.client_id = null;
+        item.client_name = '';
+    },
+
+    // Select service untuk autofill (BISA DIEDIT SETELAHNYA!)
+    selectService(item, service) {
+        // Autofill nama dan harga
+        item.service_name = service.name;
+        item.unit_price = service.formatted_price.replace('Rp ', '');
+
+        // Close dropdown
+        this.serviceSelectOpen[item.id] = false;
+        this.serviceSelectSearch[item.id] = '';
+
+        // Recalculate
+        this.calculateItem(item);
+    },
+
+    // Clear service selection (reset ke kosong)
+    clearServiceSelection(item) {
+        item.service_name = '';
+        item.unit_price = '';
+        this.calculateItem(item);
+    },
+
+    // Add single item
     addItem() {
-        this.items.push({
+        const newItem = {
             id: this.nextId++,
+            client_id: this.invoice.client_id || null,
+            client_name: this.invoice.client_name || '',
             service_name: '',
             quantity: 1,
             unit_price: '',
@@ -64,11 +145,31 @@
             cogs_amount: '',
             profit: 0,
             is_tax_deposit: false
-        });
+        };
+        this.items.push(newItem);
+        this.itemSelectOpen[newItem.id] = false;
+        this.itemSelectSearch[newItem.id] = '';
+        this.serviceSelectOpen[newItem.id] = false;
+        this.serviceSelectSearch[newItem.id] = '';
+    },
+
+    // Bulk add items
+    bulkAddItems() {
+        const count = parseInt(this.bulkAddCount) || 1;
+        for (let i = 0; i < count; i++) {
+            this.addItem();
+        }
+        this.showBulkAdd = false;
+        this.bulkAddCount = 1;
     },
 
     // Remove item
     removeItem(index) {
+        const itemId = this.items[index].id;
+        delete this.itemSelectOpen[itemId];
+        delete this.itemSelectSearch[itemId];
+        delete this.serviceSelectOpen[itemId];
+        delete this.serviceSelectSearch[itemId];
         this.items.splice(index, 1);
     },
 
@@ -122,12 +223,13 @@
         await $wire.save();
         this.saving = false;
     }
-}" @click.away="selectOpen = false">
+}"
+    @click.away="selectOpen = false; Object.keys(itemSelectOpen).forEach(key => itemSelectOpen[key] = false); Object.keys(serviceSelectOpen).forEach(key => serviceSelectOpen[key] = false)">
 
     {{-- Header --}}
     <div class="mb-6">
         <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Create Invoice</h1>
-        <p class="text-gray-600 dark:text-gray-400 mt-1">Invoice form dengan Alpine.js & Custom Select Search</p>
+        <p class="text-gray-600 dark:text-gray-400 mt-1">Invoice form dengan Alpine.js - Multi Client per Item</p>
     </div>
 
     {{-- Success Message --}}
@@ -183,16 +285,16 @@
                 <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Invoice Information</h2>
 
                 <div class="space-y-4">
-                    {{-- Client Select --}}
+                    {{-- Client Select (Billed To / Owner) --}}
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            Client *
+                            Billed To (Owner) *
                         </label>
                         <div class="relative">
                             {{-- Selected Client Display --}}
                             <div x-show="!invoice.client_id" @click="selectOpen = !selectOpen"
                                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-400 cursor-pointer hover:border-blue-400 transition">
-                                Select a client...
+                                Select owner/client...
                             </div>
 
                             <div x-show="invoice.client_id"
@@ -224,12 +326,10 @@
                                         <div @click="selectClient(client)"
                                             class="px-4 py-3 hover:bg-blue-50 dark:hover:bg-blue-900/20 cursor-pointer transition border-b border-gray-100 dark:border-gray-700 last:border-0">
                                             <div class="flex items-center gap-3">
-                                                {{-- Logo/Avatar --}}
                                                 <div
                                                     class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-semibold flex-shrink-0">
                                                     <span x-text="client.name.charAt(0).toUpperCase()"></span>
                                                 </div>
-                                                {{-- Info --}}
                                                 <div class="flex-1 min-w-0">
                                                     <div class="font-medium text-gray-900 dark:text-white truncate"
                                                         x-text="client.name"></div>
@@ -253,6 +353,9 @@
                                 </div>
                             </div>
                         </div>
+                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                            💡 Semua items akan otomatis terisi dengan client ini
+                        </p>
                     </div>
 
                     {{-- Dates --}}
@@ -280,16 +383,52 @@
                 <div class="flex items-center justify-between mb-6">
                     <div>
                         <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Invoice Items</h2>
-                        <p class="text-sm text-gray-500 dark:text-gray-400">Add services or products</p>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Add services or products per company</p>
                     </div>
-                    <button @click="addItem()" type="button"
-                        class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M12 4v16m8-8H4" />
-                        </svg>
-                        Add Item
-                    </button>
+                    <div class="flex gap-2">
+                        {{-- Bulk Add Button --}}
+                        <button @click="showBulkAdd = !showBulkAdd" type="button"
+                            class="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                            </svg>
+                            Bulk Add
+                        </button>
+
+                        {{-- Regular Add Button --}}
+                        <button @click="addItem()" type="button"
+                            class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 4v16m8-8H4" />
+                            </svg>
+                            Add Item
+                        </button>
+                    </div>
+                </div>
+
+                {{-- Bulk Add Input --}}
+                <div x-show="showBulkAdd" x-transition
+                    class="mb-4 p-4 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg">
+                    <div class="flex items-end gap-3">
+                        <div class="flex-1">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                How many items to add?
+                            </label>
+                            <input type="number" x-model.number="bulkAddCount" min="1" max="100"
+                                placeholder="Enter number of items"
+                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        </div>
+                        <button @click="bulkAddItems()" type="button"
+                            class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition">
+                            Add <span x-text="bulkAddCount"></span> Items
+                        </button>
+                        <button @click="showBulkAdd = false" type="button"
+                            class="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                            Cancel
+                        </button>
+                    </div>
                 </div>
 
                 {{-- Items List --}}
@@ -317,12 +456,152 @@
                                 </button>
                             </div>
 
-                            {{-- Service Name --}}
+                            {{-- Client Select per Item --}}
                             <div class="mb-3">
                                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                    Service Name *
+                                    Client/Company *
                                 </label>
-                                <input type="text" x-model="item.service_name" placeholder="Enter service name"
+                                <div class="relative" @click.away="itemSelectOpen[item.id] = false">
+                                    {{-- Selected --}}
+                                    <div x-show="!item.client_id"
+                                        @click="itemSelectOpen[item.id] = !itemSelectOpen[item.id]"
+                                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-400 cursor-pointer hover:border-blue-400 transition">
+                                        Select client for this item...
+                                    </div>
+
+                                    <div x-show="item.client_id"
+                                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 flex items-center justify-between">
+                                        <span class="text-gray-900 dark:text-white text-sm"
+                                            x-text="item.client_name"></span>
+                                        <button @click="clearItemClient(item)" type="button"
+                                            class="text-gray-400 hover:text-red-500 transition">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M6 18L18 6M6 6l12 12" />
+                                            </svg>
+                                        </button>
+                                    </div>
+
+                                    {{-- Dropdown --}}
+                                    <div x-show="itemSelectOpen[item.id]" x-transition
+                                        class="absolute z-40 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-64 overflow-hidden">
+
+                                        {{-- Search --}}
+                                        <div class="p-2 border-b border-gray-200 dark:border-gray-700">
+                                            <input type="text" x-model="itemSelectSearch[item.id]" @click.stop
+                                                placeholder="Search..."
+                                                class="w-full px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                        </div>
+
+                                        {{-- Options --}}
+                                        <div class="overflow-y-auto max-h-48">
+                                            <template x-for="client in filteredItemClients(item.id)"
+                                                :key="client.id">
+                                                <div @click="selectItemClient(item, client)"
+                                                    class="px-3 py-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 cursor-pointer transition">
+                                                    <div class="flex items-center gap-2">
+                                                        <div
+                                                            class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white text-xs font-semibold flex-shrink-0">
+                                                            <span x-text="client.name.charAt(0).toUpperCase()"></span>
+                                                        </div>
+                                                        <div class="flex-1 min-w-0">
+                                                            <div class="text-sm font-medium text-gray-900 dark:text-white truncate"
+                                                                x-text="client.name"></div>
+                                                            <div class="text-xs text-gray-500 dark:text-gray-400 truncate"
+                                                                x-text="client.email || '-'"></div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- Service Selection + Manual Input --}}
+                            <div class="mb-3">
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                    Service / Product *
+                                </label>
+
+                                {{-- Service Select (Autofill Template) --}}
+                                <div class="mb-2">
+                                    <div class="relative" @click.away="serviceSelectOpen[item.id] = false">
+                                        {{-- Trigger Button --}}
+                                        <button type="button"
+                                            @click="serviceSelectOpen[item.id] = !serviceSelectOpen[item.id]"
+                                            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:border-blue-400 transition flex items-center justify-between">
+                                            <span class="text-sm">
+                                                <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor"
+                                                    viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                                                </svg>
+                                                Select from service list (optional)
+                                            </span>
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M19 9l-7 7-7-7" />
+                                            </svg>
+                                        </button>
+
+                                        {{-- Dropdown --}}
+                                        <div x-show="serviceSelectOpen[item.id]" x-transition
+                                            class="absolute z-40 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-64 overflow-hidden">
+
+                                            {{-- Search --}}
+                                            <div class="p-2 border-b border-gray-200 dark:border-gray-700">
+                                                <input type="text" x-model="serviceSelectSearch[item.id]"
+                                                    @click.stop placeholder="Search services..."
+                                                    class="w-full px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                            </div>
+
+                                            {{-- Options --}}
+                                            <div class="overflow-y-auto max-h-48">
+                                                <template x-for="service in filteredItemServices(item.id)"
+                                                    :key="service.id">
+                                                    <div @click="selectService(item, service)"
+                                                        class="px-3 py-2.5 hover:bg-blue-50 dark:hover:bg-blue-900/20 cursor-pointer transition border-b border-gray-100 dark:border-gray-700 last:border-0">
+                                                        <div class="flex items-center justify-between">
+                                                            <div class="flex-1 min-w-0">
+                                                                <div class="text-sm font-medium text-gray-900 dark:text-white truncate"
+                                                                    x-text="service.name"></div>
+                                                                <div class="text-xs text-gray-500 dark:text-gray-400"
+                                                                    x-text="service.type || 'Service'"></div>
+                                                            </div>
+                                                            <div class="ml-3 flex-shrink-0">
+                                                                <span
+                                                                    class="text-sm font-semibold text-blue-600 dark:text-blue-400"
+                                                                    x-text="service.formatted_price"></span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </template>
+
+                                                {{-- Empty State --}}
+                                                <div x-show="filteredItemServices(item.id).length === 0"
+                                                    class="px-4 py-6 text-center text-gray-500 dark:text-gray-400">
+                                                    <svg class="w-10 h-10 mx-auto mb-2 text-gray-400" fill="none"
+                                                        stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2"
+                                                            d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                                                    </svg>
+                                                    <p class="text-sm">No services found</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                        💡 Pilih service untuk autofill nama & harga, atau ketik manual di bawah
+                                    </p>
+                                </div>
+
+                                {{-- Manual Input (Tetap bisa diedit!) --}}
+                                <input type="text" x-model="item.service_name"
+                                    placeholder="Enter service name or select from list above"
                                     class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                             </div>
 
@@ -467,22 +746,6 @@
                         Cancel
                     </button>
                 </div>
-            </div>
-        </div>
-    </div>
-
-    {{-- Debug Section --}}
-    <div
-        class="mt-6 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-xl p-6">
-        <h3 class="text-sm font-semibold text-yellow-900 dark:text-yellow-200 mb-3">🐛 Debug Data</h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div class="bg-white dark:bg-gray-800 rounded-lg p-4 overflow-auto">
-                <h4 class="text-xs font-semibold mb-2">Invoice:</h4>
-                <pre class="text-xs text-gray-800 dark:text-gray-200" x-text="JSON.stringify(invoice, null, 2)"></pre>
-            </div>
-            <div class="bg-white dark:bg-gray-800 rounded-lg p-4 overflow-auto max-h-96">
-                <h4 class="text-xs font-semibold mb-2">Items:</h4>
-                <pre class="text-xs text-gray-800 dark:text-gray-200" x-text="JSON.stringify(items, null, 2)"></pre>
             </div>
         </div>
     </div>

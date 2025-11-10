@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\Client;
+use App\Models\Service;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
 use Illuminate\Support\Facades\DB;
@@ -29,6 +30,7 @@ class TestingPage extends Component
             'invoice.issue_date' => 'required|date',
             'invoice.due_date' => 'required|date|after_or_equal:invoice.issue_date',
             'items' => 'required|array|min:1',
+            'items.*.client_id' => 'required|exists:clients,id',
             'items.*.service_name' => 'required|string|max:255',
             'items.*.quantity' => 'required|integer|min:1',
             'items.*.unit_price' => 'required',
@@ -51,6 +53,7 @@ class TestingPage extends Component
                 $isTaxDeposit = $item['is_tax_deposit'] ?? false;
 
                 $parsedItems[] = [
+                    'client_id' => $item['client_id'],
                     'service_name' => $item['service_name'],
                     'quantity' => $quantity,
                     'unit_price' => $unitPrice,
@@ -84,7 +87,7 @@ class TestingPage extends Component
             foreach ($parsedItems as $itemData) {
                 InvoiceItem::create([
                     'invoice_id' => $invoice->id,
-                    'client_id' => $this->invoice['client_id'],
+                    'client_id' => $itemData['client_id'],
                     'service_name' => $itemData['service_name'],
                     'quantity' => $itemData['quantity'],
                     'unit_price' => $itemData['unit_price'],
@@ -102,13 +105,13 @@ class TestingPage extends Component
             // Reset form
             $this->reset(['invoice', 'items']);
 
-            // Refresh page untuk melihat notifikasi dan form bersih
+            // Refresh page
             return $this->redirect(request()->header('Referer'), navigate: true);
 
         } catch (\Exception $e) {
             DB::rollBack();
 
-            // Log error untuk debugging
+            // Log error
             \Log::error('Failed to create invoice: ' . $e->getMessage(), [
                 'exception' => $e,
                 'invoice' => $this->invoice,
@@ -120,34 +123,24 @@ class TestingPage extends Component
         }
     }
 
-    /**
-     * Generate invoice number
-     * Format: INV-YYYYMM-XXXX
-     */
     private function generateInvoiceNumber(): string
     {
-        $yearMonth = date('Ym'); // 202411
+        $yearMonth = date('Ym');
 
-        // Get last invoice number for this month
         $lastInvoice = Invoice::where('invoice_number', 'like', "INV-{$yearMonth}-%")
             ->orderBy('invoice_number', 'desc')
             ->first();
 
         if ($lastInvoice) {
-            // Extract sequence number
             $lastNumber = (int) substr($lastInvoice->invoice_number, -4);
             $newNumber = $lastNumber + 1;
         } else {
             $newNumber = 1;
         }
 
-        // Format: INV-202411-0001
         return sprintf('INV-%s-%04d', $yearMonth, $newNumber);
     }
 
-    /**
-     * Parse currency string to integer
-     */
     private function parseAmount($value): int
     {
         if (empty($value))
@@ -155,15 +148,29 @@ class TestingPage extends Component
         return (int) preg_replace('/[^0-9]/', '', $value);
     }
 
-    /**
-     * Get active clients for select
-     */
     #[Computed]
     public function clients()
     {
         return Client::where('status', 'active')
             ->orderBy('name')
             ->get(['id', 'name', 'email', 'logo'])
+            ->toArray();
+    }
+
+    #[Computed]
+    public function services()
+    {
+        return Service::orderBy('name')
+            ->get(['id', 'name', 'price', 'type'])
+            ->map(function ($service) {
+                return [
+                    'id' => $service->id,
+                    'name' => $service->name,
+                    'price' => $service->price,
+                    'type' => $service->type,
+                    'formatted_price' => 'Rp ' . number_format($service->price, 0, ',', '.')
+                ];
+            })
             ->toArray();
     }
 
