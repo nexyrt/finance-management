@@ -12,7 +12,13 @@
                 Kelola dan lacak semua invoice Anda di sini.
             </p>
         </div>
-        <livewire:invoices.create @invoice-created="$refresh" />
+        {{-- <livewire:invoices.create @invoice-created="$refresh" /> --}}
+        <x-button size="sm" href="{{ route('invoices.create') }}" wire:navigate title="Create" text="Create Invoice"
+            prefix="true">
+            <x-slot:left>
+                <x-icon name="plus" class="w-4 h-4" />
+            </x-slot:left>
+        </x-button>
     </div>
 
     {{-- Stats Cards (Synced with Listing filters) --}}

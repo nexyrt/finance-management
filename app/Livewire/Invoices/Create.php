@@ -2,63 +2,134 @@
 
 namespace App\Livewire\Invoices;
 
-use Livewire\Component;
-use App\Models\Invoice;
 use App\Models\Client;
 use App\Models\Service;
-use TallStackUi\Traits\Interactions;
+use App\Models\Invoice;
+use App\Models\InvoiceItem;
+use Illuminate\Support\Facades\DB;
+use Livewire\Attributes\Computed;
+use Livewire\Component;
 
 class Create extends Component
 {
-    use Interactions;
+    // Invoice data
+    public $invoice = [
+        'invoice_number' => '',
+        'client_id' => null,
+        'issue_date' => null,
+        'due_date' => null,
+    ];
 
-    public bool $modal = false;
-    public $clients = [];
-    public $services = [];
-
-    // Invoice fields
-    public $invoice_number = '';
-    public $billed_to_id = '';
-    public $issue_date = '';
-    public $due_date = '';
-
-    // Discount fields
-    public $discount_type = 'fixed';
-    public $discount_value = 0;
-    public $discount_reason = '';
-
-    // Items array
+    // Items untuk save
     public $items = [];
+    public $discount = [
+        'type' => 'fixed',
+        'value' => 0,
+        'reason' => '',
+        'amount' => 0
+    ];
 
-    public function mount(): void
+    public function save()
     {
-        $this->resetForm();
-        $this->loadOptions();
+        $this->validate([
+            'invoice.client_id' => 'required|exists:clients,id',
+            'invoice.issue_date' => 'required|date',
+            'invoice.due_date' => 'required|date|after_or_equal:invoice.issue_date',
+            'items' => 'required|array|min:1',
+            'items.*.client_id' => 'required|exists:clients,id',
+            'items.*.service_name' => 'required|string|max:255',
+            'items.*.quantity' => 'required|integer|min:1',
+            'items.*.unit_price' => 'required',
+            'discount.type' => 'in:fixed,percentage',
+            'discount.value' => 'nullable|numeric|min:0',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            $parsedItems = [];
+            $subtotal = 0;
+
+            foreach ($this->items as $item) {
+                $unitPrice = $this->parseAmount($item['unit_price']);
+                $quantity = $item['quantity'];
+                $amount = $unitPrice * $quantity;
+                $cogsAmount = $this->parseAmount($item['cogs_amount'] ?? '0');
+                $isTaxDeposit = $item['is_tax_deposit'] ?? false;
+
+                $parsedItems[] = [
+                    'client_id' => $item['client_id'],
+                    'service_name' => $item['service_name'],
+                    'quantity' => $quantity,
+                    'unit_price' => $unitPrice,
+                    'amount' => $amount,
+                    'cogs_amount' => $cogsAmount,
+                    'is_tax_deposit' => $isTaxDeposit,
+                ];
+
+                $subtotal += $amount;
+            }
+
+            // Calculate discount
+            $discountAmount = 0;
+            $discountValue = 0;
+            if ($this->discount['type'] === 'fixed') {
+                $discountValue = $this->discount['value'];
+                $discountAmount = $this->discount['value'];
+            } else {
+                $discountValue = $this->discount['value'];
+                $discountAmount = ($subtotal * $this->discount['value']) / 100;
+            }
+
+            $totalAmount = max(0, $subtotal - $discountAmount);
+
+            $invoiceNumber = $this->generateInvoiceNumber();
+
+            $invoice = Invoice::create([
+                'invoice_number' => $invoiceNumber,
+                'billed_to_id' => $this->invoice['client_id'],
+                'subtotal' => $subtotal,
+                'discount_amount' => $discountAmount,
+                'discount_type' => $this->discount['type'] ?? 'fixed',
+                'discount_value' => $discountValue,
+                'discount_reason' => $this->discount['reason'],
+                'total_amount' => $totalAmount,
+                'issue_date' => $this->invoice['issue_date'],
+                'due_date' => $this->invoice['due_date'],
+                'status' => 'draft',
+            ]);
+
+            foreach ($parsedItems as $itemData) {
+                InvoiceItem::create([
+                    'invoice_id' => $invoice->id,
+                    'client_id' => $itemData['client_id'],
+                    'service_name' => $itemData['service_name'],
+                    'quantity' => $itemData['quantity'],
+                    'unit_price' => $itemData['unit_price'],
+                    'amount' => $itemData['amount'],
+                    'cogs_amount' => $itemData['cogs_amount'],
+                    'is_tax_deposit' => $itemData['is_tax_deposit'],
+                ]);
+            }
+
+            DB::commit();
+
+            session()->flash('success', "Invoice {$invoiceNumber} created successfully!");
+
+            $this->reset(['invoice', 'items', 'discount']);
+
+            return $this->redirect(request()->header('Referer'), navigate: true);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Failed to create invoice: ' . $e->getMessage());
+            session()->flash('error', 'Failed to create invoice. Please try again.');
+        }
     }
 
-    public function openModal(): void
+    private function generateInvoiceNumber(): string
     {
-        $this->resetForm();
-        $this->modal = true;
-    }
-
-    public function resetForm()
-    {
-        $this->generateInvoiceNumber();
-        $this->billed_to_id = '';
-        $this->issue_date = now()->format('Y-m-d');
-        $this->due_date = now()->addDays(30)->format('Y-m-d');
-        $this->discount_type = 'fixed';
-        $this->discount_value = 0;
-        $this->discount_reason = '';
-        $this->items = [];
-        $this->addItem();
-        $this->resetValidation();
-    }
-
-    public function generateInvoiceNumber($issueDate = null)
-    {
-        $date = $issueDate ? \Carbon\Carbon::parse($issueDate) : now();
+        $date = $this->invoice['issue_date'] ? \Carbon\Carbon::parse($this->invoice['issue_date']) : now();
         $currentMonth = $date->format('m');
         $currentYear = $date->format('y');
 
@@ -77,7 +148,7 @@ class Create extends Component
 
         $nextSequence = $maxSequence + 1;
 
-        $this->invoice_number = sprintf(
+        return sprintf(
             'INV/%02d/KSN/%02d.%s',
             $nextSequence,
             (int) $currentMonth,
@@ -85,208 +156,37 @@ class Create extends Component
         );
     }
 
-    public function updatedIssueDate()
+    private function parseAmount($value): int
     {
-        $this->generateInvoiceNumber($this->issue_date);
-    }
-
-    public function loadOptions()
-    {
-        $this->clients = Client::where('status', 'Active')
-            ->get()
-            ->map(fn($client) => [
-                'label' => $client->name,
-                'value' => $client->id
-            ])
-            ->toArray();
-
-        $this->services = Service::all()
-            ->map(fn($service) => [
-                'label' => $service->name,
-                'value' => $service->id,
-                'description' => 'Rp ' . number_format($service->price, 0, ',', '.'),
-                'price' => $service->price
-            ])
-            ->toArray();
-    }
-
-    public function addItem()
-    {
-        $this->items[] = [
-            'client_id' => $this->billed_to_id,
-            'service_id' => '',
-            'service_name' => '',
-            'quantity' => 1,
-            'price' => 0,
-            'cogs_amount' => 0,
-            'is_tax_deposit' => false,
-            'total' => 0
-        ];
-    }
-
-    public function removeItem($index)
-    {
-        if (count($this->items) > 1) {
-            unset($this->items[$index]);
-            $this->items = array_values($this->items);
-        }
-    }
-
-    public function updated($propertyName)
-    {
-        if (str_contains($propertyName, 'items.')) {
-            $parts = explode('.', $propertyName);
-            $index = $parts[1];
-
-            if (in_array($parts[2], ['quantity', 'price'])) {
-                $this->calculateTotal($index);
-            }
-
-            if ($parts[2] === 'service_id') {
-                $this->setServiceDetails($index);
-            }
-
-            if ($parts[2] === 'is_tax_deposit') {
-                $this->handleTaxDepositToggle($index);
-            }
-        }
-
-        if ($propertyName === 'billed_to_id') {
-            foreach ($this->items as $index => $item) {
-                $this->items[$index]['client_id'] = $this->billed_to_id;
-            }
-        }
-    }
-
-    public function handleTaxDepositToggle($index)
-    {
-        if ($this->items[$index]['is_tax_deposit']) {
-            $this->items[$index]['cogs_amount'] = 0;
-            $this->items[$index]['quantity'] = 1;
-        }
-    }
-
-    public function calculateTotal($index)
-    {
-        $qty = (int) $this->items[$index]['quantity'];
-        $price = (int) $this->items[$index]['price'];
-        $this->items[$index]['total'] = $qty * $price;
-    }
-
-    public function setServiceDetails($index)
-    {
-        $serviceId = $this->items[$index]['service_id'];
-        if ($serviceId) {
-            $service = collect($this->services)->firstWhere('value', $serviceId);
-            if ($service) {
-                $this->items[$index]['service_name'] = $service['label'];
-                $this->items[$index]['price'] = $service['price'];
-                $this->calculateTotal($index);
-            }
-        }
-    }
-
-    // Financial calculations
-    public function getSubtotalProperty()
-    {
-        return collect($this->items)->sum('total');
-    }
-
-    public function getNetRevenueProperty()
-    {
-        return collect($this->items)
-            ->filter(fn($item) => !($item['is_tax_deposit'] ?? false))
-            ->sum('total');
-    }
-
-    public function getTotalCogsProperty()
-    {
-        return collect($this->items)
-            ->filter(fn($item) => !($item['is_tax_deposit'] ?? false))
-            ->sum('cogs_amount');
-    }
-
-    public function getDiscountAmountProperty()
-    {
-        if ($this->discount_type === 'percentage') {
-            return (int) (($this->subtotal * $this->discount_value) / 10000);
-        } else {
-            return (int) $this->discount_value;
-        }
-    }
-
-    public function getGrandTotalProperty()
-    {
-        return max(0, $this->subtotal - $this->discountAmount);
-    }
-
-    public function getGrossProfitProperty()
-    {
-        return $this->netRevenue - $this->totalCogs - $this->discountAmount;
-    }
-
-    public function getGrossProfitMarginProperty()
-    {
-        if ($this->netRevenue == 0)
+        if (empty($value))
             return 0;
-        $netAfterDiscount = $this->netRevenue - $this->discountAmount;
-        return $netAfterDiscount > 0 ? ($this->grossProfit / $netAfterDiscount) * 100 : 0;
+        return (int) preg_replace('/[^0-9]/', '', $value);
     }
 
-    public function save()
+    #[Computed]
+    public function clients()
     {
-        $this->validate([
-            'invoice_number' => 'required|string|unique:invoices,invoice_number',
-            'billed_to_id' => 'required|exists:clients,id',
-            'issue_date' => 'required|date',
-            'due_date' => 'required|date|after:issue_date',
-            'items.*.client_id' => 'required|exists:clients,id',
-            'items.*.service_name' => 'required|string',
-            'items.*.quantity' => 'required|integer|min:1',
-            'items.*.price' => 'required|integer|min:0',
-            'items.*.cogs_amount' => 'integer|min:0',
-            'items.*.is_tax_deposit' => 'boolean',
-        ]);
+        return Client::where('status', 'active')
+            ->orderBy('name')
+            ->get(['id', 'name', 'email', 'logo'])
+            ->toArray();
+    }
 
-        try {
-            \DB::transaction(function () {
-                $invoice = Invoice::create([
-                    'invoice_number' => $this->invoice_number,
-                    'billed_to_id' => $this->billed_to_id,
-                    'subtotal' => $this->subtotal,
-                    'discount_type' => $this->discount_type,
-                    'discount_value' => $this->discount_value,
-                    'discount_amount' => $this->discountAmount,
-                    'discount_reason' => $this->discount_reason,
-                    'total_amount' => $this->grandTotal,
-                    'issue_date' => $this->issue_date,
-                    'due_date' => $this->due_date,
-                    'status' => 'draft'
-                ]);
-
-                foreach ($this->items as $item) {
-                    $invoice->items()->create([
-                        'client_id' => $item['client_id'],
-                        'service_name' => $item['service_name'],
-                        'quantity' => $item['quantity'],
-                        'unit_price' => $item['price'],
-                        'amount' => $item['total'],
-                        'cogs_amount' => $item['cogs_amount'] ?? 0,
-                        'is_tax_deposit' => $item['is_tax_deposit'] ?? false,
-                    ]);
-                }
-
-                $invoice->update(['status' => 'draft']);
-            });
-
-            $this->modal = false;
-            $this->toast()->success('Success', 'Invoice created successfully!')->send();
-            $this->dispatch('invoice-created');
-            $this->resetForm();
-
-        } catch (\Exception $e) {
-            $this->toast()->error('Error', $e->getMessage())->send();
-        }
+    #[Computed]
+    public function services()
+    {
+        return Service::orderBy('name')
+            ->get(['id', 'name', 'price', 'type'])
+            ->map(function ($service) {
+                return [
+                    'id' => $service->id,
+                    'name' => $service->name,
+                    'price' => $service->price,
+                    'type' => $service->type,
+                    'formatted_price' => 'Rp ' . number_format($service->price, 0, ',', '.')
+                ];
+            })
+            ->toArray();
     }
 
     public function render()

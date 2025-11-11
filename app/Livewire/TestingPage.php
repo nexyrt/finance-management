@@ -14,6 +14,7 @@ class TestingPage extends Component
 {
     // Invoice data
     public $invoice = [
+        'invoice_number' => '',
         'client_id' => null,
         'issue_date' => null,
         'due_date' => null,
@@ -21,10 +22,15 @@ class TestingPage extends Component
 
     // Items untuk save
     public $items = [];
+    public $discount = [
+        'type' => 'fixed',
+        'value' => 0,
+        'reason' => '',
+        'amount' => 0
+    ];
 
     public function save()
     {
-        // Validasi
         $this->validate([
             'invoice.client_id' => 'required|exists:clients,id',
             'invoice.issue_date' => 'required|date',
@@ -34,14 +40,13 @@ class TestingPage extends Component
             'items.*.service_name' => 'required|string|max:255',
             'items.*.quantity' => 'required|integer|min:1',
             'items.*.unit_price' => 'required',
-            'items.*.cogs_amount' => 'nullable',
-            'items.*.is_tax_deposit' => 'boolean',
+            'discount.type' => 'in:fixed,percentage',
+            'discount.value' => 'nullable|numeric|min:0',
         ]);
 
         try {
             DB::beginTransaction();
 
-            // Parse items dan hitung totals
             $parsedItems = [];
             $subtotal = 0;
 
@@ -65,25 +70,35 @@ class TestingPage extends Component
                 $subtotal += $amount;
             }
 
-            // Generate invoice number
+            // Calculate discount
+            $discountAmount = 0;
+            $discountValue = 0;
+            if ($this->discount['type'] === 'fixed') {
+                $discountValue = $this->discount['value'];
+                $discountAmount = $this->discount['value'];
+            } else {
+                $discountValue = $this->discount['value'];
+                $discountAmount = ($subtotal * $this->discount['value']) / 100;
+            }
+
+            $totalAmount = max(0, $subtotal - $discountAmount);
+
             $invoiceNumber = $this->generateInvoiceNumber();
 
-            // Create Invoice
             $invoice = Invoice::create([
                 'invoice_number' => $invoiceNumber,
                 'billed_to_id' => $this->invoice['client_id'],
                 'subtotal' => $subtotal,
-                'discount_amount' => 0,
-                'discount_type' => 'fixed',
-                'discount_value' => 0,
-                'discount_reason' => null,
-                'total_amount' => $subtotal,
+                'discount_amount' => $discountAmount,
+                'discount_type' => $this->discount['type'] ?? 'fixed',
+                'discount_value' => $discountValue,
+                'discount_reason' => $this->discount['reason'],
+                'total_amount' => $totalAmount,
                 'issue_date' => $this->invoice['issue_date'],
                 'due_date' => $this->invoice['due_date'],
                 'status' => 'draft',
             ]);
 
-            // Create Invoice Items
             foreach ($parsedItems as $itemData) {
                 InvoiceItem::create([
                     'invoice_id' => $invoice->id,
@@ -99,46 +114,46 @@ class TestingPage extends Component
 
             DB::commit();
 
-            // Success notification
-            session()->flash('success', "Invoice {$invoiceNumber} has been created successfully!");
+            session()->flash('success', "Invoice {$invoiceNumber} created successfully!");
 
-            // Reset form
-            $this->reset(['invoice', 'items']);
+            $this->reset(['invoice', 'items', 'discount']);
 
-            // Refresh page
             return $this->redirect(request()->header('Referer'), navigate: true);
 
         } catch (\Exception $e) {
             DB::rollBack();
-
-            // Log error
-            \Log::error('Failed to create invoice: ' . $e->getMessage(), [
-                'exception' => $e,
-                'invoice' => $this->invoice,
-                'items' => $this->items
-            ]);
-
-            // Error notification
+            \Log::error('Failed to create invoice: ' . $e->getMessage());
             session()->flash('error', 'Failed to create invoice. Please try again.');
         }
     }
 
     private function generateInvoiceNumber(): string
     {
-        $yearMonth = date('Ym');
+        $date = $this->invoice['issue_date'] ? \Carbon\Carbon::parse($this->invoice['issue_date']) : now();
+        $currentMonth = $date->format('m');
+        $currentYear = $date->format('y');
 
-        $lastInvoice = Invoice::where('invoice_number', 'like', "INV-{$yearMonth}-%")
-            ->orderBy('invoice_number', 'desc')
-            ->first();
+        // Find highest sequence number in selected month/year
+        $invoices = Invoice::whereYear('issue_date', $date->year)
+            ->whereMonth('issue_date', $date->month)
+            ->pluck('invoice_number');
 
-        if ($lastInvoice) {
-            $lastNumber = (int) substr($lastInvoice->invoice_number, -4);
-            $newNumber = $lastNumber + 1;
-        } else {
-            $newNumber = 1;
+        $maxSequence = 0;
+        foreach ($invoices as $invoiceNumber) {
+            if (preg_match('/INV\/(\d+)\/KSN\/\d{2}\.\d{2}/', $invoiceNumber, $matches)) {
+                $sequence = (int) $matches[1];
+                $maxSequence = max($maxSequence, $sequence);
+            }
         }
 
-        return sprintf('INV-%s-%04d', $yearMonth, $newNumber);
+        $nextSequence = $maxSequence + 1;
+
+        return sprintf(
+            'INV/%02d/KSN/%02d.%s',
+            $nextSequence,
+            (int) $currentMonth,
+            $currentYear
+        );
     }
 
     private function parseAmount($value): int

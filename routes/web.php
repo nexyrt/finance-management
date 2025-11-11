@@ -14,6 +14,7 @@ use App\Livewire\Services\Index as ServicesIndex;
 use App\Livewire\Accounts\Index as AccountsIndex;
 use App\Livewire\Transactions\Index as TransactionsIndex;
 use App\Livewire\Invoices\Index as InvoicesIndex;
+use App\Livewire\Invoices\Create as InvoicesCreate;
 use App\Livewire\Invoices\Edit as InvoicesEdit;
 use App\Livewire\RecurringInvoices\Index as RecurringInvoicesIndex;
 use App\Livewire\CashFlow\Index as CashFlowIndex;
@@ -35,6 +36,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::prefix('invoices')->name('invoices.')->group(function () {
         Route::get('/', InvoicesIndex::class)->name('index');
+        Route::get('/create', InvoicesCreate::class)->name('create');
         Route::get('/{invoice}/edit', InvoicesEdit::class)->name('edit');
     });
 
