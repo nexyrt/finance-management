@@ -62,7 +62,8 @@
                         <input type="text" x-model="invoice.invoice_number" :readonly="invoice.number_locked"
                             :class="invoice.number_locked ? 'bg-dark-100 dark:bg-dark-700 cursor-not-allowed' :
                                 'bg-white dark:bg-dark-800'"
-                            class="w-full pl-3 pr-10 py-2 text-sm border border-dark-200 dark:border-dark-600 rounded-lg text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                            class="w-full pl-3 pr-10 py-2 text-sm border border-dark-200 dark:border-dark-600 rounded-lg text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                            placeholder="Auto-generated on save">
                         <button @click="invoice.number_locked = !invoice.number_locked" type="button"
                             class="absolute right-3 top-1/2 -translate-y-1/2 text-dark-400 hover:text-primary-600 transition">
                             <svg x-show="invoice.number_locked" class="w-5 h-5" fill="none" stroke="currentColor"
@@ -645,6 +646,7 @@
             },
             clients: @js($this->clients),
             services: @js($this->services),
+            maxInvoiceSequence: @js($this->maxInvoiceSequence),
             nextId: 1,
             selectOpen: false,
             selectSearch: '',
@@ -659,8 +661,11 @@
                 const t = new Date();
                 const y = t.getFullYear().toString().slice(-2);
                 const m = String(t.getMonth() + 1).padStart(2, '0');
-                // Format: INV/01/KSN/MM.YY - akan di-generate ulang di backend
-                this.invoice.invoice_number = `INV/01/KSN/${m}.${y}`;
+
+                // Generate invoice number dari max sequence
+                const nextSequence = this.maxInvoiceSequence + 1;
+                this.invoice.invoice_number = `INV/${String(nextSequence).padStart(2, '0')}/KSN/${m}.${y}`;
+
                 this.invoice.issue_date = t.toISOString().split('T')[0];
                 this.invoice.due_date = new Date(t.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
             },

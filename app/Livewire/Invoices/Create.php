@@ -83,7 +83,7 @@ class Create extends Component
 
             $totalAmount = max(0, $subtotal - $discountAmount);
 
-            $invoiceNumber = $this->generateInvoiceNumber();
+            $invoiceNumber = $this->invoice['invoice_number'];
 
             $invoice = Invoice::create([
                 'invoice_number' => $invoiceNumber,
@@ -127,13 +127,11 @@ class Create extends Component
         }
     }
 
-    private function generateInvoiceNumber(): string
+    #[Computed]
+    public function maxInvoiceSequence()
     {
-        $date = $this->invoice['issue_date'] ? \Carbon\Carbon::parse($this->invoice['issue_date']) : now();
-        $currentMonth = $date->format('m');
-        $currentYear = $date->format('y');
+        $date = now();
 
-        // Find highest sequence number in selected month/year
         $invoices = Invoice::whereYear('issue_date', $date->year)
             ->whereMonth('issue_date', $date->month)
             ->pluck('invoice_number');
@@ -146,14 +144,7 @@ class Create extends Component
             }
         }
 
-        $nextSequence = $maxSequence + 1;
-
-        return sprintf(
-            'INV/%02d/KSN/%02d.%s',
-            $nextSequence,
-            (int) $currentMonth,
-            $currentYear
-        );
+        return $maxSequence;
     }
 
     private function parseAmount($value): int
