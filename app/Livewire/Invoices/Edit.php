@@ -2,362 +2,248 @@
 
 namespace App\Livewire\Invoices;
 
-use Livewire\Component;
-use App\Models\Invoice;
 use App\Models\Client;
 use App\Models\Service;
-use TallStackUi\Traits\Interactions;
+use App\Models\Invoice;
+use App\Models\InvoiceItem;
+use Illuminate\Support\Facades\DB;
+use Livewire\Attributes\Computed;
+use Livewire\Component;
 
 class Edit extends Component
 {
-    use Interactions;
+    public Invoice $invoice;
 
-    public $invoiceId;
-    public $invoice;
-    public $clients = [];
-    public $services = [];
-
-    // Invoice fields
-    public $invoice_number = '';
-    public $billed_to_id = '';
-    public $issue_date = '';
-    public $due_date = '';
-    public $status = 'draft';
-
-    // Discount fields
-    public $discount_type = 'fixed';
-    public $discount_value = 0;
-    public $discount_reason = '';
-
-    // Items array
-    public $items = [];
-
-    protected $listeners = [
-        'edit-invoice' => 'loadInvoice'
+    // Invoice data - will be synced from Alpine
+    public $invoiceData = [
+        'invoice_number' => '',
+        'client_id' => null,
+        'issue_date' => null,
+        'due_date' => null,
     ];
 
-    public function mount($invoice = null)
-    {
-        if ($invoice) {
-            $this->invoiceId = $invoice;
-            $this->loadInvoice($invoice);
-        }
-        $this->loadOptions();
+    // Items array - will be synced from Alpine
+    public $items = [];
 
-        if (empty($this->items)) {
-            $this->addItem();
-        }
+    // Discount - will be synced from Alpine
+    public $discount = [
+        'type' => 'fixed',
+        'value' => 0,
+        'reason' => '',
+    ];
+
+    public function mount(Invoice $invoice)
+    {
+        $this->invoice = $invoice->load(['items.client']);
     }
 
-    public function loadInvoice($invoiceId = null)
-    {
-        $id = $invoiceId ?? $this->invoiceId;
-        $this->invoice = Invoice::with('items', 'client')->find($id);
-
-        if (!$this->invoice) {
-            abort(404, 'Invoice not found');
-        }
-
-        $this->invoiceId = $this->invoice->id;
-        $this->invoice_number = $this->invoice->invoice_number;
-        $this->billed_to_id = $this->invoice->billed_to_id;
-        $this->issue_date = $this->invoice->issue_date->format('Y-m-d');
-        $this->due_date = $this->invoice->due_date->format('Y-m-d');
-        $this->status = $this->invoice->status;
-
-        $this->discount_type = $this->invoice->discount_type;
-        $this->discount_value = $this->invoice->discount_value;
-        $this->discount_reason = $this->invoice->discount_reason ?? '';
-
-        if ($this->invoice->items->isNotEmpty()) {
-            $this->items = $this->invoice->items->map(function ($item) {
-                return [
-                    'client_id' => $item->client_id,
-                    'service_id' => '',
-                    'service_name' => $item->service_name,
-                    'quantity' => $item->quantity,
-                    'price' => $item->unit_price,
-                    'cogs_amount' => $item->cogs_amount ?? 0,
-                    'is_tax_deposit' => $item->is_tax_deposit ?? false,
-                    'total' => $item->amount
-                ];
-            })->toArray();
-        }
-    }
-
-    public function loadOptions()
-    {
-        $this->clients = Client::where('status', 'Active')
-            ->get()
-            ->map(fn($client) => [
-                'label' => $client->name,
-                'value' => $client->id
-            ])
-            ->toArray();
-
-        $this->services = Service::all()
-            ->map(fn($service) => [
-                'label' => $service->name,
-                'value' => $service->id,
-                'description' => 'Rp ' . number_format($service->price, 0, ',', '.'),
-                'price' => $service->price
-            ])
-            ->toArray();
-    }
-
-    public function addItem()
-    {
-        $this->items[] = [
-            'client_id' => '',
-            'service_id' => '',
-            'service_name' => '',
-            'quantity' => 1,
-            'price' => 0,
-            'cogs_amount' => 0,
-            'is_tax_deposit' => false,
-            'total' => 0
-        ];
-    }
-
-    public function removeItem($index)
-    {
-        if (count($this->items) > 1) {
-            unset($this->items[$index]);
-            $this->items = array_values($this->items);
-        }
-    }
-
-    public function updated($propertyName)
-    {
-        if (str_contains($propertyName, 'items.')) {
-            $parts = explode('.', $propertyName);
-            $index = $parts[1];
-
-            if (in_array($parts[2], ['quantity', 'price'])) {
-                $this->calculateTotal($index);
-            }
-
-            if ($parts[2] === 'service_id') {
-                $this->setServiceDetails($index);
-            }
-
-            if ($parts[2] === 'is_tax_deposit') {
-                $this->handleTaxDepositToggle($index);
-            }
-        }
-    }
-
-    public function handleTaxDepositToggle($index)
-    {
-        if ($this->items[$index]['is_tax_deposit']) {
-            $this->items[$index]['cogs_amount'] = 0;
-            $this->items[$index]['quantity'] = 1;
-        }
-    }
-
-    public function calculateTotal($index)
-    {
-        $qty = (int) $this->items[$index]['quantity'];
-        $price = (int) $this->items[$index]['price'];
-        $this->items[$index]['total'] = $qty * $price;
-    }
-
-    public function setServiceDetails($index)
-    {
-        $serviceId = $this->items[$index]['service_id'];
-        if ($serviceId) {
-            $service = collect($this->services)->firstWhere('value', $serviceId);
-            if ($service) {
-                $this->items[$index]['service_name'] = $service['label'];
-                $this->items[$index]['price'] = $service['price'];
-                $this->calculateTotal($index);
-            }
-        }
-    }
-
-    public function getSubtotalProperty()
-    {
-        return collect($this->items)->sum('total');
-    }
-
-    public function getNetRevenueProperty()
-    {
-        return collect($this->items)
-            ->filter(fn($item) => !($item['is_tax_deposit'] ?? false))
-            ->sum('total');
-    }
-
-    public function getTotalCogsProperty()
-    {
-        return collect($this->items)
-            ->filter(fn($item) => !($item['is_tax_deposit'] ?? false))
-            ->sum('cogs_amount');
-    }
-
-    public function getDiscountAmountProperty()
-    {
-        if ($this->discount_type === 'percentage') {
-            return (int) (($this->subtotal * $this->discount_value) / 10000);
-        } else {
-            return (int) $this->discount_value;
-        }
-    }
-
-    public function getGrandTotalProperty()
-    {
-        return max(0, $this->subtotal - $this->discountAmount);
-    }
-
-    public function getGrossProfitProperty()
-    {
-        return $this->netRevenue - $this->totalCogs - $this->discountAmount;
-    }
-
-    public function getGrossProfitMarginProperty()
-    {
-        if ($this->netRevenue == 0)
-            return 0;
-        $netAfterDiscount = $this->netRevenue - $this->discountAmount;
-        return $netAfterDiscount > 0 ? ($this->grossProfit / $netAfterDiscount) * 100 : 0;
-    }
-
-    public function save()
+    public function update()
     {
         $this->validate([
-            'invoice_number' => 'required|string',
-            'billed_to_id' => 'required|exists:clients,id',
-            'issue_date' => 'required|date',
-            'due_date' => 'required|date|after:issue_date',
+            'invoiceData.client_id' => 'required|exists:clients,id',
+            'invoiceData.issue_date' => 'required|date',
+            'invoiceData.due_date' => 'required|date|after_or_equal:invoiceData.issue_date',
+            'items' => 'required|array|min:1',
             'items.*.client_id' => 'required|exists:clients,id',
-            'items.*.service_name' => 'required|string',
+            'items.*.service_name' => 'required|string|max:255',
             'items.*.quantity' => 'required|integer|min:1',
-            'items.*.price' => 'required|integer|min:0',
-            'items.*.cogs_amount' => 'integer|min:0',
-            'items.*.is_tax_deposit' => 'boolean',
+            'items.*.unit_price' => 'required',
+            'discount.type' => 'in:fixed,percentage',
+            'discount.value' => 'nullable|numeric|min:0',
         ]);
 
         try {
-            \DB::transaction(function () {
-                $this->updateInvoice();
-            });
+            DB::beginTransaction();
 
-            $this->toast()->success('Success', 'Invoice updated successfully!')->flash()->send();
-            return redirect()->route('invoices.index');
+            $parsedItems = [];
+            $subtotal = 0;
+
+            foreach ($this->items as $item) {
+                $unitPrice = $this->parseAmount($item['unit_price']);
+                $quantity = $item['quantity'];
+                $amount = $unitPrice * $quantity;
+                $cogsAmount = $this->parseAmount($item['cogs_amount'] ?? '0');
+                $isTaxDeposit = $item['is_tax_deposit'] ?? false;
+
+                $parsedItems[] = [
+                    'client_id' => $item['client_id'],
+                    'service_name' => $item['service_name'],
+                    'quantity' => $quantity,
+                    'unit_price' => $unitPrice,
+                    'amount' => $amount,
+                    'cogs_amount' => $cogsAmount,
+                    'is_tax_deposit' => $isTaxDeposit,
+                ];
+
+                $subtotal += $amount;
+            }
+
+            // Calculate discount
+            $discountAmount = 0;
+            $discountValue = 0;
+            if ($this->discount['type'] === 'fixed') {
+                $discountValue = $this->discount['value'];
+                $discountAmount = $this->discount['value'];
+            } else {
+                $discountValue = $this->discount['value'];
+                $discountAmount = ($subtotal * $this->discount['value']) / 100;
+            }
+
+            $totalAmount = max(0, $subtotal - $discountAmount);
+
+            // Update invoice
+            $this->invoice->update([
+                'billed_to_id' => $this->invoiceData['client_id'],
+                'subtotal' => $subtotal,
+                'discount_amount' => $discountAmount,
+                'discount_type' => $this->discount['type'] ?? 'fixed',
+                'discount_value' => $discountValue,
+                'discount_reason' => $this->discount['reason'],
+                'total_amount' => $totalAmount,
+                'issue_date' => $this->invoiceData['issue_date'],
+                'due_date' => $this->invoiceData['due_date'],
+            ]);
+
+            // Delete old items and create new ones
+            $this->invoice->items()->delete();
+
+            foreach ($parsedItems as $itemData) {
+                InvoiceItem::create([
+                    'invoice_id' => $this->invoice->id,
+                    'client_id' => $itemData['client_id'],
+                    'service_name' => $itemData['service_name'],
+                    'quantity' => $itemData['quantity'],
+                    'unit_price' => $itemData['unit_price'],
+                    'amount' => $itemData['amount'],
+                    'cogs_amount' => $itemData['cogs_amount'],
+                    'is_tax_deposit' => $itemData['is_tax_deposit'],
+                ]);
+            }
+
+            // Evaluate status based on payments
+            $this->evaluateAndUpdateStatus();
+
+            DB::commit();
+
+            session()->flash('success', "Invoice {$this->invoice->invoice_number} updated successfully!");
+
+            return $this->redirect(route('invoices.index'), navigate: true);
 
         } catch (\Exception $e) {
-            $this->toast()->error('Error', $e->getMessage())->send();
+            DB::rollBack();
+            \Log::error('Failed to update invoice: ' . $e->getMessage());
+            session()->flash('error', 'Failed to update invoice. Please try again.');
         }
     }
 
-    public function updateInvoice()
-    {
-        $oldStatus = $this->invoice->status;
-
-        $this->invoice->update([
-            'invoice_number' => $this->invoice_number,
-            'billed_to_id' => $this->billed_to_id,
-            'subtotal' => $this->subtotal,
-            'discount_type' => $this->discount_type,
-            'discount_value' => $this->discount_value,
-            'discount_amount' => $this->discountAmount,
-            'discount_reason' => $this->discount_reason,
-            'total_amount' => $this->grandTotal,
-            'issue_date' => $this->issue_date,
-            'due_date' => $this->due_date,
-        ]);
-
-        $this->updateInvoiceItems();
-
-        $newStatus = $this->evaluateStatus();
-        $this->invoice->update(['status' => $newStatus]);
-
-        if ($oldStatus !== $newStatus) {
-            $this->logStatusChange($oldStatus, $newStatus);
-        }
-    }
-
-    public function updateInvoiceItems()
-    {
-        $this->invoice->items()->delete();
-
-        foreach ($this->items as $item) {
-            $this->invoice->items()->create([
-                'client_id' => $item['client_id'],
-                'service_name' => $item['service_name'],
-                'quantity' => $item['quantity'],
-                'unit_price' => $item['price'],
-                'amount' => $item['total'],
-                'cogs_amount' => $item['cogs_amount'] ?? 0,
-                'is_tax_deposit' => $item['is_tax_deposit'] ?? false,
-            ]);
-        }
-    }
-
-    public function evaluateStatus()
+    private function evaluateAndUpdateStatus()
     {
         $this->invoice->refresh();
         $totalPaid = $this->invoice->payments()->sum('amount');
         $totalAmount = $this->invoice->total_amount;
         $dueDate = \Carbon\Carbon::parse($this->invoice->due_date);
 
-        // Jika sudah fully paid
+        // Fully paid
         if ($totalPaid >= $totalAmount && $totalPaid > 0) {
-            return 'paid';
+            $this->invoice->update(['status' => 'paid']);
+            return;
         }
 
-        // Jika partial payment
+        // Partial payment
         if ($totalPaid > 0 && $totalPaid < $totalAmount) {
-            return 'partially_paid';
+            $this->invoice->update(['status' => 'partially_paid']);
+            return;
         }
 
-        // Jika belum ada payment
+        // No payment
         if ($totalPaid == 0) {
-            // Pertahankan status draft atau overdue berdasarkan due date
             if ($this->invoice->status === 'draft') {
-                return $dueDate->isPast() ? 'overdue' : 'draft';
+                $this->invoice->update(['status' => $dueDate->isPast() ? 'overdue' : 'draft']);
+            } else {
+                $this->invoice->update(['status' => $dueDate->isPast() ? 'overdue' : $this->invoice->status]);
             }
-            // Untuk status sent yang sudah overdue
-            return $dueDate->isPast() ? 'overdue' : $this->invoice->status;
         }
-
-        return $this->invoice->status;
     }
 
-    public function logStatusChange($oldStatus, $newStatus)
+    private function parseAmount($value): int
     {
-        \Log::info("Invoice {$this->invoice_number} status changed from {$oldStatus} to {$newStatus}");
+        if (empty($value))
+            return 0;
+        return (int) preg_replace('/[^0-9]/', '', $value);
     }
 
-    public function getPreviewStatusProperty()
+    #[Computed]
+    public function existingInvoiceData()
     {
-        if (!$this->invoice || !$this->invoiceId)
-            return 'draft';
-
-        $invoice = Invoice::find($this->invoiceId);
-        if (!$invoice)
-            return 'draft';
-
-        $totalPaid = $invoice->payments()->sum('amount');
-        $newTotalAmount = $this->grandTotal;
-        $newDueDate = \Carbon\Carbon::parse($this->due_date);
-
-        if ($totalPaid >= $newTotalAmount && $totalPaid > 0) {
-            return 'paid';
+        // Load client jika belum di-load
+        if (!$this->invoice->relationLoaded('client')) {
+            $this->invoice->load('client');
         }
 
-        if ($totalPaid > 0 && $totalPaid < $newTotalAmount) {
-            return 'partially_paid';
-        }
+        return [
+            'invoice_number' => $this->invoice->invoice_number,
+            'client_id' => $this->invoice->billed_to_id,
+            'client_name' => $this->invoice->client->name ?? '',
+            'issue_date' => $this->invoice->issue_date->format('Y-m-d'),
+            'due_date' => $this->invoice->due_date->format('Y-m-d'),
+        ];
+    }
 
-        if ($totalPaid == 0) {
-            // Pertahankan draft status
-            if ($invoice->status === 'draft') {
-                return $newDueDate->isPast() ? 'overdue' : 'draft';
-            }
-            return $newDueDate->isPast() ? 'overdue' : $invoice->status;
-        }
+    #[Computed]
+    public function existingItems()
+    {
+        return $this->invoice->items->map(function ($item, $index) {
+            return [
+                'id' => $index + 1,
+                'client_id' => $item->client_id,
+                'client_name' => $item->client->name,
+                'service_name' => $item->service_name,
+                'quantity' => $item->quantity,
+                'unit_price' => number_format($item->unit_price, 0, ',', '.'),
+                'amount' => $item->amount,
+                'cogs_amount' => number_format($item->cogs_amount, 0, ',', '.'),
+                'profit' => $item->amount - $item->cogs_amount,
+                'is_tax_deposit' => $item->is_tax_deposit,
+            ];
+        })->toArray();
+    }
 
-        return $invoice->status;
+    #[Computed]
+    public function existingDiscount()
+    {
+        return [
+            'type' => $this->invoice->discount_type,
+            'value' => $this->invoice->discount_type === 'percentage'
+                ? $this->invoice->discount_value
+                : number_format($this->invoice->discount_value, 0, ',', '.'),
+            'reason' => $this->invoice->discount_reason ?? '',
+        ];
+    }
+
+    #[Computed]
+    public function clients()
+    {
+        return Client::where('status', 'active')
+            ->orderBy('name')
+            ->get(['id', 'name', 'email', 'logo'])
+            ->toArray();
+    }
+
+    #[Computed]
+    public function services()
+    {
+        return Service::orderBy('name')
+            ->get(['id', 'name', 'price', 'type'])
+            ->map(function ($service) {
+                return [
+                    'id' => $service->id,
+                    'name' => $service->name,
+                    'price' => $service->price,
+                    'type' => $service->type,
+                    'formatted_price' => 'Rp ' . number_format($service->price, 0, ',', '.')
+                ];
+            })
+            ->toArray();
     }
 
     public function render()
