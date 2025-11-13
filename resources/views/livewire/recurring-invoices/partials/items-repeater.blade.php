@@ -368,14 +368,3 @@
         </div>
     </div>
 </div>
-
-{{-- Invoice Summary Grid - Half Width Right --}}
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-    {{-- Empty left column on desktop --}}
-    <div class="hidden lg:block"></div>
-
-    {{-- Summary right column --}}
-    <div class="bg-white dark:bg-dark-800 rounded-xl shadow-sm border border-dark-200 dark:border-dark-600 p-6">
-        <h2 class="text-lg font-semibold text-dark-900 dark:text-dark-50 mb-6">Invoice Summary</h2>
-
-        <div class="space-y-4"></div>

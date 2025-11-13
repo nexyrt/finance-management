@@ -180,6 +180,10 @@
             serviceSelectSearch: {},
             saving: false,
             bulkCount: 1,
+            buttonText: {
+                default: 'Save Template',
+                saving: 'Saving...'
+            },
 
             init() {
                 const t = new Date();

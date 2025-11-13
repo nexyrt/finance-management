@@ -3,8 +3,8 @@
 namespace App\Livewire\RecurringInvoices;
 
 use App\Models\Client;
-use App\Models\RecurringTemplate;
 use App\Models\Service;
+use App\Models\RecurringTemplate;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
@@ -22,7 +22,7 @@ class CreateTemplate extends Component
 
     // Items array - will be synced from Alpine
     public $items = [];
-
+    
     // Discount - will be synced from Alpine
     public $discount = [
         'type' => 'fixed',
@@ -113,7 +113,7 @@ class CreateTemplate extends Component
                 'frequency' => $this->template['frequency'],
                 'next_generation_date' => $nextGenerationDate,
                 'status' => 'active',
-                'invoice_template' => json_encode($invoiceTemplate),
+                'invoice_template' => $invoiceTemplate, // Pass array, model cast to JSON
             ]);
 
             DB::commit();
@@ -124,7 +124,7 @@ class CreateTemplate extends Component
 
         } catch (\Exception $e) {
             DB::rollBack();
-            \Log::error('Failed to create recurring template: '.$e->getMessage());
+            \Log::error('Failed to create recurring template: ' . $e->getMessage());
             session()->flash('error', 'Failed to create recurring template. Please try again.');
         }
     }
@@ -133,7 +133,7 @@ class CreateTemplate extends Component
     {
         $date = \Carbon\Carbon::parse($startDate);
 
-        return match ($frequency) {
+        return match($frequency) {
             'monthly' => $date->addMonth(),
             'quarterly' => $date->addMonths(3),
             'semi_annual' => $date->addMonths(6),
@@ -144,10 +144,7 @@ class CreateTemplate extends Component
 
     private function parseAmount($value): int
     {
-        if (empty($value)) {
-            return 0;
-        }
-
+        if (empty($value)) return 0;
         return (int) preg_replace('/[^0-9]/', '', $value);
     }
 
@@ -171,7 +168,7 @@ class CreateTemplate extends Component
                     'name' => $service->name,
                     'price' => $service->price,
                     'type' => $service->type,
-                    'formatted_price' => 'Rp '.number_format($service->price, 0, ',', '.'),
+                    'formatted_price' => 'Rp ' . number_format($service->price, 0, ',', '.')
                 ];
             })
             ->toArray();

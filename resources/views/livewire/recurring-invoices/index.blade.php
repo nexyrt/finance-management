@@ -31,7 +31,7 @@
     </div>
 
     <!-- Tab Navigation -->
-    <x-tab selected="Analytics">
+    <x-tab selected="Templates">
         <x-tab.items tab="Templates">
             <x-slot:right>
                 <x-icon name="document-text" class="w-5 h-5" />
@@ -53,6 +53,5 @@
     </x-tab>
 
     <!-- Modal Components -->
-    <livewire:recurring-invoices.edit-template />
     <livewire:recurring-invoices.view-template />
 </div>

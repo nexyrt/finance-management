@@ -11,6 +11,7 @@ use App\Livewire\Invoices\Create as InvoicesCreate;
 use App\Livewire\Invoices\Edit as InvoicesEdit;
 use App\Livewire\RecurringInvoices\Index as RecurringInvoicesIndex;
 use App\Livewire\RecurringInvoices\CreateTemplate as RecurringInvoicesCreateTemplate;
+use App\Livewire\RecurringInvoices\EditTemplate as RecurringInvoicesEditTemplate;
 use App\Livewire\Reimbursements\Index as ReimbursementIndex;
 use App\Livewire\Services\Index as ServicesIndex;
 use App\Livewire\Settings\Appearance;
@@ -39,12 +40,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/create', InvoicesCreate::class)->name('create');
         Route::get('/{invoice}/edit', InvoicesEdit::class)->name('edit');
     });
-
+    
     Route::prefix('recurring-invoices')->name('recurring-invoices.')->group(function () {
         Route::get('/', RecurringInvoicesIndex::class)->name('index');
-        Route::get('/create-template', RecurringInvoicesCreateTemplate::class)->name('create-template');
-
+        Route::get('/template/create', RecurringInvoicesCreateTemplate::class)->name('template.create');
+        Route::get('/template/{template}/edit', RecurringInvoicesEditTemplate::class)->name('template.edit');
     });
+
     Route::get('/cash-flow', CashFlowIndex::class)->name('cash-flow.index');
     Route::get('/reimbursements', ReimbursementIndex::class)->middleware('can:view reimbursements')->name('reimbursements.index');
 
@@ -59,13 +61,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
             $pdf = $service->generateSingleInvoicePdf($invoice, $dpAmount, $pelunasanAmount);
 
             $invoiceType = $dpAmount ? 'DP-' : ($pelunasanAmount ? 'Pelunasan-' : '');
-            $filename = $invoiceType.'Invoice-'.str_replace(['/', '\\', ':', '*', '?', '"', '<', '>', '|'], '-', $invoice->invoice_number).'.pdf';
+            $filename = $invoiceType . 'Invoice-' . str_replace(['/', '\\', ':', '*', '?', '"', '<', '>', '|'], '-', $invoice->invoice_number) . '.pdf';
 
             return response()->streamDownload(function () use ($pdf) {
                 echo $pdf->output();
             }, $filename, [
                 'Content-Type' => 'application/pdf',
-                'Content-Disposition' => 'attachment; filename="'.$filename.'"',
+                'Content-Disposition' => 'attachment; filename="' . $filename . '"',
             ]);
         })->name('download');
 
@@ -99,4 +101,4 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/test', TestingPage::class)->name('test');
 });
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';

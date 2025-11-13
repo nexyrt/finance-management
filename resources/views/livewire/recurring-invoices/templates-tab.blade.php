@@ -3,7 +3,7 @@
     <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <x-input wire:model.live.debounce.300ms="search" placeholder="Search templates or clients..."
             icon="magnifying-glass" class="h-full py-3" />
-        <x-button size="sm" href="{{ route('recurring-invoices.create-template') }}" wire:navigate title="Create"
+        <x-button size="sm" href="{{ route('recurring-invoices.template.create') }}" wire:navigate title="Create"
             text="Create Template" prefix="true">
             <x-slot:left>
                 <x-icon name="plus" class="w-4 h-4" />
@@ -97,9 +97,8 @@
                             class="flex-1">
                             <x-icon name="eye" class="w-4 h-4" />
                         </x-button>
-                        <x-button wire:click="editTemplate({{ $template->id }})"
-                            loading="editTemplate({{ $template->id }})" color="green" size="sm" outline
-                            class="flex-1">
+                        <x-button href="{{ route('recurring-invoices.template.edit', $template->id) }}" wire:navigate
+                            color="green" size="sm" outline class="flex-1">
                             <x-icon name="pencil" class="w-4 h-4" />
                         </x-button>
                         <livewire:recurring-invoices.delete-template :template="$template" :key="uniqid()"
@@ -131,7 +130,7 @@
                         @endif
                     </p>
                     @if (!$search)
-                        <x-button size="sm" href="{{ route('recurring-invoices.create-template') }}" wire:navigate
+                        <x-button size="sm" href="{{ route('recurring-invoices.template.create') }}" wire:navigate
                             title="Create" text="Create Template" prefix="true">
                             <x-slot:left>
                                 <x-icon name="plus" class="w-4 h-4" />
