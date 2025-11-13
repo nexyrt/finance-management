@@ -191,8 +191,7 @@
                         loading="viewInvoice({{ $row->id }})" color="blue" size="sm" icon="eye" />
 
                     @if ($row->status === 'draft')
-                        <x-button.circle wire:click="editInvoice({{ $row->id }})"
-                            loading="editInvoice({{ $row->id }})" color="green" size="sm" icon="pencil" />
+                        <x-button.circle href="{{ route('recurring-invoices.monthly.edit', $row->id) }}" wire:navigate color="green" size="sm" icon="pencil" />
                         <x-button.circle wire:click="publishInvoice({{ $row->id }})"
                             loading="publishInvoice({{ $row->id }})" color="primary" size="sm"
                             icon="arrow-up-tray" />
@@ -208,5 +207,4 @@
     <!-- Include Child Components -->
     <livewire:recurring-invoices.monthly.view-invoice />
     <livewire:invoices.show />
-    <livewire:recurring-invoices.monthly.edit-invoice @invoice-updated="$refresh" />
 </div>

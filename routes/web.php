@@ -5,21 +5,30 @@ use App\Livewire\Admin\RoleManagement;
 use App\Livewire\CashFlow\Index as CashFlowIndex;
 use App\Livewire\Clients\Index as ClientsIndex;
 use App\Livewire\Dashboard;
+
 // Livewire Components
 use App\Livewire\Invoices\Index as InvoicesIndex;
 use App\Livewire\Invoices\Create as InvoicesCreate;
 use App\Livewire\Invoices\Edit as InvoicesEdit;
+
 use App\Livewire\RecurringInvoices\Index as RecurringInvoicesIndex;
 use App\Livewire\RecurringInvoices\CreateTemplate as RecurringInvoicesCreateTemplate;
 use App\Livewire\RecurringInvoices\EditTemplate as RecurringInvoicesEditTemplate;
+
 use App\Livewire\Reimbursements\Index as ReimbursementIndex;
+
 use App\Livewire\Services\Index as ServicesIndex;
+
 use App\Livewire\Settings\Appearance;
 use App\Livewire\Settings\Password;
 use App\Livewire\Settings\Profile;
-use App\Livewire\TestingPage;
+
 use App\Livewire\Transactions\Index as TransactionsIndex;
+
 use App\Livewire\TransactionsCategories\Index as TransactionsCategoriesIndex;
+
+use App\Livewire\TestingPage;
+
 use App\Models\Invoice;
 use App\Services\InvoicePrintService;
 use Illuminate\Http\Request;
@@ -40,11 +49,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/create', InvoicesCreate::class)->name('create');
         Route::get('/{invoice}/edit', InvoicesEdit::class)->name('edit');
     });
-    
+
     Route::prefix('recurring-invoices')->name('recurring-invoices.')->group(function () {
         Route::get('/', RecurringInvoicesIndex::class)->name('index');
         Route::get('/template/create', RecurringInvoicesCreateTemplate::class)->name('template.create');
         Route::get('/template/{template}/edit', RecurringInvoicesEditTemplate::class)->name('template.edit');
+        Route::get('/monthly/{invoice}/edit', \App\Livewire\RecurringInvoices\Monthly\EditInvoice::class)->name('monthly.edit');
     });
 
     Route::get('/cash-flow', CashFlowIndex::class)->name('cash-flow.index');
