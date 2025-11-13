@@ -3,7 +3,12 @@
     <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <x-input wire:model.live.debounce.300ms="search" placeholder="Search templates or clients..."
             icon="magnifying-glass" class="h-full py-3" />
-        <livewire:recurring-invoices.create-template />
+        <x-button size="sm" href="{{ route('recurring-invoices.create-template') }}" wire:navigate title="Create"
+            text="Create Template" prefix="true">
+            <x-slot:left>
+                <x-icon name="plus" class="w-4 h-4" />
+            </x-slot:left>
+        </x-button>
     </div>
 
     <!-- Templates Grid -->
@@ -126,7 +131,12 @@
                         @endif
                     </p>
                     @if (!$search)
-                        <livewire:recurring-invoices.create-template />
+                        <x-button size="sm" href="{{ route('recurring-invoices.create-template') }}" wire:navigate
+                            title="Create" text="Create Template" prefix="true">
+                            <x-slot:left>
+                                <x-icon name="plus" class="w-4 h-4" />
+                            </x-slot:left>
+                        </x-button>
                     @endif
                 </div>
             </div>
