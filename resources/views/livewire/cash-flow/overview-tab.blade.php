@@ -63,34 +63,27 @@
     <div class="flex justify-center">
         <div class="inline-flex gap-2 p-1 bg-zinc-100 dark:bg-dark-700 rounded-lg">
             <button wire:click="$set('period', 'this_month')"
-                class="px-4 py-2 text-sm font-medium rounded-md transition-colors"
-                :class="$wire.period === 'this_month' ? 'bg-blue-600 text-white shadow-sm' :
-                    'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-dark-600'">
+                class="px-4 py-2 text-sm font-medium rounded-md transition-colors {{ $period === 'this_month' ? 'bg-blue-600 text-white shadow-sm' : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-dark-600' }}">
                 This Month
             </button>
             <button wire:click="$set('period', 'last_3_months')"
-                class="px-4 py-2 text-sm font-medium rounded-md transition-colors"
-                :class="$wire.period === 'last_3_months' ? 'bg-blue-600 text-white shadow-sm' :
-                    'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-dark-600'">
+                class="px-4 py-2 text-sm font-medium rounded-md transition-colors {{ $period === 'last_3_months' ? 'bg-blue-600 text-white shadow-sm' : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-dark-600' }}">
                 Last 3 Months
             </button>
             <button wire:click="$set('period', 'last_year')"
-                class="px-4 py-2 text-sm font-medium rounded-md transition-colors"
-                :class="$wire.period === 'last_year' ? 'bg-blue-600 text-white shadow-sm' :
-                    'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-dark-600'">
+                class="px-4 py-2 text-sm font-medium rounded-md transition-colors {{ $period === 'last_year' ? 'bg-blue-600 text-white shadow-sm' : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-dark-600' }}">
                 Last Year
             </button>
         </div>
     </div>
 
     {{-- Charts Container --}}
-    <div x-data="cashFlowCharts()" x-init="initCharts(@js($this->monthlyTrendData), @js($this->expenseByCategoryData))" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {{-- Monthly Trend --}}
         <div class="bg-white dark:bg-dark-800 border border-zinc-200 dark:border-dark-600 rounded-xl p-6">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-6">Income vs Expense Trend</h3>
             <div class="h-80">
-                <canvas x-ref="trendChart"></canvas>
+                <canvas id="trendChart"></canvas>
             </div>
         </div>
 
@@ -98,7 +91,7 @@
         <div class="bg-white dark:bg-dark-800 border border-zinc-200 dark:border-dark-600 rounded-xl p-6">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-6">Expenses by Category</h3>
             <div class="h-80">
-                <canvas x-ref="categoryChart"></canvas>
+                <canvas id="categoryChart"></canvas>
             </div>
         </div>
     </div>
@@ -137,11 +130,12 @@
                                 4 => 'bg-gradient-to-r from-blue-500 to-blue-600',
                                 default => 'bg-gradient-to-r from-gray-500 to-gray-600',
                             } }}"
-                                style="width: {{ ($expense['total'] / $this->stats['total_expenses']) * 100 }}%"></div>
+                                style="width: {{ $this->stats['total_expenses'] > 0 ? ($expense['total'] / $this->stats['total_expenses']) * 100 : 0 }}%">
+                            </div>
                         </div>
                     </div>
                     <div class="flex-shrink-0 text-xs text-gray-500 dark:text-gray-400">
-                        {{ number_format(($expense['total'] / $this->stats['total_expenses']) * 100, 1) }}%
+                        {{ $this->stats['total_expenses'] > 0 ? number_format(($expense['total'] / $this->stats['total_expenses']) * 100, 1) : 0 }}%
                     </div>
                 </div>
             @empty
@@ -151,55 +145,38 @@
     </div>
 </div>
 
-@assets
+@push('scripts')
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
-@endassets
-
-@script
     <script>
-        Alpine.data('cashFlowCharts', () => ({
-            trendChart: null,
-            categoryChart: null,
-            themeObserver: null,
+        function setupCashFlowCharts() {
+            let trendChart, categoryChart;
 
-            initCharts(monthlyData, categoryData) {
-                this.$nextTick(() => {
-                    this.renderTrendChart(monthlyData);
-                    this.renderCategoryChart(categoryData);
-                    this.watchThemeChanges();
-                    this.listenForUpdates();
-                });
-            },
+            function isDarkMode() {
+                return document.documentElement.classList.contains('dark');
+            }
 
-            listenForUpdates() {
-                Livewire.on('charts-updated', (data) => {
-                    this.renderTrendChart(data[0].monthlyData);
-                    this.renderCategoryChart(data[0].categoryData);
-                });
-            },
+            function getThemeColors() {
+                const isDark = isDarkMode();
+                return {
+                    grid: isDark ? '#374151' : '#e5e7eb',
+                    text: isDark ? '#d1d5db' : '#6b7280',
+                    border: isDark ? '#4b5563' : '#d1d5db',
+                    tooltipBg: isDark ? '#1f2937' : '#ffffff',
+                    tooltipTitle: isDark ? '#ffffff' : '#111827',
+                    tooltipBody: isDark ? '#e5e7eb' : '#374151',
+                };
+            }
 
-            watchThemeChanges() {
-                this.themeObserver = new MutationObserver(() => {
-                    if (this.trendChart && this.categoryChart) {
-                        this.updateChartTheme(this.trendChart);
-                        this.updateChartTheme(this.categoryChart);
-                    }
-                });
+            function createTrendChart() {
+                const ctx = document.getElementById('trendChart');
+                if (!ctx) return;
 
-                this.themeObserver.observe(document.documentElement, {
-                    attributes: true,
-                    attributeFilter: ['class']
-                });
-            },
+                if (trendChart) trendChart.destroy();
 
-            renderTrendChart(data) {
-                if (this.trendChart) {
-                    this.trendChart.destroy();
-                }
+                const colors = getThemeColors();
+                const data = @json($this->monthlyTrendData);
 
-                const colors = this.getThemeColors();
-
-                this.trendChart = new Chart(this.$refs.trendChart, {
+                trendChart = new Chart(ctx, {
                     type: 'line',
                     data: {
                         labels: data.map(d => d.month),
@@ -211,6 +188,10 @@
                             borderWidth: 3,
                             fill: true,
                             tension: 0.4,
+                            pointBackgroundColor: 'rgb(34, 197, 94)',
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2,
+                            pointRadius: 4,
                         }, {
                             label: 'Expenses',
                             data: data.map(d => d.expenses),
@@ -219,6 +200,10 @@
                             borderWidth: 3,
                             fill: true,
                             tension: 0.4,
+                            pointBackgroundColor: 'rgb(239, 68, 68)',
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2,
+                            pointRadius: 4,
                         }]
                     },
                     options: {
@@ -227,7 +212,10 @@
                         plugins: {
                             legend: {
                                 labels: {
-                                    color: colors.text
+                                    color: colors.text,
+                                    font: {
+                                        size: 12
+                                    }
                                 }
                             },
                             tooltip: {
@@ -244,8 +232,16 @@
                         },
                         scales: {
                             y: {
+                                beginAtZero: true,
                                 ticks: {
-                                    color: colors.text
+                                    color: colors.text,
+                                    callback: function(value) {
+                                        if (value >= 1000000000) return 'Rp ' + (value / 1000000000).toFixed(
+                                            1) + 'M';
+                                        if (value >= 1000000) return 'Rp ' + (value / 1000000).toFixed(0) +
+                                        'Jt';
+                                        return 'Rp ' + (value / 1000).toFixed(0) + 'Rb';
+                                    }
                                 },
                                 grid: {
                                     color: colors.grid
@@ -256,22 +252,24 @@
                                     color: colors.text
                                 },
                                 grid: {
-                                    color: colors.grid
+                                    display: false
                                 }
                             }
                         }
                     }
                 });
-            },
+            }
 
-            renderCategoryChart(data) {
-                if (this.categoryChart) {
-                    this.categoryChart.destroy();
-                }
+            function createCategoryChart() {
+                const ctx = document.getElementById('categoryChart');
+                if (!ctx) return;
 
-                const colors = this.getThemeColors();
+                if (categoryChart) categoryChart.destroy();
 
-                this.categoryChart = new Chart(this.$refs.categoryChart, {
+                const colors = getThemeColors();
+                const data = @json($this->expenseByCategoryData);
+
+                categoryChart = new Chart(ctx, {
                     type: 'bar',
                     data: {
                         labels: data.map(d => d.category),
@@ -288,6 +286,7 @@
                                 'rgba(236, 72, 153, 0.8)',
                             ],
                             borderWidth: 0,
+                            borderRadius: 6
                         }]
                     },
                     options: {
@@ -310,8 +309,16 @@
                         },
                         scales: {
                             y: {
+                                beginAtZero: true,
                                 ticks: {
-                                    color: colors.text
+                                    color: colors.text,
+                                    callback: function(value) {
+                                        if (value >= 1000000000) return 'Rp ' + (value / 1000000000).toFixed(
+                                            1) + 'M';
+                                        if (value >= 1000000) return 'Rp ' + (value / 1000000).toFixed(0) +
+                                        'Jt';
+                                        return 'Rp ' + (value / 1000).toFixed(0) + 'Rb';
+                                    }
                                 },
                                 grid: {
                                     color: colors.grid
@@ -328,42 +335,44 @@
                         }
                     }
                 });
-            },
-
-            updateChartTheme(chart) {
-                const colors = this.getThemeColors();
-
-                chart.options.plugins.legend.labels.color = colors.text;
-                chart.options.plugins.tooltip.backgroundColor = colors.tooltipBg;
-                chart.options.plugins.tooltip.titleColor = colors.tooltipTitle;
-                chart.options.plugins.tooltip.bodyColor = colors.tooltipBody;
-                chart.options.plugins.tooltip.borderColor = colors.border;
-
-                chart.options.scales.y.ticks.color = colors.text;
-                chart.options.scales.y.grid.color = colors.grid;
-                chart.options.scales.x.ticks.color = colors.text;
-                chart.options.scales.x.grid.color = colors.grid;
-
-                chart.update();
-            },
-
-            getThemeColors() {
-                const isDark = document.documentElement.classList.contains('dark');
-                return {
-                    grid: isDark ? '#374151' : '#e5e7eb',
-                    text: isDark ? '#d1d5db' : '#6b7280',
-                    border: isDark ? '#4b5563' : '#d1d5db',
-                    tooltipBg: isDark ? '#1f2937' : '#ffffff',
-                    tooltipTitle: isDark ? '#ffffff' : '#111827',
-                    tooltipBody: isDark ? '#e5e7eb' : '#374151',
-                };
-            },
-
-            destroy() {
-                if (this.trendChart) this.trendChart.destroy();
-                if (this.categoryChart) this.categoryChart.destroy();
-                if (this.themeObserver) this.themeObserver.disconnect();
             }
-        }));
+
+            // Initialize
+            createTrendChart();
+            createCategoryChart();
+
+            // Listen for Livewire updates (when period changes)
+            Livewire.on('charts-updated', (data) => {
+                createTrendChart();
+                createCategoryChart();
+            });
+
+            // Dark mode observer
+            const observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    if (mutation.attributeName === 'class') {
+                        setTimeout(() => {
+                            createTrendChart();
+                            createCategoryChart();
+                        }, 100);
+                    }
+                });
+            });
+
+            observer.observe(document.documentElement, {
+                attributes: true,
+                attributeFilter: ['class']
+            });
+        }
+
+        // Run on initial load
+        document.addEventListener('DOMContentLoaded', () => {
+            setupCashFlowCharts();
+        });
+
+        // Run on every wire:navigate
+        document.addEventListener('livewire:navigated', () => {
+            setupCashFlowCharts();
+        });
     </script>
-@endscript
+@endpush
