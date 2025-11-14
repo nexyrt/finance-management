@@ -221,7 +221,7 @@
 @push('scripts')
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        function setupRevenueChart() {
             let revenueChart;
 
             function isDarkMode() {
@@ -312,28 +312,26 @@
             const initialChartData = @json($this->revenueChart);
             createChart(initialChartData);
 
+            // Listen for Livewire updates
             document.addEventListener('chartDataUpdated', event => {
                 const chartData = event.detail[0].chartData;
                 createChart(chartData);
             });
 
+            // Dark mode observer
             const observer = new MutationObserver(function(mutations) {
                 mutations.forEach(function(mutation) {
-                    if (mutation.attributeName === 'class') {
-                        if (revenueChart) {
-                            const currentData = revenueChart.data.datasets[0].data;
-                            const currentLabels = revenueChart.data.labels;
+                    if (mutation.attributeName === 'class' && revenueChart) {
+                        const currentData = revenueChart.data.datasets[0].data;
+                        const currentLabels = revenueChart.data.labels;
 
-                            setTimeout(() => {
-                                createChart(currentLabels.map((label, index) => ({
-                                    [Object.keys(
-                                            @json($this->revenueChart)[0]
-                                            )[0]
-                                    ]: label,
-                                    revenue: currentData[index]
-                                })));
-                            }, 100);
-                        }
+                        setTimeout(() => {
+                            createChart(currentLabels.map((label, index) => ({
+                                [Object.keys(@json($this->revenueChart)[0])[
+                                0]]: label,
+                                revenue: currentData[index]
+                            })));
+                        }, 100);
                     }
                 });
             });
@@ -343,11 +341,22 @@
                 attributeFilter: ['class']
             });
 
+            // Cleanup on page leave
             window.addEventListener('beforeunload', () => {
                 if (revenueChart) {
                     revenueChart.destroy();
                 }
             });
+        }
+
+        // Run on initial load
+        document.addEventListener('DOMContentLoaded', () => {
+            setupRevenueChart();
+        });
+
+        // Run on every wire:navigate
+        document.addEventListener('livewire:navigated', () => {
+            setupRevenueChart();
         });
     </script>
 @endpush

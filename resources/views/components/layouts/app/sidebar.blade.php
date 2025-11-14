@@ -5,7 +5,7 @@
     @include('partials.head')
 </head>
 
-<body class="min-h-screen bg-white dark:bg-zinc-800">
+<body class="min-h-screen bg-white dark:bg-dark-900">
     <x-toast />
     <x-dialog />
 
@@ -58,7 +58,7 @@
 
                     @can('view recurring-invoices')
                         <flux:navlist.item icon="arrow-path" :href="route('recurring-invoices.index')"
-                            :current="request()->routeIs('recurring-invoices.*')" class="py-5">
+                            :current="request()->routeIs('recurring-invoices.*')" wire:navigate class="py-5">
                             {{ __('Recurring Invoices') }}
                         </flux:navlist.item>
                     @endcan
@@ -76,7 +76,7 @@
             @can('view categories')
                 <flux:navlist.item icon="tag" :href="route('transaction-categories.index')"
                     :current="request()->routeIs('transaction-categories.*')" wire:navigate class="py-5">
-                    {{ __('Transaction Categories') }}
+                    {{ __('Categories') }}
                 </flux:navlist.item>
             @endcan
 
