@@ -295,7 +295,7 @@
 </div>
 
 <script>
-    document.addEventListener('livewire:init', () => {
+    function setupPrintListeners() {
         Livewire.on('execute-print', (data) => {
             const {
                 previewUrl,
@@ -332,5 +332,10 @@
             }
             downloadNext();
         });
+    }
+
+    // Setup ulang setiap navigate
+    document.addEventListener('livewire:navigated', () => {
+        setupPrintListeners();
     });
 </script>

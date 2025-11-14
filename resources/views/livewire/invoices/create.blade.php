@@ -667,7 +667,7 @@
                 this.invoice.invoice_number = `INV/${String(nextSequence).padStart(2, '0')}/KSN/${m}.${y}`;
 
                 this.invoice.issue_date = t.toISOString().split('T')[0];
-                this.invoice.due_date = new Date(t.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+                this.invoice.due_date = new Date(t.getTime() + 5 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
             },
 
             get filteredClients() {
