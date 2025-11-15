@@ -232,8 +232,10 @@
                 const ctx = document.getElementById('revenueChart');
                 if (!ctx) return;
 
-                if (revenueChart) {
-                    revenueChart.destroy();
+                // Destroy existing chart instance
+                const existingChart = Chart.getChart(ctx);
+                if (existingChart) {
+                    existingChart.destroy();
                 }
 
                 const isDark = isDarkMode();
@@ -349,12 +351,7 @@
             });
         }
 
-        // Run on initial load
-        document.addEventListener('DOMContentLoaded', () => {
-            setupRevenueChart();
-        });
-
-        // Run on every wire:navigate
+        // Only use livewire:navigated
         document.addEventListener('livewire:navigated', () => {
             setupRevenueChart();
         });
