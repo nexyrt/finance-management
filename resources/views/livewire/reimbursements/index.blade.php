@@ -24,9 +24,9 @@
     </div>
 
     {{-- Tab Container --}}
-    <x-tab selected="my-requests">
+    <x-tab selected="My Requests">
         {{-- My Requests Tab --}}
-        <x-tab.items tab="my-requests">
+        <x-tab.items tab="My Requests">
             <x-slot:left>
                 <x-icon name="user" class="w-5 h-5" />
             </x-slot:left>
@@ -38,7 +38,7 @@
 
         {{-- All Requests Tab (Finance Only) --}}
         @if ($this->canViewAllRequests())
-            <x-tab.items tab="all-requests">
+            <x-tab.items tab="All Requests">
                 <x-slot:left>
                     <x-icon name="users" class="w-5 h-5" />
                 </x-slot:left>

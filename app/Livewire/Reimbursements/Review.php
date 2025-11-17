@@ -8,23 +8,19 @@ use App\Models\TransactionCategory;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
-use Livewire\Attributes\Renderless;
 use Livewire\Component;
 
 class Review extends Component
 {
     use Alert;
 
-    // Modal Control
     public bool $modal = false;
+    public $reimbursementId = null;
+    public $action = null; // 'approve' or 'reject'
 
-    // Reimbursement ID
-    public ?int $reimbursementId = null;
-
-    // Review Form
-    public $decision = 'approve'; // 'approve' or 'reject'
-    public ?int $categoryId = null; // Transaction category (required if approve)
-    public ?string $notes = null;
+    // Form fields
+    public $categoryId = null;
+    public $reviewNotes = null;
 
     public function render(): View
     {
@@ -34,129 +30,95 @@ class Review extends Component
     #[On('review::reimbursement')]
     public function load(int $id): void
     {
-        $reimbursement = Reimbursement::findOrFail($id);
-
-        // Authorization check
         if (!auth()->user()->can('approve reimbursements')) {
             $this->error('Unauthorized action');
             return;
         }
 
+        $reimbursement = Reimbursement::findOrFail($id);
+
         if (!$reimbursement->canReview()) {
-            $this->error('This reimbursement cannot be reviewed');
+            $this->error('Reimbursement harus berstatus Pending untuk direview');
             return;
         }
 
         $this->reimbursementId = $id;
-        $this->decision = 'approve'; // Default to approve
-        $this->reset(['categoryId', 'notes']);
-
+        $this->action = null;
+        $this->reset(['categoryId', 'reviewNotes']);
         $this->modal = true;
     }
 
     #[Computed]
     public function reimbursement(): ?Reimbursement
     {
-        return $this->reimbursementId 
+        return $this->reimbursementId
             ? Reimbursement::with('user')->find($this->reimbursementId)
             : null;
     }
 
     #[Computed]
-    public function transactionCategories(): array
+    public function expenseCategories(): array
     {
-        // Get expense categories (parent + children)
-        return TransactionCategory::ofType('expense')
-            ->parents()
-            ->with('children')
+        return TransactionCategory::where('type', 'expense')
             ->orderBy('label')
             ->get()
-            ->flatMap(function ($parent) {
-                $categories = [];
-                
-                // Add parent category
-                $categories[] = [
-                    'label' => $parent->label,
-                    'value' => $parent->id,
-                ];
-                
-                // Add children categories with indentation
-                foreach ($parent->children as $child) {
-                    $categories[] = [
-                        'label' => '  └─ ' . $child->label,
-                        'value' => $child->id,
-                    ];
-                }
-                
-                return $categories;
-            })
+            ->map(fn($cat) => ['label' => $cat->label, 'value' => $cat->id])
             ->toArray();
     }
 
     public function rules(): array
     {
-        return [
-            'decision' => ['required', 'in:approve,reject'],
-            'categoryId' => ['required_if:decision,approve', 'nullable', 'exists:transaction_categories,id'],
-            'notes' => ['nullable', 'string', 'max:500'],
-        ];
+        $rules = ['reviewNotes' => ['nullable', 'string', 'max:500']];
+
+        if ($this->action === 'approve') {
+            $rules['categoryId'] = ['required', 'exists:transaction_categories,id'];
+        }
+
+        return $rules;
     }
 
     public function messages(): array
     {
         return [
-            'categoryId.required_if' => 'Transaction category is required when approving',
-            'notes.max' => 'Notes cannot exceed 500 characters',
+            'categoryId.required' => 'Pilih kategori transaksi',
+            'categoryId.exists' => 'Kategori tidak valid',
         ];
     }
 
-    public function submitReview(): void
+    public function approveReimbursement(): void
+    {
+        $this->action = 'approve';
+        $this->processReview();
+    }
+
+    public function rejectReimbursement(): void
+    {
+        $this->action = 'reject';
+        $this->processReview();
+    }
+
+    private function processReview(): void
     {
         $validated = $this->validate();
 
         $reimbursement = Reimbursement::findOrFail($this->reimbursementId);
 
         if (!$reimbursement->canReview()) {
-            $this->error('This reimbursement cannot be reviewed');
+            $this->error('Reimbursement tidak dapat direview');
             return;
         }
 
-        if ($validated['decision'] === 'approve') {
-            // Approve with category
-            $category = TransactionCategory::findOrFail($validated['categoryId']);
-            
-            $notes = $validated['notes'] 
-                ? $validated['notes'] . " (Category: {$category->label})" 
-                : "Approved - Category: {$category->label}";
-
-            $reimbursement->approve(auth()->id(), $notes);
-            
-            $this->dispatch('reviewed');
-            $this->success('Reimbursement approved successfully');
+        if ($this->action === 'approve') {
+            // Set category then approve
+            $reimbursement->update(['category_id' => $validated['categoryId']]);
+            $reimbursement->approve(auth()->id(), $validated['reviewNotes']);
+            $this->success('Reimbursement disetujui');
         } else {
-            // Reject
-            if (empty($validated['notes'])) {
-                $this->error('Please provide a reason for rejection');
-                return;
-            }
-
-            $reimbursement->reject(auth()->id(), $validated['notes']);
-            
-            $this->dispatch('reviewed');
-            $this->warning('Reimbursement rejected');
+            $reimbursement->reject(auth()->id(), $validated['reviewNotes']);
+            $this->success('Reimbursement ditolak');
         }
 
+        $this->dispatch('reviewed');
         $this->reset();
-    }
-
-    // Quick actions
-    public function approveQuick(): void
-    {
-        $this->decision = 'approve';
-    }
-
-    public function rejectQuick(): void
-    {
-        $this->decision = 'reject';
     }
 }

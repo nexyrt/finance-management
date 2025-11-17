@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Storage;
 
 class Reimbursement extends Model
@@ -16,24 +17,24 @@ class Reimbursement extends Model
         'title',
         'description',
         'amount',
+        'amount_paid',
         'expense_date',
-        'category',
+        'category_input', // User's text input
+        'category_id', // FK set by finance
         'attachment_path',
         'attachment_name',
         'status',
+        'payment_status',
         'reviewed_by',
         'reviewed_at',
         'review_notes',
-        'paid_by',
-        'paid_at',
-        'bank_transaction_id',
     ];
 
     protected $casts = [
         'expense_date' => 'date',
         'reviewed_at' => 'datetime',
-        'paid_at' => 'datetime',
         'amount' => 'integer',
+        'amount_paid' => 'integer',
     ];
 
     // =====================================
@@ -50,14 +51,14 @@ class Reimbursement extends Model
         return $this->belongsTo(User::class, 'reviewed_by');
     }
 
-    public function payer(): BelongsTo
+    public function category(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'paid_by');
+        return $this->belongsTo(TransactionCategory::class);
     }
 
-    public function bankTransaction(): BelongsTo
+    public function payments(): HasMany
     {
-        return $this->belongsTo(BankTransaction::class);
+        return $this->hasMany(ReimbursementPayment::class);
     }
 
     // =====================================
@@ -86,7 +87,7 @@ class Reimbursement extends Model
 
     public function scopePaid($query)
     {
-        return $query->where('status', 'paid');
+        return $query->where('payment_status', 'paid');
     }
 
     public function scopeRejected($query)
@@ -94,9 +95,9 @@ class Reimbursement extends Model
         return $query->where('status', 'rejected');
     }
 
-    public function scopeByCategory($query, string $category)
+    public function scopeByCategory($query, int $categoryId)
     {
-        return $query->where('category', $category);
+        return $query->where('category_id', $categoryId);
     }
 
     public function scopeDateBetween($query, $startDate, $endDate)
@@ -114,6 +115,30 @@ class Reimbursement extends Model
     public function scopeYear($query, int $year)
     {
         return $query->whereYear('expense_date', $year);
+    }
+
+    // =====================================
+    // PAYMENT STATUS CHECKERS
+    // =====================================
+
+    public function isFullyPaid(): bool
+    {
+        return $this->amount_paid >= $this->amount;
+    }
+
+    public function hasPartialPayment(): bool
+    {
+        return $this->amount_paid > 0 && $this->amount_paid < $this->amount;
+    }
+
+    public function isUnpaid(): bool
+    {
+        return $this->amount_paid == 0;
+    }
+
+    public function getAmountRemainingAttribute(): int
+    {
+        return $this->amount - $this->amount_paid;
     }
 
     // =====================================
@@ -140,11 +165,6 @@ class Reimbursement extends Model
         return $this->status === 'rejected';
     }
 
-    public function isPaid(): bool
-    {
-        return $this->status === 'paid';
-    }
-
     public function canEdit(): bool
     {
         return in_array($this->status, ['draft', 'rejected']);
@@ -157,7 +177,7 @@ class Reimbursement extends Model
 
     public function canSubmit(): bool
     {
-        return in_array($this->status, ['draft', 'rejected']);
+        return $this->status === 'draft';
     }
 
     public function canReview(): bool
@@ -167,7 +187,10 @@ class Reimbursement extends Model
 
     public function canPay(): bool
     {
-        return $this->status === 'approved';
+        // Can pay if approved, has category assigned, and not fully paid yet
+        return $this->status === 'approved'
+            && $this->category_id !== null
+            && !$this->isFullyPaid();
     }
 
     // =====================================
@@ -211,18 +234,33 @@ class Reimbursement extends Model
         ]);
     }
 
-    public function markAsPaid(int $payerId, int $bankTransactionId): bool
+    public function recordPayment(int $amount, int $bankTransactionId, int $payerId, string $paymentDate, ?string $notes = null): bool
     {
         if (!$this->canPay()) {
             return false;
         }
 
-        return $this->update([
-            'status' => 'paid',
-            'paid_by' => $payerId,
-            'paid_at' => now(),
+        // Create payment record
+        $this->payments()->create([
             'bank_transaction_id' => $bankTransactionId,
+            'amount' => $amount,
+            'payment_date' => $paymentDate,
+            'notes' => $notes,
+            'paid_by' => $payerId,
         ]);
+
+        // Update total paid
+        $this->amount_paid += $amount;
+
+        // Update payment status
+        if ($this->isFullyPaid()) {
+            $this->payment_status = 'paid';
+            $this->status = 'paid';
+        } else {
+            $this->payment_status = 'partial';
+        }
+
+        return $this->save();
     }
 
     // =====================================
@@ -268,6 +306,16 @@ class Reimbursement extends Model
         return 'Rp ' . number_format($this->amount, 0, ',', '.');
     }
 
+    public function getFormattedAmountPaidAttribute(): string
+    {
+        return 'Rp ' . number_format($this->amount_paid, 0, ',', '.');
+    }
+
+    public function getFormattedAmountRemainingAttribute(): string
+    {
+        return 'Rp ' . number_format($this->amount_remaining, 0, ',', '.');
+    }
+
     public function getStatusBadgeColorAttribute(): string
     {
         return match ($this->status) {
@@ -275,6 +323,16 @@ class Reimbursement extends Model
             'pending' => 'yellow',
             'approved' => 'blue',
             'rejected' => 'red',
+            'paid' => 'green',
+            default => 'gray',
+        };
+    }
+
+    public function getPaymentStatusBadgeColorAttribute(): string
+    {
+        return match ($this->payment_status) {
+            'unpaid' => 'gray',
+            'partial' => 'yellow',
             'paid' => 'green',
             default => 'gray',
         };
@@ -292,9 +350,24 @@ class Reimbursement extends Model
         };
     }
 
+    public function getPaymentStatusLabelAttribute(): string
+    {
+        return match ($this->payment_status) {
+            'unpaid' => 'Belum Dibayar',
+            'partial' => 'Cicilan',
+            'paid' => 'Lunas',
+            default => ucfirst($this->payment_status),
+        };
+    }
+
     public function getCategoryLabelAttribute(): string
     {
-        return match ($this->category) {
+        // Use FK category if set by finance, fallback to user input
+        if ($this->category) {
+            return $this->category->label;
+        }
+
+        return match ($this->category_input) {
             'transport' => 'Transport',
             'meals' => 'Meals & Entertainment',
             'office_supplies' => 'Office Supplies',
@@ -302,7 +375,7 @@ class Reimbursement extends Model
             'accommodation' => 'Accommodation',
             'medical' => 'Medical',
             'other' => 'Other',
-            default => ucfirst($this->category),
+            default => ucfirst($this->category_input ?? 'Other'),
         };
     }
 

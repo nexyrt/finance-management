@@ -10,10 +10,7 @@ use Livewire\Component;
 
 class Show extends Component
 {
-    // Modal Control
     public bool $modal = false;
-
-    // Reimbursement ID - NO type declaration untuk konsistensi
     public $reimbursementId = null;
 
     public function render(): View
@@ -32,12 +29,16 @@ class Show extends Component
     public function reimbursement(): ?Reimbursement
     {
         return $this->reimbursementId
-            ? Reimbursement::with(['user', 'reviewer', 'payer', 'bankTransaction.bankAccount'])
+            ? Reimbursement::with([
+                'user',
+                'reviewer',
+                'payments.payer',
+                'payments.bankTransaction.bankAccount'
+            ])
                 ->find($this->reimbursementId)
             : null;
     }
 
-    // Quick actions from show modal
     public function editReimbursement(): void
     {
         $this->dispatch('edit::reimbursement', id: $this->reimbursementId);

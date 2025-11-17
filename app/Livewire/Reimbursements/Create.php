@@ -14,24 +14,14 @@ class Create extends Component
 {
     use Alert, WithFileUploads;
 
-    // Modal Control
     public bool $modal = false;
-
-    // Form Fields
-    public ?string $title = null;
-
-    public ?string $description = null;
-
-    public ?string $amount = null;
-
-    public ?string $expense_date = null;
-
-    public ?string $category = null;
-
+    public $title = null;
+    public $description = null;
+    public $amount = null;
+    public $expense_date = null;
+    public $category = null;
     public $attachment = null;
-
-    // Action Type
-    public string $action = 'draft'; // 'draft' or 'submit'
+    public $action = 'draft';
 
     public function mount(): void
     {
@@ -54,22 +44,36 @@ class Create extends Component
         return [
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:1000'],
-            'amount' => ['required', 'string'],
+            'amount' => ['required'], // Remove 'string' - will be parsed
             'expense_date' => ['required', 'date'],
-            'category' => ['required', 'string', 'in:transport,meals,office_supplies,communication,accommodation,medical,other'],
-            'attachment' => ['nullable', 'file', 'max:5120', 'mimes:jpg,jpeg,png,pdf'], // 5MB max
+            'category' => ['nullable', 'string', 'in:transport,meals,office_supplies,communication,accommodation,medical,other'],
+            'attachment' => ['nullable', 'file', 'max:5120', 'mimes:jpg,jpeg,png,pdf'],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'amount.required' => 'Amount is required',
         ];
     }
 
     public function save(): void
     {
+        // Parse amount before validation
+        if ($this->amount) {
+            $parsedAmount = Reimbursement::parseAmount($this->amount);
+            if ($parsedAmount < 1) {
+                $this->addError('amount', 'Amount must be at least Rp 1');
+                return;
+            }
+        }
+
         $validated = $this->validate();
 
         DB::transaction(function () use ($validated) {
-            // Parse amount
             $amount = Reimbursement::parseAmount($validated['amount']);
 
-            // Handle attachment upload
             $attachmentPath = null;
             $attachmentName = null;
 
@@ -78,20 +82,18 @@ class Create extends Component
                 $attachmentName = $this->attachment->getClientOriginalName();
             }
 
-            // Create reimbursement
             $reimbursement = Reimbursement::create([
                 'user_id' => auth()->id(),
                 'title' => $validated['title'],
                 'description' => $validated['description'],
                 'amount' => $amount,
                 'expense_date' => $validated['expense_date'],
-                'category' => $validated['category'],
+                'category_input' => $validated['category'],
                 'attachment_path' => $attachmentPath,
                 'attachment_name' => $attachmentName,
                 'status' => 'draft',
             ]);
 
-            // If action is submit, auto-submit
             if ($this->action === 'submit') {
                 $reimbursement->submit();
             }

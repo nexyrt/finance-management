@@ -18,10 +18,7 @@ class OverviewTab extends Component
     // Dispatch event when period changes
     public function updatedPeriod(): void
     {
-        $this->dispatch('charts-updated', [
-            'monthlyData' => $this->monthlyTrendData,
-            'categoryData' => $this->expenseByCategoryData
-        ]);
+        $this->dispatch('charts-updated');
     }
 
     #[Computed]
@@ -70,36 +67,74 @@ class OverviewTab extends Component
     #[Computed]
     public function monthlyTrendData(): array
     {
-        $startDate = $this->getStartDate();
-        $endDate = now();
-        $months = $this->generateMonthLabels($startDate, $endDate);
+        return match($this->period) {
+            'this_month' => $this->getWeeklyData(),
+            'last_3_months' => $this->getThreeMonthsData(),
+            'last_year' => $this->getYearlyData(),
+            default => $this->getYearlyData(),
+        };
+    }
+
+    private function getWeeklyData(): array
+    {
+        $startOfMonth = now()->startOfMonth();
+        $endOfMonth = now()->endOfMonth();
+        $weeks = [];
+
+        // Generate week ranges
+        $currentWeek = $startOfMonth->copy();
+        $weekNumber = 1;
+
+        while ($currentWeek <= $endOfMonth) {
+            $weekStart = $currentWeek->copy();
+            $weekEnd = $currentWeek->copy()->endOfWeek()->min($endOfMonth);
+
+            $weeks[] = [
+                'label' => 'Week ' . $weekNumber,
+                'start' => $weekStart->format('Y-m-d'),
+                'end' => $weekEnd->format('Y-m-d'),
+            ];
+
+            $currentWeek->addWeek()->startOfWeek();
+            $weekNumber++;
+
+            // Safety: max 5 weeks
+            if ($weekNumber > 5) break;
+        }
+
+        return array_map(function ($week) {
+            $start = Carbon::parse($week['start']);
+            $end = Carbon::parse($week['end']);
+
+            $income = $this->calculateIncome($start, $end);
+            $expenses = $this->calculateExpenses($start, $end);
+
+            return [
+                'month' => $week['label'],
+                'income' => $income,
+                'expenses' => $expenses,
+            ];
+        }, $weeks);
+    }
+
+    private function getThreeMonthsData(): array
+    {
+        $months = [];
+        for ($i = 2; $i >= 0; $i--) {
+            $month = now()->subMonths($i);
+            $months[] = [
+                'label' => $month->translatedFormat('M Y'),
+                'start' => $month->copy()->startOfMonth()->format('Y-m-d'),
+                'end' => $month->copy()->endOfMonth()->format('Y-m-d'),
+            ];
+        }
 
         return array_map(function ($month) {
             $start = Carbon::parse($month['start']);
             $end = Carbon::parse($month['end']);
 
-            // Bank Income
-            $bankIncome = BankTransaction::where('transaction_type', 'credit')
-                ->whereHas('category', fn($q) => $q->where('type', 'income'))
-                ->whereBetween('transaction_date', [$start, $end])
-                ->sum('amount');
-
-            // Invoice Profit
-            $revenue = Invoice::whereBetween('issue_date', [$start, $end])->sum('total_amount');
-            $cogs = InvoiceItem::whereHas('invoice', fn($q) => $q->whereBetween('issue_date', [$start, $end]))
-                ->where('is_tax_deposit', false)
-                ->sum('cogs_amount');
-            $taxDeposits = InvoiceItem::whereHas('invoice', fn($q) => $q->whereBetween('issue_date', [$start, $end]))
-                ->where('is_tax_deposit', true)
-                ->sum('amount');
-
-            $income = $bankIncome + ($revenue - $cogs - $taxDeposits);
-
-            // Expenses
-            $expenses = BankTransaction::where('transaction_type', 'debit')
-                ->whereHas('category', fn($q) => $q->where('type', 'expense'))
-                ->whereBetween('transaction_date', [$start, $end])
-                ->sum('amount');
+            $income = $this->calculateIncome($start, $end);
+            $expenses = $this->calculateExpenses($start, $end);
 
             return [
                 'month' => $month['label'],
@@ -109,29 +144,98 @@ class OverviewTab extends Component
         }, $months);
     }
 
+    private function getYearlyData(): array
+    {
+        $startDate = now()->subMonths(11)->startOfMonth();
+        $endDate = now();
+        $months = $this->generateMonthLabels($startDate, $endDate);
+
+        return array_map(function ($month) {
+            $start = Carbon::parse($month['start']);
+            $end = Carbon::parse($month['end']);
+
+            $income = $this->calculateIncome($start, $end);
+            $expenses = $this->calculateExpenses($start, $end);
+
+            return [
+                'month' => $month['label'],
+                'income' => $income,
+                'expenses' => $expenses,
+            ];
+        }, $months);
+    }
+
+    private function calculateIncome(Carbon $start, Carbon $end): int
+    {
+        // Bank Income
+        $bankIncome = BankTransaction::where('transaction_type', 'credit')
+            ->whereHas('category', fn($q) => $q->where('type', 'income'))
+            ->whereBetween('transaction_date', [$start, $end])
+            ->sum('amount');
+
+        // Invoice Profit
+        $revenue = Invoice::whereBetween('issue_date', [$start, $end])->sum('total_amount');
+        $cogs = InvoiceItem::whereHas('invoice', fn($q) => $q->whereBetween('issue_date', [$start, $end]))
+            ->where('is_tax_deposit', false)
+            ->sum('cogs_amount');
+        $taxDeposits = InvoiceItem::whereHas('invoice', fn($q) => $q->whereBetween('issue_date', [$start, $end]))
+            ->where('is_tax_deposit', true)
+            ->sum('amount');
+
+        return $bankIncome + ($revenue - $cogs - $taxDeposits);
+    }
+
+    private function calculateExpenses(Carbon $start, Carbon $end): int
+    {
+        return BankTransaction::where('transaction_type', 'debit')
+            ->whereHas('category', fn($q) => $q->where('type', 'expense'))
+            ->whereBetween('transaction_date', [$start, $end])
+            ->sum('amount');
+    }
+
     #[Computed]
     public function expenseByCategoryData(): array
     {
         $startDate = $this->getStartDate();
         $endDate = now();
 
-        return BankTransaction::with('category.parent')
+        $transactions = BankTransaction::with('category.parent')
             ->where('transaction_type', 'debit')
             ->whereHas('category', fn($q) => $q->where('type', 'expense'))
             ->whereBetween('transaction_date', [$startDate, $endDate])
-            ->get()
-            ->groupBy(function ($t) {
-                if (!$t->category)
-                    return 'Uncategorized';
-                return $t->category->parent ? $t->category->parent->label : $t->category->label;
-            })
-            ->map(fn($items) => [
-                'category' => $items->first()->category?->parent?->label ?? $items->first()->category?->label ?? 'Uncategorized',
-                'total' => $items->sum('amount'),
-            ])
-            ->sortByDesc('total')
-            ->values()
-            ->toArray();
+            ->get();
+
+        // Group by parent category (or self if no parent)
+        $grouped = [];
+        foreach ($transactions as $transaction) {
+            if (!$transaction->category) {
+                $key = 'Uncategorized';
+            } else {
+                // Use parent label if exists, otherwise use own label
+                $key = $transaction->category->parent 
+                    ? $transaction->category->parent->label 
+                    : $transaction->category->label;
+            }
+
+            if (!isset($grouped[$key])) {
+                $grouped[$key] = 0;
+            }
+            $grouped[$key] += $transaction->amount;
+        }
+
+        // Convert to array format
+        $result = [];
+        foreach ($grouped as $category => $total) {
+            $result[] = [
+                'category' => $category,
+                'total' => $total,
+            ];
+        }
+
+        // Sort by total descending
+        usort($result, fn($a, $b) => $b['total'] <=> $a['total']);
+
+        return $result;
     }
 
     #[Computed]
@@ -167,7 +271,7 @@ class OverviewTab extends Component
 
         while ($current <= $endDate) {
             $months[] = [
-                'label' => $current->format('M Y'),
+                'label' => $current->translatedFormat('M Y'),
                 'start' => $current->copy()->startOfMonth()->format('Y-m-d'),
                 'end' => $current->copy()->endOfMonth()->format('Y-m-d'),
             ];

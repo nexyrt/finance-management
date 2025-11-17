@@ -18,16 +18,12 @@ class AllRequests extends Component
 
     // Filter & Sorting
     public $quantity = 10;
-
     public $search = null;
-
     public array $sort = ['column' => 'created_at', 'direction' => 'desc'];
 
     // Filters
     public $statusFilter = null;
-
     public $categoryFilter = null;
-
     public $dateRange = [];
 
     // Bulk Actions
@@ -40,6 +36,7 @@ class AllRequests extends Component
         ['index' => 'category', 'label' => 'Category'],
         ['index' => 'expense_date', 'label' => 'Date'],
         ['index' => 'status', 'label' => 'Status'],
+        ['index' => 'payment_status', 'label' => 'Payment'],
         ['index' => 'action', 'sortable' => false],
     ];
 
@@ -48,53 +45,50 @@ class AllRequests extends Component
         return view('livewire.reimbursements.all-requests');
     }
 
-    // Data loading for ALL requests
     #[Computed]
     public function rows(): LengthAwarePaginator
     {
-        return Reimbursement::with(['user', 'reviewer', 'payer', 'bankTransaction.bankAccount'])
-            ->when($this->search, fn (Builder $query) => $query->where(function ($q) {
-                $q->whereAny(['title', 'description', 'category'], 'like', '%'.trim($this->search).'%')
-                    ->orWhereHas('user', fn ($user) => $user->where('name', 'like', '%'.trim($this->search).'%'));
+        return Reimbursement::with(['user', 'reviewer', 'payments.payer', 'payments.bankTransaction.bankAccount'])
+            ->when($this->search, fn(Builder $query) => $query->where(function ($q) {
+                $q->whereAny(['title', 'description', 'category'], 'like', '%' . trim($this->search) . '%')
+                    ->orWhereHas('user', fn($user) => $user->where('name', 'like', '%' . trim($this->search) . '%'));
             }))
-            ->when($this->statusFilter, fn (Builder $query) => $query->where('status', $this->statusFilter))
-            ->when($this->categoryFilter, fn (Builder $query) => $query->where('category', $this->categoryFilter))
-            ->when(! empty($this->dateRange) && count($this->dateRange) === 2, fn (Builder $query) => $query->whereBetween('expense_date', $this->dateRange))
-            ->when($this->sort['column'] === 'user',
-                fn (Builder $query) => $query->leftJoin('users', 'reimbursements.user_id', '=', 'users.id')
+            ->when($this->statusFilter, fn(Builder $query) => $query->where('status', $this->statusFilter))
+            ->when($this->categoryFilter, fn(Builder $query) => $query->where('category', $this->categoryFilter))
+            ->when(!empty($this->dateRange) && count($this->dateRange) === 2, fn(Builder $query) => $query->whereBetween('expense_date', $this->dateRange))
+            ->when(
+                $this->sort['column'] === 'user',
+                fn(Builder $query) => $query->leftJoin('users', 'reimbursements.user_id', '=', 'users.id')
                     ->orderBy('users.name', $this->sort['direction'])
                     ->select('reimbursements.*'),
-                fn (Builder $query) => $query->orderBy($this->sort['column'], $this->sort['direction'])
+                fn(Builder $query) => $query->orderBy($this->sort['column'], $this->sort['direction'])
             )
             ->paginate($this->quantity)
             ->withQueryString();
     }
-    // Status filter options
+
     #[Computed]
     public function statusOptions(): array
     {
         return collect(Reimbursement::statuses())
-            ->map(fn ($status) => ['label' => $status['label'], 'value' => $status['value']])
+            ->map(fn($status) => ['label' => $status['label'], 'value' => $status['value']])
             ->toArray();
     }
 
-    // Category filter options
     #[Computed]
     public function categoryOptions(): array
     {
         return collect(Reimbursement::categories())
-            ->map(fn ($category) => ['label' => $category['label'], 'value' => $category['value']])
+            ->map(fn($category) => ['label' => $category['label'], 'value' => $category['value']])
             ->toArray();
     }
 
-    // Clear all filters
     public function clearFilters(): void
     {
         $this->reset(['statusFilter', 'categoryFilter', 'dateRange', 'search']);
         $this->resetPage();
     }
 
-    // Listen to refresh events from child components
     #[On('refreshed')]
     #[On('created')]
     #[On('updated')]
@@ -103,6 +97,6 @@ class AllRequests extends Component
     #[On('paid')]
     public function refresh(): void
     {
-        unset($this->stats, $this->rows);
+        unset($this->rows);
     }
 }

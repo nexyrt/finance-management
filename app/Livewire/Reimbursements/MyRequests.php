@@ -17,18 +17,14 @@ class MyRequests extends Component
 {
     use Alert, WithPagination;
 
-    // Filter & Sorting
-    public ?int $quantity = 10;
-
-    public ?string $search = null;
-
+    // Filter & Sorting - NO TYPE DECLARATION
+    public $quantity = 10;
+    public $search = null;
     public array $sort = ['column' => 'created_at', 'direction' => 'desc'];
 
     // Filters
     public $statusFilter = null;
-
     public $categoryFilter = null;
-
     public $dateRange = [];
 
     // Bulk Actions
@@ -39,7 +35,6 @@ class MyRequests extends Component
         return view('livewire.reimbursements.my-requests');
     }
 
-    // Headers
     #[Computed]
     public function headers(): array
     {
@@ -49,64 +44,58 @@ class MyRequests extends Component
             ['index' => 'category', 'label' => 'Category'],
             ['index' => 'expense_date', 'label' => 'Date'],
             ['index' => 'status', 'label' => 'Status'],
+            ['index' => 'payment_status', 'label' => 'Payment'],
             ['index' => 'action', 'sortable' => false],
         ];
     }
 
-    // Data loading
     #[Computed]
     public function rows(): LengthAwarePaginator
     {
-        return Reimbursement::with(['user', 'reviewer', 'payer', 'bankTransaction.bankAccount'])
+        return Reimbursement::with(['user', 'reviewer', 'payments.payer', 'payments.bankTransaction.bankAccount'])
             ->where('user_id', auth()->id())
-            ->when($this->search, fn (Builder $query) => $query->whereAny(['title', 'description', 'category'], 'like', '%'.trim($this->search).'%'))
-            ->when($this->statusFilter, fn (Builder $query) => $query->where('status', $this->statusFilter))
-            ->when($this->categoryFilter, fn (Builder $query) => $query->where('category', $this->categoryFilter))
-            ->when(! empty($this->dateRange) && count($this->dateRange) === 2, fn (Builder $query) => $query->whereBetween('expense_date', $this->dateRange))
+            ->when($this->search, fn(Builder $query) => $query->whereAny(['title', 'description', 'category'], 'like', '%' . trim($this->search) . '%'))
+            ->when($this->statusFilter, fn(Builder $query) => $query->where('status', $this->statusFilter))
+            ->when($this->categoryFilter, fn(Builder $query) => $query->where('category', $this->categoryFilter))
+            ->when(!empty($this->dateRange) && count($this->dateRange) === 2, fn(Builder $query) => $query->whereBetween('expense_date', $this->dateRange))
             ->orderBy($this->sort['column'], $this->sort['direction'])
             ->paginate($this->quantity)
             ->withQueryString();
     }
 
-    // Status filter options
     #[Computed]
     public function statusOptions(): array
     {
         return collect(Reimbursement::statuses())
-            ->map(fn ($status) => ['label' => $status['label'], 'value' => $status['value']])
+            ->map(fn($status) => ['label' => $status['label'], 'value' => $status['value']])
             ->toArray();
     }
 
-    // Category filter options
     #[Computed]
     public function categoryOptions(): array
     {
         return collect(Reimbursement::categories())
-            ->map(fn ($category) => ['label' => $category['label'], 'value' => $category['value']])
+            ->map(fn($category) => ['label' => $category['label'], 'value' => $category['value']])
             ->toArray();
     }
 
-    // Clear all filters
     public function clearFilters(): void
     {
         $this->reset(['statusFilter', 'categoryFilter', 'dateRange', 'search']);
         $this->resetPage();
     }
 
-    // Submit draft to pending
     public function submitRequest(int $id): void
     {
         $reimbursement = Reimbursement::findOrFail($id);
 
         if ($reimbursement->user_id !== auth()->id()) {
             $this->error('Unauthorized action');
-
             return;
         }
 
-        if (! $reimbursement->canSubmit()) {
+        if (!$reimbursement->canSubmit()) {
             $this->error('Cannot submit this reimbursement');
-
             return;
         }
 
@@ -114,7 +103,6 @@ class MyRequests extends Component
         $this->success('Reimbursement submitted for approval');
     }
 
-    // Bulk Delete: Step 1 - Confirmation
     #[Renderless]
     public function confirmBulkDelete(): void
     {
@@ -129,7 +117,6 @@ class MyRequests extends Component
             ->send();
     }
 
-    // Bulk Delete: Step 2 - Execution
     public function bulkDelete(): void
     {
         if (empty($this->selected)) {
@@ -145,7 +132,6 @@ class MyRequests extends Component
 
         if ($count === 0) {
             $this->error('No deletable reimbursements selected');
-            
             return;
         }
 
@@ -158,7 +144,6 @@ class MyRequests extends Component
         $this->success("{$count} reimbursements deleted successfully");
     }
 
-    // Listen to refresh events from child components
     #[On('refreshed')]
     #[On('created')]
     #[On('updated')]
@@ -167,6 +152,6 @@ class MyRequests extends Component
     #[On('paid')]
     public function refresh(): void
     {
-        unset($this->stats, $this->rows);
+        unset($this->rows);
     }
 }

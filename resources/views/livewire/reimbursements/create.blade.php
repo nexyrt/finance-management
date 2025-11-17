@@ -6,7 +6,6 @@
 
     {{-- Modal --}}
     <x-modal wire="modal" size="xl" center persistent>
-        {{-- Custom Title --}}
         <x-slot:title>
             <div class="flex items-center gap-4 my-3">
                 <div class="h-12 w-12 bg-primary-50 dark:bg-primary-900/20 rounded-xl flex items-center justify-center">
@@ -19,9 +18,7 @@
             </div>
         </x-slot:title>
 
-        {{-- Form --}}
         <form id="reimbursement-create" wire:submit="save" class="space-y-6">
-            {{-- Section: Basic Information --}}
             <div class="space-y-4">
                 <div class="border-b border-secondary-200 dark:border-dark-600 pb-4">
                     <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-1">Expense Details</h4>
@@ -39,8 +36,9 @@
                     <x-date wire:model="expense_date" label="Expense Date *" placeholder="Select date" />
 
                     <div class="lg:col-span-2">
-                        <x-select.styled wire:model="category" :options="$this->categories" label="Category *"
-                            placeholder="Select category..." searchable />
+                        <x-select.styled wire:model="category" :options="$this->categories" label="Category (Referensi)"
+                            placeholder="Pilih kategori..." searchable
+                            hint="Finance akan menentukan kategori final saat review" />
                     </div>
 
                     <div class="lg:col-span-2">
@@ -50,7 +48,6 @@
                 </div>
             </div>
 
-            {{-- Section: Attachment --}}
             <div class="space-y-4">
                 <div class="border-b border-secondary-200 dark:border-dark-600 pb-4">
                     <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-1">Attachment</h4>
@@ -65,7 +62,6 @@
             </div>
         </form>
 
-        {{-- Footer --}}
         <x-slot:footer>
             <div class="flex flex-col sm:flex-row justify-end gap-3">
                 <x-button wire:click="$set('modal', false)" color="secondary" outline

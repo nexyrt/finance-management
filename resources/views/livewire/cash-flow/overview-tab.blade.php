@@ -1,4 +1,10 @@
-<div class="space-y-6">
+<div class="space-y-6" x-data="{
+    currentPeriod: @entangle('period'),
+    chartData: {
+        monthly: @js($this->monthlyTrendData),
+        category: @js($this->expenseByCategoryData)
+    }
+}" x-init="$watch('currentPeriod', () => $wire.$refresh())">
     {{-- Summary Cards --}}
     <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6">
         <div class="bg-white dark:bg-dark-800 border border-zinc-200 dark:border-dark-600 rounded-xl p-6">
@@ -78,20 +84,30 @@
     </div>
 
     {{-- Charts Container --}}
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6" wire:key="charts-container-{{ $period }}">
         {{-- Monthly Trend --}}
         <div class="bg-white dark:bg-dark-800 border border-zinc-200 dark:border-dark-600 rounded-xl p-6">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-6">Income vs Expense Trend</h3>
-            <div class="h-80">
-                <canvas id="trendChart"></canvas>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-6">
+                Income vs Expense Trend
+                <span class="text-sm font-normal text-gray-500 dark:text-gray-400">
+                    ({{ match ($period) {
+                        'this_month' => 'Weekly',
+                        'last_3_months' => '3 Months',
+                        'last_year' => '12 Months',
+                        default => '',
+                    } }})
+                </span>
+            </h3>
+            <div class="h-80" wire:ignore.self>
+                <canvas id="trendChart-{{ $period }}"></canvas>
             </div>
         </div>
 
         {{-- Expense by Category --}}
         <div class="bg-white dark:bg-dark-800 border border-zinc-200 dark:border-dark-600 rounded-xl p-6">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-6">Expenses by Category</h3>
-            <div class="h-80">
-                <canvas id="categoryChart"></canvas>
+            <div class="h-80" wire:ignore.self>
+                <canvas id="categoryChart-{{ $period }}"></canvas>
             </div>
         </div>
     </div>
@@ -148,9 +164,7 @@
 @push('scripts')
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
     <script>
-        function setupCashFlowCharts() {
-            let trendChart, categoryChart;
-
+        function setupCashFlowCharts(period) {
             function isDarkMode() {
                 return document.documentElement.classList.contains('dark');
             }
@@ -168,15 +182,19 @@
             }
 
             function createTrendChart() {
-                const ctx = document.getElementById('trendChart');
+                const ctx = document.getElementById('trendChart-' + period);
                 if (!ctx) return;
 
-                if (trendChart) trendChart.destroy();
+                // Destroy existing chart instance
+                const existingChart = Chart.getChart(ctx);
+                if (existingChart) {
+                    existingChart.destroy();
+                }
 
                 const colors = getThemeColors();
                 const data = @json($this->monthlyTrendData);
 
-                trendChart = new Chart(ctx, {
+                new Chart(ctx, {
                     type: 'line',
                     data: {
                         labels: data.map(d => d.month),
@@ -261,15 +279,19 @@
             }
 
             function createCategoryChart() {
-                const ctx = document.getElementById('categoryChart');
+                const ctx = document.getElementById('categoryChart-' + period);
                 if (!ctx) return;
 
-                if (categoryChart) categoryChart.destroy();
+                // Destroy existing chart instance
+                const existingChart = Chart.getChart(ctx);
+                if (existingChart) {
+                    existingChart.destroy();
+                }
 
                 const colors = getThemeColors();
                 const data = @json($this->expenseByCategoryData);
 
-                categoryChart = new Chart(ctx, {
+                new Chart(ctx, {
                     type: 'bar',
                     data: {
                         labels: data.map(d => d.category),
@@ -341,12 +363,6 @@
             createTrendChart();
             createCategoryChart();
 
-            // Listen for Livewire updates (when period changes)
-            Livewire.on('charts-updated', (data) => {
-                createTrendChart();
-                createCategoryChart();
-            });
-
             // Dark mode observer
             const observer = new MutationObserver(function(mutations) {
                 mutations.forEach(function(mutation) {
@@ -365,14 +381,23 @@
             });
         }
 
-        // Run on initial load
-        document.addEventListener('DOMContentLoaded', () => {
-            setupCashFlowCharts();
+        // Initialize on page load
+        document.addEventListener('livewire:navigated', () => {
+            const period = @js($period);
+            setupCashFlowCharts(period);
         });
 
-        // Run on every wire:navigate
-        document.addEventListener('livewire:navigated', () => {
-            setupCashFlowCharts();
+        // Re-initialize when period changes (Livewire will re-render with new canvas IDs)
+        document.addEventListener('livewire:init', () => {
+            Livewire.hook('morph.updated', ({
+                el,
+                component
+            }) => {
+                const period = component.get('period');
+                setTimeout(() => {
+                    setupCashFlowCharts(period);
+                }, 100);
+            });
         });
     </script>
 @endpush
