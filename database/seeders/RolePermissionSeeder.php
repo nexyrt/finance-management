@@ -105,6 +105,6 @@ class RolePermissionSeeder extends Seeder
         ]);
 
         // 👇 ASSIGN SEMUA USER SEBAGAI STAFF
-        User::all()->each(fn($user) => $user->assignRole('staff'));
+        User::all()->each(fn($user) => $user->assignRole('admin'));
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\CompanyProfile;
 use App\Models\Invoice;
 use Barryvdh\DomPDF\Facade\Pdf;
 
@@ -10,21 +11,22 @@ class InvoicePrintService
     public function generateSingleInvoicePdf(Invoice $invoice, ?int $dpAmount = null, ?int $pelunasanAmount = null)
     {
         $invoice->load(['client', 'items.client', 'payments.bankAccount']);
+        $company = CompanyProfile::current();
 
-        // DP or Pelunasan Logic
         $isDownPayment = !is_null($dpAmount) && $dpAmount > 0;
         $isPelunasan = !is_null($pelunasanAmount) && $pelunasanAmount > 0;
         $displayAmount = $isDownPayment ? $dpAmount : ($isPelunasan ? $pelunasanAmount : $invoice->total_amount);
 
-        $netRevenue = $invoice->items->where('is_tax_deposit', false)->sum('amount');
-        $totalCogs = $invoice->items->where('is_tax_deposit', false)->sum('cogs_amount');
-        $grossProfit = $netRevenue - $totalCogs - ($invoice->discount_amount ?? 0);
-
         $regularItems = $invoice->items->where('is_tax_deposit', false);
         $taxDepositItems = $invoice->items->where('is_tax_deposit', true);
 
-        // Calculate total paid for pelunasan info
-        $totalPaid = $invoice->payments->sum('amount');
+        $netRevenue = $regularItems->sum('amount');
+        $totalCogs = $regularItems->sum('cogs_amount');
+        $grossProfit = $netRevenue - $totalCogs - ($invoice->discount_amount ?? 0);
+
+        // PPN Calculation
+        $ppnAmount = $company?->is_pkp ? ($displayAmount * $company->ppn_rate / 100) : 0;
+        $grandTotal = $displayAmount + $ppnAmount;
 
         $data = [
             'invoice' => $invoice,
@@ -33,14 +35,16 @@ class InvoicePrintService
             'regular_items' => $regularItems,
             'tax_deposit_items' => $taxDepositItems,
             'payments' => $invoice->payments,
-            'company' => $this->getCompanyInfo(),
-            'terbilang' => $this->numberToWords($displayAmount),
+            'company' => $this->getCompanyInfo($company),
+            'terbilang' => $this->numberToWords($grandTotal),
             'is_down_payment' => $isDownPayment,
             'is_pelunasan' => $isPelunasan,
             'dp_amount' => $dpAmount,
             'pelunasan_amount' => $pelunasanAmount,
             'display_amount' => $displayAmount,
-            'total_paid' => $totalPaid,
+            'ppn_amount' => $ppnAmount,
+            'grand_total' => $grandTotal,
+            'total_paid' => $invoice->payments->sum('amount'),
             'financial_summary' => [
                 'net_revenue' => $netRevenue,
                 'total_cogs' => $totalCogs,
@@ -51,7 +55,7 @@ class InvoicePrintService
             ]
         ];
 
-        $pdf = Pdf::loadView('pdf.kisantra-invoice', $data)
+        return Pdf::loadView('pdf.kisantra-invoice', $data)
             ->setPaper('A4', 'portrait')
             ->setOptions([
                 'dpi' => 150,
@@ -59,109 +63,122 @@ class InvoicePrintService
                 'isHtml5ParserEnabled' => true,
                 'isRemoteEnabled' => true,
             ]);
-
-        return $pdf;
     }
 
     public function downloadSingleInvoice(Invoice $invoice)
     {
-        $pdf = $this->generateSingleInvoicePdf($invoice);
-
         $filename = 'Invoice-' . str_replace(['/', '\\', ':', '*', '?', '"', '<', '>', '|'], '-', $invoice->invoice_number) . '.pdf';
-
-        return $pdf->download($filename);
+        return $this->generateSingleInvoicePdf($invoice)->download($filename);
     }
 
-    private function getCompanyInfo(): array
+    private function getCompanyInfo(?CompanyProfile $company): array
+    {
+        if (!$company) {
+            return $this->getFallbackCompanyInfo();
+        }
+
+        return [
+            'name' => $company->name,
+            'address' => $company->address,
+            'email' => $company->email,
+            'phone' => $company->phone,
+            'logo_base64' => $company->logo_base64,
+            'signature_base64' => $company->signature_base64,
+            'stamp_base64' => $company->stamp_base64,
+            'bank_accounts' => $company->bank_accounts,
+            'signature' => [
+                'name' => $company->finance_manager_name,
+                'position' => $company->finance_manager_position
+            ],
+            'is_pkp' => $company->is_pkp,
+            'npwp' => $company->npwp,
+            'ppn_rate' => $company->ppn_rate,
+        ];
+    }
+
+    private function getFallbackCompanyInfo(): array
     {
         return [
             'name' => 'PT. KINARA SADAYATRA NUSANTARA',
             'address' => 'Jl. A. Wahab Syahranie Perum Pondok Alam Indah, Nomor 3D, Kel. Sempaja Barat, Kota Samarinda - Kalimantan Timur',
             'email' => 'kisantra.official@gmail.com',
             'phone' => '0852-8888-2600',
-            'logo_base64' => $this->getLogoBase64(),
-            'signature_base64' => $this->getSignatureBase64(),
-            'stamp_base64' => $this->getStampBase64(),
+            'logo_base64' => $this->getImageBase64('images/letter-head.png'),
+            'signature_base64' => $this->getImageBase64('images/pdf-signature.png'),
+            'stamp_base64' => $this->getImageBase64('images/kisantra-stamp.png'),
             'bank_accounts' => [
-                [
-                    'bank' => 'MANDIRI',
-                    'account_number' => '1480045452425',
-                    'account_name' => 'PT. KINARA SADAYATRA NUSANTARA'
-                ]
+                ['bank' => 'MANDIRI', 'account_number' => '1480045452425', 'account_name' => 'PT. KINARA SADAYATRA NUSANTARA']
             ],
-            'signature' => [
-                'name' => 'Mohammad Denny Jodysetiawan',
-                'position' => 'Manajer Keuangan'
-            ]
+            'signature' => ['name' => 'Mohammad Denny Jodysetiawan', 'position' => 'Manajer Keuangan'],
+            'is_pkp' => false,
+            'npwp' => null,
+            'ppn_rate' => 11.00,
         ];
     }
 
-    private function getLogoBase64(): string
+    private function getImageBase64(string $path): string
     {
-        $logoPath = public_path('images/letter-head.png');
-        if (file_exists($logoPath)) {
-            return 'data:image/png;base64,' . base64_encode(file_get_contents($logoPath));
-        }
-        return '';
-    }
-
-    private function getSignatureBase64(): string
-    {
-        $signaturePath = public_path('images/pdf-signature.png');
-        if (file_exists($signaturePath)) {
-            return 'data:image/png;base64,' . base64_encode(file_get_contents($signaturePath));
-        }
-        return '';
-    }
-
-    private function getStampBase64(): string
-    {
-        $stampPath = public_path('images/kisantra-stamp.png');
-        if (file_exists($stampPath)) {
-            return 'data:image/png;base64,' . base64_encode(file_get_contents($stampPath));
-        }
-        return '';
+        $fullPath = public_path($path);
+        return file_exists($fullPath) ? 'data:image/png;base64,' . base64_encode(file_get_contents($fullPath)) : '';
     }
 
     private function numberToWords($number): string
     {
-        $words = [
-            '',
-            'Satu',
-            'Dua',
-            'Tiga',
-            'Empat',
-            'Lima',
-            'Enam',
-            'Tujuh',
-            'Delapan',
-            'Sembilan',
-            'Sepuluh',
-            'Sebelas',
-            'Dua Belas',
-            'Tiga Belas',
-            'Empat Belas',
-            'Lima Belas',
-            'Enam Belas',
-            'Tujuh Belas',
-            'Delapan Belas',
-            'Sembilan Belas'
-        ];
+        if ($number == 0)
+            return 'Nol';
 
-        $tens = ['', '', 'Dua Puluh', 'Tiga Puluh', 'Empat Puluh', 'Lima Puluh', 'Enam Puluh', 'Tujuh Puluh', 'Delapan Puluh', 'Sembilan Puluh'];
+        $words = ['', 'Satu', 'Dua', 'Tiga', 'Empat', 'Lima', 'Enam', 'Tujuh', 'Delapan', 'Sembilan'];
 
-        if ($number < 20) {
-            return $words[$number];
-        } elseif ($number < 100) {
-            return $tens[intval($number / 10)] . ' ' . $words[$number % 10];
-        } elseif ($number < 1000) {
-            return $words[intval($number / 100)] . ' Ratus ' . $this->numberToWords($number % 100);
-        } elseif ($number < 1000000) {
-            return $this->numberToWords(intval($number / 1000)) . ' Ribu ' . $this->numberToWords($number % 1000);
-        } elseif ($number < 1000000000) {
-            return $this->numberToWords(intval($number / 1000000)) . ' Juta ' . $this->numberToWords($number % 1000000);
+        // Milyar
+        if ($number >= 1000000000) {
+            $milyar = intval($number / 1000000000);
+            $sisa = $number % 1000000000;
+            $result = ($milyar == 1 ? 'Satu' : $this->numberToWords($milyar)) . ' Milyar';
+            return $sisa > 0 ? $result . ' ' . $this->numberToWords($sisa) : $result;
         }
 
-        return 'Angka terlalu besar';
+        // Juta
+        if ($number >= 1000000) {
+            $juta = intval($number / 1000000);
+            $sisa = $number % 1000000;
+            $result = ($juta == 1 ? 'Satu' : $this->numberToWords($juta)) . ' Juta';
+            return $sisa > 0 ? $result . ' ' . $this->numberToWords($sisa) : $result;
+        }
+
+        // Ribu
+        if ($number >= 1000) {
+            $ribu = intval($number / 1000);
+            $sisa = $number % 1000;
+            $result = ($ribu == 1 ? 'Seribu' : $this->numberToWords($ribu) . ' Ribu');
+            return $sisa > 0 ? $result . ' ' . $this->numberToWords($sisa) : $result;
+        }
+
+        // Ratus
+        if ($number >= 100) {
+            $ratus = intval($number / 100);
+            $sisa = $number % 100;
+            $result = ($ratus == 1 ? 'Seratus' : $words[$ratus] . ' Ratus');
+            return $sisa > 0 ? $result . ' ' . $this->numberToWords($sisa) : $result;
+        }
+
+        // Puluh
+        if ($number >= 20) {
+            $puluh = intval($number / 10);
+            $sisa = $number % 10;
+            $result = $words[$puluh] . ' Puluh';
+            return $sisa > 0 ? $result . ' ' . $words[$sisa] : $result;
+        }
+
+        // 11-19
+        if ($number >= 11) {
+            return $words[$number - 10] . ' Belas';
+        }
+
+        // 10
+        if ($number == 10)
+            return 'Sepuluh';
+
+        // 1-9
+        return $words[$number];
     }
 }

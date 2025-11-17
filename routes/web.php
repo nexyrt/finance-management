@@ -20,6 +20,7 @@ use App\Livewire\Reimbursements\Index as ReimbursementIndex;
 use App\Livewire\Services\Index as ServicesIndex;
 
 use App\Livewire\Settings\Appearance;
+use App\Livewire\Settings\CompanyProfileSettings;
 use App\Livewire\Settings\Password;
 use App\Livewire\Settings\Profile;
 
@@ -101,6 +102,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/profile', Profile::class)->name('profile');
         Route::get('/password', Password::class)->name('password');
         Route::get('/appearance', Appearance::class)->name('appearance');
+        Route::get('/company', CompanyProfileSettings::class)->name('company');
     });
 
     Route::middleware(['role:admin'])->prefix('admin')->name('admin.')->group(function () {
