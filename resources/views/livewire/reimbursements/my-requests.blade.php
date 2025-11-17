@@ -32,12 +32,32 @@
             </div>
         @endinteract
 
-        {{-- Amount Column --}}
+        {{-- Replace column_amount section only --}}
         @interact('column_amount', $row)
-            <div class="text-right">
-                <div class="font-bold text-lg text-dark-900 dark:text-dark-50">
+            <div class="min-w-[180px]">
+                <div class="font-bold text-base text-dark-900 dark:text-dark-50">
                     {{ $row->formatted_amount }}
                 </div>
+                @if ($row->amount_paid > 0)
+                    @php $pct = ($row->amount_paid / $row->amount) * 100; @endphp
+                    <div class="mt-2 space-y-1">
+                        <div class="flex justify-between text-xs">
+                            <span class="text-green-600 dark:text-green-400">{{ $row->formatted_amount_paid }}</span>
+                            @if ($row->amount_remaining > 0)
+                                <span class="text-amber-600">Sisa: {{ $row->formatted_amount_remaining }}</span>
+                            @endif
+                        </div>
+                        <div class="w-full bg-gray-200 dark:bg-dark-700 rounded-full h-2">
+                            <div class="{{ $row->isFullyPaid() ? 'bg-green-500' : 'bg-amber-500' }} h-2 rounded-full"
+                                style="width: {{ min($pct, 100) }}%"></div>
+                        </div>
+                        <div class="text-xs text-center {{ $row->isFullyPaid() ? 'text-green-600' : 'text-amber-600' }}">
+                            {{ number_format($pct, 1) }}%
+                        </div>
+                    </div>
+                @else
+                    <div class="text-xs text-gray-500 mt-1">Belum dibayar</div>
+                @endif
             </div>
         @endinteract
 

@@ -189,7 +189,6 @@ class Reimbursement extends Model
     {
         // Can pay if approved, has category assigned, and not fully paid yet
         return $this->status === 'approved'
-            && $this->category_id !== null
             && !$this->isFullyPaid();
     }
 
