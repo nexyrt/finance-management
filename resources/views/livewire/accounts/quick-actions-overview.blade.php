@@ -131,243 +131,239 @@
 @push('scripts')
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            let chart;
+        let chartInstance = null;
 
-            function isDarkMode() {
-                return document.documentElement.classList.contains('dark');
+        function isDarkMode() {
+            return document.documentElement.classList.contains('dark');
+        }
+
+        function createChart(chartData) {
+            const ctx = document.getElementById('cashflowChart');
+            if (!ctx || !chartData || chartData.length === 0) return;
+
+            if (chartInstance) {
+                chartInstance.destroy();
+                chartInstance = null;
             }
 
-            function createChart(chartData) {
-                const ctx = document.getElementById('cashflowChart');
-                if (!ctx || !chartData || chartData.length === 0) return;
+            const isDark = isDarkMode();
+            const incomeData = chartData.map(item => item.income);
+            const expenseData = chartData.map(item => item.expense);
+            const netData = chartData.map(item => item.income - item.expense);
 
-                if (chart) {
-                    chart.destroy();
-                }
-
-                const isDark = isDarkMode();
-
-                // Prepare data for mixed chart (bar + line)
-                const incomeData = chartData.map(item => item.income);
-                const expenseData = chartData.map(item => item.expense);
-                const netData = chartData.map(item => item.income - item.expense);
-
-                chart = new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: chartData.map(item => item.month),
-                        datasets: [{
+            chartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: chartData.map(item => item.month),
+                    datasets: [{
                             label: 'Income',
                             data: incomeData,
-                            backgroundColor: 'rgba(16, 185, 129, 0.8)',
-                            borderColor: '#10b981',
+                            backgroundColor: 'rgba(34, 197, 94, 0.8)',
+                            borderColor: 'rgba(34, 197, 94, 1)',
                             borderWidth: 2,
                             borderRadius: 8,
-                            borderSkipped: false,
-                        }, {
+                            yAxisID: 'y',
+                        },
+                        {
                             label: 'Expense',
                             data: expenseData,
                             backgroundColor: 'rgba(239, 68, 68, 0.8)',
-                            borderColor: '#ef4444',
+                            borderColor: 'rgba(239, 68, 68, 1)',
                             borderWidth: 2,
                             borderRadius: 8,
-                            borderSkipped: false,
-                        }, {
-                            label: 'Net Cashflow',
+                            yAxisID: 'y',
+                        },
+                        {
+                            label: 'Net Cash Flow',
                             data: netData,
                             type: 'line',
-                            borderColor: isDark ? '#60a5fa' : '#3b82f6',
-                            backgroundColor: 'transparent',
+                            borderColor: 'rgba(59, 130, 246, 1)',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
                             borderWidth: 3,
-                            pointRadius: 6,
-                            pointHoverRadius: 8,
-                            pointBackgroundColor: isDark ? '#60a5fa' : '#3b82f6',
-                            pointBorderColor: '#ffffff',
-                            pointBorderWidth: 2,
                             tension: 0.4,
-                            fill: false,
+                            fill: true,
                             yAxisID: 'y1',
-                        }]
+                            pointRadius: 4,
+                            pointHoverRadius: 6,
+                            pointBackgroundColor: 'rgba(59, 130, 246, 1)',
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2,
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
                     },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        interaction: {
-                            mode: 'index',
-                            intersect: false,
-                        },
-                        plugins: {
-                            title: {
-                                display: true,
-                                text: 'Monthly Income vs Expense Comparison',
-                                color: isDark ? '#d1d5db' : '#374151',
-                                font: {
-                                    size: 14,
-                                    weight: 'bold'
-                                }
-                            },
-                            tooltip: {
-                                backgroundColor: isDark ? '#1f2937' : '#ffffff',
-                                titleColor: isDark ? '#f3f4f6' : '#111827',
-                                bodyColor: isDark ? '#d1d5db' : '#374151',
-                                borderColor: isDark ? '#4b5563' : '#e5e7eb',
-                                borderWidth: 1,
-                                cornerRadius: 8,
-                                displayColors: true,
-                                callbacks: {
-                                    label: function(context) {
-                                        const value = context.parsed.y;
-                                        return context.dataset.label + ': Rp ' +
-                                            new Intl.NumberFormat('id-ID').format(value);
-                                    },
-                                    afterBody: function(tooltipItems) {
-                                        const dataIndex = tooltipItems[0].dataIndex;
-                                        const income = incomeData[dataIndex];
-                                        const expense = expenseData[dataIndex];
-                                        const net = income - expense;
-                                        const ratio = expense > 0 ? ((income / expense) * 100).toFixed(
-                                            1) : '∞';
+                    plugins: {
+                        tooltip: {
+                            backgroundColor: isDark ? '#1f2937' : '#ffffff',
+                            titleColor: isDark ? '#f3f4f6' : '#111827',
+                            bodyColor: isDark ? '#d1d5db' : '#374151',
+                            borderColor: isDark ? '#374151' : '#e5e7eb',
+                            borderWidth: 1,
+                            cornerRadius: 8,
+                            displayColors: true,
+                            callbacks: {
+                                label: function(context) {
+                                    const value = context.parsed.y;
+                                    return context.dataset.label + ': Rp ' +
+                                        new Intl.NumberFormat('id-ID').format(value);
+                                },
+                                afterBody: function(tooltipItems) {
+                                    const dataIndex = tooltipItems[0].dataIndex;
+                                    const income = incomeData[dataIndex];
+                                    const expense = expenseData[dataIndex];
+                                    const net = income - expense;
+                                    const ratio = expense > 0 ? ((income / expense) * 100).toFixed(1) : '∞';
 
-                                        return [
-                                            '',
-                                            `Net: Rp ${new Intl.NumberFormat('id-ID').format(net)}`,
-                                            `Ratio: ${ratio}% income/expense`
-                                        ];
-                                    }
-                                }
-                            },
-                            legend: {
-                                position: 'bottom',
-                                labels: {
-                                    color: isDark ? '#9ca3af' : '#6b7280',
-                                    usePointStyle: true,
-                                    padding: 20,
-                                    font: {
-                                        size: 12
-                                    }
+                                    return [
+                                        '',
+                                        `Net: Rp ${new Intl.NumberFormat('id-ID').format(net)}`,
+                                        `Ratio: ${ratio}% income/expense`
+                                    ];
                                 }
                             }
                         },
-                        scales: {
-                            x: {
-                                grid: {
-                                    color: isDark ? '#374151' : '#f3f4f6',
-                                    drawBorder: false,
-                                },
-                                ticks: {
-                                    color: isDark ? '#9ca3af' : '#6b7280',
-                                    font: {
-                                        size: 11
-                                    }
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: isDark ? '#9ca3af' : '#6b7280',
+                                usePointStyle: true,
+                                padding: 20,
+                                font: {
+                                    size: 12
                                 }
-                            },
-                            y: {
-                                type: 'linear',
-                                display: true,
-                                position: 'left',
-                                grid: {
-                                    color: isDark ? '#374151' : '#f3f4f6',
-                                    drawBorder: false,
-                                },
-                                ticks: {
-                                    color: isDark ? '#9ca3af' : '#6b7280',
-                                    font: {
-                                        size: 11
-                                    },
-                                    callback: function(value) {
-                                        // Format dengan nominal lengkap untuk Indonesia
-                                        if (value >= 1000000000) {
-                                            return 'Rp ' + (value / 1000000000).toFixed(1) + 'B';
-                                        } else if (value >= 1000000) {
-                                            return 'Rp ' + (value / 1000000).toFixed(0) + 'Jt';
-                                        } else if (value >= 1000) {
-                                            return 'Rp ' + (value / 1000).toFixed(0) + 'K';
-                                        } else {
-                                            return 'Rp ' + new Intl.NumberFormat('id-ID').format(value);
-                                        }
-                                    }
-                                }
-                            },
-                            y1: {
-                                type: 'linear',
-                                display: true,
-                                position: 'right',
-                                grid: {
-                                    drawOnChartArea: false,
-                                },
-                                ticks: {
-                                    color: isDark ? '#60a5fa' : '#3b82f6',
-                                    font: {
-                                        size: 11
-                                    },
-                                    callback: function(value) {
-                                        const sign = value >= 0 ? '+' : '';
-                                        if (Math.abs(value) >= 1000000) {
-                                            return sign + (value / 1000000).toFixed(1) + 'Jt';
-                                        } else if (Math.abs(value) >= 1000) {
-                                            return sign + (value / 1000).toFixed(0) + 'K';
-                                        } else {
-                                            return sign + new Intl.NumberFormat('id-ID').format(value);
-                                        }
-                                    }
-                                }
-                            }
-                        },
-                        elements: {
-                            bar: {
-                                borderWidth: 2,
                             }
                         }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                color: isDark ? '#374151' : '#f3f4f6',
+                                drawBorder: false,
+                            },
+                            ticks: {
+                                color: isDark ? '#9ca3af' : '#6b7280',
+                                font: {
+                                    size: 11
+                                }
+                            }
+                        },
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            grid: {
+                                color: isDark ? '#374151' : '#f3f4f6',
+                                drawBorder: false,
+                            },
+                            ticks: {
+                                color: isDark ? '#9ca3af' : '#6b7280',
+                                font: {
+                                    size: 11
+                                },
+                                callback: function(value) {
+                                    if (value >= 1000000000) {
+                                        return 'Rp ' + (value / 1000000000).toFixed(1) + 'B';
+                                    } else if (value >= 1000000) {
+                                        return 'Rp ' + (value / 1000000).toFixed(0) + 'Jt';
+                                    } else if (value >= 1000) {
+                                        return 'Rp ' + (value / 1000).toFixed(0) + 'K';
+                                    } else {
+                                        return 'Rp ' + new Intl.NumberFormat('id-ID').format(value);
+                                    }
+                                }
+                            }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            grid: {
+                                drawOnChartArea: false,
+                            },
+                            ticks: {
+                                color: isDark ? '#60a5fa' : '#3b82f6',
+                                font: {
+                                    size: 11
+                                },
+                                callback: function(value) {
+                                    const sign = value >= 0 ? '+' : '';
+                                    if (Math.abs(value) >= 1000000) {
+                                        return sign + (value / 1000000).toFixed(1) + 'Jt';
+                                    } else if (Math.abs(value) >= 1000) {
+                                        return sign + (value / 1000).toFixed(0) + 'K';
+                                    } else {
+                                        return sign + new Intl.NumberFormat('id-ID').format(value);
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    elements: {
+                        bar: {
+                            borderWidth: 2,
+                        }
                     }
-                });
-            }
+                }
+            });
+        }
 
-            // Initial render
+        // Initialize on page load (Livewire SPA navigation)
+        document.addEventListener('livewire:navigated', () => {
             const initialData = @json($this->chartData);
             createChart(initialData);
+        });
 
-            // Listen for Livewire updates
-            document.addEventListener('chartDataUpdated', event => {
-                const chartData = event.detail[0].chartData;
-                createChart(chartData);
+        // Listen for chart updates
+        Livewire.on('chartDataUpdated', (data) => {
+            createChart(data[0].chartData);
+        });
+
+        // Reinitialize after actions
+        Livewire.on('reinitialize-chart', (data) => {
+            if (chartInstance) {
+                chartInstance.destroy();
+                chartInstance = null;
+            }
+            setTimeout(() => {
+                createChart(data[0].chartData);
+            }, 100);
+        });
+
+        // Handle theme changes
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.attributeName === 'class' && chartInstance) {
+                    const currentLabels = chartInstance.data.labels;
+                    const datasets = chartInstance.data.datasets;
+
+                    setTimeout(() => {
+                        createChart(currentLabels.map((label, index) => ({
+                            month: label,
+                            income: datasets[0].data[index],
+                            expense: datasets[1].data[index]
+                        })));
+                    }, 100);
+                }
             });
+        });
 
-            // Listen for chart reinitialization after actions
-            document.addEventListener('reinitialize-chart', event => {
-                const chartData = event.detail[0].chartData;
-                setTimeout(() => {
-                    createChart(chartData);
-                }, 100);
-            });
+        observer.observe(document.documentElement, {
+            attributes: true,
+            attributeFilter: ['class']
+        });
 
-            // Handle theme changes
-            const observer = new MutationObserver(function(mutations) {
-                mutations.forEach(function(mutation) {
-                    if (mutation.attributeName === 'class' && chart) {
-                        const currentLabels = chart.data.labels;
-                        const datasets = chart.data.datasets;
-
-                        setTimeout(() => {
-                            createChart(currentLabels.map((label, index) => ({
-                                month: label,
-                                income: datasets[0].data[index],
-                                expense: datasets[1].data[index]
-                            })));
-                        }, 100);
-                    }
-                });
-            });
-
-            observer.observe(document.documentElement, {
-                attributes: true,
-                attributeFilter: ['class']
-            });
-
-            // Cleanup
-            window.addEventListener('beforeunload', () => {
-                if (chart) chart.destroy();
-            });
+        // Cleanup
+        window.addEventListener('beforeunload', () => {
+            if (chartInstance) {
+                chartInstance.destroy();
+                chartInstance = null;
+            }
         });
     </script>
 @endpush
