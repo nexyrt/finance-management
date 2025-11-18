@@ -32,20 +32,83 @@
             <flux:separator />
 
             <div class="space-y-4">
-                <x-upload wire:model="logo" label="Logo" accept="image/*" tip="PNG, JPG (Max 2MB)" />
+                {{-- Logo --}}
                 @if ($currentLogo)
-                    <img src="{{ asset($currentLogo) }}" class="h-16 border rounded" alt="Current">
+                    <div class="space-y-2">
+                        <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Current Logo</label>
+                        <div
+                            class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4 border border-blue-200 dark:border-blue-800">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-3 cursor-pointer"
+                                    wire:click="$set('showLogoModal', true)">
+                                    <img src="{{ asset('storage/' . $currentLogo) }}" class="h-16 rounded border"
+                                        alt="Logo">
+                                    <div>
+                                        <p class="text-sm font-medium text-blue-900 dark:text-blue-100">letter-head.png
+                                        </p>
+                                        <p class="text-xs text-blue-700 dark:text-blue-300">Click to preview</p>
+                                    </div>
+                                </div>
+                                <flux:button variant="danger" size="sm" wire:click="deleteExistingLogo">Delete
+                                </flux:button>
+                            </div>
+                        </div>
+                    </div>
                 @endif
+                <x-upload wire:model="logo" label="{{ $currentLogo ? 'Replace Logo' : 'Logo' }}" accept="image/*"
+                    tip="PNG, JPG (Max 2MB)" />
 
-                <x-upload wire:model="signature" label="Signature" accept="image/*" tip="PNG, JPG (Max 2MB)" />
+                {{-- Signature --}}
                 @if ($currentSignature)
-                    <img src="{{ asset($currentSignature) }}" class="h-16 border rounded" alt="Current">
+                    <div class="space-y-2">
+                        <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Current Signature</label>
+                        <div
+                            class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4 border border-blue-200 dark:border-blue-800">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-3 cursor-pointer"
+                                    wire:click="$set('showSignatureModal', true)">
+                                    <img src="{{ asset('storage/' . $currentSignature) }}" class="h-16 rounded border"
+                                        alt="Signature">
+                                    <div>
+                                        <p class="text-sm font-medium text-blue-900 dark:text-blue-100">
+                                            pdf-signature.png</p>
+                                        <p class="text-xs text-blue-700 dark:text-blue-300">Click to preview</p>
+                                    </div>
+                                </div>
+                                <flux:button variant="danger" size="sm" wire:click="deleteExistingSignature">Delete
+                                </flux:button>
+                            </div>
+                        </div>
+                    </div>
                 @endif
+                <x-upload wire:model="signature" label="{{ $currentSignature ? 'Replace Signature' : 'Signature' }}"
+                    accept="image/*" tip="PNG, JPG (Max 2MB)" />
 
-                <x-upload wire:model="stamp" label="Stamp" accept="image/*" tip="PNG, JPG (Max 2MB)" />
+                {{-- Stamp --}}
                 @if ($currentStamp)
-                    <img src="{{ asset($currentStamp) }}" class="h-16 border rounded" alt="Current">
+                    <div class="space-y-2">
+                        <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Current Stamp</label>
+                        <div
+                            class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4 border border-blue-200 dark:border-blue-800">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-3 cursor-pointer"
+                                    wire:click="$set('showStampModal', true)">
+                                    <img src="{{ asset('storage/' . $currentStamp) }}" class="h-16 rounded border"
+                                        alt="Stamp">
+                                    <div>
+                                        <p class="text-sm font-medium text-blue-900 dark:text-blue-100">
+                                            kisantra-stamp.png</p>
+                                        <p class="text-xs text-blue-700 dark:text-blue-300">Click to preview</p>
+                                    </div>
+                                </div>
+                                <flux:button variant="danger" size="sm" wire:click="deleteExistingStamp">Delete
+                                </flux:button>
+                            </div>
+                        </div>
+                    </div>
                 @endif
+                <x-upload wire:model="stamp" label="{{ $currentStamp ? 'Replace Stamp' : 'Stamp' }}" accept="image/*"
+                    tip="PNG, JPG (Max 2MB)" />
             </div>
 
             <div class="flex items-center gap-4">
@@ -54,4 +117,23 @@
             </div>
         </form>
     </x-settings.layout>
+
+    {{-- Preview Modals --}}
+    <flux:modal name="logo-preview" :show="$showLogoModal" wire:model="showLogoModal">
+        @if ($currentLogo)
+            <img src="{{ asset('storage/' . $currentLogo) }}" class="w-full" alt="Logo Preview">
+        @endif
+    </flux:modal>
+
+    <flux:modal name="signature-preview" :show="$showSignatureModal" wire:model="showSignatureModal">
+        @if ($currentSignature)
+            <img src="{{ asset('storage/' . $currentSignature) }}" class="w-full" alt="Signature Preview">
+        @endif
+    </flux:modal>
+
+    <flux:modal name="stamp-preview" :show="$showStampModal" wire:model="showStampModal">
+        @if ($currentStamp)
+            <img src="{{ asset('storage/' . $currentStamp) }}" class="w-full" alt="Stamp Preview">
+        @endif
+    </flux:modal>
 </section>

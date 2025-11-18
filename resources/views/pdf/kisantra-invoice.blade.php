@@ -398,7 +398,7 @@
             border: 1px solid #f59e0b;
             border-left: 4px solid #f59e0b;
             padding: 8px;
-            margin-bottom: 10px;
+            margin-top: 10px;
             font-size: 12px;
             color: #92400e;
         }
@@ -412,10 +412,10 @@
             <div class="letterhead-container">
                 @if ($company['logo_base64'])
                     <img src="{{ $company['logo_base64'] }}" class="letterhead-image"
-                        alt="PT. Kinara Sadayatra Nusantara Letterhead">
+                        alt="{{ $company['name'] }}">
                 @else
                     <div style="padding: 20px; text-align: center; border: 2px dashed #42b2cc; color: #42b2cc;">
-                        PT. KINARA SADAYATRA NUSANTARA<br>
+                        {{ $company['name'] }}<br>
                         LETTERHEAD PLACEHOLDER
                     </div>
                 @endif
@@ -751,7 +751,7 @@
 
                 <!-- Signature Section -->
                 <div class="signature-section">
-                    <div style="font-weight: bold; margin-bottom: 10px;">PT. KINARA SADAYATRA NUSANTARA</div>
+                    <div style="font-weight: bold; margin-bottom: 10px;">{{ $company['name'] }}</div>
 
                     <div class="signature-box">
                         @if ($company['signature_base64'])

@@ -82,9 +82,9 @@ class InvoicePrintService
             'address' => $company->address,
             'email' => $company->email,
             'phone' => $company->phone,
-            'logo_base64' => $company->logo_base64,
-            'signature_base64' => $company->signature_base64,
-            'stamp_base64' => $company->stamp_base64,
+            'logo_base64' => $company?->logo_path ? $this->getImageBase64($company->logo_path) : '',
+            'signature_base64' => $company?->signature_path ? $this->getImageBase64($company->signature_path) : '',
+            'stamp_base64' => $company?->stamp_path ? $this->getImageBase64($company->stamp_path) : '',
             'bank_accounts' => $company->bank_accounts,
             'signature' => [
                 'name' => $company->finance_manager_name,
@@ -118,7 +118,7 @@ class InvoicePrintService
 
     private function getImageBase64(string $path): string
     {
-        $fullPath = public_path($path);
+        $fullPath = public_path('storage/' . $path);
         return file_exists($fullPath) ? 'data:image/png;base64,' . base64_encode(file_get_contents($fullPath)) : '';
     }
 
