@@ -148,9 +148,4 @@ class CompanyProfileSettings extends Component
             $this->currentStamp = null;
         }
     }
-
-    public function render()
-    {
-        return view('livewire.settings.company-profile-settings');
-    }
 }

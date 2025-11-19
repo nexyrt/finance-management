@@ -41,8 +41,6 @@
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center gap-3 cursor-pointer"
                                     wire:click="$set('showLogoModal', true)">
-                                    <img src="{{ asset('storage/' . $currentLogo) }}" class="h-16 rounded border"
-                                        alt="Logo">
                                     <div>
                                         <p class="text-sm font-medium text-blue-900 dark:text-blue-100">letter-head.png
                                         </p>
@@ -67,8 +65,6 @@
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center gap-3 cursor-pointer"
                                     wire:click="$set('showSignatureModal', true)">
-                                    <img src="{{ asset('storage/' . $currentSignature) }}" class="h-16 rounded border"
-                                        alt="Signature">
                                     <div>
                                         <p class="text-sm font-medium text-blue-900 dark:text-blue-100">
                                             pdf-signature.png</p>
@@ -93,8 +89,6 @@
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center gap-3 cursor-pointer"
                                     wire:click="$set('showStampModal', true)">
-                                    <img src="{{ asset('storage/' . $currentStamp) }}" class="h-16 rounded border"
-                                        alt="Stamp">
                                     <div>
                                         <p class="text-sm font-medium text-blue-900 dark:text-blue-100">
                                             kisantra-stamp.png</p>
