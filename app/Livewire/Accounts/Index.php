@@ -97,6 +97,14 @@ class Index extends Component
         });
     }
 
+    #[Computed]
+    public function totalBalance()
+    {
+        return BankAccount::all()->sum(function ($account) {
+            return $account->balance;
+        });
+    }
+
     // Helper methods
     private function calculateTrend($accountId): string
     {

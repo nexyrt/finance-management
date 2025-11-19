@@ -13,21 +13,45 @@
                     Manage bank accounts, transactions, and monitor cashflow
                 </p>
             </div>
-            @if ($selectedAccountId)
-                <x-dropdown icon="cog-6-tooth" position="bottom-end">
-                    <x-slot:trigger>
-                        <x-button color="secondary" outline icon="cog-6-tooth" class="w-full sm:w-auto">
-                            Account Settings
-                        </x-button>
-                    </x-slot:trigger>
-                    <x-dropdown.items text="Edit Account" icon="pencil"
-                        wire:click="editAccount({{ $selectedAccountId }})"
-                        loading="editAccount({{ $selectedAccountId }})" />
-                    <x-dropdown.items text="Delete Account" icon="trash"
-                        wire:click="deleteAccount({{ $selectedAccountId }})"
-                        loading="deleteAccount({{ $selectedAccountId }})" class="text-red-600 dark:text-red-400" />
-                </x-dropdown>
-            @endif
+
+            {{-- Total Balance + Settings --}}
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                {{-- Total Balance Card --}}
+                <div
+                    class="px-6 py-4 bg-gradient-to-br from-primary-500 to-primary-700 dark:from-primary-600 dark:to-primary-800 rounded-xl shadow-lg">
+                    <div class="flex items-center gap-3">
+                        <div class="h-12 w-12 bg-white/20 rounded-lg flex items-center justify-center">
+                            <x-icon name="currency-dollar" class="w-6 h-6 text-white" />
+                        </div>
+                        <div>
+                            <p class="text-xs text-white/70 font-medium">Total Balance</p>
+                            <p class="text-2xl font-bold text-white">
+                                Rp {{ number_format($this->totalBalance, 0, ',', '.') }}
+                            </p>
+                            <p class="text-xs text-white/60">
+                                {{ $this->accountsData->count() }}
+                                {{ Str::plural('account', $this->accountsData->count()) }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Account Settings --}}
+                @if ($selectedAccountId)
+                    <x-dropdown icon="cog-6-tooth" position="bottom-end">
+                        <x-slot:trigger>
+                            <x-button color="secondary" outline icon="cog-6-tooth" class="w-full sm:w-auto">
+                                Settings
+                            </x-button>
+                        </x-slot:trigger>
+                        <x-dropdown.items text="Edit Account" icon="pencil"
+                            wire:click="editAccount({{ $selectedAccountId }})" />
+                        <x-dropdown.items text="Delete Account" icon="trash"
+                            wire:click="deleteAccount({{ $selectedAccountId }})"
+                            class="text-red-600 dark:text-red-400" />
+                    </x-dropdown>
+                @endif
+            </div>
         </div>
     </div>
 
