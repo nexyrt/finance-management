@@ -28,7 +28,12 @@ class MyRequests extends Component
     public $dateRange = [];
 
     // Bulk Actions
-    public $selected = [];
+    public array $selected = [];
+
+    // Image Preview
+    public bool $modal = false;
+    public $previewImage = null;
+    public $previewName = null;
 
     public function render(): View
     {
@@ -39,12 +44,12 @@ class MyRequests extends Component
     public function headers(): array
     {
         return [
+            ['index' => 'attachment', 'label' => '', 'sortable' => false],
             ['index' => 'title', 'label' => 'Title'],
-            ['index' => 'amount', 'label' => 'Amount'],
             ['index' => 'category', 'label' => 'Category'],
             ['index' => 'expense_date', 'label' => 'Date'],
+            ['index' => 'amount', 'label' => 'Amount'],
             ['index' => 'status', 'label' => 'Status'],
-            ['index' => 'payment_status', 'label' => 'Payment'],
             ['index' => 'action', 'sortable' => false],
         ];
     }
@@ -52,12 +57,29 @@ class MyRequests extends Component
     #[Computed]
     public function rows(): LengthAwarePaginator
     {
-        return Reimbursement::with(['user', 'reviewer', 'payments.payer', 'payments.bankTransaction.bankAccount'])
+        return Reimbursement::with(['reviewer'])
             ->where('user_id', auth()->id())
-            ->when($this->search, fn(Builder $query) => $query->whereAny(['title', 'description', 'category'], 'like', '%' . trim($this->search) . '%'))
-            ->when($this->statusFilter, fn(Builder $query) => $query->where('status', $this->statusFilter))
-            ->when($this->categoryFilter, fn(Builder $query) => $query->where('category', $this->categoryFilter))
-            ->when(!empty($this->dateRange) && count($this->dateRange) === 2, fn(Builder $query) => $query->whereBetween('expense_date', $this->dateRange))
+            ->when(
+                $this->search,
+                fn(Builder $query) =>
+                $query->whereAny(['title', 'description', 'category_input'], 'like', '%' . trim($this->search) . '%')
+            )
+            ->when(
+                $this->statusFilter,
+                fn(Builder $query) =>
+                $query->where('status', $this->statusFilter)
+            )
+            ->when(
+                $this->categoryFilter,
+                fn(Builder $query) =>
+                $query->where('category_input', $this->categoryFilter)
+            )
+            ->when(
+                !empty($this->dateRange) && count($this->dateRange) === 2,
+                fn(Builder $query) =>
+                $query->whereBetween('expense_date', $this->dateRange)
+            )
+            ->withSum('payments', 'amount')
             ->orderBy($this->sort['column'], $this->sort['direction'])
             ->paginate($this->quantity)
             ->withQueryString();
@@ -66,17 +88,27 @@ class MyRequests extends Component
     #[Computed]
     public function statusOptions(): array
     {
-        return collect(Reimbursement::statuses())
-            ->map(fn($status) => ['label' => $status['label'], 'value' => $status['value']])
-            ->toArray();
+        return [
+            ['label' => 'Draft', 'value' => 'draft'],
+            ['label' => 'Pending Review', 'value' => 'pending'],
+            ['label' => 'Approved', 'value' => 'approved'],
+            ['label' => 'Rejected', 'value' => 'rejected'],
+            ['label' => 'Paid', 'value' => 'paid'],
+        ];
     }
 
     #[Computed]
     public function categoryOptions(): array
     {
-        return collect(Reimbursement::categories())
-            ->map(fn($category) => ['label' => $category['label'], 'value' => $category['value']])
-            ->toArray();
+        return [
+            ['label' => 'Transport', 'value' => 'transport'],
+            ['label' => 'Meals & Entertainment', 'value' => 'meals'],
+            ['label' => 'Office Supplies', 'value' => 'office_supplies'],
+            ['label' => 'Communication', 'value' => 'communication'],
+            ['label' => 'Accommodation', 'value' => 'accommodation'],
+            ['label' => 'Medical', 'value' => 'medical'],
+            ['label' => 'Other', 'value' => 'other'],
+        ];
     }
 
     public function clearFilters(): void
@@ -142,6 +174,24 @@ class MyRequests extends Component
         $this->selected = [];
         $this->resetPage();
         $this->success("{$count} reimbursements deleted successfully");
+    }
+
+    public function previewAttachment(int $id): void
+    {
+        $reimbursement = Reimbursement::findOrFail($id);
+
+        if ($reimbursement->user_id !== auth()->id()) {
+            $this->error('Unauthorized action');
+            return;
+        }
+
+        if (!$reimbursement->hasAttachment() || !$reimbursement->isImageAttachment()) {
+            return;
+        }
+
+        $this->previewImage = $reimbursement->attachment_url;
+        $this->previewName = $reimbursement->attachment_name;
+        $this->modal = true;
     }
 
     #[On('refreshed')]
