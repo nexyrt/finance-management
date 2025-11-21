@@ -44,13 +44,10 @@ class MyRequests extends Component
     public function headers(): array
     {
         return [
-            ['index' => 'attachment', 'label' => '', 'sortable' => false],
-            ['index' => 'title', 'label' => 'Title'],
-            ['index' => 'category', 'label' => 'Category'],
-            ['index' => 'expense_date', 'label' => 'Date'],
+            ['index' => 'request', 'label' => 'Request Information'],
             ['index' => 'amount', 'label' => 'Amount'],
             ['index' => 'status', 'label' => 'Status'],
-            ['index' => 'action', 'sortable' => false],
+            ['index' => 'actions', 'sortable' => false],
         ];
     }
 

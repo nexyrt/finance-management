@@ -98,7 +98,7 @@
                     } }})
                 </span>
             </h3>
-            <div class="h-80" wire:ignore.self>
+            <div class="h-80" wire:ignore>
                 <canvas id="trendChart-{{ $period }}"></canvas>
             </div>
         </div>
@@ -106,7 +106,7 @@
         {{-- Expense by Category --}}
         <div class="bg-white dark:bg-dark-800 border border-zinc-200 dark:border-dark-600 rounded-xl p-6">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-6">Expenses by Category</h3>
-            <div class="h-80" wire:ignore.self>
+            <div class="h-80" wire:ignore>
                 <canvas id="categoryChart-{{ $period }}"></canvas>
             </div>
         </div>
@@ -162,22 +162,17 @@
 </div>
 
 @push('scripts')
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
     <script>
         function setupCashFlowCharts(period) {
-            function isDarkMode() {
-                return document.documentElement.classList.contains('dark');
-            }
-
             function getThemeColors() {
-                const isDark = isDarkMode();
+                const isDark = document.documentElement.classList.contains('dark');
                 return {
+                    text: isDark ? '#e5e7eb' : '#374151',
                     grid: isDark ? '#374151' : '#e5e7eb',
-                    text: isDark ? '#d1d5db' : '#6b7280',
                     border: isDark ? '#4b5563' : '#d1d5db',
                     tooltipBg: isDark ? '#1f2937' : '#ffffff',
-                    tooltipTitle: isDark ? '#ffffff' : '#111827',
-                    tooltipBody: isDark ? '#e5e7eb' : '#374151',
+                    tooltipTitle: isDark ? '#f3f4f6' : '#111827',
+                    tooltipBody: isDark ? '#d1d5db' : '#6b7280',
                 };
             }
 
@@ -185,11 +180,8 @@
                 const ctx = document.getElementById('trendChart-' + period);
                 if (!ctx) return;
 
-                // Destroy existing chart instance
                 const existingChart = Chart.getChart(ctx);
-                if (existingChart) {
-                    existingChart.destroy();
-                }
+                if (existingChart) existingChart.destroy();
 
                 const colors = getThemeColors();
                 const data = @json($this->monthlyTrendData);
@@ -199,41 +191,34 @@
                     data: {
                         labels: data.map(d => d.month),
                         datasets: [{
-                            label: 'Income',
-                            data: data.map(d => d.income),
-                            borderColor: 'rgb(34, 197, 94)',
-                            backgroundColor: 'rgba(34, 197, 94, 0.1)',
-                            borderWidth: 3,
-                            fill: true,
-                            tension: 0.4,
-                            pointBackgroundColor: 'rgb(34, 197, 94)',
-                            pointBorderColor: '#fff',
-                            pointBorderWidth: 2,
-                            pointRadius: 4,
-                        }, {
-                            label: 'Expenses',
-                            data: data.map(d => d.expenses),
-                            borderColor: 'rgb(239, 68, 68)',
-                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                            borderWidth: 3,
-                            fill: true,
-                            tension: 0.4,
-                            pointBackgroundColor: 'rgb(239, 68, 68)',
-                            pointBorderColor: '#fff',
-                            pointBorderWidth: 2,
-                            pointRadius: 4,
-                        }]
+                                label: 'Income',
+                                data: data.map(d => d.income),
+                                borderColor: 'rgb(34, 197, 94)',
+                                backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                                tension: 0.4,
+                                fill: true
+                            },
+                            {
+                                label: 'Expenses',
+                                data: data.map(d => d.expenses),
+                                borderColor: 'rgb(239, 68, 68)',
+                                backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                                tension: 0.4,
+                                fill: true
+                            }
+                        ]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
+                        interaction: {
+                            mode: 'index',
+                            intersect: false,
+                        },
                         plugins: {
                             legend: {
                                 labels: {
-                                    color: colors.text,
-                                    font: {
-                                        size: 12
-                                    }
+                                    color: colors.text
                                 }
                             },
                             tooltip: {
@@ -257,7 +242,7 @@
                                         if (value >= 1000000000) return 'Rp ' + (value / 1000000000).toFixed(
                                             1) + 'M';
                                         if (value >= 1000000) return 'Rp ' + (value / 1000000).toFixed(0) +
-                                        'Jt';
+                                            'Jt';
                                         return 'Rp ' + (value / 1000).toFixed(0) + 'Rb';
                                     }
                                 },
@@ -282,11 +267,8 @@
                 const ctx = document.getElementById('categoryChart-' + period);
                 if (!ctx) return;
 
-                // Destroy existing chart instance
                 const existingChart = Chart.getChart(ctx);
-                if (existingChart) {
-                    existingChart.destroy();
-                }
+                if (existingChart) existingChart.destroy();
 
                 const colors = getThemeColors();
                 const data = @json($this->expenseByCategoryData);
@@ -338,7 +320,7 @@
                                         if (value >= 1000000000) return 'Rp ' + (value / 1000000000).toFixed(
                                             1) + 'M';
                                         if (value >= 1000000) return 'Rp ' + (value / 1000000).toFixed(0) +
-                                        'Jt';
+                                            'Jt';
                                         return 'Rp ' + (value / 1000).toFixed(0) + 'Rb';
                                     }
                                 },
@@ -359,7 +341,6 @@
                 });
             }
 
-            // Initialize
             createTrendChart();
             createCategoryChart();
 
@@ -387,13 +368,14 @@
             setupCashFlowCharts(period);
         });
 
-        // Re-initialize when period changes (Livewire will re-render with new canvas IDs)
+        // ✅ FIX: Livewire 3 syntax
         document.addEventListener('livewire:init', () => {
             Livewire.hook('morph.updated', ({
                 el,
                 component
             }) => {
-                const period = component.get('period');
+                // Get period from component state (Livewire 3)
+                const period = component.$wire.period || @js($period);
                 setTimeout(() => {
                     setupCashFlowCharts(period);
                 }, 100);
