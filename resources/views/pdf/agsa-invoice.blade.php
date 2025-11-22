@@ -25,17 +25,25 @@
             padding: 20px;
         }
 
-        /* Header */
-        .header {
+        /* Header Grid */
+        .header-grid {
             display: table;
             width: 100%;
             margin-bottom: 20px;
         }
 
-        .header-left {
+        .header-grid-left {
             display: table-cell;
-            width: 30%;
+            width: 50%;
             vertical-align: top;
+            padding-right: 20px;
+        }
+
+        .header-grid-right {
+            display: table-cell;
+            width: 50%;
+            vertical-align: top;
+            text-align: right;
         }
 
         .logo {
@@ -43,37 +51,9 @@
             height: auto;
         }
 
-        .header-right {
-            display: table-cell;
-            width: 70%;
-            vertical-align: top;
-            text-align: right;
-            padding-right: 10px;
-        }
-
         .company-info {
-            font-size: 12pt;
+            font-size: 11pt;
             line-height: 1.4;
-        }
-
-        /* Billing Section */
-        .billing-section {
-            display: table;
-            width: 100%;
-            margin-bottom: 15px;
-        }
-
-        .billing-left {
-            display: table-cell;
-            width: 50%;
-            vertical-align: top;
-        }
-
-        .billing-right {
-            display: table-cell;
-            width: 50%;
-            vertical-align: top;
-            text-align: right;
         }
 
         .client-name {
@@ -85,13 +65,14 @@
         .invoice-meta {
             font-size: 11pt;
             line-height: 1.5;
+            text-align: left;
+            display: inline-block;
         }
 
         /* Periode */
         .periode {
             font-weight: bold;
             font-size: 11pt;
-            margin: 15px 0 10px 0;
         }
 
         /* Items Table */
@@ -254,41 +235,54 @@
 
 <body>
     <div class="container">
-        <!-- Header -->
-        <div class="header">
-            <div class="header-left">
+        <!-- Header Grid: 2 Columns -->
+        <div class="header-grid">
+            <!-- Left Column: Logo + Client + Periode -->
+            <div class="header-grid-left">
+                <!-- Logo -->
                 @if (!empty($company['logo_base64']))
-                    <img src="{{ $company['logo_base64'] }}" class="logo" alt="Logo">
+                    <div style="margin-bottom: 20px;">
+                        <img src="{{ $company['logo_base64'] }}" class="logo" alt="Logo">
+                    </div>
                 @endif
+
+                <!-- Client Info -->
+                <div style="margin-bottom: 20px;">
+                    <div style="font-size: 11pt; margin-bottom: 5px;">To:</div>
+                    <div class="client-name">{{ strtoupper($client->name) }}</div>
+                    <div style="font-size: 11pt;">{{ strtoupper($client->address ?? 'DI SEMPAYAU') }}</div>
+                </div>
+
+                <!-- Periode -->
+                    <div class="periode">Periode  21 SEPTEMBER 2025 - 20 OKTOBER 2025</div>
             </div>
-            <div class="header-right">
-                <div class="company-info">
+
+            <!-- Right Column: Company Info + Invoice Meta -->
+            <div class="header-grid-right">
+                <!-- Company Info -->
+                <div class="company-info" style="margin-bottom: 30px;">
                     {{ $company['address'] }}<br>
                     {{ $company['phone'] }}<br>
                     {{ $company['email'] }}
                 </div>
-            </div>
-        </div>
 
-        <!-- Billing Info -->
-        <div class="billing-section">
-            <div class="billing-left">
-                <div style="font-size: 11pt; margin-bottom: 3px;">To:</div>
-                <div class="client-name">{{ strtoupper($client->name) }}</div>
-                <div style="font-size: 11pt;">{{ strtoupper($client->address ?? 'DI SEMPAYAU') }}</div>
-            </div>
-            <div class="billing-right">
+                <!-- Invoice Meta -->
                 <div class="invoice-meta">
-                    INVOICE NO. : {{ $invoice->invoice_number }}<br>
-                    DATE : {{ $invoice->issue_date->format('d F Y') }}
+                    <table style="width: 100%; font-size: 11pt;">
+                        <tr>
+                            <td style="width: 30%; padding: 2px 0;">INVOICE NO.</td>
+                            <td style="width: 5%; padding: 2px 0;">:</td>
+                            <td style="width: 65%; padding: 2px 0;">{{ $invoice->invoice_number }}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 2px 0;">DATE</td>
+                            <td style="padding: 2px 0;">:</td>
+                            <td style="padding: 2px 0;">{{ $invoice->issue_date->format('d F Y') }}</td>
+                        </tr>
+                    </table>
                 </div>
             </div>
         </div>
-
-        <!-- Periode -->
-        @if (!empty($periode))
-            <div class="periode">Periode {{ $periode }}</div>
-        @endif
 
         <!-- Items Table -->
         <table class="items-table">
