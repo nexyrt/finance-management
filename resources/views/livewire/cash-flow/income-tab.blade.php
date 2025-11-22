@@ -271,7 +271,7 @@
 
                             <td class="px-4 py-5 whitespace-nowrap">
                                 <div
-                                    class="flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                    class="flex items-center justify-center gap-1">
                                     @if ($item->attachment_path)
                                         <x-button.circle icon="paper-clip" color="primary" size="sm"
                                             wire:click="viewAttachment('{{ $item->source_type }}', {{ $item->id }})"

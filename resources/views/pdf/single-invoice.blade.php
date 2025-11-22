@@ -27,14 +27,13 @@
 
         /* Header dengan logo JKB */
         .header {
-            @if ($company['logo_base64'])
+            @if (!empty($company['logo_base64']))
                 background: url('{{ $company['logo_base64'] }}') no-repeat center;
                 background-size: cover;
             @else
                 background: linear-gradient(90deg, #ff6b35 0%, #1e3a8a 100%);
             @endif
             height: 200px;
-            /* Adjusted height for better visibility */
             margin: -15px -20px 0px -15px;
             border: none;
         }
@@ -457,13 +456,14 @@
             <!-- Kolom Kanan: Grand Total dan Signature -->
             <div class="footer-right">
                 <!-- Discount Section (if applicable) -->
-                @if($invoice->discount_amount > 0)
-                <div class="grand-total-section">
-                    <div class="grand-total-row">
-                        <div class="grand-total-label">DISKON</div>
-                        <div class="grand-total-value">IDR -{{ number_format($invoice->discount_amount, 0, ',', '.') }}</div>
+                @if ($invoice->discount_amount > 0)
+                    <div class="grand-total-section">
+                        <div class="grand-total-row">
+                            <div class="grand-total-label">DISKON</div>
+                            <div class="grand-total-value">IDR
+                                -{{ number_format($invoice->discount_amount, 0, ',', '.') }}</div>
+                        </div>
                     </div>
-                </div>
                 @endif
 
                 <!-- Grand Total -->
@@ -493,16 +493,16 @@
                     <div style="font-weight: bold; margin-bottom: 10px;">{{ $company['name'] }}</div>
 
                     <div class="signature-box">
-                        @if ($company['signature_base64'])
+                        @if (!empty($company['signature_base64']))
                             <img src="{{ $company['signature_base64'] }}" class="signature-image" alt="Signature">
                         @endif
 
-                        @if ($company['stamp_base64'])
+                        @if (!empty($company['stamp_base64']))
                             <img src="{{ $company['stamp_base64'] }}" class="company-stamp" alt="Company Stamp">
                         @endif
 
-                        <div class="signature-name">{{ $company['signature']['name'] }}</div>
-                        <div class="signature-position">{{ $company['signature']['position'] }}</div>
+                        <div class="signature-name">{{ $company['signature']['name'] ?? 'Nama Penandatangan' }}</div>
+                        <div class="signature-position">{{ $company['signature']['position'] ?? 'Direktur' }}</div>
                     </div>
                 </div>
             </div>
