@@ -7,7 +7,7 @@
     <title>Invoice - {{ $invoice->invoice_number }}</title>
     <style>
         @page {
-            margin: 15mm 15mm 15mm 15mm;
+            margin: 10mm 10mm 10mm 10mm;
         }
 
         * {
@@ -21,6 +21,7 @@
             font-size: 10pt;
             line-height: 1.4;
             color: #000;
+            padding: 30px 30px 30px 30px;
         }
 
         .container {
@@ -87,26 +88,25 @@
             width: 100%;
             border-collapse: collapse;
             margin-top: 20px;
-            margin-bottom: 20px;
+            margin-bottom: 0;
+            border: 2px solid #000;
         }
 
         .items-table thead th {
-            background-color: #1e3a8a;
-            color: #fff;
-            padding: 10px 8px;
+            background-color: #ffc000;
+            color: #000;
+            padding: 0;
             text-align: left;
-            font-size: 11pt;
+            font-size: 10pt;
             font-weight: bold;
+            border: 2px solid #000;
         }
 
         .items-table tbody td {
-            padding: 8px;
-            border-bottom: 1px solid #ddd;
-            font-size: 11pt;
-        }
-
-        .items-table tbody tr:last-child td {
-            border-bottom: 2px solid #1e3a8a;
+            padding: 6px 8px;
+            border: 1px solid #000;
+            font-size: 10pt;
+            vertical-align: top;
         }
 
         .text-left {
@@ -285,7 +285,7 @@
             <!-- Right Column: Company Info + Invoice Meta -->
             <div class="header-grid-right">
                 <!-- Company Info -->
-                <div class="company-info" style="margin-bottom: 30px;">
+                <div class="company-info" style="margin-bottom: 30px; margin-top: 30px;">
                     Jalan AW Syahranie Perum Villa Tamara Blok L No. 9<br>
                     Samarinda, Kalimantan Timur - Indonesia<br>
                     0813 1177 1117<br>
@@ -294,7 +294,7 @@
                 </div>
 
                 <!-- Invoice Meta -->
-                <div class="invoice-meta" style="text-align: right;">
+                <div class="invoice-meta" style="text-align: right; margin-top: 30px;">
                     <table style="width: auto; border-collapse: collapse; margin-left: auto;">
                         <tr>
                             <td style="padding: 2px 5px 2px 0; font-size: 8pt; white-space: nowrap;">INVOICE NO.</td>
@@ -315,9 +315,9 @@
         <table class="items-table">
             <thead>
                 <tr>
-                    <th style="width: 5%;">NO.</th>
-                    <th style="width: 70%;">DESCRIPTION</th>
-                    <th style="width: 25%;">AMOUNT</th>
+                    <th style="width: 3%; text-align: center;">NO.</th>
+                    <th style="width: 72%;">DESCRIPTION</th>
+                    <th style="width: 25%; text-align: center;">AMOUNT</th>
                 </tr>
             </thead>
             <tbody>
@@ -332,46 +332,147 @@
         </table>
 
         <!-- Summary Box -->
-        <div class="summary-box">
-            @php
-                $subtotalI = $invoice->subtotal;
-                $dpp = $subtotalI * 0.029;
-                $ppn = $dpp * 0.12;
-                $subtotalII = $subtotalI + $dpp + $ppn;
-                $pph23 = $subtotalI * 0.02;
-                $grandTotal = $subtotalII - $pph23;
-            @endphp
+        @php
+            $subtotalI = $invoice->subtotal;
+            $dpp = $subtotalI * 0.029;
+            $ppn = $dpp * 0.12;
+            $subtotalII = $subtotalI + $dpp + $ppn;
+            $pph23 = $subtotalI * 0.02;
+            $grandTotal = $subtotalII - $pph23;
 
-            <div class="summary-row">
-                <div class="summary-label">Sub Total I</div>
-                <div class="summary-value">Rp {{ number_format($subtotalI, 0, ',', '.') }}</div>
-            </div>
+            // Fungsi Terbilang untuk konversi angka ke kata
+            function terbilang($angka)
+            {
+                $angka = abs($angka);
+                $huruf = [
+                    '',
+                    'Satu',
+                    'Dua',
+                    'Tiga',
+                    'Empat',
+                    'Lima',
+                    'Enam',
+                    'Tujuh',
+                    'Delapan',
+                    'Sembilan',
+                    'Sepuluh',
+                    'Sebelas',
+                ];
+                $hasil = '';
 
-            <div class="summary-row">
-                <div class="summary-label">DPP (2,9%)</div>
-                <div class="summary-value">Rp {{ number_format($dpp, 0, ',', '.') }}</div>
-            </div>
+                if ($angka < 12) {
+                    $hasil = ' ' . $huruf[$angka];
+                } elseif ($angka < 20) {
+                    $hasil = terbilang($angka - 10) . ' Belas';
+                } elseif ($angka < 100) {
+                    $hasil = terbilang($angka / 10) . ' Puluh' . terbilang($angka % 10);
+                } elseif ($angka < 200) {
+                    $hasil = ' Seratus' . terbilang($angka - 100);
+                } elseif ($angka < 1000) {
+                    $hasil = terbilang($angka / 100) . ' Ratus' . terbilang($angka % 100);
+                } elseif ($angka < 2000) {
+                    $hasil = ' Seribu' . terbilang($angka - 1000);
+                } elseif ($angka < 1000000) {
+                    $hasil = terbilang($angka / 1000) . ' Ribu' . terbilang($angka % 1000);
+                } elseif ($angka < 1000000000) {
+                    $hasil = terbilang($angka / 1000000) . ' Juta' . terbilang($angka % 1000000);
+                } elseif ($angka < 1000000000000) {
+                    $hasil = terbilang($angka / 1000000000) . ' Milyar' . terbilang($angka % 1000000000);
+                } elseif ($angka < 1000000000000000) {
+                    $hasil = terbilang($angka / 1000000000000) . ' Triliun' . terbilang($angka % 1000000000000);
+                }
 
-            <div class="summary-row">
-                <div class="summary-label">PPN (12%)</div>
-                <div class="summary-value">Rp {{ number_format($ppn, 0, ',', '.') }}</div>
-            </div>
+                return trim($hasil);
+            }
 
-            <div class="summary-row bold">
-                <div class="summary-label">Sub Total II</div>
-                <div class="summary-value">Rp {{ number_format($subtotalII, 0, ',', '.') }}</div>
-            </div>
+            $terbilang = terbilang($grandTotal) . ' Rupiah';
+        @endphp
 
-            <div class="summary-row">
-                <div class="summary-label">PPh 23 (2%)</div>
-                <div class="summary-value">Rp {{ number_format($pph23, 0, ',', '.') }}</div>
-            </div>
-
-            <div class="summary-row total">
-                <div class="summary-label">GRAND TOTAL</div>
-                <div class="summary-value">Rp {{ number_format($grandTotal, 0, ',', '.') }}</div>
-            </div>
-        </div>
+        <table style="width: 100%; border: 2px solid #000; border-collapse: collapse; margin-top: 0;">
+            <tbody>
+                <tr>
+                    <td
+                        style="border-left: 2px solid #000; border-right: 0; padding: 4px 8px; width: 50%; font-size: 10pt;">
+                    </td>
+                    <td
+                        style="border-left: 0; border-right: 0; padding: 4px 8px; width: 3%; text-align: center; font-size: 10pt;">
+                        I</td>
+                    <td style="border-left: 0; border-right: 0; padding: 4px 8px; width: 22%; font-size: 10pt;">Sub
+                        total I :</td>
+                    <td
+                        style="border-left: 0; border-right: 0; padding: 4px 8px; width: 5%; text-align: left; font-size: 10pt;">
+                        Rp</td>
+                    <td
+                        style="border-left: 0; border-right: 2px solid #000; padding: 4px 8px; width: 20%; text-align: right; font-size: 10pt;">
+                        {{ number_format($subtotalI, 0, ',', '.') }}</td>
+                </tr>
+                <tr>
+                    <td style="border-left: 2px solid #000; border-right: 0; padding: 4px 8px;"></td>
+                    <td style="border-left: 0; border-right: 0; padding: 4px 8px; text-align: center; font-size: 10pt;">
+                        II</td>
+                    <td style="border-left: 0; border-right: 0; padding: 4px 8px; font-size: 10pt;">DPP</td>
+                    <td style="border-left: 0; border-right: 0; padding: 4px 8px; text-align: left; font-size: 10pt;">Rp
+                    </td>
+                    <td
+                        style="border-left: 0; border-right: 2px solid #000; padding: 4px 8px; text-align: right; font-size: 10pt;">
+                        {{ number_format($dpp, 0, ',', '.') }}</td>
+                </tr>
+                <tr>
+                    <td style="border-left: 2px solid #000; border-right: 0; padding: 4px 8px;"></td>
+                    <td style="border-left: 0; border-right: 0; padding: 4px 8px; text-align: center; font-size: 10pt;">
+                        III</td>
+                    <td style="border-left: 0; border-right: 0; padding: 4px 8px; font-size: 10pt;">PPN</td>
+                    <td style="border-left: 0; border-right: 0; padding: 4px 8px; text-align: left; font-size: 10pt;">Rp
+                    </td>
+                    <td
+                        style="border-left: 0; border-right: 2px solid #000; padding: 4px 8px; text-align: right; font-size: 10pt;">
+                        {{ number_format($ppn, 0, ',', '.') }}</td>
+                </tr>
+                <tr>
+                    <td style="border-left: 2px solid #000; border-right: 0; padding: 4px 8px;"></td>
+                    <td style="border-left: 0; border-right: 0; padding: 4px 8px; text-align: center; font-size: 10pt;">
+                        IV</td>
+                    <td style="border-left: 0; border-right: 0; padding: 4px 8px; font-size: 10pt;">Sub total II :</td>
+                    <td style="border-left: 0; border-right: 0; padding: 4px 8px; text-align: left; font-size: 10pt;">Rp
+                    </td>
+                    <td
+                        style="border-left: 0; border-right: 2px solid #000; padding: 4px 8px; text-align: right; font-size: 10pt;">
+                        {{ number_format($subtotalII, 0, ',', '.') }}</td>
+                </tr>
+                <tr>
+                    <td style="border-left: 2px solid #000; border-right: 0; padding: 4px 8px;"></td>
+                    <td style="border-left: 0; border-right: 0; padding: 4px 8px; text-align: center; font-size: 10pt;">
+                        V</td>
+                    <td style="border-left: 0; border-right: 0; padding: 4px 8px; font-size: 10pt; color: #800080;">PPh
+                        ps 23 (2%) :</td>
+                    <td
+                        style="border-left: 0; border-right: 0; padding: 4px 8px; text-align: left; font-size: 10pt; color: #800080;">
+                        Rp</td>
+                    <td
+                        style="border-left: 0; border-right: 2px solid #000; padding: 4px 8px; text-align: right; font-size: 10pt; color: #800080;">
+                        ({{ number_format($pph23, 0, ',', '.') }})</td>
+                </tr>
+                <tr>
+                    <td style="border: 2px solid #000; border-top: 2px solid #000; border-bottom: 0; padding: 4px 8px;">
+                    </td>
+                    <td colspan="2"
+                        style="border-top: 2px solid #000; border-bottom: 0; border-left: 0; border-right: 0; padding: 4px 8px; text-align: right; font-size: 10pt; font-weight: bold;">
+                        Grand Total :</td>
+                    <td
+                        style="border-top: 2px solid #000; border-bottom: 0; border-left: 0; border-right: 0; padding: 4px 8px; text-align: left; font-size: 10pt; font-weight: bold;">
+                        Rp</td>
+                    <td
+                        style="border: 2px solid #000; border-top: 2px solid #000; border-bottom: 0; border-left: 0; padding: 4px 8px; text-align: right; font-size: 10pt; font-weight: bold;">
+                        {{ number_format($grandTotal, 0, ',', '.') }}</td>
+                </tr>
+                <tr>
+                    <td colspan="5"
+                        style="border: 2px solid #000; border-top: 2px solid #000; padding: 6px 8px; font-size: 9pt; font-style: italic; text-align: center;">
+                        Says : <i>{{ $terbilang }}</i>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
 
         <!-- Bank Details -->
         <div class="bank-section">
