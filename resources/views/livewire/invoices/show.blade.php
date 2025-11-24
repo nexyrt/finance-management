@@ -481,8 +481,8 @@
                 {{-- Main Actions --}}
                 <div class="flex items-center gap-2">
                     @if ($invoice)
-                        <x-button href="{{ route('invoices.edit', $invoice->id) }}" wire:navigate
-                            icon="pencil" outline size="sm">
+                        <x-button href="{{ route('invoices.edit', $invoice->id) }}" wire:navigate icon="pencil"
+                            outline size="sm">
                             Edit
                         </x-button>
                     @endif
@@ -494,7 +494,7 @@
         </x-slot:footer>
     </x-modal>
 
-    <livewire:payments.delete />
+    <livewire:payments.delete @payment-deleted="$refresh" @invoice-updated="$refresh" />
     <livewire:payments.attachment-viewer />
 </div>
 

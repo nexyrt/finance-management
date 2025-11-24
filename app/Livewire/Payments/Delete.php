@@ -6,8 +6,11 @@ use App\Models\Payment;
 use App\Models\Invoice;
 use Livewire\Component;
 use Livewire\Attributes\On;
+use Livewire\Attributes\Computed;
 use TallStackUi\Traits\Interactions;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Contracts\View\View;
 
 class Delete extends Component
 {
@@ -15,9 +18,21 @@ class Delete extends Component
 
     public ?Payment $payment = null;
     public ?Invoice $invoice = null;
+    public bool $modal = false;
+
+    // Predicted status info
+    public string $predictedStatus = '';
+    public int $remainingPaid = 0;
+    public string $statusText = '';
+    public string $statusColor = '';
+
+    public function render(): View
+    {
+        return view('livewire.payments.delete');
+    }
 
     #[On('delete-payment')]
-    public function showDeleteDialog(int $paymentId): void
+    public function load(int $paymentId): void
     {
         $this->payment = Payment::with(['invoice.client', 'bankAccount'])->find($paymentId);
 
@@ -28,15 +43,13 @@ class Delete extends Component
 
         $this->invoice = $this->payment->invoice;
 
-        // Show confirmation dialog with higher z-index
-        $this->dialog()
-            ->question('Konfirmasi Hapus Payment', $this->getConfirmationMessage())
-            ->confirm('Ya, Hapus Payment', 'confirmDelete', 'Payment berhasil dihapus')
-            ->cancel('Batal')
-            ->send();
+        // Calculate predicted status
+        $this->calculatePredictedStatus();
+
+        $this->modal = true;
     }
 
-    public function confirmDelete(): void
+    public function delete(): void
     {
         if (!$this->payment) {
             $this->toast()->error('Error', 'Payment tidak ditemukan')->send();
@@ -47,6 +60,11 @@ class Delete extends Component
             DB::transaction(function () {
                 $invoice = $this->payment->invoice;
                 $oldStatus = $invoice->status;
+
+                // Delete attachment if exists
+                if ($this->payment->attachment_path && Storage::exists($this->payment->attachment_path)) {
+                    Storage::delete($this->payment->attachment_path);
+                }
 
                 // Delete payment
                 $this->payment->delete();
@@ -63,39 +81,43 @@ class Delete extends Component
 
             // Success feedback
             $this->toast()->success('Berhasil', 'Payment berhasil dihapus')->send();
-            
+
             // Dispatch events to refresh other components
             $this->dispatch('payment-deleted');
             $this->dispatch('invoice-updated');
 
+            // Close modal and reset
+            $this->modal = false;
+            $this->reset(['payment', 'invoice', 'predictedStatus', 'remainingPaid', 'statusText', 'statusColor']);
+
         } catch (\Exception $e) {
             $this->toast()->error('Error', 'Gagal menghapus payment: ' . $e->getMessage())->send();
         }
-
-        // Reset data
-        $this->reset(['payment', 'invoice']);
     }
 
-    private function getConfirmationMessage(): string
+    private function calculatePredictedStatus(): void
     {
         if (!$this->payment || !$this->invoice) {
-            return 'Apakah Anda yakin ingin menghapus payment ini?';
+            return;
         }
 
-        $paymentAmount = number_format($this->payment->amount, 0, ',', '.');
-        $invoiceNumber = $this->invoice->invoice_number;
-        $clientName = $this->invoice->client->name;
-        
         // Calculate remaining payments after deletion
-        $totalPaid = $this->invoice->payments()->where('id', '!=', $this->payment->id)->sum('amount');
-        $totalAmount = $this->invoice->total_amount;
-        
-        // Predict new status
-        $newStatus = $this->predictNewStatus($totalPaid, $totalAmount, $this->invoice->due_date);
-        $statusText = $this->getStatusText($newStatus);
+        $this->remainingPaid = $this->invoice->payments()
+            ->where('id', '!=', $this->payment->id)
+            ->sum('amount');
 
-        return "Anda akan menghapus payment sebesar Rp {$paymentAmount} untuk invoice {$invoiceNumber} ({$clientName}).\n\n" .
-               "Status invoice akan berubah menjadi: {$statusText}";
+        $totalAmount = $this->invoice->total_amount;
+        $dueDate = $this->invoice->due_date;
+
+        $this->predictedStatus = $this->predictNewStatus(
+            $this->remainingPaid,
+            $totalAmount,
+            $dueDate
+        );
+
+        // Set status text and color
+        $this->statusText = $this->getStatusText($this->predictedStatus);
+        $this->statusColor = $this->getStatusColor($this->predictedStatus);
     }
 
     private function evaluateInvoiceStatus(Invoice $invoice): string
@@ -130,7 +152,7 @@ class Delete extends Component
 
     private function getStatusText(string $status): string
     {
-        return match($status) {
+        return match ($status) {
             'paid' => 'Lunas',
             'partially_paid' => 'Sebagian Dibayar',
             'sent' => 'Terkirim',
@@ -140,14 +162,21 @@ class Delete extends Component
         };
     }
 
+    private function getStatusColor(string $status): string
+    {
+        return match ($status) {
+            'paid' => 'green',
+            'partially_paid' => 'yellow',
+            'sent' => 'blue',
+            'overdue' => 'red',
+            'draft' => 'gray',
+            default => 'gray'
+        };
+    }
+
     private function logStatusChange(Invoice $invoice, string $oldStatus, string $newStatus): void
     {
         // Log status change untuk audit trail
         \Log::info("Invoice {$invoice->invoice_number} status changed from {$oldStatus} to {$newStatus} due to payment deletion");
-    }
-
-    public function render()
-    {
-        return view('livewire.payments.delete');
     }
 }

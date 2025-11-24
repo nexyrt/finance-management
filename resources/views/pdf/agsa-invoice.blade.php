@@ -1,11 +1,15 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 
 <head>
-    <meta charset="utf-8">
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Invoice {{ $invoice->invoice_number }}</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice - {{ $invoice->invoice_number }}</title>
     <style>
+        @page {
+            margin: 15mm 15mm 15mm 15mm;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -14,161 +18,160 @@
 
         body {
             font-family: Arial, sans-serif;
-            font-size: 11pt;
-            line-height: 1.3;
+            font-size: 10pt;
+            line-height: 1.4;
             color: #000;
         }
 
         .container {
-            max-width: 100%;
-            margin: 0;
-            padding: 20px;
+            width: 100%;
+            max-width: 210mm;
+            margin: 0 auto;
         }
 
-        /* Header Grid */
+        /* Header Grid: 2 Columns */
         .header-grid {
-            display: table;
             width: 100%;
             margin-bottom: 20px;
+            display: table;
         }
 
         .header-grid-left {
             display: table-cell;
             width: 50%;
             vertical-align: top;
-            padding-right: 20px;
+            padding-right: 15px;
         }
 
         .header-grid-right {
             display: table-cell;
             width: 50%;
             vertical-align: top;
+            padding-left: 15px;
             text-align: right;
         }
 
         .logo {
-            width: 150px;
+            width: 350px;
             height: auto;
         }
 
         .company-info {
-            font-size: 11pt;
-            line-height: 1.4;
+            font-size: 8pt;
+            line-height: 1.5;
+            text-align: right;
         }
 
         .client-name {
             font-weight: bold;
-            font-size: 11pt;
-            margin-bottom: 3px;
+            font-size: 8pt;
+            margin-bottom: 5px;
         }
 
         .invoice-meta {
-            font-size: 11pt;
-            line-height: 1.5;
-            text-align: left;
-            display: inline-block;
+            font-weight: bold;
+            font-size: 8pt;
+            text-align: right;
         }
 
-        /* Periode */
         .periode {
+            font-size: 8pt;
             font-weight: bold;
-            font-size: 11pt;
+            margin-top: 10px;
         }
 
         /* Items Table */
         .items-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 0;
+            margin-top: 20px;
+            margin-bottom: 20px;
         }
 
-        .items-table th {
-            background: #FFD966;
-            border: 1px solid #000;
-            padding: 6px 8px;
-            text-align: center;
+        .items-table thead th {
+            background-color: #1e3a8a;
+            color: #fff;
+            padding: 10px 8px;
+            text-align: left;
+            font-size: 11pt;
             font-weight: bold;
+        }
+
+        .items-table tbody td {
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
             font-size: 11pt;
         }
 
-        .items-table td {
-            border: 1px solid #000;
-            padding: 6px 8px;
-            font-size: 11pt;
-            vertical-align: top;
+        .items-table tbody tr:last-child td {
+            border-bottom: 2px solid #1e3a8a;
         }
 
         .text-left {
             text-align: left;
         }
 
-        .text-right {
-            text-align: right;
-        }
-
         .text-center {
             text-align: center;
         }
 
+        .text-right {
+            text-align: right;
+        }
+
         /* Summary Box */
         .summary-box {
-            border: 1px solid #000;
-            border-top: none;
-            padding: 8px;
-            font-size: 11pt;
+            width: 100%;
+            margin-bottom: 20px;
         }
 
         .summary-row {
-            display: table;
             width: 100%;
+            display: table;
             margin-bottom: 3px;
         }
 
         .summary-label {
             display: table-cell;
-            padding-right: 10px;
+            width: 70%;
+            text-align: right;
+            padding-right: 15px;
+            font-size: 11pt;
         }
 
         .summary-value {
             display: table-cell;
+            width: 30%;
             text-align: right;
-            padding-right: 10px;
+            font-size: 11pt;
         }
 
-        .summary-amount {
-            display: table-cell;
-            text-align: right;
+        .summary-row.bold .summary-label,
+        .summary-row.bold .summary-value {
             font-weight: bold;
         }
 
-        .pph-negative {
-            color: #C00000;
+        .summary-row.total {
+            border-top: 2px solid #1e3a8a;
+            padding-top: 5px;
+            margin-top: 5px;
         }
 
-        .grand-total {
+        .summary-row.total .summary-label,
+        .summary-row.total .summary-value {
+            font-size: 12pt;
             font-weight: bold;
-            font-size: 11pt;
-            margin-top: 3px;
         }
 
-        /* Terbilang */
-        .terbilang {
-            font-style: italic;
-            font-size: 11pt;
-            margin: 10px 0;
-            padding: 5px;
-            background: #f5f5f5;
-        }
-
-        /* Bank Table */
+        /* Bank Section */
         .bank-section {
-            margin: 15px 0;
+            margin-bottom: 30px;
         }
 
         .bank-title {
             font-weight: bold;
             font-size: 11pt;
-            margin-bottom: 5px;
+            margin-bottom: 10px;
         }
 
         .bank-table {
@@ -176,55 +179,56 @@
             border-collapse: collapse;
         }
 
-        .bank-table th {
-            background: #f5f5f5;
-            border: 1px solid #000;
-            padding: 5px;
-            text-align: center;
+        .bank-table thead th {
+            background-color: #1e3a8a;
+            color: #fff;
+            padding: 8px;
+            text-align: left;
+            font-size: 10pt;
             font-weight: bold;
-            font-size: 11pt;
         }
 
-        .bank-table td {
-            border: 1px solid #000;
-            padding: 5px;
-            font-size: 11pt;
+        .bank-table tbody td {
+            padding: 8px;
+            border: 1px solid #ddd;
+            font-size: 10pt;
         }
 
         /* Signature */
         .signature-section {
-            margin-top: 30px;
-            text-align: center;
+            margin-top: 40px;
         }
 
         .signature-location {
             text-align: right;
             font-size: 11pt;
-            margin-bottom: 5px;
+            margin-bottom: 15px;
         }
 
         .signature-box {
-            display: inline-block;
+            width: 200px;
+            float: right;
             text-align: center;
-            border: 2px solid #000;
-            padding: 60px 100px 15px 100px;
-            margin-top: 10px;
-            position: relative;
         }
 
         .signature-image {
+            max-width: 150px;
+            height: auto;
+            margin-bottom: 10px;
+        }
+
+        .stamp-image {
             position: absolute;
-            top: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 100px;
+            right: 50px;
+            margin-top: -60px;
+            max-width: 100px;
             height: auto;
         }
 
         .signature-name {
             font-weight: bold;
             font-size: 11pt;
-            margin-bottom: 3px;
+            text-decoration: underline;
         }
 
         .signature-position {
@@ -240,61 +244,72 @@
             <!-- Left Column: Logo + Client + Periode -->
             <div class="header-grid-left">
                 <!-- Logo -->
-                @if (!empty($company['logo_base64']))
-                    <div style="margin-bottom: 20px;">
+                <div style="margin-bottom: 20px;">
+                    @if (!empty($company['logo_base64']))
                         <img src="{{ $company['logo_base64'] }}" class="logo" alt="Logo">
-                    </div>
-                @endif
+                    @else
+                        {{-- Placeholder for design review --}}
+                        <div
+                            style="width: 350px; height: 80px; background: #e5e7eb; display: flex; align-items: center; justify-content: center; border: 1px solid #ccc;">
+                            <span style="color: #666; font-size: 18pt; font-weight: bold;">AGSA LOGO</span>
+                        </div>
+                    @endif
+                </div>
 
                 <!-- Client Info -->
                 <div style="margin-bottom: 20px;">
                     <div style="display: table; width: 100%;">
                         <div style="display: table-row;">
                             <div
-                                style="display: table-cell; width: 30px; vertical-align: top; padding-right: 5px; font-size: 11pt;">
+                                style="display: table-cell; width: 30px; vertical-align: top; padding-right: 5px; font-size: 8pt;">
                                 To:</div>
                             <div style="display: table-cell; vertical-align: top;">
-                                <div class="client-name">{{ strtoupper($client->name) }}</div>
+                                <div class="client-name">PT. GANDA ALAM MAKMUR</div>
                             </div>
                         </div>
                         <div style="display: table-row;">
                             <div style="display: table-cell;"></div>
                             <div style="display: table-cell; vertical-align: top;">
-                                <div style="font-size: 11pt;">{{ strtoupper($client->address ?? 'DI SEMPAYAU') }}</div>
+                                <div style="font-size: 8pt;">DI SEMPAYAU</div>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Periode -->
-                @if (!empty($periode))
-                    <div class="periode">Periode {{ $periode }}</div>
-                @endif
+                <div class="periode">Periode 21 SEPTEMBER 2025 - 20 OKTOBER 2025</div>
             </div>
 
             <!-- Right Column: Company Info + Invoice Meta -->
             <div class="header-grid-right">
                 <!-- Company Info -->
                 <div class="company-info" style="margin-bottom: 30px;">
-                    {{ $company['address'] }}<br>
-                    {{ $company['phone'] }}<br>
-                    {{ $company['email'] }}
+                    Jalan AW Syahranie Perum Villa Tamara Blok L No. 9<br>
+                    Samarinda, Kalimantan Timur - Indonesia<br>
+                    0813 1177 1117<br>
+                    <a href="/cdn-cgi/l/email-protection" class="__cf_email__"
+                        data-cfemail="5d3c3a2f3c2d3c333c2e3c29243c3c3f3c3934732d291d3a303c3431733e3230">[email&#160;protected]</a>
                 </div>
 
                 <!-- Invoice Meta -->
                 <div class="invoice-meta">
-                    <table style="width: 100%; font-size: 11pt;">
-                        <tr>
-                            <td style="width: 30%; padding: 2px 0;">INVOICE NO.</td>
-                            <td style="width: 5%; padding: 2px 0;">:</td>
-                            <td style="width: 65%; padding: 2px 0;">{{ $invoice->invoice_number }}</td>
-                        </tr>
-                        <tr>
-                            <td style="padding: 2px 0;">DATE</td>
-                            <td style="padding: 2px 0;">:</td>
-                            <td style="padding: 2px 0;">{{ $invoice->issue_date->format('d F Y') }}</td>
-                        </tr>
-                    </table>
+                    <div style="display: table; width: 100%;">
+                        <div style="display: table-row;">
+                            <div
+                                style="display: table-cell; width: 110px; vertical-align: top; padding-right: 5px; font-size: 8pt;">
+                                INVOICE NO.</div>
+                            <div
+                                style="display: table-cell; width: 10px; vertical-align: top; padding-right: 5px; font-size: 8pt;">
+                                :</div>
+                            <div style="display: table-cell; vertical-align: top; font-size: 8pt;">
+                                075/AGSA-GAM/INVOICE/X/2025</div>
+                        </div>
+                        <div style="display: table-row;">
+                            <div style="display: table-cell; padding-right: 5px; font-size: 8pt;">DATE</div>
+                            <div style="display: table-cell; padding-right: 5px; font-size: 8pt;">:</div>
+                            <div style="display: table-cell; font-size: 8pt;">21 Oktober 2025</div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -331,38 +346,33 @@
             @endphp
 
             <div class="summary-row">
-                <div class="summary-label">I</div>
-                <div class="summary-value">Sub total I :</div>
-                <div class="summary-amount">Rp {{ number_format($subtotalI, 0, ',', '.') }}</div>
-            </div>
-            <div class="summary-row">
-                <div class="summary-label">II</div>
-                <div class="summary-value">DPP</div>
-                <div class="summary-amount">Rp {{ number_format($dpp, 0, ',', '.') }}</div>
-            </div>
-            <div class="summary-row">
-                <div class="summary-label">III</div>
-                <div class="summary-value">PPN</div>
-                <div class="summary-amount">Rp {{ number_format($ppn, 0, ',', '.') }}</div>
-            </div>
-            <div class="summary-row">
-                <div class="summary-label">IV</div>
-                <div class="summary-value">Sub total II :</div>
-                <div class="summary-amount">Rp {{ number_format($subtotalII, 0, ',', '.') }}</div>
-            </div>
-            <div class="summary-row">
-                <div class="summary-label">V</div>
-                <div class="summary-value">PPh ps 23 (2%) :</div>
-                <div class="summary-amount pph-negative">Rp ({{ number_format($pph23, 0, ',', '.') }})</div>
-            </div>
-            <div class="summary-row grand-total">
-                <div class="summary-label">VI</div>
-                <div class="summary-value">Grand Total :</div>
-                <div class="summary-amount">Rp {{ number_format($grandTotal, 0, ',', '.') }}</div>
+                <div class="summary-label">Sub Total I</div>
+                <div class="summary-value">Rp {{ number_format($subtotalI, 0, ',', '.') }}</div>
             </div>
 
-            <div class="terbilang">
-                Saya : <strong>{{ $terbilang }} Rupiah</strong>
+            <div class="summary-row">
+                <div class="summary-label">DPP (2,9%)</div>
+                <div class="summary-value">Rp {{ number_format($dpp, 0, ',', '.') }}</div>
+            </div>
+
+            <div class="summary-row">
+                <div class="summary-label">PPN (12%)</div>
+                <div class="summary-value">Rp {{ number_format($ppn, 0, ',', '.') }}</div>
+            </div>
+
+            <div class="summary-row bold">
+                <div class="summary-label">Sub Total II</div>
+                <div class="summary-value">Rp {{ number_format($subtotalII, 0, ',', '.') }}</div>
+            </div>
+
+            <div class="summary-row">
+                <div class="summary-label">PPh 23 (2%)</div>
+                <div class="summary-value">Rp {{ number_format($pph23, 0, ',', '.') }}</div>
+            </div>
+
+            <div class="summary-row total">
+                <div class="summary-label">GRAND TOTAL</div>
+                <div class="summary-value">Rp {{ number_format($grandTotal, 0, ',', '.') }}</div>
             </div>
         </div>
 
@@ -382,24 +392,22 @@
                 <tbody>
                     @php
                         $biayaTenagaKerja = $subtotalI + $dpp + $ppn - $pph23;
-                        $biayaOperasional = 0; // Sesuaikan jika ada
+                        $biayaOperasional = 0;
                     @endphp
                     <tr>
                         <td class="text-center">1</td>
-                        <td>{{ $company['bank_accounts'][0]['account_name'] ?? $company['name'] }}</td>
-                        <td>{{ $company['bank_accounts'][0]['account_number'] ?? '' }}</td>
+                        <td>PT AGRAPANA SATYA ABADI</td>
+                        <td>1234567890 (BCA)</td>
                         <td>Biaya Tenaga Kerja</td>
                         <td class="text-right">Rp {{ number_format($biayaTenagaKerja, 0, ',', '.') }}</td>
                     </tr>
-                    @if (count($company['bank_accounts']) > 1)
-                        <tr>
-                            <td class="text-center">2</td>
-                            <td>{{ $company['bank_accounts'][1]['account_name'] ?? $company['name'] }}</td>
-                            <td>{{ $company['bank_accounts'][1]['account_number'] ?? '' }}</td>
-                            <td>Biaya Operasional</td>
-                            <td class="text-right">Rp {{ number_format($biayaOperasional, 0, ',', '.') }}</td>
-                        </tr>
-                    @endif
+                    <tr>
+                        <td class="text-center">2</td>
+                        <td>PT AGRAPANA SATYA ABADI</td>
+                        <td>0987654321 (Mandiri)</td>
+                        <td>Biaya Operasional</td>
+                        <td class="text-right">Rp {{ number_format($biayaOperasional, 0, ',', '.') }}</td>
+                    </tr>
                     <tr>
                         <td colspan="4" class="text-right" style="font-weight: bold;">TOTAL</td>
                         <td class="text-right" style="font-weight: bold;">Rp
@@ -412,19 +420,19 @@
         <!-- Signature -->
         <div class="signature-section">
             <div class="signature-location">
-                {{ strtoupper($company['city'] ?? 'SEMPAYAU') }}, {{ $invoice->issue_date->format('d-M-y') }}
+                SAMARINDA, 21-Okt-25
             </div>
 
             <div class="signature-box">
                 @if (!empty($company['signature_base64']))
                     <img src="{{ $company['signature_base64'] }}" class="signature-image" alt="Signature">
+                @else
+                    {{-- Placeholder for signature --}}
+                    <div style="height: 80px;"></div>
                 @endif
 
-                <div class="signature-name">{{ $company['signature']['name'] ?? 'Nama Penandatangan' }}</div>
-                <div class="signature-position">{{ $company['signature']['position'] ?? 'HR Foreman' }}</div>
-            </div>
-        </div>
-    </div>
-</body>
+                @if (!empty($company['stamp_base64']))
+                    <img src="{{ $company['stamp_base64'] }}" class="stamp-image" alt="Stamp">
+                @endif
 
-</html>
+                <div class="signature-name">DEDDY PUTRA PRATAMA, SE</div>
