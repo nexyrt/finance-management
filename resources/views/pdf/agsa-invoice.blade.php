@@ -248,13 +248,28 @@
 
                 <!-- Client Info -->
                 <div style="margin-bottom: 20px;">
-                    <div style="font-size: 11pt; margin-bottom: 5px;">To:</div>
-                    <div class="client-name">{{ strtoupper($client->name) }}</div>
-                    <div style="font-size: 11pt;">{{ strtoupper($client->address ?? 'DI SEMPAYAU') }}</div>
+                    <div style="display: table; width: 100%;">
+                        <div style="display: table-row;">
+                            <div
+                                style="display: table-cell; width: 30px; vertical-align: top; padding-right: 5px; font-size: 11pt;">
+                                To:</div>
+                            <div style="display: table-cell; vertical-align: top;">
+                                <div class="client-name">{{ strtoupper($client->name) }}</div>
+                            </div>
+                        </div>
+                        <div style="display: table-row;">
+                            <div style="display: table-cell;"></div>
+                            <div style="display: table-cell; vertical-align: top;">
+                                <div style="font-size: 11pt;">{{ strtoupper($client->address ?? 'DI SEMPAYAU') }}</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Periode -->
-                    <div class="periode">Periode  21 SEPTEMBER 2025 - 20 OKTOBER 2025</div>
+                @if (!empty($periode))
+                    <div class="periode">Periode {{ $periode }}</div>
+                @endif
             </div>
 
             <!-- Right Column: Company Info + Invoice Meta -->

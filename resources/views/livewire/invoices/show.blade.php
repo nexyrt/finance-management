@@ -481,7 +481,8 @@
                 {{-- Main Actions --}}
                 <div class="flex items-center gap-2">
                     @if ($invoice)
-                        <x-button wire:click="editInvoice" color="zinc" icon="pencil" outline size="sm">
+                        <x-button href="{{ route('invoices.edit', $invoice->id) }}" wire:navigate
+                            icon="pencil" outline size="sm">
                             Edit
                         </x-button>
                     @endif
