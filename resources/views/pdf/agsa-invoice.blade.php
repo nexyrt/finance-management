@@ -75,8 +75,10 @@
         }
 
         .periode {
+            padding: 0;
             font-size: 8pt;
-            font-weight: bold;
+            font-weight: normal;
+            text-align: left;
             margin-top: 10px;
         }
 
@@ -244,7 +246,7 @@
             <!-- Left Column: Logo + Client + Periode -->
             <div class="header-grid-left">
                 <!-- Logo -->
-                <div style="margin-bottom: 20px;">
+                <div style="margin-bottom: 50px;">
                     @if (!empty($company['logo_base64']))
                         <img src="{{ $company['logo_base64'] }}" class="logo" alt="Logo">
                     @else
@@ -257,7 +259,7 @@
                 </div>
 
                 <!-- Client Info -->
-                <div style="margin-bottom: 20px;">
+                <div style="margin-bottom: 90px;">
                     <div style="display: table; width: 100%;">
                         <div style="display: table-row;">
                             <div
@@ -292,24 +294,19 @@
                 </div>
 
                 <!-- Invoice Meta -->
-                <div class="invoice-meta">
-                    <div style="display: table; width: 100%;">
-                        <div style="display: table-row;">
-                            <div
-                                style="display: table-cell; width: 110px; vertical-align: top; padding-right: 5px; font-size: 8pt;">
-                                INVOICE NO.</div>
-                            <div
-                                style="display: table-cell; width: 10px; vertical-align: top; padding-right: 5px; font-size: 8pt;">
-                                :</div>
-                            <div style="display: table-cell; vertical-align: top; font-size: 8pt;">
-                                075/AGSA-GAM/INVOICE/X/2025</div>
-                        </div>
-                        <div style="display: table-row;">
-                            <div style="display: table-cell; padding-right: 5px; font-size: 8pt;">DATE</div>
-                            <div style="display: table-cell; padding-right: 5px; font-size: 8pt;">:</div>
-                            <div style="display: table-cell; font-size: 8pt;">21 Oktober 2025</div>
-                        </div>
-                    </div>
+                <div class="invoice-meta" style="text-align: right;">
+                    <table style="width: auto; border-collapse: collapse; margin-left: auto;">
+                        <tr>
+                            <td style="padding: 2px 5px 2px 0; font-size: 8pt; white-space: nowrap;">INVOICE NO.</td>
+                            <td style="padding: 2px 5px; font-size: 8pt;">:</td>
+                            <td style="padding: 2px 0 2px 5px; font-size: 8pt;">075/AGSA-GAM/INVOICE/X/2025</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 2px 5px 2px 0; font-size: 8pt; white-space: nowrap;">DATE</td>
+                            <td style="padding: 2px 5px; font-size: 8pt;">:</td>
+                            <td style="padding: 2px 0 2px 5px; font-size: 8pt;">21 Oktober 2025</td>
+                        </tr>
+                    </table>
                 </div>
             </div>
         </div>
@@ -436,3 +433,10 @@
                 @endif
 
                 <div class="signature-name">DEDDY PUTRA PRATAMA, SE</div>
+                <div class="signature-position">Manajer Keuangan</div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
