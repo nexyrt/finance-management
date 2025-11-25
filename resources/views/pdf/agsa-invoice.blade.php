@@ -21,7 +21,7 @@
             font-size: 10pt;
             line-height: 1.4;
             color: #000;
-            padding: 30px 30px 30px 30px;
+            padding: 80px 80px 30px 80px;
         }
 
         .container {
@@ -103,10 +103,14 @@
         }
 
         .items-table tbody td {
-            padding: 6px 8px;
+            padding: 1px 3px;
             border: 1px solid #000;
             font-size: 10pt;
             vertical-align: top;
+        }
+
+        .items-table tbody tr:last-child td {
+            border-bottom: none;
         }
 
         .text-left {
@@ -168,32 +172,37 @@
         /* Bank Section */
         .bank-section {
             margin-bottom: 30px;
+            margin-top: 60px;
         }
 
         .bank-title {
             font-weight: bold;
-            font-size: 11pt;
+            font-size: 8pt;
             margin-bottom: 10px;
         }
 
         .bank-table {
-            width: 100%;
+            width: 75%;
+            margin-left: auto;
             border-collapse: collapse;
+            border: 2px solid #000;
+            margin-top: 10px;
         }
 
         .bank-table thead th {
-            background-color: #1e3a8a;
-            color: #fff;
-            padding: 8px;
-            text-align: left;
-            font-size: 10pt;
+            background-color: #fff;
+            color: #000;
+            padding: 4px 8px;
+            text-align: center;
+            font-size: 8pt;
             font-weight: bold;
+            border: 1px solid #000;
         }
 
         .bank-table tbody td {
-            padding: 8px;
-            border: 1px solid #ddd;
-            font-size: 10pt;
+            padding: 4px 8px;
+            border: 1px solid #000;
+            font-size: 8pt;
         }
 
         /* Signature */
@@ -315,12 +324,18 @@
         <table class="items-table">
             <thead>
                 <tr>
-                    <th style="width: 3%; text-align: center;">NO.</th>
-                    <th style="width: 72%;">DESCRIPTION</th>
+                    <th style="width: 5%; text-align: center;">NO.</th>
+                    <th style="width: 70%; text-align: center;">DESCRIPTION</th>
                     <th style="width: 25%; text-align: center;">AMOUNT</th>
                 </tr>
             </thead>
             <tbody>
+                <!-- Empty row separator for double line effect -->
+                <tr>
+                    <td colspan="3"
+                        style="padding: 2px; border: none; border-left: 2px solid #000; border-right: 2px solid #000;">
+                    </td>
+                </tr>
                 @foreach ($items as $index => $item)
                     <tr>
                         <td class="text-center">{{ $index + 1 }}</td>
@@ -328,6 +343,12 @@
                         <td class="text-right">Rp {{ number_format($item->amount, 0, ',', '.') }}</td>
                     </tr>
                 @endforeach
+                <!-- Empty row separator after last item -->
+                <tr>
+                    <td colspan="3"
+                        style="padding: 2px; border: none; border-left: 2px solid #000; border-right: 2px solid #000;">
+                    </td>
+                </tr>
             </tbody>
         </table>
 
@@ -388,7 +409,8 @@
             $terbilang = terbilang($grandTotal) . ' Rupiah';
         @endphp
 
-        <table style="width: 100%; border: 2px solid #000; border-collapse: collapse; margin-top: 0;">
+        <table
+            style="width: 100%; border-left: 2px solid #000; border-right: 2px solid #000; border-bottom: 2px solid #000; border-top: none; border-collapse: collapse; margin-top: 0;">
             <tbody>
                 <tr>
                     <td
@@ -481,8 +503,8 @@
                 <thead>
                     <tr>
                         <th style="width: 5%;">No</th>
-                        <th style="width: 30%;">Nama Perusahaan</th>
-                        <th style="width: 20%;">Rekening Bank</th>
+                        <th style="width: 28%;">Nama Perusahaan</th>
+                        <th style="width: 22%;">Rekening Bank</th>
                         <th style="width: 25%;">Keterangan</th>
                         <th style="width: 20%;">Jumlah</th>
                     </tr>
@@ -494,20 +516,20 @@
                     @endphp
                     <tr>
                         <td class="text-center">1</td>
-                        <td>PT AGRAPANA SATYA ABADI</td>
-                        <td>1234567890 (BCA)</td>
+                        <td>Agrapana Satya Abadi PT</td>
+                        <td>1444569995</td>
                         <td>Biaya Tenaga Kerja</td>
                         <td class="text-right">Rp {{ number_format($biayaTenagaKerja, 0, ',', '.') }}</td>
                     </tr>
                     <tr>
                         <td class="text-center">2</td>
-                        <td>PT AGRAPANA SATYA ABADI</td>
-                        <td>0987654321 (Mandiri)</td>
+                        <td>Agrapana Satya Abadi PT</td>
+                        <td>2997898888</td>
                         <td>Biaya Operasional</td>
                         <td class="text-right">Rp {{ number_format($biayaOperasional, 0, ',', '.') }}</td>
                     </tr>
                     <tr>
-                        <td colspan="4" class="text-right" style="font-weight: bold;">TOTAL</td>
+                        <td colspan="4" style="text-align: center; font-weight: bold;">TOTAL</td>
                         <td class="text-right" style="font-weight: bold;">Rp
                             {{ number_format($grandTotal, 0, ',', '.') }}</td>
                     </tr>
