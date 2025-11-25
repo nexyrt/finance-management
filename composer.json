@@ -18,6 +18,7 @@
         "livewire/livewire": "^3.6",
         "livewire/volt": "^1.7.0",
         "maatwebsite/excel": "^3.1",
+        "ngekoding/terbilang": "^1.0",
         "spatie/laravel-permission": "^6.21",
         "tallstackui/tallstackui": "^2.0.0",
         "wireui/wireui": "^2.4"

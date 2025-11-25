@@ -171,8 +171,8 @@
 
         /* Bank Section */
         .bank-section {
-            margin-bottom: 30px;
             margin-top: 60px;
+            margin-bottom: 30px;
         }
 
         .bank-title {
@@ -208,42 +208,54 @@
         /* Signature */
         .signature-section {
             margin-top: 40px;
+            width: 75%;
+            margin-left: auto;
         }
 
         .signature-location {
+            font-size: 7pt;
+            margin-bottom: 5px;
+            margin-right: 80px;
             text-align: right;
-            font-size: 11pt;
-            margin-bottom: 15px;
         }
 
         .signature-box {
-            width: 200px;
-            float: right;
+            width: 280px;
+            border: 2px solid #000;
             text-align: center;
+            margin-left: auto;
+            padding: 15px;
+            position: relative;
+        }
+
+        .signature-content {
+            min-height: 100px;
+            margin-bottom: 15px;
         }
 
         .signature-image {
             max-width: 150px;
             height: auto;
-            margin-bottom: 10px;
         }
 
         .stamp-image {
             position: absolute;
-            right: 50px;
-            margin-top: -60px;
-            max-width: 100px;
+            right: 20px;
+            top: 20px;
+            max-width: 80px;
             height: auto;
         }
 
         .signature-name {
-            font-weight: bold;
-            font-size: 11pt;
-            text-decoration: underline;
+            font-size: 7pt;
+            padding: 8px 0;
+            border-bottom: 1px solid #000;
         }
 
         .signature-position {
-            font-size: 11pt;
+            font-size: 7pt;
+            font-weight: bold;
+            padding-top: 8px;
         }
     </style>
 </head>
@@ -540,23 +552,22 @@
         <!-- Signature -->
         <div class="signature-section">
             <div class="signature-location">
-                SAMARINDA, 21-Okt-25
+                SEMPAWAU, {{ now()->format('d-M-y') }}
             </div>
 
             <div class="signature-box">
-                @if (!empty($company['signature_base64']))
-                    <img src="{{ $company['signature_base64'] }}" class="signature-image" alt="Signature">
-                @else
-                    {{-- Placeholder for signature --}}
-                    <div style="height: 80px;"></div>
-                @endif
+                <div class="signature-content">
+                    @if (!empty($company['signature_base64']))
+                        <img src="{{ $company['signature_base64'] }}" class="signature-image" alt="Signature">
+                    @endif
 
-                @if (!empty($company['stamp_base64']))
-                    <img src="{{ $company['stamp_base64'] }}" class="stamp-image" alt="Stamp">
-                @endif
+                    @if (!empty($company['stamp_base64']))
+                        <img src="{{ $company['stamp_base64'] }}" class="stamp-image" alt="Stamp">
+                    @endif
+                </div>
 
-                <div class="signature-name">DEDDY PUTRA PRATAMA, SE</div>
-                <div class="signature-position">Manajer Keuangan</div>
+                <div class="signature-name">Nurmaisa Hamzah</div>
+                <div class="signature-position">HR Foreman</div>
             </div>
         </div>
     </div>

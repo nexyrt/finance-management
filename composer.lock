@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f4968f04cab5c757ccfa5f60b7bc7751",
+    "content-hash": "1021136e2a6439b971fac03e0ab045b8",
     "packages": [
         {
             "name": "barryvdh/laravel-dompdf",
@@ -3429,6 +3429,57 @@
                 "source": "https://github.com/nette/utils/tree/v4.0.8"
             },
             "time": "2025-08-06T21:43:34+00:00"
+        },
+        {
+            "name": "ngekoding/terbilang",
+            "version": "v1.0.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/ngekoding/php-terbilang.git",
+                "reference": "46194dc2de6f0b515e76f823ad03c75cd74db0cb"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/ngekoding/php-terbilang/zipball/46194dc2de6f0b515e76f823ad03c75cd74db0cb",
+                "reference": "46194dc2de6f0b515e76f823ad03c75cd74db0cb",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.6"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "*"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Ngekoding\\Terbilang\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Nur Muhammad",
+                    "email": "blog.nurmuhammad@gmail.com"
+                }
+            ],
+            "description": "A library to convert numbers and currency to words in Indonesian.",
+            "keywords": [
+                "currency",
+                "money",
+                "numbers",
+                "terbilang",
+                "to",
+                "words"
+            ],
+            "support": {
+                "issues": "https://github.com/ngekoding/php-terbilang/issues",
+                "source": "https://github.com/ngekoding/php-terbilang/tree/v1.0.2"
+            },
+            "time": "2024-06-21T01:53:47+00:00"
         },
         {
             "name": "nikic/php-parser",
