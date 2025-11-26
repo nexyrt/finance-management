@@ -34,13 +34,18 @@ class BankAccount extends Model
         return $this->hasMany(Payment::class);
     }
 
+    public function loanPayments(): HasMany
+    {
+        return $this->hasMany(LoanPayment::class);
+    }
+
     // Current balance calculation
     public function getBalanceAttribute(): int
     {
         $payments = $this->payments()->sum('amount');
         $credits = $this->transactions()->where('transaction_type', 'credit')->sum('amount');
         $debits = $this->transactions()->where('transaction_type', 'debit')->sum('amount');
-        
+
         return $this->initial_balance + $payments + $credits - $debits;
     }
 
