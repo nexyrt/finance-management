@@ -51,16 +51,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/{invoice}/edit', InvoicesEdit::class)->name('edit');
     });
 
-    Route::prefix('recurring-invoices')->name('recurring-invoices.')->group(function () {
-        Route::get('/', RecurringInvoicesIndex::class)->name('index');
-        Route::get('/template/create', RecurringInvoicesCreateTemplate::class)->name('template.create');
-        Route::get('/template/{template}/edit', RecurringInvoicesEditTemplate::class)->name('template.edit');
-        Route::get('/monthly/{invoice}/edit', \App\Livewire\RecurringInvoices\Monthly\EditInvoice::class)->name('monthly.edit');
-    });
-
-    Route::get('/cash-flow', CashFlowIndex::class)->name('cash-flow.index');
-    Route::get('/reimbursements', ReimbursementIndex::class)->middleware('can:view reimbursements')->name('reimbursements.index');
-
     // Invoice PDF Operations
     Route::prefix('invoice')->name('invoice.')->group(function () {
         Route::get('/{invoice}/download', function (Invoice $invoice, Request $request) {
@@ -96,6 +86,26 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ]);
         })->name('preview');
     });
+
+    Route::prefix('recurring-invoices')->name('recurring-invoices.')->group(function () {
+        Route::get('/', RecurringInvoicesIndex::class)->name('index');
+        Route::get('/template/create', RecurringInvoicesCreateTemplate::class)->name('template.create');
+        Route::get('/template/{template}/edit', RecurringInvoicesEditTemplate::class)->name('template.edit');
+        Route::get('/monthly/{invoice}/edit', \App\Livewire\RecurringInvoices\Monthly\EditInvoice::class)->name('monthly.edit');
+    });
+
+    Route::get('/cash-flow', CashFlowIndex::class)->name('cash-flow.index');
+    Route::get('/reimbursements', ReimbursementIndex::class)->middleware('can:view reimbursements')->name('reimbursements.index');
+
+    // Loans
+    Route::get('/loans', App\Livewire\Loans\Index::class)
+        ->name('loans.index')
+        ->middleware('can:view loans');
+
+    // Receivables
+    Route::get('/receivables', App\Livewire\Receivables\Index::class)
+        ->name('receivables.index')
+        ->middleware('can:view receivables');
 
     Route::prefix('settings')->name('settings.')->group(function () {
         Route::redirect('/', '/settings/profile');

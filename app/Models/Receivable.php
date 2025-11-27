@@ -23,10 +23,13 @@ class Receivable extends Model
         'status',
         'purpose',
         'notes',
+        'disbursement_account', // ← TAMBAH
         'approved_by',
         'approved_at',
+        'review_notes',
         'rejection_reason',
-        'contract_attachment',
+        'contract_attachment_path',
+        'contract_attachment_name',
     ];
 
     protected $casts = [
@@ -50,5 +53,10 @@ class Receivable extends Model
     public function approver(): BelongsTo
     {
         return $this->belongsTo(User::class, 'approved_by');
+    }
+
+    public function scopePendingApproval($query)
+    {
+        return $query->where('status', 'pending_approval');
     }
 }

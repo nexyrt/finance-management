@@ -12,7 +12,7 @@ return new class extends Migration {
             $table->string('receivable_number')->unique();
             $table->enum('type', ['employee_loan', 'company_loan']);
 
-            $table->morphs('debtor');
+            $table->morphs('debtor'); // ← Already creates index
 
             $table->bigInteger('principal_amount');
             $table->decimal('interest_rate', 5, 2)->default(0);
@@ -33,7 +33,7 @@ return new class extends Migration {
             $table->string('contract_attachment')->nullable();
             $table->timestamps();
 
-            $table->index(['debtor_type', 'debtor_id']);
+            // $table->index(['debtor_type', 'debtor_id']); // ← REMOVE THIS LINE
             $table->index('status');
             $table->index('loan_date');
         });

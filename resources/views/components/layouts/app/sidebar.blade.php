@@ -100,6 +100,39 @@
                 </flux:navlist.item>
             @endcan
 
+            {{-- Debt & Receivables Group --}}
+            @canany(['view loans', 'view receivables'])
+                <flux:navlist.group heading="Debt & Receivables" expandable class="mt-1">
+
+                    @can('view loans')
+                        <flux:navlist.item icon="banknotes" :href="route('loans.index')"
+                            :current="request()->routeIs('loans.*')" wire:navigate class="py-5">
+                            {{ __('Loans') }}
+                        </flux:navlist.item>
+                    @endcan
+
+                    @can('view receivables')
+                        <flux:navlist.item icon="currency-dollar" :href="route('receivables.index')"
+                            :current="request()->routeIs('receivables.*')" wire:navigate class="py-5">
+                            <div class="flex items-center justify-between w-full">
+                                <span>{{ __('Receivables') }}</span>
+
+                                {{-- Pending Approval Badge for Finance --}}
+                                @can('approve receivables')
+                                    @php
+                                        $pendingReceivables = \App\Models\Receivable::pendingApproval()->count();
+                                    @endphp
+                                    @if ($pendingReceivables > 0)
+                                        <flux:badge color="yellow" size="sm">{{ $pendingReceivables }}</flux:badge>
+                                    @endif
+                                @endcan
+                            </div>
+                        </flux:navlist.item>
+                    @endcan
+
+                </flux:navlist.group>
+            @endcanany
+
             {{-- Admin Section --}}
             @role('admin')
                 <flux:navlist.group heading="Admin" expandable class="mt-1">
@@ -116,8 +149,8 @@
 
             {{-- Testing Page --}}
             @env('local')
-                <flux:navlist.item icon="beaker" :href="route('test')"
-                    :current="request()->routeIs('test')" wire:navigate class="py-5">
+                <flux:navlist.item icon="beaker" :href="route('test')" :current="request()->routeIs('test')"
+                    wire:navigate class="py-5">
                     {{ __('Testing Page') }}
                 </flux:navlist.item>
             @endenv
