@@ -319,8 +319,6 @@
     {{-- Child Components (Shared) --}}
     <livewire:reimbursements.show />
     <livewire:reimbursements.update />
-    <livewire:reimbursements.delete />
-
 
     @can('approve reimbursements')
         <livewire:reimbursements.review />
