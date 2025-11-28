@@ -16,11 +16,10 @@
                 Workflow Guide
             </x-button>
 
-            @if ($this->canCreate())
+            @can('create reimbursements')
                 <livewire:reimbursements.create @created="$refresh" />
-            @endif
+            @endcan
         </div>
-
     </div>
 
     {{-- Tab Container --}}
@@ -37,7 +36,7 @@
         </x-tab.items>
 
         {{-- All Requests Tab (Finance Only) --}}
-        @if ($this->canViewAllRequests())
+        @can('approve reimbursements')
             <x-tab.items tab="All Requests">
                 <x-slot:left>
                     <x-icon name="users" class="w-5 h-5" />
@@ -47,7 +46,7 @@
                     <livewire:reimbursements.all-requests />
                 </div>
             </x-tab.items>
-        @endif
+        @endcan
     </x-tab>
 
     {{-- Workflow Guide Modal --}}
@@ -320,6 +319,12 @@
     {{-- Child Components (Shared) --}}
     <livewire:reimbursements.show />
     <livewire:reimbursements.update />
-    <livewire:reimbursements.review />
-    <livewire:reimbursements.payment />
+
+    @can('approve reimbursements')
+        <livewire:reimbursements.review />
+    @endcan
+
+    @can('pay reimbursements')
+        <livewire:reimbursements.payment />
+    @endcan
 </div>
