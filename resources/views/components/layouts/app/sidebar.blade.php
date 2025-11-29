@@ -19,36 +19,43 @@
         </a>
 
         <flux:navlist variant="outline">
-            {{-- Dashboard - Always visible --}}
+            {{-- ================================================================== --}}
+            {{-- DASHBOARD --}}
+            {{-- ================================================================== --}}
             <flux:navlist.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')"
-                wire:navigate class="py-5">{{ __('Dashboard') }}
+                wire:navigate class="py-5">
+                {{ __('Dashboard') }}
             </flux:navlist.item>
 
-            {{-- Clients --}}
-            @can('view clients')
-                <flux:navlist.item icon="users" :href="route('clients')" :current="request()->routeIs('clients')"
-                    wire:navigate class="py-5">{{ __('Clients') }}
-                </flux:navlist.item>
-            @endcan
-
-            {{-- Services --}}
-            @can('view services')
-                <flux:navlist.item icon="puzzle-piece" :href="route('services')" :current="request()->routeIs('services')"
-                    wire:navigate class="py-5">{{ __('Services') }}
-                </flux:navlist.item>
-            @endcan
-
-            {{-- Finance Group - Show if user has ANY finance permission --}}
-            @canany(['view cash-flow', 'view invoices', 'view recurring-invoices', 'view bank-accounts'])
-                <flux:navlist.group heading="Finance" expandable class="mt-1">
-
-                    @can('view cash-flow')
-                        <flux:navlist.item icon="chart-bar" :href="route('cash-flow.index')"
-                            :current="request()->routeIs('cash-flow.*')" wire:navigate class="py-5">
-                            {{ __('Cash Flow') }}
+            {{-- ================================================================== --}}
+            {{-- MASTER DATA --}}
+            {{-- ================================================================== --}}
+            @canany(['view clients', 'view services'])
+                <flux:navlist.group heading="Master Data" expandable class="mt-1">
+                    {{-- Clients --}}
+                    @can('view clients')
+                        <flux:navlist.item icon="users" :href="route('clients')" :current="request()->routeIs('clients')"
+                            wire:navigate class="py-5">
+                            {{ __('Clients') }}
                         </flux:navlist.item>
                     @endcan
 
+                    {{-- Services --}}
+                    @can('view services')
+                        <flux:navlist.item icon="puzzle-piece" :href="route('services')"
+                            :current="request()->routeIs('services')" wire:navigate class="py-5">
+                            {{ __('Services') }}
+                        </flux:navlist.item>
+                    @endcan
+                </flux:navlist.group>
+            @endcanany
+
+            {{-- ================================================================== --}}
+            {{-- FINANCE --}}
+            {{-- ================================================================== --}}
+            @canany(['view invoices', 'view recurring-invoices', 'view bank-accounts', 'view cash-flow'])
+                <flux:navlist.group heading="Finance" expandable class="mt-1">
+                    {{-- Invoices --}}
                     @can('view invoices')
                         <flux:navlist.item icon="document-text" :href="route('invoices.index')"
                             :current="request()->routeIs('invoices.*')" wire:navigate class="py-5">
@@ -56,6 +63,7 @@
                         </flux:navlist.item>
                     @endcan
 
+                    {{-- Recurring Invoices --}}
                     @can('view recurring-invoices')
                         <flux:navlist.item icon="arrow-path" :href="route('recurring-invoices.index')"
                             :current="request()->routeIs('recurring-invoices.*')" wire:navigate class="py-5">
@@ -63,16 +71,27 @@
                         </flux:navlist.item>
                     @endcan
 
+                    {{-- Bank Accounts --}}
                     @can('view bank-accounts')
                         <flux:navlist.item icon="credit-card" :href="route('bank-accounts.index')"
                             :current="request()->routeIs('bank-accounts.*')" wire:navigate class="py-5">
                             {{ __('Bank Accounts') }}
                         </flux:navlist.item>
                     @endcan
+
+                    {{-- Cash Flow --}}
+                    @can('view cash-flow')
+                        <flux:navlist.item icon="chart-bar" :href="route('cash-flow.index')"
+                            :current="request()->routeIs('cash-flow.*')" wire:navigate class="py-5">
+                            {{ __('Cash Flow') }}
+                        </flux:navlist.item>
+                    @endcan
                 </flux:navlist.group>
             @endcanany
 
-            {{-- Transaction Categories --}}
+            {{-- ================================================================== --}}
+            {{-- CATEGORIES --}}
+            {{-- ================================================================== --}}
             @can('view categories')
                 <flux:navlist.item icon="tag" :href="route('transaction-categories.index')"
                     :current="request()->routeIs('transaction-categories.*')" wire:navigate class="py-5">
@@ -80,30 +99,32 @@
                 </flux:navlist.item>
             @endcan
 
-            {{-- 🆕 REIMBURSEMENTS - Add here --}}
+            {{-- ================================================================== --}}
+            {{-- REIMBURSEMENTS --}}
+            {{-- ================================================================== --}}
             @can('view reimbursements')
-                <flux:navlist.item icon="banknotes" :href="route('reimbursements.index')"
+                <flux:navlist.item icon="receipt-percent" :href="route('reimbursements.index')"
                     :current="request()->routeIs('reimbursements.*')" wire:navigate class="py-5">
                     <div class="flex items-center justify-between w-full">
                         <span>{{ __('Reimbursements') }}</span>
-
-                        {{-- Pending Badge for Finance --}}
                         @can('approve reimbursements')
                             @php
-                                $pendingCount = \App\Models\Reimbursement::pending()->count();
+                                $pendingReimbursements = \App\Models\Reimbursement::pending()->count();
                             @endphp
-                            @if ($pendingCount > 0)
-                                <flux:badge color="yellow" size="sm">{{ $pendingCount }}</flux:badge>
+                            @if ($pendingReimbursements > 0)
+                                <flux:badge color="yellow" size="sm">{{ $pendingReimbursements }}</flux:badge>
                             @endif
                         @endcan
                     </div>
                 </flux:navlist.item>
             @endcan
 
-            {{-- Debt & Receivables Group --}}
+            {{-- ================================================================== --}}
+            {{-- DEBT & RECEIVABLES --}}
+            {{-- ================================================================== --}}
             @canany(['view loans', 'view receivables'])
                 <flux:navlist.group heading="Debt & Receivables" expandable class="mt-1">
-
+                    {{-- Loans (Company Debt) --}}
                     @can('view loans')
                         <flux:navlist.item icon="banknotes" :href="route('loans.index')"
                             :current="request()->routeIs('loans.*')" wire:navigate class="py-5">
@@ -111,13 +132,12 @@
                         </flux:navlist.item>
                     @endcan
 
+                    {{-- Receivables (Employee/Client Loans) --}}
                     @can('view receivables')
                         <flux:navlist.item icon="currency-dollar" :href="route('receivables.index')"
                             :current="request()->routeIs('receivables.*')" wire:navigate class="py-5">
                             <div class="flex items-center justify-between w-full">
                                 <span>{{ __('Receivables') }}</span>
-
-                                {{-- Pending Approval Badge for Finance --}}
                                 @can('approve receivables')
                                     @php
                                         $pendingReceivables = \App\Models\Receivable::pendingApproval()->count();
@@ -129,25 +149,35 @@
                             </div>
                         </flux:navlist.item>
                     @endcan
-
                 </flux:navlist.group>
             @endcanany
 
-            {{-- Admin Section --}}
-            @role('admin')
-                <flux:navlist.group heading="Admin" expandable class="mt-1">
-                    <flux:navlist.item icon="users" :href="route('admin.users')"
-                        :current="request()->routeIs('admin.users')" wire:navigate class="py-5">
-                        {{ __('Users') }}
-                    </flux:navlist.item>
-                    <flux:navlist.item icon="shield-check" :href="route('admin.roles')"
-                        :current="request()->routeIs('admin.roles')" wire:navigate class="py-5">
-                        {{ __('Roles') }}
-                    </flux:navlist.item>
-                </flux:navlist.group>
-            @endrole
+            {{-- ================================================================== --}}
+            {{-- ADMINISTRATION --}}
+            {{-- ================================================================== --}}
+            @canany(['manage users', 'view permissions'])
+                <flux:navlist.group heading="Administration" expandable class="mt-1">
+                    {{-- Users --}}
+                    @can('manage users')
+                        <flux:navlist.item icon="users" :href="route('admin.users')"
+                            :current="request()->routeIs('admin.users')" wire:navigate class="py-5">
+                            {{ __('Users') }}
+                        </flux:navlist.item>
+                    @endcan
 
-            {{-- Testing Page --}}
+                    {{-- Permissions --}}
+                    @can('view permissions')
+                        <flux:navlist.item icon="shield-check" :href="route('permissions.index')"
+                            :current="request()->routeIs('permissions.*')" wire:navigate class="py-5">
+                            {{ __('Permissions') }}
+                        </flux:navlist.item>
+                    @endcan
+                </flux:navlist.group>
+            @endcanany
+
+            {{-- ================================================================== --}}
+            {{-- TESTING (Local Environment Only) --}}
+            {{-- ================================================================== --}}
             @env('local')
                 <flux:navlist.item icon="beaker" :href="route('test')" :current="request()->routeIs('test')"
                     wire:navigate class="py-5">

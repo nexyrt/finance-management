@@ -20,9 +20,6 @@ class DatabaseSeeder extends Seeder
             RecurringTemplateSeeder::class,
             RecurringInvoiceSeeder::class,
             TransactionCategorySeeder::class,
-            RolePermissionSeeder::class,
-            ReimbursementPermissionSeeder::class,
-            LoanReceivablePermissionSeeder::class,
             CompanyProfileSeeder::class,
         ]);
     }
