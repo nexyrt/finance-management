@@ -118,11 +118,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('template.create');
 
         Route::get('/template/{template}/edit', RecurringInvoicesEditTemplate::class)
-            ->middleware('can:update recurring-invoices')
+            ->middleware('can:edit recurring-invoices')
             ->name('template.edit');
 
         Route::get('/monthly/{invoice}/edit', RecurringInvoicesMonthlyEdit::class)
-            ->middleware('can:update recurring-invoices')
+            ->middleware('can:edit recurring-invoices')
             ->name('monthly.edit');
     });
 
