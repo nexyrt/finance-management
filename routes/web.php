@@ -69,7 +69,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('create');
 
         Route::get('/{invoice}/edit', InvoicesEdit::class)
-            ->middleware('can:update invoices')
+            ->middleware('can:edit invoices')
             ->name('edit');
     });
 

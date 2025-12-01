@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
             RecurringInvoiceSeeder::class,
             TransactionCategorySeeder::class,
             CompanyProfileSeeder::class,
+            MasterPermissionSeeder::class,
         ]);
     }
 }

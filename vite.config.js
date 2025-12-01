@@ -8,9 +8,6 @@ export default defineConfig({
     plugins: [
         laravel({
             input: ['resources/css/app.css', 'resources/js/app.js'],
-            refresh: [`resources/views/**/*`,
-                `./vendor/masmerise/livewire-toaster/resources/views/*.blade.php`
-            ],
         }),
         tailwindcss(),
     ],
@@ -19,5 +16,8 @@ export default defineConfig({
     ],
     server: {
         cors: true,
+    },
+    build: {
+        chunkSizeWarningLimit: 1500, // atau 2000 sesuai kebutuhan
     },
 });
