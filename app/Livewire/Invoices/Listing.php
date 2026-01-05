@@ -23,7 +23,7 @@ class Listing extends Component
     // Filters
     public $statusFilter = null;
     public $clientFilter = null;
-    public $selectedMonth = '2025-11';
+    public $selectedMonth = null;
     public $dateRange = [];
     public $search = '';
 
@@ -54,6 +54,7 @@ class Listing extends Component
 
     public function mount()
     {
+        $this->selectedMonth = now()->format('Y-m');
         $this->dateRange = [];
         $this->dispatchFilterChange();
     }
