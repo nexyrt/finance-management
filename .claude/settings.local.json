@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(tree:*)",
+      "WebFetch(domain:tallstackui.com)",
+      "Bash(php artisan:*)",
+      "Bash(npm run build:*)"
+    ]
+  }
+}

@@ -36,6 +36,37 @@ document.addEventListener('DOMContentLoaded', initializeQuill);
 // Re-initialize after Livewire updates (if using Livewire)
 document.addEventListener('livewire:navigated', initializeQuill);
 
+// Prevent default drag and drop behavior globally to avoid file opening in new tab
+// This is especially important for files dragged from WhatsApp Web
+document.addEventListener('DOMContentLoaded', () => {
+    // Prevent default dragover on entire document
+    document.addEventListener('dragover', (e) => {
+        // Check if dragging over an upload component or file input
+        const isOverUpload = e.target.closest('[x-data*="tallstackui_formUpload"]') ||
+                            e.target.closest('input[type="file"]');
+
+        if (isOverUpload) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+    }, false);
+
+    // Prevent default drop on entire document
+    document.addEventListener('drop', (e) => {
+        // Check if dropping on an upload component or file input
+        const isOverUpload = e.target.closest('[x-data*="tallstackui_formUpload"]') ||
+                            e.target.closest('input[type="file"]');
+
+        if (isOverUpload) {
+            e.preventDefault();
+            e.stopPropagation();
+        } else {
+            // Prevent file opening on any other area
+            e.preventDefault();
+        }
+    }, false);
+});
+
 // Livewire.on('open-preview-delayed', (data) => {
 //     setTimeout(() => {
 //         window.open(data[0].url, '_blank');

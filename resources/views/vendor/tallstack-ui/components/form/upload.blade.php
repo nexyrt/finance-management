@@ -17,6 +17,8 @@
      x-on:livewire-upload-finish="uploading = false"
      x-on:livewire-upload-error="uploading = false"
      x-on:livewire-upload-progress="progress = $event.detail.progress"
+     @dragover.prevent
+     @drop.prevent
      class="relative" x-on:click.outside="show = false">
      @if ($static) <p hidden x-ref="placeholder">{{ $placeholder }}</p> @endif
         <x-dynamic-component :component="TallStackUi::prefix('input')"
@@ -82,7 +84,10 @@
                           :class="$personalize['floating.class']"
                           dusk="tallstackui_upload_floating">
          @if (!$static)
-         <div @class(['flex flex-col w-full items-center justify-center', 'mb-2' => $footer?->isNotEmpty()])>
+         <div @class(['flex flex-col w-full items-center justify-center', 'mb-2' => $footer?->isNotEmpty()])
+              @dragover.prevent="dragging = true"
+              @dragleave.prevent="dragging = false"
+              @drop.prevent="dragging = false; $refs.files.files = $event.dataTransfer.files; upload()">
              <div class="{{ $personalize['placeholder.wrapper'] }}" :class="{ 'bg-primary-100': dragging }">
                  <div class="{{ $personalize['placeholder.icon.wrapper'] }}">
                      <x-dynamic-component :component="TallStackUi::prefix('icon')"
@@ -105,9 +110,9 @@
                         x-ref="files"
                         {{ $attributes->only(['accept', 'x-on:upload']) }}
                         x-on:change="upload()"
-                        x-on:dragover="dragging = true"
-                        x-on:dragleave="dragging = false"
-                        x-on:drop="dragging = false;"
+                        x-on:dragover.prevent="dragging = true"
+                        x-on:dragleave.prevent="dragging = false"
+                        x-on:drop.prevent="dragging = false;"
                         @if ($multiple) multiple @endif />
              </div>
          </div>
