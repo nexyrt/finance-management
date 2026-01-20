@@ -88,15 +88,19 @@ class Create extends Component
         $options = [];
 
         foreach ($parents as $parent) {
+            // Parent category - disabled (hanya sebagai header)
             $options[] = [
                 'label' => $parent->label,
                 'value' => $parent->id,
+                'disabled' => true, // Disable parent category
             ];
 
+            // Child categories - enabled (bisa dipilih)
             foreach ($parent->children as $child) {
                 $options[] = [
                     'label' => '  ↳ ' . $child->label,
                     'value' => $child->id,
+                    'disabled' => false,
                 ];
             }
         }

@@ -58,17 +58,19 @@ class Transfer extends Component
         $options = [];
 
         foreach ($parents as $parent) {
-            // Add parent
+            // Add parent - disabled (hanya sebagai header)
             $options[] = [
                 'label' => $parent->label,
                 'value' => $parent->id,
+                'disabled' => true,
             ];
 
-            // Add children
+            // Add children - enabled (bisa dipilih)
             foreach ($parent->children as $child) {
                 $options[] = [
                     'label' => '  ↳ ' . $child->label,
                     'value' => $child->id,
+                    'disabled' => false,
                 ];
             }
         }
