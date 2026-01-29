@@ -120,6 +120,26 @@
             @endcan
 
             {{-- ================================================================== --}}
+            {{-- FEEDBACKS --}}
+            {{-- ================================================================== --}}
+            @can('view feedbacks')
+                <flux:navlist.item icon="chat-bubble-left-ellipsis" :href="route('feedbacks.index')"
+                    :current="request()->routeIs('feedbacks.*')" wire:navigate class="py-5">
+                    <div class="flex items-center justify-between w-full">
+                        <span>{{ __('Feedbacks') }}</span>
+                        @can('manage feedbacks')
+                            @php
+                                $openFeedbacks = \App\Models\Feedback::where('status', 'open')->count();
+                            @endphp
+                            @if ($openFeedbacks > 0)
+                                <flux:badge color="red" size="sm">{{ $openFeedbacks }}</flux:badge>
+                            @endif
+                        @endcan
+                    </div>
+                </flux:navlist.item>
+            @endcan
+
+            {{-- ================================================================== --}}
             {{-- DEBT & RECEIVABLES --}}
             {{-- ================================================================== --}}
             @canany(['view loans', 'view receivables'])
@@ -188,6 +208,11 @@
 
         <flux:spacer />
 
+        {{-- Desktop Notification Bell --}}
+        <div class="hidden lg:flex justify-center mb-4">
+            <livewire:notifications.bell />
+        </div>
+
         {{-- Theme Switcher --}}
         <flux:radio.group x-data variant="segmented" x-model="$flux.appearance">
             <flux:radio value="light" icon="sun">{{ __('Light') }}</flux:radio>
@@ -245,6 +270,9 @@
 
         <flux:spacer />
 
+        {{-- Notification Bell --}}
+        <livewire:notifications.bell />
+
         <flux:dropdown position="top" align="end">
             <flux:profile :initials="auth() -> user() -> initials()" icon-trailing="chevron-down" />
 
@@ -287,6 +315,12 @@
     </flux:header>
 
     {{ $slot }}
+
+    {{-- Floating Feedback Button --}}
+    <livewire:floating-feedback-button />
+
+    {{-- Global Feedback Create Modal --}}
+    <livewire:feedbacks.create />
 
     @fluxScripts
     @livewireScripts

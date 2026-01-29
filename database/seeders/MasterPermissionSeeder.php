@@ -153,6 +153,14 @@ class MasterPermissionSeeder extends Seeder
 
             // User Management
             'manage users',
+
+            // Feedbacks
+            'view feedbacks',
+            'create feedbacks',
+            'edit feedbacks',
+            'delete feedbacks',
+            'respond feedbacks',
+            'manage feedbacks',
         ];
 
         $newCount = 0;
@@ -265,6 +273,14 @@ class MasterPermissionSeeder extends Seeder
 
             // Permissions (view only)
             'view permissions',
+
+            // Feedbacks (can respond and manage)
+            'view feedbacks',
+            'create feedbacks',
+            'edit feedbacks',
+            'delete feedbacks',
+            'respond feedbacks',
+            'manage feedbacks',
         ];
 
         $financeManager->syncPermissions($financeManagerPermissions);
@@ -296,6 +312,12 @@ class MasterPermissionSeeder extends Seeder
             // Receivables (request only)
             'view receivables',
             'create receivables',
+
+            // Feedbacks (own only)
+            'view feedbacks',
+            'create feedbacks',
+            'edit feedbacks',
+            'delete feedbacks',
         ];
 
         $staff->syncPermissions($staffPermissions);
