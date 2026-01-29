@@ -61,6 +61,18 @@ class MyFeedbacks extends Component
             ->withQueryString();
     }
 
+    #[Computed]
+    public function totalCount(): int
+    {
+        return Feedback::query()->forUser(auth()->id())->count();
+    }
+
+    #[Computed]
+    public function hasFilters(): bool
+    {
+        return !empty($this->search) || !is_null($this->statusFilter) || !is_null($this->typeFilter);
+    }
+
     public function updatedSearch(): void
     {
         $this->resetPage();
