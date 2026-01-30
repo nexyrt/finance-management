@@ -424,21 +424,20 @@
 
         <!-- Invoice Title -->
         <div class="invoice-title">
-            INVOICE
+            {{ __('invoice.invoice') }}
             @if ($is_down_payment)
                 <span
-                    style="background: #f59e0b; padding: 3px 12px; margin-left: 15px; border-radius: 4px; font-size: 14px; letter-spacing: 1px;">DOWN
-                    PAYMENT</span>
+                    style="background: #f59e0b; padding: 3px 12px; margin-left: 15px; border-radius: 4px; font-size: 14px; letter-spacing: 1px;">{{ strtoupper(__('invoice.down_payment')) }}</span>
             @elseif($is_pelunasan)
                 <span
-                    style="background: #10b981; padding: 3px 12px; margin-left: 15px; border-radius: 4px; font-size: 14px; letter-spacing: 1px;">PELUNASAN</span>
+                    style="background: #10b981; padding: 3px 12px; margin-left: 15px; border-radius: 4px; font-size: 14px; letter-spacing: 1px;">{{ strtoupper(__('invoice.settlement')) }}</span>
             @endif
         </div>
 
         <!-- Main Content -->
         <div class="main-content">
             <div class="left-section">
-                <div class="section-title">TAGIHAN KEPADA :</div>
+                <div class="section-title">{{ __('invoice.bill_to') }} :</div>
                 <div class="client-name">{{ strtoupper($client->name) }}</div>
 
                 @php
@@ -448,13 +447,13 @@
 
                 @if ($hasMultipleClients)
                     <div style="margin-top: 10px; font-size: 12px; color: #666; font-style: italic;">
-                        * Invoice ini mencakup tagihan untuk {{ $uniqueClients->count() }} klien
+                        * {{ __('invoice.multiple_clients_note', ['count' => $uniqueClients->count()]) }}
                     </div>
                 @endif
 
                 @if ($financial_summary['has_tax_deposits'])
                     <div style="margin-top: 10px; font-size: 12px; color: #f59e0b; font-style: italic;">
-                        * Termasuk titipan pajak sebesar Rp
+                        * {{ __('invoice.includes_tax_deposit') }} Rp
                         {{ number_format($financial_summary['tax_deposits_total'], 0, ',', '.') }}
                     </div>
                 @endif
@@ -463,19 +462,19 @@
             <div class="right-section">
                 <div class="info-grid">
                     <div class="info-row">
-                        <div class="info-label">TANGGAL</div>
+                        <div class="info-label">{{ __('invoice.invoice_date') }}</div>
                         <div class="info-value">{{ $invoice->issue_date->format('d M Y') }}</div>
                     </div>
                     <div class="info-row">
-                        <div class="info-label">No. INVOICE</div>
+                        <div class="info-label">{{ __('invoice.invoice_number') }}</div>
                         <div class="info-value">{{ $invoice->invoice_number }}</div>
                     </div>
                     <div class="info-row">
-                        <div class="info-label">TERMIN</div>
+                        <div class="info-label">{{ __('invoice.payment_terms') }}</div>
                         <div class="info-value">-</div>
                     </div>
                     <div class="info-row">
-                        <div class="info-label">DUE DATE</div>
+                        <div class="info-label">{{ __('invoice.due_date') }}</div>
                         <div class="info-value">{{ $invoice->due_date->format('d M Y') }}</div>
                     </div>
                 </div>
@@ -486,16 +485,16 @@
         <table class="items-table {{ $hasMultipleClients ? 'compact-table' : '' }}">
             <thead>
                 <tr>
-                    <th style="width: 6%;">NO</th>
+                    <th style="width: 6%;">{{ __('invoice.no') }}</th>
                     @if ($hasMultipleClients)
-                        <th style="width: 18%;">KLIEN</th>
-                        <th style="width: 38%;">DESKRIPSI PEKERJAAN</th>
+                        <th style="width: 18%;">{{ __('invoice.client') }}</th>
+                        <th style="width: 38%;">{{ __('invoice.description') }}</th>
                     @else
-                        <th style="width: 56%;">DESKRIPSI PEKERJAAN</th>
+                        <th style="width: 56%;">{{ __('invoice.description') }}</th>
                     @endif
-                    <th style="width: 8%;">QTY</th>
-                    <th style="width: 15%;">BIAYA SATUAN</th>
-                    <th style="width: 15%;">JUMLAH</th>
+                    <th style="width: 8%;">{{ __('invoice.qty') }}</th>
+                    <th style="width: 15%;">{{ __('invoice.unit_price') }}</th>
+                    <th style="width: 15%;">{{ __('invoice.amount') }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -547,7 +546,7 @@
                             <td class="text-left">
                                 {{ $item->service_name }}
                                 @if ($item->is_tax_deposit)
-                                    <span class="tax-deposit-label">TITIPAN PAJAK</span>
+                                    <span class="tax-deposit-label">{{ strtoupper(__('invoice.tax_deposit')) }}</span>
                                 @endif
                             </td>
                             <td>{{ number_format($item->quantity) }}</td>
@@ -577,11 +576,11 @@
                 <!-- Payment Methods -->
                 @foreach ($company['bank_accounts'] as $index => $bank)
                     <div class="payment-method">
-                        <div class="payment-title">Metode Pembayaran #{{ $index + 1 }}</div>
+                        <div class="payment-title">{{ __('invoice.payment_method') }} #{{ $index + 1 }}</div>
                         <div class="bank-info">
-                            <strong>Bank:</strong> {{ $bank['bank'] }}<br>
-                            <strong>No. Rek:</strong> {{ $bank['account_number'] }}<br>
-                            <strong>Atas Nama:</strong> {{ $bank['account_name'] }}
+                            <strong>{{ __('invoice.bank_name') }}:</strong> {{ $bank['bank'] }}<br>
+                            <strong>{{ __('invoice.account_number') }}:</strong> {{ $bank['account_number'] }}<br>
+                            <strong>{{ __('invoice.account_holder') }}:</strong> {{ $bank['account_name'] }}
                         </div>
                     </div>
                 @endforeach
@@ -589,7 +588,7 @@
                 <!-- Terbilang -->
                 <div
                     style="font-style: italic; margin-top: 10px; padding: 10px; background: #f8f9fa; border-left: 3px solid #42b2cc;">
-                    <strong style="color: #42b2cc;">Terbilang:</strong> {{ $terbilang }} Rupiah
+                    <strong style="color: #42b2cc;">{{ __('invoice.say') }}:</strong> {{ $terbilang }} {{ __('invoice.rupiah') }}
                 </div>
 
                 <!-- DP Information Box -->
@@ -597,23 +596,23 @@
                     <div
                         style="margin-top: 20px; padding: 15px; background: #fff3cd; border: 2px solid #ffc107; border-radius: 6px;">
                         <div style="font-weight: bold; color: #856404; margin-bottom: 8px; font-size: 14px;">
-                            📋 INFORMASI PEMBAYARAN DOWN PAYMENT
+                            📋 {{ strtoupper(__('invoice.down_payment_info')) }}
                         </div>
                         <table style="width: 100%; font-size: 13px; color: #856404;">
                             <tr>
-                                <td style="padding: 3px 0; width: 40%;">Total Invoice:</td>
+                                <td style="padding: 3px 0; width: 40%;">{{ __('invoice.invoice_total') }}:</td>
                                 <td style="padding: 3px 0; font-weight: bold; text-align: right;">
                                     Rp {{ number_format($invoice->total_amount, 0, ',', '.') }}
                                 </td>
                             </tr>
                             <tr>
-                                <td style="padding: 3px 0;">Down Payment (Dibayar):</td>
+                                <td style="padding: 3px 0;">{{ __('invoice.down_payment_paid') }}:</td>
                                 <td style="padding: 3px 0; font-weight: bold; text-align: right; color: #28a745;">
                                     Rp {{ number_format($dp_amount, 0, ',', '.') }}
                                 </td>
                             </tr>
                             <tr style="border-top: 2px dashed #ffc107;">
-                                <td style="padding: 8px 0 3px 0; font-weight: bold;">Sisa Pembayaran:</td>
+                                <td style="padding: 8px 0 3px 0; font-weight: bold;">{{ __('invoice.remaining_payment') }}:</td>
                                 <td
                                     style="padding: 8px 0 3px 0; font-weight: bold; text-align: right; color: #dc3545; font-size: 15px;">
                                     Rp {{ number_format($invoice->total_amount - $dp_amount, 0, ',', '.') }}
@@ -625,23 +624,23 @@
                     <div
                         style="margin-top: 20px; padding: 15px; background: #d1fae5; border: 2px solid #10b981; border-radius: 6px;">
                         <div style="font-weight: bold; color: #065f46; margin-bottom: 8px; font-size: 14px;">
-                            ✅ INFORMASI PELUNASAN
+                            ✅ {{ strtoupper(__('invoice.settlement_info')) }}
                         </div>
                         <table style="width: 100%; font-size: 13px; color: #065f46;">
                             <tr>
-                                <td style="padding: 3px 0; width: 40%;">Total Invoice:</td>
+                                <td style="padding: 3px 0; width: 40%;">{{ __('invoice.invoice_total') }}:</td>
                                 <td style="padding: 3px 0; font-weight: bold; text-align: right;">
                                     Rp {{ number_format($invoice->total_amount, 0, ',', '.') }}
                                 </td>
                             </tr>
                             <tr>
-                                <td style="padding: 3px 0;">Sudah Dibayar:</td>
+                                <td style="padding: 3px 0;">{{ __('invoice.already_paid') }}:</td>
                                 <td style="padding: 3px 0; font-weight: bold; text-align: right; color: #059669;">
                                     Rp {{ number_format($total_paid, 0, ',', '.') }}
                                 </td>
                             </tr>
                             <tr style="border-top: 2px dashed #10b981;">
-                                <td style="padding: 8px 0 3px 0; font-weight: bold;">Pelunasan (Sisa):</td>
+                                <td style="padding: 8px 0 3px 0; font-weight: bold;">{{ __('invoice.settlement_amount') }}:</td>
                                 <td
                                     style="padding: 8px 0 3px 0; font-weight: bold; text-align: right; color: #10b981; font-size: 15px;">
                                     Rp {{ number_format($pelunasan_amount, 0, ',', '.') }}
@@ -650,16 +649,16 @@
                         </table>
                         <div
                             style="margin-top: 10px; padding: 8px; background: white; border-radius: 4px; font-size: 12px; text-align: center; color: #059669;">
-                            <strong>Invoice ini merupakan tagihan pelunasan terakhir</strong>
+                            <strong>{{ __('invoice.final_settlement_note') }}</strong>
                         </div>
                     </div>
                 @endif
 
                 <!-- Tax Information -->
                 <div class="tax-info">
-                    <strong>Catatan:</strong> PPh Final 0,5% sesuai PP No. 23/2018 untuk UMKM
+                    <strong>{{ __('invoice.notes') }}:</strong> {{ __('invoice.pph_final_note') }}
                     @if ($financial_summary['has_tax_deposits'])
-                        <br><strong>*</strong> Titipan pajak tidak termasuk dalam perhitungan PPh Final
+                        <br><strong>*</strong> {{ __('invoice.tax_deposit_excluded_note') }}
                     @endif
                 </div>
             </div>
@@ -677,14 +676,14 @@
                 @if ($financial_summary['has_tax_deposits'])
                     <div class="grand-total-section">
                         <div class="grand-total-row">
-                            <div class="grand-total-label">SUBTOTAL LAYANAN</div>
+                            <div class="grand-total-label">{{ __('invoice.service_subtotal') }}</div>
                             <div class="grand-total-value">IDR {{ number_format($netRevenue, 0, ',', '.') }}</div>
                         </div>
                     </div>
 
                     <div class="grand-total-section">
                         <div class="grand-total-row">
-                            <div class="grand-total-label">TITIPAN PAJAK</div>
+                            <div class="grand-total-label">{{ __('invoice.tax_deposit') }}</div>
                             <div class="grand-total-value">IDR
                                 {{ number_format($financial_summary['tax_deposits_total'], 0, ',', '.') }}</div>
                         </div>
@@ -695,7 +694,7 @@
                 @if ($invoice->discount_amount > 0)
                     <div class="grand-total-section">
                         <div class="grand-total-row">
-                            <div class="grand-total-label">DISKON</div>
+                            <div class="grand-total-label">{{ __('invoice.discount') }}</div>
                             <div class="grand-total-value">IDR
                                 -{{ number_format($invoice->discount_amount, 0, ',', '.') }}</div>
                         </div>
@@ -705,7 +704,7 @@
                 <!-- DPP (based on net revenue after discount) -->
                 <div class="grand-total-section">
                     <div class="grand-total-row">
-                        <div class="grand-total-label">DPP</div>
+                        <div class="grand-total-label">{{ __('invoice.dpp') }}</div>
                         <div class="grand-total-value">IDR {{ number_format($dpp, 0, ',', '.') }}</div>
                     </div>
                 </div>
@@ -713,7 +712,7 @@
                 <!-- PP 55 (0.5% from net revenue) -->
                 <div class="grand-total-section">
                     <div class="grand-total-row">
-                        <div class="grand-total-label">PP 55 (0,5%)</div>
+                        <div class="grand-total-label">{{ __('invoice.pp_55') }}</div>
                         <div class="grand-total-value">IDR {{ number_format($pph05Percent, 0, ',', '.') }}</div>
                     </div>
                 </div>
@@ -721,7 +720,7 @@
                 <!-- Grand Total -->
                 <div class="grand-total-section">
                     <div class="grand-total-row">
-                        <div class="grand-total-label">GRAND TOTAL</div>
+                        <div class="grand-total-label">{{ __('invoice.grand_total') }}</div>
                         <div class="grand-total-value">IDR {{ number_format($netRevenueAfterDiscount, 0, ',', '.') }}
                         </div>
                     </div>
@@ -733,11 +732,11 @@
                     <div class="total-row">
                         <div class="total-label">
                             @if ($is_down_payment)
-                                TOTAL DOWN PAYMENT
+                                {{ strtoupper(__('invoice.total_down_payment')) }}
                             @elseif ($is_pelunasan)
-                                TOTAL PELUNASAN
+                                {{ strtoupper(__('invoice.total_settlement')) }}
                             @else
-                                TOTAL
+                                {{ strtoupper(__('invoice.total')) }}
                             @endif
                         </div>
                         <div class="total-value">

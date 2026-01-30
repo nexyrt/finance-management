@@ -7,8 +7,8 @@
                     <x-icon name="trash" class="w-6 h-6 text-white" />
                 </div>
                 <div>
-                    <h3 class="text-xl font-bold text-gray-900 dark:text-white">Hapus Klien</h3>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">Konfirmasi penghapusan klien</p>
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white">{{ __('pages.delete_client') }}</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">{{ __('pages.confirm_client_deletion') }}</p>
                 </div>
             </div>
         </x-slot:header>
@@ -34,7 +34,7 @@
                         <div>
                             <h4 class="text-lg font-semibold text-gray-900 dark:text-white">{{ $client->name }}</h4>
                             <div class="flex items-center gap-2 mt-1">
-                                <x-badge text="{{ $client->type === 'individual' ? 'Individu' : 'Perusahaan' }}" 
+                                <x-badge text="{{ $client->type === 'individual' ? __('pages.individual') : __('pages.company') }}"
                                          color="{{ $client->type === 'individual' ? 'blue' : 'purple' }}" />
                                 @if($client->NPWP)
                                     <span class="text-xs text-gray-600 dark:text-gray-400 font-mono bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
@@ -54,13 +54,13 @@
                                 <x-icon name="exclamation-triangle" class="w-4 h-4 text-red-600 dark:text-red-400" />
                             </div>
                             <div>
-                                <h4 class="font-semibold text-red-900 dark:text-red-100 mb-1">Perhatian!</h4>
+                                <h4 class="font-semibold text-red-900 dark:text-red-100 mb-1">{{ __('pages.attention') }}</h4>
                                 <p class="text-sm text-red-800 dark:text-red-200 mb-3">
-                                    Klien ini memiliki <strong>{{ $client->invoices->count() }} invoice</strong> yang akan ikut terhapus secara permanen.
+                                    {!! __('pages.client_has_invoices', ['count' => $client->invoices->count()]) !!}
                                 </p>
                                 <div class="bg-red-100 dark:bg-red-800/30 rounded-lg p-3">
                                     <div class="text-sm text-red-800 dark:text-red-200">
-                                        <div class="font-medium mb-1">Total nilai invoice:</div>
+                                        <div class="font-medium mb-1">{{ __('pages.total_invoice_value') }}</div>
                                         <div class="text-lg font-bold">Rp {{ number_format($client->invoices->sum('total_amount'), 0, ',', '.') }}</div>
                                     </div>
                                 </div>
@@ -74,7 +74,7 @@
                                 <x-icon name="check-circle" class="w-4 h-4 text-green-600 dark:text-green-400" />
                             </div>
                             <p class="text-sm text-green-800 dark:text-green-200">
-                                Klien ini tidak memiliki invoice terkait.
+                                {{ __('pages.client_no_invoices') }}
                             </p>
                         </div>
                     </div>
@@ -85,10 +85,10 @@
         <x-slot:footer>
             <div class="flex justify-end gap-3">
                 <x-button wire:click="$toggle('clientDeleteModal')" color="secondary">
-                    Batal
+                    {{ __('common.cancel') }}
                 </x-button>
                 <x-button wire:click="confirm" x-on:click="$modalClose('client-delete-modal')" color="red" icon="trash" spinner="confirm">
-                    Hapus Klien
+                    {{ __('pages.delete_client') }}
                 </x-button>
             </div>
         </x-slot:footer>

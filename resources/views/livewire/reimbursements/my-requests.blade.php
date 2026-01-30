@@ -2,8 +2,8 @@
     {{-- Filters --}}
     <div class="flex flex-col lg:flex-row gap-4 items-start lg:items-end">
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 flex-1">
-            <x-select.styled wire:model.live="statusFilter" label="Status" :options="$this->statusOptions" placeholder="All status..." />
-            <x-select.styled wire:model.live="categoryFilter" label="Category" :options="$this->categoryOptions"
+            <x-select.styled wire:model.live="statusFilter" :label="__('common.status')" :options="$this->statusOptions" placeholder="All status..." />
+            <x-select.styled wire:model.live="categoryFilter" :label="__('common.category')" :options="$this->categoryOptions"
                 placeholder="All categories..." />
             <x-date wire:model.live="dateRange" label="Date Range" range placeholder="Select range..." />
         </div>

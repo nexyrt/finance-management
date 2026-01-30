@@ -9,7 +9,8 @@
       "Bash(for file in app/Livewire/Feedbacks/*.php app/Livewire/Notifications/*.php)",
       "Bash(do echo \"Checking: $file\")",
       "Bash(done)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(git checkout:*)"
     ]
   }
 }

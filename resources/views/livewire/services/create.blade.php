@@ -3,19 +3,19 @@
 <div>
     <!-- Trigger Button -->
     <x-button wire:click="$toggle('modal')" icon="plus" color="primary">
-        Tambah Layanan
+        {{ __('pages.add_service') }}
     </x-button>
 
     <!-- Modal -->
     <x-modal wire size="2xl" center persistent>
         <x-slot:title>
-            Tambah Layanan Baru
+            {{ __('pages.add_service') }}
         </x-slot:title>
 
         <form id="create-form" wire:submit="save" class="space-y-4">
-            <x-input wire:model="name" label="Nama Layanan" hint="Masukkan nama layanan yang akan ditawarkan" required />
+            <x-input wire:model="name" label="{{ __('pages.service_name') }}" hint="{{ __('pages.service_description') }}" required />
 
-            <x-select.styled wire:model="type" label="Kategori Layanan" :options="[
+            <x-select.styled wire:model="type" label="{{ __('common.category') }}" :options="[
                 ['label' => 'Perizinan', 'value' => 'Perizinan'],
                 ['label' => 'Administrasi Perpajakan', 'value' => 'Administrasi Perpajakan'],
                 ['label' => 'Digital Marketing', 'value' => 'Digital Marketing'],
@@ -23,17 +23,17 @@
             ]"
                 placeholder="Pilih kategori layanan..." required />
 
-            <x-input wire:model="price" label="Harga Layanan" hint="Masukkan harga dalam Rupiah (contoh: 500000)"
+            <x-input wire:model="price" label="{{ __('pages.service_price') }}" hint="Masukkan harga dalam Rupiah (contoh: 500000)"
                 prefix="Rp" x-mask:dynamic="$money($input, '.')" required />
         </form>
 
         <x-slot:footer>
             <div class="flex justify-between w-full">
                 <x-button wire:click="$set('modal', false)" color="gray">
-                    Batal
+                    {{ __('common.cancel') }}
                 </x-button>
                 <x-button type="submit" form="create-form" color="primary" loading="save" icon="check">
-                    Simpan Layanan
+                    {{ __('common.save') }}
                 </x-button>
             </div>
         </x-slot:footer>

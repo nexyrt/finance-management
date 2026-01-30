@@ -34,6 +34,7 @@ class Listing extends Component
     public $printAmountPaid = 0;
     public $printType = 'full';
     public $dpAmount = null;
+    public $printTemplate = 'kisantra-invoice'; // Template selection
 
     public array $headers = [
         ['index' => 'invoice_number', 'label' => 'No. Invoice'],
@@ -67,6 +68,7 @@ class Listing extends Component
         $this->printAmountPaid = $amountPaid;
         $this->printType = 'full';
         $this->dpAmount = null;
+        $this->printTemplate = 'kisantra-invoice'; // Reset to default
         $this->printModal = true;
     }
 
@@ -81,6 +83,9 @@ class Listing extends Component
         $previewUrl = route('invoice.preview', $this->printInvoiceId);
         $downloadUrl = route('invoice.download', $this->printInvoiceId);
 
+        // Add template parameter
+        $templateParam = '?template=' . $this->printTemplate;
+
         if ($this->printType === 'dp') {
             $dpParsed = $this->dpAmount ? (int) preg_replace('/[^0-9]/', '', $this->dpAmount) : 0;
 
@@ -89,8 +94,8 @@ class Listing extends Component
                 return;
             }
 
-            $previewUrl .= '?dp_amount=' . $dpParsed;
-            $downloadUrl .= '?dp_amount=' . $dpParsed;
+            $previewUrl .= $templateParam . '&dp_amount=' . $dpParsed;
+            $downloadUrl .= $templateParam . '&dp_amount=' . $dpParsed;
         } elseif ($this->printType === 'pelunasan') {
             $sisaPembayaran = $this->printTotalAmount - $this->printAmountPaid;
 
@@ -99,8 +104,12 @@ class Listing extends Component
                 return;
             }
 
-            $previewUrl .= '?pelunasan_amount=' . $sisaPembayaran;
-            $downloadUrl .= '?pelunasan_amount=' . $sisaPembayaran;
+            $previewUrl .= $templateParam . '&pelunasan_amount=' . $sisaPembayaran;
+            $downloadUrl .= $templateParam . '&pelunasan_amount=' . $sisaPembayaran;
+        } else {
+            // Full invoice
+            $previewUrl .= $templateParam;
+            $downloadUrl .= $templateParam;
         }
 
         $this->dispatch('execute-print', [
@@ -109,7 +118,7 @@ class Listing extends Component
         ]);
 
         $this->printModal = false;
-        $this->reset(['printInvoiceId', 'printTotalAmount', 'printAmountPaid', 'printType', 'dpAmount']);
+        $this->reset(['printInvoiceId', 'printTotalAmount', 'printAmountPaid', 'printType', 'dpAmount', 'printTemplate']);
     }
 
     #[Computed]

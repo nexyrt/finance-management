@@ -6,14 +6,14 @@
         <div class="space-y-1">
             <h1
                 class="text-4xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-indigo-800 dark:from-white dark:via-blue-200 dark:to-indigo-200 bg-clip-text text-transparent">
-                Manajemen Invoice
+                {{ __('pages.invoice_management') }}
             </h1>
             <p class="text-gray-600 dark:text-zinc-400 text-lg">
-                Kelola dan lacak semua invoice Anda di sini.
+                {{ __('pages.manage_track_invoices') }}
             </p>
         </div>
         {{-- <livewire:invoices.create @invoice-created="$refresh" /> --}}
-        <x-button size="sm" href="{{ route('invoices.create') }}" wire:navigate title="Create" text="Create Invoice"
+        <x-button size="sm" href="{{ route('invoices.create') }}" wire:navigate :title="__('common.create')" :text="__('invoice.create_invoice')"
             prefix="true">
             <x-slot:left>
                 <x-icon name="plus" class="w-4 h-4" />
@@ -29,7 +29,7 @@
                     <x-icon name="chart-bar" class="w-6 h-6 text-blue-600 dark:text-blue-400" />
                 </div>
                 <div>
-                    <p class="text-sm text-dark-600 dark:text-dark-400">Total Revenue</p>
+                    <p class="text-sm text-dark-600 dark:text-dark-400">{{ __('pages.total_revenue') }}</p>
                     <p class="text-2xl font-bold text-blue-600 dark:text-blue-400">
                         Rp {{ number_format($this->stats['total_revenue'], 0, ',', '.') }}
                     </p>
@@ -43,7 +43,7 @@
                     <x-icon name="currency-dollar" class="w-6 h-6 text-red-600 dark:text-red-400" />
                 </div>
                 <div>
-                    <p class="text-sm text-dark-600 dark:text-dark-400">Total COSS (Cost of Services Sales)</p>
+                    <p class="text-sm text-dark-600 dark:text-dark-400">{{ __('pages.total_cogs_label') }}</p>
                     <p class="text-xl font-bold text-red-600 dark:text-red-400">
                         Rp {{ number_format($this->stats['total_cogs'], 0, ',', '.') }}
                     </p>
@@ -57,12 +57,12 @@
                     <x-icon name="arrow-trending-up" class="w-6 h-6 text-green-600 dark:text-green-400" />
                 </div>
                 <div>
-                    <p class="text-sm text-dark-600 dark:text-dark-400">Total Profit</p>
+                    <p class="text-sm text-dark-600 dark:text-dark-400">{{ __('pages.total_profit') }}</p>
                     <p class="text-xl font-bold text-green-600 dark:text-green-400">
                         Rp {{ number_format($this->stats['total_profit'], 0, ',', '.') }}
                     </p>
                     <p class="text-xs text-green-500 dark:text-green-400">
-                        {{ number_format($this->stats['profit_margin'], 1) }}% margin
+                        {{ number_format($this->stats['profit_margin'], 1) }}% {{ __('pages.margin') }}
                     </p>
                 </div>
             </div>
@@ -74,12 +74,12 @@
                     <x-icon name="exclamation-triangle" class="w-6 h-6 text-orange-600 dark:text-orange-400" />
                 </div>
                 <div>
-                    <p class="text-sm text-dark-600 dark:text-dark-400">Outstanding Profit</p>
+                    <p class="text-sm text-dark-600 dark:text-dark-400">{{ __('pages.outstanding_profit') }}</p>
                     <p class="text-xl font-bold text-orange-600 dark:text-orange-400">
                         Rp {{ number_format($this->stats['outstanding_profit'], 0, ',', '.') }}
                     </p>
                     <p class="text-xs text-orange-500 dark:text-orange-400">
-                        From Rp {{ number_format($this->stats['paid_profit'], 0, ',', '.') }} revenue
+                        {{ __('pages.from') }} Rp {{ number_format($this->stats['paid_profit'], 0, ',', '.') }} {{ __('pages.revenue') }}
                     </p>
                 </div>
             </div>

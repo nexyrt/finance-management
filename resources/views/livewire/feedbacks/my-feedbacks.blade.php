@@ -34,7 +34,7 @@
                     ['label' => 'In Progress', 'value' => 'in_progress'],
                     ['label' => 'Resolved', 'value' => 'resolved'],
                     ['label' => 'Closed', 'value' => 'closed'],
-                ]" placeholder="Semua Status" />
+                ]" :placeholder="__('common.status')" />
             </div>
         </div>
 

@@ -6,8 +6,8 @@
                     <x-icon name="pencil-square" class="w-6 h-6 text-blue-600 dark:text-blue-400" />
                 </div>
                 <div>
-                    <h3 class="text-xl font-bold text-dark-900 dark:text-dark-50">Edit Feedback</h3>
-                    <p class="text-sm text-dark-600 dark:text-dark-400">Perbarui detail feedback Anda</p>
+                    <h3 class="text-xl font-bold text-dark-900 dark:text-dark-50">{{ __('common.edit') }} {{ __('common.feedbacks') }}</h3>
+                    <p class="text-sm text-dark-600 dark:text-dark-400">{{ __('common.feedbacks') }}</p>
                 </div>
             </div>
         </x-slot:title>
@@ -27,12 +27,12 @@
 
             {{-- Title --}}
             <div>
-                <x-input wire:model="title" label="Judul *" placeholder="Ringkasan singkat feedback Anda..." />
+                <x-input wire:model="title" :label="__('common.title') . ' *'" placeholder="Ringkasan singkat feedback Anda..." />
             </div>
 
             {{-- Description --}}
             <div>
-                <x-textarea wire:model="description" label="Deskripsi *"
+                <x-textarea wire:model="description" :label="__('common.description') . ' *'"
                     placeholder="Jelaskan secara detail..."
                     rows="5" />
             </div>
@@ -85,10 +85,10 @@
         <x-slot:footer>
             <div class="flex flex-col sm:flex-row justify-end gap-3">
                 <x-button wire:click="close" color="secondary" outline>
-                    Batal
+                    {{ __('common.cancel') }}
                 </x-button>
                 <x-button wire:click="save" color="primary" icon="check" loading="save">
-                    Simpan Perubahan
+                    {{ __('common.save') }}
                 </x-button>
             </div>
         </x-slot:footer>

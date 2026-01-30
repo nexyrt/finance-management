@@ -24,19 +24,19 @@
             {{-- ================================================================== --}}
             <flux:navlist.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')"
                 wire:navigate class="py-5">
-                {{ __('Dashboard') }}
+                {{ __('common.dashboard') }}
             </flux:navlist.item>
 
             {{-- ================================================================== --}}
             {{-- MASTER DATA --}}
             {{-- ================================================================== --}}
             @canany(['view clients', 'view services'])
-                <flux:navlist.group heading="Master Data" expandable class="mt-1">
+                <flux:navlist.group :heading="__('common.master_data')" expandable class="mt-1">
                     {{-- Clients --}}
                     @can('view clients')
                         <flux:navlist.item icon="users" :href="route('clients')" :current="request()->routeIs('clients')"
                             wire:navigate class="py-5">
-                            {{ __('Clients') }}
+                            {{ __('common.clients') }}
                         </flux:navlist.item>
                     @endcan
 
@@ -44,7 +44,7 @@
                     @can('view services')
                         <flux:navlist.item icon="puzzle-piece" :href="route('services')"
                             :current="request()->routeIs('services')" wire:navigate class="py-5">
-                            {{ __('Services') }}
+                            {{ __('common.services') }}
                         </flux:navlist.item>
                     @endcan
                 </flux:navlist.group>
@@ -54,12 +54,12 @@
             {{-- FINANCE --}}
             {{-- ================================================================== --}}
             @canany(['view invoices', 'view recurring-invoices', 'view bank-accounts', 'view cash-flow'])
-                <flux:navlist.group heading="Finance" expandable class="mt-1">
+                <flux:navlist.group :heading="__('common.finance')" expandable class="mt-1">
                     {{-- Invoices --}}
                     @can('view invoices')
                         <flux:navlist.item icon="document-text" :href="route('invoices.index')"
                             :current="request()->routeIs('invoices.*')" wire:navigate class="py-5">
-                            {{ __('Invoices') }}
+                            {{ __('common.invoices') }}
                         </flux:navlist.item>
                     @endcan
 
@@ -67,7 +67,7 @@
                     @can('view recurring-invoices')
                         <flux:navlist.item icon="arrow-path" :href="route('recurring-invoices.index')"
                             :current="request()->routeIs('recurring-invoices.*')" wire:navigate class="py-5">
-                            {{ __('Recurring Invoices') }}
+                            {{ __('common.recurring_invoices') }}
                         </flux:navlist.item>
                     @endcan
 
@@ -75,7 +75,7 @@
                     @can('view bank-accounts')
                         <flux:navlist.item icon="credit-card" :href="route('bank-accounts.index')"
                             :current="request()->routeIs('bank-accounts.*')" wire:navigate class="py-5">
-                            {{ __('Bank Accounts') }}
+                            {{ __('common.bank_accounts') }}
                         </flux:navlist.item>
                     @endcan
 
@@ -83,7 +83,7 @@
                     @can('view cash-flow')
                         <flux:navlist.item icon="chart-bar" :href="route('cash-flow.index')"
                             :current="request()->routeIs('cash-flow.*')" wire:navigate class="py-5">
-                            {{ __('Cash Flow') }}
+                            {{ __('common.cash_flow') }}
                         </flux:navlist.item>
                     @endcan
                 </flux:navlist.group>
@@ -95,7 +95,7 @@
             @can('view categories')
                 <flux:navlist.item icon="tag" :href="route('transaction-categories.index')"
                     :current="request()->routeIs('transaction-categories.*')" wire:navigate class="py-5">
-                    {{ __('Categories') }}
+                    {{ __('common.categories') }}
                 </flux:navlist.item>
             @endcan
 
@@ -106,7 +106,7 @@
                 <flux:navlist.item icon="receipt-percent" :href="route('reimbursements.index')"
                     :current="request()->routeIs('reimbursements.*')" wire:navigate class="py-5">
                     <div class="flex items-center justify-between w-full">
-                        <span>{{ __('Reimbursements') }}</span>
+                        <span>{{ __('common.reimbursements') }}</span>
                         @can('approve reimbursements')
                             @php
                                 $pendingReimbursements = \App\Models\Reimbursement::pending()->count();
@@ -126,7 +126,7 @@
                 <flux:navlist.item icon="chat-bubble-left-ellipsis" :href="route('feedbacks.index')"
                     :current="request()->routeIs('feedbacks.*')" wire:navigate class="py-5">
                     <div class="flex items-center justify-between w-full">
-                        <span>{{ __('Feedbacks') }}</span>
+                        <span>{{ __('common.feedbacks') }}</span>
                         @can('manage feedbacks')
                             @php
                                 $openFeedbacks = \App\Models\Feedback::where('status', 'open')->count();
@@ -143,12 +143,12 @@
             {{-- DEBT & RECEIVABLES --}}
             {{-- ================================================================== --}}
             @canany(['view loans', 'view receivables'])
-                <flux:navlist.group heading="Debt & Receivables" expandable class="mt-1">
+                <flux:navlist.group :heading="__('common.debt_receivables')" expandable class="mt-1">
                     {{-- Loans (Company Debt) --}}
                     @can('view loans')
                         <flux:navlist.item icon="banknotes" :href="route('loans.index')"
                             :current="request()->routeIs('loans.*')" wire:navigate class="py-5">
-                            {{ __('Loans') }}
+                            {{ __('common.loans') }}
                         </flux:navlist.item>
                     @endcan
 
@@ -157,7 +157,7 @@
                         <flux:navlist.item icon="currency-dollar" :href="route('receivables.index')"
                             :current="request()->routeIs('receivables.*')" wire:navigate class="py-5">
                             <div class="flex items-center justify-between w-full">
-                                <span>{{ __('Receivables') }}</span>
+                                <span>{{ __('common.receivables') }}</span>
                                 @can('approve receivables')
                                     @php
                                         $pendingReceivables = \App\Models\Receivable::pendingApproval()->count();
@@ -176,12 +176,12 @@
             {{-- ADMINISTRATION --}}
             {{-- ================================================================== --}}
             @canany(['manage users', 'view permissions'])
-                <flux:navlist.group heading="Administration" expandable class="mt-1">
+                <flux:navlist.group :heading="__('common.administration')" expandable class="mt-1">
                     {{-- Users --}}
                     @can('manage users')
                         <flux:navlist.item icon="users" :href="route('admin.users')"
                             :current="request()->routeIs('admin.users')" wire:navigate class="py-5">
-                            {{ __('Users') }}
+                            {{ __('common.users') }}
                         </flux:navlist.item>
                     @endcan
 
@@ -189,7 +189,7 @@
                     @can('view permissions')
                         <flux:navlist.item icon="shield-check" :href="route('permissions.index')"
                             :current="request()->routeIs('permissions.*')" wire:navigate class="py-5">
-                            {{ __('Permissions') }}
+                            {{ __('common.permissions') }}
                         </flux:navlist.item>
                     @endcan
                 </flux:navlist.group>
@@ -201,23 +201,28 @@
             @env('local')
                 <flux:navlist.item icon="beaker" :href="route('test')" :current="request()->routeIs('test')"
                     wire:navigate class="py-5">
-                    {{ __('Testing Page') }}
+                    {{ __('common.testing_page') }}
                 </flux:navlist.item>
             @endenv
         </flux:navlist>
 
         <flux:spacer />
 
-        {{-- Desktop Notification Bell --}}
-        <div class="hidden lg:flex justify-center mb-4">
+        {{-- Desktop: Notification, Language Switcher & Theme Toggle (1 row) --}}
+        <div class="hidden lg:flex justify-center items-center gap-2 mb-4">
             <livewire:notifications.bell />
-        </div>
+            <livewire:language-switcher />
 
-        {{-- Theme Switcher --}}
-        <flux:radio.group x-data variant="segmented" x-model="$flux.appearance">
-            <flux:radio value="light" icon="sun">{{ __('Light') }}</flux:radio>
-            <flux:radio value="dark" icon="moon">{{ __('Dark') }}</flux:radio>
-        </flux:radio.group>
+            {{-- Theme Toggle --}}
+            <div x-data>
+                <button @click="$flux.appearance = ($flux.appearance === 'dark' ? 'light' : 'dark')"
+                    type="button"
+                    class="relative p-2 text-dark-500 hover:text-dark-700 dark:text-dark-400 dark:hover:text-dark-200 transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-dark-700">
+                    <x-icon name="sun" class="w-6 h-6 dark:hidden" />
+                    <x-icon name="moon" class="w-6 h-6 hidden dark:block" />
+                </button>
+            </div>
+        </div>
 
         {{-- User Menu --}}
         <flux:dropdown position="bottom" align="start">
@@ -247,7 +252,7 @@
 
                 <flux:menu.radio.group>
                     <flux:menu.item :href="route('settings.profile')" icon="cog" wire:navigate>
-                        {{ __('Settings') }}
+                        {{ __('common.settings') }}
                     </flux:menu.item>
                 </flux:menu.radio.group>
 
@@ -256,7 +261,7 @@
                 <form method="POST" action="{{ route('logout') }}" class="w-full">
                     @csrf
                     <flux:menu.item as="button" type="submit" icon="arrow-right-start-on-rectangle" class="w-full">
-                        {{ __('Log Out') }}
+                        {{ __('common.log_out') }}
                     </flux:menu.item>
                 </form>
             </flux:menu>
@@ -270,8 +275,21 @@
 
         <flux:spacer />
 
-        {{-- Notification Bell --}}
-        <livewire:notifications.bell />
+        {{-- Mobile: Notification, Language Switcher & Theme Toggle --}}
+        <div class="flex items-center gap-1">
+            <livewire:notifications.bell />
+            <livewire:language-switcher />
+
+            {{-- Theme Toggle --}}
+            <div x-data>
+                <button @click="$flux.appearance = ($flux.appearance === 'dark' ? 'light' : 'dark')"
+                    type="button"
+                    class="relative p-2 text-dark-500 hover:text-dark-700 dark:text-dark-400 dark:hover:text-dark-200 transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-dark-700">
+                    <x-icon name="sun" class="w-6 h-6 dark:hidden" />
+                    <x-icon name="moon" class="w-6 h-6 hidden dark:block" />
+                </button>
+            </div>
+        </div>
 
         <flux:dropdown position="top" align="end">
             <flux:profile :initials="auth() -> user() -> initials()" icon-trailing="chevron-down" />
@@ -299,7 +317,7 @@
 
                 <flux:menu.radio.group>
                     <flux:menu.item :href="route('settings.profile')" icon="cog" wire:navigate>
-                        {{ __('Settings') }}</flux:menu.item>
+                        {{ __('common.settings') }}</flux:menu.item>
                 </flux:menu.radio.group>
 
                 <flux:menu.separator />
@@ -307,7 +325,7 @@
                 <form method="POST" action="{{ route('logout') }}" class="w-full">
                     @csrf
                     <flux:menu.item as="button" type="submit" icon="arrow-right-start-on-rectangle" class="w-full">
-                        {{ __('Log Out') }}
+                        {{ __('common.log_out') }}
                     </flux:menu.item>
                 </form>
             </flux:menu>

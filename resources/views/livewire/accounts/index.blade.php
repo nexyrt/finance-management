@@ -7,10 +7,10 @@
             <div class="space-y-1">
                 <h1
                     class="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-dark-900 via-primary-600 to-primary-700 dark:from-white dark:via-primary-300 dark:to-primary-200 bg-clip-text text-transparent">
-                    Bank Account Management
+                    {{ __('common.bank_accounts') }}
                 </h1>
                 <p class="text-dark-600 dark:text-dark-400 text-base sm:text-lg">
-                    Manage bank accounts, transactions, and monitor cashflow
+                    {{ __('common.bank_accounts') }}
                 </p>
             </div>
 
@@ -24,7 +24,7 @@
                             <x-icon name="currency-dollar" class="w-6 h-6 text-white" />
                         </div>
                         <div>
-                            <p class="text-xs text-white/70 font-medium">Total Balance</p>
+                            <p class="text-xs text-white/70 font-medium">{{ __('common.total') }}</p>
                             <p class="text-2xl font-bold text-white">
                                 Rp {{ number_format($this->totalBalance, 0, ',', '.') }}
                             </p>
@@ -41,12 +41,12 @@
                     <x-dropdown icon="cog-6-tooth" position="bottom-end">
                         <x-slot:trigger>
                             <x-button color="secondary" outline icon="cog-6-tooth" class="w-full sm:w-auto">
-                                Settings
+                                {{ __('common.settings') }}
                             </x-button>
                         </x-slot:trigger>
-                        <x-dropdown.items text="Edit Account" icon="pencil"
+                        <x-dropdown.items text="{{ __('common.edit') }}" icon="pencil"
                             wire:click="editAccount({{ $selectedAccountId }})" />
-                        <x-dropdown.items text="Delete Account" icon="trash"
+                        <x-dropdown.items text="{{ __('common.delete') }}" icon="trash"
                             wire:click="deleteAccount({{ $selectedAccountId }})"
                             class="text-red-600 dark:text-red-400" />
                     </x-dropdown>
@@ -61,12 +61,12 @@
         <div class="space-y-4">
             <div class="flex items-center justify-between">
                 <div>
-                    <h2 class="text-xl font-bold text-dark-900 dark:text-dark-50">My Cards</h2>
-                    <p class="text-sm text-dark-600 dark:text-dark-400">Select account to manage</p>
+                    <h2 class="text-xl font-bold text-dark-900 dark:text-dark-50">{{ __('common.bank_accounts') }}</h2>
+                    <p class="text-sm text-dark-600 dark:text-dark-400">{{ __('common.select') }}</p>
                 </div>
                 <x-button wire:click="createAccount" loading="createAccount" color="primary" icon="plus"
                     size="sm">
-                    Add
+                    {{ __('common.create') }}
                 </x-button>
             </div>
 
@@ -82,7 +82,7 @@
                         <div
                             class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex items-center gap-2 px-4 py-2 bg-white/80 dark:bg-dark-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-white/30 dark:border-dark-600/30">
                             <x-icon name="arrow-path" class="w-4 h-4 text-primary-600 animate-spin" />
-                            <span class="text-sm text-primary-600 dark:text-primary-400 font-medium">Loading...</span>
+                            <span class="text-sm text-primary-600 dark:text-primary-400 font-medium">{{ __('common.loading') }}</span>
                         </div>
                     </div>
 
@@ -138,10 +138,10 @@
             @if ($this->accountsData->count() === 0)
                 <div class="text-center py-8">
                     <x-icon name="building-library" class="w-12 h-12 text-zinc-400 mx-auto mb-3" />
-                    <p class="text-dark-600 dark:text-dark-400 mb-4">No accounts yet</p>
+                    <p class="text-dark-600 dark:text-dark-400 mb-4">{{ __('common.no_data') }}</p>
                     <x-button wire:click="createAccount" loading="createAccount" color="primary" icon="plus"
                         size="sm">
-                        Add First Account
+                        {{ __('common.create') }}
                     </x-button>
                 </div>
             @endif
@@ -188,12 +188,10 @@
                 <div
                     class="bg-white dark:bg-dark-800 border border-zinc-200 dark:border-dark-600 rounded-xl p-12 text-center">
                     <x-icon name="building-library" class="w-16 h-16 text-zinc-400 mx-auto mb-4" />
-                    <h3 class="text-xl font-semibold text-dark-900 dark:text-dark-50 mb-2">Select an Account</h3>
-                    <p class="text-dark-600 dark:text-dark-400 mb-6">Choose an account from the sidebar to view
-                        transactions
-                        and manage settings</p>
+                    <h3 class="text-xl font-semibold text-dark-900 dark:text-dark-50 mb-2">{{ __('common.select') }}</h3>
+                    <p class="text-dark-600 dark:text-dark-400 mb-6">{{ __('common.bank_accounts') }}</p>
                     <x-button wire:click="createAccount" loading="createAccount" color="primary" icon="plus">
-                        Create New Account
+                        {{ __('common.create') }}
                     </x-button>
                 </div>
             @endif

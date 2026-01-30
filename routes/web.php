@@ -80,7 +80,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
             $service = new InvoicePrintService;
             $dpAmount = $request->query('dp_amount') ? (int) $request->query('dp_amount') : null;
             $pelunasanAmount = $request->query('pelunasan_amount') ? (int) $request->query('pelunasan_amount') : null;
-            $pdf = $service->generateSingleInvoicePdf($invoice, $dpAmount, $pelunasanAmount);
+            $template = $request->query('template', 'kisantra-invoice'); // Template parameter
+            $pdf = $service->generateSingleInvoicePdf($invoice, $dpAmount, $pelunasanAmount, $template);
 
             $invoiceType = $dpAmount ? 'DP-' : ($pelunasanAmount ? 'Pelunasan-' : '');
             $filename = $invoiceType.'Invoice-'.str_replace(['/', '\\', ':', '*', '?', '"', '<', '>', '|'], '-', $invoice->invoice_number).'.pdf';
@@ -97,7 +98,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
             $service = new InvoicePrintService;
             $dpAmount = $request->query('dp_amount') ? (int) $request->query('dp_amount') : null;
             $pelunasanAmount = $request->query('pelunasan_amount') ? (int) $request->query('pelunasan_amount') : null;
-            $pdf = $service->generateSingleInvoicePdf($invoice, $dpAmount, $pelunasanAmount);
+            $template = $request->query('template', 'kisantra-invoice'); // Template parameter
+            $pdf = $service->generateSingleInvoicePdf($invoice, $dpAmount, $pelunasanAmount, $template);
 
             return response($pdf->output(), 200, [
                 'Content-Type' => 'application/pdf',

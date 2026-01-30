@@ -297,7 +297,7 @@
                 </div>
             </div>
             <div class="header-right">
-                <div class="invoice-title">INVOICE</div>
+                <div class="invoice-title">{{ __('invoice.invoice') }}</div>
                 <div class="invoice-number">{{ $invoice->invoice_number }}</div>
             </div>
         </div>
@@ -306,7 +306,7 @@
         <div class="invoice-info">
             <div class="invoice-info-left">
                 <div class="info-section">
-                    <div class="info-title">Kepada:</div>
+                    <div class="info-title">{{ __('invoice.bill_to') }}:</div>
                     <div class="info-content">
                         <div class="client-name">{{ strtoupper($client->name) }}</div>
                         @if ($client->address)
@@ -317,12 +317,12 @@
             </div>
             <div class="invoice-info-right">
                 <div class="info-section">
-                    <div class="info-title">Detail Invoice:</div>
+                    <div class="info-title">{{ __('invoice.invoice_details') }}:</div>
                     <div class="info-content">
-                        <strong>Tanggal:</strong> {{ $invoice->issue_date->format('d M Y') }}<br>
-                        <strong>Jatuh Tempo:</strong> {{ $invoice->due_date->format('d M Y') }}<br>
+                        <strong>{{ __('invoice.invoice_date') }}:</strong> {{ $invoice->issue_date->format('d M Y') }}<br>
+                        <strong>{{ __('invoice.due_date') }}:</strong> {{ $invoice->due_date->format('d M Y') }}<br>
                         @if ($invoice->status)
-                            <strong>Status:</strong> {{ ucfirst($invoice->status) }}
+                            <strong>{{ __('common.status') }}:</strong> {{ ucfirst($invoice->status) }}
                         @endif
                     </div>
                 </div>
@@ -333,11 +333,11 @@
         <table class="items-table">
             <thead>
                 <tr>
-                    <th style="width: 5%;">No</th>
-                    <th style="width: 50%;">Deskripsi</th>
-                    <th style="width: 10%;" class="text-center">Qty</th>
-                    <th style="width: 15%;" class="text-right">Harga Satuan</th>
-                    <th style="width: 20%;" class="text-right">Jumlah</th>
+                    <th style="width: 5%;">{{ __('invoice.no') }}</th>
+                    <th style="width: 50%;">{{ __('invoice.description') }}</th>
+                    <th style="width: 10%;" class="text-center">{{ __('invoice.qty') }}</th>
+                    <th style="width: 15%;" class="text-right">{{ __('invoice.unit_price') }}</th>
+                    <th style="width: 20%;" class="text-right">{{ __('invoice.amount') }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -356,19 +356,19 @@
         <!-- Summary -->
         <div class="summary-section">
             <div class="summary-row">
-                <div class="summary-label">Subtotal:</div>
+                <div class="summary-label">{{ __('invoice.subtotal') }}:</div>
                 <div class="summary-value">Rp {{ number_format($invoice->subtotal, 0, ',', '.') }}</div>
             </div>
 
             @if ($invoice->discount_amount > 0)
                 <div class="summary-row">
-                    <div class="summary-label">Diskon:</div>
+                    <div class="summary-label">{{ __('invoice.discount') }}:</div>
                     <div class="summary-value">-Rp {{ number_format($invoice->discount_amount, 0, ',', '.') }}</div>
                 </div>
             @endif
 
             <div class="summary-row total">
-                <div class="summary-label">TOTAL:</div>
+                <div class="summary-label">{{ strtoupper(__('invoice.total')) }}:</div>
                 <div class="summary-value">Rp {{ number_format($invoice->total_amount, 0, ',', '.') }}</div>
             </div>
         </div>
@@ -379,24 +379,24 @@
                 <!-- Payment Info -->
                 @foreach ($company['bank_accounts'] as $index => $bank)
                     <div class="payment-info">
-                        <div class="payment-title">Pembayaran ke Rekening #{{ $index + 1 }}</div>
+                        <div class="payment-title">{{ __('invoice.payment_to_account') }} #{{ $index + 1 }}</div>
                         <div class="payment-details">
-                            <strong>Bank:</strong> {{ $bank['bank'] }}<br>
-                            <strong>No. Rekening:</strong> {{ $bank['account_number'] }}<br>
-                            <strong>Atas Nama:</strong> {{ $bank['account_name'] }}
+                            <strong>{{ __('invoice.bank_name') }}:</strong> {{ $bank['bank'] }}<br>
+                            <strong>{{ __('invoice.account_number') }}:</strong> {{ $bank['account_number'] }}<br>
+                            <strong>{{ __('invoice.account_holder') }}:</strong> {{ $bank['account_name'] }}
                         </div>
                     </div>
                 @endforeach
 
                 <!-- Terbilang -->
                 <div class="terbilang">
-                    <strong>Terbilang:</strong> {{ $terbilang }} Rupiah
+                    <strong>{{ __('invoice.say') }}:</strong> {{ $terbilang }} {{ __('invoice.rupiah') }}
                 </div>
 
                 <!-- Notes -->
                 <div class="notes">
-                    Harap melakukan pembayaran sebelum tanggal jatuh tempo.<br>
-                    Terima kasih atas kepercayaan Anda.
+                    {{ __('invoice.payment_before_due_date') }}<br>
+                    {{ __('invoice.thank_you') }}
                 </div>
             </div>
 

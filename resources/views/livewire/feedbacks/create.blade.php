@@ -6,7 +6,7 @@
                     <x-icon name="chat-bubble-left-right" class="w-6 h-6 text-primary-600 dark:text-primary-400" />
                 </div>
                 <div>
-                    <h3 class="text-xl font-bold text-dark-900 dark:text-dark-50">Kirim Feedback</h3>
+                    <h3 class="text-xl font-bold text-dark-900 dark:text-dark-50">{{ __('common.feedbacks') }}</h3>
                     <p class="text-sm text-dark-600 dark:text-dark-400">Bantu kami meningkatkan sistem ini</p>
                 </div>
             </div>
@@ -27,12 +27,12 @@
 
             {{-- Title --}}
             <div>
-                <x-input wire:model="title" label="Judul *" placeholder="Ringkasan singkat feedback Anda..." />
+                <x-input wire:model="title" :label="__('common.title') . ' *'" placeholder="Ringkasan singkat feedback Anda..." />
             </div>
 
             {{-- Description --}}
             <div>
-                <x-textarea wire:model="description" label="Deskripsi *"
+                <x-textarea wire:model="description" :label="__('common.description') . ' *'"
                     placeholder="Jelaskan secara detail... Untuk bug report, sertakan langkah-langkah untuk mereproduksi masalah."
                     rows="5" />
                 <p class="mt-1 text-xs text-dark-500">Maksimal 5000 karakter</p>
@@ -95,10 +95,10 @@
         <x-slot:footer>
             <div class="flex flex-col sm:flex-row justify-end gap-3">
                 <x-button wire:click="resetForm" color="secondary" outline>
-                    Batal
+                    {{ __('common.cancel') }}
                 </x-button>
                 <x-button wire:click="save" color="primary" icon="paper-airplane" loading="save">
-                    Kirim Feedback
+                    {{ __('common.submit') }}
                 </x-button>
             </div>
         </x-slot:footer>

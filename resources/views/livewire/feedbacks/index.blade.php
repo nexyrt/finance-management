@@ -2,7 +2,7 @@
     {{-- Header --}}
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-            <h1 class="text-2xl font-bold text-dark-900 dark:text-white">Feedback & Bug Reports</h1>
+            <h1 class="text-2xl font-bold text-dark-900 dark:text-white">{{ __('common.feedbacks') }}</h1>
             <p class="text-dark-500 dark:text-dark-400 mt-1">
                 @if ($this->canManageFeedbacks())
                     Kelola feedback dari semua pengguna
@@ -28,7 +28,7 @@
                 </div>
                 <div>
                     <p class="text-2xl font-bold text-dark-900 dark:text-white">{{ $this->stats['total'] }}</p>
-                    <p class="text-xs text-dark-500">Total</p>
+                    <p class="text-xs text-dark-500">{{ __('common.total') }}</p>
                 </div>
             </div>
         </div>
@@ -41,7 +41,7 @@
                 </div>
                 <div>
                     <p class="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{{ $this->stats['open'] }}</p>
-                    <p class="text-xs text-dark-500">Open</p>
+                    <p class="text-xs text-dark-500">{{ __('common.status') }}</p>
                 </div>
             </div>
         </div>

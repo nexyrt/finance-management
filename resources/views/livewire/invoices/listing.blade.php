@@ -2,29 +2,29 @@
     {{-- Filters (unchanged) --}}
     <div class="flex flex-col lg:flex-row gap-4 items-start lg:items-end">
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 flex-1">
-            <x-select.styled wire:model.live="statusFilter" label="Status" :options="[
-                ['label' => 'Draft', 'value' => 'draft'],
-                ['label' => 'Terkirim', 'value' => 'sent'],
-                ['label' => 'Dibayar', 'value' => 'paid'],
-                ['label' => 'Sebagian', 'value' => 'partially_paid'],
-                ['label' => 'Terlambat', 'value' => 'overdue'],
+            <x-select.styled wire:model.live="statusFilter" :label="__('common.status')" :options="[
+                ['label' => __('common.draft'), 'value' => 'draft'],
+                ['label' => __('invoice.sent'), 'value' => 'sent'],
+                ['label' => __('common.paid'), 'value' => 'paid'],
+                ['label' => __('common.partially_paid'), 'value' => 'partially_paid'],
+                ['label' => __('common.overdue'), 'value' => 'overdue'],
             ]"
-                placeholder="Semua status..." />
-            <x-select.styled wire:model.live="clientFilter" label="Klien" :options="$this->clients
+                :placeholder="__('pages.all') . ' ' . strtolower(__('common.status')) . '...'" />
+            <x-select.styled wire:model.live="clientFilter" :label="__('common.clients')" :options="$this->clients
                 ->map(fn($client) => ['label' => $client->name, 'value' => $client->id])
-                ->toArray()" placeholder="Semua klien..."
+                ->toArray()" :placeholder="__('pages.all') . ' ' . strtolower(__('common.clients')) . '...'"
                 searchable />
-            <x-date month-year-only wire:model.live="selectedMonth" label="Bulan" placeholder="Pilih bulan..." />
-            <x-date wire:model.live="dateRange" label="Range Tanggal" range placeholder="Pilih range..." />
+            <x-date month-year-only wire:model.live="selectedMonth" :label="__('pages.month')" :placeholder="__('common.select') . ' ' . strtolower(__('pages.month')) . '...'" />
+            <x-date wire:model.live="dateRange" :label="__('pages.date_range')" range :placeholder="__('common.select') . ' ' . strtolower(__('pages.date_range')) . '...'" />
         </div>
         <div class="flex gap-2">
             @if ($statusFilter || $clientFilter || !empty($dateRange) || $selectedMonth)
                 <x-button wire:click="clearFilters" icon="x-mark" color="gray" outline
-                    size="sm">Clear</x-button>
+                    size="sm">{{ __('pages.clear_filter') }}</x-button>
             @endif
             <x-button wire:click="exportExcel" size="sm" color="green" icon="document-text"
-                outline>Excel</x-button>
-            <x-button wire:click="exportPdf" size="sm" color="red" icon="document" outline>PDF</x-button>
+                outline>{{ __('pages.export_excel') }}</x-button>
+            <x-button wire:click="exportPdf" size="sm" color="red" icon="document" outline>{{ __('pages.export_pdf') }}</x-button>
         </div>
     </div>
 
@@ -47,7 +47,7 @@
                 <div>
                     <p class="font-semibold text-dark-900 dark:text-dark-50">{{ $row->client_name }}</p>
                     <div class="text-xs text-dark-500 dark:text-dark-400 capitalize">
-                        {{ $row->client_type === 'individual' ? 'Individu' : 'Perusahaan' }}</div>
+                        {{ $row->client_type === 'individual' ? __('pages.individual') : __('pages.company') }}</div>
                 </div>
             </div>
         @endinteract
@@ -75,10 +75,10 @@
                 </div>
                 @if ($isOverdue)
                     <div class="text-xs text-red-600 dark:text-red-400">{{ (int) abs($row->due_date->diffInDays(now())) }}
-                        hari lewat</div>
+                        {{ __('pages.days_overdue') }}</div>
                 @elseif($isDueSoon)
                     <div class="text-xs text-yellow-600 dark:text-yellow-400">{{ (int) $row->due_date->diffInDays(now()) }}
-                        hari lagi</div>
+                        {{ __('pages.days_left') }}</div>
                 @else
                     <div class="text-xs text-dark-500 dark:text-dark-400">{{ $row->due_date->diffForHumans() }}</div>
                 @endif
@@ -93,25 +93,25 @@
                     @php $paymentPercentage = ($row->amount_paid / $row->total_amount) * 100; @endphp
                     <div class="mt-1">
                         <div class="text-xs text-green-600 dark:text-green-400">{{ number_format($paymentPercentage, 1) }}%
-                            Dibayar</div>
+                            {{ __('invoice.paid') }}</div>
                         <div class="w-full bg-zinc-200 dark:bg-dark-700 rounded-full h-1 mt-1">
                             <div class="bg-green-500 h-1 rounded-full" style="width: {{ min($paymentPercentage, 100) }}%">
                             </div>
                         </div>
                     </div>
                 @else
-                    <div class="text-xs text-dark-500 dark:text-dark-400">Belum dibayar</div>
+                    <div class="text-xs text-dark-500 dark:text-dark-400">{{ __('invoice.unpaid') }}</div>
                 @endif
             </div>
         @endinteract
 
         @interact('column_status', $row)
             <x-badge :text="match ($row->status) {
-                'draft' => 'Draft',
-                'sent' => 'Terkirim',
-                'paid' => 'Dibayar',
-                'partially_paid' => 'Sebagian',
-                'overdue' => 'Terlambat',
+                'draft' => __('common.draft'),
+                'sent' => __('invoice.sent'),
+                'paid' => __('common.paid'),
+                'partially_paid' => __('common.partially_paid'),
+                'overdue' => __('common.overdue'),
                 default => ucfirst($row->status),
             }" :color="match ($row->status) {
                 'draft' => 'gray',
@@ -126,32 +126,32 @@
         @interact('column_actions', $row)
             <div class="flex items-center gap-1">
                 <x-button.circle icon="eye" color="blue" size="sm" wire:click="showInvoice({{ $row->id }})"
-                    loading="showInvoice({{ $row->id }})" title="Lihat Detail" />
+                    loading="showInvoice({{ $row->id }})" :title="__('common.view')" />
                 <x-button.circle icon="pencil" color="green" size="sm" href="{{ route('invoices.edit', $row->id) }}"
-                    wire:navigate title="Edit" />
+                    wire:navigate :title="__('common.edit')" />
 
                 @if ($row->status === 'draft')
                     <x-button.circle icon="paper-airplane" color="cyan" size="sm"
                         wire:click='sendInvoice({{ $row->id }})' loading="sendInvoice({{ $row->id }})"
-                        title="Kirim" />
+                        :title="__('invoice.send_invoice')" />
                 @endif
 
                 @if ($row->status === 'sent')
                     <x-button.circle icon="arrow-uturn-left" color="orange" size="sm"
                         wire:click='rollbackTodraft({{ $row->id }})' loading="rollbackToraft({{ $row->id }})"
-                        title="Kembali ke Draft" />
+                        :title="__('pages.back_to_draft')" />
                 @endif
 
                 @if (in_array($row->status, ['sent', 'overdue', 'partially_paid']))
                     <x-button.circle icon="currency-dollar" color="yellow" size="sm"
                         wire:click="recordPayment({{ $row->id }})" loading="recordPayment({{ $row->id }})"
-                        title="Catat Pembayaran" />
+                        :title="__('pages.record_payment')" />
                 @endif
 
                 {{-- Print Button - Trigger Modal --}}
                 <x-button.circle icon="printer" color="gray" size="sm"
                     wire:click="openPrintModal({{ $row->id }}, {{ $row->total_amount }}, {{ $row->amount_paid }})"
-                    title="Print" />
+                    :title="__('common.print')" />
 
                 <x-button.circle icon="trash" color="red" size="sm"
                     wire:click="deleteInvoice({{ $row->id }})" loading="deleteInvoice({{ $row->id }})" />
@@ -171,18 +171,18 @@
                     </div>
                     <div>
                         <div class="font-semibold text-dark-900 dark:text-dark-50"
-                            x-text="`${show.length} invoice dipilih`"></div>
-                        <div class="text-xs text-dark-500 dark:text-dark-400">Pilih aksi untuk invoice yang dipilih
+                            x-text="`${show.length} {{ __('common.invoices') }} {{ __('pages.selected') }}`"></div>
+                        <div class="text-xs text-dark-500 dark:text-dark-400">{{ __('pages.select_action_for_selected') }}
                         </div>
                     </div>
                 </div>
                 <div class="flex items-center gap-2 justify-end">
                     <x-button wire:click="bulkPrintInvoices" size="sm" color="blue" icon="printer"
-                        loading="bulkPrintInvoices" class="whitespace-nowrap">Print All</x-button>
+                        loading="bulkPrintInvoices" class="whitespace-nowrap">{{ __('pages.print_all') }}</x-button>
                     <x-button wire:click="bulkDelete" size="sm" color="red" icon="trash"
-                        loading="bulkDelete" class="whitespace-nowrap">Hapus</x-button>
+                        loading="bulkDelete" class="whitespace-nowrap">{{ __('common.delete') }}</x-button>
                     <x-button wire:click="$set('selected', [])" size="sm" color="gray" icon="x-mark"
-                        class="whitespace-nowrap">Batal</x-button>
+                        class="whitespace-nowrap">{{ __('common.cancel') }}</x-button>
                 </div>
             </div>
         </div>
@@ -197,8 +197,8 @@
                     <x-icon name="printer" class="w-6 h-6 text-primary-600 dark:text-primary-400" />
                 </div>
                 <div>
-                    <h3 class="text-xl font-bold text-dark-900 dark:text-dark-50">Print Invoice</h3>
-                    <p class="text-sm text-dark-600 dark:text-dark-400">Pilih tipe invoice yang akan dicetak</p>
+                    <h3 class="text-xl font-bold text-dark-900 dark:text-dark-50">{{ __('invoice.print_invoice') }}</h3>
+                    <p class="text-sm text-dark-600 dark:text-dark-400">{{ __('pages.select_invoice_type_to_print') }}</p>
                 </div>
             </div>
         </x-slot:title>
@@ -217,8 +217,8 @@
                         </div>
                     </div>
                     <div class="flex-1">
-                        <div class="font-semibold text-dark-900 dark:text-dark-50 mb-1">Full Invoice</div>
-                        <div class="text-sm text-dark-600 dark:text-dark-400 mb-2">Cetak invoice dengan nilai penuh
+                        <div class="font-semibold text-dark-900 dark:text-dark-50 mb-1">{{ __('invoice.full_payment_invoice') }}</div>
+                        <div class="text-sm text-dark-600 dark:text-dark-400 mb-2">{{ __('pages.print_full_invoice') }}
                         </div>
                         <div class="text-lg font-bold text-primary-600 dark:text-primary-400">
                             Rp {{ number_format($printTotalAmount, 0, ',', '.') }}
@@ -240,11 +240,11 @@
                         </div>
                     </div>
                     <div class="flex-1">
-                        <div class="font-semibold text-dark-900 dark:text-dark-50 mb-1">Down Payment (DP)</div>
-                        <div class="text-sm text-dark-600 dark:text-dark-400 mb-3">Cetak invoice dengan nominal DP
+                        <div class="font-semibold text-dark-900 dark:text-dark-50 mb-1">{{ __('invoice.down_payment') }} (DP)</div>
+                        <div class="text-sm text-dark-600 dark:text-dark-400 mb-3">{{ __('pages.print_dp_invoice') }}
                         </div>
                         @if ($printType === 'dp')
-                            <x-input wire:model="dpAmount" type="text" label="Nominal DP *" placeholder="0"
+                            <x-input wire:model="dpAmount" type="text" :label="__('pages.dp_amount') . ' *'" placeholder="0"
                                 prefix="Rp" x-mask:dynamic="$money($input, ',')" />
                         @endif
                     </div>
@@ -265,11 +265,10 @@
                             </div>
                         </div>
                         <div class="flex-1">
-                            <div class="font-semibold text-dark-900 dark:text-dark-50 mb-1">Pelunasan</div>
-                            <div class="text-sm text-dark-600 dark:text-dark-400 mb-2">Cetak invoice untuk sisa
-                                pembayaran</div>
+                            <div class="font-semibold text-dark-900 dark:text-dark-50 mb-1">{{ __('invoice.settlement') }}</div>
+                            <div class="text-sm text-dark-600 dark:text-dark-400 mb-2">{{ __('pages.print_settlement_invoice') }}</div>
                             <div class="grid grid-cols-2 gap-2 text-xs mb-2">
-                                <div class="text-dark-500 dark:text-dark-400">Sudah dibayar:</div>
+                                <div class="text-dark-500 dark:text-dark-400">{{ __('invoice.already_paid') }}:</div>
                                 <div class="text-right text-green-600 dark:text-green-400 font-semibold">
                                     Rp {{ number_format($printAmountPaid, 0, ',', '.') }}
                                 </div>
@@ -281,14 +280,46 @@
                     </div>
                 </div>
             @endif
+
+            {{-- Template Selection dengan TallStackUI --}}
+            <div class="mt-6 pt-6 border-t border-dark-200 dark:border-dark-600">
+                <label class="block text-sm font-semibold text-dark-900 dark:text-dark-50 mb-3">
+                    {{ __('pages.select_template') }}
+                </label>
+                <div class="grid grid-cols-2 gap-3">
+                    @foreach([
+                        ['value' => 'kisantra-invoice', 'label' => 'Kisantra', 'desc' => 'Default template'],
+                        ['value' => 'semesta-invoice', 'label' => 'Semesta', 'desc' => 'Mining (PPN + PPH 22)'],
+                        ['value' => 'agsa-invoice', 'label' => 'AGSA', 'desc' => 'Alternative'],
+                        ['value' => 'invoice', 'label' => 'Generic', 'desc' => 'Simple'],
+                    ] as $tpl)
+                        <div wire:click="$set('printTemplate', '{{ $tpl['value'] }}')"
+                            class="p-3 border-2 rounded-lg cursor-pointer transition {{ $printTemplate === $tpl['value'] ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20' : 'border-gray-200 dark:border-dark-600 hover:border-primary-300' }}">
+                            <div class="flex items-start gap-2">
+                                <div class="pt-0.5">
+                                    <div class="w-4 h-4 rounded-full border-2 flex items-center justify-center {{ $printTemplate === $tpl['value'] ? 'bg-primary-500 border-primary-500' : 'border-gray-300 dark:border-dark-500' }}">
+                                        @if ($printTemplate === $tpl['value'])
+                                            <div class="w-2 h-2 bg-white rounded-full"></div>
+                                        @endif
+                                    </div>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="font-medium text-sm text-dark-900 dark:text-dark-50">{{ $tpl['label'] }}</div>
+                                    <div class="text-xs text-dark-500 dark:text-dark-400">{{ $tpl['desc'] }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
         </div>
 
         <x-slot:footer>
             <div class="flex flex-col sm:flex-row justify-end gap-3">
                 <x-button wire:click="$set('printModal', false)" color="secondary" outline
-                    class="w-full sm:w-auto">Batal</x-button>
+                    class="w-full sm:w-auto">{{ __('common.cancel') }}</x-button>
                 <x-button wire:click="executePrint" color="primary" icon="printer" loading="executePrint"
-                    class="w-full sm:w-auto">Print</x-button>
+                    class="w-full sm:w-auto">{{ __('common.print') }}</x-button>
             </div>
         </x-slot:footer>
     </x-modal>

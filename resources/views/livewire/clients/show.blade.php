@@ -1,6 +1,6 @@
 {{-- resources/views/livewire/clients/show.blade.php --}}
 
-<x-modal wire="showViewModal" title="Detail Klien" size="5xl" center>
+<x-modal wire="showViewModal" title="{{ __('pages.client_details') }}" size="5xl" center>
     @if($client)
         <div class="space-y-6">
             <!-- Client Header -->
@@ -22,9 +22,9 @@
                     <div>
                         <h3 class="text-2xl font-bold text-gray-900 dark:text-white">{{ $client->name }}</h3>
                         <div class="flex items-center space-x-3 mt-2">
-                            <x-badge text="{{ $client->type === 'individual' ? 'Individu' : 'Perusahaan' }}" 
+                            <x-badge text="{{ $client->type === 'individual' ? __('pages.individual') : __('pages.company') }}"
                                      color="{{ $client->type === 'individual' ? 'blue' : 'purple' }}" />
-                            <x-badge text="{{ $client->status === 'Active' ? 'Aktif' : 'Tidak Aktif' }}" 
+                            <x-badge text="{{ $client->status === 'Active' ? __('common.active') : __('common.inactive') }}"
                                      color="{{ $client->status === 'Active' ? 'green' : 'red' }}" />
                         </div>
                     </div>
@@ -32,7 +32,7 @@
 
                 <!-- Quick Stats -->
                 <div class="text-right">
-                    <div class="text-sm text-gray-500 dark:text-gray-400">Total Invoice</div>
+                    <div class="text-sm text-gray-500 dark:text-gray-400">{{ __('pages.total_invoices') }}</div>
                     <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ $this->getTotalInvoices() }}</div>
                     <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">
                         Rp {{ number_format($this->getTotalAmount(), 0, ',', '.') }}
@@ -41,9 +41,9 @@
             </div>
 
             <!-- Tabbed Content -->
-            <x-tab selected="Ringkasan">
+            <x-tab selected="{{ __('pages.overview') }}">
                 <!-- Overview Tab -->
-                <x-tab.items tab="Ringkasan">
+                <x-tab.items tab="{{ __('pages.overview') }}">
                     <x-slot:right>
                         <x-icon name="information-circle" class="w-5 h-5" />
                     </x-slot:right>
@@ -58,7 +58,7 @@
                                         <x-icon name="identification" class="w-5 h-5 text-white" />
                                     </div>
                                     <h4 class="text-xl font-bold text-gray-900 dark:text-white">
-                                        Informasi Dasar
+                                        {{ __('pages.basic_info') }}
                                     </h4>
                                 </div>
                                 
@@ -70,33 +70,33 @@
                                                 <div class="h-8 w-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
                                                     <x-icon name="user" class="w-4 h-4 text-blue-600 dark:text-blue-400" />
                                                 </div>
-                                                <span class="text-sm font-medium text-gray-600 dark:text-gray-400">Nama Klien</span>
+                                                <span class="text-sm font-medium text-gray-600 dark:text-gray-400">{{ __('pages.client_name_label') }}</span>
                                             </div>
                                             <span class="font-semibold text-gray-900 dark:text-white text-right">{{ $client->name }}</span>
                                         </div>
                                     </div>
-                                    
+
                                     <div class="group p-3 rounded-xl hover:bg-white dark:hover:bg-gray-700/30 transition-colors duration-150">
                                         <div class="flex items-center justify-between">
                                             <div class="flex items-center space-x-3">
                                                 <div class="h-8 w-8 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
                                                     <x-icon name="{{ $client->type === 'individual' ? 'user-circle' : 'building-office-2' }}" class="w-4 h-4 text-purple-600 dark:text-purple-400" />
                                                 </div>
-                                                <span class="text-sm font-medium text-gray-600 dark:text-gray-400">Tipe</span>
+                                                <span class="text-sm font-medium text-gray-600 dark:text-gray-400">{{ __('pages.type') }}</span>
                                             </div>
-                                            <span class="font-semibold text-gray-900 dark:text-white">{{ $client->type === 'individual' ? 'Individu' : 'Perusahaan' }}</span>
+                                            <span class="font-semibold text-gray-900 dark:text-white">{{ $client->type === 'individual' ? __('pages.individual') : __('pages.company') }}</span>
                                         </div>
                                     </div>
-                                    
+
                                     <div class="group p-3 rounded-xl hover:bg-white dark:hover:bg-gray-700/30 transition-colors duration-150">
                                         <div class="flex items-center justify-between">
                                             <div class="flex items-center space-x-3">
                                                 <div class="h-8 w-8 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
                                                     <x-icon name="shield-check" class="w-4 h-4 text-green-600 dark:text-green-400" />
                                                 </div>
-                                                <span class="text-sm font-medium text-gray-600 dark:text-gray-400">Status</span>
+                                                <span class="text-sm font-medium text-gray-600 dark:text-gray-400">{{ __('common.status') }}</span>
                                             </div>
-                                            <x-badge text="{{ $client->status === 'Active' ? 'Aktif' : 'Tidak Aktif' }}" 
+                                            <x-badge text="{{ $client->status === 'Active' ? __('common.active') : __('common.inactive') }}"
                                                      color="{{ $client->status === 'Active' ? 'green' : 'red' }}" />
                                         </div>
                                     </div>
@@ -108,13 +108,13 @@
                                                     <div class="h-8 w-8 bg-amber-100 dark:bg-amber-900/30 rounded-lg flex items-center justify-center">
                                                         <x-icon name="document-text" class="w-4 h-4 text-amber-600 dark:text-amber-400" />
                                                     </div>
-                                                    <span class="text-sm font-medium text-gray-600 dark:text-gray-400">NPWP</span>
+                                                    <span class="text-sm font-medium text-gray-600 dark:text-gray-400">{{ __('pages.tax_id') }}</span>
                                                 </div>
                                                 <span class="font-semibold text-gray-900 dark:text-white font-mono text-sm bg-gray-100 dark:bg-gray-700/50 px-3 py-1 rounded-lg">{{ $client->NPWP }}</span>
                                             </div>
                                         </div>
                                     @endif
-                                    
+
                                     @if ($client->KPP)
                                         <div class="group p-3 rounded-xl hover:bg-white dark:hover:bg-gray-700/30 transition-colors duration-150">
                                             <div class="flex items-center justify-between">
@@ -122,13 +122,13 @@
                                                     <div class="h-8 w-8 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg flex items-center justify-center">
                                                         <x-icon name="building-office" class="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
                                                     </div>
-                                                    <span class="text-sm font-medium text-gray-600 dark:text-gray-400">KPP</span>
+                                                    <span class="text-sm font-medium text-gray-600 dark:text-gray-400">{{ __('pages.kpp') }}</span>
                                                 </div>
                                                 <span class="font-semibold text-gray-900 dark:text-white">{{ $client->KPP }}</span>
                                             </div>
                                         </div>
                                     @endif
-                                    
+
                                     @if ($client->EFIN)
                                         <div class="group p-3 rounded-xl hover:bg-white dark:hover:bg-gray-700/30 transition-colors duration-150">
                                             <div class="flex items-center justify-between">
@@ -136,7 +136,7 @@
                                                     <div class="h-8 w-8 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg flex items-center justify-center">
                                                         <x-icon name="key" class="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                                                     </div>
-                                                    <span class="text-sm font-medium text-gray-600 dark:text-gray-400">EFIN</span>
+                                                    <span class="text-sm font-medium text-gray-600 dark:text-gray-400">{{ __('pages.efin') }}</span>
                                                 </div>
                                                 <span class="font-semibold text-gray-900 dark:text-white">{{ $client->EFIN }}</span>
                                             </div>
@@ -152,7 +152,7 @@
                                         <x-icon name="phone" class="w-5 h-5 text-white" />
                                     </div>
                                     <h4 class="text-xl font-bold text-gray-900 dark:text-white">
-                                        Informasi Kontak
+                                        {{ __('pages.contact_info') }}
                                     </h4>
                                 </div>
                                 
@@ -164,7 +164,7 @@
                                                     <div class="h-8 w-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
                                                         <x-icon name="envelope" class="w-4 h-4 text-blue-600 dark:text-blue-400" />
                                                     </div>
-                                                    <span class="text-sm font-medium text-gray-600 dark:text-gray-400">Email</span>
+                                                    <span class="text-sm font-medium text-gray-600 dark:text-gray-400">{{ __('common.email') }}</span>
                                                 </div>
                                                 <a href="mailto:{{ $client->email }}" class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-semibold transition-colors duration-150 hover:underline">
                                                     {{ $client->email }}
@@ -172,7 +172,7 @@
                                             </div>
                                         </div>
                                     @endif
-                                    
+
                                     @if ($client->person_in_charge)
                                         <div class="group p-3 rounded-xl hover:bg-white dark:hover:bg-gray-700/30 transition-colors duration-150">
                                             <div class="flex items-center justify-between">
@@ -180,13 +180,13 @@
                                                     <div class="h-8 w-8 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
                                                         <x-icon name="user-circle" class="w-4 h-4 text-purple-600 dark:text-purple-400" />
                                                     </div>
-                                                    <span class="text-sm font-medium text-gray-600 dark:text-gray-400">Penanggung Jawab</span>
+                                                    <span class="text-sm font-medium text-gray-600 dark:text-gray-400">{{ __('pages.person_in_charge_label') }}</span>
                                                 </div>
                                                 <span class="font-semibold text-gray-900 dark:text-white text-right">{{ $client->person_in_charge }}</span>
                                             </div>
                                         </div>
                                     @endif
-                                    
+
                                     @if ($client->account_representative)
                                         <div class="group p-3 rounded-xl hover:bg-white dark:hover:bg-gray-700/30 transition-colors duration-150">
                                             <div class="flex items-center justify-between">
@@ -194,13 +194,13 @@
                                                     <div class="h-8 w-8 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg flex items-center justify-center">
                                                         <x-icon name="briefcase" class="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
                                                     </div>
-                                                    <span class="text-sm font-medium text-gray-600 dark:text-gray-400">Perwakilan Akun</span>
+                                                    <span class="text-sm font-medium text-gray-600 dark:text-gray-400">{{ __('pages.account_representative_label') }}</span>
                                                 </div>
                                                 <span class="font-semibold text-gray-900 dark:text-white text-right">{{ $client->account_representative }}</span>
                                             </div>
                                         </div>
                                     @endif
-                                    
+
                                     @if ($client->ar_phone_number)
                                         <div class="group p-3 rounded-xl hover:bg-white dark:hover:bg-gray-700/30 transition-colors duration-150">
                                             <div class="flex items-center justify-between">
@@ -208,13 +208,13 @@
                                                     <div class="h-8 w-8 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
                                                         <x-icon name="phone" class="w-4 h-4 text-green-600 dark:text-green-400" />
                                                     </div>
-                                                    <span class="text-sm font-medium text-gray-600 dark:text-gray-400">Telepon AR</span>
+                                                    <span class="text-sm font-medium text-gray-600 dark:text-gray-400">{{ __('pages.ar_phone_label') }}</span>
                                                 </div>
                                                 <span class="font-semibold text-gray-900 dark:text-white font-mono text-sm bg-gray-100 dark:bg-gray-700/50 px-3 py-1 rounded-lg">{{ $client->ar_phone_number }}</span>
                                             </div>
                                         </div>
                                     @endif
-                                    
+
                                     @if ($client->address)
                                         <div class="group p-3 rounded-xl hover:bg-white dark:hover:bg-gray-700/30 transition-colors duration-150">
                                             <div class="space-y-2">
@@ -222,7 +222,7 @@
                                                     <div class="h-8 w-8 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center">
                                                         <x-icon name="map-pin" class="w-4 h-4 text-red-600 dark:text-red-400" />
                                                     </div>
-                                                    <span class="text-sm font-medium text-gray-600 dark:text-gray-400">Alamat</span>
+                                                    <span class="text-sm font-medium text-gray-600 dark:text-gray-400">{{ __('pages.address_label') }}</span>
                                                 </div>
                                                 <div class="ml-11">
                                                     <p class="font-semibold text-gray-900 dark:text-white leading-relaxed text-sm bg-gray-50 dark:bg-gray-700/30 p-3 rounded-lg border border-gray-200 dark:border-gray-600/50">{{ $client->address }}</p>
@@ -230,13 +230,13 @@
                                             </div>
                                         </div>
                                     @endif
-                                    
+
                                     @if (!$client->email && !$client->person_in_charge && !$client->account_representative && !$client->ar_phone_number && !$client->address)
                                         <div class="text-center py-8">
                                             <div class="h-12 w-12 bg-gray-100 dark:bg-gray-700/50 rounded-xl flex items-center justify-center mx-auto mb-3">
                                                 <x-icon name="phone-x-mark" class="w-6 h-6 text-gray-400" />
                                             </div>
-                                            <p class="text-gray-500 dark:text-gray-400 text-sm">Belum ada informasi kontak</p>
+                                            <p class="text-gray-500 dark:text-gray-400 text-sm">{{ __('pages.no_contact_info_yet') }}</p>
                                         </div>
                                     @endif
                                 </div>
@@ -246,32 +246,32 @@
                 </x-tab.items>
 
                 <!-- Financial Tab -->
-                <x-tab.items tab="Keuangan">
+                <x-tab.items tab="{{ __('pages.financial') }}">
                     <x-slot:right>
                         <x-icon name="currency-dollar" class="w-5 h-5" />
                     </x-slot:right>
-                    
+
                     <div class="space-y-6">
                         <!-- Financial Summary -->
                         <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
                             <div class="text-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-100 dark:border-blue-800/50">
-                                <div class="text-sm text-blue-600 dark:text-blue-400 font-medium">Total Invoice</div>
+                                <div class="text-sm text-blue-600 dark:text-blue-400 font-medium">{{ __('pages.total_invoices') }}</div>
                                 <div class="text-2xl font-bold text-blue-700 dark:text-blue-300">{{ $this->getTotalInvoices() }}</div>
                             </div>
                             <div class="text-center p-4 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-100 dark:border-green-800/50">
-                                <div class="text-sm text-green-600 dark:text-green-400 font-medium">Total Jumlah</div>
+                                <div class="text-sm text-green-600 dark:text-green-400 font-medium">{{ __('pages.total_amount') }}</div>
                                 <div class="text-lg font-bold text-green-700 dark:text-green-300">
                                     Rp {{ number_format($this->getTotalAmount(), 0, ',', '.') }}
                                 </div>
                             </div>
                             <div class="text-center p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl border border-emerald-100 dark:border-emerald-800/50">
-                                <div class="text-sm text-emerald-600 dark:text-emerald-400 font-medium">Terbayar</div>
+                                <div class="text-sm text-emerald-600 dark:text-emerald-400 font-medium">{{ __('pages.paid_amount') }}</div>
                                 <div class="text-lg font-bold text-emerald-700 dark:text-emerald-300">
                                     Rp {{ number_format($this->getPaidAmount(), 0, ',', '.') }}
                                 </div>
                             </div>
                             <div class="text-center p-4 bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-100 dark:border-red-800/50">
-                                <div class="text-sm text-red-600 dark:text-red-400 font-medium">Tertunggak</div>
+                                <div class="text-sm text-red-600 dark:text-red-400 font-medium">{{ __('pages.outstanding_amount') }}</div>
                                 <div class="text-lg font-bold text-red-700 dark:text-red-300">
                                     Rp {{ number_format($this->getOutstandingAmount(), 0, ',', '.') }}
                                 </div>
@@ -281,7 +281,7 @@
                         <!-- Recent Invoices -->
                         <div>
                             <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 pb-2 border-b border-gray-200 dark:border-gray-700">
-                                Invoice Terbaru
+                                {{ __('pages.recent_invoices') }}
                             </h4>
                             @if ($client->invoices->count() > 0)
                                 <div class="space-y-3">
@@ -300,7 +300,7 @@
                                                 <div class="font-semibold text-gray-900 dark:text-white">
                                                     Rp {{ number_format($invoice->total_amount, 0, ',', '.') }}
                                                 </div>
-                                                <x-badge text="{{ $invoice->status === 'paid' ? 'Lunas' : ($invoice->status === 'overdue' ? 'Terlambat' : ucfirst($invoice->status)) }}" 
+                                                <x-badge text="{{ $invoice->status === 'paid' ? __('pages.paid_off') : ($invoice->status === 'overdue' ? __('common.overdue') : ucfirst($invoice->status)) }}"
                                                          color="{{ $invoice->status === 'paid' ? 'green' : ($invoice->status === 'overdue' ? 'red' : 'yellow') }}" />
                                             </div>
                                         </div>
@@ -308,7 +308,7 @@
                                 </div>
                                 @if ($this->getTotalInvoices() > 5)
                                     <div class="mt-4 text-center">
-                                        <x-button size="sm" color="blue" outline>Lihat Semua Invoice ({{ $this->getTotalInvoices() }})</x-button>
+                                        <x-button size="sm" color="blue" outline>{{ __('pages.view_all_invoices', ['count' => $this->getTotalInvoices()]) }}</x-button>
                                     </div>
                                 @endif
                             @else
@@ -316,7 +316,7 @@
                                     <div class="h-16 w-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-3">
                                         <x-icon name="document" class="w-8 h-8 text-gray-400" />
                                     </div>
-                                    <p class="text-gray-500 dark:text-gray-400">Belum ada invoice</p>
+                                    <p class="text-gray-500 dark:text-gray-400">{{ __('pages.no_invoices_yet') }}</p>
                                 </div>
                             @endif
                         </div>
@@ -324,18 +324,18 @@
                 </x-tab.items>
 
                 <!-- Relationships Tab -->
-                <x-tab.items tab="Hubungan">
+                <x-tab.items tab="{{ __('pages.relationships') }}">
                     <x-slot:right>
                         <x-icon name="users" class="w-5 h-5" />
                     </x-slot:right>
-                    
+
                     <div class="space-y-6">
                         @if ($client->type === 'individual' && $client->ownedCompanies->count() > 0)
                             <div>
                                 <div class="flex justify-between items-center mb-4 pb-2 border-b border-gray-200 dark:border-gray-700">
-                                    <h4 class="text-lg font-semibold text-gray-900 dark:text-white">Perusahaan yang Dimiliki</h4>
+                                    <h4 class="text-lg font-semibold text-gray-900 dark:text-white">{{ __('pages.owned_companies') }}</h4>
                                     <x-button size="sm" color="blue" outline wire:click="manageRelationships">
-                                        Kelola
+                                        {{ __('pages.manage') }}
                                     </x-button>
                                 </div>
                                 <div class="space-y-3">
@@ -348,11 +348,11 @@
                                                 <div>
                                                     <span class="font-semibold text-gray-900 dark:text-white">{{ $company->name }}</span>
                                                     @if($company->NPWP)
-                                                        <p class="text-sm text-gray-600 dark:text-gray-400 font-mono">NPWP: {{ $company->NPWP }}</p>
+                                                        <p class="text-sm text-gray-600 dark:text-gray-400 font-mono">{{ __('pages.tax_id') }}: {{ $company->NPWP }}</p>
                                                     @endif
                                                 </div>
                                             </div>
-                                            <x-badge text="{{ $company->status === 'Active' ? 'Aktif' : 'Tidak Aktif' }}" 
+                                            <x-badge text="{{ $company->status === 'Active' ? __('common.active') : __('common.inactive') }}"
                                                      color="{{ $company->status === 'Active' ? 'green' : 'red' }}" />
                                         </div>
                                     @endforeach
@@ -363,9 +363,9 @@
                         @if ($client->type === 'company' && $client->owners->count() > 0)
                             <div>
                                 <div class="flex justify-between items-center mb-4 pb-2 border-b border-gray-200 dark:border-gray-700">
-                                    <h4 class="text-lg font-semibold text-gray-900 dark:text-white">Pemilik</h4>
+                                    <h4 class="text-lg font-semibold text-gray-900 dark:text-white">{{ __('pages.owners') }}</h4>
                                     <x-button size="sm" color="blue" outline wire:click="manageRelationships">
-                                        Kelola
+                                        {{ __('pages.manage') }}
                                     </x-button>
                                 </div>
                                 <div class="space-y-3">
@@ -382,7 +382,7 @@
                                                     @endif
                                                 </div>
                                             </div>
-                                            <x-badge text="{{ $owner->status === 'Active' ? 'Aktif' : 'Tidak Aktif' }}" 
+                                            <x-badge text="{{ $owner->status === 'Active' ? __('common.active') : __('common.inactive') }}"
                                                      color="{{ $owner->status === 'Active' ? 'green' : 'red' }}" />
                                         </div>
                                     @endforeach
@@ -390,18 +390,18 @@
                             </div>
                         @endif
 
-                        @if (($client->type === 'individual' && $client->ownedCompanies->count() === 0) || 
-                             ($client->type === 'company' && $client->owners->count() === 0))
+                        @if ($client->type === 'individual' && $client->ownedCompanies->count() === 0 ||
+                             $client->type === 'company' && $client->owners->count() === 0)
                             <div class="text-center py-12">
                                 <div class="h-16 w-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
                                     <x-icon name="users" class="w-8 h-8 text-gray-400" />
                                 </div>
-                                <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">Tidak Ada Hubungan</h3>
+                                <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">{{ __('pages.no_relationships') }}</h3>
                                 <p class="text-gray-500 dark:text-gray-400 mb-4">
-                                    {{ $client->type === 'individual' ? 'Individu ini belum memiliki perusahaan yang dimiliki.' : 'Perusahaan ini belum memiliki pemilik yang terdaftar.' }}
+                                    {{ $client->type === 'individual' ? __('pages.individual_no_owned_companies') : __('pages.company_no_owners') }}
                                 </p>
                                 <x-button wire:click="manageRelationships" color="primary">
-                                    Tambah {{ $client->type === 'individual' ? 'Perusahaan' : 'Pemilik' }}
+                                    {{ $client->type === 'individual' ? __('pages.add_company') : __('pages.add_owner') }}
                                 </x-button>
                             </div>
                         @endif
@@ -413,8 +413,8 @@
 
     <x-slot:footer>
         <div class="flex justify-end space-x-3">
-            <x-button wire:click="$toggle('showViewModal')" color="secondary">Tutup</x-button>
-            <x-button wire:click="editClient" color="primary" icon="pencil">Edit Klien</x-button>
+            <x-button wire:click="$toggle('showViewModal')" color="secondary">{{ __('common.close') }}</x-button>
+            <x-button wire:click="editClient" color="primary" icon="pencil">{{ __('pages.edit_client') }}</x-button>
         </div>
     </x-slot:footer>
 </x-modal>

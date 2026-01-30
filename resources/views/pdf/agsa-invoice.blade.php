@@ -285,7 +285,7 @@
                         <div style="display: table-row;">
                             <div
                                 style="display: table-cell; width: 30px; vertical-align: top; padding-right: 5px; font-size: 8pt;">
-                                To:</div>
+                                {{ __('invoice.bill_to') }}:</div>
                             <div style="display: table-cell; vertical-align: top;">
                                 <div class="client-name">PT. GANDA ALAM MAKMUR</div>
                             </div>
@@ -300,7 +300,7 @@
                 </div>
 
                 <!-- Periode -->
-                <div class="periode">Periode 21 SEPTEMBER 2025 - 20 OKTOBER 2025</div>
+                <div class="periode">{{ __('invoice.period') }} 21 SEPTEMBER 2025 - 20 OKTOBER 2025</div>
             </div>
 
             <!-- Right Column: Company Info + Invoice Meta -->
@@ -318,12 +318,12 @@
                 <div class="invoice-meta" style="text-align: right; margin-top: 30px;">
                     <table style="width: auto; border-collapse: collapse; margin-left: auto;">
                         <tr>
-                            <td style="padding: 2px 5px 2px 0; font-size: 8pt; white-space: nowrap;">INVOICE NO.</td>
+                            <td style="padding: 2px 5px 2px 0; font-size: 8pt; white-space: nowrap;">{{ strtoupper(__('invoice.invoice_number')) }}</td>
                             <td style="padding: 2px 5px; font-size: 8pt;">:</td>
                             <td style="padding: 2px 0 2px 5px; font-size: 8pt;">075/AGSA-GAM/INVOICE/X/2025</td>
                         </tr>
                         <tr>
-                            <td style="padding: 2px 5px 2px 0; font-size: 8pt; white-space: nowrap;">DATE</td>
+                            <td style="padding: 2px 5px 2px 0; font-size: 8pt; white-space: nowrap;">{{ strtoupper(__('common.date')) }}</td>
                             <td style="padding: 2px 5px; font-size: 8pt;">:</td>
                             <td style="padding: 2px 0 2px 5px; font-size: 8pt;">21 Oktober 2025</td>
                         </tr>
@@ -336,9 +336,9 @@
         <table class="items-table">
             <thead>
                 <tr>
-                    <th style="width: 5%; text-align: center;">NO.</th>
-                    <th style="width: 70%; text-align: center;">DESCRIPTION</th>
-                    <th style="width: 25%; text-align: center;">AMOUNT</th>
+                    <th style="width: 5%; text-align: center;">{{ strtoupper(__('invoice.no')) }}</th>
+                    <th style="width: 70%; text-align: center;">{{ strtoupper(__('invoice.description')) }}</th>
+                    <th style="width: 25%; text-align: center;">{{ strtoupper(__('invoice.amount')) }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -431,8 +431,7 @@
                     <td
                         style="border-left: 0; border-right: 0; padding: 4px 8px; width: 3%; text-align: center; font-size: 10pt;">
                         I</td>
-                    <td style="border-left: 0; border-right: 0; padding: 4px 8px; width: 22%; font-size: 10pt;">Sub
-                        total I :</td>
+                    <td style="border-left: 0; border-right: 0; padding: 4px 8px; width: 22%; font-size: 10pt;">{{ __('invoice.subtotal') }} I :</td>
                     <td
                         style="border-left: 0; border-right: 0; padding: 4px 8px; width: 5%; text-align: left; font-size: 10pt;">
                         Rp</td>
@@ -466,7 +465,7 @@
                     <td style="border-left: 2px solid #000; border-right: 0; padding: 4px 8px;"></td>
                     <td style="border-left: 0; border-right: 0; padding: 4px 8px; text-align: center; font-size: 10pt;">
                         IV</td>
-                    <td style="border-left: 0; border-right: 0; padding: 4px 8px; font-size: 10pt;">Sub total II :</td>
+                    <td style="border-left: 0; border-right: 0; padding: 4px 8px; font-size: 10pt;">{{ __('invoice.subtotal') }} II :</td>
                     <td style="border-left: 0; border-right: 0; padding: 4px 8px; text-align: left; font-size: 10pt;">Rp
                     </td>
                     <td
@@ -491,7 +490,7 @@
                     </td>
                     <td colspan="2"
                         style="border-top: 2px solid #000; border-bottom: 0; border-left: 0; border-right: 0; padding: 4px 8px; text-align: right; font-size: 10pt; font-weight: bold;">
-                        Grand Total :</td>
+                        {{ __('invoice.grand_total') }} :</td>
                     <td
                         style="border-top: 2px solid #000; border-bottom: 0; border-left: 0; border-right: 0; padding: 4px 8px; text-align: left; font-size: 10pt; font-weight: bold;">
                         Rp</td>
@@ -502,7 +501,7 @@
                 <tr>
                     <td colspan="5"
                         style="border: 2px solid #000; border-top: 2px solid #000; padding: 6px 8px; font-size: 9pt; font-style: italic; text-align: center;">
-                        Says : <i>{{ $terbilang }}</i>
+                        {{ __('invoice.say') }} : <i>{{ $terbilang }}</i>
                     </td>
                 </tr>
             </tbody>
@@ -510,15 +509,15 @@
 
         <!-- Bank Details -->
         <div class="bank-section">
-            <div class="bank-title">Please Remit To :</div>
+            <div class="bank-title">{{ __('invoice.please_remit_to') }} :</div>
             <table class="bank-table">
                 <thead>
                     <tr>
-                        <th style="width: 5%;">No</th>
-                        <th style="width: 28%;">Nama Perusahaan</th>
-                        <th style="width: 22%;">Rekening Bank</th>
-                        <th style="width: 25%;">Keterangan</th>
-                        <th style="width: 20%;">Jumlah</th>
+                        <th style="width: 5%;">{{ __('invoice.no') }}</th>
+                        <th style="width: 28%;">{{ __('invoice.company_name') }}</th>
+                        <th style="width: 22%;">{{ __('invoice.bank_account') }}</th>
+                        <th style="width: 25%;">{{ __('invoice.description') }}</th>
+                        <th style="width: 20%;">{{ __('invoice.amount') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -530,18 +529,18 @@
                         <td class="text-center">1</td>
                         <td>Agrapana Satya Abadi PT</td>
                         <td>1444569995</td>
-                        <td>Biaya Tenaga Kerja</td>
+                        <td>{{ __('invoice.labor_cost') }}</td>
                         <td class="text-right">Rp {{ number_format($biayaTenagaKerja, 0, ',', '.') }}</td>
                     </tr>
                     <tr>
                         <td class="text-center">2</td>
                         <td>Agrapana Satya Abadi PT</td>
                         <td>2997898888</td>
-                        <td>Biaya Operasional</td>
+                        <td>{{ __('invoice.operational_cost') }}</td>
                         <td class="text-right">Rp {{ number_format($biayaOperasional, 0, ',', '.') }}</td>
                     </tr>
                     <tr>
-                        <td colspan="4" style="text-align: center; font-weight: bold;">TOTAL</td>
+                        <td colspan="4" style="text-align: center; font-weight: bold;">{{ strtoupper(__('invoice.total')) }}</td>
                         <td class="text-right" style="font-weight: bold;">Rp
                             {{ number_format($grandTotal, 0, ',', '.') }}</td>
                     </tr>

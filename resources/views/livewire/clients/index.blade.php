@@ -7,16 +7,16 @@
             <div class="space-y-1">
                 <h1
                     class="text-4xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-indigo-800 dark:from-white dark:via-blue-200 dark:to-indigo-200 bg-clip-text text-transparent">
-                    Manajemen Klien
+                    {{ __('pages.client_management') }}
                 </h1>
                 <p class="text-gray-600 dark:text-zinc-400 text-lg">
-                    Kelola klien Anda dan lacak hubungan bisnis mereka
+                    {{ __('pages.client_management_description') }}
                 </p>
             </div>
 
             <div class="flex items-center gap-3">
                 <x-button wire:click="$dispatch('create-client')" icon="plus" color="primary">
-                    Tambah Klien
+                    {{ __('pages.add_client') }}
                 </x-button>
             </div>
         </div>
@@ -28,7 +28,7 @@
             class="bg-white/80 dark:bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/50 dark:border-white/10 shadow-lg shadow-gray-500/5">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Klien</p>
+                    <p class="text-sm font-medium text-gray-600 dark:text-gray-400">{{ __('pages.total_clients') }}</p>
                     <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ $rows->total() ?? 0 }}</p>
                 </div>
                 <div class="h-12 w-12 bg-blue-500/10 dark:bg-blue-400/10 rounded-xl flex items-center justify-center">
@@ -41,7 +41,7 @@
             class="bg-white/80 dark:bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/50 dark:border-white/10 shadow-lg shadow-gray-500/5">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Klien Aktif</p>
+                    <p class="text-sm font-medium text-gray-600 dark:text-gray-400">{{ __('pages.active_clients') }}</p>
                     <p class="text-3xl font-bold text-green-600 dark:text-green-400">
                         {{ $rows->where('status', 'Active')->count() ?? 0 }}</p>
                 </div>
@@ -55,7 +55,7 @@
             class="bg-white/80 dark:bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/50 dark:border-white/10 shadow-lg shadow-gray-500/5">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Perusahaan</p>
+                    <p class="text-sm font-medium text-gray-600 dark:text-gray-400">{{ __('pages.companies') }}</p>
                     <p class="text-3xl font-bold text-purple-600 dark:text-purple-400">
                         {{ $rows->where('type', 'company')->count() ?? 0 }}</p>
                 </div>
@@ -70,7 +70,7 @@
             class="bg-white/80 dark:bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/50 dark:border-white/10 shadow-lg shadow-gray-500/5">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Individu</p>
+                    <p class="text-sm font-medium text-gray-600 dark:text-gray-400">{{ __('pages.individuals') }}</p>
                     <p class="text-3xl font-bold text-blue-600 dark:text-blue-400">
                         {{ $rows->where('type', 'individual')->count() ?? 0 }}</p>
                 </div>
@@ -90,8 +90,8 @@
                     <x-icon name="funnel" class="w-5 h-5 text-white" />
                 </div>
                 <div>
-                    <h3 class="text-lg font-semibold text-zinc-900 dark:text-white">Filter Klien</h3>
-                    <p class="text-sm text-zinc-500 dark:text-zinc-400">Gunakan filter untuk mempersempit pencarian</p>
+                    <h3 class="text-lg font-semibold text-zinc-900 dark:text-white">{{ __('pages.filter_clients') }}</h3>
+                    <p class="text-sm text-zinc-500 dark:text-zinc-400">{{ __('pages.use_filters_narrow_search') }}</p>
                 </div>
             </div>
             
@@ -99,7 +99,7 @@
             @if($typeFilter || $statusFilter)
                 <div class="flex items-center space-x-2">
                     <div class="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-3 py-1 rounded-full text-sm font-medium">
-                        {{ collect([$typeFilter, $statusFilter])->filter()->count() }} Filter Aktif
+                        {{ collect([$typeFilter, $statusFilter])->filter()->count() }} {{ __('pages.active_filters') }}
                     </div>
                 </div>
             @endif
@@ -114,12 +114,12 @@
                         <div class="h-6 w-6 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
                             <x-icon name="user-group" class="w-4 h-4 text-blue-600 dark:text-blue-400" />
                         </div>
-                        <label class="text-sm font-medium text-zinc-700 dark:text-zinc-300">Tipe Klien</label>
+                        <label class="text-sm font-medium text-zinc-700 dark:text-zinc-300">{{ __('pages.client_type') }}</label>
                     </div>
                     <x-select.styled wire:model.live="typeFilter" :options="[
-                        ['label' => '👤 Individu', 'value' => 'individual'],
-                        ['label' => '🏢 Perusahaan', 'value' => 'company'],
-                    ]" placeholder="Semua tipe..."
+                        ['label' => '👤 ' . __('pages.individuals'), 'value' => 'individual'],
+                        ['label' => '🏢 ' . __('pages.companies'), 'value' => 'company'],
+                    ]" placeholder="{{ __('pages.all_types') }}"
                         class="w-full" />
                 </div>
 
@@ -129,13 +129,13 @@
                         <div class="h-6 w-6 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
                             <x-icon name="shield-check" class="w-4 h-4 text-green-600 dark:text-green-400" />
                         </div>
-                        <label class="text-sm font-medium text-zinc-700 dark:text-zinc-300">Status</label>
+                        <label class="text-sm font-medium text-zinc-700 dark:text-zinc-300">{{ __('common.status') }}</label>
                     </div>
                     <x-select.styled wire:model.live="statusFilter" :options="[
-                        ['label' => '✅ Aktif', 'value' => 'Active'],
-                        ['label' => '❌ Tidak Aktif', 'value' => 'Inactive'],
+                        ['label' => '✅ ' . __('common.active'), 'value' => 'Active'],
+                        ['label' => '❌ ' . __('common.inactive'), 'value' => 'Inactive'],
                     ]"
-                        placeholder="Semua status..."
+                        placeholder="{{ __('pages.all_status') }}"
                         class="w-full" />
                 </div>
 
@@ -145,10 +145,10 @@
                         <div class="h-6 w-6 bg-zinc-100 dark:bg-zinc-900/30 rounded-lg flex items-center justify-center">
                             <x-icon name="arrow-path" class="w-4 h-4 text-zinc-600 dark:text-zinc-400" />
                         </div>
-                        <label class="text-sm font-medium text-zinc-700 dark:text-zinc-300">Reset</label>
+                        <label class="text-sm font-medium text-zinc-700 dark:text-zinc-300">{{ __('pages.reset') }}</label>
                     </div>
                     <x-button wire:click="clearFilters" color="secondary" icon="x-mark">
-                        Hapus Semua Filter
+                        {{ __('pages.clear_all_filters') }}
                     </x-button>
                 </div>
             </div>
@@ -158,12 +158,12 @@
                 <div class="mt-6 pt-4 border-t border-zinc-200/50 dark:border-zinc-700/50">
                     <div class="flex items-center space-x-2 mb-3">
                         <x-icon name="tag" class="w-4 h-4 text-zinc-500 dark:text-zinc-400" />
-                        <span class="text-sm font-medium text-zinc-600 dark:text-zinc-400">Filter Aktif:</span>
+                        <span class="text-sm font-medium text-zinc-600 dark:text-zinc-400">{{ __('pages.active_filters') }}:</span>
                     </div>
                     <div class="flex flex-wrap gap-2">
                         @if($typeFilter)
                             <div class="inline-flex items-center gap-2 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 px-3 py-1.5 rounded-lg border border-blue-200 dark:border-blue-800 text-sm">
-                                <span>{{ $typeFilter === 'individual' ? '👤 Individu' : '🏢 Perusahaan' }}</span>
+                                <span>{{ $typeFilter === 'individual' ? '👤 ' . __('pages.individuals') : '🏢 ' . __('pages.companies') }}</span>
                                 <button wire:click="$set('typeFilter', '')" class="hover:bg-blue-200 dark:hover:bg-blue-800 rounded-full p-0.5 transition-colors">
                                     <x-icon name="x-mark" class="w-3 h-3" />
                                 </button>
@@ -171,7 +171,7 @@
                         @endif
                         @if($statusFilter)
                             <div class="inline-flex items-center gap-2 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 px-3 py-1.5 rounded-lg border border-green-200 dark:border-green-800 text-sm">
-                                <span>{{ $statusFilter === 'Active' ? '✅ Aktif' : '❌ Tidak Aktif' }}</span>
+                                <span>{{ $statusFilter === 'Active' ? '✅ ' . __('common.active') : '❌ ' . __('common.inactive') }}</span>
                                 <button wire:click="$set('statusFilter', '')" class="hover:bg-green-200 dark:hover:bg-green-800 rounded-full p-0.5 transition-colors">
                                     <x-icon name="x-mark" class="w-3 h-3" />
                                 </button>
@@ -226,7 +226,7 @@
 
         {{-- Enhanced Type Column --}}
         @interact('column_type', $row)
-            <x-badge text="{{ $row->type === 'individual' ? '👤 Individu' : '🏢 Perusahaan' }}"
+            <x-badge text="{{ $row->type === 'individual' ? '👤 ' . __('pages.individuals') : '🏢 ' . __('pages.companies') }}"
                 color="{{ $row->type === 'individual' ? 'blue' : 'purple' }}" class="shadow-sm" />
         @endinteract
 
@@ -249,7 +249,7 @@
                 @endif
 
                 @if (!$row->email && !$row->ar_phone_number)
-                    <span class="text-gray-400 dark:text-gray-500 italic text-sm">Tidak ada info kontak</span>
+                    <span class="text-gray-400 dark:text-gray-500 italic text-sm">{{ __('pages.no_contact_info') }}</span>
                 @endif
             </div>
         @endinteract
@@ -301,7 +301,7 @@
                     <div
                         class="inline-flex items-center gap-1 text-xs text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 px-2 py-1 rounded-full">
                         <x-icon name="check-circle" class="w-3 h-3" />
-                        <span>Lunas</span>
+                        <span>{{ __('pages.paid_off') }}</span>
                     </div>
                 @endif
             </div>
@@ -310,13 +310,13 @@
         {{-- Enhanced Actions --}}
         @interact('column_actions', $row)
             <x-dropdown icon="ellipsis-vertical" class="shadow-lg">
-                <x-dropdown.items text="Lihat Detail" icon="eye"
+                <x-dropdown.items text="{{ __('pages.view_details') }}" icon="eye"
                     wire:click="$dispatch('show-client', { clientId: {{ $row->id }} })" />
-                <x-dropdown.items text="Edit Klien" icon="pencil"
+                <x-dropdown.items text="{{ __('pages.edit_client') }}" icon="pencil"
                     wire:click="$dispatch('edit-client', { clientId: {{ $row->id }} })" />
-                <x-dropdown.items text="Hubungan" icon="users"
+                <x-dropdown.items text="{{ __('pages.manage_relationships') }}" icon="users"
                     wire:click="$dispatch('manage-relationships', { clientId: {{ $row->id }} })" />
-                <x-dropdown.items text="Hapus" icon="trash"
+                <x-dropdown.items text="{{ __('common.delete') }}" icon="trash"
                     wire:click="$dispatch('delete-client', { clientId: {{ $row->id }} })" />
             </x-dropdown>
         @endinteract
@@ -343,27 +343,27 @@
                         <x-icon name="check-circle" class="w-5 h-5 text-blue-600 dark:text-blue-400" />
                     </div>
                     <div>
-                        <p class="font-semibold text-zinc-900 dark:text-white" x-text="`${show.length} klien dipilih`"></p>
-                        <p class="text-sm text-zinc-500 dark:text-zinc-400">Pilih aksi untuk semua klien terpilih</p>
+                        <p class="font-semibold text-zinc-900 dark:text-white" x-text="`${show.length} {{ __('pages.clients_selected') }}`"></p>
+                        <p class="text-sm text-zinc-500 dark:text-zinc-400">{{ __('pages.select_action_all_clients') }}</p>
                     </div>
                 </div>
 
                 {{-- Actions --}}
                 <div class="flex items-center gap-2">
-                    <x-button 
-                        wire:click="clearSelection" 
-                        color="secondary" 
+                    <x-button
+                        wire:click="clearSelection"
+                        color="secondary"
                         size="sm"
                         icon="x-mark">
-                        Batal
+                        {{ __('common.cancel') }}
                     </x-button>
-                    
-                    <x-button 
-                        wire:click="bulkDelete" 
-                        color="red" 
+
+                    <x-button
+                        wire:click="bulkDelete"
+                        color="red"
                         size="sm"
                         icon="trash">
-                        <span x-text="`Hapus ${show.length} Klien`"></span>
+                        <span x-text="`{{ __('common.delete') }} ${show.length} {{ __('common.clients') }}`"></span>
                     </x-button>
                 </div>
             </div>

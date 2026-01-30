@@ -3,9 +3,9 @@
     <div class="mb-6 space-y-1">
         <h1
             class="text-4xl font-bold bg-gradient-to-r from-dark-900 via-primary-800 to-primary-800 dark:from-white dark:via-primary-200 dark:to-primary-200 bg-clip-text text-transparent">
-            Create Invoice
+            {{ __('invoice.create_invoice') }}
         </h1>
-        <p class="text-dark-600 dark:text-dark-400 text-lg">Multi-client invoice with dynamic items</p>
+        <p class="text-dark-600 dark:text-dark-400 text-lg">{{ __('pages.multi_client_invoice') }}</p>
     </div>
 
     {{-- Flash Messages --}}
@@ -39,7 +39,7 @@
 
     @if ($errors->any())
         <div class="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-            <h3 class="text-sm font-semibold text-red-900 dark:text-red-200 mb-2">Please fix:</h3>
+            <h3 class="text-sm font-semibold text-red-900 dark:text-red-200 mb-2">{{ __('pages.please_fix') }}:</h3>
             <ul class="list-disc list-inside text-sm text-red-700 dark:text-red-300 space-y-1">
                 @foreach ($errors->all() as $error)
                     <li>{{ $error }}</li>
@@ -51,19 +51,19 @@
     <div class="space-y-6">
         {{-- Invoice Info - 1 ROW Grid (4 cols equal) --}}
         <div class="bg-white dark:bg-dark-800 rounded-xl shadow-sm border border-dark-200 dark:border-dark-600 p-6">
-            <h2 class="text-lg font-semibold text-dark-900 dark:text-dark-50 mb-4">Invoice Information</h2>
+            <h2 class="text-lg font-semibold text-dark-900 dark:text-dark-50 mb-4">{{ __('invoice.invoice_details') }}</h2>
 
             <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
                 {{-- Invoice Number (3 cols) --}}
                 <div class="md:col-span-3">
-                    <label class="block text-sm font-medium text-dark-900 dark:text-dark-50 mb-1">Invoice Number
+                    <label class="block text-sm font-medium text-dark-900 dark:text-dark-50 mb-1">{{ __('invoice.invoice_number') }}
                         *</label>
                     <div class="relative">
                         <input type="text" x-model="invoice.invoice_number" :readonly="invoice.number_locked"
                             :class="invoice.number_locked ? 'bg-dark-100 dark:bg-dark-700 cursor-not-allowed' :
                                 'bg-white dark:bg-dark-800'"
                             class="w-full pl-3 pr-10 py-2 text-sm border border-dark-200 dark:border-dark-600 rounded-lg text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                            placeholder="Auto-generated on save">
+                            :placeholder="__('pages.auto_generate_on_save')">
                         <button @click="invoice.number_locked = !invoice.number_locked" type="button"
                             class="absolute right-3 top-1/2 -translate-y-1/2 text-dark-400 hover:text-primary-600 transition">
                             <svg x-show="invoice.number_locked" class="w-5 h-5" fill="none" stroke="currentColor"
@@ -82,12 +82,12 @@
 
                 {{-- Client (3 cols) --}}
                 <div class="md:col-span-3">
-                    <label class="block text-sm font-medium text-dark-900 dark:text-dark-50 mb-1">Billed To (Owner)
+                    <label class="block text-sm font-medium text-dark-900 dark:text-dark-50 mb-1">{{ __('invoice.bill_to') }} ({{ __('pages.owner') }})
                         *</label>
                     <div class="relative">
                         <div x-show="!invoice.client_id" @click="selectOpen = !selectOpen"
                             class="w-full px-3 py-2 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-500 dark:text-dark-400 cursor-pointer hover:border-primary-400 transition">
-                            Select client...
+                            {{ __('pages.select_client') }}
                         </div>
                         <div x-show="invoice.client_id"
                             class="w-full px-3 py-2 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 flex items-center justify-between">
@@ -103,7 +103,7 @@
                         <div x-show="selectOpen" x-transition
                             class="absolute z-50 mt-1 w-full bg-white dark:bg-dark-800 border border-dark-200 dark:border-dark-700 rounded-lg shadow-lg max-h-80 overflow-hidden">
                             <div class="p-2 border-b border-dark-200 dark:border-dark-700">
-                                <input type="text" x-model="selectSearch" @click.stop placeholder="Search clients..."
+                                <input type="text" x-model="selectSearch" @click.stop :placeholder="'{{ __('common.search') }} {{ strtolower(__('common.clients')) }}...'"
                                     class="w-full px-3 py-2 border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 placeholder-dark-400 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
                             </div>
                             <div class="overflow-y-auto max-h-64">
@@ -126,7 +126,7 @@
                                 </template>
                                 <div x-show="filteredClients.length === 0"
                                     class="px-4 py-8 text-center text-dark-500 dark:text-dark-400">
-                                    <p class="text-sm">No clients found</p>
+                                    <p class="text-sm">{{ __('pages.no_clients_found') }}</p>
                                 </div>
                             </div>
                         </div>
@@ -135,14 +135,14 @@
 
                 {{-- Issue Date (3 cols) --}}
                 <div class="md:col-span-3">
-                    <label class="block text-sm font-medium text-dark-900 dark:text-dark-50 mb-1">Issue Date *</label>
+                    <label class="block text-sm font-medium text-dark-900 dark:text-dark-50 mb-1">{{ __('invoice.invoice_date') }} *</label>
                     <input type="date" x-model="invoice.issue_date"
                         class="w-full px-3 py-2 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
                 </div>
 
                 {{-- Due Date (3 cols) --}}
                 <div class="md:col-span-3">
-                    <label class="block text-sm font-medium text-dark-900 dark:text-dark-50 mb-1">Due Date *</label>
+                    <label class="block text-sm font-medium text-dark-900 dark:text-dark-50 mb-1">{{ __('invoice.due_date') }} *</label>
                     <input type="date" x-model="invoice.due_date"
                         class="w-full px-3 py-2 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
                 </div>
@@ -152,7 +152,7 @@
         {{-- Invoice Items - Full Width --}}
         <div class="bg-white dark:bg-dark-800 rounded-xl shadow-sm border border-dark-200 dark:border-dark-600 p-6">
             <div class="flex items-center justify-between mb-4">
-                <h2 class="text-lg font-semibold text-dark-900 dark:text-dark-50">Invoice Items</h2>
+                <h2 class="text-lg font-semibold text-dark-900 dark:text-dark-50">{{ __('pages.invoice_items') }}</h2>
                 <div class="flex items-center gap-2">
                     <input type="number" x-model="bulkCount" min="1" max="50"
                         class="w-16 px-2 py-2 text-sm text-center border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
@@ -162,7 +162,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M12 4v16m8-8H4" />
                         </svg>
-                        Add Item
+                        {{ __('pages.add_item') }}
                     </button>
                 </div>
             </div>
@@ -171,16 +171,16 @@
             <div class="hidden lg:grid lg:grid-cols-24 gap-3 px-4 py-3 bg-dark-100 dark:bg-dark-900 rounded-lg mb-2">
                 <div class="col-span-1 text-xs font-semibold text-dark-700 dark:text-dark-300 uppercase text-center">#
                 </div>
-                <div class="col-span-4 text-xs font-semibold text-dark-700 dark:text-dark-300 uppercase">Client</div>
-                <div class="col-span-5 text-xs font-semibold text-dark-700 dark:text-dark-300 uppercase">Service</div>
+                <div class="col-span-4 text-xs font-semibold text-dark-700 dark:text-dark-300 uppercase">{{ __('invoice.client') }}</div>
+                <div class="col-span-5 text-xs font-semibold text-dark-700 dark:text-dark-300 uppercase">{{ __('common.services') }}</div>
                 <div class="col-span-2 text-xs font-semibold text-dark-700 dark:text-dark-300 uppercase text-center">
-                    Qty</div>
-                <div class="col-span-3 text-xs font-semibold text-dark-700 dark:text-dark-300 uppercase">Unit Price
+                    {{ __('invoice.qty') }}</div>
+                <div class="col-span-3 text-xs font-semibold text-dark-700 dark:text-dark-300 uppercase">{{ __('invoice.unit_price') }}
                 </div>
-                <div class="col-span-3 text-xs font-semibold text-dark-700 dark:text-dark-300 uppercase">Amount</div>
-                <div class="col-span-3 text-xs font-semibold text-dark-700 dark:text-dark-300 uppercase">COGS</div>
+                <div class="col-span-3 text-xs font-semibold text-dark-700 dark:text-dark-300 uppercase">{{ __('invoice.amount') }}</div>
+                <div class="col-span-3 text-xs font-semibold text-dark-700 dark:text-dark-300 uppercase">{{ __('pages.cogs') }}</div>
                 <div class="col-span-2 text-xs font-semibold text-dark-700 dark:text-dark-300 uppercase text-center">
-                    Tax</div>
+                    {{ __('common.tax') }}</div>
                 <div class="col-span-1 text-xs font-semibold text-dark-700 dark:text-dark-300 uppercase text-center">
                 </div>
             </div>
@@ -203,7 +203,7 @@
                                     <div x-show="!item.client_id"
                                         @click="itemSelectOpen[item.id] = !itemSelectOpen[item.id]"
                                         class="w-full px-2 py-1.5 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-500 dark:text-dark-400 cursor-pointer hover:border-primary-400 transition truncate">
-                                        Select...
+                                        {{ __('common.select') }}
                                     </div>
                                     <div x-show="item.client_id"
                                         class="w-full px-2 py-1.5 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 flex items-center justify-between gap-1">
@@ -222,7 +222,7 @@
                                         class="absolute z-50 mt-1 w-64 bg-white dark:bg-dark-800 border border-dark-200 dark:border-dark-700 rounded-lg shadow-lg max-h-80 overflow-hidden">
                                         <div class="p-2 border-b border-dark-200 dark:border-dark-700">
                                             <input type="text" x-model="itemSelectSearch[item.id]" @click.stop
-                                                placeholder="Search..."
+                                                :placeholder="'{{ __('common.search') }}...'"
                                                 class="w-full px-2 py-1.5 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 placeholder-dark-400 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
                                         </div>
                                         <div class="overflow-y-auto max-h-64">
@@ -246,7 +246,7 @@
                                             </template>
                                             <div x-show="filteredItemClients(item.id).length === 0"
                                                 class="px-3 py-6 text-center text-dark-500 dark:text-dark-400">
-                                                <p class="text-xs">No clients found</p>
+                                                <p class="text-xs">{{ __('pages.no_clients_found') }}</p>
                                             </div>
                                         </div>
                                     </div>
@@ -258,7 +258,7 @@
                                 <div class="relative flex gap-1" @click.away="serviceSelectOpen[item.id] = false">
                                     <input type="text" x-model="item.service_name"
                                         class="flex-1 px-2 py-1.5 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                                        placeholder="Type service name...">
+                                        :placeholder="'{{ __('pages.type_service_name') }}...'"
                                     <button @click="serviceSelectOpen[item.id] = !serviceSelectOpen[item.id]"
                                         type="button"
                                         class="px-2 py-1.5 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-600 dark:text-dark-400 hover:bg-dark-50 dark:hover:bg-dark-700 transition flex-shrink-0">
@@ -272,7 +272,7 @@
                                         class="absolute z-50 mt-1 w-96 bg-white dark:bg-dark-800 border border-dark-200 dark:border-dark-700 rounded-lg shadow-lg max-h-80 overflow-hidden">
                                         <div class="p-2 border-b border-dark-200 dark:border-dark-700">
                                             <input type="text" x-model="serviceSelectSearch[item.id]" @click.stop
-                                                placeholder="Search services..."
+                                                :placeholder="'{{ __('common.search') }} {{ strtolower(__('common.services')) }}...'"
                                                 class="w-full px-2 py-1.5 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 placeholder-dark-400 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
                                         </div>
                                         <div class="overflow-y-auto max-h-64">
@@ -293,7 +293,7 @@
                                             </template>
                                             <div x-show="filteredItemServices(item.id).length === 0"
                                                 class="px-3 py-6 text-center text-dark-500 dark:text-dark-400">
-                                                <p class="text-xs">No services found</p>
+                                                <p class="text-xs">{{ __('pages.no_services_found') }}</p>
                                             </div>
                                         </div>
                                     </div>
@@ -334,7 +334,7 @@
                                 <label class="flex items-center gap-1.5 cursor-pointer">
                                     <input type="checkbox" x-model="item.is_tax_deposit"
                                         class="rounded border-dark-300 dark:border-dark-600 text-primary-600 focus:ring-2 focus:ring-primary-500">
-                                    <span class="text-xs text-dark-600 dark:text-dark-400">Tax</span>
+                                    <span class="text-xs text-dark-600 dark:text-dark-400">{{ __('common.tax') }}</span>
                                 </label>
                             </div>
 
@@ -360,7 +360,7 @@
                                     <label class="flex items-center gap-1.5 cursor-pointer">
                                         <input type="checkbox" x-model="item.is_tax_deposit"
                                             class="rounded border-dark-300 dark:border-dark-600 text-primary-600 focus:ring-2 focus:ring-primary-500">
-                                        <span class="text-xs text-dark-600 dark:text-dark-400">Tax Deposit</span>
+                                        <span class="text-xs text-dark-600 dark:text-dark-400">{{ __('invoice.tax_deposit') }}</span>
                                     </label>
                                 </div>
                                 <button @click="removeItem(index)" type="button"
@@ -376,12 +376,12 @@
                                 {{-- Client --}}
                                 <div>
                                     <label
-                                        class="block text-xs font-medium text-dark-600 dark:text-dark-400 mb-1">Client</label>
+                                        class="block text-xs font-medium text-dark-600 dark:text-dark-400 mb-1">{{ __('invoice.client') }}</label>
                                     <div class="relative">
                                         <div x-show="!item.client_id"
                                             @click="itemSelectOpen[item.id] = !itemSelectOpen[item.id]"
                                             class="w-full px-3 py-2 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-500 dark:text-dark-400 cursor-pointer hover:border-primary-400 transition">
-                                            Select client...
+                                            {{ __('pages.select_client') }}
                                         </div>
                                         <div x-show="item.client_id"
                                             class="w-full px-3 py-2 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 flex items-center justify-between">
@@ -400,7 +400,7 @@
                                             class="absolute z-50 mt-1 w-full bg-white dark:bg-dark-800 border border-dark-200 dark:border-dark-700 rounded-lg shadow-lg max-h-80 overflow-hidden">
                                             <div class="p-2 border-b border-dark-200 dark:border-dark-700">
                                                 <input type="text" x-model="itemSelectSearch[item.id]" @click.stop
-                                                    placeholder="Search clients..."
+                                                    :placeholder="'{{ __('common.search') }} {{ strtolower(__('common.clients')) }}...'"
                                                     class="w-full px-3 py-2 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 placeholder-dark-400 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
                                             </div>
                                             <div class="overflow-y-auto max-h-64">
@@ -425,7 +425,7 @@
                                                 </template>
                                                 <div x-show="filteredItemClients(item.id).length === 0"
                                                     class="px-4 py-8 text-center text-dark-500 dark:text-dark-400">
-                                                    <p class="text-sm">No clients found</p>
+                                                    <p class="text-sm">{{ __('pages.no_clients_found') }}</p>
                                                 </div>
                                             </div>
                                         </div>
@@ -435,12 +435,11 @@
                                 {{-- Service --}}
                                 <div>
                                     <label
-                                        class="block text-xs font-medium text-dark-600 dark:text-dark-400 mb-1">Service
-                                        Name</label>
+                                        class="block text-xs font-medium text-dark-600 dark:text-dark-400 mb-1">{{ __('pages.service_name') }}</label>
                                     <div class="relative flex gap-2" @click.away="serviceSelectOpen[item.id] = false">
                                         <input type="text" x-model="item.service_name"
                                             class="flex-1 px-3 py-2 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                                            placeholder="Type service name...">
+                                            :placeholder="'{{ __('pages.type_service_name') }}...'"
                                         <button @click="serviceSelectOpen[item.id] = !serviceSelectOpen[item.id]"
                                             type="button"
                                             class="px-3 py-2 border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-600 dark:text-dark-400 hover:bg-dark-50 dark:hover:bg-dark-700 transition flex-shrink-0">
@@ -454,7 +453,7 @@
                                             class="absolute z-50 mt-1 w-full bg-white dark:bg-dark-800 border border-dark-200 dark:border-dark-700 rounded-lg shadow-lg max-h-80 overflow-hidden">
                                             <div class="p-2 border-b border-dark-200 dark:border-dark-700">
                                                 <input type="text" x-model="serviceSelectSearch[item.id]"
-                                                    @click.stop placeholder="Search services..."
+                                                    @click.stop :placeholder="'{{ __('common.search') }} {{ strtolower(__('common.services')) }}...'"
                                                     class="w-full px-3 py-2 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 placeholder-dark-400 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
                                             </div>
                                             <div class="overflow-y-auto max-h-64">
@@ -476,7 +475,7 @@
                                                 </template>
                                                 <div x-show="filteredItemServices(item.id).length === 0"
                                                     class="px-4 py-8 text-center text-dark-500 dark:text-dark-400">
-                                                    <p class="text-sm">No services found</p>
+                                                    <p class="text-sm">{{ __('pages.no_services_found') }}</p>
                                                 </div>
                                             </div>
                                         </div>
@@ -487,15 +486,14 @@
                                 <div class="grid grid-cols-2 gap-2">
                                     <div>
                                         <label
-                                            class="block text-xs font-medium text-dark-600 dark:text-dark-400 mb-1">Quantity</label>
+                                            class="block text-xs font-medium text-dark-600 dark:text-dark-400 mb-1">{{ __('invoice.quantity') }}</label>
                                         <input type="number" x-model="item.quantity" @input="calculateItem(item)"
                                             min="1"
                                             class="w-full px-3 py-2 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
                                     </div>
                                     <div>
                                         <label
-                                            class="block text-xs font-medium text-dark-600 dark:text-dark-400 mb-1">Unit
-                                            Price</label>
+                                            class="block text-xs font-medium text-dark-600 dark:text-dark-400 mb-1">{{ __('invoice.unit_price') }}</label>
                                         <input type="text" x-model="item.unit_price"
                                             @input="item.unit_price = formatInput($event.target.value); calculateItem(item)"
                                             class="w-full px-3 py-2 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
@@ -507,13 +505,13 @@
                                 <div class="grid grid-cols-2 gap-2">
                                     <div>
                                         <label
-                                            class="block text-xs font-medium text-dark-600 dark:text-dark-400 mb-1">Amount</label>
+                                            class="block text-xs font-medium text-dark-600 dark:text-dark-400 mb-1">{{ __('invoice.amount') }}</label>
                                         <div class="px-3 py-2 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-dark-100 dark:bg-dark-900 text-dark-900 dark:text-dark-50 font-semibold"
                                             x-text="formatCurrency(item.amount)"></div>
                                     </div>
                                     <div>
                                         <label
-                                            class="block text-xs font-medium text-dark-600 dark:text-dark-400 mb-1">COGS</label>
+                                            class="block text-xs font-medium text-dark-600 dark:text-dark-400 mb-1">{{ __('pages.cogs') }}</label>
                                         <input type="text" x-model="item.cogs_amount"
                                             @input="item.cogs_amount = formatInput($event.target.value); calculateItem(item)"
                                             class="w-full px-3 py-2 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
@@ -531,7 +529,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
-                    <p class="text-dark-600 dark:text-dark-400 text-sm">No items yet. Click "Add Item" to get started.
+                    <p class="text-dark-600 dark:text-dark-400 text-sm">{{ __('pages.no_items_yet') }}
                     </p>
                 </div>
             </div>
@@ -545,12 +543,12 @@
             {{-- Summary right column --}}
             <div
                 class="bg-white dark:bg-dark-800 rounded-xl shadow-sm border border-dark-200 dark:border-dark-600 p-6">
-                <h2 class="text-lg font-semibold text-dark-900 dark:text-dark-50 mb-6">Invoice Summary</h2>
+                <h2 class="text-lg font-semibold text-dark-900 dark:text-dark-50 mb-6">{{ __('pages.invoice_summary') }}</h2>
 
                 <div class="space-y-4">
                     {{-- Subtotal --}}
                     <div class="flex justify-between items-center">
-                        <span class="text-sm text-dark-600 dark:text-dark-400">Subtotal</span>
+                        <span class="text-sm text-dark-600 dark:text-dark-400">{{ __('invoice.subtotal') }}</span>
                         <span class="text-lg font-semibold text-dark-900 dark:text-dark-50"
                             x-text="formatCurrency(subtotal)"></span>
                     </div>
@@ -558,28 +556,28 @@
                     {{-- Discount Section --}}
                     <div class="pt-4 pb-4 border-t border-b border-dark-200 dark:border-dark-700 space-y-3">
                         <div class="flex flex-col gap-2">
-                            <span class="text-sm font-medium text-dark-900 dark:text-dark-50">Discount</span>
+                            <span class="text-sm font-medium text-dark-900 dark:text-dark-50">{{ __('invoice.discount') }}</span>
                             <select x-model="discount.type"
                                 class="w-full px-3 py-2 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2020%2020%22%3E%3Cpath%20stroke%3D%22%236b7280%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%221.5%22%20d%3D%22m6%208%204%204%204-4%22%2F%3E%3C%2Fsvg%3E')] bg-[length:1.25rem] bg-[right_0.5rem_center] bg-no-repeat pr-10">
-                                <option value="fixed">Fixed Amount</option>
-                                <option value="percentage">Percentage (%)</option>
+                                <option value="fixed">{{ __('pages.fixed_amount') }}</option>
+                                <option value="percentage">{{ __('pages.percentage') }} (%)</option>
                             </select>
                         </div>
 
                         <div class="space-y-2">
                             <input type="text" x-model="discount.value"
                                 @input="discount.value = formatInput($event.target.value)"
-                                x-show="discount.type === 'fixed'" placeholder="Enter amount"
+                                x-show="discount.type === 'fixed'" :placeholder="'{{ __('pages.enter_amount') }}'"
                                 class="w-full px-3 py-2 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
                             <input type="number" x-model="discount.value" x-show="discount.type === 'percentage'"
-                                placeholder="Enter percentage" min="0" max="100"
+                                :placeholder="'{{ __('pages.enter_percentage') }}'" min="0" max="100"
                                 class="w-full px-3 py-2 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
-                            <input type="text" x-model="discount.reason" placeholder="Reason (optional)"
+                            <input type="text" x-model="discount.reason" :placeholder="'{{ __('pages.reason_optional') }}'"
                                 class="w-full px-3 py-2 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
                         </div>
 
                         <div class="flex justify-between items-center" x-show="discountAmount > 0">
-                            <span class="text-sm text-dark-600 dark:text-dark-400">Discount Applied</span>
+                            <span class="text-sm text-dark-600 dark:text-dark-400">{{ __('pages.discount_applied') }}</span>
                             <span class="text-sm font-medium text-red-600 dark:text-red-400"
                                 x-text="'- ' + formatCurrency(discountAmount)"></span>
                         </div>
@@ -588,7 +586,7 @@
                     {{-- Total --}}
                     <div class="py-4 px-4 bg-primary-50 dark:bg-primary-900/20 rounded-lg">
                         <div class="flex justify-between items-center">
-                            <span class="text-base font-semibold text-dark-900 dark:text-dark-50">Total Amount</span>
+                            <span class="text-base font-semibold text-dark-900 dark:text-dark-50">{{ __('invoice.total_amount') }}</span>
                             <span class="text-2xl font-bold text-primary-600 dark:text-primary-400"
                                 x-text="formatCurrency(totalAmount)"></span>
                         </div>
@@ -597,12 +595,12 @@
                     {{-- Additional Info --}}
                     <div class="grid grid-cols-2 gap-3 pt-3">
                         <div class="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                            <span class="text-xs text-green-700 dark:text-green-400 block mb-1">Net Profit</span>
+                            <span class="text-xs text-green-700 dark:text-green-400 block mb-1">{{ __('pages.net_profit') }}</span>
                             <span class="text-base font-semibold text-green-600 dark:text-green-400"
                                 x-text="formatCurrency(netProfit)"></span>
                         </div>
                         <div class="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                            <span class="text-xs text-blue-700 dark:text-blue-400 block mb-1">Tax Deposits</span>
+                            <span class="text-xs text-blue-700 dark:text-blue-400 block mb-1">{{ __('invoice.tax_deposit') }}</span>
                             <span class="text-base font-semibold text-blue-600 dark:text-blue-400"
                                 x-text="formatCurrency(taxDeposits)"></span>
                         </div>
@@ -619,7 +617,7 @@
                                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
                             </path>
                         </svg>
-                        <span x-text="saving ? 'Saving...' : 'Save Invoice'"></span>
+                        <span x-text="saving ? '{{ __('common.saving') }}...' : '{{ __('pages.save_invoice') }}'"></span>
                     </button>
                 </div>
             </div>

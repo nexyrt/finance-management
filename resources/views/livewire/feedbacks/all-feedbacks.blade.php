@@ -15,7 +15,7 @@
                 ['label' => 'In Progress', 'value' => 'in_progress'],
                 ['label' => 'Resolved', 'value' => 'resolved'],
                 ['label' => 'Closed', 'value' => 'closed'],
-            ]" placeholder="Status" />
+            ]" :placeholder="__('common.status')" />
             <x-select.styled wire:model.live="priorityFilter" :options="[
                 ['label' => 'Low', 'value' => 'low'],
                 ['label' => 'Medium', 'value' => 'medium'],

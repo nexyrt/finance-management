@@ -8,8 +8,8 @@
                             <x-icon name="document-text" class="w-6 h-6 text-primary-600 dark:text-primary-400" />
                         </div>
                         <div>
-                            <h3 class="text-xl font-bold text-dark-900 dark:text-dark-50">Reimbursement Details</h3>
-                            <p class="text-sm text-dark-600 dark:text-dark-400">View reimbursement information</p>
+                            <h3 class="text-xl font-bold text-dark-900 dark:text-dark-50">{{ __('common.reimbursements') }}</h3>
+                            <p class="text-sm text-dark-600 dark:text-dark-400">{{ __('pages.reimbursement_status') }}</p>
                         </div>
                     </div>
                     <div class="flex gap-2">
@@ -30,7 +30,7 @@
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="md:col-span-2">
-                            <label class="text-xs font-medium text-dark-500 dark:text-dark-400">Title</label>
+                            <label class="text-xs font-medium text-dark-500 dark:text-dark-400">{{ __('common.title') }}</label>
                             <div class="text-sm font-semibold text-dark-900 dark:text-dark-50 mt-1">
                                 {{ $this->reimbursement->title }}
                             </div>
@@ -40,7 +40,7 @@
                         <div class="md:col-span-2 p-4 bg-gradient-to-r from-primary-50 to-blue-50 dark:from-primary-900/20 dark:to-blue-900/20 border border-primary-200 dark:border-primary-800 rounded-lg">
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div>
-                                    <label class="text-xs font-medium text-primary-700 dark:text-primary-300">Total Amount</label>
+                                    <label class="text-xs font-medium text-primary-700 dark:text-primary-300">{{ __('common.amount') }}</label>
                                     <div class="text-2xl font-bold text-primary-600 dark:text-primary-400 mt-1">
                                         {{ $this->reimbursement->formatted_amount }}
                                     </div>
@@ -67,7 +67,7 @@
                         </div>
 
                         <div>
-                            <label class="text-xs font-medium text-dark-500 dark:text-dark-400">Expense Date</label>
+                            <label class="text-xs font-medium text-dark-500 dark:text-dark-400">{{ __('pages.request_date') }}</label>
                             <div class="text-sm font-medium text-dark-900 dark:text-dark-50 mt-1">
                                 {{ $this->reimbursement->expense_date->format('d M Y') }}
                                 <span class="text-xs text-dark-500 dark:text-dark-400">
@@ -77,7 +77,7 @@
                         </div>
 
                         <div>
-                            <label class="text-xs font-medium text-dark-500 dark:text-dark-400">Category</label>
+                            <label class="text-xs font-medium text-dark-500 dark:text-dark-400">{{ __('common.category') }}</label>
                             <div class="mt-1">
                                 <x-badge :text="$this->reimbursement->category_label" :color="match ($this->reimbursement->category) {
                                     'transport' => 'blue',
@@ -92,7 +92,7 @@
                         </div>
 
                         <div>
-                            <label class="text-xs font-medium text-dark-500 dark:text-dark-400">Requested By</label>
+                            <label class="text-xs font-medium text-dark-500 dark:text-dark-400">{{ __('pages.requester') }}</label>
                             <div class="flex items-center gap-2 mt-1">
                                 <div class="w-8 h-8 bg-gradient-to-br from-primary-400 to-primary-600 rounded-xl flex items-center justify-center">
                                     <span class="text-white font-semibold text-xs">
@@ -112,7 +112,7 @@
 
                         @if ($this->reimbursement->description)
                             <div class="md:col-span-2">
-                                <label class="text-xs font-medium text-dark-500 dark:text-dark-400">Description</label>
+                                <label class="text-xs font-medium text-dark-500 dark:text-dark-400">{{ __('common.description') }}</label>
                                 <div class="text-sm text-dark-900 dark:text-dark-50 mt-1 whitespace-pre-line">
                                     {{ $this->reimbursement->description }}
                                 </div>
@@ -125,7 +125,7 @@
                 @if ($this->reimbursement->hasAttachment())
                     <div class="space-y-4">
                         <div class="border-b border-secondary-200 dark:border-dark-600 pb-3">
-                            <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50">Attachment</h4>
+                            <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50">{{ __('common.attachment') }}</h4>
                         </div>
 
                         <div class="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
@@ -225,7 +225,7 @@
                                             class="w-5 h-5 text-{{ $this->reimbursement->isApproved() ? 'blue' : 'red' }}-600 dark:text-{{ $this->reimbursement->isApproved() ? 'blue' : 'red' }}-400 flex-shrink-0 mt-0.5" />
                                         <div class="flex-1">
                                             <div class="text-sm font-semibold text-{{ $this->reimbursement->isApproved() ? 'blue' : 'red' }}-900 dark:text-{{ $this->reimbursement->isApproved() ? 'blue' : 'red' }}-200">
-                                                {{ $this->reimbursement->isApproved() ? 'Approved' : 'Rejected' }} by {{ $this->reimbursement->reviewer->name }}
+                                                {{ $this->reimbursement->isApproved() ? __('common.approved') : __('common.rejected') }} by {{ $this->reimbursement->reviewer->name }}
                                             </div>
                                             <div class="text-xs text-{{ $this->reimbursement->isApproved() ? 'blue' : 'red' }}-700 dark:text-{{ $this->reimbursement->isApproved() ? 'blue' : 'red' }}-300">
                                                 {{ $this->reimbursement->reviewed_at->format('d M Y H:i') }}
@@ -255,7 +255,7 @@
                     <div class="flex gap-2">
                         @if ($this->reimbursement->canEdit() && $this->reimbursement->user_id === auth()->id())
                             <x-button wire:click="editReimbursement" color="green" icon="pencil" size="sm">
-                                Edit
+                                {{ __('common.edit') }}
                             </x-button>
                         @endif
 
@@ -277,7 +277,7 @@
                     </div>
 
                     <x-button wire:click="$toggle('modal')" color="secondary" outline>
-                        Close
+                        {{ __('common.close') }}
                     </x-button>
                 </div>
             </x-slot:footer>

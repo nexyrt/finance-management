@@ -1,5 +1,5 @@
 <div>
-    <x-modal wire title="Detail Invoice" size="5xl" center>
+    <x-modal wire :title="__('invoice.invoice_details')" size="5xl" center>
         @if ($invoice)
             {{-- Header with consistent color scheme --}}
             <div
@@ -26,11 +26,11 @@
                     {{-- Right: Amount & Status --}}
                     <div class="flex flex-col items-end gap-2">
                         <x-badge :text="match ($invoice->status) {
-                            'draft' => 'Draft',
-                            'sent' => 'Terkirim',
-                            'paid' => 'Lunas',
-                            'partially_paid' => 'Sebagian',
-                            'overdue' => 'Terlambat',
+                            'draft' => __('common.draft'),
+                            'sent' => __('invoice.sent'),
+                            'paid' => __('common.paid'),
+                            'partially_paid' => __('common.partially_paid'),
+                            'overdue' => __('common.overdue'),
                             default => ucfirst($invoice->status),
                         }" :color="match ($invoice->status) {
                             'draft' => 'zinc',
@@ -47,7 +47,7 @@
                             </p>
                             @if ($this->grossProfit > 0)
                                 <p class="text-xs text-green-600 dark:text-green-400">
-                                    Profit: Rp {{ number_format($this->grossProfit, 0, ',', '.') }}
+                                    {{ __('pages.profit') }}: Rp {{ number_format($this->grossProfit, 0, ',', '.') }}
                                 </p>
                             @endif
                             @if ($invoice->amount_paid > 0)
@@ -78,13 +78,13 @@
                         {{-- Quick Stats Grid --}}
                         <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
                             <div class="bg-zinc-50 dark:bg-dark-800 rounded-xl p-4">
-                                <p class="text-xs text-dark-600 dark:text-dark-400">Tanggal Invoice</p>
+                                <p class="text-xs text-dark-600 dark:text-dark-400">{{ __('invoice.invoice_date') }}</p>
                                 <p class="font-medium text-dark-900 dark:text-dark-50">
                                     {{ $invoice->issue_date->format('d M Y') }}
                                 </p>
                             </div>
                             <div class="bg-zinc-50 dark:bg-dark-800 rounded-xl p-4">
-                                <p class="text-xs text-dark-600 dark:text-dark-400">Jatuh Tempo</p>
+                                <p class="text-xs text-dark-600 dark:text-dark-400">{{ __('invoice.due_date') }}</p>
                                 <p
                                     class="font-medium {{ $invoice->due_date->isPast() && $invoice->status !== 'paid'
                                         ? 'text-red-600 dark:text-red-400'
@@ -93,12 +93,12 @@
                                 </p>
                             </div>
                             <div class="bg-zinc-50 dark:bg-dark-800 rounded-xl p-4">
-                                <p class="text-xs text-dark-600 dark:text-dark-400">Total Item</p>
+                                <p class="text-xs text-dark-600 dark:text-dark-400">{{ __('pages.total_items') }}</p>
                                 <p class="font-medium text-dark-900 dark:text-dark-50">{{ $invoice->items->count() }}
-                                    item</p>
+                                    {{ __('pages.items') }}</p>
                             </div>
                             <div class="bg-zinc-50 dark:bg-dark-800 rounded-xl p-4">
-                                <p class="text-xs text-dark-600 dark:text-dark-400">Gross Profit</p>
+                                <p class="text-xs text-dark-600 dark:text-dark-400">{{ __('pages.gross_profit') }}</p>
                                 <p class="font-medium text-green-600 dark:text-green-400">
                                     Rp {{ number_format($this->grossProfit, 0, ',', '.') }}
                                 </p>
@@ -111,7 +111,7 @@
                                 class="bg-zinc-50 dark:bg-dark-800 px-4 py-3 border-b border-zinc-200 dark:border-dark-600">
                                 <h4 class="font-medium text-dark-900 dark:text-dark-50 flex items-center gap-2">
                                     <x-icon name="list-bullet" class="w-4 h-4" />
-                                    Item Invoice
+                                    {{ __('pages.invoice_items') }}
                                 </h4>
                             </div>
                             <div class="divide-y divide-zinc-200 dark:divide-dark-600">
@@ -135,13 +135,13 @@
                                                         {{ $item->service_name }}
                                                     </p>
                                                     @if ($item->is_tax_deposit)
-                                                        <x-badge text="Tax Deposit" color="amber" size="xs" />
+                                                        <x-badge :text="__('invoice.tax_deposit')" color="amber" size="xs" />
                                                     @endif
                                                 </div>
                                                 <p class="text-xs text-dark-600 dark:text-dark-400 truncate">
-                                                    {{ $item->client->name }} • Qty: {{ $item->quantity }}
+                                                    {{ $item->client->name }} • {{ __('invoice.qty') }}: {{ $item->quantity }}
                                                     @if (!$item->is_tax_deposit && $item->cogs_amount > 0)
-                                                        • Profit: Rp
+                                                        • {{ __('pages.profit') }}: Rp
                                                         {{ number_format($item->profit_amount, 0, ',', '.') }}
                                                     @endif
                                                 </p>
@@ -162,14 +162,14 @@
                                 class="bg-zinc-50 dark:bg-dark-800 px-4 py-3 border-t border-zinc-200 dark:border-dark-600">
                                 <div class="space-y-2">
                                     <div class="flex justify-between items-center text-sm">
-                                        <span class="text-dark-600 dark:text-dark-400">Subtotal</span>
+                                        <span class="text-dark-600 dark:text-dark-400">{{ __('invoice.subtotal') }}</span>
                                         <span class="text-dark-900 dark:text-dark-50">
                                             Rp {{ number_format($invoice->subtotal, 0, ',', '.') }}
                                         </span>
                                     </div>
                                     @if ($invoice->discount_amount > 0)
                                         <div class="flex justify-between items-center text-sm">
-                                            <span class="text-dark-600 dark:text-dark-400">Discount</span>
+                                            <span class="text-dark-600 dark:text-dark-400">{{ __('invoice.discount') }}</span>
                                             <span class="text-green-600 dark:text-green-400">
                                                 -Rp {{ number_format($invoice->discount_amount, 0, ',', '.') }}
                                             </span>
@@ -177,7 +177,7 @@
                                     @endif
                                     <div
                                         class="flex justify-between items-center border-t border-zinc-200 dark:border-dark-600 pt-2">
-                                        <span class="font-medium text-dark-900 dark:text-dark-50">Total Invoice</span>
+                                        <span class="font-medium text-dark-900 dark:text-dark-50">{{ __('invoice.total_invoice') }}</span>
                                         <span class="text-lg font-bold text-dark-900 dark:text-dark-50">
                                             Rp {{ number_format($invoice->total_amount, 0, ',', '.') }}
                                         </span>
@@ -206,14 +206,14 @@
                             class="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl p-4 mb-6">
                             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
                                 <div>
-                                    <p class="text-sm text-dark-600 dark:text-dark-400">Total Terbayar</p>
+                                    <p class="text-sm text-dark-600 dark:text-dark-400">{{ __('pages.total_paid') }}</p>
                                     <p class="text-xl font-bold text-green-700 dark:text-green-300">
                                         Rp {{ number_format($totalPaid, 0, ',', '.') }}
                                     </p>
                                 </div>
                                 @if ($remaining > 0)
                                     <div class="text-left sm:text-right">
-                                        <p class="text-sm text-dark-600 dark:text-dark-400">Sisa Tagihan</p>
+                                        <p class="text-sm text-dark-600 dark:text-dark-400">{{ __('pages.remaining_bill') }}</p>
                                         <p class="text-xl font-bold text-red-600 dark:text-red-400">
                                             Rp {{ number_format($remaining, 0, ',', '.') }}
                                         </p>
@@ -225,7 +225,7 @@
                                     style="width: {{ min($percentage, 100) }}%"></div>
                             </div>
                             <p class="text-xs text-dark-600 dark:text-dark-400">
-                                {{ number_format($percentage, 1) }}% dari total invoice
+                                {{ number_format($percentage, 1) }}% {{ __('pages.of_total_invoice') }}
                             </p>
                         </div>
 
@@ -280,13 +280,13 @@
                                                         wire:click="showPaymentAttachment({{ $payment->id }})"
                                                         loading="showPaymentAttachment({{ $payment->id }})"
                                                         color="blue" icon="eye" size="sm" outline
-                                                        title="Lihat Lampiran" />
+                                                        :title="__('pages.view_attachment')" />
                                                 @endif
 
                                                 <x-button.circle
                                                     wire:click="$dispatch('delete-payment', { paymentId: {{ $payment->id }} })"
                                                     color="red" icon="trash" size="sm" outline
-                                                    title="Hapus Pembayaran" />
+                                                    :title="__('pages.delete_payment')" />
                                             </div>
                                         </div>
                                     </div>
@@ -299,13 +299,13 @@
                                 class="bg-zinc-100 dark:bg-dark-800 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
                                 <x-icon name="credit-card" class="w-8 h-8 text-zinc-400 dark:text-dark-400" />
                             </div>
-                            <h3 class="font-medium text-dark-900 dark:text-dark-50 mb-2">Belum Ada Pembayaran</h3>
+                            <h3 class="font-medium text-dark-900 dark:text-dark-50 mb-2">{{ __('pages.no_payments_yet') }}</h3>
                             <p class="text-dark-600 dark:text-dark-400 text-sm mb-4">
-                                Invoice ini belum menerima pembayaran
+                                {{ __('pages.invoice_no_payments_received') }}
                             </p>
                             @if (in_array($invoice->status, ['sent', 'overdue', 'partially_paid']))
                                 <x-button wire:click="recordPayment" color="green" icon="plus" size="sm">
-                                    Catat Pembayaran
+                                    {{ __('pages.record_payment') }}
                                 </x-button>
                             @endif
                         </div>
@@ -325,16 +325,16 @@
                                 <x-icon
                                     name="{{ $invoice->client->type === 'individual' ? 'user' : 'building-office' }}"
                                     class="w-4 h-4" />
-                                Informasi Klien
+                                {{ __('pages.client_information') }}
                             </h4>
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                                 <div>
-                                    <p class="text-dark-600 dark:text-dark-400">Nama</p>
+                                    <p class="text-dark-600 dark:text-dark-400">{{ __('pages.name') }}</p>
                                     <p class="font-medium text-dark-900 dark:text-dark-50">
                                         {{ $invoice->client->name }}</p>
                                 </div>
                                 <div>
-                                    <p class="text-dark-600 dark:text-dark-400">Tipe</p>
+                                    <p class="text-dark-600 dark:text-dark-400">{{ __('pages.type') }}</p>
                                     <p class="font-medium text-dark-900 dark:text-dark-50">
                                         {{ ucfirst($invoice->client->type) }}</p>
                                 </div>
@@ -359,29 +359,29 @@
                         <div class="border border-zinc-200 dark:border-dark-600 rounded-xl p-4">
                             <h4 class="font-medium text-dark-900 dark:text-dark-50 mb-3 flex items-center gap-2">
                                 <x-icon name="calculator" class="w-4 h-4" />
-                                Rincian Keuangan
+                                {{ __('pages.financial_breakdown') }}
                             </h4>
                             <div class="space-y-2 text-sm">
                                 <div class="flex justify-between">
-                                    <span class="text-dark-600 dark:text-dark-400">Total Invoice</span>
+                                    <span class="text-dark-600 dark:text-dark-400">{{ __('invoice.total_invoice') }}</span>
                                     <span class="text-dark-900 dark:text-dark-50">
                                         Rp {{ number_format($invoice->total_amount, 0, ',', '.') }}
                                     </span>
                                 </div>
                                 <div class="flex justify-between">
-                                    <span class="text-dark-600 dark:text-dark-400">Tax Deposits</span>
+                                    <span class="text-dark-600 dark:text-dark-400">{{ __('invoice.tax_deposit') }}</span>
                                     <span class="text-amber-600 dark:text-amber-400">
                                         Rp {{ number_format($this->totalTaxDeposits, 0, ',', '.') }}
                                     </span>
                                 </div>
                                 <div class="flex justify-between">
-                                    <span class="text-dark-600 dark:text-dark-400">Total COGS</span>
+                                    <span class="text-dark-600 dark:text-dark-400">{{ __('pages.total_cogs_label') }}</span>
                                     <span class="text-red-600 dark:text-red-400">
                                         Rp {{ number_format($this->totalCogs, 0, ',', '.') }}
                                     </span>
                                 </div>
                                 <div class="flex justify-between border-t border-zinc-200 dark:border-dark-600 pt-2">
-                                    <span class="font-medium text-dark-900 dark:text-dark-50">Gross Profit</span>
+                                    <span class="font-medium text-dark-900 dark:text-dark-50">{{ __('pages.gross_profit') }}</span>
                                     <span class="font-medium text-green-600 dark:text-green-400">
                                         Rp {{ number_format($this->grossProfit, 0, ',', '.') }}
                                     </span>
@@ -393,13 +393,13 @@
                         <div class="border border-zinc-200 dark:border-dark-600 rounded-xl p-4">
                             <h4 class="font-medium text-dark-900 dark:text-dark-50 mb-3 flex items-center gap-2">
                                 <x-icon name="clock" class="w-4 h-4" />
-                                Timeline
+                                {{ __('pages.timeline') }}
                             </h4>
                             <div class="space-y-3">
                                 <div class="flex items-center gap-3">
                                     <div class="w-2 h-2 bg-primary-500 rounded-full flex-shrink-0"></div>
                                     <div class="flex-1 min-w-0">
-                                        <p class="text-sm font-medium text-dark-900 dark:text-dark-50">Invoice Dibuat
+                                        <p class="text-sm font-medium text-dark-900 dark:text-dark-50">{{ __('pages.invoice_created') }}
                                         </p>
                                         <p class="text-xs text-dark-600 dark:text-dark-400">
                                             {{ $invoice->created_at->format('d M Y H:i') }}
@@ -411,8 +411,7 @@
                                     <div class="flex items-center gap-3">
                                         <div class="w-2 h-2 bg-green-500 rounded-full flex-shrink-0"></div>
                                         <div class="flex-1 min-w-0">
-                                            <p class="text-sm font-medium text-dark-900 dark:text-dark-50">Invoice
-                                                Dikirim</p>
+                                            <p class="text-sm font-medium text-dark-900 dark:text-dark-50">{{ __('pages.invoice_sent') }}</p>
                                             <p class="text-xs text-dark-600 dark:text-dark-400">
                                                 {{ $invoice->issue_date->format('d M Y') }}
                                             </p>
@@ -425,7 +424,7 @@
                                         <div class="w-2 h-2 bg-emerald-500 rounded-full flex-shrink-0"></div>
                                         <div class="flex-1 min-w-0">
                                             <p class="text-sm font-medium text-dark-900 dark:text-dark-50">
-                                                Pembayaran Diterima
+                                                {{ __('pages.payment_received') }}
                                             </p>
                                             <p class="text-xs text-dark-600 dark:text-dark-400">
                                                 {{ $payment->payment_date->format('d M Y') }} •
@@ -439,10 +438,10 @@
                                     <div class="flex items-center gap-3">
                                         <div class="w-2 h-2 bg-red-500 rounded-full animate-pulse flex-shrink-0"></div>
                                         <div class="flex-1 min-w-0">
-                                            <p class="text-sm font-medium text-red-600">Melewati Jatuh Tempo</p>
+                                            <p class="text-sm font-medium text-red-600">{{ __('pages.past_due_date') }}</p>
                                             <p class="text-xs text-red-500">
                                                 {{ $invoice->due_date->format('d M Y') }} •
-                                                {{ abs($invoice->due_date->diffInDays(now())) }} hari yang lalu
+                                                {{ abs($invoice->due_date->diffInDays(now())) }} {{ __('pages.days_ago') }}
                                             </p>
                                         </div>
                                     </div>
@@ -457,22 +456,63 @@
         <x-slot:footer>
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 w-full">
                 {{-- Quick Actions --}}
-                <div class="flex flex-wrap items-center gap-2">
+                <div class="flex flex-wrap items-center gap-2" x-data="{
+                    templateOpen: false,
+                    selectedTemplate: 'kisantra-invoice',
+                    templates: [
+                        { value: 'kisantra-invoice', label: 'Kisantra (Default)', desc: 'Template default dengan branding Kisantra' },
+                        { value: 'semesta-invoice', label: 'Semesta (Mining)', desc: 'Template untuk mining/trading dengan PPN + PPH 22' },
+                        { value: 'agsa-invoice', label: 'AGSA', desc: 'Template alternatif AGSA' },
+                        { value: 'invoice', label: 'Generic', desc: 'Template sederhana' }
+                    ]
+                }">
                     @if ($invoice)
-                        <x-button wire:click="printInvoice" color="primary" icon="printer" outline size="sm">
-                            Print PDF
-                        </x-button>
+                        {{-- Print with Template Selection --}}
+                        <div class="relative">
+                            <x-button @click="templateOpen = !templateOpen" color="primary" icon="printer" outline size="sm">
+                                {{ __('pages.print_pdf') }}
+                            </x-button>
+
+                            {{-- Template Dropdown --}}
+                            <div x-show="templateOpen"
+                                 @click.away="templateOpen = false"
+                                 x-transition
+                                 class="absolute right-0 mt-2 w-80 bg-white dark:bg-dark-800 rounded-lg shadow-xl border border-dark-200 dark:border-dark-700 z-50">
+                                <div class="p-3 border-b border-dark-200 dark:border-dark-700">
+                                    <h3 class="font-semibold text-sm text-dark-900 dark:text-dark-50">{{ __('pages.select_invoice_template') }}</h3>
+                                </div>
+                                <div class="p-2 max-h-96 overflow-y-auto">
+                                    <template x-for="template in templates" :key="template.value">
+                                        <button
+                                            @click="selectedTemplate = template.value; templateOpen = false; printInvoiceWithTemplate({{ $invoice->id }}, template.value)"
+                                            class="w-full text-left px-3 py-2 rounded hover:bg-primary-50 dark:hover:bg-primary-900/20 transition group">
+                                            <div class="flex items-start gap-2">
+                                                <div class="mt-1">
+                                                    <svg class="w-4 h-4 text-primary-600 dark:text-primary-400" :class="{ 'opacity-100': selectedTemplate === template.value, 'opacity-0': selectedTemplate !== template.value }" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                                    </svg>
+                                                </div>
+                                                <div class="flex-1">
+                                                    <div class="font-medium text-dark-900 dark:text-dark-50 text-sm" x-text="template.label"></div>
+                                                    <div class="text-xs text-dark-500 dark:text-dark-400 mt-0.5" x-text="template.desc"></div>
+                                                </div>
+                                            </div>
+                                        </button>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
 
                         @if ($invoice->status === 'draft')
                             <x-button wire:click="sendInvoice" color="blue" icon="paper-airplane" size="sm">
-                                Kirim
+                                {{ __('pages.send') }}
                             </x-button>
                         @endif
 
                         @if (in_array($invoice->status, ['sent', 'overdue', 'partially_paid']))
                             <x-button wire:click="recordPayment" color="green" icon="currency-dollar"
                                 size="sm">
-                                Bayar
+                                {{ __('pages.pay') }}
                             </x-button>
                         @endif
                     @endif
@@ -483,11 +523,11 @@
                     @if ($invoice)
                         <x-button href="{{ route('invoices.edit', $invoice->id) }}" wire:navigate icon="pencil"
                             outline size="sm">
-                            Edit
+                            {{ __('common.edit') }}
                         </x-button>
                     @endif
                     <x-button wire:click="$set('modal', false)" color="zinc">
-                        Tutup
+                        {{ __('common.close') }}
                     </x-button>
                 </div>
             </div>
@@ -499,6 +539,23 @@
 </div>
 
 <script>
+    // Global function for printing with template selection
+    function printInvoiceWithTemplate(invoiceId, template = 'kisantra-invoice') {
+        const previewUrl = `/invoice/${invoiceId}/preview?template=${template}`;
+        const downloadUrl = `/invoice/${invoiceId}/download?template=${template}`;
+
+        window.open(previewUrl, '_blank');
+        setTimeout(() => {
+            const link = document.createElement('a');
+            link.href = downloadUrl;
+            link.download = `Invoice-${invoiceId}.pdf`;
+            link.style.display = 'none';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }, 500);
+    }
+
     document.addEventListener('livewire:init', () => {
         Livewire.on('print-invoice', (data) => {
             const {
@@ -506,21 +563,8 @@
                 invoiceNumber
             } = data[0];
 
-            // Use same function as listing component
-            function printInvoice(invoiceId) {
-                window.open(`/invoice/${invoiceId}/preview`, '_blank');
-                setTimeout(() => {
-                    const link = document.createElement('a');
-                    link.href = `/invoice/${invoiceId}/download`;
-                    link.download = `Invoice-${invoiceId}.pdf`;
-                    link.style.display = 'none';
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                }, 500);
-            }
-
-            printInvoice(invoiceId);
+            // Use default template if called from wire:click
+            printInvoiceWithTemplate(invoiceId, 'kisantra-invoice');
         });
     });
 </script>

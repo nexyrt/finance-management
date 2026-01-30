@@ -78,9 +78,11 @@ return [
     |
     */
 
-    'locale' => 'id_ID',
+    'locale' => env('APP_LOCALE', 'id'),
 
     'fallback_locale' => env('APP_FALLBACK_LOCALE', 'en'),
+
+    'available_locales' => ['id', 'zh'],
 
     'faker_locale' => env('APP_FAKER_LOCALE', 'en_US'),
 

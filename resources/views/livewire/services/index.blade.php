@@ -6,10 +6,10 @@
         <div class="space-y-1">
             <h1
                 class="text-4xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-indigo-800 dark:from-white dark:via-blue-200 dark:to-indigo-200 bg-clip-text text-transparent">
-                Manajemen Layanan
+                {{ __('common.services') }}
             </h1>
             <p class="text-gray-600 dark:text-zinc-400 text-lg">
-                Kelola dan atur semua layanan yang ditawarkan.
+                {{ __('pages.service_list') }}
             </p>
         </div>
         <livewire:services.create @service-created="$refresh" :key="'create-service'" />
@@ -23,7 +23,7 @@
                     <x-icon name="squares-2x2" class="w-6 h-6 text-blue-600 dark:text-blue-400" />
                 </div>
                 <div>
-                    <p class="text-sm text-zinc-600 dark:text-zinc-400">Total Layanan</p>
+                    <p class="text-sm text-zinc-600 dark:text-zinc-400">{{ __('common.total') }} {{ __('common.services') }}</p>
                     <p class="text-2xl font-bold text-blue-600 dark:text-blue-400">
                         {{ $stats['total_services'] }}
                     </p>
@@ -37,7 +37,7 @@
                     <x-icon name="banknotes" class="w-6 h-6 text-green-600 dark:text-green-400" />
                 </div>
                 <div>
-                    <p class="text-sm text-zinc-600 dark:text-zinc-400">Rata-rata Harga</p>
+                    <p class="text-sm text-zinc-600 dark:text-zinc-400">{{ __('common.price') }}</p>
                     <p class="text-lg font-bold text-green-600 dark:text-green-400">
                         @if ($stats['avg_price'])
                             Rp {{ number_format($stats['avg_price'], 0, ',', '.') }}
@@ -55,7 +55,7 @@
                     <x-icon name="star" class="w-6 h-6 text-purple-600 dark:text-purple-400" />
                 </div>
                 <div>
-                    <p class="text-sm text-zinc-600 dark:text-zinc-400">Harga Tertinggi</p>
+                    <p class="text-sm text-zinc-600 dark:text-zinc-400">{{ __('common.price') }}</p>
                     <p class="text-lg font-bold text-purple-600 dark:text-purple-400">
                         @if ($stats['highest_price'])
                             Rp {{ number_format($stats['highest_price'], 0, ',', '.') }}
@@ -73,7 +73,7 @@
                     <x-icon name="rectangle-group" class="w-6 h-6 text-orange-600 dark:text-orange-400" />
                 </div>
                 <div>
-                    <p class="text-sm text-zinc-600 dark:text-zinc-400">Kategori Terbanyak</p>
+                    <p class="text-sm text-zinc-600 dark:text-zinc-400">{{ __('common.category') }}</p>
                     <p class="text-sm font-bold text-orange-600 dark:text-orange-400">
                         @if ($stats['by_type']->isNotEmpty())
                             {{ $stats['by_type']->keys()->first() }}
@@ -91,7 +91,7 @@
     <div class="flex flex-col lg:flex-row gap-4 items-start lg:items-end">
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 flex-1">
             <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Kategori</label>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('common.category') }}</label>
                 <x-select.styled wire:model.live="typeFilter" :options="[
                     ['label' => 'Perizinan', 'value' => 'Perizinan'],
                     ['label' => 'Administrasi Perpajakan', 'value' => 'Administrasi Perpajakan'],
@@ -104,7 +104,7 @@
         <div class="flex gap-2">
             @if ($typeFilter)
                 <x-button wire:click="clearFilters" icon="x-mark" color="gray" outline size="sm">
-                    Clear
+                    {{ __('pages.clear_filter') }}
                 </x-button>
             @endif
         </div>
@@ -163,7 +163,7 @@
         @interact('column_actions', $row)
             <div class="flex items-center gap-1">
                 <x-button.circle icon="pencil" color="green" size="sm" wire:click="edit({{ $row->id }})"
-                    title="Edit" />
+                    title="{{ __('common.edit') }}" />
 
                 <livewire:services.delete :service="$row" :key="uniqid()" @service-deleted="$refresh" />
             </div>
@@ -192,11 +192,11 @@
                 <div class="flex items-center gap-2 justify-end">
                     <x-button wire:click="bulkDelete" size="sm" color="red" icon="trash" loading="bulkDelete"
                         class="whitespace-nowrap">
-                        Hapus
+                        {{ __('common.delete') }}
                     </x-button>
                     <x-button wire:click="$set('selected', [])" size="sm" color="gray" icon="x-mark"
                         class="whitespace-nowrap">
-                        Batal
+                        {{ __('common.cancel') }}
                     </x-button>
                 </div>
             </div>

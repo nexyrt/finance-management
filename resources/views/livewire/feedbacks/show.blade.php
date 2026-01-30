@@ -46,7 +46,7 @@
 
                 {{-- Description --}}
                 <div>
-                    <h4 class="text-sm font-semibold text-dark-900 dark:text-white mb-2">Deskripsi</h4>
+                    <h4 class="text-sm font-semibold text-dark-900 dark:text-white mb-2">{{ __('common.description') }}</h4>
                     <div class="prose prose-sm dark:prose-invert max-w-none p-4 bg-white dark:bg-dark-800 rounded-lg border border-gray-200 dark:border-dark-600">
                         {!! nl2br(e($this->feedback->description)) !!}
                     </div>
@@ -104,12 +104,12 @@
             <x-slot:footer>
                 <div class="flex flex-col sm:flex-row justify-end gap-3">
                     <x-button wire:click="close" color="secondary" outline>
-                        Tutup
+                        {{ __('common.close') }}
                     </x-button>
 
                     @if ($this->feedback->canEdit() && $this->feedback->user_id === auth()->id())
                         <x-button wire:click="editFeedback" color="blue" icon="pencil">
-                            Edit
+                            {{ __('common.edit') }}
                         </x-button>
                     @endif
 

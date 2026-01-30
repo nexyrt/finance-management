@@ -8,25 +8,46 @@ use Barryvdh\DomPDF\Facade\Pdf;
 
 class InvoicePrintService
 {
-    public function generateSingleInvoicePdf(Invoice $invoice, ?int $dpAmount = null, ?int $pelunasanAmount = null)
+    public function generateSingleInvoicePdf(Invoice $invoice, ?int $dpAmount = null, ?int $pelunasanAmount = null, string $template = 'kisantra-invoice')
     {
         $invoice->load(['client', 'items.client', 'payments.bankAccount']);
         $company = CompanyProfile::current();
 
         $isDownPayment = !is_null($dpAmount) && $dpAmount > 0;
         $isPelunasan = !is_null($pelunasanAmount) && $pelunasanAmount > 0;
-        $displayAmount = $isDownPayment ? $dpAmount : ($isPelunasan ? $pelunasanAmount : $invoice->total_amount);
 
         $regularItems = $invoice->items->where('is_tax_deposit', false);
         $taxDepositItems = $invoice->items->where('is_tax_deposit', true);
 
         $netRevenue = $regularItems->sum('amount');
         $totalCogs = $regularItems->sum('cogs_amount');
-        $grossProfit = $netRevenue - $totalCogs - ($invoice->discount_amount ?? 0);
+        $itemsTotal = $invoice->subtotal; // Base DPP
+        $discountAmount = $invoice->discount_amount ?? 0;
 
-        // PPN Calculation
-        $ppnAmount = $company?->is_pkp ? ($displayAmount * $company->ppn_rate / 100) : 0;
-        $grandTotal = $displayAmount + $ppnAmount;
+        // Template-specific calculations
+        if ($template === 'semesta-invoice') {
+            // SEMESTA: PPN 11% + PPH 22 1.5%
+            $ppnRate = $company?->ppn_rate ?? 11;
+            $ppnAmount = ($itemsTotal * $ppnRate / 100);
+            $subtotalWithPpn = $itemsTotal + $ppnAmount;
+            $pph22Amount = $itemsTotal * 1.5 / 100;
+            $displayAmount = $isDownPayment ? $dpAmount : ($isPelunasan ? $pelunasanAmount : $subtotalWithPpn);
+            $grandTotal = $subtotalWithPpn - $pph22Amount - $discountAmount - ($isDownPayment ? 0 : ($dpAmount ?? 0));
+        } else {
+            // KISANTRA (default): existing calculation
+            $displayAmount = $isDownPayment ? $dpAmount : ($isPelunasan ? $pelunasanAmount : $invoice->total_amount);
+            $ppnAmount = $company?->is_pkp ? ($displayAmount * $company->ppn_rate / 100) : 0;
+            $pph22Amount = 0;
+            $grandTotal = $displayAmount + $ppnAmount;
+        }
+
+        // DP percentage
+        $dpPercentage = null;
+        if ($dpAmount && $itemsTotal > 0) {
+            $dpPercentage = round(($dpAmount / $itemsTotal) * 100) . '%';
+        }
+
+        $grossProfit = $netRevenue - $totalCogs - $discountAmount;
 
         $data = [
             'invoice' => $invoice,
@@ -40,9 +61,11 @@ class InvoicePrintService
             'is_down_payment' => $isDownPayment,
             'is_pelunasan' => $isPelunasan,
             'dp_amount' => $dpAmount,
+            'dp_percentage' => $dpPercentage,
             'pelunasan_amount' => $pelunasanAmount,
             'display_amount' => $displayAmount,
             'ppn_amount' => $ppnAmount,
+            'pph22_amount' => $pph22Amount,
             'grand_total' => $grandTotal,
             'total_paid' => $invoice->payments->sum('amount'),
             'financial_summary' => [
@@ -55,7 +78,7 @@ class InvoicePrintService
             ]
         ];
 
-        return Pdf::loadView('pdf.kisantra-invoice', $data)
+        return Pdf::loadView('pdf.' . $template, $data)
             ->setPaper('A4', 'portrait')
             ->setOptions([
                 'dpi' => 150,
@@ -65,10 +88,10 @@ class InvoicePrintService
             ]);
     }
 
-    public function downloadSingleInvoice(Invoice $invoice)
+    public function downloadSingleInvoice(Invoice $invoice, string $template = 'kisantra-invoice')
     {
         $filename = 'Invoice-' . str_replace(['/', '\\', ':', '*', '?', '"', '<', '>', '|'], '-', $invoice->invoice_number) . '.pdf';
-        return $this->generateSingleInvoicePdf($invoice)->download($filename);
+        return $this->generateSingleInvoicePdf($invoice, null, null, $template)->download($filename);
     }
 
     private function getCompanyInfo(?CompanyProfile $company): array
@@ -93,6 +116,7 @@ class InvoicePrintService
             'is_pkp' => $company->is_pkp,
             'npwp' => $company->npwp,
             'ppn_rate' => $company->ppn_rate,
+            'pph22_rate' => 1.5, // Fixed for semesta template
         ];
     }
 
