@@ -129,6 +129,108 @@
                         class="w-full px-3 py-2 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
                 </div>
             </div>
+
+            {{-- Faktur Upload --}}
+            <div class="mt-6 pt-6 border-t border-dark-200 dark:border-dark-600" x-data="{ isDragging: false }">
+                <label class="block text-sm font-medium text-dark-900 dark:text-dark-50 mb-2">
+                    Faktur (PDF/Gambar)
+                </label>
+
+                @if ($invoice->faktur && !$faktur)
+                    <div class="mb-3 p-3 bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 rounded-lg">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <svg class="w-5 h-5 text-primary-600 dark:text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                <span class="text-sm text-primary-900 dark:text-primary-100">{{ basename($invoice->faktur) }}</span>
+                            </div>
+                            <a href="{{ Storage::url($invoice->faktur) }}" target="_blank" class="text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 underline">
+                                Lihat File
+                            </a>
+                        </div>
+                    </div>
+                @endif
+
+                <div class="space-y-3">
+                    {{-- Drag and Drop Zone --}}
+                    <div @dragover.prevent="isDragging = true"
+                         @dragleave.prevent="isDragging = false"
+                         @drop.prevent="isDragging = false; $refs.fileInput.files = $event.dataTransfer.files; $refs.fileInput.dispatchEvent(new Event('change', { bubbles: true }))"
+                         :class="isDragging ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20' : 'border-dark-300 dark:border-dark-600'"
+                         class="relative border-2 border-dashed rounded-xl p-6 transition-all duration-200">
+
+                        <input type="file"
+                               wire:model="faktur"
+                               accept=".pdf,.jpg,.jpeg,.png"
+                               x-ref="fileInput"
+                               class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+
+                        <div class="text-center pointer-events-none">
+                            @if ($faktur)
+                                {{-- File Selected State --}}
+                                <div class="flex flex-col items-center gap-3">
+                                    <div class="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
+                                        <svg class="w-8 h-8 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-medium text-green-600 dark:text-green-400">File baru dipilih</p>
+                                        <p class="text-xs text-dark-600 dark:text-dark-400 mt-1">{{ $faktur->getClientOriginalName() }}</p>
+                                        <p class="text-xs text-dark-500 dark:text-dark-500 mt-1">{{ number_format($faktur->getSize() / 1024, 2) }} KB</p>
+                                    </div>
+                                    <button type="button"
+                                            wire:click="$set('faktur', null)"
+                                            class="pointer-events-auto text-sm text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 font-medium">
+                                        Hapus File
+                                    </button>
+                                </div>
+                            @else
+                                {{-- Empty State --}}
+                                <div class="flex flex-col items-center gap-3">
+                                    <div class="w-16 h-16 bg-primary-100 dark:bg-primary-900/30 rounded-full flex items-center justify-center">
+                                        <svg class="w-8 h-8 text-primary-600 dark:text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-medium text-dark-900 dark:text-dark-50">
+                                            <span class="text-primary-600 dark:text-primary-400">Klik untuk upload</span>
+                                            atau drag & drop
+                                        </p>
+                                        <p class="text-xs text-dark-500 dark:text-dark-400 mt-1">
+                                            @if ($invoice->faktur)
+                                                Upload file baru untuk mengganti faktur saat ini
+                                            @else
+                                                PDF, JPG, JPEG, PNG (Maks. 5MB)
+                                            @endif
+                                        </p>
+                                    </div>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+
+                    @error('faktur')
+                        <p class="text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                    @enderror
+
+                    @if ($faktur)
+                        <div>
+                            <label class="block text-sm font-medium text-dark-900 dark:text-dark-50 mb-1">
+                                Nama File (Opsional)
+                            </label>
+                            <input type="text" wire:model="fakturName" placeholder="Contoh: Faktur-{{ $invoice->invoice_number }}"
+                                class="w-full px-3 py-2 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                            @error('fakturName')
+                                <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                            @enderror
+                            <p class="mt-1 text-xs text-dark-500 dark:text-dark-400">Kosongkan untuk menggunakan nama file asli. Ekstensi file akan ditambahkan otomatis.</p>
+                        </div>
+                    @endif
+                </div>
+            </div>
         </div>
 
         {{-- Invoice Items --}}

@@ -150,7 +150,7 @@
                             </div>
                             <div>
                                 <p class="font-medium text-dark-900 dark:text-white">{{ $client['name'] }}</p>
-                                <p class="text-xs text-dark-500 dark:text-dark-400 capitalize">{{ $client['type'] }}</p>
+                                <p class="text-xs text-dark-500 dark:text-dark-400 capitalize">{{ __('pages.' . $client['type']) }}</p>
                             </div>
                         </div>
                         <div class="text-right">

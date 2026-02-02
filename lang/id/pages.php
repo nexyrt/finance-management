@@ -335,6 +335,10 @@ return [
     'month' => 'Bulan',
     'date_range' => 'Range Tanggal',
     'days_overdue' => 'hari lewat',
+
+    // Currency
+    'billion' => 'Miliar',
+    'million' => 'Juta',
     'days_left' => 'hari lagi',
     'selected' => 'dipilih',
     'select_action_for_selected' => 'Pilih aksi untuk item yang dipilih',

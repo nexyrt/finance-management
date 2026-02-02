@@ -238,11 +238,11 @@ class Dashboard extends Component
     public function invoiceStatusChart()
     {
         $statuses = [
-            'draft' => 'Draft',
-            'sent' => 'Terkirim',
-            'paid' => 'Lunas',
-            'partially_paid' => 'Cicilan',
-            'overdue' => 'Terlambat'
+            'draft' => __('pages.draft'),
+            'sent' => __('pages.sent'),
+            'paid' => __('pages.paid'),
+            'partially_paid' => __('pages.installment'),
+            'overdue' => __('pages.late')
         ];
 
         $data = Invoice::select('status', DB::raw('count(*) as count'))
@@ -356,9 +356,9 @@ class Dashboard extends Component
     public function formatCurrency($amount)
     {
         if ($amount >= 1000000000) {
-            return 'Rp ' . number_format($amount / 1000000000, 1, ',', '.') . ' Miliar';
+            return 'Rp ' . number_format($amount / 1000000000, 1, ',', '.') . ' ' . __('pages.billion');
         } elseif ($amount >= 1000000) {
-            return 'Rp ' . number_format($amount / 1000000, 1, ',', '.') . ' Juta';
+            return 'Rp ' . number_format($amount / 1000000, 1, ',', '.') . ' ' . __('pages.million');
         } else {
             return 'Rp ' . number_format($amount, 0, ',', '.');
         }

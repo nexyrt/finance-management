@@ -123,6 +123,20 @@
             }" />
         @endinteract
 
+        @interact('column_faktur', $row)
+            @if ($row->faktur)
+                <button wire:click="showInvoice({{ $row->id }}, 'overview')"
+                    class="inline-flex items-center gap-1.5 text-sm font-medium text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 hover:underline transition group">
+                    <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span class="truncate max-w-[150px]" title="{{ basename($row->faktur) }}">{{ basename($row->faktur) }}</span>
+                </button>
+            @else
+                <span class="text-sm text-dark-400 dark:text-dark-500">-</span>
+            @endif
+        @endinteract
+
         @interact('column_actions', $row)
             <div class="flex items-center gap-1">
                 <x-button.circle icon="eye" color="blue" size="sm" wire:click="showInvoice({{ $row->id }})"

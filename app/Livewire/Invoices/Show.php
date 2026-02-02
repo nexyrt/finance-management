@@ -14,9 +14,10 @@ class Show extends Component
 
     public ?Invoice $invoice = null;
     public bool $modal = false;
+    public string $selectedTab = 'overview';
 
     #[On('show-invoice')]
-    public function show(int $invoiceId): void
+    public function show(int $invoiceId, string $tab = 'payments'): void
     {
         $this->invoice = Invoice::with(['client', 'items.client', 'payments.bankAccount'])
             ->find($invoiceId);
@@ -26,6 +27,7 @@ class Show extends Component
             return;
         }
 
+        $this->selectedTab = $tab;
         $this->modal = true;
     }
 
@@ -33,6 +35,7 @@ class Show extends Component
     {
         $this->invoice = null;
         $this->modal = false;
+        $this->selectedTab = 'overview';
     }
 
     #[Computed]

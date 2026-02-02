@@ -27,27 +27,60 @@
 
         /* Header */
         .header {
-            text-align: center;
-            margin-bottom: 5px;
+            width: 100%;
+            margin-bottom: 10px;
             border-bottom: 2px solid #000;
             padding-bottom: 10px;
         }
 
+        .header-container {
+            width: 100%;
+            display: table;
+        }
+
+        .header-left {
+            display: table-cell;
+            width: 25%;
+            vertical-align: middle;
+            text-align: center;
+        }
+
+        .header-center {
+            display: table-cell;
+            width: 50%;
+            vertical-align: middle;
+            text-align: center;
+            padding: 0 10px;
+        }
+
+        .header-right {
+            display: table-cell;
+            width: 25%;
+            vertical-align: middle;
+        }
+
         .company-logo {
-            width: 80px;
-            height: 80px;
-            margin: 0 auto 10px;
+            width: 100px;
+            height: 100px;
+            margin: 0 auto;
+        }
+
+        .company-logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
         }
 
         .company-name {
-            font-size: 14px;
+            font-size: 13px;
             font-weight: bold;
             margin-bottom: 3px;
+            line-height: 1.3;
         }
 
         .company-address {
             font-size: 9px;
-            line-height: 1.3;
+            line-height: 1.5;
         }
 
         /* Invoice Title */
@@ -266,15 +299,23 @@
     <div class="container">
         <!-- Header -->
         <div class="header">
-            @if($company['logo_base64'])
-            <div class="company-logo">
-                <img src="{{ $company['logo_base64'] }}" alt="Logo" style="width: 100%; height: 100%; object-fit: contain;">
-            </div>
-            @endif
-            <div class="company-name">{{ strtoupper($company['name']) }}</div>
-            <div class="company-address">
-                {{ $company['address'] }}<br>
-                Email: {{ $company['email'] }} | Phone: {{ $company['phone'] }}
+            <div class="header-container">
+                <div class="header-left">
+                    <div class="company-logo">
+                        <img src="{{ public_path('images/spi.png') }}" alt="Logo">
+                    </div>
+                </div>
+                <div class="header-center">
+                    <div class="company-name">{{ strtoupper($company['name']) }}</div>
+                    <div class="company-address">
+                        {{ $company['address'] }}<br>
+                        Samarinda - Kalimantan Timur - Indonesia<br>
+                        Email : {{ $company['email'] }}
+                    </div>
+                </div>
+                <div class="header-right">
+                    <!-- Empty column for future use -->
+                </div>
             </div>
         </div>
 

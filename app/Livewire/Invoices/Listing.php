@@ -43,6 +43,7 @@ class Listing extends Component
         ['index' => 'due_date', 'label' => 'Jatuh Tempo'],
         ['index' => 'total_amount', 'label' => 'Jumlah'],
         ['index' => 'status', 'label' => 'Status'],
+        ['index' => 'faktur', 'label' => 'Faktur', 'sortable' => false],
         ['index' => 'actions', 'label' => 'Aksi', 'sortable' => false],
     ];
 
@@ -141,6 +142,7 @@ class Listing extends Component
                 'invoices.issue_date',
                 'invoices.due_date',
                 'invoices.status',
+                'invoices.faktur',
                 'invoices.created_at',
                 'invoices.updated_at',
                 'invoices.subtotal',
@@ -234,9 +236,9 @@ class Listing extends Component
         $this->dispatchFilterChange();
     }
 
-    public function showInvoice(int $invoiceId): void
+    public function showInvoice(int $invoiceId, string $tab = 'payments'): void
     {
-        $this->dispatch('show-invoice', invoiceId: $invoiceId);
+        $this->dispatch('show-invoice', invoiceId: $invoiceId, tab: $tab);
     }
 
     public function recordPayment(int $invoiceId): void

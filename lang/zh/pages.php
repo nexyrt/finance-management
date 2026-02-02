@@ -241,4 +241,8 @@ return [
     'required' => '必填',
     'auto' => '自动',
     'manual' => '手动',
+
+    // Currency
+    'billion' => '十亿',
+    'million' => '百万',
 ];

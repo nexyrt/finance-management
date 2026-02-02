@@ -9,9 +9,12 @@ use App\Models\InvoiceItem;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 
 class Create extends Component
 {
+    use WithFileUploads;
+
     // Invoice data
     public $invoice = [
         'invoice_number' => '',
@@ -19,6 +22,9 @@ class Create extends Component
         'issue_date' => null,
         'due_date' => null,
     ];
+
+    public $faktur;
+    public $fakturName;
 
     // Items untuk save
     public $items = [];
@@ -42,6 +48,8 @@ class Create extends Component
             'items.*.unit_price' => 'required',
             'discount.type' => 'in:fixed,percentage',
             'discount.value' => 'nullable|numeric|min:0',
+            'faktur' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'fakturName' => 'nullable|string|max:255',
         ]);
 
         try {
@@ -85,6 +93,14 @@ class Create extends Component
 
             $invoiceNumber = $this->invoice['invoice_number'];
 
+            $fakturPath = null;
+            if ($this->faktur) {
+                $customName = $this->fakturName ? $this->fakturName : $this->faktur->getClientOriginalName();
+                $extension = $this->faktur->getClientOriginalExtension();
+                $fileName = pathinfo($customName, PATHINFO_FILENAME) . '.' . $extension;
+                $fakturPath = $this->faktur->storeAs('invoices/fakturs', $fileName, 'public');
+            }
+
             $invoice = Invoice::create([
                 'invoice_number' => $invoiceNumber,
                 'billed_to_id' => $this->invoice['client_id'],
@@ -97,6 +113,7 @@ class Create extends Component
                 'issue_date' => $this->invoice['issue_date'],
                 'due_date' => $this->invoice['due_date'],
                 'status' => 'draft',
+                'faktur' => $fakturPath,
             ]);
 
             foreach ($parsedItems as $itemData) {

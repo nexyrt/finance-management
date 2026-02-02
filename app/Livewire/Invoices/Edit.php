@@ -7,11 +7,15 @@ use App\Models\Service;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 
 class Edit extends Component
 {
+    use WithFileUploads;
+
     public Invoice $invoice;
 
     // Invoice data - will be synced from Alpine
@@ -21,6 +25,9 @@ class Edit extends Component
         'issue_date' => null,
         'due_date' => null,
     ];
+
+    public $faktur;
+    public $fakturName;
 
     // Items array - will be synced from Alpine
     public $items = [];
@@ -50,6 +57,8 @@ class Edit extends Component
             'items.*.unit_price' => 'required',
             'discount.type' => 'in:fixed,percentage',
             'discount.value' => 'nullable|numeric|min:0',
+            'faktur' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'fakturName' => 'nullable|string|max:255',
         ]);
 
         try {
@@ -91,8 +100,7 @@ class Edit extends Component
 
             $totalAmount = max(0, $subtotal - $discountAmount);
 
-            // Update invoice
-            $this->invoice->update([
+            $updateData = [
                 'billed_to_id' => $this->invoiceData['client_id'],
                 'subtotal' => $subtotal,
                 'discount_amount' => $discountAmount,
@@ -102,7 +110,20 @@ class Edit extends Component
                 'total_amount' => $totalAmount,
                 'issue_date' => $this->invoiceData['issue_date'],
                 'due_date' => $this->invoiceData['due_date'],
-            ]);
+            ];
+
+            if ($this->faktur) {
+                if ($this->invoice->faktur) {
+                    Storage::disk('public')->delete($this->invoice->faktur);
+                }
+                $customName = $this->fakturName ? $this->fakturName : $this->faktur->getClientOriginalName();
+                $extension = $this->faktur->getClientOriginalExtension();
+                $fileName = pathinfo($customName, PATHINFO_FILENAME) . '.' . $extension;
+                $updateData['faktur'] = $this->faktur->storeAs('invoices/fakturs', $fileName, 'public');
+            }
+
+            // Update invoice
+            $this->invoice->update($updateData);
 
             // Delete old items and create new ones
             $this->invoice->items()->delete();

@@ -23,6 +23,7 @@ class Invoice extends Model
         'issue_date',
         'due_date',
         'status',
+        'faktur',
     ];
 
     protected $casts = [
