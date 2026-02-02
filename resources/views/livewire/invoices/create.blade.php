@@ -744,6 +744,7 @@
             clients: @js($this->clients),
             services: @js($this->services),
             maxInvoiceSequence: @js($this->maxInvoiceSequence),
+            companyInitials: @js($this->companyInitials),
             nextId: 1,
             selectOpen: false,
             selectSearch: '',
@@ -756,15 +757,44 @@
 
             init() {
                 const t = new Date();
-                const y = t.getFullYear().toString().slice(-2);
-                const m = String(t.getMonth() + 1).padStart(2, '0');
-
-                // Generate invoice number dari max sequence
-                const nextSequence = this.maxInvoiceSequence + 1;
-                this.invoice.invoice_number = `INV/${String(nextSequence).padStart(2, '0')}/KSN/${m}.${y}`;
-
                 this.invoice.issue_date = t.toISOString().split('T')[0];
                 this.invoice.due_date = new Date(t.getTime() + 5 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+
+                // Invoice number will be generated after client is selected
+                this.invoice.invoice_number = '';
+            },
+
+            getRomanMonth(month) {
+                const romans = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
+                return romans[month - 1] || 'I';
+            },
+
+            getInitials(name) {
+                if (!name) return 'XXX';
+                return name.split(/\s+/)
+                    .filter(word => word.length > 0)
+                    .map(word => word[0].toUpperCase())
+                    .join('');
+            },
+
+            generateInvoiceNumber() {
+                if (!this.invoice.client_id) {
+                    return '';
+                }
+
+                const client = this.clients.find(c => c.id === this.invoice.client_id);
+                if (!client) return '';
+
+                const t = new Date();
+                const year = t.getFullYear();
+                const romanMonth = this.getRomanMonth(t.getMonth() + 1);
+                const nextSequence = this.maxInvoiceSequence + 1;
+
+                // Use company initials from backend
+                const clientInitials = this.getInitials(client.name);
+
+                // Format: 001/INV/SPI-SAB/I/2026
+                return `${String(nextSequence).padStart(3, '0')}/INV/${this.companyInitials}-${clientInitials}/${romanMonth}/${year}`;
             },
 
             get filteredClients() {
@@ -807,6 +837,12 @@
                 this.invoice.client_name = c.name;
                 this.selectOpen = false;
                 this.selectSearch = '';
+
+                // Auto-generate invoice number when client is selected
+                if (!this.invoice.number_locked || !this.invoice.invoice_number) {
+                    this.invoice.invoice_number = this.generateInvoiceNumber();
+                }
+
                 this.items.forEach(i => {
                     if (!i.client_id) {
                         i.client_id = c.id;
@@ -879,7 +915,6 @@
                 // Remove all dots (thousand separators), then replace comma with dot (decimal)
                 const cleaned = str.replace(/\./g, '').replace(/,/g, '.');
                 const result = parseFloat(cleaned) || 0;
-                console.log('parseQuantity - input:', JSON.stringify(value), 'cleaned:', cleaned, 'result:', result);
                 return result;
             },
 
@@ -887,7 +922,6 @@
                 const qty = this.parseQuantity(item.quantity),
                     price = this.parse(item.unit_price),
                     cogs = this.parse(item.cogs_amount);
-                console.log('calculateItem: qty=', qty, 'price=', price, 'result=', qty * price);
                 item.amount = Math.round(qty * price);
                 item.profit = item.amount - cogs;
             },

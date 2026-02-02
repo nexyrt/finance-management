@@ -57,7 +57,9 @@ return [
     'payment' => '付款',
     'grand_total' => '总计',
     'total_amount' => '总金额',
+    'total_invoice' => '发票总额',
     'amount_paid' => '已付金额',
+    'faktur' => '发票',
     'amount_remaining' => '剩余金额',
     'balance_due' => '应付余额',
 

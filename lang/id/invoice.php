@@ -57,9 +57,11 @@ return [
     'payment' => 'Pembayaran',
     'grand_total' => 'Total Keseluruhan',
     'total_amount' => 'Total Jumlah',
+    'total_invoice' => 'Total Invoice',
     'amount_paid' => 'Jumlah Dibayar',
     'amount_remaining' => 'Sisa Pembayaran',
     'balance_due' => 'Saldo Terutang',
+    'faktur' => 'Faktur',
 
     // Payment Info
     'payment_terms' => 'Syarat Pembayaran',

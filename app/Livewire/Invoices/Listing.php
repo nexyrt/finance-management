@@ -36,16 +36,20 @@ class Listing extends Component
     public $dpAmount = null;
     public $printTemplate = 'kisantra-invoice'; // Template selection
 
-    public array $headers = [
-        ['index' => 'invoice_number', 'label' => 'No. Invoice'],
-        ['index' => 'client_name', 'label' => 'Klien'],
-        ['index' => 'issue_date', 'label' => 'Tanggal'],
-        ['index' => 'due_date', 'label' => 'Jatuh Tempo'],
-        ['index' => 'total_amount', 'label' => 'Jumlah'],
-        ['index' => 'status', 'label' => 'Status'],
-        ['index' => 'faktur', 'label' => 'Faktur', 'sortable' => false],
-        ['index' => 'actions', 'label' => 'Aksi', 'sortable' => false],
-    ];
+    #[Computed]
+    public function headers(): array
+    {
+        return [
+            ['index' => 'invoice_number', 'label' => __('invoice.invoice_number')],
+            ['index' => 'client_name', 'label' => __('invoice.client')],
+            ['index' => 'issue_date', 'label' => __('pages.date')],
+            ['index' => 'due_date', 'label' => __('invoice.due_date')],
+            ['index' => 'total_amount', 'label' => __('invoice.amount')],
+            ['index' => 'status', 'label' => __('common.status')],
+            ['index' => 'faktur', 'label' => __('invoice.faktur'), 'sortable' => false],
+            ['index' => 'actions', 'label' => __('common.actions'), 'sortable' => false],
+        ];
+    }
 
     protected $listeners = [
         'invoice-created' => '$refresh',

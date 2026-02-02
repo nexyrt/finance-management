@@ -59,6 +59,7 @@ return [
     'refresh' => '刷新',
     'confirm' => '确认',
     'select' => '选择',
+    'actions' => '操作',
 
     // Common Labels
     'name' => '名称',

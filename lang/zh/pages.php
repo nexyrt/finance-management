@@ -48,6 +48,16 @@ return [
     'total_invoices' => '总发票数',
     'profit_margin' => '利润率',
     'margin' => '利润率',
+    'total_cogs_label' => '成本总额',
+    'total_profit' => '总利润',
+    'outstanding_profit' => '未收利润',
+    'from' => '从',
+    'financial_breakdown' => '财务明细',
+    'timeline' => '时间线',
+    'invoice_created' => '发票已创建',
+    'invoice_sent' => '发票已发送',
+    'past_due_date' => '已过期',
+    'days_ago' => '天前',
 
     // Clients
     'client_list' => '客户列表',
@@ -62,6 +72,9 @@ return [
     'is_pkp' => 'PKP',
     'yes' => '是',
     'no' => '否',
+    'client_information' => '客户信息',
+    'type' => '类型',
+    'name' => '名称',
 
     // Services
     'service_list' => '服务列表',
@@ -73,6 +86,8 @@ return [
     'service_description' => '服务描述',
 
     // Invoices
+    'invoice_management' => '发票管理',
+    'manage_track_invoices' => '管理和跟踪发票',
     'invoice_list' => '发票列表',
     'select_client' => '选择客户',
     'select_template' => '选择模板',
@@ -83,7 +98,12 @@ return [
     'generate_number' => '生成编号',
     'auto_generate' => '自动生成',
     'term_days' => '期限（天）',
+    'date' => '日期',
     'cogs' => '成本',
+    'invoice_items' => '发票项目',
+    'total_items' => '总项目',
+    'items' => '项目',
+    'of_total_invoice' => '占总发票',
 
     // Payments
     'payment_list' => '付款列表',
@@ -91,6 +111,13 @@ return [
     'payment_date' => '付款日期',
     'payment_proof' => '付款凭证',
     'select_invoice' => '选择发票',
+    'total_paid' => '已付总额',
+    'remaining_bill' => '剩余账单',
+    'no_payments_yet' => '尚无付款',
+    'invoice_no_payments_received' => '此发票尚未收到付款',
+    'view_attachment' => '查看附件',
+    'delete_payment' => '删除付款',
+    'payment_received' => '收到付款',
 
     // Bank Accounts
     'account_name' => '账户名称',
@@ -207,6 +234,10 @@ return [
     'export_pdf' => '导出PDF',
     'import_data' => '导入数据',
     'choose_file' => '选择文件',
+    'print_pdf' => '打印PDF',
+    'send' => '发送',
+    'pay' => '支付',
+    'select_invoice_template' => '选择发票模板',
 
     // Messages & Confirmations
     'are_you_sure' => '您确定吗？',

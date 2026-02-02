@@ -110,7 +110,11 @@ class Create extends Component
 
             $totalAmount = max(0, $subtotal - $discountAmount);
 
+            // Generate invoice number if empty or not locked
             $invoiceNumber = $this->invoice['invoice_number'];
+            if (empty($invoiceNumber)) {
+                $invoiceNumber = $this->generateInvoiceNumber();
+            }
 
             $fakturPath = null;
             if ($this->faktur) {
@@ -210,13 +214,89 @@ class Create extends Component
 
         $maxSequence = 0;
         foreach ($invoices as $invoiceNumber) {
-            if (preg_match('/INV\/(\d+)\/KSN\/\d{2}\.\d{2}/', $invoiceNumber, $matches)) {
+            // Match new format: 001/INV/SPI-SAB/I/2026
+            if (preg_match('/^(\d+)\/INV\//', $invoiceNumber, $matches)) {
                 $sequence = (int) $matches[1];
                 $maxSequence = max($maxSequence, $sequence);
             }
         }
 
         return $maxSequence;
+    }
+
+    private function getCompanyInitials(): string
+    {
+        // Get company profile from database
+        $company = \App\Models\CompanyProfile::first();
+        if (!$company || !$company->name) {
+            return 'SPI'; // Default fallback
+        }
+
+        // Extract initials from company name
+        $words = preg_split('/\s+/', $company->name);
+        $initials = '';
+        foreach ($words as $word) {
+            if (!empty($word)) {
+                $initials .= strtoupper($word[0]);
+            }
+        }
+
+        return $initials ?: 'SPI';
+    }
+
+    private function getClientInitials($clientId): string
+    {
+        $client = Client::find($clientId);
+        if (!$client) {
+            return 'XXX';
+        }
+
+        // Use company name if type is company, otherwise use personal name
+        $name = $client->type === 'company' && $client->company_name
+            ? $client->company_name
+            : $client->name;
+
+        // Extract initials from name
+        $words = preg_split('/\s+/', $name);
+        $initials = '';
+        foreach ($words as $word) {
+            if (!empty($word)) {
+                $initials .= strtoupper($word[0]);
+            }
+        }
+
+        return $initials ?: 'XXX';
+    }
+
+    private function getRomanMonth($month): string
+    {
+        $romans = [
+            1 => 'I', 2 => 'II', 3 => 'III', 4 => 'IV',
+            5 => 'V', 6 => 'VI', 7 => 'VII', 8 => 'VIII',
+            9 => 'IX', 10 => 'X', 11 => 'XI', 12 => 'XII'
+        ];
+
+        return $romans[$month] ?? 'I';
+    }
+
+    public function generateInvoiceNumber(): string
+    {
+        $date = now();
+        $sequence = $this->maxInvoiceSequence + 1;
+        $companyInitials = $this->getCompanyInitials();
+        $clientInitials = $this->getClientInitials($this->invoice['client_id']);
+        $romanMonth = $this->getRomanMonth($date->month);
+        $year = $date->year;
+
+        // Format: 001/INV/SPI-SAB/I/2026
+        return sprintf(
+            '%03d/INV/%s-%s/%s/%d',
+            $sequence,
+            $companyInitials,
+            $clientInitials,
+            $romanMonth,
+            $year
+        );
     }
 
     private function parseAmount($value): int
@@ -247,6 +327,12 @@ class Create extends Component
             ->orderBy('name')
             ->get(['id', 'name', 'email', 'logo'])
             ->toArray();
+    }
+
+    #[Computed]
+    public function companyInitials()
+    {
+        return $this->getCompanyInitials();
     }
 
     #[Computed]
