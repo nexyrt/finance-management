@@ -143,8 +143,18 @@ class Create extends Component
 
         } catch (\Exception $e) {
             DB::rollBack();
-            \Log::error('Failed to create invoice: ' . $e->getMessage());
-            session()->flash('error', 'Failed to create invoice. Please try again.');
+            \Log::error('Failed to create invoice: ' . $e->getMessage(), [
+                'exception' => $e,
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            // Show detailed error message to user
+            $errorMessage = 'Failed to create invoice: ' . $e->getMessage();
+            if (config('app.debug')) {
+                $errorMessage .= "\n\nFile: " . $e->getFile() . ':' . $e->getLine();
+            }
+
+            session()->flash('error', $errorMessage);
         }
     }
 
