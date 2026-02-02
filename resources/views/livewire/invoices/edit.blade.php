@@ -342,7 +342,7 @@
                                 <div class="relative flex gap-1" @click.away="serviceSelectOpen[item.id] = false">
                                     <input type="text" x-model="item.service_name"
                                         class="flex-1 px-2 py-1.5 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                                        :placeholder="'{{ __('pages.type_service_name') }}...'"
+                                        :placeholder="'{{ __('pages.type_service_name') }}...'" >
                                     <button @click="serviceSelectOpen[item.id] = !serviceSelectOpen[item.id]"
                                         type="button"
                                         class="px-2 py-1.5 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-600 dark:text-dark-400 hover:bg-dark-50 dark:hover:bg-dark-700 transition flex-shrink-0">
@@ -523,7 +523,7 @@
                                     <div class="relative flex gap-2" @click.away="serviceSelectOpen[item.id] = false">
                                         <input type="text" x-model="item.service_name"
                                             class="flex-1 px-3 py-2 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                                            :placeholder="'{{ __('pages.type_service_name') }}...'"
+                                            :placeholder="'{{ __('pages.type_service_name') }}...'" >
                                         <button @click="serviceSelectOpen[item.id] = !serviceSelectOpen[item.id]"
                                             type="button"
                                             class="px-3 py-2 border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-600 dark:text-dark-400 hover:bg-dark-50 dark:hover:bg-dark-700 transition flex-shrink-0">
