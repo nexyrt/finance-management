@@ -37,6 +37,22 @@ class Create extends Component
 
     public function save()
     {
+        // Pre-process items to ensure unit_price and quantity are not empty
+        foreach ($this->items as $index => $item) {
+            // Set default values if empty
+            if (empty($item['unit_price']) || trim($item['unit_price']) === '' || $item['unit_price'] === 'Rp ') {
+                $this->addError("items.{$index}.unit_price", 'Harga satuan harus diisi.');
+            }
+            if (empty($item['quantity']) || trim($item['quantity']) === '') {
+                $this->addError("items.{$index}.quantity", 'Jumlah harus diisi.');
+            }
+        }
+
+        // If we have errors from pre-processing, stop here
+        if ($this->getErrorBag()->isNotEmpty()) {
+            return;
+        }
+
         $this->validate([
             'invoice.client_id' => 'required|exists:clients,id',
             'invoice.issue_date' => 'required|date',

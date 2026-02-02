@@ -250,10 +250,12 @@
             <div class="hidden lg:grid lg:grid-cols-24 gap-3 px-4 py-3 bg-dark-100 dark:bg-dark-900 rounded-lg mb-2">
                 <div class="col-span-1 text-xs font-semibold text-dark-700 dark:text-dark-300 uppercase text-center">#
                 </div>
-                <div class="col-span-4 text-xs font-semibold text-dark-700 dark:text-dark-300 uppercase">{{ __('invoice.client') }}</div>
-                <div class="col-span-5 text-xs font-semibold text-dark-700 dark:text-dark-300 uppercase">{{ __('common.services') }}</div>
+                <div class="col-span-3 text-xs font-semibold text-dark-700 dark:text-dark-300 uppercase">{{ __('invoice.client') }}</div>
+                <div class="col-span-4 text-xs font-semibold text-dark-700 dark:text-dark-300 uppercase">{{ __('common.services') }}</div>
                 <div class="col-span-2 text-xs font-semibold text-dark-700 dark:text-dark-300 uppercase text-center">
                     {{ __('invoice.qty') }}</div>
+                <div class="col-span-2 text-xs font-semibold text-dark-700 dark:text-dark-300 uppercase text-center">
+                    {{ __('invoice.unit') }}</div>
                 <div class="col-span-3 text-xs font-semibold text-dark-700 dark:text-dark-300 uppercase">{{ __('invoice.unit_price') }}
                 </div>
                 <div class="col-span-3 text-xs font-semibold text-dark-700 dark:text-dark-300 uppercase">{{ __('invoice.amount') }}</div>
@@ -276,8 +278,8 @@
                                     x-text="index + 1"></span>
                             </div>
 
-                            {{-- Client (col-span-4) --}}
-                            <div class="col-span-4">
+                            {{-- Client (col-span-3) --}}
+                            <div class="col-span-3">
                                 <div class="relative">
                                     <div x-show="!item.client_id"
                                         @click="itemSelectOpen[item.id] = !itemSelectOpen[item.id]"
@@ -332,8 +334,8 @@
                                 </div>
                             </div>
 
-                            {{-- Service (col-span-5) --}}
-                            <div class="col-span-5">
+                            {{-- Service (col-span-4) --}}
+                            <div class="col-span-4">
                                 <div class="relative flex gap-1" @click.away="serviceSelectOpen[item.id] = false">
                                     <input type="text" x-model="item.service_name"
                                         class="flex-1 px-2 py-1.5 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
@@ -381,9 +383,18 @@
 
                             {{-- Qty (col-span-2) --}}
                             <div class="col-span-2">
-                                <input type="number" x-model="item.quantity" @input="calculateItem(item)"
-                                    min="1"
+                                <input type="text" x-model="item.quantity" @input="calculateItem(item)"
+                                    class="w-full px-2 py-1.5 text-sm text-center border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                    placeholder="1">
+                            </div>
+
+                            {{-- Unit (col-span-2) --}}
+                            <div class="col-span-2">
+                                <select x-model="item.unit"
                                     class="w-full px-2 py-1.5 text-sm text-center border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                                    <option value="pcs">pcs</option>
+                                    <option value="m³">m³</option>
+                                </select>
                             </div>
 
                             {{-- Unit Price (col-span-3) --}}
@@ -561,14 +572,23 @@
                                     </div>
                                 </div>
 
-                                {{-- Qty & Unit Price --}}
-                                <div class="grid grid-cols-2 gap-2">
+                                {{-- Qty, Unit & Unit Price --}}
+                                <div class="grid grid-cols-3 gap-2">
                                     <div>
                                         <label
                                             class="block text-xs font-medium text-dark-600 dark:text-dark-400 mb-1">{{ __('invoice.quantity') }}</label>
-                                        <input type="number" x-model="item.quantity" @input="calculateItem(item)"
-                                            min="1"
+                                        <input type="text" x-model="item.quantity" @input="calculateItem(item)"
+                                            class="w-full px-3 py-2 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                            placeholder="1">
+                                    </div>
+                                    <div>
+                                        <label
+                                            class="block text-xs font-medium text-dark-600 dark:text-dark-400 mb-1">{{ __('invoice.unit') }}</label>
+                                        <select x-model="item.unit"
                                             class="w-full px-3 py-2 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                                            <option value="pcs">pcs</option>
+                                            <option value="m³">m³</option>
+                                        </select>
                                     </div>
                                     <div>
                                         <label
@@ -823,6 +843,7 @@
                     client_name: this.invoice.client_name || '',
                     service_name: '',
                     quantity: 1,
+                    unit: 'pcs',
                     unit_price: '',
                     amount: 0,
                     cogs_amount: '',
@@ -851,11 +872,23 @@
                 this.items.splice(index, 1);
             },
 
+            parseQuantity(value) {
+                if (!value) return 0;
+                // Convert Indonesian format (2.828,93) to standard float (2828.93)
+                const str = value.toString().trim();
+                // Remove all dots (thousand separators), then replace comma with dot (decimal)
+                const cleaned = str.replace(/\./g, '').replace(/,/g, '.');
+                const result = parseFloat(cleaned) || 0;
+                console.log('parseQuantity - input:', JSON.stringify(value), 'cleaned:', cleaned, 'result:', result);
+                return result;
+            },
+
             calculateItem(item) {
-                const qty = parseInt(item.quantity) || 1,
+                const qty = this.parseQuantity(item.quantity),
                     price = this.parse(item.unit_price),
                     cogs = this.parse(item.cogs_amount);
-                item.amount = qty * price;
+                console.log('calculateItem: qty=', qty, 'price=', price, 'result=', qty * price);
+                item.amount = Math.round(qty * price);
                 item.profit = item.amount - cogs;
             },
 

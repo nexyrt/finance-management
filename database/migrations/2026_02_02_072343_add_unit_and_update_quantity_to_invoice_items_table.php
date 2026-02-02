@@ -11,15 +11,20 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('invoice_items', function (Blueprint $table) {
-            // Change quantity from integer to decimal to support decimal values
-            $table->decimal('quantity', 12, 3)->default(1)->change();
+        // Check if unit column already exists
+        $hasUnitColumn = Schema::hasColumn('invoice_items', 'unit');
 
-            // Add unit column after quantity
-            if (!Schema::hasColumn('invoice_items', 'unit')) {
-                $table->string('unit', 20)->default('pcs')->after('quantity');
-            }
+        // Change quantity type
+        Schema::table('invoice_items', function (Blueprint $table) {
+            $table->decimal('quantity', 12, 3)->default(1)->change();
         });
+
+        // Add unit column in separate statement to avoid conflicts
+        if (!$hasUnitColumn) {
+            Schema::table('invoice_items', function (Blueprint $table) {
+                $table->string('unit', 20)->default('pcs')->after('quantity');
+            });
+        }
     }
 
     /**

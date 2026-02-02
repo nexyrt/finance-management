@@ -12,7 +12,8 @@ return new class extends Migration {
             $table->foreignId('invoice_id')->constrained()->cascadeOnDelete();
             $table->foreignId('client_id')->constrained()->cascadeOnDelete();
             $table->string('service_name');
-            $table->integer('quantity')->default(1);
+            $table->decimal('quantity', 12, 3)->default(1);
+            $table->string('unit', 20)->default('pcs');
             $table->bigInteger('unit_price'); // Store in rupiah
             $table->bigInteger('amount'); // calculated: quantity * unit_price
             $table->timestamps();
