@@ -4,16 +4,16 @@
         <div class="space-y-1">
             <h1
                 class="text-4xl font-bold bg-gradient-to-r from-dark-900 via-primary-800 to-primary-800 dark:from-white dark:via-primary-200 dark:to-primary-200 bg-clip-text text-transparent">
-                Reimbursements
+                {{ __('pages.reimbursements') }}
             </h1>
             <p class="text-dark-600 dark:text-dark-400 text-lg">
-                Manage expense reimbursement requests
+                {{ __('pages.manage_expense_reimbursement_requests') }}
             </p>
         </div>
 
         <div class="flex space-x-5">
             <x-button wire:click="$toggle('workflowGuideModal')" icon="information-circle" color="orange" outline>
-                Workflow Guide
+                {{ __('pages.workflow_guide') }}
             </x-button>
 
             @can('create reimbursements')
@@ -23,9 +23,9 @@
     </div>
 
     {{-- Tab Container --}}
-    <x-tab selected="My Requests">
+    <x-tab :selected="__('pages.my_requests')">
         {{-- My Requests Tab --}}
-        <x-tab.items tab="My Requests">
+        <x-tab.items :tab="__('pages.my_requests')">
             <x-slot:left>
                 <x-icon name="user" class="w-5 h-5" />
             </x-slot:left>
@@ -37,7 +37,7 @@
 
         {{-- All Requests Tab (Finance Only) --}}
         @can('approve reimbursements')
-            <x-tab.items tab="All Requests">
+            <x-tab.items :tab="__('pages.all_reimbursements')">
                 <x-slot:left>
                     <x-icon name="users" class="w-5 h-5" />
                 </x-slot:left>

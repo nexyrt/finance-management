@@ -4,38 +4,38 @@
         <div class="space-y-1">
             <h1
                 class="text-4xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-indigo-800 dark:from-white dark:via-blue-200 dark:to-indigo-200 bg-clip-text text-transparent">
-                Cash Flow Management
+                {{ __('pages.cash_flow_management') }}
             </h1>
             <p class="text-gray-600 dark:text-zinc-400 text-lg">
-                Monitor and manage all your financial transactions
+                {{ __('pages.monitor_and_manage_transactions') }}
             </p>
         </div>
     </div>
 
     {{-- Tab Navigation --}}
-    <x-tab selected="Expenses">
-        <x-tab.items tab="Overview">
+    <x-tab :selected="__('pages.expenses')">
+        <x-tab.items :tab="__('pages.overview')">
             <x-slot:right>
                 <x-icon name="chart-bar" class="w-5 h-5" />
             </x-slot:right>
             <livewire:cash-flow.overview-tab />
         </x-tab.items>
 
-        <x-tab.items tab="Income">
+        <x-tab.items :tab="__('pages.income')">
             <x-slot:right>
                 <x-icon name="arrow-trending-up" class="w-5 h-5" />
             </x-slot:right>
             <livewire:cash-flow.income-tab />
         </x-tab.items>
 
-        <x-tab.items tab="Expenses">
+        <x-tab.items :tab="__('pages.expenses')">
             <x-slot:right>
                 <x-icon name="arrow-trending-down" class="w-5 h-5" />
             </x-slot:right>
             <livewire:cash-flow.expenses-tab />
         </x-tab.items>
 
-        <x-tab.items tab="Transfers">
+        <x-tab.items :tab="__('pages.transfers')">
             <x-slot:right>
                 <x-icon name="arrow-path" class="w-5 h-5" />
             </x-slot:right>

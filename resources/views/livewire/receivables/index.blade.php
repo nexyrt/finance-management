@@ -4,10 +4,10 @@
         <div class="space-y-1">
             <h1
                 class="text-4xl font-bold bg-gradient-to-r from-dark-900 via-primary-800 to-primary-800 dark:from-white dark:via-primary-200 dark:to-primary-200 bg-clip-text text-transparent">
-                Manajemen Piutang
+                {{ __('pages.receivable_management') }}
             </h1>
             <p class="text-dark-600 dark:text-dark-400 text-lg">
-                Kelola piutang karyawan dan perusahaan
+                {{ __('pages.manage_receivables_tracking') }}
             </p>
         </div>
         <livewire:receivables.create @created="$refresh" />
@@ -16,15 +16,15 @@
     {{-- Filters --}}
     <div class="flex flex-col lg:flex-row gap-4 items-start lg:items-end">
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 flex-1">
-            <x-select.styled wire:model.live="typeFilter" label="Jenis" :options="$this->typeOptions" placeholder="Semua jenis..." />
+            <x-select.styled wire:model.live="typeFilter" label="{{ __('common.type') }}" :options="$this->typeOptions" placeholder="{{ __('pages.all') }} {{ strtolower(__('common.type')) }}..." />
 
-            <x-select.styled wire:model.live="statusFilter" label="Status" :options="$this->statusOptions"
-                placeholder="Semua status..." />
+            <x-select.styled wire:model.live="statusFilter" label="{{ __('common.status') }}" :options="$this->statusOptions"
+                placeholder="{{ __('pages.all') }} {{ strtolower(__('common.status')) }}..." />
         </div>
 
         @if ($typeFilter || $statusFilter)
             <x-button wire:click="clearFilters" icon="x-mark" color="gray" outline size="sm">
-                Hapus Filter
+                {{ __('pages.clear_filter') }}
             </x-button>
         @endif
     </div>

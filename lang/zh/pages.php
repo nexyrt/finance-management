@@ -29,8 +29,10 @@ return [
     'draft_invoices' => '草稿发票',
     'recent_invoices' => '最近发票',
     'no_invoices_yet' => '暂无发票',
+    'draft' => '草稿',
     'sent' => '已发送',
     'paid' => '已付款',
+    'partially_paid' => '部分付款',
     'installment' => '分期付款',
     'late' => '延迟',
     'total_bank_balance' => '银行总余额',
@@ -43,6 +45,9 @@ return [
     'view_cash_flow' => '查看现金流',
     'revenue' => '收入',
     'profit' => '利润',
+    'total_invoices' => '总发票数',
+    'profit_margin' => '利润率',
+    'margin' => '利润率',
 
     // Clients
     'client_list' => '客户列表',
@@ -69,7 +74,6 @@ return [
 
     // Invoices
     'invoice_list' => '发票列表',
-    'create_new_invoice' => '创建新发票',
     'select_client' => '选择客户',
     'select_template' => '选择模板',
     'add_item' => '添加项目',
@@ -80,8 +84,6 @@ return [
     'auto_generate' => '自动生成',
     'term_days' => '期限（天）',
     'cogs' => '成本',
-    'profit' => '利润',
-    'gross_profit' => '毛利润',
 
     // Payments
     'payment_list' => '付款列表',
@@ -96,16 +98,30 @@ return [
     'current_balance' => '当前余额',
     'account_type' => '账户类型',
 
-    // Transactions
+    // Transactions & Cash Flow
+    'cash_flow_management' => '现金流管理',
+    'monitor_and_manage_transactions' => '监控和管理所有财务交易',
+    'all_transactions' => '所有交易',
+    'manage_all_transactions_from_all_accounts' => '管理所有账户的全部交易',
     'transaction_list' => '交易列表',
     'add_transaction' => '添加交易',
     'transaction_type' => '交易类型',
+    'transfer_funds' => '转账资金',
+    'total_income' => '总收入',
+    'total_expense' => '总支出',
+    'total_transactions' => '总交易数',
     'credit' => '贷方',
     'debit' => '借方',
     'income' => '收入',
     'expense' => '支出',
+    'expenses' => '支出',
+    'overview' => '概览',
+    'transfers' => '转账',
+    'adjustments' => '调整',
 
     // Reimbursements
+    'reimbursements' => '报销',
+    'manage_expense_reimbursement_requests' => '管理费用报销申请',
     'reimbursement_list' => '报销列表',
     'submit_reimbursement' => '提交报销',
     'reimbursement_status' => '报销状态',
@@ -113,8 +129,16 @@ return [
     'approval_date' => '批准日期',
     'requester' => '申请人',
     'approver' => '批准人',
+    'workflow_guide' => '工作流程指南',
+    'my_requests' => '我的申请',
+    'pending_approval' => '待批准',
+    'approved_reimbursements' => '已批准的报销',
+    'all_reimbursements' => '所有报销',
 
     // Loans
+    'loans' => '贷款',
+    'loan_management' => '贷款管理',
+    'track_and_manage_loans' => '跟踪和管理贷款记录',
     'loan_list' => '贷款列表',
     'add_loan' => '添加贷款',
     'loan_amount' => '贷款金额',
@@ -123,10 +147,23 @@ return [
     'monthly_payment' => '月付款',
 
     // Receivables
+    'receivables' => '应收账款',
+    'receivable_management' => '应收账款管理',
+    'manage_receivables_tracking' => '管理应收账款跟踪',
     'receivable_list' => '应收账款列表',
     'add_receivable' => '添加应收账款',
     'debtor' => '债务人',
     'creditor' => '债权人',
+
+    // Recurring Invoices
+    'recurring_invoices' => '经常性发票',
+    'recurring_invoice_management' => '经常性发票管理',
+    'manage_recurring_billing' => '管理经常性账单和发票模板',
+    'automate_billing_process' => '通过智能模板自动化您的账单流程',
+    'templates' => '模板',
+    'monthly' => '每月',
+    'analytics' => '分析',
+    'projected' => '预计',
 
     // Users & Permissions
     'user_list' => '用户列表',

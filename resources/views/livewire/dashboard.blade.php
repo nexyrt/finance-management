@@ -1,8 +1,8 @@
 <div class="min-h-screen bg-gray-50 dark:bg-dark-900 p-6">
     {{-- Header --}}
     <div class="mb-8">
-        <h1 class="text-3xl font-bold text-dark-900 dark:text-white">Dashboard Keuangan</h1>
-        <p class="text-dark-600 dark:text-dark-400 mt-1">Ringkasan lengkap keuangan perusahaan</p>
+        <h1 class="text-3xl font-bold text-dark-900 dark:text-white">{{ __('pages.financial_dashboard') }}</h1>
+        <p class="text-dark-600 dark:text-dark-400 mt-1">{{ __('pages.complete_financial_summary') }}</p>
     </div>
 
     {{-- Top Metrics --}}
@@ -21,7 +21,7 @@
                     </span>
                 @endif
             </div>
-            <p class="text-sm text-dark-600 dark:text-dark-400 mb-1">Total Pendapatan</p>
+            <p class="text-sm text-dark-600 dark:text-dark-400 mb-1">{{ __('pages.total_revenue') }}</p>
             <p class="text-2xl font-bold text-dark-900 dark:text-white">{{ $this->formatCurrency($this->totalRevenue) }}</p>
         </div>
 
@@ -35,11 +35,11 @@
                 </div>
                 @if ($this->overdueInvoices > 0)
                     <span class="text-xs font-medium px-2 py-1 rounded-full bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">
-                        {{ $this->overdueInvoices }} terlambat
+                        {{ $this->overdueInvoices }} {{ __('pages.overdue') }}
                     </span>
                 @endif
             </div>
-            <p class="text-sm text-dark-600 dark:text-dark-400 mb-1">Tagihan Tertunda</p>
+            <p class="text-sm text-dark-600 dark:text-dark-400 mb-1">{{ __('pages.outstanding_bills') }}</p>
             <p class="text-2xl font-bold text-dark-900 dark:text-white">{{ $this->formatCurrency($this->outstandingAmount) }}</p>
         </div>
 
@@ -52,7 +52,7 @@
                     </svg>
                 </div>
             </div>
-            <p class="text-sm text-dark-600 dark:text-dark-400 mb-1">Total Invoice</p>
+            <p class="text-sm text-dark-600 dark:text-dark-400 mb-1">{{ __('pages.total_invoices') }}</p>
             <p class="text-2xl font-bold text-dark-900 dark:text-white">{{ number_format($this->totalInvoices) }}</p>
         </div>
 
@@ -65,7 +65,7 @@
                     </svg>
                 </div>
             </div>
-            <p class="text-sm text-dark-600 dark:text-dark-400 mb-1">Tingkat Pelunasan</p>
+            <p class="text-sm text-dark-600 dark:text-dark-400 mb-1">{{ __('pages.collection_rate') }}</p>
             <p class="text-2xl font-bold text-dark-900 dark:text-white">{{ $this->collectionRate }}%</p>
         </div>
 
@@ -78,10 +78,10 @@
                     </svg>
                 </div>
                 <span class="text-xs font-medium px-2 py-1 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
-                    {{ $this->profitMargin }}% margin
+                    {{ $this->profitMargin }}% {{ __('pages.margin') }}
                 </span>
             </div>
-            <p class="text-sm text-dark-600 dark:text-dark-400 mb-1">Laba Kotor</p>
+            <p class="text-sm text-dark-600 dark:text-dark-400 mb-1">{{ __('pages.gross_profit') }}</p>
             <p class="text-2xl font-bold text-dark-900 dark:text-white">{{ $this->formatCurrency($this->grossProfit) }}</p>
         </div>
 
@@ -95,11 +95,11 @@
                 </div>
                 @if ($this->newClientsThisMonth > 0)
                     <span class="text-xs font-medium px-2 py-1 rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400">
-                        +{{ $this->newClientsThisMonth }} baru
+                        +{{ $this->newClientsThisMonth }} {{ __('pages.new') }}
                     </span>
                 @endif
             </div>
-            <p class="text-sm text-dark-600 dark:text-dark-400 mb-1">Klien Aktif</p>
+            <p class="text-sm text-dark-600 dark:text-dark-400 mb-1">{{ __('pages.active_clients') }}</p>
             <p class="text-2xl font-bold text-dark-900 dark:text-white">{{ number_format($this->activeClients) }}</p>
         </div>
     </div>
@@ -108,7 +108,7 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
         {{-- Revenue Trend --}}
         <div class="lg:col-span-2 bg-white dark:bg-dark-800 rounded-xl p-6 border border-dark-200 dark:border-dark-600">
-            <h3 class="text-lg font-semibold text-dark-900 dark:text-white mb-6">Tren Pendapatan (12 Bulan)</h3>
+            <h3 class="text-lg font-semibold text-dark-900 dark:text-white mb-6">{{ __('pages.revenue_trend_12_months') }}</h3>
             <div class="h-80">
                 <canvas id="revenueChart"></canvas>
             </div>
@@ -116,7 +116,7 @@
 
         {{-- Invoice Status --}}
         <div class="bg-white dark:bg-dark-800 rounded-xl p-6 border border-dark-200 dark:border-dark-600">
-            <h3 class="text-lg font-semibold text-dark-900 dark:text-white mb-6">Status Invoice</h3>
+            <h3 class="text-lg font-semibold text-dark-900 dark:text-white mb-6">{{ __('pages.invoice_status') }}</h3>
             <div class="h-80 flex items-center justify-center">
                 <canvas id="statusChart"></canvas>
             </div>
@@ -125,7 +125,7 @@
 
     {{-- Profit vs Revenue Chart --}}
     <div class="bg-white dark:bg-dark-800 rounded-xl p-6 border border-dark-200 dark:border-dark-600 mb-8">
-        <h3 class="text-lg font-semibold text-dark-900 dark:text-white mb-6">Pendapatan vs Laba (6 Bulan Terakhir)</h3>
+        <h3 class="text-lg font-semibold text-dark-900 dark:text-white mb-6">{{ __('pages.revenue_vs_profit') }}</h3>
         <div class="h-80">
             <canvas id="profitChart"></canvas>
         </div>
@@ -136,9 +136,9 @@
         {{-- Top Clients --}}
         <div class="bg-white dark:bg-dark-800 rounded-xl p-6 border border-dark-200 dark:border-dark-600">
             <div class="flex items-center justify-between mb-6">
-                <h3 class="text-lg font-semibold text-dark-900 dark:text-white">Klien Teratas</h3>
+                <h3 class="text-lg font-semibold text-dark-900 dark:text-white">{{ __('pages.top_clients') }}</h3>
                 <a href="{{ route('clients') }}" wire:navigate class="text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300">
-                    Lihat Semua →
+                    {{ __('pages.view_all') }} →
                 </a>
             </div>
             <div class="space-y-3">
@@ -158,7 +158,7 @@
                         </div>
                     </div>
                 @empty
-                    <p class="text-center text-dark-500 dark:text-dark-400 py-8">Belum ada data klien</p>
+                    <p class="text-center text-dark-500 dark:text-dark-400 py-8">{{ __('pages.no_client_data_yet') }}</p>
                 @endforelse
             </div>
         </div>
@@ -166,23 +166,23 @@
         {{-- Recurring Revenue --}}
         <div class="bg-white dark:bg-dark-800 rounded-xl p-6 border border-dark-200 dark:border-dark-600">
             <div class="flex items-center justify-between mb-6">
-                <h3 class="text-lg font-semibold text-dark-900 dark:text-white">Recurring Revenue</h3>
+                <h3 class="text-lg font-semibold text-dark-900 dark:text-white">{{ __('pages.recurring_revenue') }}</h3>
                 <a href="{{ route('recurring-invoices.index') }}" wire:navigate class="text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300">
-                    Kelola →
+                    {{ __('pages.manage') }} →
                 </a>
             </div>
             <div class="space-y-4">
                 <div class="p-4 bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-lg">
-                    <p class="text-sm text-blue-700 dark:text-blue-300 mb-1">MRR (Monthly Recurring Revenue)</p>
+                    <p class="text-sm text-blue-700 dark:text-blue-300 mb-1">{{ __('pages.mrr_monthly_recurring_revenue') }}</p>
                     <p class="text-2xl font-bold text-blue-900 dark:text-blue-100">{{ $this->formatCurrency($this->monthlyRecurringRevenue) }}</p>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div class="p-4 bg-dark-50 dark:bg-dark-700 rounded-lg">
-                        <p class="text-sm text-dark-600 dark:text-dark-400 mb-1">Template Aktif</p>
+                        <p class="text-sm text-dark-600 dark:text-dark-400 mb-1">{{ __('pages.active_templates') }}</p>
                         <p class="text-xl font-bold text-dark-900 dark:text-white">{{ $this->activeTemplates }}</p>
                     </div>
                     <div class="p-4 bg-dark-50 dark:bg-dark-700 rounded-lg">
-                        <p class="text-sm text-dark-600 dark:text-dark-400 mb-1">Invoice Draft</p>
+                        <p class="text-sm text-dark-600 dark:text-dark-400 mb-1">{{ __('pages.draft_invoices') }}</p>
                         <p class="text-xl font-bold text-dark-900 dark:text-white">{{ $this->draftRecurringInvoices }}</p>
                     </div>
                 </div>
@@ -195,9 +195,9 @@
         {{-- Recent Invoices --}}
         <div class="lg:col-span-2 bg-white dark:bg-dark-800 rounded-xl p-6 border border-dark-200 dark:border-dark-600">
             <div class="flex items-center justify-between mb-6">
-                <h3 class="text-lg font-semibold text-dark-900 dark:text-white">Invoice Terbaru</h3>
+                <h3 class="text-lg font-semibold text-dark-900 dark:text-white">{{ __('pages.recent_invoices') }}</h3>
                 <a href="{{ route('invoices.index') }}" wire:navigate class="text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300">
-                    Lihat Semua →
+                    {{ __('pages.view_all') }} →
                 </a>
             </div>
             <div class="space-y-2">
@@ -210,11 +210,11 @@
                         <div class="flex items-center gap-3">
                             <p class="font-bold text-dark-900 dark:text-white">{{ $this->formatCurrency($invoice['total_amount']) }}</p>
                             <x-badge :text="match ($invoice['status']) {
-                                'draft' => 'Draft',
-                                'sent' => 'Terkirim',
-                                'paid' => 'Lunas',
-                                'partially_paid' => 'Cicilan',
-                                'overdue' => 'Terlambat',
+                                'draft' => __('pages.draft'),
+                                'sent' => __('pages.sent'),
+                                'paid' => __('pages.paid'),
+                                'partially_paid' => __('pages.installment'),
+                                'overdue' => __('pages.late'),
                                 default => $invoice['status']
                             }" :color="match ($invoice['status']) {
                                 'draft' => 'gray',
@@ -227,7 +227,7 @@
                         </div>
                     </div>
                 @empty
-                    <p class="text-center text-dark-500 dark:text-dark-400 py-8">Belum ada invoice</p>
+                    <p class="text-center text-dark-500 dark:text-dark-400 py-8">{{ __('pages.no_invoices_yet') }}</p>
                 @endforelse
             </div>
         </div>
@@ -243,12 +243,12 @@
                         </svg>
                     </div>
                     <div>
-                        <p class="text-sm text-emerald-100">Total Saldo Bank</p>
+                        <p class="text-sm text-emerald-100">{{ __('pages.total_bank_balance') }}</p>
                         <p class="text-2xl font-bold">{{ $this->formatCurrency($this->totalBankBalance) }}</p>
                     </div>
                 </div>
                 <div class="pt-4 border-t border-emerald-400/30">
-                    <p class="text-xs text-emerald-100 mb-1">Cash Flow Bulan Ini</p>
+                    <p class="text-xs text-emerald-100 mb-1">{{ __('pages.cash_flow_this_month') }}</p>
                     <p class="text-lg font-semibold">{{ $this->formatCurrency($this->cashFlowThisMonth) }}</p>
                 </div>
             </div>
@@ -263,23 +263,23 @@
                             </svg>
                         </div>
                         <div>
-                            <p class="text-sm text-dark-600 dark:text-dark-400">Reimbursement Pending</p>
-                            <p class="text-xl font-bold text-dark-900 dark:text-white">{{ $this->pendingReimbursements }} pengajuan</p>
+                            <p class="text-sm text-dark-600 dark:text-dark-400">{{ __('pages.reimbursement_pending') }}</p>
+                            <p class="text-xl font-bold text-dark-900 dark:text-white">{{ $this->pendingReimbursements }} {{ __('pages.submissions') }}</p>
                         </div>
                     </div>
                     <div class="pt-4 border-t border-dark-200 dark:border-dark-600">
-                        <p class="text-xs text-dark-600 dark:text-dark-400 mb-1">Total Nilai</p>
+                        <p class="text-xs text-dark-600 dark:text-dark-400 mb-1">{{ __('pages.total_value') }}</p>
                         <p class="text-lg font-semibold text-dark-900 dark:text-white">{{ $this->formatCurrency($this->pendingReimbursementAmount) }}</p>
                     </div>
                     <a href="{{ route('reimbursements.index') }}" wire:navigate class="block mt-4 text-center text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 font-medium">
-                        Tinjau Sekarang →
+                        {{ __('pages.review_now') }} →
                     </a>
                 </div>
             @endif
 
             {{-- Quick Actions --}}
             <div class="bg-white dark:bg-dark-800 rounded-xl p-6 border border-dark-200 dark:border-dark-600">
-                <h4 class="text-sm font-semibold text-dark-900 dark:text-white mb-4">Aksi Cepat</h4>
+                <h4 class="text-sm font-semibold text-dark-900 dark:text-white mb-4">{{ __('pages.quick_actions') }}</h4>
                 <div class="space-y-2">
                     <a href="{{ route('invoices.create') }}" wire:navigate class="flex items-center gap-3 p-3 rounded-lg hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors group">
                         <div class="h-8 w-8 bg-primary-100 dark:bg-primary-900/30 rounded-lg flex items-center justify-center group-hover:bg-primary-200 dark:group-hover:bg-primary-900/50 transition-colors">
@@ -287,7 +287,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                             </svg>
                         </div>
-                        <span class="text-sm font-medium text-dark-900 dark:text-white">Buat Invoice Baru</span>
+                        <span class="text-sm font-medium text-dark-900 dark:text-white">{{ __('pages.create_new_invoice') }}</span>
                     </a>
                     <a href="{{ route('cash-flow.index') }}" wire:navigate class="flex items-center gap-3 p-3 rounded-lg hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors group">
                         <div class="h-8 w-8 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg flex items-center justify-center group-hover:bg-emerald-200 dark:group-hover:bg-emerald-900/50 transition-colors">
@@ -295,7 +295,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                             </svg>
                         </div>
-                        <span class="text-sm font-medium text-dark-900 dark:text-white">Lihat Cash Flow</span>
+                        <span class="text-sm font-medium text-dark-900 dark:text-white">{{ __('pages.view_cash_flow') }}</span>
                     </a>
                 </div>
             </div>
@@ -358,7 +358,7 @@
                             borderWidth: 1,
                             callbacks: {
                                 label: function(context) {
-                                    return 'Pendapatan: Rp ' + new Intl.NumberFormat('id-ID').format(context.parsed.y);
+                                    return '{{ __("pages.revenue") }}: Rp ' + new Intl.NumberFormat('id-ID').format(context.parsed.y);
                                 }
                             }
                         }
@@ -454,7 +454,7 @@
                     labels: data.map(item => item.month),
                     datasets: [
                         {
-                            label: 'Pendapatan',
+                            label: '{{ __("pages.revenue") }}',
                             data: data.map(item => item.revenue),
                             backgroundColor: 'rgba(59, 130, 246, 0.7)',
                             borderColor: 'rgb(59, 130, 246)',
@@ -462,7 +462,7 @@
                             borderRadius: 6
                         },
                         {
-                            label: 'Laba',
+                            label: '{{ __("pages.profit") }}',
                             data: data.map(item => item.profit),
                             backgroundColor: 'rgba(34, 197, 94, 0.7)',
                             borderColor: 'rgb(34, 197, 94)',

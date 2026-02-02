@@ -43,11 +43,11 @@ class LanguageSwitcher extends Component
                     'flag' => '🇨🇳',
                     'code' => 'zh',
                 ],
-                'en' => [
-                    'name' => 'English',
-                    'flag' => '🇬🇧',
-                    'code' => 'en',
-                ]
+                // 'en' => [
+                //     'name' => 'English',
+                //     'flag' => '🇬🇧',
+                //     'code' => 'en',
+                // ]
             ],
         ]);
     }

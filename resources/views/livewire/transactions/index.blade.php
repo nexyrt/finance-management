@@ -4,18 +4,18 @@
         <div>
             <h1
                 class="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-gray-900 via-blue-600 to-blue-700 dark:from-white dark:via-blue-300 dark:to-blue-200 bg-clip-text text-transparent">
-                Semua Transaksi
+                {{ __('pages.all_transactions') }}
             </h1>
             <p class="text-gray-600 dark:text-gray-400 text-base sm:text-lg">
-                Kelola seluruh transaksi dari semua rekening
+                {{ __('pages.manage_all_transactions_from_all_accounts') }}
             </p>
         </div>
         <div class="flex gap-3">
             <x-button wire:click="createTransaction(1)" loading="createTransaction" color="blue" icon="plus">
-                Tambah Transaksi
+                {{ __('pages.add_transaction') }}
             </x-button>
             <x-button wire:click="openTransfer" loading="openTransfer" color="blue" icon="arrow-path">
-                Transfer Dana
+                {{ __('pages.transfer_funds') }}
             </x-button>
         </div>
     </div>
@@ -28,7 +28,7 @@
                     <x-icon name="arrow-down" class="w-6 h-6 text-green-600 dark:text-green-400" />
                 </div>
                 <div>
-                    <p class="text-sm text-dark-600 dark:text-dark-400">Total Pemasukan</p>
+                    <p class="text-sm text-dark-600 dark:text-dark-400">{{ __('pages.total_income') }}</p>
                     <p class="text-2xl font-bold text-green-600 dark:text-green-400">
                         Rp {{ number_format($this->stats['total_income'], 0, ',', '.') }}
                     </p>
@@ -42,7 +42,7 @@
                     <x-icon name="arrow-up" class="w-6 h-6 text-red-600 dark:text-red-400" />
                 </div>
                 <div>
-                    <p class="text-sm text-dark-600 dark:text-dark-400">Total Pengeluaran</p>
+                    <p class="text-sm text-dark-600 dark:text-dark-400">{{ __('pages.total_expense') }}</p>
                     <p class="text-2xl font-bold text-red-600 dark:text-red-400">
                         Rp {{ number_format($this->stats['total_expense'], 0, ',', '.') }}
                     </p>
@@ -56,7 +56,7 @@
                     <x-icon name="clipboard-document-list" class="w-6 h-6 text-blue-600 dark:text-blue-400" />
                 </div>
                 <div>
-                    <p class="text-sm text-dark-600 dark:text-dark-400">Total Transaksi</p>
+                    <p class="text-sm text-dark-600 dark:text-dark-400">{{ __('pages.total_transactions') }}</p>
                     <p class="text-2xl font-bold text-blue-600 dark:text-blue-400">
                         {{ number_format($this->stats['total_transactions'], 0, ',', '.') }}
                     </p>

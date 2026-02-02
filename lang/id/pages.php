@@ -29,10 +29,15 @@ return [
     'draft_invoices' => 'Invoice Draft',
     'recent_invoices' => 'Invoice Terbaru',
     'no_invoices_yet' => 'Belum ada invoice',
+    'draft' => 'Draft',
     'sent' => 'Terkirim',
     'paid' => 'Lunas',
+    'partially_paid' => 'Sebagian Dibayar',
     'installment' => 'Cicilan',
     'late' => 'Terlambat',
+    'total_invoices' => 'Total Invoice',
+    'profit_margin' => 'Margin Laba',
+    'margin' => 'margin',
     'total_bank_balance' => 'Total Saldo Bank',
     'cash_flow_this_month' => 'Cash Flow Bulan Ini',
     'reimbursement_pending' => 'Reimbursement Pending',
@@ -184,16 +189,30 @@ return [
     'current_balance' => 'Saldo Saat Ini',
     'account_type' => 'Tipe Akun',
 
-    // Transactions
+    // Transactions & Cash Flow
+    'cash_flow_management' => 'Manajemen Cash Flow',
+    'monitor_and_manage_transactions' => 'Pantau dan kelola semua transaksi keuangan Anda',
+    'all_transactions' => 'Semua Transaksi',
+    'manage_all_transactions_from_all_accounts' => 'Kelola seluruh transaksi dari semua rekening',
     'transaction_list' => 'Daftar Transaksi',
     'add_transaction' => 'Tambah Transaksi',
     'transaction_type' => 'Tipe Transaksi',
+    'transfer_funds' => 'Transfer Dana',
+    'total_income' => 'Total Pemasukan',
+    'total_expense' => 'Total Pengeluaran',
+    'total_transactions' => 'Total Transaksi',
     'credit' => 'Kredit',
     'debit' => 'Debit',
     'income' => 'Pemasukan',
     'expense' => 'Pengeluaran',
+    'expenses' => 'Pengeluaran',
+    'overview' => 'Ringkasan',
+    'transfers' => 'Transfer',
+    'adjustments' => 'Penyesuaian',
 
     // Reimbursements
+    'reimbursements' => 'Reimbursements',
+    'manage_expense_reimbursement_requests' => 'Kelola pengajuan reimbursement pengeluaran',
     'reimbursement_list' => 'Daftar Penggantian',
     'submit_reimbursement' => 'Ajukan Penggantian',
     'reimbursement_status' => 'Status Penggantian',
@@ -201,8 +220,16 @@ return [
     'approval_date' => 'Tanggal Persetujuan',
     'requester' => 'Pengaju',
     'approver' => 'Penyetuju',
+    'workflow_guide' => 'Panduan Alur Kerja',
+    'my_requests' => 'Pengajuan Saya',
+    'pending_approval' => 'Menunggu Persetujuan',
+    'approved_reimbursements' => 'Reimbursement Disetujui',
+    'all_reimbursements' => 'Semua Reimbursement',
 
     // Loans
+    'loans' => 'Pinjaman',
+    'loan_management' => 'Manajemen Pinjaman',
+    'track_and_manage_loans' => 'Lacak dan kelola catatan pinjaman',
     'loan_list' => 'Daftar Pinjaman',
     'add_loan' => 'Tambah Pinjaman',
     'loan_amount' => 'Jumlah Pinjaman',
@@ -211,10 +238,23 @@ return [
     'monthly_payment' => 'Cicilan Bulanan',
 
     // Receivables
+    'receivables' => 'Piutang',
+    'receivable_management' => 'Manajemen Piutang',
+    'manage_receivables_tracking' => 'Kelola pelacakan piutang',
     'receivable_list' => 'Daftar Piutang',
     'add_receivable' => 'Tambah Piutang',
     'debtor' => 'Debitur',
     'creditor' => 'Kreditur',
+
+    // Recurring Invoices
+    'recurring_invoices' => 'Invoice Berulang',
+    'recurring_invoice_management' => 'Manajemen Invoice Berulang',
+    'manage_recurring_billing' => 'Kelola tagihan berulang dan template invoice',
+    'automate_billing_process' => 'Otomatisasi proses penagihan dengan template pintar',
+    'templates' => 'Template',
+    'monthly' => 'Bulanan',
+    'analytics' => 'Analitik',
+    'projected' => 'Proyeksi',
 
     // Users & Permissions
     'user_list' => 'Daftar Pengguna',
