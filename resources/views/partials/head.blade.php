@@ -36,7 +36,6 @@
 </style>
 
 
-<wireui:scripts />
 <tallstackui:script />
 
 @livewireStyles
