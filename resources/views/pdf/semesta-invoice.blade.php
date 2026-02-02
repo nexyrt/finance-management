@@ -386,8 +386,8 @@
                         <br><small style="font-style: italic; color: #666;">({{ __('invoice.tax_deposit') }})</small>
                         @endif
                     </td>
-                    <td class="qty">{{ number_format($item->quantity, 2, ',', '.') }}</td>
-                    <td class="unit">{{ $item->unit ?? 'M³' }}</td>
+                    <td class="qty">{{ rtrim(rtrim(number_format($item->quantity, 3, ',', '.'), '0'), ',') }}</td>
+                    <td class="unit">{{ $item->unit ?? 'pcs' }}</td>
                     <td class="price">Rp {{ number_format($item->unit_price, 0, ',', '.') }}</td>
                     <td class="amount">
                         Rp {{ number_format($item->amount, 0, ',', '.') }}

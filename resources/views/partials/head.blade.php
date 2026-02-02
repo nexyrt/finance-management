@@ -6,7 +6,11 @@
 <!-- Include Jodit CSS Styling -->
 <link rel="preconnect" href="https://fonts.bunny.net">
 <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
-<link rel="icon" href="{{ asset('images/kisantra.png') }}" type="image/png">
+@if(isset($companyProfile) && $companyProfile && $companyProfile->logo_path)
+    <link rel="icon" href="{{ Storage::url($companyProfile->logo_path) }}" type="image/png">
+@else
+    <link rel="icon" href="{{ asset('images/kisantra.png') }}" type="image/png">
+@endif
 
 <link rel="stylesheet" href="//unpkg.com/jodit@4.1.16/es2021/jodit.min.css">
 <link href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css" rel="stylesheet" />

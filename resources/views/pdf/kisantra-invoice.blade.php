@@ -549,7 +549,7 @@
                                     <span class="tax-deposit-label">{{ strtoupper(__('invoice.tax_deposit')) }}</span>
                                 @endif
                             </td>
-                            <td>{{ number_format($item->quantity) }}</td>
+                            <td>{{ rtrim(rtrim(number_format($item->quantity, 3, ',', '.'), '0'), ',') }} {{ $item->unit ?? 'pcs' }}</td>
                             <td>
                                 <div class="currency-cell">
                                     <div class="currency-left">IDR</div>

@@ -15,6 +15,7 @@ class InvoiceItem extends Model
         'client_id',
         'service_name',
         'quantity',
+        'unit',
         'unit_price',
         'amount',
         'cogs_amount',
@@ -22,7 +23,7 @@ class InvoiceItem extends Model
     ];
 
     protected $casts = [
-        'quantity' => 'integer',
+        'quantity' => 'decimal:3',
         'unit_price' => 'integer',
         'amount' => 'integer',
         'cogs_amount' => 'integer',

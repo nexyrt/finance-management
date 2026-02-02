@@ -345,7 +345,7 @@
                     <tr>
                         <td class="text-center">{{ $index + 1 }}</td>
                         <td>{{ $item->service_name }}</td>
-                        <td class="text-center">{{ number_format($item->quantity) }}</td>
+                        <td class="text-center">{{ rtrim(rtrim(number_format($item->quantity, 3, ',', '.'), '0'), ',') }} {{ $item->unit ?? 'pcs' }}</td>
                         <td class="text-right">Rp {{ number_format($item->unit_price, 0, ',', '.') }}</td>
                         <td class="text-right">Rp {{ number_format($item->amount, 0, ',', '.') }}</td>
                     </tr>

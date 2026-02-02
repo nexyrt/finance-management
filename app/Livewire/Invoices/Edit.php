@@ -53,7 +53,8 @@ class Edit extends Component
             'items' => 'required|array|min:1',
             'items.*.client_id' => 'required|exists:clients,id',
             'items.*.service_name' => 'required|string|max:255',
-            'items.*.quantity' => 'required|integer|min:1',
+            'items.*.quantity' => 'required',
+            'items.*.unit' => 'nullable|string|max:20',
             'items.*.unit_price' => 'required',
             'discount.type' => 'in:fixed,percentage',
             'discount.value' => 'nullable|numeric|min:0',
@@ -69,15 +70,17 @@ class Edit extends Component
 
             foreach ($this->items as $item) {
                 $unitPrice = $this->parseAmount($item['unit_price']);
-                $quantity = $item['quantity'];
+                $quantity = $this->parseQuantity($item['quantity']);
                 $amount = $unitPrice * $quantity;
                 $cogsAmount = $this->parseAmount($item['cogs_amount'] ?? '0');
                 $isTaxDeposit = $item['is_tax_deposit'] ?? false;
+                $unit = $item['unit'] ?? 'pcs';
 
                 $parsedItems[] = [
                     'client_id' => $item['client_id'],
                     'service_name' => $item['service_name'],
                     'quantity' => $quantity,
+                    'unit' => $unit,
                     'unit_price' => $unitPrice,
                     'amount' => $amount,
                     'cogs_amount' => $cogsAmount,
@@ -134,6 +137,7 @@ class Edit extends Component
                     'client_id' => $itemData['client_id'],
                     'service_name' => $itemData['service_name'],
                     'quantity' => $itemData['quantity'],
+                    'unit' => $itemData['unit'],
                     'unit_price' => $itemData['unit_price'],
                     'amount' => $itemData['amount'],
                     'cogs_amount' => $itemData['cogs_amount'],
@@ -193,6 +197,20 @@ class Edit extends Component
         return (int) preg_replace('/[^0-9]/', '', $value);
     }
 
+    private function parseQuantity($value): float
+    {
+        if (empty($value))
+            return 0;
+
+        // Convert Indonesian format (2.828,93) to standard float (2828.93)
+        // Remove thousand separators (dots)
+        $value = str_replace('.', '', $value);
+        // Replace decimal comma with dot
+        $value = str_replace(',', '.', $value);
+
+        return (float) $value;
+    }
+
     #[Computed]
     public function existingInvoiceData()
     {
@@ -219,7 +237,8 @@ class Edit extends Component
                 'client_id' => $item->client_id,
                 'client_name' => $item->client->name,
                 'service_name' => $item->service_name,
-                'quantity' => $item->quantity,
+                'quantity' => number_format($item->quantity, 3, ',', '.'),
+                'unit' => $item->unit ?? 'pcs',
                 'unit_price' => number_format($item->unit_price, 0, ',', '.'),
                 'amount' => $item->amount,
                 'cogs_amount' => number_format($item->cogs_amount, 0, ',', '.'),

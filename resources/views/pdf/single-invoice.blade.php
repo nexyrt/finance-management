@@ -412,7 +412,7 @@
                     <tr>
                         <td>{{ $index + 1 }}</td>
                         <td class="text-left">{{ $item->service_name }}</td>
-                        <td>{{ number_format($item->quantity) }}</td>
+                        <td>{{ rtrim(rtrim(number_format($item->quantity, 3, ',', '.'), '0'), ',') }} {{ $item->unit ?? 'pcs' }}</td>
                         <td>
                             <div class="currency-cell">
                                 <div class="currency-left">IDR</div>
