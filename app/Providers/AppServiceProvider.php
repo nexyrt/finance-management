@@ -4,6 +4,7 @@
 
 namespace App\Providers;
 
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\ServiceProvider;
 use TallStackUi\Facades\TallStackUi;
 
@@ -14,5 +15,28 @@ class AppServiceProvider extends ServiceProvider
         TallStackUi::personalize()
             ->modal()
             ->block('wrapper.first', 'fixed inset-0 bg-black/30 transform transition-opacity');
+
+        // Set locale from session or user preference with fallback
+        $availableLocales = config('app.available_locales', ['id', 'zh']);
+        $locale = session('locale');
+
+        // If locale is not available, fallback to 'id'
+        if (!$locale || !in_array($locale, $availableLocales)) {
+            $locale = 'id';
+        }
+
+        // If user is authenticated, use their preference
+        if (auth()->check() && auth()->user()->locale) {
+            $userLocale = auth()->user()->locale;
+            // Only use user locale if it's available
+            if (in_array($userLocale, $availableLocales)) {
+                $locale = $userLocale;
+            } else {
+                // Update user's locale to fallback
+                auth()->user()->update(['locale' => 'id']);
+            }
+        }
+
+        App::setLocale($locale);
     }
 }
