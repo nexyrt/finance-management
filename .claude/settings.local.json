@@ -10,7 +10,9 @@
       "Bash(do echo \"Checking: $file\")",
       "Bash(done)",
       "Bash(ls:*)",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ]
   }
 }
