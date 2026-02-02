@@ -141,18 +141,43 @@ class Create extends Component
 
             return $this->redirect(request()->header('Referer'), navigate: true);
 
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            DB::rollBack();
+            throw $e; // Let Livewire handle validation errors
         } catch (\Exception $e) {
             DB::rollBack();
-            \Log::error('Failed to create invoice: ' . $e->getMessage(), [
-                'exception' => $e,
-                'trace' => $e->getTraceAsString()
+
+            // Comprehensive logging with context
+            \Log::error('Failed to create invoice', [
+                'error_message' => $e->getMessage(),
+                'error_code' => $e->getCode(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString(),
+                'invoice_data' => [
+                    'invoice_number' => $this->invoice['invoice_number'] ?? null,
+                    'client_id' => $this->invoice['client_id'] ?? null,
+                    'items_count' => count($this->items ?? []),
+                ],
+                'parsed_items_sample' => isset($parsedItems) ? array_slice($parsedItems, 0, 2) : [],
             ]);
 
-            // Show detailed error message to user
-            $errorMessage = 'Failed to create invoice: ' . $e->getMessage();
-            if (config('app.debug')) {
-                $errorMessage .= "\n\nFile: " . $e->getFile() . ':' . $e->getLine();
+            // Build detailed user-friendly error message
+            $errorMessage = 'Failed to create invoice.';
+
+            // Add specific error details
+            if (strpos($e->getMessage(), 'SQLSTATE') !== false) {
+                $errorMessage .= ' Database error: ' . $e->getMessage();
+            } elseif (strpos($e->getMessage(), 'column') !== false || strpos($e->getMessage(), 'Column') !== false) {
+                $errorMessage .= ' Missing required field: ' . $e->getMessage();
+            } elseif (strpos($e->getMessage(), 'Undefined') !== false) {
+                $errorMessage .= ' Data issue: ' . $e->getMessage();
+            } else {
+                $errorMessage .= ' ' . $e->getMessage();
             }
+
+            // Always show file and line in production for debugging
+            $errorMessage .= "\n\nError location: " . basename($e->getFile()) . ':' . $e->getLine();
 
             session()->flash('error', $errorMessage);
         }
