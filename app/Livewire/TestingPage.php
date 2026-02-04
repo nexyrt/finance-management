@@ -2,191 +2,50 @@
 
 namespace App\Livewire;
 
-use App\Models\Client;
-use App\Models\Service;
-use App\Models\Invoice;
-use App\Models\InvoiceItem;
-use Illuminate\Support\Facades\DB;
-use Livewire\Attributes\Computed;
+use Gemini\Laravel\Facades\Gemini;
 use Livewire\Component;
 
 class TestingPage extends Component
 {
-    // Invoice data
-    public $invoice = [
-        'invoice_number' => '',
-        'client_id' => null,
-        'issue_date' => null,
-        'due_date' => null,
-    ];
+    public string $question = '';
+    public string $response = '';
 
-    // Items untuk save
-    public $items = [];
-    public $discount = [
-        'type' => 'fixed',
-        'value' => 0,
-        'reason' => '',
-        'amount' => 0
-    ];
-
-    public function save()
+    public function listModels()
     {
-        $this->validate([
-            'invoice.client_id' => 'required|exists:clients,id',
-            'invoice.issue_date' => 'required|date',
-            'invoice.due_date' => 'required|date|after_or_equal:invoice.issue_date',
-            'items' => 'required|array|min:1',
-            'items.*.client_id' => 'required|exists:clients,id',
-            'items.*.service_name' => 'required|string|max:255',
-            'items.*.quantity' => 'required|integer|min:1',
-            'items.*.unit_price' => 'required',
-            'discount.type' => 'in:fixed,percentage',
-            'discount.value' => 'nullable|numeric|min:0',
-        ]);
+        try {
+            $geminiResponse = Gemini::models()->list();
+
+            $models = [];
+            foreach ($geminiResponse->models as $model) {
+                if (in_array('generateContent', $model->supportedGenerationMethods ?? [])) {  // Filter yang support generateContent
+                    $models[] = $model->name . ' (' . ($model->displayName ?? 'N/A') . ')';
+                }
+            }
+
+            $this->response = "Model tersedia (support generateContent):\n" . implode("\n", $models);
+        } catch (\Exception $e) {
+            $this->response = "Gagal list models: " . $e->getMessage();
+        }
+    }
+
+    public function askGemini()
+    {
+        $this->response = 'Sedang berpikir...';
+
+        if (empty(trim($this->question))) {
+            $this->response = 'Masukkan pertanyaan dulu!';
+            return;
+        }
 
         try {
-            DB::beginTransaction();
+            // Gunakan model yang tersedia dari list Anda
+            $result = Gemini::generativeModel('models/gemini-2.5-flash')
+                ->generateContent($this->question);
 
-            $parsedItems = [];
-            $subtotal = 0;
-
-            foreach ($this->items as $item) {
-                $unitPrice = $this->parseAmount($item['unit_price']);
-                $quantity = $item['quantity'];
-                $amount = $unitPrice * $quantity;
-                $cogsAmount = $this->parseAmount($item['cogs_amount'] ?? '0');
-                $isTaxDeposit = $item['is_tax_deposit'] ?? false;
-
-                $parsedItems[] = [
-                    'client_id' => $item['client_id'],
-                    'service_name' => $item['service_name'],
-                    'quantity' => $quantity,
-                    'unit_price' => $unitPrice,
-                    'amount' => $amount,
-                    'cogs_amount' => $cogsAmount,
-                    'is_tax_deposit' => $isTaxDeposit,
-                ];
-
-                $subtotal += $amount;
-            }
-
-            // Calculate discount
-            $discountAmount = 0;
-            $discountValue = 0;
-            if ($this->discount['type'] === 'fixed') {
-                $discountValue = $this->discount['value'];
-                $discountAmount = $this->discount['value'];
-            } else {
-                $discountValue = $this->discount['value'];
-                $discountAmount = ($subtotal * $this->discount['value']) / 100;
-            }
-
-            $totalAmount = max(0, $subtotal - $discountAmount);
-
-            $invoiceNumber = $this->generateInvoiceNumber();
-
-            $invoice = Invoice::create([
-                'invoice_number' => $invoiceNumber,
-                'billed_to_id' => $this->invoice['client_id'],
-                'subtotal' => $subtotal,
-                'discount_amount' => $discountAmount,
-                'discount_type' => $this->discount['type'] ?? 'fixed',
-                'discount_value' => $discountValue,
-                'discount_reason' => $this->discount['reason'],
-                'total_amount' => $totalAmount,
-                'issue_date' => $this->invoice['issue_date'],
-                'due_date' => $this->invoice['due_date'],
-                'status' => 'draft',
-            ]);
-
-            foreach ($parsedItems as $itemData) {
-                InvoiceItem::create([
-                    'invoice_id' => $invoice->id,
-                    'client_id' => $itemData['client_id'],
-                    'service_name' => $itemData['service_name'],
-                    'quantity' => $itemData['quantity'],
-                    'unit_price' => $itemData['unit_price'],
-                    'amount' => $itemData['amount'],
-                    'cogs_amount' => $itemData['cogs_amount'],
-                    'is_tax_deposit' => $itemData['is_tax_deposit'],
-                ]);
-            }
-
-            DB::commit();
-
-            session()->flash('success', "Invoice {$invoiceNumber} created successfully!");
-
-            $this->reset(['invoice', 'items', 'discount']);
-
-            return $this->redirect(request()->header('Referer'), navigate: true);
-
+            $this->response = $result->text();
         } catch (\Exception $e) {
-            DB::rollBack();
-            \Log::error('Failed to create invoice: ' . $e->getMessage());
-            session()->flash('error', 'Failed to create invoice. Please try again.');
+            $this->response = "Gagal: " . $e->getMessage() . "\nCoba model lain seperti 'models/gemini-2.0-flash'";
         }
-    }
-
-    private function generateInvoiceNumber(): string
-    {
-        $date = $this->invoice['issue_date'] ? \Carbon\Carbon::parse($this->invoice['issue_date']) : now();
-        $currentMonth = $date->format('m');
-        $currentYear = $date->format('y');
-
-        // Find highest sequence number in selected month/year
-        $invoices = Invoice::whereYear('issue_date', $date->year)
-            ->whereMonth('issue_date', $date->month)
-            ->pluck('invoice_number');
-
-        $maxSequence = 0;
-        foreach ($invoices as $invoiceNumber) {
-            if (preg_match('/INV\/(\d+)\/KSN\/\d{2}\.\d{2}/', $invoiceNumber, $matches)) {
-                $sequence = (int) $matches[1];
-                $maxSequence = max($maxSequence, $sequence);
-            }
-        }
-
-        $nextSequence = $maxSequence + 1;
-
-        return sprintf(
-            'INV/%02d/KSN/%02d.%s',
-            $nextSequence,
-            (int) $currentMonth,
-            $currentYear
-        );
-    }
-
-    private function parseAmount($value): int
-    {
-        if (empty($value))
-            return 0;
-        return (int) preg_replace('/[^0-9]/', '', $value);
-    }
-
-    #[Computed]
-    public function clients()
-    {
-        return Client::where('status', 'active')
-            ->orderBy('name')
-            ->get(['id', 'name', 'email', 'logo'])
-            ->toArray();
-    }
-
-    #[Computed]
-    public function services()
-    {
-        return Service::orderBy('name')
-            ->get(['id', 'name', 'price', 'type'])
-            ->map(function ($service) {
-                return [
-                    'id' => $service->id,
-                    'name' => $service->name,
-                    'price' => $service->price,
-                    'type' => $service->type,
-                    'formatted_price' => 'Rp ' . number_format($service->price, 0, ',', '.')
-                ];
-            })
-            ->toArray();
     }
 
     public function render()

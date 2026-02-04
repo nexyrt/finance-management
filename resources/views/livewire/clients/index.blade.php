@@ -375,5 +375,4 @@
     <livewire:clients.delete />
     <livewire:clients.show />
     <livewire:clients.create />
-    <livewire:clients.relationship />
 </section>

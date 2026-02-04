@@ -8,139 +8,118 @@
     {{-- Top Metrics --}}
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-8">
         {{-- Total Revenue --}}
-        <div class="bg-white dark:bg-dark-800 rounded-xl p-6 border border-dark-200 dark:border-dark-600 hover:shadow-lg transition-shadow">
+        <x-card class="hover:shadow-lg transition-shadow">
             <div class="flex items-center justify-between mb-4">
                 <div class="h-12 w-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
-                    <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
+                    <x-icon name="currency-dollar" class="w-6 h-6 text-blue-600 dark:text-blue-400" />
                 </div>
                 @if ($this->revenueGrowth != 0)
-                    <span class="text-xs font-medium px-2 py-1 rounded-full {{ $this->revenueGrowth >= 0 ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' }}">
-                        {{ $this->revenueGrowth >= 0 ? '+' : '' }}{{ $this->revenueGrowth }}%
-                    </span>
+                    <x-badge :text="($this->revenueGrowth >= 0 ? '+' : '') . $this->revenueGrowth . '%'" :color="$this->revenueGrowth >= 0 ? 'green' : 'red'" sm />
                 @endif
             </div>
             <p class="text-sm text-dark-600 dark:text-dark-400 mb-1">{{ __('pages.total_revenue') }}</p>
             <p class="text-2xl font-bold text-dark-900 dark:text-white">{{ $this->formatCurrency($this->totalRevenue) }}</p>
-        </div>
+        </x-card>
 
         {{-- Outstanding --}}
-        <div class="bg-white dark:bg-dark-800 rounded-xl p-6 border border-dark-200 dark:border-dark-600 hover:shadow-lg transition-shadow">
+        <x-card class="hover:shadow-lg transition-shadow">
             <div class="flex items-center justify-between mb-4">
                 <div class="h-12 w-12 bg-amber-100 dark:bg-amber-900/30 rounded-xl flex items-center justify-center">
-                    <svg class="w-6 h-6 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
+                    <x-icon name="clock" class="w-6 h-6 text-amber-600 dark:text-amber-400" />
                 </div>
                 @if ($this->overdueInvoices > 0)
-                    <span class="text-xs font-medium px-2 py-1 rounded-full bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">
-                        {{ $this->overdueInvoices }} {{ __('pages.overdue') }}
-                    </span>
+                    <x-badge :text="$this->overdueInvoices . ' ' . __('pages.overdue')" color="red" sm />
                 @endif
             </div>
             <p class="text-sm text-dark-600 dark:text-dark-400 mb-1">{{ __('pages.outstanding_bills') }}</p>
             <p class="text-2xl font-bold text-dark-900 dark:text-white">{{ $this->formatCurrency($this->outstandingAmount) }}</p>
-        </div>
+        </x-card>
 
         {{-- Total Invoices --}}
-        <div class="bg-white dark:bg-dark-800 rounded-xl p-6 border border-dark-200 dark:border-dark-600 hover:shadow-lg transition-shadow">
+        <x-card class="hover:shadow-lg transition-shadow">
             <div class="flex items-center justify-between mb-4">
                 <div class="h-12 w-12 bg-purple-100 dark:bg-purple-900/30 rounded-xl flex items-center justify-center">
-                    <svg class="w-6 h-6 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
+                    <x-icon name="document-text" class="w-6 h-6 text-purple-600 dark:text-purple-400" />
                 </div>
             </div>
             <p class="text-sm text-dark-600 dark:text-dark-400 mb-1">{{ __('pages.total_invoices') }}</p>
             <p class="text-2xl font-bold text-dark-900 dark:text-white">{{ number_format($this->totalInvoices) }}</p>
-        </div>
+        </x-card>
 
         {{-- Collection Rate --}}
-        <div class="bg-white dark:bg-dark-800 rounded-xl p-6 border border-dark-200 dark:border-dark-600 hover:shadow-lg transition-shadow">
+        <x-card class="hover:shadow-lg transition-shadow">
             <div class="flex items-center justify-between mb-4">
                 <div class="h-12 w-12 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center">
-                    <svg class="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
+                    <x-icon name="check-circle" class="w-6 h-6 text-green-600 dark:text-green-400" />
                 </div>
             </div>
             <p class="text-sm text-dark-600 dark:text-dark-400 mb-1">{{ __('pages.collection_rate') }}</p>
             <p class="text-2xl font-bold text-dark-900 dark:text-white">{{ $this->collectionRate }}%</p>
-        </div>
+        </x-card>
 
         {{-- Gross Profit --}}
-        <div class="bg-white dark:bg-dark-800 rounded-xl p-6 border border-dark-200 dark:border-dark-600 hover:shadow-lg transition-shadow">
+        <x-card class="hover:shadow-lg transition-shadow">
             <div class="flex items-center justify-between mb-4">
                 <div class="h-12 w-12 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl flex items-center justify-center">
-                    <svg class="w-6 h-6 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                    </svg>
+                    <x-icon name="arrow-trending-up" class="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
                 </div>
-                <span class="text-xs font-medium px-2 py-1 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
-                    {{ $this->profitMargin }}% {{ __('pages.margin') }}
-                </span>
+                <x-badge :text="$this->profitMargin . '% ' . __('pages.margin')" color="emerald" sm />
             </div>
             <p class="text-sm text-dark-600 dark:text-dark-400 mb-1">{{ __('pages.gross_profit') }}</p>
             <p class="text-2xl font-bold text-dark-900 dark:text-white">{{ $this->formatCurrency($this->grossProfit) }}</p>
-        </div>
+        </x-card>
 
         {{-- Active Clients --}}
-        <div class="bg-white dark:bg-dark-800 rounded-xl p-6 border border-dark-200 dark:border-dark-600 hover:shadow-lg transition-shadow">
+        <x-card class="hover:shadow-lg transition-shadow">
             <div class="flex items-center justify-between mb-4">
                 <div class="h-12 w-12 bg-indigo-100 dark:bg-indigo-900/30 rounded-xl flex items-center justify-center">
-                    <svg class="w-6 h-6 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                    </svg>
+                    <x-icon name="user-group" class="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
                 </div>
                 @if ($this->newClientsThisMonth > 0)
-                    <span class="text-xs font-medium px-2 py-1 rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400">
-                        +{{ $this->newClientsThisMonth }} {{ __('pages.new') }}
-                    </span>
+                    <x-badge :text="'+' . $this->newClientsThisMonth . ' ' . __('pages.new')" color="indigo" sm />
                 @endif
             </div>
             <p class="text-sm text-dark-600 dark:text-dark-400 mb-1">{{ __('pages.active_clients') }}</p>
             <p class="text-2xl font-bold text-dark-900 dark:text-white">{{ number_format($this->activeClients) }}</p>
-        </div>
+        </x-card>
     </div>
 
     {{-- Charts Section --}}
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
         {{-- Revenue Trend --}}
-        <div class="lg:col-span-2 bg-white dark:bg-dark-800 rounded-xl p-6 border border-dark-200 dark:border-dark-600">
-            <h3 class="text-lg font-semibold text-dark-900 dark:text-white mb-6">{{ __('pages.revenue_trend_12_months') }}</h3>
+        <x-card class="lg:col-span-2" header="{{ __('pages.revenue_trend_12_months') }}">
             <div class="h-80">
                 <canvas id="revenueChart"></canvas>
             </div>
-        </div>
+        </x-card>
 
         {{-- Invoice Status --}}
-        <div class="bg-white dark:bg-dark-800 rounded-xl p-6 border border-dark-200 dark:border-dark-600">
-            <h3 class="text-lg font-semibold text-dark-900 dark:text-white mb-6">{{ __('pages.invoice_status') }}</h3>
+        <x-card header="{{ __('pages.invoice_status') }}">
             <div class="h-80 flex items-center justify-center">
                 <canvas id="statusChart"></canvas>
             </div>
-        </div>
+        </x-card>
     </div>
 
     {{-- Profit vs Revenue Chart --}}
-    <div class="bg-white dark:bg-dark-800 rounded-xl p-6 border border-dark-200 dark:border-dark-600 mb-8">
-        <h3 class="text-lg font-semibold text-dark-900 dark:text-white mb-6">{{ __('pages.revenue_vs_profit') }}</h3>
-        <div class="h-80">
-            <canvas id="profitChart"></canvas>
-        </div>
+    <div class="mb-8">
+        <x-card header="{{ __('pages.revenue_vs_profit') }}">
+            <div class="h-80">
+                <canvas id="profitChart"></canvas>
+            </div>
+        </x-card>
     </div>
 
     {{-- Insights Grid --}}
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         {{-- Top Clients --}}
-        <div class="bg-white dark:bg-dark-800 rounded-xl p-6 border border-dark-200 dark:border-dark-600">
-            <div class="flex items-center justify-between mb-6">
-                <h3 class="text-lg font-semibold text-dark-900 dark:text-white">{{ __('pages.top_clients') }}</h3>
+        <x-card>
+            <x-slot:header class="flex items-center justify-between p-4 border-b border-gray-100 dark:border-dark-600">
+                <span class="text-md font-medium text-secondary-700 dark:text-dark-300">{{ __('pages.top_clients') }}</span>
                 <a href="{{ route('clients') }}" wire:navigate class="text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300">
                     {{ __('pages.view_all') }} →
                 </a>
-            </div>
+            </x-slot:header>
             <div class="space-y-3">
                 @forelse ($this->topClients as $client)
                     <div class="flex items-center justify-between p-3 bg-dark-50 dark:bg-dark-700 rounded-lg">
@@ -161,16 +140,16 @@
                     <p class="text-center text-dark-500 dark:text-dark-400 py-8">{{ __('pages.no_client_data_yet') }}</p>
                 @endforelse
             </div>
-        </div>
+        </x-card>
 
         {{-- Recurring Revenue --}}
-        <div class="bg-white dark:bg-dark-800 rounded-xl p-6 border border-dark-200 dark:border-dark-600">
-            <div class="flex items-center justify-between mb-6">
-                <h3 class="text-lg font-semibold text-dark-900 dark:text-white">{{ __('pages.recurring_revenue') }}</h3>
+        <x-card>
+            <x-slot:header class="flex items-center justify-between p-4 border-b border-gray-100 dark:border-dark-600">
+                <span class="text-md font-medium text-secondary-700 dark:text-dark-300">{{ __('pages.recurring_revenue') }}</span>
                 <a href="{{ route('recurring-invoices.index') }}" wire:navigate class="text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300">
                     {{ __('pages.manage') }} →
                 </a>
-            </div>
+            </x-slot:header>
             <div class="space-y-4">
                 <div class="p-4 bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-lg">
                     <p class="text-sm text-blue-700 dark:text-blue-300 mb-1">{{ __('pages.mrr_monthly_recurring_revenue') }}</p>
@@ -187,19 +166,19 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </x-card>
     </div>
 
     {{-- Recent Activity & Quick Actions --}}
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {{-- Recent Invoices --}}
-        <div class="lg:col-span-2 bg-white dark:bg-dark-800 rounded-xl p-6 border border-dark-200 dark:border-dark-600">
-            <div class="flex items-center justify-between mb-6">
-                <h3 class="text-lg font-semibold text-dark-900 dark:text-white">{{ __('pages.recent_invoices') }}</h3>
+        <x-card class="lg:col-span-2">
+            <x-slot:header class="flex items-center justify-between p-4 border-b border-gray-100 dark:border-dark-600">
+                <span class="text-md font-medium text-secondary-700 dark:text-dark-300">{{ __('pages.recent_invoices') }}</span>
                 <a href="{{ route('invoices.index') }}" wire:navigate class="text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300">
                     {{ __('pages.view_all') }} →
                 </a>
-            </div>
+            </x-slot:header>
             <div class="space-y-2">
                 @forelse ($this->recentInvoices as $invoice)
                     <div class="flex items-center justify-between p-3 hover:bg-dark-50 dark:hover:bg-dark-700 rounded-lg transition-colors">
@@ -230,17 +209,15 @@
                     <p class="text-center text-dark-500 dark:text-dark-400 py-8">{{ __('pages.no_invoices_yet') }}</p>
                 @endforelse
             </div>
-        </div>
+        </x-card>
 
         {{-- Quick Stats & Actions --}}
         <div class="space-y-6">
-            {{-- Bank Balance --}}
-            <div class="bg-gradient-to-br from-emerald-500 to-emerald-700 rounded-xl p-6 text-white">
+            {{-- Bank Balance - Keep custom styling for gradient background --}}
+            <div class="bg-gradient-to-br from-emerald-500 to-emerald-700 rounded-xl p-6 text-white shadow-md">
                 <div class="flex items-center gap-3 mb-4">
                     <div class="h-12 w-12 bg-white/20 rounded-xl flex items-center justify-center">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" />
-                        </svg>
+                        <x-icon name="building-library" class="w-6 h-6" />
                     </div>
                     <div>
                         <p class="text-sm text-emerald-100">{{ __('pages.total_bank_balance') }}</p>
@@ -255,50 +232,47 @@
 
             {{-- Reimbursements --}}
             @if ($this->pendingReimbursements > 0)
-                <div class="bg-white dark:bg-dark-800 rounded-xl p-6 border border-dark-200 dark:border-dark-600">
+                <x-card>
                     <div class="flex items-center gap-3 mb-4">
                         <div class="h-10 w-10 bg-amber-100 dark:bg-amber-900/30 rounded-lg flex items-center justify-center">
-                            <svg class="w-5 h-5 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
+                            <x-icon name="currency-dollar" class="w-5 h-5 text-amber-600 dark:text-amber-400" />
                         </div>
                         <div>
                             <p class="text-sm text-dark-600 dark:text-dark-400">{{ __('pages.reimbursement_pending') }}</p>
                             <p class="text-xl font-bold text-dark-900 dark:text-white">{{ $this->pendingReimbursements }} {{ __('pages.submissions') }}</p>
                         </div>
                     </div>
-                    <div class="pt-4 border-t border-dark-200 dark:border-dark-600">
-                        <p class="text-xs text-dark-600 dark:text-dark-400 mb-1">{{ __('pages.total_value') }}</p>
-                        <p class="text-lg font-semibold text-dark-900 dark:text-white">{{ $this->formatCurrency($this->pendingReimbursementAmount) }}</p>
-                    </div>
-                    <a href="{{ route('reimbursements.index') }}" wire:navigate class="block mt-4 text-center text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 font-medium">
-                        {{ __('pages.review_now') }} →
-                    </a>
-                </div>
+                    <x-slot:footer>
+                        <div class="flex items-center justify-between w-full">
+                            <div>
+                                <p class="text-xs text-dark-600 dark:text-dark-400 mb-1">{{ __('pages.total_value') }}</p>
+                                <p class="text-lg font-semibold text-dark-900 dark:text-white">{{ $this->formatCurrency($this->pendingReimbursementAmount) }}</p>
+                            </div>
+                            <a href="{{ route('reimbursements.index') }}" wire:navigate class="text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 font-medium">
+                                {{ __('pages.review_now') }} →
+                            </a>
+                        </div>
+                    </x-slot:footer>
+                </x-card>
             @endif
 
             {{-- Quick Actions --}}
-            <div class="bg-white dark:bg-dark-800 rounded-xl p-6 border border-dark-200 dark:border-dark-600">
-                <h4 class="text-sm font-semibold text-dark-900 dark:text-white mb-4">{{ __('pages.quick_actions') }}</h4>
+            <x-card header="{{ __('pages.quick_actions') }}">
                 <div class="space-y-2">
                     <a href="{{ route('invoices.create') }}" wire:navigate class="flex items-center gap-3 p-3 rounded-lg hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors group">
                         <div class="h-8 w-8 bg-primary-100 dark:bg-primary-900/30 rounded-lg flex items-center justify-center group-hover:bg-primary-200 dark:group-hover:bg-primary-900/50 transition-colors">
-                            <svg class="w-4 h-4 text-primary-600 dark:text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                            </svg>
+                            <x-icon name="plus" class="w-4 h-4 text-primary-600 dark:text-primary-400" />
                         </div>
                         <span class="text-sm font-medium text-dark-900 dark:text-white">{{ __('pages.create_new_invoice') }}</span>
                     </a>
                     <a href="{{ route('cash-flow.index') }}" wire:navigate class="flex items-center gap-3 p-3 rounded-lg hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors group">
                         <div class="h-8 w-8 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg flex items-center justify-center group-hover:bg-emerald-200 dark:group-hover:bg-emerald-900/50 transition-colors">
-                            <svg class="w-4 h-4 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                            </svg>
+                            <x-icon name="chart-bar" class="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                         </div>
                         <span class="text-sm font-medium text-dark-900 dark:text-white">{{ __('pages.view_cash_flow') }}</span>
                     </a>
                 </div>
-            </div>
+            </x-card>
         </div>
     </div>
 </div>

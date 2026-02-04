@@ -4,9 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use App\Models\InvoiceItem;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class Client extends Model
@@ -28,18 +26,6 @@ class Client extends Model
         'address'
     ];
 
-    public function ownedCompanies(): BelongsToMany
-    {
-        return $this->belongsToMany(Client::class, 'client_relationships', 'owner_id', 'company_id')
-            ->withTimestamps();
-    }
-
-    public function owners(): BelongsToMany
-    {
-        return $this->belongsToMany(Client::class, 'client_relationships', 'company_id', 'owner_id')
-            ->withTimestamps();
-    }
-
     public function invoices(): HasMany
     {
         return $this->hasMany(Invoice::class, 'billed_to_id');
@@ -55,7 +41,7 @@ class Client extends Model
         return $this->morphMany(Receivable::class, 'debtor');
     }
 
-    // Override delete method to handle relationships properly
+    // Override delete method to handle cascade deletes
     public function delete()
     {
         // Delete invoice items related to this client
@@ -63,15 +49,6 @@ class Client extends Model
 
         // Delete invoices for this client
         $this->invoices()->delete();
-
-        // Delete client relationships
-        if ($this->type === 'individual') {
-            // Remove owned companies relationships
-            $this->ownedCompanies()->detach();
-        } else {
-            // Remove owners relationships
-            $this->owners()->detach();
-        }
 
         return parent::delete();
     }

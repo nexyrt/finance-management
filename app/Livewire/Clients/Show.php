@@ -16,8 +16,6 @@ class Show extends Component
     {
         $this->client = Client::with([
             'invoices' => fn($q) => $q->latest()->limit(5),
-            'owners',
-            'ownedCompanies'
         ])->find($clientId);
 
         if ($this->client) {
@@ -29,17 +27,8 @@ class Show extends Component
     {
         if ($this->client) {
             $clientId = $this->client->id;
-            $this->showViewModal = false; // Changed from $this->close()
+            $this->showViewModal = false;
             $this->dispatch('edit-client', clientId: $clientId);
-        }
-    }
-
-    public function manageRelationships()
-    {
-        if ($this->client) {
-            $clientId = $this->client->id;
-            $this->showViewModal = false; // Changed from $this->close()
-            $this->dispatch('manage-relationships', clientId: $clientId);
         }
     }
 
