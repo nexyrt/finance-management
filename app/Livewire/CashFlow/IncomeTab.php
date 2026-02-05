@@ -287,6 +287,22 @@ class IncomeTab extends Component
         }, $filename);
     }
 
+    // Export to PDF
+    public function exportPdf()
+    {
+        $startDate = !empty($this->dateRange) && isset($this->dateRange[0]) ? $this->dateRange[0] : null;
+        $endDate = !empty($this->dateRange) && isset($this->dateRange[1]) ? $this->dateRange[1] : null;
+
+        // Build URL with query parameters
+        $url = route('cash-flow.export.pdf', array_filter([
+            'start_date' => $startDate,
+            'end_date' => $endDate,
+        ]));
+
+        // Redirect to PDF download
+        return redirect($url);
+    }
+
     // Export selected items
     public function exportSelected()
     {

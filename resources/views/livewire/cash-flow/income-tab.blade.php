@@ -55,8 +55,11 @@
                         langsung</p>
                 </div>
                 <div class="flex items-center gap-2">
+                    <x-button wire:click="exportPdf" color="red" icon="document-text" size="sm" loading="exportPdf">
+                        Export PDF
+                    </x-button>
                     <x-button wire:click="export" color="green" icon="arrow-down-tray" size="sm" loading="export">
-                        Export
+                        Export Excel
                     </x-button>
                     <livewire:cash-flow.create-income @income-created="$refresh" />
                 </div>

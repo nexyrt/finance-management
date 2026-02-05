@@ -111,13 +111,12 @@
                     <p class="text-sm text-dark-600 dark:text-dark-400">Transaksi pengeluaran operasional</p>
                 </div>
                 <div class="flex items-center gap-2 flex-wrap">
+                    <x-button wire:click="exportPdf" color="red" icon="document-text" size="sm" loading="exportPdf">
+                        Export PDF
+                    </x-button>
                     <x-button wire:click="export" color="green" icon="arrow-down-tray" size="sm"
-                        loading="export">Export</x-button>
-                    <x-button wire:click="exportWithCategoryBreakdown" color="purple" icon="chart-bar" size="sm"
-                        loading="exportWithCategoryBreakdown">Breakdown</x-button>
-                    <x-button wire:click="exportComparison" color="blue" icon="arrow-trending-up" size="sm"
-                        loading="exportComparison">Comparison</x-button>
-                    <x-button wire:click="$dispatch('create-transaction', {allowedTypes: ['debit']})" color="red"
+                        loading="export">Export Excel</x-button>
+                    <x-button wire:click="$dispatch('create-transaction', {allowedTypes: ['debit']})" color="primary"
                         icon="plus" size="sm">Tambah</x-button>
                 </div>
             </div>
