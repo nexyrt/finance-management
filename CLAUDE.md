@@ -1196,6 +1196,92 @@ config/
 
 ---
 
+## Design System
+
+### Typography
+
+**Fonts:**
+- **Headings (h1-h6)**: Plus Jakarta Sans (weights: 600, 700, 800)
+  - Modern dan profesional
+  - Digunakan untuk semua heading dan judul
+- **Body Text**: Inter (weights: 400, 500, 600, 700)
+  - Sangat readable, digunakan di aplikasi finance seperti Stripe, Mercury
+  - Digunakan untuk semua body text, paragraphs, labels
+
+**Implementation:**
+```css
+/* app.css */
+--font-sans: 'Inter', ...;
+--font-heading: 'Plus Jakarta Sans', ...;
+
+/* Auto-applied */
+h1, h2, h3, h4, h5, h6, .heading, .font-heading {
+    font-family: var(--font-heading);
+}
+```
+
+### Dark Mode Color System
+
+**Color Variables** (`resources/css/app.css`):
+
+| Variable | Hex | Usage |
+|----------|-----|-------|
+| `--color-dark-50` | `#fafafa` | Light mode backgrounds, lightest gray |
+| `--color-dark-100` | `#f4f4f5` | Very light backgrounds |
+| `--color-dark-200` | `#e4e4e7` | Light borders, dividers |
+| `--color-dark-300` | `#d4d4d8` | Medium-light text/borders |
+| `--color-dark-400` | `#a1a1aa` | Muted text, icons |
+| `--color-dark-500` | `#71717a` | Secondary text |
+| `--color-dark-700` | `#27272a` | **Sidebar background** (dark mode) |
+| `--color-dark-800` | `#3f3f46` | **Body/Card background** (dark mode) |
+| `--color-dark-950` | `#09090b` | Deepest black (rarely used) |
+
+**Key Dark Mode Classes & Usage:**
+
+| Class | Hex | Primary Usage | Components |
+|-------|-----|---------------|------------|
+| `dark:bg-dark-700` | `#27272a` | **Sidebar, Info boxes, Stats boxes, Selected/Active states** | Sidebar menu, Dashboard stats, Pagination active button, Info sections |
+| `dark:bg-dark-800` | `#3f3f46` | **Primary cards, Body background, Modals, Panels, Table rows** | Cards, Modals, Dropdowns, Notification bell, Language switcher, Table striped rows (`dark:bg-dark-800/50`) |
+| `dark:border-dark-600` | (Missing - needs definition) | **Card borders, Dividers, Separators** | All card borders, Section dividers, Table borders |
+| `dark:border-dark-800` | `#3f3f46` | **Subtle borders, Inner dividers** | Sidebar border, Internal separators |
+
+**Layout Structure:**
+```blade
+<!-- app.blade.php -->
+<body class="dark:bg-dark-800">  <!-- Body: #3f3f46 -->
+    <sidebar class="dark:bg-dark-700">  <!-- Sidebar: #27272a (darker) -->
+    </sidebar>
+    <main>
+        <card class="dark:bg-dark-800 dark:border-dark-600">
+            <!-- Cards use same color as body for flat design -->
+        </card>
+    </main>
+</body>
+```
+
+**Design Principles:**
+- Sidebar (`dark-700`) is **darker** than body (`dark-800`) for depth perception
+- Cards use `dark-800` background with `dark-600` borders for subtle elevation
+- Hover states and active items use `dark-700` for visual feedback
+- Table alternating rows use `dark-800/50` (50% opacity) for zebra striping
+
+**Missing Variables (TODO):**
+- `--color-dark-600`: Should be defined for border consistency (suggested: `#52525b`)
+- `--color-dark-900`: Currently missing, used in some views (suggested: `#1a1a1a`)
+
+### Primary Color Palette
+
+**Professional Blue Theme:**
+- Primary: `#2563eb` (blue-600)
+- Used for: Buttons, links, active states, focus rings
+- Full spectrum: 50-950 defined in `app.css`
+
+**Secondary & Dark:**
+- Secondary: Slate/Gray for neutral elements
+- Dark: Zinc-based for dark mode backgrounds (see table above)
+
+---
+
 ## Database Seeding
 
 ### Active Seeders (always run)

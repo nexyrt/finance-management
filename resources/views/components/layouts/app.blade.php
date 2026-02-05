@@ -24,7 +24,7 @@
     @include('partials.head')
 </head>
 
-<body class="min-h-screen bg-gray-50 dark:bg-dark-900">
+<body class="min-h-screen bg-gray-50 dark:bg-dark-800">
     <x-toast />
     <x-dialog />
 
@@ -63,7 +63,7 @@
 
         {{-- Sidebar Menu --}}
         <x-slot:menu>
-            <x-side-bar smart navigate thin-scroll class="bg-white dark:bg-primary-950 border-r border-zinc-200 dark:border-primary-900">
+            <x-side-bar smart navigate thin-scroll class="bg-white dark:bg-dark-50 border-r border-zinc-200 dark:border-dark-800">
                 {{-- Logo --}}
                 <x-slot:brand>
                     <a href="{{ route('dashboard') }}" wire:navigate class="flex justify-center items-center py-4">

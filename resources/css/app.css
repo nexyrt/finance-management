@@ -14,7 +14,8 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-heading: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
 
     /* =========================================================================
        TallStackUI Custom Colors - Professional Blue Theme
@@ -56,10 +57,8 @@
     --color-dark-300: #d4d4d8;
     --color-dark-400: #a1a1aa;
     --color-dark-500: #71717a;
-    --color-dark-600: #52525b;
-    --color-dark-700: #3f3f46;
-    --color-dark-800: #27272a;
-    --color-dark-900: #18181b;
+    --color-dark-700: #27272a;
+    --color-dark-800: #3f3f46;
     --color-dark-950: #09090b;
 }
 
@@ -81,5 +80,12 @@
 }
 
 [x-cloak] { display: none !important; }
+
+/* Typography - Heading fonts */
+h1, h2, h3, h4, h5, h6,
+.heading,
+.font-heading {
+    font-family: var(--font-heading);
+}
 
 
