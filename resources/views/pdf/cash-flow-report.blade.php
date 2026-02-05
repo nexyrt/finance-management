@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="utf-8">
-    <title>Rincian Dana Kas Kantor - {{ $monthName }} {{ $year }}</title>
+    <title>Rincian Dana Kas Kantor - {{ $periodText }}</title>
     <style>
         @page {
             margin: 20mm 15mm;
