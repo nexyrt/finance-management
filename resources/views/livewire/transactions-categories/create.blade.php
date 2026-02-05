@@ -18,23 +18,15 @@
                 ]" placeholder="Pilih type category..." required />
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {{-- Code Input --}}
-                <div>
-                    <x-input label="Code *" wire:model="code" hint="Uppercase, no spaces (e.g., INC_PAYMENT)"
-                        required />
-                </div>
-
-                {{-- Label Input --}}
-                <div>
-                    <x-input label="Label *" wire:model="label" required />
-                </div>
+            {{-- Label Input --}}
+            <div>
+                <x-input label="Label *" wire:model="label" hint="E.g., Client Payment, Office Supplies" required />
             </div>
 
             {{-- Parent Selector (conditional) --}}
             @if ($type && count($this->parentOptions) > 0)
                 <div>
-                    <x-select.styled label="Parent Category (Optional)" wire:model="parent_code"
+                    <x-select.styled label="Parent Category (Optional)" wire:model="parent_id"
                         :options="$this->parentOptions" placeholder="Select parent or leave empty for top-level" />
                     <p class="mt-1 text-xs text-dark-500 dark:text-dark-400">
                         <x-icon name="information-circle" class="w-4 h-4 inline" />
@@ -59,7 +51,7 @@
                     <strong>Tips:</strong>
                 </p>
                 <ul class="mt-2 text-sm text-dark-500 dark:text-dark-400 space-y-1 list-disc list-inside">
-                    <li>Use descriptive codes: <code class="text-xs bg-gray-200 dark:bg-gray-800 px-1 py-0.5 rounded">INC_CLIENT_PAYMENT</code></li>
+                    <li>Use clear, descriptive labels for easy identification</li>
                     <li>Parent categories group related child categories</li>
                     <li>Child categories inherit their parent's type</li>
                 </ul>

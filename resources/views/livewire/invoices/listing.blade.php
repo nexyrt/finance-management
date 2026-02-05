@@ -39,10 +39,9 @@
 
         @interact('column_client_name', $row)
             <div class="flex items-center gap-3">
-                <div
-                    class="w-10 h-10 {{ $row->client_type === 'individual' ? 'bg-gradient-to-br from-zinc-400 to-zinc-600' : 'bg-gradient-to-br from-purple-400 to-purple-600' }} rounded-2xl flex items-center justify-center shadow-lg">
+                <div class="w-10 h-10 bg-zinc-100 dark:bg-dark-700 rounded-lg flex items-center justify-center">
                     <x-icon name="{{ $row->client_type === 'individual' ? 'user' : 'building-office' }}"
-                        class="w-5 h-5 text-white" />
+                        class="w-5 h-5 text-dark-600 dark:text-dark-400" />
                 </div>
                 <div>
                     <p class="font-semibold text-dark-900 dark:text-dark-50">{{ $row->client_name }}</p>
@@ -177,11 +176,11 @@
     <div x-data="{ show: @entangle('selected').live }" x-show="show.length > 0" x-transition
         class="fixed bottom-4 sm:bottom-6 left-4 right-4 sm:left-1/2 sm:right-auto sm:transform sm:-translate-x-1/2 z-50">
         <div
-            class="bg-white dark:bg-dark-800 rounded-xl shadow-lg border border-zinc-200 dark:border-dark-600 px-4 sm:px-6 py-4 sm:min-w-96">
+            class="bg-white dark:bg-dark-800 rounded-lg shadow-lg border border-zinc-200 dark:border-dark-600 px-4 sm:px-6 py-4 sm:min-w-96">
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-6">
                 <div class="flex items-center gap-3">
-                    <div class="h-10 w-10 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center">
-                        <x-icon name="check-circle" class="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                    <div class="h-10 w-10 bg-zinc-100 dark:bg-dark-700 rounded-lg flex items-center justify-center">
+                        <x-icon name="check-circle" class="w-5 h-5 text-dark-600 dark:text-dark-400" />
                     </div>
                     <div>
                         <div class="font-semibold text-dark-900 dark:text-dark-50"
@@ -207,11 +206,11 @@
         <x-slot:title>
             <div class="flex items-center gap-4 my-3">
                 <div
-                    class="h-12 w-12 bg-primary-50 dark:bg-primary-900/20 rounded-xl flex items-center justify-center">
-                    <x-icon name="printer" class="w-6 h-6 text-primary-600 dark:text-primary-400" />
+                    class="h-12 w-12 bg-zinc-100 dark:bg-dark-700 rounded-lg flex items-center justify-center">
+                    <x-icon name="printer" class="w-6 h-6 text-dark-600 dark:text-dark-400" />
                 </div>
                 <div>
-                    <h3 class="text-xl font-bold text-dark-900 dark:text-dark-50">{{ __('invoice.print_invoice') }}</h3>
+                    <h3 class="text-xl font-semibold text-dark-900 dark:text-dark-50">{{ __('invoice.print_invoice') }}</h3>
                     <p class="text-sm text-dark-600 dark:text-dark-400">{{ __('pages.select_invoice_type_to_print') }}</p>
                 </div>
             </div>
@@ -220,11 +219,11 @@
         <div class="space-y-4">
             {{-- Full Invoice Option --}}
             <div wire:click="$set('printType', 'full')"
-                class="p-4 border-2 rounded-lg cursor-pointer transition-all hover:border-primary-300 {{ $printType === 'full' ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20' : 'border-gray-200 dark:border-dark-600' }}">
+                class="p-4 border-2 rounded-lg cursor-pointer transition-all hover:border-zinc-400 {{ $printType === 'full' ? 'border-zinc-600 bg-zinc-50 dark:bg-dark-700' : 'border-gray-200 dark:border-dark-600' }}">
                 <div class="flex items-start gap-3">
                     <div class="pt-1">
                         <div
-                            class="w-5 h-5 rounded-full border-2 flex items-center justify-center {{ $printType === 'full' ? 'bg-primary-500 border-primary-500' : 'border-gray-300 dark:border-dark-500' }}">
+                            class="w-5 h-5 rounded-full border-2 flex items-center justify-center {{ $printType === 'full' ? 'bg-zinc-600 border-zinc-600' : 'border-gray-300 dark:border-dark-500' }}">
                             @if ($printType === 'full')
                                 <div class="w-2.5 h-2.5 bg-white rounded-full"></div>
                             @endif
@@ -234,7 +233,7 @@
                         <div class="font-semibold text-dark-900 dark:text-dark-50 mb-1">{{ __('invoice.full_payment_invoice') }}</div>
                         <div class="text-sm text-dark-600 dark:text-dark-400 mb-2">{{ __('pages.print_full_invoice') }}
                         </div>
-                        <div class="text-lg font-bold text-primary-600 dark:text-primary-400">
+                        <div class="text-lg font-semibold text-dark-900 dark:text-dark-50">
                             Rp {{ number_format($printTotalAmount, 0, ',', '.') }}
                         </div>
                     </div>
@@ -243,11 +242,11 @@
 
             {{-- Down Payment Option --}}
             <div wire:click="$set('printType', 'dp')"
-                class="p-4 border-2 rounded-lg cursor-pointer transition-all hover:border-primary-300 {{ $printType === 'dp' ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20' : 'border-gray-200 dark:border-dark-600' }}">
+                class="p-4 border-2 rounded-lg cursor-pointer transition-all hover:border-zinc-400 {{ $printType === 'dp' ? 'border-zinc-600 bg-zinc-50 dark:bg-dark-700' : 'border-gray-200 dark:border-dark-600' }}">
                 <div class="flex items-start gap-3">
                     <div class="pt-1">
                         <div
-                            class="w-5 h-5 rounded-full border-2 flex items-center justify-center {{ $printType === 'dp' ? 'bg-primary-500 border-primary-500' : 'border-gray-300 dark:border-dark-500' }}">
+                            class="w-5 h-5 rounded-full border-2 flex items-center justify-center {{ $printType === 'dp' ? 'bg-zinc-600 border-zinc-600' : 'border-gray-300 dark:border-dark-500' }}">
                             @if ($printType === 'dp')
                                 <div class="w-2.5 h-2.5 bg-white rounded-full"></div>
                             @endif
@@ -258,8 +257,8 @@
                         <div class="text-sm text-dark-600 dark:text-dark-400 mb-3">{{ __('pages.print_dp_invoice') }}
                         </div>
                         @if ($printType === 'dp')
-                            <x-input wire:model="dpAmount" type="text" :label="__('pages.dp_amount') . ' *'" placeholder="0"
-                                prefix="Rp" x-mask:dynamic="$money($input, ',')" />
+                            <x-currency-input wire:model="dpAmount" :label="__('pages.dp_amount') . ' *'" placeholder="0"
+                                prefix="Rp" />
                         @endif
                     </div>
                 </div>
@@ -268,11 +267,11 @@
             {{-- Pelunasan Option --}}
             @if ($printAmountPaid > 0 && $printAmountPaid < $printTotalAmount)
                 <div wire:click="$set('printType', 'pelunasan')"
-                    class="p-4 border-2 rounded-lg cursor-pointer transition-all hover:border-primary-300 {{ $printType === 'pelunasan' ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20' : 'border-gray-200 dark:border-dark-600' }}">
+                    class="p-4 border-2 rounded-lg cursor-pointer transition-all hover:border-zinc-400 {{ $printType === 'pelunasan' ? 'border-zinc-600 bg-zinc-50 dark:bg-dark-700' : 'border-gray-200 dark:border-dark-600' }}">
                     <div class="flex items-start gap-3">
                         <div class="pt-1">
                             <div
-                                class="w-5 h-5 rounded-full border-2 flex items-center justify-center {{ $printType === 'pelunasan' ? 'bg-primary-500 border-primary-500' : 'border-gray-300 dark:border-dark-500' }}">
+                                class="w-5 h-5 rounded-full border-2 flex items-center justify-center {{ $printType === 'pelunasan' ? 'bg-zinc-600 border-zinc-600' : 'border-gray-300 dark:border-dark-500' }}">
                                 @if ($printType === 'pelunasan')
                                     <div class="w-2.5 h-2.5 bg-white rounded-full"></div>
                                 @endif
@@ -283,11 +282,11 @@
                             <div class="text-sm text-dark-600 dark:text-dark-400 mb-2">{{ __('pages.print_settlement_invoice') }}</div>
                             <div class="grid grid-cols-2 gap-2 text-xs mb-2">
                                 <div class="text-dark-500 dark:text-dark-400">{{ __('invoice.already_paid') }}:</div>
-                                <div class="text-right text-green-600 dark:text-green-400 font-semibold">
+                                <div class="text-right text-dark-900 dark:text-dark-50 font-semibold">
                                     Rp {{ number_format($printAmountPaid, 0, ',', '.') }}
                                 </div>
                             </div>
-                            <div class="text-lg font-bold text-orange-600 dark:text-orange-400">
+                            <div class="text-lg font-semibold text-dark-900 dark:text-dark-50">
                                 Rp {{ number_format($printTotalAmount - $printAmountPaid, 0, ',', '.') }}
                             </div>
                         </div>
@@ -308,10 +307,10 @@
                         ['value' => 'invoice', 'label' => 'Generic', 'desc' => 'Simple'],
                     ] as $tpl)
                         <div wire:click="$set('printTemplate', '{{ $tpl['value'] }}')"
-                            class="p-3 border-2 rounded-lg cursor-pointer transition {{ $printTemplate === $tpl['value'] ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20' : 'border-gray-200 dark:border-dark-600 hover:border-primary-300' }}">
+                            class="p-3 border-2 rounded-lg cursor-pointer transition {{ $printTemplate === $tpl['value'] ? 'border-zinc-600 bg-zinc-50 dark:bg-dark-700' : 'border-gray-200 dark:border-dark-600 hover:border-zinc-400' }}">
                             <div class="flex items-start gap-2">
                                 <div class="pt-0.5">
-                                    <div class="w-4 h-4 rounded-full border-2 flex items-center justify-center {{ $printTemplate === $tpl['value'] ? 'bg-primary-500 border-primary-500' : 'border-gray-300 dark:border-dark-500' }}">
+                                    <div class="w-4 h-4 rounded-full border-2 flex items-center justify-center {{ $printTemplate === $tpl['value'] ? 'bg-zinc-600 border-zinc-600' : 'border-gray-300 dark:border-dark-500' }}">
                                         @if ($printTemplate === $tpl['value'])
                                             <div class="w-2 h-2 bg-white rounded-full"></div>
                                         @endif

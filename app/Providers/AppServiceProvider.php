@@ -12,9 +12,14 @@ class AppServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
+        // TallStackUI Component Personalization - Professional Blue Theme
         TallStackUi::personalize()
             ->modal()
-            ->block('wrapper.first', 'fixed inset-0 bg-black/30 transform transition-opacity');
+            ->block('wrapper.first', 'fixed inset-0 bg-black/30 transform transition-opacity')
+            ->and()
+            ->card()
+            ->block('wrapper.second')
+            ->replace('shadow-md', 'border border-zinc-200 dark:border-dark-600 shadow-sm hover:shadow-md transition-shadow duration-150');
 
         // Set locale from session or user preference with fallback
         $availableLocales = config('app.available_locales', ['id', 'zh']);

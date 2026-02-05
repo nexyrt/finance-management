@@ -13,9 +13,8 @@ class Create extends Component
     use Alert;
 
     public string $type = '';
-    public string $code = '';
     public string $label = '';
-    public ?string $parent_code = null;
+    public ?int $parent_id = null;
     public bool $modal = false;
 
     public function render(): View
@@ -26,7 +25,7 @@ class Create extends Component
     public function updatedType(): void
     {
         // Reset parent when type changes
-        $this->parent_code = null;
+        $this->parent_id = null;
     }
 
     #[Computed]
@@ -36,13 +35,13 @@ class Create extends Component
             return [];
         }
 
-        return TransactionCategory::whereNull('parent_code')
+        return TransactionCategory::whereNull('parent_id')
             ->where('type', $this->type)
             ->orderBy('label')
             ->get()
             ->map(fn($cat) => [
                 'label' => $cat->label,
-                'value' => $cat->code
+                'value' => $cat->id
             ])
             ->toArray();
     }
@@ -51,26 +50,11 @@ class Create extends Component
     {
         return [
             'type' => ['required', 'in:income,expense,adjustment,transfer'],
-            'code' => [
-                'required',
-                'string',
-                'unique:transaction_categories,code',
-                'regex:/^[A-Z0-9_]+$/',
-                'max:50'
-            ],
             'label' => ['required', 'string', 'max:255'],
-            'parent_code' => [
+            'parent_id' => [
                 'nullable',
-                'exists:transaction_categories,code',
+                'exists:transaction_categories,id',
             ],
-        ];
-    }
-
-    protected function messages(): array
-    {
-        return [
-            'code.regex' => 'Code harus uppercase, hanya huruf, angka, dan underscore',
-            'code.unique' => 'Code sudah digunakan',
         ];
     }
 
@@ -80,9 +64,8 @@ class Create extends Component
 
         TransactionCategory::create([
             'type' => $this->type,
-            'code' => $this->code,
             'label' => $this->label,
-            'parent_code' => $this->parent_code,
+            'parent_id' => $this->parent_id,
         ]);
 
         $this->dispatch('created');

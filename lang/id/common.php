@@ -35,6 +35,7 @@ return [
     'profile' => 'Profil',
 
     // Actions
+    'actions' => 'Aksi',
     'create' => 'Buat',
     'edit' => 'Ubah',
     'delete' => 'Hapus',

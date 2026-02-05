@@ -15,9 +15,8 @@ class Update extends Component
 
     public ?int $categoryId = null;
     public string $type = '';
-    public string $code = '';
     public string $label = '';
-    public ?string $parent_code = null;
+    public ?int $parent_id = null;
     public int $transactionsCount = 0;
     public int $childrenCount = 0;
     public bool $modal = false;
@@ -32,12 +31,11 @@ class Update extends Component
     public function load(TransactionCategory $category): void
     {
         $category->loadCount(['transactions', 'children']);
-        
+
         $this->categoryId = $category->id;
         $this->type = $category->type;
-        $this->code = $category->code;
         $this->label = $category->label;
-        $this->parent_code = $category->parent_code;
+        $this->parent_id = $category->parent_id;
         $this->transactionsCount = $category->transactions_count;
         $this->childrenCount = $category->children_count;
         $this->originalType = $category->type;
@@ -48,7 +46,7 @@ class Update extends Component
     {
         // Reset parent when type changes
         if ($this->type !== $this->originalType) {
-            $this->parent_code = null;
+            $this->parent_id = null;
         }
     }
 
@@ -59,14 +57,14 @@ class Update extends Component
             return [];
         }
 
-        return TransactionCategory::whereNull('parent_code')
+        return TransactionCategory::whereNull('parent_id')
             ->where('type', $this->type)
             ->where('id', '!=', $this->categoryId) // Exclude self
             ->orderBy('label')
             ->get()
             ->map(fn($cat) => [
                 'label' => $cat->label,
-                'value' => $cat->code
+                'value' => $cat->id
             ])
             ->toArray();
     }
@@ -81,26 +79,11 @@ class Update extends Component
     {
         return [
             'type' => ['required', 'in:income,expense,adjustment,transfer'],
-            'code' => [
-                'required',
-                'string',
-                'unique:transaction_categories,code,' . $this->categoryId,
-                'regex:/^[A-Z0-9_]+$/',
-                'max:50'
-            ],
             'label' => ['required', 'string', 'max:255'],
-            'parent_code' => [
+            'parent_id' => [
                 'nullable',
-                'exists:transaction_categories,code',
+                'exists:transaction_categories,id',
             ],
-        ];
-    }
-
-    protected function messages(): array
-    {
-        return [
-            'code.regex' => 'Code harus uppercase, hanya huruf, angka, dan underscore',
-            'code.unique' => 'Code sudah digunakan',
         ];
     }
 
@@ -113,13 +96,12 @@ class Update extends Component
         }
 
         $this->validate();
-        
+
         $category = TransactionCategory::findOrFail($this->categoryId);
         $category->update([
             'type' => $this->type,
-            'code' => $this->code,
             'label' => $this->label,
-            'parent_code' => $this->parent_code,
+            'parent_id' => $this->parent_id,
         ]);
 
         $this->dispatch('updated');

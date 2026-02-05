@@ -2,14 +2,14 @@
     $personalize = $classes();
 @endphp
 
-<div x-data="tallstackui_card(@js($initializeMinimized))" class="{{ $personalize['wrapper.first'] }}" x-show="show" x-cloak wire:ignore.self>
+<div x-data="tallstackui_card(@js($initializeMinimized))" class="{{ $personalize['wrapper.first'] }}" x-cloak wire:ignore.self>
     <div class="{{ $personalize['wrapper.second'] }}">
         @if ($image && $position !== 'bottom')
             <div class="{{ $personalize['image.wrapper'] }}">
                 <img src="{{ $image }}" @class([$personalize['image.rounded.top'], $personalize['image.size']]) />
             </div>
         @endif
-        @if ($header)
+        @if ($header && ! $header instanceof \Illuminate\View\ComponentSlot)
             <div @class([$personalize['header.wrapper.base'], $colors['background']]) x-bind:class="{ '{{ $personalize['header.wrapper.border'] }}' : !minimize }">
                 <div class="{{ $personalize['header.text.size'] }}">
                     {{ $header }}
@@ -41,6 +41,10 @@
                 </div>
                 @endif
             </div>
+        @elseif ($header instanceof \Illuminate\View\ComponentSlot)
+            <div @class([$personalize['header.wrapper.border'], $colors['background']])>
+                {{ $header }}
+            </div>
         @endif
         <div {{ $attributes->class($personalize['body']) }}
              x-show="!minimize"
@@ -61,9 +65,13 @@
                  x-transition:leave="transition ease-in duration-100"
                  x-transition:leave-start="opacity-100 translate-y-0"
                  x-transition:leave-end="opacity-0 -translate-y-10">
-                <div class="{{ $personalize['footer.text'] }}">
+                @if (! $footer instanceof \Illuminate\View\ComponentSlot)
+                    <div class="{{ $personalize['footer.text'] }}">
+                        {{ $footer }}
+                    </div>
+                @else
                     {{ $footer }}
-                </div>
+                @endif
             </div>
         @endif
         @if ($image && $position === 'bottom')

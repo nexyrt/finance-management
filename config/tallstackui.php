@@ -100,7 +100,7 @@ return [
         |----------------------------------
         | Allowed: solid, outline (Heroicons only).
         */
-        'style' => env('TALLSTACKUI_ICON_STYLE', 'solid'),
+        'style' => env('TALLSTACKUI_ICON_STYLE', 'outline'),
 
         /*
         |----------------------------------

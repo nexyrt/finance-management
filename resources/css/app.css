@@ -6,6 +6,8 @@
 @plugin '@tailwindcss/forms';
 
 @source '../views';
+@source '../../app/Providers/*.php';
+@source '../../app/TallStackUi/*.php';
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../vendor/livewire/flux-pro/stubs/**/*.blade.php';
 @source '../../vendor/livewire/flux/stubs/**/*.blade.php';
@@ -17,9 +19,12 @@
 @theme {
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
 
-    --color-dark: #a1a1aa;
+    /* =========================================================================
+       TallStackUI Custom Colors - Professional Blue Theme
+       ========================================================================= */
 
-    /* Primary Color - Blue Theme */
+    /* PRIMARY COLOR - Professional Blue (#2563EB) */
+    --color-primary: #2563eb;
     --color-primary-50: #eff6ff;
     --color-primary-100: #dbeafe;
     --color-primary-200: #bfdbfe;
@@ -30,8 +35,10 @@
     --color-primary-700: #1d4ed8;
     --color-primary-800: #1e40af;
     --color-primary-900: #1e3a8a;
+    --color-primary-950: #172554;
 
-    /* Secondary Color - Slate Theme */
+    /* SECONDARY COLOR - Slate/Gray for neutral elements */
+    --color-secondary: #64748b;
     --color-secondary-50: #f8fafc;
     --color-secondary-100: #f1f5f9;
     --color-secondary-200: #e2e8f0;
@@ -42,8 +49,10 @@
     --color-secondary-700: #334155;
     --color-secondary-800: #1e293b;
     --color-secondary-900: #0f172a;
+    --color-secondary-950: #020617;
 
-    /* Dark Color - Zinc Theme */
+    /* DARK COLOR - Zinc for dark mode backgrounds */
+    --color-dark: #52525b;
     --color-dark-50: #fafafa;
     --color-dark-100: #f4f4f5;
     --color-dark-200: #e4e4e7;
@@ -54,51 +63,10 @@
     --color-dark-700: #3f3f46;
     --color-dark-800: #27272a;
     --color-dark-900: #18181b;
-
-    /* Flux UI Variables - Unified with TallStackUI */
-    --color-accent: var(--color-zinc-800);
-    --color-accent-content: var(--color-zinc-800);
-    --color-accent-foreground: var(--color-white);
-
-    /* Success/Error Colors */
-    --color-green-50: #f0fdf4;
-    --color-green-100: #dcfce7;
-    --color-green-500: #22c55e;
-    --color-green-600: #16a34a;
-    --color-green-700: #15803d;
-
-    --color-red-50: #fef2f2;
-    --color-red-100: #fee2e2;
-    --color-red-500: #ef4444;
-    --color-red-600: #dc2626;
-    --color-red-700: #b91c1c;
-
-    --color-amber-50: #fffbeb;
-    --color-amber-500: #f59e0b;
-    --color-amber-600: #d97706;
-
-    /* Transaction Color Coding */
-    --color-income: var(--color-green-600);
-    --color-income-bg: var(--color-green-50);
-    --color-income-light: var(--color-green-100);
-
-    --color-expense: var(--color-red-600);
-    --color-expense-bg: var(--color-red-50);
-    --color-expense-light: var(--color-red-100);
-
-    /* TallStackUI Aliases */
-    --color-green-income: var(--color-income);
-    --color-red-expense: var(--color-expense);
+    --color-dark-950: #09090b;
 }
 
-@layer theme {
-    .dark {
-        /* Dark mode adjustments */
-        --color-accent: var(--color-white);
-        --color-accent-content: var(--color-white);
-        --color-accent-foreground: var(--color-dark-900);
-    }
-}
+/* Dark mode is handled by Tailwind's dark: variant and TallStackUI automatically */
 
 /* Rounded bars CSS */
 .rounded-bars .toastui-chart-series-bar rect,
@@ -116,3 +84,165 @@
 }
 
 [x-cloak] { display: none !important; }
+
+/* ============================================
+   TallStackUI Layout Customization
+   ============================================ */
+
+/* Main content area - light background */
+[x-data*="layout"] > div:last-child {
+    background-color: rgb(249 250 251) !important; /* gray-50 */
+}
+
+.dark [x-data*="layout"] > div:last-child {
+    background-color: rgb(24 24 27) !important; /* dark-900 */
+}
+
+/* Sidebar customization - Professional Blue Theme */
+/* Target multiple selectors with highest specificity */
+[data-slot="sidebar"],
+aside[data-slot="sidebar"],
+.dark [data-slot="sidebar"],
+.dark aside[data-slot="sidebar"],
+aside.bg-white,
+aside.dark\:bg-primary-950 {
+    background-color: rgb(23 37 84) !important; /* primary-950 #172554 */
+    border-right: 1px solid rgb(30 58 138) !important; /* primary-900 */
+}
+
+/* Force sidebar background in dark mode with multiple selectors */
+html.dark aside,
+html.dark [data-slot="sidebar"],
+.dark aside,
+body.dark aside {
+    background-color: rgb(23 37 84) !important; /* primary-950 */
+}
+
+/* Sidebar text colors - Light mode (sidebar has white/light background) */
+[data-slot="sidebar"] a,
+aside[data-slot="sidebar"] a,
+aside a {
+    color: rgb(30 41 59) !important; /* slate-800 - dark text on light bg */
+}
+
+[data-slot="sidebar"] a:hover,
+aside[data-slot="sidebar"] a:hover,
+aside a:hover {
+    color: rgb(15 23 42) !important; /* slate-900 - darker on hover */
+    background-color: rgba(148, 163, 184, 0.15) !important; /* subtle slate hover */
+}
+
+/* Active menu item in sidebar - Light mode */
+[data-slot="sidebar"] a[aria-current="page"],
+aside[data-slot="sidebar"] a[aria-current="page"],
+aside a[aria-current="page"] {
+    background-color: rgba(148, 163, 184, 0.25) !important; /* slate highlight */
+    color: rgb(15 23 42) !important; /* slate-900 - dark for active */
+}
+
+/* Sidebar text colors - Dark mode */
+.dark [data-slot="sidebar"] a,
+.dark aside[data-slot="sidebar"] a,
+.dark aside a,
+html.dark aside a {
+    color: rgb(203 213 225) !important; /* slate-300 - soft readable text */
+}
+
+.dark [data-slot="sidebar"] a:hover,
+.dark aside[data-slot="sidebar"] a:hover,
+.dark aside a:hover,
+html.dark aside a:hover {
+    color: rgb(241 245 249) !important; /* slate-100 - brighter on hover */
+    background-color: rgba(71, 85, 105, 0.25) !important; /* subtle slate hover */
+}
+
+/* Active menu item in sidebar - Dark mode */
+.dark [data-slot="sidebar"] a[aria-current="page"],
+.dark aside[data-slot="sidebar"] a[aria-current="page"],
+.dark aside a[aria-current="page"],
+html.dark aside a[aria-current="page"] {
+    background-color: rgba(71, 85, 105, 0.4) !important; /* stronger slate highlight */
+    color: rgb(248 250 252) !important; /* slate-50 - almost white for active */
+}
+
+/* ============================================
+   TallStackUI Sidebar Typography & Icon Customization
+   ============================================ */
+
+/* Sidebar menu items - Light font weight for cleaner look */
+[data-slot="sidebar"] a,
+aside[data-slot="sidebar"] a,
+[data-tallstackui] aside a,
+.dark [data-slot="sidebar"] a,
+.dark aside[data-slot="sidebar"] a {
+    font-weight: 400 !important; /* regular weight */
+    padding-top: 0.5rem !important; /* 8px */
+    padding-bottom: 0.5rem !important; /* 8px */
+    padding-left: 0.75rem !important; /* 12px */
+    padding-right: 0.75rem !important; /* 12px */
+    font-size: 0.875rem !important; /* 14px */
+    line-height: 1.25rem !important; /* Tight line height */
+    margin-bottom: 0.125rem !important; /* 2px - tiny gap between items */
+    border-radius: 0.375rem !important; /* 6px - rounded corners */
+    transition: all 0.15s ease-in-out !important; /* smooth transitions */
+}
+
+/* Sidebar separator headings - Light mode (sidebar has white/light background) */
+[data-slot="sidebar"] .text-xs.font-semibold,
+aside[data-slot="sidebar"] .text-xs.font-semibold,
+[data-slot="sidebar"] span,
+aside[data-slot="sidebar"] span {
+    font-weight: 400 !important; /* regular weight */
+    font-size: 0.6875rem !important; /* 11px - smaller like in reference */
+    letter-spacing: 0.08em !important; /* wider spacing for uppercase */
+    text-transform: uppercase !important;
+    color: rgb(71 85 105) !important; /* slate-600 - dark muted gray on light bg */
+}
+
+/* Sidebar separator headings - Dark mode */
+.dark [data-slot="sidebar"] .text-xs.font-semibold,
+.dark aside[data-slot="sidebar"] .text-xs.font-semibold,
+.dark [data-slot="sidebar"] span,
+.dark aside[data-slot="sidebar"] span {
+    font-weight: 400 !important; /* regular weight */
+    font-size: 0.6875rem !important; /* 11px */
+    letter-spacing: 0.08em !important;
+    text-transform: uppercase !important;
+    color: rgb(100 116 139) !important; /* slate-500 - darker gray for dark mode */
+}
+
+/* Reduce spacing for separator sections */
+[data-slot="sidebar"] .px-3.pt-6.pb-2,
+aside[data-slot="sidebar"] .px-3.pt-6.pb-2,
+.dark [data-slot="sidebar"] .px-3.pt-6.pb-2,
+.dark aside[data-slot="sidebar"] .px-3.pt-6.pb-2 {
+    padding-top: 1rem !important; /* 16px - more space above sections */
+    padding-bottom: 0.375rem !important; /* 6px - tight space below header */
+    padding-left: 0.75rem !important; /* 12px - align with menu items */
+    padding-right: 0.75rem !important;
+}
+
+/* Override TallStackUI icon to use outline style (stroke-based) */
+[data-slot="sidebar"] svg,
+aside[data-slot="sidebar"] svg,
+[data-tallstackui] aside svg,
+.dark [data-slot="sidebar"] svg,
+.dark aside[data-slot="sidebar"] svg {
+    stroke-width: 1.5 !important; /* Heroicons outline default */
+    fill: none !important;
+    stroke: currentColor !important;
+    width: 1.125rem !important; /* 18px - smaller icons like reference */
+    height: 1.125rem !important;
+    flex-shrink: 0 !important; /* prevent icon shrinking */
+}
+
+/* Gap between icon and text */
+[data-slot="sidebar"] a,
+aside[data-slot="sidebar"] a,
+.dark [data-slot="sidebar"] a,
+.dark aside[data-slot="sidebar"] a {
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.625rem !important; /* 10px gap between icon and text */
+}
+

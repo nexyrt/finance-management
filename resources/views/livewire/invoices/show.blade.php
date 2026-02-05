@@ -1,22 +1,17 @@
 <div>
     <x-modal wire :title="__('invoice.invoice_details')" size="5xl" center>
         @if ($invoice)
-            {{-- Header with consistent color scheme --}}
-            <div
-                class="bg-gradient-to-r from-primary-50 to-primary-100 dark:from-primary-900/20 dark:to-primary-800/20 -m-6 mb-6 p-6">
+            {{-- Header --}}
+            <div class="bg-white dark:bg-dark-800 -m-6 mb-6 p-6 border-b border-zinc-200 dark:border-dark-600">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     {{-- Left: Invoice Info --}}
                     <div class="flex items-center gap-4">
-                        <div
-                            class="w-12 h-12 {{ $invoice->client->type === 'individual'
-                                ? 'bg-gradient-to-br from-primary-400 to-primary-600'
-                                : 'bg-gradient-to-br from-purple-400 to-purple-600' }} 
-                            rounded-xl flex items-center justify-center shadow-lg">
+                        <div class="w-12 h-12 bg-zinc-100 dark:bg-dark-700 rounded-lg flex items-center justify-center">
                             <x-icon name="{{ $invoice->client->type === 'individual' ? 'user' : 'building-office' }}"
-                                class="w-6 h-6 text-white" />
+                                class="w-6 h-6 text-dark-600 dark:text-dark-400" />
                         </div>
                         <div>
-                            <h2 class="text-xl font-bold text-dark-900 dark:text-dark-50 font-mono">
+                            <h2 class="text-xl font-semibold text-dark-900 dark:text-dark-50 font-mono">
                                 {{ $invoice->invoice_number }}
                             </h2>
                             <p class="text-sm text-dark-600 dark:text-dark-400">{{ $invoice->client->name }}</p>
@@ -42,23 +37,22 @@
                         }" />
 
                         <div class="text-right">
-                            <p class="text-2xl font-bold text-dark-900 dark:text-dark-50">
+                            <p class="text-xl font-semibold text-dark-900 dark:text-dark-50">
                                 Rp {{ number_format($invoice->total_amount, 0, ',', '.') }}
                             </p>
                             @if ($this->grossProfit > 0)
-                                <p class="text-xs text-green-600 dark:text-green-400">
+                                <p class="text-sm text-dark-600 dark:text-dark-400">
                                     {{ __('pages.profit') }}: Rp {{ number_format($this->grossProfit, 0, ',', '.') }}
                                 </p>
                             @endif
                             @if ($invoice->amount_paid > 0)
                                 @php $percentage = ($invoice->amount_paid / $invoice->total_amount) * 100; @endphp
-                                <div class="flex items-center gap-2 mt-1">
+                                <div class="flex items-center gap-2 mt-2">
                                     <div class="w-16 bg-zinc-200 dark:bg-dark-700 rounded-full h-1.5">
-                                        <div class="bg-green-500 h-1.5 rounded-full"
+                                        <div class="bg-zinc-600 dark:bg-zinc-400 h-1.5 rounded-full"
                                             style="width: {{ min($percentage, 100) }}%"></div>
                                     </div>
-                                    <span
-                                        class="text-xs text-green-600 font-medium">{{ number_format($percentage, 0) }}%</span>
+                                    <span class="text-xs text-dark-600 dark:text-dark-400">{{ number_format($percentage, 0) }}%</span>
                                 </div>
                             @endif
                         </div>
@@ -77,13 +71,13 @@
                     <div class="space-y-6">
                         {{-- Quick Stats Grid --}}
                         <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                            <div class="bg-zinc-50 dark:bg-dark-800 rounded-xl p-4">
+                            <div class="bg-white dark:bg-dark-800 border border-zinc-200 dark:border-dark-600 rounded-lg p-4">
                                 <p class="text-xs text-dark-600 dark:text-dark-400">{{ __('invoice.invoice_date') }}</p>
                                 <p class="font-medium text-dark-900 dark:text-dark-50">
                                     {{ $invoice->issue_date->format('d M Y') }}
                                 </p>
                             </div>
-                            <div class="bg-zinc-50 dark:bg-dark-800 rounded-xl p-4">
+                            <div class="bg-white dark:bg-dark-800 border border-zinc-200 dark:border-dark-600 rounded-lg p-4">
                                 <p class="text-xs text-dark-600 dark:text-dark-400">{{ __('invoice.due_date') }}</p>
                                 <p
                                     class="font-medium {{ $invoice->due_date->isPast() && $invoice->status !== 'paid'
@@ -92,14 +86,14 @@
                                     {{ $invoice->due_date->format('d M Y') }}
                                 </p>
                             </div>
-                            <div class="bg-zinc-50 dark:bg-dark-800 rounded-xl p-4">
+                            <div class="bg-white dark:bg-dark-800 border border-zinc-200 dark:border-dark-600 rounded-lg p-4">
                                 <p class="text-xs text-dark-600 dark:text-dark-400">{{ __('pages.total_items') }}</p>
                                 <p class="font-medium text-dark-900 dark:text-dark-50">{{ $invoice->items->count() }}
                                     {{ __('pages.items') }}</p>
                             </div>
-                            <div class="bg-zinc-50 dark:bg-dark-800 rounded-xl p-4">
+                            <div class="bg-white dark:bg-dark-800 border border-zinc-200 dark:border-dark-600 rounded-lg p-4">
                                 <p class="text-xs text-dark-600 dark:text-dark-400">{{ __('pages.gross_profit') }}</p>
-                                <p class="font-medium text-green-600 dark:text-green-400">
+                                <p class="font-medium text-dark-900 dark:text-dark-50">
                                     Rp {{ number_format($this->grossProfit, 0, ',', '.') }}
                                 </p>
                             </div>
@@ -107,8 +101,8 @@
 
                         {{-- Faktur Attachment --}}
                         @if ($invoice->faktur)
-                            <div class="border border-zinc-200 dark:border-dark-600 rounded-xl overflow-hidden">
-                                <div class="bg-zinc-50 dark:bg-dark-800 px-4 py-3 border-b border-zinc-200 dark:border-dark-600">
+                            <div class="border border-zinc-200 dark:border-dark-600 rounded-lg overflow-hidden">
+                                <div class="bg-white dark:bg-dark-800 px-4 py-3 border-b border-zinc-200 dark:border-dark-600">
                                     <h4 class="font-medium text-dark-900 dark:text-dark-50 flex items-center gap-2">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -146,9 +140,9 @@
                         @endif
 
                         {{-- Invoice Items --}}
-                        <div class="border border-zinc-200 dark:border-dark-600 rounded-xl overflow-hidden">
+                        <div class="border border-zinc-200 dark:border-dark-600 rounded-lg overflow-hidden">
                             <div
-                                class="bg-zinc-50 dark:bg-dark-800 px-4 py-3 border-b border-zinc-200 dark:border-dark-600">
+                                class="bg-white dark:bg-dark-800 px-4 py-3 border-b border-zinc-200 dark:border-dark-600">
                                 <h4 class="font-medium text-dark-900 dark:text-dark-50 flex items-center gap-2">
                                     <x-icon name="list-bullet" class="w-4 h-4" />
                                     {{ __('pages.invoice_items') }}
@@ -159,11 +153,7 @@
                                     <div
                                         class="px-4 py-3 flex items-center justify-between hover:bg-zinc-50 dark:hover:bg-dark-800">
                                         <div class="flex items-center gap-3 flex-1 min-w-0">
-                                            <div
-                                                class="w-8 h-8 {{ $item->client->type === 'individual'
-                                                    ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400'
-                                                    : 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400' }} 
-                                                rounded-lg flex items-center justify-center">
+                                            <div class="w-8 h-8 bg-zinc-100 dark:bg-dark-700 text-dark-600 dark:text-dark-400 rounded-lg flex items-center justify-center">
                                                 <x-icon
                                                     name="{{ $item->client->type === 'individual' ? 'user' : 'building-office' }}"
                                                     class="w-4 h-4" />
@@ -199,7 +189,7 @@
                                 @endforeach
                             </div>
                             <div
-                                class="bg-zinc-50 dark:bg-dark-800 px-4 py-3 border-t border-zinc-200 dark:border-dark-600">
+                                class="bg-white dark:bg-dark-800 px-4 py-3 border-t border-zinc-200 dark:border-dark-600">
                                 <div class="space-y-2">
                                     <div class="flex justify-between items-center text-sm">
                                         <span class="text-dark-600 dark:text-dark-400">{{ __('invoice.subtotal') }}</span>
@@ -242,26 +232,25 @@
                             $percentage = ($totalPaid / $invoice->total_amount) * 100;
                         @endphp
 
-                        <div
-                            class="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl p-4 mb-6">
+                        <div class="bg-white dark:bg-dark-800 border border-zinc-200 dark:border-dark-600 rounded-lg p-4 mb-6">
                             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
                                 <div>
                                     <p class="text-sm text-dark-600 dark:text-dark-400">{{ __('pages.total_paid') }}</p>
-                                    <p class="text-xl font-bold text-green-700 dark:text-green-300">
+                                    <p class="text-xl font-semibold text-dark-900 dark:text-dark-50">
                                         Rp {{ number_format($totalPaid, 0, ',', '.') }}
                                     </p>
                                 </div>
                                 @if ($remaining > 0)
                                     <div class="text-left sm:text-right">
                                         <p class="text-sm text-dark-600 dark:text-dark-400">{{ __('pages.remaining_bill') }}</p>
-                                        <p class="text-xl font-bold text-red-600 dark:text-red-400">
+                                        <p class="text-xl font-semibold text-dark-900 dark:text-dark-50">
                                             Rp {{ number_format($remaining, 0, ',', '.') }}
                                         </p>
                                     </div>
                                 @endif
                             </div>
-                            <div class="w-full bg-white dark:bg-dark-700 rounded-full h-2 mb-2">
-                                <div class="bg-gradient-to-r from-green-500 to-emerald-500 h-2 rounded-full transition-all duration-500"
+                            <div class="w-full bg-zinc-200 dark:bg-dark-700 rounded-full h-2 mb-2">
+                                <div class="bg-zinc-600 dark:bg-zinc-400 h-2 rounded-full transition-all duration-500"
                                     style="width: {{ min($percentage, 100) }}%"></div>
                             </div>
                             <p class="text-xs text-dark-600 dark:text-dark-400">
@@ -273,13 +262,13 @@
                         <div class="space-y-3">
                             @foreach ($invoice->payments as $payment)
                                 <div
-                                    class="border border-zinc-200 dark:border-dark-600 rounded-xl p-4 hover:shadow-md transition-shadow">
+                                    class="border border-zinc-200 dark:border-dark-600 rounded-lg p-4 hover:bg-zinc-50 dark:hover:bg-dark-700 transition">
                                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                                         <div class="flex items-center gap-3 flex-1 min-w-0">
                                             <div
-                                                class="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center">
+                                                class="w-10 h-10 bg-zinc-100 dark:bg-dark-700 rounded-lg flex items-center justify-center">
                                                 <x-icon name="banknotes"
-                                                    class="w-5 h-5 text-green-600 dark:text-green-400" />
+                                                    class="w-5 h-5 text-dark-600 dark:text-dark-400" />
                                             </div>
                                             <div class="min-w-0 flex-1">
                                                 <p class="font-medium text-gray-900 dark:text-gray-50">
@@ -336,8 +325,8 @@
                     @else
                         <div class="text-center py-12">
                             <div
-                                class="bg-zinc-100 dark:bg-dark-800 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                                <x-icon name="credit-card" class="w-8 h-8 text-zinc-400 dark:text-dark-400" />
+                                class="bg-zinc-100 dark:bg-dark-700 rounded-lg w-12 h-12 flex items-center justify-center mx-auto mb-4">
+                                <x-icon name="credit-card" class="w-6 h-6 text-dark-600 dark:text-dark-400" />
                             </div>
                             <h3 class="font-medium text-dark-900 dark:text-dark-50 mb-2">{{ __('pages.no_payments_yet') }}</h3>
                             <p class="text-dark-600 dark:text-dark-400 text-sm mb-4">
@@ -360,7 +349,7 @@
 
                     <div class="space-y-6">
                         {{-- Client Details --}}
-                        <div class="border border-zinc-200 dark:border-dark-600 rounded-xl p-4">
+                        <div class="border border-zinc-200 dark:border-dark-600 rounded-lg p-4">
                             <h4 class="font-medium text-dark-900 dark:text-dark-50 mb-3 flex items-center gap-2">
                                 <x-icon
                                     name="{{ $invoice->client->type === 'individual' ? 'user' : 'building-office' }}"
@@ -396,7 +385,7 @@
                         </div>
 
                         {{-- Financial Breakdown --}}
-                        <div class="border border-zinc-200 dark:border-dark-600 rounded-xl p-4">
+                        <div class="border border-zinc-200 dark:border-dark-600 rounded-lg p-4">
                             <h4 class="font-medium text-dark-900 dark:text-dark-50 mb-3 flex items-center gap-2">
                                 <x-icon name="calculator" class="w-4 h-4" />
                                 {{ __('pages.financial_breakdown') }}
@@ -410,19 +399,19 @@
                                 </div>
                                 <div class="flex justify-between">
                                     <span class="text-dark-600 dark:text-dark-400">{{ __('invoice.tax_deposit') }}</span>
-                                    <span class="text-amber-600 dark:text-amber-400">
+                                    <span class="text-dark-900 dark:text-dark-50">
                                         Rp {{ number_format($this->totalTaxDeposits, 0, ',', '.') }}
                                     </span>
                                 </div>
                                 <div class="flex justify-between">
                                     <span class="text-dark-600 dark:text-dark-400">{{ __('pages.total_cogs_label') }}</span>
-                                    <span class="text-red-600 dark:text-red-400">
+                                    <span class="text-dark-900 dark:text-dark-50">
                                         Rp {{ number_format($this->totalCogs, 0, ',', '.') }}
                                     </span>
                                 </div>
                                 <div class="flex justify-between border-t border-zinc-200 dark:border-dark-600 pt-2">
                                     <span class="font-medium text-dark-900 dark:text-dark-50">{{ __('pages.gross_profit') }}</span>
-                                    <span class="font-medium text-green-600 dark:text-green-400">
+                                    <span class="font-medium text-dark-900 dark:text-dark-50">
                                         Rp {{ number_format($this->grossProfit, 0, ',', '.') }}
                                     </span>
                                 </div>
@@ -430,14 +419,14 @@
                         </div>
 
                         {{-- Timeline --}}
-                        <div class="border border-zinc-200 dark:border-dark-600 rounded-xl p-4">
+                        <div class="border border-zinc-200 dark:border-dark-600 rounded-lg p-4">
                             <h4 class="font-medium text-dark-900 dark:text-dark-50 mb-3 flex items-center gap-2">
                                 <x-icon name="clock" class="w-4 h-4" />
                                 {{ __('pages.timeline') }}
                             </h4>
                             <div class="space-y-3">
                                 <div class="flex items-center gap-3">
-                                    <div class="w-2 h-2 bg-primary-500 rounded-full flex-shrink-0"></div>
+                                    <div class="w-2 h-2 bg-zinc-500 dark:bg-zinc-400 rounded-full flex-shrink-0"></div>
                                     <div class="flex-1 min-w-0">
                                         <p class="text-sm font-medium text-dark-900 dark:text-dark-50">{{ __('pages.invoice_created') }}
                                         </p>
@@ -449,7 +438,7 @@
 
                                 @if ($invoice->status !== 'draft')
                                     <div class="flex items-center gap-3">
-                                        <div class="w-2 h-2 bg-green-500 rounded-full flex-shrink-0"></div>
+                                        <div class="w-2 h-2 bg-zinc-500 dark:bg-zinc-400 rounded-full flex-shrink-0"></div>
                                         <div class="flex-1 min-w-0">
                                             <p class="text-sm font-medium text-dark-900 dark:text-dark-50">{{ __('pages.invoice_sent') }}</p>
                                             <p class="text-xs text-dark-600 dark:text-dark-400">
@@ -461,7 +450,7 @@
 
                                 @foreach ($invoice->payments as $payment)
                                     <div class="flex items-center gap-3">
-                                        <div class="w-2 h-2 bg-emerald-500 rounded-full flex-shrink-0"></div>
+                                        <div class="w-2 h-2 bg-zinc-500 dark:bg-zinc-400 rounded-full flex-shrink-0"></div>
                                         <div class="flex-1 min-w-0">
                                             <p class="text-sm font-medium text-dark-900 dark:text-dark-50">
                                                 {{ __('pages.payment_received') }}

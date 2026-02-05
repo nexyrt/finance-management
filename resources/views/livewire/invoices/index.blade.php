@@ -23,67 +23,54 @@
 
     {{-- Stats Cards (Synced with Listing filters) --}}
     <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6">
-        <div class="bg-white dark:bg-dark-800 border border-zinc-200 dark:border-dark-600 rounded-xl p-6">
-            <div class="flex items-center gap-4">
+        <x-card class="hover:shadow-lg transition-shadow">
+            <div class="flex items-center justify-between mb-4">
                 <div class="h-12 w-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
                     <x-icon name="chart-bar" class="w-6 h-6 text-blue-600 dark:text-blue-400" />
                 </div>
-                <div>
-                    <p class="text-sm text-dark-600 dark:text-dark-400">{{ __('pages.total_revenue') }}</p>
-                    <p class="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                        Rp {{ number_format($this->stats['total_revenue'], 0, ',', '.') }}
-                    </p>
-                </div>
             </div>
-        </div>
+            <p class="text-sm text-dark-600 dark:text-dark-400 mb-1">{{ __('pages.total_revenue') }}</p>
+            <p class="text-2xl font-bold text-dark-900 dark:text-white">
+                Rp {{ number_format($this->stats['total_revenue'], 0, ',', '.') }}
+            </p>
+        </x-card>
 
-        <div class="bg-white dark:bg-dark-800 border border-zinc-200 dark:border-dark-600 rounded-xl p-6">
-            <div class="flex items-center gap-4">
+        <x-card class="hover:shadow-lg transition-shadow">
+            <div class="flex items-center justify-between mb-4">
                 <div class="h-12 w-12 bg-red-100 dark:bg-red-900/30 rounded-xl flex items-center justify-center">
                     <x-icon name="currency-dollar" class="w-6 h-6 text-red-600 dark:text-red-400" />
                 </div>
-                <div>
-                    <p class="text-sm text-dark-600 dark:text-dark-400">{{ __('pages.total_cogs_label') }}</p>
-                    <p class="text-xl font-bold text-red-600 dark:text-red-400">
-                        Rp {{ number_format($this->stats['total_cogs'], 0, ',', '.') }}
-                    </p>
-                </div>
             </div>
-        </div>
+            <p class="text-sm text-dark-600 dark:text-dark-400 mb-1">{{ __('pages.total_cogs_label') }}</p>
+            <p class="text-2xl font-bold text-dark-900 dark:text-white">
+                Rp {{ number_format($this->stats['total_cogs'], 0, ',', '.') }}
+            </p>
+        </x-card>
 
-        <div class="bg-white dark:bg-dark-800 border border-zinc-200 dark:border-dark-600 rounded-xl p-6">
-            <div class="flex items-center gap-4">
+        <x-card class="hover:shadow-lg transition-shadow">
+            <div class="flex items-center justify-between mb-4">
                 <div class="h-12 w-12 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center">
                     <x-icon name="arrow-trending-up" class="w-6 h-6 text-green-600 dark:text-green-400" />
                 </div>
-                <div>
-                    <p class="text-sm text-dark-600 dark:text-dark-400">{{ __('pages.total_profit') }}</p>
-                    <p class="text-xl font-bold text-green-600 dark:text-green-400">
-                        Rp {{ number_format($this->stats['total_profit'], 0, ',', '.') }}
-                    </p>
-                    <p class="text-xs text-green-500 dark:text-green-400">
-                        {{ number_format($this->stats['profit_margin'], 1) }}% {{ __('pages.margin') }}
-                    </p>
-                </div>
+                <x-badge :text="number_format($this->stats['profit_margin'], 1) . '% ' . __('pages.margin')" color="green" sm />
             </div>
-        </div>
+            <p class="text-sm text-dark-600 dark:text-dark-400 mb-1">{{ __('pages.total_profit') }}</p>
+            <p class="text-2xl font-bold text-dark-900 dark:text-white">
+                Rp {{ number_format($this->stats['total_profit'], 0, ',', '.') }}
+            </p>
+        </x-card>
 
-        <div class="bg-white dark:bg-dark-800 border border-zinc-200 dark:border-dark-600 rounded-xl p-6">
-            <div class="flex items-center gap-4">
+        <x-card class="hover:shadow-lg transition-shadow">
+            <div class="flex items-center justify-between mb-4">
                 <div class="h-12 w-12 bg-orange-100 dark:bg-orange-900/30 rounded-xl flex items-center justify-center">
                     <x-icon name="exclamation-triangle" class="w-6 h-6 text-orange-600 dark:text-orange-400" />
                 </div>
-                <div>
-                    <p class="text-sm text-dark-600 dark:text-dark-400">{{ __('pages.outstanding_profit') }}</p>
-                    <p class="text-xl font-bold text-orange-600 dark:text-orange-400">
-                        Rp {{ number_format($this->stats['outstanding_profit'], 0, ',', '.') }}
-                    </p>
-                    <p class="text-xs text-orange-500 dark:text-orange-400">
-                        {{ __('pages.from') }} Rp {{ number_format($this->stats['paid_profit'], 0, ',', '.') }} {{ __('pages.revenue') }}
-                    </p>
-                </div>
             </div>
-        </div>
+            <p class="text-sm text-dark-600 dark:text-dark-400 mb-1">{{ __('pages.outstanding_profit') }}</p>
+            <p class="text-2xl font-bold text-dark-900 dark:text-white">
+                Rp {{ number_format($this->stats['outstanding_profit'], 0, ',', '.') }}
+            </p>
+        </x-card>
     </div>
 
     {{-- Invoices Table Component --}}

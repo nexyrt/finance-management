@@ -98,6 +98,156 @@ public function refreshStats(): void
 
 ---
 
+## UI/UX Design System
+
+### Design Principles
+
+**CRITICAL: Semua page baru atau redesign HARUS mengikuti design system ini untuk konsistensi.**
+
+**Core Philosophy:**
+- **Minimalist** - No fancy decorations, focus on functionality
+- **Clean & Readable** - Code dan UI harus mudah dibaca
+- **Consistent** - Spacing, typography, dan pattern yang sama di semua page
+- **Functional-First** - Prioritas pada komponen dan data, bukan estetika berlebihan
+
+### Layout Guidelines
+
+**1. Spacing:**
+- Root container: `space-y-8` untuk vertical rhythm
+- Section spacing: `mt-8` atau gunakan parent `space-y-8`
+- Element spacing: `mt-2`, `mt-4` untuk spacing kecil
+- Grid gaps: `gap-6` untuk grid layouts
+
+**2. Typography:**
+```blade
+{{-- Page Title --}}
+<h1 class="text-2xl font-bold">Page Title</h1>
+
+{{-- Section Title --}}
+<h2 class="text-xl font-semibold">Section Title</h2>
+
+{{-- Output/Info Text --}}
+<p class="text-sm">Information text</p>
+```
+
+**3. Containers:**
+```blade
+{{-- Simple section - NO borders/backgrounds by default --}}
+<div>
+    <x-component />
+    <p class="mt-2 text-sm">Output</p>
+</div>
+
+{{-- Only add styling when necessary for grouping --}}
+<div class="p-4 border rounded-lg">
+    {{-- Content --}}
+</div>
+```
+
+### Component Usage
+
+**DO's:**
+```blade
+{{-- Clean, minimal attribute usage --}}
+<x-currency-input
+    wire:model.live="amount"
+    label="Amount"
+/>
+
+{{-- Direct output display --}}
+<p class="mt-2 text-sm">Value: {{ $amount }}</p>
+
+{{-- Descriptive comments --}}
+{{-- Test 1: Tanpa Prefix --}}
+```
+
+**DON'Ts:**
+```blade
+{{-- ❌ Jangan gunakan warna/dekorasi berlebihan --}}
+<div class="border-2 border-green-500 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl shadow-2xl p-8">
+
+{{-- ❌ Jangan nested containers berlebihan --}}
+<div class="wrapper">
+    <div class="inner">
+        <div class="content">
+            <x-input />
+        </div>
+    </div>
+</div>
+
+{{-- ❌ Jangan typography yang berlebihan --}}
+<h1 class="text-5xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r...">
+```
+
+### Color Scheme
+
+**Default Colors Only:**
+- Text: Default Tailwind (`text-gray-800`, `dark:text-white`)
+- Backgrounds: Clean white/dark mode auto
+- Borders: `border`, `border-gray-200`, `dark:border-gray-700`
+- Accents: Only when necessary (`text-blue-600`, `text-green-600`)
+
+**Avoid:**
+- ❌ Custom gradient backgrounds
+- ❌ Multiple accent colors dalam satu section
+- ❌ Heavy shadows (`shadow-2xl`, `shadow-lg`)
+- ❌ Bright/neon colors
+
+### Code Style
+
+**Blade Templates:**
+```blade
+{{-- Descriptive comments for sections --}}
+{{-- Test 1: Description of what this tests --}}
+<div>
+    <x-component
+        wire:model.live="property"
+        label="Label"
+        attribute="value"
+    />
+    <p class="mt-2 text-sm">Output: {{ $property }}</p>
+</div>
+```
+
+**Livewire Components:**
+```php
+class PageName extends Component
+{
+    // Clear, descriptive property comments
+    public $property = 0;
+
+    public function render()
+    {
+        return view('livewire.page-name');
+    }
+}
+```
+
+### Reference Example
+
+**Good Example (Testing Page):**
+```blade
+<div class="space-y-8">
+    <h1 class="text-2xl font-bold">Page Title</h1>
+
+    {{-- Section 1 --}}
+    <div>
+        <x-component wire:model.live="data" label="Label" />
+        <p class="mt-2 text-sm">Value: {{ $data }}</p>
+    </div>
+</div>
+```
+
+**When to Deviate:**
+- Complex dashboards requiring grid layouts
+- Data tables requiring specific styling
+- Modal/dialog components
+- Alert/notification components with semantic colors
+
+**Always Ask First** jika tidak yakin apakah design memerlukan deviasi dari system ini.
+
+---
+
 ## Page Structure (Livewire Components)
 
 ### Dashboard
@@ -1101,6 +1251,54 @@ $value = preg_replace('/[^0-9]/', '', $input);
 // Display formatting
 $display = 'Rp ' . number_format($value, 0, ',', '.');
 ```
+
+---
+
+## Development Guidelines
+
+### Component Usage Protocol
+
+**CRITICAL: Always Study Documentation First**
+
+Before implementing ANY external component or library (TallStackUI, WireUI, Laravel packages, JavaScript libraries, etc.), you MUST follow this protocol:
+
+1. **Search for official documentation** using WebSearch tool
+2. **Read the complete documentation** using WebFetch tool
+3. **Understand the correct usage** including:
+   - Available attributes/parameters
+   - Livewire integration patterns
+   - Common pitfalls and warnings
+   - Best practices for the specific component
+4. **Only then implement** the component with correct syntax
+
+**Never implement based on assumptions or memory alone.**
+
+**Examples of components requiring documentation review:**
+- TallStackUI components (`x-currency`, `x-select`, `x-input`, `x-color`, `x-date`, etc.)
+- WireUI components (`x-button`, `x-modal`, `x-notification`, etc.)
+- Third-party Livewire components
+- New Laravel packages (Spatie packages, intervention/image, etc.)
+- JavaScript libraries integration (Chart.js, ApexCharts, Alpine plugins)
+
+**Mandatory Workflow:**
+```
+User Request → WebSearch official docs → WebFetch full documentation →
+Understand attributes & usage → Verify examples → Implement correctly
+```
+
+**This protocol applies to:**
+- ✅ Initial component implementation
+- ✅ Modifications to existing component code
+- ✅ Debugging component-related issues
+- ✅ Adding new features using components
+- ✅ Upgrading/changing component versions
+
+**Why This Matters:**
+- Prevents incorrect usage that causes bugs
+- Ensures all features are utilized properly
+- Reduces trial-and-error implementation
+- Maintains code quality standards
+- Saves debugging time later
 
 ---
 

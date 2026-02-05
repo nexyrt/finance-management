@@ -10,8 +10,8 @@
         {{-- Total Revenue --}}
         <x-card class="hover:shadow-lg transition-shadow">
             <div class="flex items-center justify-between mb-4">
-                <div class="h-12 w-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
-                    <x-icon name="currency-dollar" class="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                <div class="h-12 w-12 bg-primary-100 dark:bg-primary-900/30 rounded-xl flex items-center justify-center">
+                    <x-icon name="currency-dollar" class="w-6 h-6 text-primary-600 dark:text-primary-400" />
                 </div>
                 @if ($this->revenueGrowth != 0)
                     <x-badge :text="($this->revenueGrowth >= 0 ? '+' : '') . $this->revenueGrowth . '%'" :color="$this->revenueGrowth >= 0 ? 'green' : 'red'" sm />
@@ -38,8 +38,8 @@
         {{-- Total Invoices --}}
         <x-card class="hover:shadow-lg transition-shadow">
             <div class="flex items-center justify-between mb-4">
-                <div class="h-12 w-12 bg-purple-100 dark:bg-purple-900/30 rounded-xl flex items-center justify-center">
-                    <x-icon name="document-text" class="w-6 h-6 text-purple-600 dark:text-purple-400" />
+                <div class="h-12 w-12 bg-secondary-100 dark:bg-secondary-900/30 rounded-xl flex items-center justify-center">
+                    <x-icon name="document-text" class="w-6 h-6 text-secondary-600 dark:text-secondary-400" />
                 </div>
             </div>
             <p class="text-sm text-dark-600 dark:text-dark-400 mb-1">{{ __('pages.total_invoices') }}</p>
@@ -60,10 +60,10 @@
         {{-- Gross Profit --}}
         <x-card class="hover:shadow-lg transition-shadow">
             <div class="flex items-center justify-between mb-4">
-                <div class="h-12 w-12 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl flex items-center justify-center">
-                    <x-icon name="arrow-trending-up" class="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+                <div class="h-12 w-12 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center">
+                    <x-icon name="arrow-trending-up" class="w-6 h-6 text-green-600 dark:text-green-400" />
                 </div>
-                <x-badge :text="$this->profitMargin . '% ' . __('pages.margin')" color="emerald" sm />
+                <x-badge :text="$this->profitMargin . '% ' . __('pages.margin')" color="green" sm />
             </div>
             <p class="text-sm text-dark-600 dark:text-dark-400 mb-1">{{ __('pages.gross_profit') }}</p>
             <p class="text-2xl font-bold text-dark-900 dark:text-white">{{ $this->formatCurrency($this->grossProfit) }}</p>
@@ -72,8 +72,8 @@
         {{-- Active Clients --}}
         <x-card class="hover:shadow-lg transition-shadow">
             <div class="flex items-center justify-between mb-4">
-                <div class="h-12 w-12 bg-indigo-100 dark:bg-indigo-900/30 rounded-xl flex items-center justify-center">
-                    <x-icon name="user-group" class="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
+                <div class="h-12 w-12 bg-primary-100 dark:bg-primary-900/30 rounded-xl flex items-center justify-center">
+                    <x-icon name="user-group" class="w-6 h-6 text-primary-600 dark:text-primary-400" />
                 </div>
                 @if ($this->newClientsThisMonth > 0)
                     <x-badge :text="'+' . $this->newClientsThisMonth . ' ' . __('pages.new')" color="indigo" sm />
@@ -308,15 +308,16 @@
                     datasets: [{
                         label: 'Pendapatan',
                         data: data.map(item => item.revenue),
-                        borderColor: 'rgb(59, 130, 246)',
-                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        borderColor: 'rgb(37, 99, 235)', // Professional Blue #2563EB
+                        backgroundColor: 'rgba(37, 99, 235, 0.15)',
                         borderWidth: 3,
                         fill: true,
                         tension: 0.4,
-                        pointBackgroundColor: 'rgb(59, 130, 246)',
+                        pointBackgroundColor: 'rgb(37, 99, 235)',
                         pointBorderColor: '#fff',
                         pointBorderWidth: 2,
-                        pointRadius: 4,
+                        pointRadius: 5,
+                        pointHoverRadius: 7,
                     }]
                 },
                 options: {
@@ -380,14 +381,15 @@
                     datasets: [{
                         data: Object.values(data),
                         backgroundColor: [
-                            'rgba(156, 163, 175, 0.8)',
-                            'rgba(59, 130, 246, 0.8)',
-                            'rgba(34, 197, 94, 0.8)',
-                            'rgba(251, 191, 36, 0.8)',
-                            'rgba(239, 68, 68, 0.8)'
+                            'rgba(161, 161, 170, 0.85)', // draft - zinc-400
+                            'rgba(37, 99, 235, 0.85)',   // sent - Professional Blue
+                            'rgba(5, 150, 105, 0.85)',   // paid - emerald-600
+                            'rgba(217, 119, 6, 0.85)',   // partially_paid - amber-600
+                            'rgba(220, 38, 38, 0.85)'    // overdue - red-600
                         ],
-                        borderWidth: 2,
-                        borderColor: isDark ? '#18181b' : '#ffffff'
+                        borderWidth: 3,
+                        borderColor: isDark ? '#18181b' : '#ffffff',
+                        hoverOffset: 8
                     }]
                 },
                 options: {
@@ -430,18 +432,20 @@
                         {
                             label: '{{ __("pages.revenue") }}',
                             data: data.map(item => item.revenue),
-                            backgroundColor: 'rgba(59, 130, 246, 0.7)',
-                            borderColor: 'rgb(59, 130, 246)',
+                            backgroundColor: 'rgba(37, 99, 235, 0.8)', // Professional Blue
+                            borderColor: 'rgb(37, 99, 235)',
                             borderWidth: 1,
-                            borderRadius: 6
+                            borderRadius: 8,
+                            hoverBackgroundColor: 'rgba(37, 99, 235, 0.95)'
                         },
                         {
                             label: '{{ __("pages.profit") }}',
                             data: data.map(item => item.profit),
-                            backgroundColor: 'rgba(34, 197, 94, 0.7)',
-                            borderColor: 'rgb(34, 197, 94)',
+                            backgroundColor: 'rgba(5, 150, 105, 0.8)', // Emerald Success
+                            borderColor: 'rgb(5, 150, 105)',
                             borderWidth: 1,
-                            borderRadius: 6
+                            borderRadius: 8,
+                            hoverBackgroundColor: 'rgba(5, 150, 105, 0.95)'
                         }
                     ]
                 },
