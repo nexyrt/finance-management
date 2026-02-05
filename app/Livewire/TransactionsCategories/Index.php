@@ -22,7 +22,6 @@ class Index extends Component
 
     public array $headers = [
         ['index' => 'type', 'label' => 'Type'],
-        ['index' => 'code', 'label' => 'Code'],
         ['index' => 'label', 'label' => 'Label'],
         ['index' => 'parent', 'label' => 'Parent', 'sortable' => false],
         ['index' => 'usage', 'label' => 'Usage', 'sortable' => false],
@@ -40,10 +39,7 @@ class Index extends Component
         return TransactionCategory::with(['parent', 'children'])
             ->withCount(['transactions', 'children'])
             ->when($this->search, fn(Builder $query) =>
-                $query->where(function ($q) {
-                    $q->where('label', 'like', "%{$this->search}%")
-                        ->orWhere('code', 'like', "%{$this->search}%");
-                })
+                $query->where('label', 'like', "%{$this->search}%")
             )
             ->when($this->typeFilter, fn(Builder $query) =>
                 $query->where('type', $this->typeFilter)
@@ -51,7 +47,7 @@ class Index extends Component
             ->when(
                 $this->sort['column'] === 'parent',
                 fn(Builder $query) =>
-                $query->leftJoin('transaction_categories as parents', 'transaction_categories.parent_code', '=', 'parents.code')
+                $query->leftJoin('transaction_categories as parents', 'transaction_categories.parent_id', '=', 'parents.id')
                     ->orderBy('parents.label', $this->sort['direction'])
                     ->select('transaction_categories.*'),
                 fn(Builder $query) =>
@@ -68,8 +64,8 @@ class Index extends Component
 
         return [
             'total' => $categories->count(),
-            'parents' => $categories->whereNull('parent_code')->count(),
-            'children' => $categories->whereNotNull('parent_code')->count(),
+            'parents' => $categories->whereNull('parent_id')->count(),
+            'children' => $categories->whereNotNull('parent_id')->count(),
             'with_transactions' => $categories->where('transactions_count', '>', 0)->count(),
         ];
     }

@@ -79,7 +79,7 @@ class Create extends Component
             default => []
         };
 
-        $parents = TransactionCategory::whereNull('parent_code')
+        $parents = TransactionCategory::whereNull('parent_id')
             ->whereIn('type', $categoryTypes)
             ->orderBy('type')
             ->orderBy('label')

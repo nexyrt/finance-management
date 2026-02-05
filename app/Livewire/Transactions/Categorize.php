@@ -91,7 +91,7 @@ class Categorize extends Component
         };
 
         // Get parent categories
-        $parents = TransactionCategory::whereNull('parent_code')
+        $parents = TransactionCategory::whereNull('parent_id')
             ->whereIn('type', $categoryTypes)
             ->orderBy('type')
             ->orderBy('label')

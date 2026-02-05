@@ -130,13 +130,6 @@
             }" />
         @endinteract
 
-        {{-- Code Column --}}
-        @interact('column_code', $row)
-            <div class="font-mono font-bold text-dark-900 dark:text-dark-50">
-                {{ $row->code }}
-            </div>
-        @endinteract
-
         {{-- Label Column --}}
         @interact('column_label', $row)
             <div class="font-medium text-dark-900 dark:text-dark-50">
