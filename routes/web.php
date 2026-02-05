@@ -24,6 +24,7 @@ use App\Livewire\Settings\Profile;
 use App\Livewire\TestingPage;
 use App\Livewire\TransactionsCategories\Index as TransactionsCategoriesIndex;
 use App\Livewire\Users\Index as UsersIndex;
+use App\Http\Controllers\CashFlowExportController;
 use App\Models\Invoice;
 use App\Services\InvoicePrintService;
 use Illuminate\Http\Request;
@@ -139,6 +140,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/cash-flow', CashFlowIndex::class)
         ->middleware('can:view cash-flow')
         ->name('cash-flow.index');
+
+    Route::get('/cash-flow/export/pdf', [CashFlowExportController::class, 'exportPdf'])
+        ->middleware('can:view cash-flow')
+        ->name('cash-flow.export.pdf');
+
+    Route::get('/cash-flow/export/pdf/preview', [CashFlowExportController::class, 'previewPdf'])
+        ->middleware('can:view cash-flow')
+        ->name('cash-flow.export.pdf.preview');
 
     // ------------------------------------------------------------------------
     // CATEGORIES
