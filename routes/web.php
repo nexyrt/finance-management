@@ -137,6 +137,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->middleware('can:view bank-accounts')
         ->name('bank-accounts.index');
 
+    Route::get('/bank-account/export/pdf', [CashFlowExportController::class, 'exportPdf'])
+        ->middleware('can:view bank-accounts')
+        ->name('bank-account.export.pdf');
+
+    Route::get('/bank-account/export/pdf/preview', [CashFlowExportController::class, 'previewPdf'])
+        ->middleware('can:view bank-accounts')
+        ->name('bank-account.export.pdf.preview');
+
     Route::get('/cash-flow', CashFlowIndex::class)
         ->middleware('can:view cash-flow')
         ->name('cash-flow.index');

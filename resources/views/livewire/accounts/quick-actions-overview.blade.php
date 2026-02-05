@@ -131,7 +131,10 @@
 @push('scripts')
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        let chartInstance = null;
+        // Use window to avoid duplicate declaration on Livewire navigation
+        if (typeof window.cashflowChartInstance === 'undefined') {
+            window.cashflowChartInstance = null;
+        }
 
         function isDarkMode() {
             return document.documentElement.classList.contains('dark');
@@ -141,9 +144,9 @@
             const ctx = document.getElementById('cashflowChart');
             if (!ctx || !chartData || chartData.length === 0) return;
 
-            if (chartInstance) {
-                chartInstance.destroy();
-                chartInstance = null;
+            if (window.cashflowChartInstance) {
+                window.cashflowChartInstance.destroy();
+                window.cashflowChartInstance = null;
             }
 
             const isDark = isDarkMode();
@@ -151,7 +154,7 @@
             const expenseData = chartData.map(item => item.expense);
             const netData = chartData.map(item => item.income - item.expense);
 
-            chartInstance = new Chart(ctx, {
+            window.cashflowChartInstance = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: chartData.map(item => item.month),
@@ -326,9 +329,9 @@
 
         // Reinitialize after actions
         Livewire.on('reinitialize-chart', (data) => {
-            if (chartInstance) {
-                chartInstance.destroy();
-                chartInstance = null;
+            if (window.cashflowChartInstance) {
+                window.cashflowChartInstance.destroy();
+                window.cashflowChartInstance = null;
             }
             setTimeout(() => {
                 createChart(data[0].chartData);
@@ -338,9 +341,9 @@
         // Handle theme changes
         const observer = new MutationObserver(function(mutations) {
             mutations.forEach(function(mutation) {
-                if (mutation.attributeName === 'class' && chartInstance) {
-                    const currentLabels = chartInstance.data.labels;
-                    const datasets = chartInstance.data.datasets;
+                if (mutation.attributeName === 'class' && window.cashflowChartInstance) {
+                    const currentLabels = window.cashflowChartInstance.data.labels;
+                    const datasets = window.cashflowChartInstance.data.datasets;
 
                     setTimeout(() => {
                         createChart(currentLabels.map((label, index) => ({
@@ -360,10 +363,15 @@
 
         // Cleanup
         window.addEventListener('beforeunload', () => {
-            if (chartInstance) {
-                chartInstance.destroy();
-                chartInstance = null;
+            if (window.cashflowChartInstance) {
+                window.cashflowChartInstance.destroy();
+                window.cashflowChartInstance = null;
             }
+        });
+
+        // Handle PDF download without page reload
+        Livewire.on('download-pdf', (event) => {
+            window.open(event.url, '_blank');
         });
     </script>
 @endpush

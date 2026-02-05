@@ -243,9 +243,9 @@
                 <th class="col-no">NO</th>
                 <th class="col-date">TANGGAL</th>
                 <th class="col-description">URAIAN</th>
-                <th class="col-amount">UANG MASUK</th>
-                <th class="col-amount">PENGELUARAN</th>
-                <th class="col-amount">SISA SALDO</th>
+                <th class="col-amount" colspan="2">UANG MASUK</th>
+                <th class="col-amount" colspan="2">PENGELUARAN</th>
+                <th class="col-amount" colspan="2">SISA SALDO</th>
             </tr>
         </thead>
         <tbody>

@@ -36,8 +36,20 @@
 </style>
 
 
-<tallstackui:script />
+{{-- Initialize theme BEFORE anything else --}}
+<script>
+    // Apply theme immediately on page load
+    (function() {
+        const theme = localStorage.getItem('tallstackui.theme');
+        if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    })();
+</script>
 
 @livewireStyles
 @vite(['resources/css/app.css', 'resources/js/app.js'])
-@fluxAppearance
+
+<tallstackui:script />

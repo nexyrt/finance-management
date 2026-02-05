@@ -1,19 +1,24 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" x-data="{ theme: localStorage.getItem('theme') || 'dark' }" x-init="
-    $watch('theme', value => {
-        localStorage.setItem('theme', value);
-        if (value === 'dark') {
-            document.documentElement.classList.add('dark');
-        } else {
-            document.documentElement.classList.remove('dark');
-        }
-    });
-    if (theme === 'dark') {
-        document.documentElement.classList.add('dark');
-    } else {
-        document.documentElement.classList.remove('dark');
-    }
-" :class="theme">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}"
+      x-data="{
+          darkTheme: localStorage.getItem('tallstackui.theme') === 'dark' || (!localStorage.getItem('tallstackui.theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)
+      }"
+      x-init="
+          $watch('darkTheme', value => {
+              localStorage.setItem('tallstackui.theme', value ? 'dark' : 'light');
+              if (value) {
+                  document.documentElement.classList.add('dark');
+              } else {
+                  document.documentElement.classList.remove('dark');
+              }
+          });
+          // Apply initial state
+          if (darkTheme) {
+              document.documentElement.classList.add('dark');
+          } else {
+              document.documentElement.classList.remove('dark');
+          }
+      ">
 
 <head>
     @include('partials.head')
@@ -35,13 +40,8 @@
                         {{-- Language Switcher --}}
                         <livewire:language-switcher />
 
-                        {{-- Theme Toggle --}}
-                        <button @click="theme = (theme === 'dark' ? 'light' : 'dark')"
-                                type="button"
-                                class="relative p-2 text-dark-500 hover:text-dark-700 dark:text-dark-400 dark:hover:text-dark-200 transition-colors rounded-lg hover:bg-primary-100 dark:hover:bg-primary-900/20">
-                            <x-icon name="sun" class="w-6 h-6 dark:hidden" />
-                            <x-icon name="moon" class="w-6 h-6 hidden dark:block" />
-                        </button>
+                        {{-- Theme Switcher --}}
+                        <x-theme-switch only-icons />
 
                         {{-- User Dropdown --}}
                         <x-dropdown text="Hello, {{ auth()->user()->name }}!" position="bottom-end">
@@ -173,6 +173,30 @@
 
     <script src="//unpkg.com/jodit@4.1.16/es2021/jodit.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
+
+    {{-- Fix theme persistence on Livewire navigation --}}
+    <script>
+        document.addEventListener('livewire:navigated', () => {
+            // Re-apply theme from localStorage after Livewire navigation
+            const theme = localStorage.getItem('tallstackui.theme');
+            const isDark = theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches);
+
+            if (isDark) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+
+            // Update Alpine.js variable if it exists
+            if (window.Alpine && Alpine.store) {
+                // Try to update the darkTheme variable in root Alpine context
+                const htmlElement = document.documentElement;
+                if (htmlElement.__x) {
+                    htmlElement.__x.$data.darkTheme = isDark;
+                }
+            }
+        });
+    </script>
 </body>
 
 </html>

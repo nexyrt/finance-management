@@ -67,7 +67,18 @@ class QuickActionsOverview extends Component
             $this->toast()->warning('Warning', 'Please select an account first')->send();
             return;
         }
+
+        $url = route('bank-account.export.pdf', [
+            'bank_account_id' => $this->selectedAccountId,
+        ]);
+
+        $this->dispatch('download-pdf', url: $url);
         $this->toast()->info('Export Started', 'Your report is being generated')->send();
+
+        // Re-initialize chart after export (same as account selection)
+        $this->dispatch('chartDataUpdated', [
+            'chartData' => $this->chartData,
+        ]);
     }
 
     // Chart data
