@@ -70,6 +70,24 @@ class Create extends Component
         $this->category_id = null;
     }
 
+    #[On('category-created')]
+    public function refreshCategories(int $categoryId): void
+    {
+        // Unset the computed property to force refresh
+        unset($this->categoriesOptions);
+
+        // Only set the newly created category as selected if it's not a parent (i.e., it has a parent_id)
+        $category = TransactionCategory::find($categoryId);
+        if ($category && $category->parent_id !== null) {
+            // It's a child category, can be selected
+            $this->category_id = $categoryId;
+        }
+        // If it's a parent category, don't auto-select it since it's disabled in the dropdown
+
+        // Force Livewire to re-render the component
+        $this->dispatch('$refresh');
+    }
+
     #[Computed]
     public function categoriesOptions(): array
     {

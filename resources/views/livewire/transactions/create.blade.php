@@ -104,16 +104,23 @@
                         ->toArray()" label="Rekening Bank *"
                         placeholder="Pilih rekening..." searchable />
 
-                    <x-select.styled wire:model.live="category_id" :options="$this->categoriesOptions" placeholder="Pilih kategori..."
-                        searchable>
-                        <x-slot:label>
+                    <div>
+                        <div class="flex items-center justify-between mb-1.5">
                             <div class="flex items-center gap-2">
-                                <span>Kategori Transaksi *</span>
+                                <span class="block text-sm font-medium text-gray-700 dark:text-gray-200">Kategori Transaksi *</span>
                                 <x-tooltip color="secondary" text="Kategori disesuaikan dengan jenis transaksi"
                                     position="top" />
                             </div>
-                        </x-slot:label>
-                    </x-select.styled>
+                            <button type="button"
+                                wire:click="$dispatch('open-inline-category-modal', { transactionType: '{{ $transaction_type }}' })"
+                                class="flex items-center gap-1 px-2 py-1 text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20">
+                                <x-icon name="plus" class="w-4 h-4" />
+                                <span>Tambah</span>
+                            </button>
+                        </div>
+                        <x-select.styled wire:model.live="category_id" :options="$this->categoriesOptions"
+                            placeholder="Pilih kategori..." searchable />
+                    </div>
 
                     <x-wireui-currency prefix="Rp " wire:model.blur="amount" placeholder="0" thousands="."
                         decimal=",">
@@ -170,4 +177,7 @@
             </div>
         </x-slot:footer>
     </x-modal>
+
+    {{-- Inline Category Creation Component --}}
+    <livewire:transactions.inline-category-create :transactionType="$transaction_type" />
 </div>
