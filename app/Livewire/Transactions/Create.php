@@ -182,6 +182,18 @@ class Create extends Component
         }
     }
 
+    public function deleteUpload(array $content): void
+    {
+        // TallStackUI calls this method when user clicks delete button on uploaded file
+        // The $content array contains information about the file being deleted
+
+        // For temporary uploads (not yet saved to database), we just reset the property
+        if (isset($content['temporary_name'])) {
+            // This is a temporary Livewire upload
+            $this->attachment = null;
+        }
+    }
+
     public function render()
     {
         return view('livewire.transactions.create');

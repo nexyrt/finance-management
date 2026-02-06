@@ -3,33 +3,33 @@
 
     <x-settings.layout :heading="__('Company Profile')" :subheading="__('Manage company information for invoices')">
         <form wire:submit="updateCompanyProfile" class="my-6 space-y-6">
-            <flux:input wire:model="name" label="Company Name" required />
-            <flux:textarea wire:model="address" label="Address" rows="3" required />
+            <x-input wire:model="name" label="Company Name" required />
+            <x-textarea wire:model="address" label="Address" rows="3" required />
 
             <div class="grid grid-cols-2 gap-4">
-                <flux:input wire:model="email" label="Email" type="email" required />
-                <flux:input wire:model="phone" label="Phone" required />
+                <x-input wire:model="email" label="Email" type="email" required />
+                <x-input wire:model="phone" label="Phone" required />
             </div>
 
-            <flux:separator />
+            <hr class="border-gray-200 dark:border-dark-600" />
 
             <div class="grid grid-cols-2 gap-4">
-                <flux:input wire:model="finance_manager_name" label="Finance Manager" required />
-                <flux:input wire:model="finance_manager_position" label="Position" required />
+                <x-input wire:model="finance_manager_name" label="Finance Manager" required />
+                <x-input wire:model="finance_manager_position" label="Position" required />
             </div>
 
-            <flux:separator />
+            <hr class="border-gray-200 dark:border-dark-600" />
 
-            <flux:checkbox wire:model.boolean="is_pkp" label="PKP (Pengusaha Kena Pajak)" />
+            <x-checkbox wire:model.boolean="is_pkp" label="PKP (Pengusaha Kena Pajak)" />
 
             @if ($is_pkp)
                 <div class="grid grid-cols-2 gap-4">
-                    <flux:input wire:model="npwp" label="NPWP" />
-                    <flux:input wire:model="ppn_rate" label="PPN Rate (%)" type="number" step="0.01" />
+                    <x-input wire:model="npwp" label="NPWP" />
+                    <x-input wire:model="ppn_rate" label="PPN Rate (%)" type="number" step="0.01" />
                 </div>
             @endif
 
-            <flux:separator />
+            <hr class="border-gray-200 dark:border-dark-600" />
 
             <div class="space-y-4">
                 {{-- Logo --}}
@@ -47,8 +47,7 @@
                                         <p class="text-xs text-blue-700 dark:text-blue-300">Click to preview</p>
                                     </div>
                                 </div>
-                                <flux:button variant="danger" size="sm" wire:click="deleteExistingLogo">Delete
-                                </flux:button>
+                                <x-button color="red" sm wire:click="deleteExistingLogo">Delete</x-button>
                             </div>
                         </div>
                     </div>
@@ -71,8 +70,7 @@
                                         <p class="text-xs text-blue-700 dark:text-blue-300">Click to preview</p>
                                     </div>
                                 </div>
-                                <flux:button variant="danger" size="sm" wire:click="deleteExistingSignature">Delete
-                                </flux:button>
+                                <x-button color="red" sm wire:click="deleteExistingSignature">Delete</x-button>
                             </div>
                         </div>
                     </div>
@@ -95,8 +93,7 @@
                                         <p class="text-xs text-blue-700 dark:text-blue-300">Click to preview</p>
                                     </div>
                                 </div>
-                                <flux:button variant="danger" size="sm" wire:click="deleteExistingStamp">Delete
-                                </flux:button>
+                                <x-button color="red" sm wire:click="deleteExistingStamp">Delete</x-button>
                             </div>
                         </div>
                     </div>
@@ -106,28 +103,28 @@
             </div>
 
             <div class="flex items-center gap-4">
-                <flux:button variant="primary" type="submit">{{ __('Save') }}</flux:button>
+                <x-button color="primary" type="submit">{{ __('Save') }}</x-button>
                 <x-action-message on="company-updated">{{ __('Saved.') }}</x-action-message>
             </div>
         </form>
     </x-settings.layout>
 
     {{-- Preview Modals --}}
-    <flux:modal name="logo-preview" :show="$showLogoModal" wire:model="showLogoModal">
+    <x-modal title="Logo Preview" wire="showLogoModal" size="lg" center>
         @if ($currentLogo)
             <img src="{{ asset('storage/' . $currentLogo) }}" class="w-full" alt="Logo Preview">
         @endif
-    </flux:modal>
+    </x-modal>
 
-    <flux:modal name="signature-preview" :show="$showSignatureModal" wire:model="showSignatureModal">
+    <x-modal title="Signature Preview" wire="showSignatureModal" size="lg" center>
         @if ($currentSignature)
             <img src="{{ asset('storage/' . $currentSignature) }}" class="w-full" alt="Signature Preview">
         @endif
-    </flux:modal>
+    </x-modal>
 
-    <flux:modal name="stamp-preview" :show="$showStampModal" wire:model="showStampModal">
+    <x-modal title="Stamp Preview" wire="showStampModal" size="lg" center>
         @if ($currentStamp)
             <img src="{{ asset('storage/' . $currentStamp) }}" class="w-full" alt="Stamp Preview">
         @endif
-    </flux:modal>
+    </x-modal>
 </section>

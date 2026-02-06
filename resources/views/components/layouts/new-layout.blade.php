@@ -1,21 +1,17 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" x-data="{
     darkTheme: localStorage.getItem('tallstackui.theme') === 'dark' || (!localStorage.getItem('tallstackui.theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)
-}" x-init="$watch('darkTheme', value => {
-    localStorage.setItem('tallstackui.theme', value ? 'dark' : 'light');
-    if (value) {
-        document.documentElement.classList.add('dark');
-    } else {
-        document.documentElement.classList.remove('dark');
-    }
-});
-
-// Apply initial state
-if (darkTheme) {
-    document.documentElement.classList.add('dark');
-} else {
-    document.documentElement.classList.remove('dark');
-}">
+}" x-init="
+    // Watch for theme changes
+    $watch('darkTheme', value => {
+        localStorage.setItem('tallstackui.theme', value ? 'dark' : 'light');
+        if (value) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    });
+">
 
 <head>
     @include('partials.head')
@@ -221,7 +217,7 @@ window.addEventListener('resize', () => {
                         Dashboard
                     </h3>
 
-                    <a href="{{ route('dashboard') }}" @click="closeMobileMenu()"
+                    <a href="{{ route('dashboard') }}" wire:navigate @click="closeMobileMenu()"
                         :title="isCollapsed ? 'Dashboard' : undefined"
                         class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-dark-800 menu-item {{ request()->routeIs('dashboard') ? 'active' : '' }}"
                         :class="{
@@ -246,7 +242,7 @@ window.addEventListener('resize', () => {
                     </h3>
 
                     @can('view clients')
-                        <a href="{{ route('clients') }}" @click="closeMobileMenu()"
+                        <a href="{{ route('clients') }}" wire:navigate @click="closeMobileMenu()"
                             :title="isCollapsed ? 'Klien' : undefined"
                             class="menu-item {{ request()->routeIs('clients') ? 'active' : '' }} flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-dark-800"
                             :class="{
@@ -264,7 +260,7 @@ window.addEventListener('resize', () => {
                     @endcan
 
                     @can('view services')
-                        <a href="{{ route('services') }}" @click="closeMobileMenu()"
+                        <a href="{{ route('services') }}" wire:navigate @click="closeMobileMenu()"
                             :title="isCollapsed ? 'Layanan' : undefined"
                             class="menu-item {{ request()->routeIs('services') ? 'active' : '' }} flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-dark-800"
                             :class="{
@@ -290,7 +286,7 @@ window.addEventListener('resize', () => {
                     </h3>
 
                     @can('view invoices')
-                        <a href="{{ route('invoices.index') }}" @click="closeMobileMenu()"
+                        <a href="{{ route('invoices.index') }}" wire:navigate @click="closeMobileMenu()"
                             :title="isCollapsed ? 'Invoice' : undefined"
                             class="menu-item {{ request()->routeIs('invoices.index') ? 'active' : '' }} flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-dark-800"
                             :class="{
@@ -308,7 +304,7 @@ window.addEventListener('resize', () => {
                     @endcan
 
                     @can('view recurring-invoices')
-                        <a href="{{ route('recurring-invoices.index') }}" @click="closeMobileMenu()"
+                        <a href="{{ route('recurring-invoices.index') }}" wire:navigate @click="closeMobileMenu()"
                             :title="isCollapsed ? 'Invoice Berulang' : undefined"
                             class="menu-item {{ request()->routeIs('recurring-invoices.index') ? 'active' : '' }} flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-dark-800"
                             :class="{
@@ -327,7 +323,7 @@ window.addEventListener('resize', () => {
                     @endcan
 
                     @can('view bank-accounts')
-                        <a href="{{ route('bank-accounts.index') }}" @click="closeMobileMenu()"
+                        <a href="{{ route('bank-accounts.index') }}" wire:navigate @click="closeMobileMenu()"
                             :title="isCollapsed ? 'Rekening Bank' : undefined"
                             class="menu-item {{ request()->routeIs('bank-accounts.index') ? 'active' : '' }} flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-dark-800"
                             :class="{
@@ -346,7 +342,7 @@ window.addEventListener('resize', () => {
                     @endcan
 
                     @can('view cash-flow')
-                        <a href="{{ route('cash-flow.index') }}" @click="closeMobileMenu()"
+                        <a href="{{ route('cash-flow.index') }}" wire:navigate @click="closeMobileMenu()"
                             :title="isCollapsed ? 'Arus Kas' : undefined"
                             class="menu-item {{ request()->routeIs('cash-flow.index') ? 'active' : '' }} flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-dark-800"
                             :class="{
@@ -364,7 +360,7 @@ window.addEventListener('resize', () => {
                     @endcan
 
                     @can('view categories')
-                        <a href="{{ route('transaction-categories.index') }}" @click="closeMobileMenu()"
+                        <a href="{{ route('transaction-categories.index') }}" wire:navigate @click="closeMobileMenu()"
                             :title="isCollapsed ? 'Kategori' : undefined"
                             class="menu-item {{ request()->routeIs('transaction-categories.index') ? 'active' : '' }} flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-dark-800"
                             :class="{
@@ -383,7 +379,7 @@ window.addEventListener('resize', () => {
                     @endcan
 
                     @can('view reimbursements')
-                        <a href="{{ route('reimbursements.index') }}" @click="closeMobileMenu()"
+                        <a href="{{ route('reimbursements.index') }}" wire:navigate @click="closeMobileMenu()"
                             :title="isCollapsed ? 'Reimbursement' : undefined"
                             class="menu-item {{ request()->routeIs('reimbursements.index') ? 'active' : '' }} flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-dark-800"
                             :class="{
@@ -410,7 +406,7 @@ window.addEventListener('resize', () => {
                     </h3>
 
                     @can('view loans')
-                        <a href="{{ route('loans.index') }}" @click="closeMobileMenu()"
+                        <a href="{{ route('loans.index') }}" wire:navigate @click="closeMobileMenu()"
                             :title="isCollapsed ? 'Pinjaman' : undefined"
                             class="menu-item {{ request()->routeIs('loans.index') ? 'active' : '' }} flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-dark-800"
                             :class="{
@@ -428,7 +424,7 @@ window.addEventListener('resize', () => {
                     @endcan
 
                     @can('view receivables')
-                        <a href="{{ route('receivables.index') }}" @click="closeMobileMenu()"
+                        <a href="{{ route('receivables.index') }}" wire:navigate @click="closeMobileMenu()"
                             :title="isCollapsed ? 'Piutang' : undefined"
                             class="menu-item {{ request()->routeIs('receivables.index') ? 'active' : '' }} flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-dark-800"
                             :class="{
@@ -454,7 +450,7 @@ window.addEventListener('resize', () => {
                     </h3>
 
                     @can('view feedbacks')
-                        <a href="{{ route('feedbacks.index') }}" @click="closeMobileMenu()"
+                        <a href="{{ route('feedbacks.index') }}" wire:navigate @click="closeMobileMenu()"
                             :title="isCollapsed ? 'Umpan Balik' : undefined"
                             class="menu-item {{ request()->routeIs('feedbacks.index') ? 'active' : '' }} flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-dark-800"
                             :class="{
@@ -472,7 +468,7 @@ window.addEventListener('resize', () => {
                     @endcan
 
                     @can('view permissions')
-                        <a href="{{ route('permissions.index') }}" @click="closeMobileMenu()"
+                        <a href="{{ route('permissions.index') }}" wire:navigate @click="closeMobileMenu()"
                             :title="isCollapsed ? 'Hak Akses' : undefined"
                             class="menu-item {{ request()->routeIs('permissions.index') ? 'active' : '' }} flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-dark-800"
                             :class="{
@@ -490,7 +486,7 @@ window.addEventListener('resize', () => {
                     @endcan
 
                     @can('manage users')
-                        <a href="{{ route('admin.users') }}" @click="closeMobileMenu()"
+                        <a href="{{ route('admin.users') }}" wire:navigate @click="closeMobileMenu()"
                             :title="isCollapsed ? 'Pengguna' : undefined"
                             class="menu-item {{ request()->routeIs('admin.users') ? 'active' : '' }} flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-dark-800"
                             :class="{
@@ -549,7 +545,7 @@ window.addEventListener('resize', () => {
                                     {{ auth()->user()->email ?? 'user@email.com' }}</p>
                             </div>
                             <div class="h-px bg-gray-200 dark:bg-dark-600 my-1"></div>
-                            <a href="{{ route('settings.profile') }}"
+                            <a href="{{ route('settings.profile') }}" wire:navigate
                                 class="flex items-center px-2 py-1.5 text-sm rounded-sm hover:bg-gray-100 dark:hover:bg-dark-700 cursor-pointer text-gray-700 dark:text-gray-300">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -557,7 +553,7 @@ window.addEventListener('resize', () => {
                                 </svg>
                                 <span>Profil Saya</span>
                             </a>
-                            <a href="{{ route('settings.appearance') }}"
+                            <a href="{{ route('settings.appearance') }}" wire:navigate
                                 class="flex items-center px-2 py-1.5 text-sm rounded-sm hover:bg-gray-100 dark:hover:bg-dark-700 cursor-pointer text-gray-700 dark:text-gray-300">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -565,7 +561,7 @@ window.addEventListener('resize', () => {
                                 </svg>
                                 <span>Tampilan</span>
                             </a>
-                            <a href="{{ route('settings.company') }}"
+                            <a href="{{ route('settings.company') }}" wire:navigate
                                 class="flex items-center px-2 py-1.5 text-sm rounded-sm hover:bg-gray-100 dark:hover:bg-dark-700 cursor-pointer text-gray-700 dark:text-gray-300">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -657,6 +653,51 @@ window.addEventListener('resize', () => {
     @livewireScripts
     <wireui:scripts />
     @stack('scripts')
+
+    {{-- Dark Mode Script - Persist across wire:navigate --}}
+    <script>
+        // Initialize dark mode from localStorage
+        function initDarkMode() {
+            const isDark = localStorage.getItem('tallstackui.theme') === 'dark' ||
+                          (!localStorage.getItem('tallstackui.theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+
+            // Apply dark class to html element
+            if (isDark) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+
+            // Sync Alpine.js state if Alpine is loaded
+            // Wait a tick to ensure Alpine is fully initialized
+            setTimeout(() => {
+                const htmlEl = document.querySelector('html');
+                if (htmlEl && htmlEl.__x && htmlEl.__x.$data) {
+                    htmlEl.__x.$data.darkTheme = isDark;
+                }
+            }, 0);
+        }
+
+        // Run on initial load
+        initDarkMode();
+
+        // Re-run after Livewire navigation
+        document.addEventListener('livewire:navigated', () => {
+            initDarkMode();
+        });
+
+        // Re-run after Alpine is initialized (for initial page load)
+        document.addEventListener('alpine:init', () => {
+            initDarkMode();
+        });
+
+        // Watch for localStorage changes (for theme switcher in other tabs)
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'tallstackui.theme') {
+                initDarkMode();
+            }
+        });
+    </script>
 </body>
 
 </html>
