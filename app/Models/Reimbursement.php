@@ -170,9 +170,18 @@ class Reimbursement extends Model
         return in_array($this->status, ['draft', 'rejected']);
     }
 
-    public function canDelete(): bool
+    public function canDelete(?User $user = null): bool
     {
-        return $this->status === 'draft';
+        $user = $user ?? auth()->user();
+
+        // Admin can delete any reimbursement
+        if ($user && $user->hasRole('admin')) {
+            return true;
+        }
+
+        // Owner can only delete if draft or rejected (not yet approved/paid)
+        // Cannot delete pending (being reviewed), approved, or paid
+        return in_array($this->status, ['draft', 'rejected']);
     }
 
     public function canSubmit(): bool

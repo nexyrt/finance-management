@@ -165,6 +165,8 @@ window.addEventListener('resize', () => {
         isMobileMenuOpen = false;
     }
 });">
+    <x-toast />
+    <x-dialog />
 
     <!-- Mobile Overlay -->
     <div x-show="isMobileMenuOpen" x-cloak @click="closeMobileMenu()" class="fixed inset-0 bg-black/50 z-40 lg:hidden"

@@ -1,3 +1,3 @@
 <div>
-    {{-- Care about people's approval and you will be their prisoner. --}}
+    <x-button.circle icon="trash" color="red" size="sm" wire:click="confirm" title="Hapus" />
 </div>

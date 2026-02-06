@@ -139,9 +139,7 @@
                 @endif
 
                 @if ($row->canDelete())
-                    <x-button.circle icon="trash" color="red" size="sm"
-                        wire:click="deleteReimbursement({{ $row->id }})"
-                        loading="deleteReimbursement({{ $row->id }})" />
+                    <livewire:reimbursements.delete :reimbursement="$row" :key="uniqid()" @deleted="$refresh" />
                 @endif
             </div>
         @endinteract
