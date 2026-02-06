@@ -1,451 +1,385 @@
-<div class="min-h-screen p-6">
-    {{-- Header --}}
-    <div class="mb-8">
-        <h1 class="text-3xl font-bold text-dark-900 dark:text-white">{{ __('pages.financial_dashboard') }}</h1>
-        <p class="text-dark-600 dark:text-dark-400 mt-1">{{ __('pages.complete_financial_summary') }}</p>
+<div class="space-y-6" :key="uniqid()">
+    {{-- Header Section (WAJIB SAMA DI SEMUA PAGE) --}}
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div class="space-y-1">
+            <h1 class="text-4xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-indigo-800 dark:from-white dark:via-blue-200 dark:to-indigo-200 bg-clip-text text-transparent">
+                Dashboard Keuangan
+            </h1>
+            <p class="text-gray-600 dark:text-zinc-400 text-lg">
+                Ringkasan keuangan dan aktivitas bisnis
+            </p>
+        </div>
+
+        {{-- Period Filter --}}
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
+            <x-select.native wire:model.live="period" class="w-full sm:w-48">
+                <option value="this_month">Bulan Ini</option>
+                <option value="last_month">Bulan Lalu</option>
+                <option value="this_quarter">Kuartal Ini</option>
+                <option value="last_quarter">Kuartal Lalu</option>
+                <option value="this_year">Tahun Ini</option>
+                <option value="last_year">Tahun Lalu</option>
+                <option value="custom">Kustom</option>
+            </x-select.native>
+
+            @if ($period === 'custom')
+                <div class="flex gap-2">
+                    <x-input type="date" wire:model.live="startDate" placeholder="Dari" class="w-full sm:w-auto" />
+                    <x-input type="date" wire:model.live="endDate" placeholder="Sampai" class="w-full sm:w-auto" />
+                </div>
+            @endif
+        </div>
     </div>
 
-    {{-- Top Metrics --}}
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-8">
-        {{-- Total Revenue --}}
-        <x-card class="hover:shadow-lg transition-shadow">
-            <div class="flex items-center justify-between mb-4">
-                <div class="h-12 w-12 bg-primary-100 dark:bg-primary-900/30 rounded-xl flex items-center justify-center">
-                    <x-icon name="currency-dollar" class="w-6 h-6 text-primary-600 dark:text-primary-400" />
-                </div>
-                @if ($this->revenueGrowth != 0)
-                    <x-badge :text="($this->revenueGrowth >= 0 ? '+' : '') . $this->revenueGrowth . '%'" :color="$this->revenueGrowth >= 0 ? 'green' : 'red'" sm />
-                @endif
-            </div>
-            <p class="text-sm text-dark-600 dark:text-dark-400 mb-1">{{ __('pages.total_revenue') }}</p>
-            <p class="text-2xl font-bold text-dark-900 dark:text-white">{{ $this->formatCurrency($this->totalRevenue) }}</p>
-        </x-card>
-
-        {{-- Outstanding --}}
-        <x-card class="hover:shadow-lg transition-shadow">
-            <div class="flex items-center justify-between mb-4">
-                <div class="h-12 w-12 bg-amber-100 dark:bg-amber-900/30 rounded-xl flex items-center justify-center">
-                    <x-icon name="clock" class="w-6 h-6 text-amber-600 dark:text-amber-400" />
-                </div>
-                @if ($this->overdueInvoices > 0)
-                    <x-badge :text="$this->overdueInvoices . ' ' . __('pages.overdue')" color="red" sm />
-                @endif
-            </div>
-            <p class="text-sm text-dark-600 dark:text-dark-400 mb-1">{{ __('pages.outstanding_bills') }}</p>
-            <p class="text-2xl font-bold text-dark-900 dark:text-white">{{ $this->formatCurrency($this->outstandingAmount) }}</p>
-        </x-card>
-
-        {{-- Total Invoices --}}
-        <x-card class="hover:shadow-lg transition-shadow">
-            <div class="flex items-center justify-between mb-4">
-                <div class="h-12 w-12 bg-secondary-100 dark:bg-secondary-900/30 rounded-xl flex items-center justify-center">
-                    <x-icon name="document-text" class="w-6 h-6 text-secondary-600 dark:text-secondary-400" />
+    {{-- Quick Stats - 4 Cards --}}
+    <div class="grid gap-4 grid-cols-2 lg:grid-cols-4">
+        {{-- Card 1: Total Saldo --}}
+        <x-card class="hover:shadow-md transition-shadow">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-xs md:text-sm font-medium text-gray-600 dark:text-gray-400">Total Saldo</span>
+                <div class="h-7 w-7 md:h-8 md:w-8 rounded-lg bg-blue-500/10 dark:bg-blue-500/20 flex items-center justify-center">
+                    <x-icon name="wallet" class="h-3.5 w-3.5 md:h-4 md:w-4 text-blue-600 dark:text-blue-400" />
                 </div>
             </div>
-            <p class="text-sm text-dark-600 dark:text-dark-400 mb-1">{{ __('pages.total_invoices') }}</p>
-            <p class="text-2xl font-bold text-dark-900 dark:text-white">{{ number_format($this->totalInvoices) }}</p>
+            <div class="text-lg md:text-2xl font-bold">{{ $this->formatCurrency($this->totalBankBalance) }}</div>
+            <p class="text-[10px] md:text-xs flex items-center gap-1 mt-1">
+                <x-icon name="arrow-trending-up" class="h-3 w-3 text-green-600 dark:text-green-400" />
+                <span class="text-green-600 dark:text-green-400 font-medium">Saldo bank</span>
+            </p>
         </x-card>
 
-        {{-- Collection Rate --}}
-        <x-card class="hover:shadow-lg transition-shadow">
-            <div class="flex items-center justify-between mb-4">
-                <div class="h-12 w-12 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center">
-                    <x-icon name="check-circle" class="w-6 h-6 text-green-600 dark:text-green-400" />
+        {{-- Card 2: Pemasukan --}}
+        <x-card class="hover:shadow-md transition-shadow">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-xs md:text-sm font-medium text-gray-600 dark:text-gray-400">Pemasukan</span>
+                <div class="h-7 w-7 md:h-8 md:w-8 rounded-lg bg-green-500/10 dark:bg-green-500/20 flex items-center justify-center">
+                    <x-icon name="arrow-down-right" class="h-3.5 w-3.5 md:h-4 md:w-4 text-green-600 dark:text-green-400" />
                 </div>
             </div>
-            <p class="text-sm text-dark-600 dark:text-dark-400 mb-1">{{ __('pages.collection_rate') }}</p>
-            <p class="text-2xl font-bold text-dark-900 dark:text-white">{{ $this->collectionRate }}%</p>
+            <div class="text-lg md:text-2xl font-bold">{{ $this->formatCurrency($this->incomeThisMonth) }}</div>
+            <p class="text-[10px] md:text-xs flex items-center gap-1 mt-1">
+                <span class="text-gray-600 dark:text-gray-400">{{ $this->getPeriodLabel() }}</span>
+            </p>
         </x-card>
 
-        {{-- Gross Profit --}}
-        <x-card class="hover:shadow-lg transition-shadow">
-            <div class="flex items-center justify-between mb-4">
-                <div class="h-12 w-12 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center">
-                    <x-icon name="arrow-trending-up" class="w-6 h-6 text-green-600 dark:text-green-400" />
+        {{-- Card 3: Pengeluaran --}}
+        <x-card class="hover:shadow-md transition-shadow">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-xs md:text-sm font-medium text-gray-600 dark:text-gray-400">Pengeluaran</span>
+                <div class="h-7 w-7 md:h-8 md:w-8 rounded-lg bg-red-500/10 dark:bg-red-500/20 flex items-center justify-center">
+                    <x-icon name="arrow-up-right" class="h-3.5 w-3.5 md:h-4 md:w-4 text-red-600 dark:text-red-400" />
                 </div>
-                <x-badge :text="$this->profitMargin . '% ' . __('pages.margin')" color="green" sm />
             </div>
-            <p class="text-sm text-dark-600 dark:text-dark-400 mb-1">{{ __('pages.gross_profit') }}</p>
-            <p class="text-2xl font-bold text-dark-900 dark:text-white">{{ $this->formatCurrency($this->grossProfit) }}</p>
+            <div class="text-lg md:text-2xl font-bold">{{ $this->formatCurrency($this->expensesThisMonth) }}</div>
+            <p class="text-[10px] md:text-xs flex items-center gap-1 mt-1">
+                <span class="text-gray-600 dark:text-gray-400">{{ $this->getPeriodLabel() }}</span>
+            </p>
         </x-card>
 
-        {{-- Active Clients --}}
-        <x-card class="hover:shadow-lg transition-shadow">
-            <div class="flex items-center justify-between mb-4">
-                <div class="h-12 w-12 bg-primary-100 dark:bg-primary-900/30 rounded-xl flex items-center justify-center">
-                    <x-icon name="user-group" class="w-6 h-6 text-primary-600 dark:text-primary-400" />
+        {{-- Card 4: Invoice Tertunda --}}
+        <x-card class="hover:shadow-md transition-shadow">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-xs md:text-sm font-medium text-gray-600 dark:text-gray-400">Invoice Tertunda</span>
+                <div class="h-7 w-7 md:h-8 md:w-8 rounded-lg bg-amber-500/10 dark:bg-amber-500/20 flex items-center justify-center">
+                    <x-icon name="document-text" class="h-3.5 w-3.5 md:h-4 md:w-4 text-amber-600 dark:text-amber-400" />
                 </div>
-                @if ($this->newClientsThisMonth > 0)
-                    <x-badge :text="'+' . $this->newClientsThisMonth . ' ' . __('pages.new')" color="indigo" sm />
-                @endif
             </div>
-            <p class="text-sm text-dark-600 dark:text-dark-400 mb-1">{{ __('pages.active_clients') }}</p>
-            <p class="text-2xl font-bold text-dark-900 dark:text-white">{{ number_format($this->activeClients) }}</p>
-        </x-card>
-    </div>
-
-    {{-- Charts Section --}}
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        {{-- Revenue Trend --}}
-        <x-card class="lg:col-span-2" header="{{ __('pages.revenue_trend_12_months') }}">
-            <div class="h-80">
-                <canvas id="revenueChart"></canvas>
-            </div>
-        </x-card>
-
-        {{-- Invoice Status --}}
-        <x-card header="{{ __('pages.invoice_status') }}">
-            <div class="h-80 flex items-center justify-center">
-                <canvas id="statusChart"></canvas>
-            </div>
+            <div class="text-lg md:text-2xl font-bold">{{ $this->formatCurrency($this->pendingInvoicesAmount) }}</div>
+            <p class="text-[10px] md:text-xs flex items-center gap-1 mt-1">
+                <x-icon name="clock" class="h-3 w-3 text-amber-600 dark:text-amber-400" />
+                <span class="text-amber-600 dark:text-amber-400 font-medium">{{ $this->pendingInvoicesCount }} invoice</span>
+                <span class="text-gray-600 dark:text-gray-400 hidden sm:inline">menunggu</span>
+            </p>
         </x-card>
     </div>
 
-    {{-- Profit vs Revenue Chart --}}
-    <div class="mb-8">
-        <x-card header="{{ __('pages.revenue_vs_profit') }}">
-            <div class="h-80">
-                <canvas id="profitChart"></canvas>
-            </div>
-        </x-card>
-    </div>
-
-    {{-- Insights Grid --}}
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        {{-- Top Clients --}}
-        <x-card>
-            <x-slot:header class="flex items-center justify-between p-4 border-b border-gray-100 dark:border-dark-600">
-                <span class="text-md font-medium text-secondary-700 dark:text-dark-300">{{ __('pages.top_clients') }}</span>
-                <a href="{{ route('clients') }}" wire:navigate class="text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300">
-                    {{ __('pages.view_all') }} →
-                </a>
-            </x-slot:header>
-            <div class="space-y-3">
-                @forelse ($this->topClients as $client)
-                    <div class="flex items-center justify-between p-3 bg-dark-50 dark:bg-dark-700 rounded-lg">
-                        <div class="flex items-center gap-3">
-                            <div class="h-10 w-10 bg-gradient-to-br from-primary-400 to-primary-600 rounded-full flex items-center justify-center text-white font-bold">
-                                {{ $client['rank'] }}
-                            </div>
-                            <div>
-                                <p class="font-medium text-dark-900 dark:text-white">{{ $client['name'] }}</p>
-                                <p class="text-xs text-dark-500 dark:text-dark-400 capitalize">{{ __('pages.' . $client['type']) }}</p>
-                            </div>
-                        </div>
-                        <div class="text-right">
-                            <p class="font-bold text-dark-900 dark:text-white">{{ $this->formatCurrency($client['total_revenue']) }}</p>
-                        </div>
-                    </div>
-                @empty
-                    <p class="text-center text-dark-500 dark:text-dark-400 py-8">{{ __('pages.no_client_data_yet') }}</p>
-                @endforelse
-            </div>
-        </x-card>
-
-        {{-- Recurring Revenue --}}
-        <x-card>
-            <x-slot:header class="flex items-center justify-between p-4 border-b border-gray-100 dark:border-dark-600">
-                <span class="text-md font-medium text-secondary-700 dark:text-dark-300">{{ __('pages.recurring_revenue') }}</span>
-                <a href="{{ route('recurring-invoices.index') }}" wire:navigate class="text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300">
-                    {{ __('pages.manage') }} →
-                </a>
-            </x-slot:header>
-            <div class="space-y-4">
-                <div class="p-4 bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-lg">
-                    <p class="text-sm text-blue-700 dark:text-blue-300 mb-1">{{ __('pages.mrr_monthly_recurring_revenue') }}</p>
-                    <p class="text-2xl font-bold text-blue-900 dark:text-blue-100">{{ $this->formatCurrency($this->monthlyRecurringRevenue) }}</p>
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="p-4 bg-dark-50 dark:bg-dark-700 rounded-lg">
-                        <p class="text-sm text-dark-600 dark:text-dark-400 mb-1">{{ __('pages.active_templates') }}</p>
-                        <p class="text-xl font-bold text-dark-900 dark:text-white">{{ $this->activeTemplates }}</p>
-                    </div>
-                    <div class="p-4 bg-dark-50 dark:bg-dark-700 rounded-lg">
-                        <p class="text-sm text-dark-600 dark:text-dark-400 mb-1">{{ __('pages.draft_invoices') }}</p>
-                        <p class="text-xl font-bold text-dark-900 dark:text-white">{{ $this->draftRecurringInvoices }}</p>
-                    </div>
-                </div>
-            </div>
-        </x-card>
-    </div>
-
-    {{-- Recent Activity & Quick Actions --}}
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {{-- Recent Invoices --}}
-        <x-card class="lg:col-span-2">
-            <x-slot:header class="flex items-center justify-between p-4 border-b border-gray-100 dark:border-dark-600">
-                <span class="text-md font-medium text-secondary-700 dark:text-dark-300">{{ __('pages.recent_invoices') }}</span>
-                <a href="{{ route('invoices.index') }}" wire:navigate class="text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300">
-                    {{ __('pages.view_all') }} →
-                </a>
-            </x-slot:header>
-            <div class="space-y-2">
-                @forelse ($this->recentInvoices as $invoice)
-                    <div class="flex items-center justify-between p-3 hover:bg-dark-50 dark:hover:bg-dark-700 rounded-lg transition-colors">
-                        <div class="flex-1">
-                            <p class="font-mono font-bold text-sm text-dark-900 dark:text-white">{{ $invoice['invoice_number'] }}</p>
-                            <p class="text-xs text-dark-600 dark:text-dark-400">{{ $invoice['client_name'] }} • {{ $invoice['issue_date'] }}</p>
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <p class="font-bold text-dark-900 dark:text-white">{{ $this->formatCurrency($invoice['total_amount']) }}</p>
-                            <x-badge :text="match ($invoice['status']) {
-                                'draft' => __('pages.draft'),
-                                'sent' => __('pages.sent'),
-                                'paid' => __('pages.paid'),
-                                'partially_paid' => __('pages.installment'),
-                                'overdue' => __('pages.late'),
-                                default => $invoice['status']
-                            }" :color="match ($invoice['status']) {
-                                'draft' => 'gray',
-                                'sent' => 'blue',
-                                'paid' => 'green',
-                                'partially_paid' => 'yellow',
-                                'overdue' => 'red',
-                                default => 'gray'
-                            }" />
-                        </div>
-                    </div>
-                @empty
-                    <p class="text-center text-dark-500 dark:text-dark-400 py-8">{{ __('pages.no_invoices_yet') }}</p>
-                @endforelse
-            </div>
-        </x-card>
-
-        {{-- Quick Stats & Actions --}}
-        <div class="space-y-6">
-            {{-- Bank Balance - Keep custom styling for gradient background --}}
-            <div class="bg-gradient-to-br from-emerald-500 to-emerald-700 rounded-xl p-6 text-white shadow-md">
-                <div class="flex items-center gap-3 mb-4">
-                    <div class="h-12 w-12 bg-white/20 rounded-xl flex items-center justify-center">
-                        <x-icon name="building-library" class="w-6 h-6" />
-                    </div>
-                    <div>
-                        <p class="text-sm text-emerald-100">{{ __('pages.total_bank_balance') }}</p>
-                        <p class="text-2xl font-bold">{{ $this->formatCurrency($this->totalBankBalance) }}</p>
-                    </div>
-                </div>
-                <div class="pt-4 border-t border-emerald-400/30">
-                    <p class="text-xs text-emerald-100 mb-1">{{ __('pages.cash_flow_this_month') }}</p>
-                    <p class="text-lg font-semibold">{{ $this->formatCurrency($this->cashFlowThisMonth) }}</p>
-                </div>
-            </div>
-
-            {{-- Reimbursements --}}
-            @if ($this->pendingReimbursements > 0)
-                <x-card>
-                    <div class="flex items-center gap-3 mb-4">
-                        <div class="h-10 w-10 bg-amber-100 dark:bg-amber-900/30 rounded-lg flex items-center justify-center">
-                            <x-icon name="currency-dollar" class="w-5 h-5 text-amber-600 dark:text-amber-400" />
+    {{-- Main Charts Row --}}
+    <div class="grid gap-4 lg:grid-cols-3 items-start">
+        {{-- Cash Flow Chart - lg:col-span-2 --}}
+        <div class="lg:col-span-2">
+            <x-card class="hover:shadow-md transition-shadow">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center gap-2">
+                        <div class="h-8 w-8 rounded-lg bg-blue-500/10 dark:bg-blue-500/20 flex items-center justify-center">
+                            <x-icon name="chart-bar" class="h-4 w-4 text-blue-600 dark:text-blue-400" />
                         </div>
                         <div>
-                            <p class="text-sm text-dark-600 dark:text-dark-400">{{ __('pages.reimbursement_pending') }}</p>
-                            <p class="text-xl font-bold text-dark-900 dark:text-white">{{ $this->pendingReimbursements }} {{ __('pages.submissions') }}</p>
+                            <h3 class="text-sm md:text-base font-semibold">Arus Kas Bulanan</h3>
+                            <p class="text-xs text-gray-600 dark:text-gray-400">6 bulan terakhir</p>
                         </div>
                     </div>
-                    <x-slot:footer>
-                        <div class="flex items-center justify-between w-full">
-                            <div>
-                                <p class="text-xs text-dark-600 dark:text-dark-400 mb-1">{{ __('pages.total_value') }}</p>
-                                <p class="text-lg font-semibold text-dark-900 dark:text-white">{{ $this->formatCurrency($this->pendingReimbursementAmount) }}</p>
-                            </div>
-                            <a href="{{ route('reimbursements.index') }}" wire:navigate class="text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 font-medium">
-                                {{ __('pages.review_now') }} →
-                            </a>
+                    <div class="flex items-center gap-4 text-xs">
+                        <div class="flex items-center gap-1.5">
+                            <div class="w-2.5 h-2.5 rounded-full bg-green-600"></div>
+                            <span class="text-gray-600 dark:text-gray-400">Pemasukan</span>
                         </div>
-                    </x-slot:footer>
-                </x-card>
-            @endif
+                        <div class="flex items-center gap-1.5">
+                            <div class="w-2.5 h-2.5 rounded-full bg-red-600"></div>
+                            <span class="text-gray-600 dark:text-gray-400">Pengeluaran</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="h-[220px] md:h-[260px]">
+                    @if (count($this->cashFlowChart) > 0)
+                        <canvas id="cashFlowChart"></canvas>
+                    @else
+                        <div class="flex items-center justify-center h-full">
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Belum ada data transaksi</p>
+                        </div>
+                    @endif
+                </div>
+            </x-card>
+        </div>
 
-            {{-- Quick Actions --}}
-            <x-card header="{{ __('pages.quick_actions') }}">
-                <div class="space-y-2">
-                    <a href="{{ route('invoices.create') }}" wire:navigate class="flex items-center gap-3 p-3 rounded-lg hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors group">
-                        <div class="h-8 w-8 bg-primary-100 dark:bg-primary-900/30 rounded-lg flex items-center justify-center group-hover:bg-primary-200 dark:group-hover:bg-primary-900/50 transition-colors">
-                            <x-icon name="plus" class="w-4 h-4 text-primary-600 dark:text-primary-400" />
+        {{-- Expense by Category --}}
+        <div>
+            <x-card class="hover:shadow-md transition-shadow">
+                <div class="flex items-center gap-2 mb-3">
+                    <div class="h-8 w-8 rounded-lg bg-blue-500/10 dark:bg-blue-500/20 flex items-center justify-center">
+                        <x-icon name="chart-pie" class="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <div>
+                        <h3 class="text-sm md:text-base font-semibold">Pengeluaran per Kategori</h3>
+                        <p class="text-xs text-gray-600 dark:text-gray-400">{{ ucfirst($this->getPeriodLabel()) }}</p>
+                    </div>
+                </div>
+                <div class="h-[160px]">
+                    @if (count($this->expensesByCategoryChart) > 0)
+                        <canvas id="expenseCategoryChart"></canvas>
+                    @else
+                        <div class="flex items-center justify-center h-full">
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Belum ada data pengeluaran</p>
                         </div>
-                        <span class="text-sm font-medium text-dark-900 dark:text-white">{{ __('pages.create_new_invoice') }}</span>
-                    </a>
-                    <a href="{{ route('cash-flow.index') }}" wire:navigate class="flex items-center gap-3 p-3 rounded-lg hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors group">
-                        <div class="h-8 w-8 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg flex items-center justify-center group-hover:bg-emerald-200 dark:group-hover:bg-emerald-900/50 transition-colors">
-                            <x-icon name="chart-bar" class="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                    @endif
+                </div>
+                <div class="space-y-1.5 mt-2">
+                    @forelse ($this->expensesByCategoryChart as $category)
+                        <div class="flex items-center justify-between text-xs py-1">
+                            <div class="flex items-center gap-2">
+                                <div class="w-2.5 h-2.5 rounded-full" style="background-color: {{ $category['color'] }}"></div>
+                                <span class="text-gray-600 dark:text-gray-400">{{ $category['name'] }}</span>
+                            </div>
+                            <span class="font-medium">{{ $this->formatCurrency($category['value']) }}</span>
                         </div>
-                        <span class="text-sm font-medium text-dark-900 dark:text-white">{{ __('pages.view_cash_flow') }}</span>
-                    </a>
+                    @empty
+                        <p class="text-xs text-gray-500 dark:text-gray-400 text-center py-4">Belum ada data</p>
+                    @endforelse
                 </div>
             </x-card>
         </div>
     </div>
+
+    {{-- Second Row --}}
+    <div class="grid gap-4 lg:grid-cols-2 items-start">
+        {{-- Revenue vs Expenses Chart --}}
+        <x-card class="hover:shadow-md transition-shadow">
+            <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center gap-2">
+                        <div class="h-8 w-8 rounded-lg bg-blue-500/10 dark:bg-blue-500/20 flex items-center justify-center">
+                            <x-icon name="chart-bar" class="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                        </div>
+                        <div>
+                            <h3 class="text-sm md:text-base font-semibold">Pendapatan vs Pengeluaran</h3>
+                            <p class="text-xs text-gray-600 dark:text-gray-400">6 bulan terakhir</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="h-[180px]">
+                    @if (count($this->revenueVsExpensesChart) > 0)
+                        <canvas id="revenueExpenseChart"></canvas>
+                    @else
+                        <div class="flex items-center justify-center h-full">
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Belum ada data</p>
+                        </div>
+                    @endif
+                </div>
+                <div class="flex items-center justify-center gap-4 mt-2 text-xs">
+                    <div class="flex items-center gap-1.5">
+                        <div class="w-2.5 h-2.5 rounded bg-green-600"></div>
+                        <span class="text-gray-600 dark:text-gray-400">Pendapatan</span>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <div class="w-2.5 h-2.5 rounded bg-red-600"></div>
+                        <span class="text-gray-600 dark:text-gray-400">Pengeluaran</span>
+                </div>
+            </div>
+        </x-card>
+
+        {{-- Bank Accounts --}}
+        <x-card class="hover:shadow-md transition-shadow">
+            <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center gap-2">
+                        <div class="h-8 w-8 rounded-lg bg-blue-500/10 dark:bg-blue-500/20 flex items-center justify-center">
+                            <x-icon name="building-library" class="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                        </div>
+                        <div>
+                            <h3 class="text-sm md:text-base font-semibold">Saldo Rekening</h3>
+                            <p class="text-xs text-gray-600 dark:text-gray-400">Posisi per bank</p>
+                        </div>
+                </div>
+                <a href="{{ route('bank-accounts.index') }}" wire:navigate class="text-xs text-blue-600 hover:underline flex items-center gap-1 dark:text-blue-400">
+                        Kelola <x-icon name="arrow-up-right" class="h-3 w-3" />
+                    </a>
+                </div>
+                <div class="space-y-2">
+                    @forelse ($this->bankAccounts as $account)
+                        <div class="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-dark-700 hover:bg-gray-100 dark:hover:bg-dark-600 transition-colors">
+                            <div class="flex items-center gap-3">
+                                <div class="h-9 w-9 rounded-lg bg-blue-500/10 dark:bg-blue-500/20 flex items-center justify-center">
+                                    <x-icon name="credit-card" class="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                                </div>
+                                <div>
+                                    <p class="font-medium text-sm">{{ $account['name'] }}</p>
+                                    <p class="text-[10px] text-gray-600 dark:text-gray-400">{{ $account['account_number'] }} • {{ $account['bank'] }}</p>
+                                </div>
+                            </div>
+                            <p class="font-semibold">{{ $this->formatCurrency($account['balance']) }}</p>
+                        </div>
+                    @empty
+                        <p class="text-xs text-gray-500 dark:text-gray-400 text-center py-4">Belum ada rekening</p>
+                    @endforelse
+                    @if ($this->bankAccounts->count() > 0)
+                        <div class="flex items-center justify-between p-3 rounded-lg bg-blue-500/5 border border-blue-500/20 dark:bg-blue-500/10 dark:border-blue-500/30">
+                            <span class="font-medium text-sm">Total</span>
+                            <span class="font-bold text-blue-600 dark:text-blue-400">{{ $this->formatCurrency($this->totalBankBalance) }}</span>
+                        </div>
+                    @endif
+            </div>
+        </x-card>
+    </div>
+
+    {{-- Third Row --}}
+    <div class="grid gap-4 lg:grid-cols-2 items-start">
+        {{-- Pending Invoices --}}
+        <x-card class="hover:shadow-md transition-shadow">
+            <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center gap-2">
+                        <div class="h-8 w-8 rounded-lg bg-amber-500/10 dark:bg-amber-500/20 flex items-center justify-center">
+                            <x-icon name="document-text" class="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                        </div>
+                        <div>
+                            <h3 class="text-sm md:text-base font-semibold">Invoice Tertunda</h3>
+                            <p class="text-xs text-gray-600 dark:text-gray-400">Perlu difollow-up</p>
+                        </div>
+                </div>
+                <a href="{{ route('invoices.index') }}" wire:navigate class="text-xs text-blue-600 hover:underline flex items-center gap-1 dark:text-blue-400">
+                        Lihat Semua <x-icon name="arrow-up-right" class="h-3 w-3" />
+                    </a>
+                </div>
+                <div class="space-y-2">
+                    @forelse ($this->pendingInvoicesList as $invoice)
+                        @php
+                            $isOverdue = $invoice['days_until_due'] < 0;
+                            $isWarning = $invoice['days_until_due'] >= 0 && $invoice['days_until_due'] < 7;
+                        @endphp
+                        <div class="flex items-center justify-between p-3 rounded-lg border transition-colors {{ $isOverdue ? 'bg-red-500/5 border-red-500/20 dark:bg-red-500/10 dark:border-red-500/30' : ($isWarning ? 'bg-amber-500/5 border-amber-500/20 dark:bg-amber-500/10 dark:border-amber-500/30' : 'bg-gray-50 dark:bg-dark-700 border-transparent') }}">
+                            <div class="flex items-center gap-3 min-w-0">
+                                <div class="h-8 w-8 rounded-lg flex items-center justify-center flex-shrink-0 {{ $isOverdue ? 'bg-red-500/10 dark:bg-red-500/20' : ($isWarning ? 'bg-amber-500/10 dark:bg-amber-500/20' : 'bg-gray-200 dark:bg-dark-600') }}">
+                                    @if ($isOverdue)
+                                        <x-icon name="exclamation-triangle" class="h-4 w-4 text-red-600 dark:text-red-400" />
+                                    @elseif ($isWarning)
+                                        <x-icon name="clock" class="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                                    @else
+                                        <x-icon name="check-circle" class="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                                    @endif
+                                </div>
+                                <div class="min-w-0">
+                                    <p class="font-medium text-sm truncate">{{ $invoice['client'] }}</p>
+                                    <p class="text-[10px] text-gray-600 dark:text-gray-400">{{ $invoice['invoice_number'] }}</p>
+                                </div>
+                            </div>
+                            <div class="text-right flex-shrink-0 ml-2">
+                                <p class="font-semibold">{{ $this->formatCurrency($invoice['amount']) }}</p>
+                                <span class="text-[10px] font-medium {{ $isOverdue ? 'text-red-600 dark:text-red-400' : ($isWarning ? 'text-amber-600 dark:text-amber-400' : 'text-gray-600 dark:text-gray-400') }}">
+                                    {{ $isOverdue ? 'Lewat ' . abs($invoice['days_until_due']) . ' hari' : $invoice['days_until_due'] . ' hari lagi' }}
+                                </span>
+                            </div>
+                        </div>
+                    @empty
+                        <p class="text-xs text-gray-500 dark:text-gray-400 text-center py-4">Tidak ada invoice tertunda</p>
+                    @endforelse
+            </div>
+        </x-card>
+
+        {{-- Recent Transactions --}}
+        <x-card class="hover:shadow-md transition-shadow">
+            <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center gap-2">
+                        <div class="h-8 w-8 rounded-lg bg-blue-500/10 dark:bg-blue-500/20 flex items-center justify-center">
+                            <x-icon name="arrow-trending-up" class="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                        </div>
+                        <div>
+                            <h3 class="text-sm md:text-base font-semibold">Transaksi Terbaru</h3>
+                            <p class="text-xs text-gray-600 dark:text-gray-400">Aktivitas terakhir</p>
+                        </div>
+                </div>
+                <a href="{{ route('cash-flow.index') }}" wire:navigate class="text-xs text-blue-600 hover:underline flex items-center gap-1 dark:text-blue-400">
+                        Lihat Semua <x-icon name="arrow-up-right" class="h-3 w-3" />
+                    </a>
+                </div>
+                <div class="space-y-2">
+                    @forelse ($this->recentTransactions as $transaction)
+                        <div class="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-dark-700 hover:bg-gray-100 dark:hover:bg-dark-600 transition-colors">
+                            <div class="flex items-center gap-3 min-w-0">
+                                <div class="h-8 w-8 rounded-lg flex items-center justify-center flex-shrink-0 {{ $transaction['type'] === 'income' ? 'bg-green-500/10 dark:bg-green-500/20' : 'bg-red-500/10 dark:bg-red-500/20' }}">
+                                    @if ($transaction['type'] === 'income')
+                                        <x-icon name="arrow-down-right" class="h-4 w-4 text-green-600 dark:text-green-400" />
+                                    @else
+                                        <x-icon name="arrow-up-right" class="h-4 w-4 text-red-600 dark:text-red-400" />
+                                    @endif
+                                </div>
+                                <div class="min-w-0">
+                                    <p class="font-medium text-sm truncate">{{ $transaction['description'] }}</p>
+                                    <p class="text-[10px] text-gray-600 dark:text-gray-400">{{ $transaction['date']->diffForHumans() }}</p>
+                                </div>
+                            </div>
+                            <p class="font-semibold flex-shrink-0 ml-2 {{ $transaction['type'] === 'income' ? 'text-green-600 dark:text-green-400' : '' }}">
+                                {{ $transaction['type'] === 'income' ? '+' : '-' }}{{ $this->formatNumber($transaction['amount']) }}
+                            </p>
+                        </div>
+                    @empty
+                        <p class="text-xs text-gray-500 dark:text-gray-400 text-center py-4">Belum ada transaksi</p>
+                    @endforelse
+            </div>
+        </x-card>
+    </div>
 </div>
 
 @push('scripts')
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    function setupDashboardCharts() {
-        let revenueChart, statusChart, profitChart;
+    function setupDashboard() {
+        const isDark = () => document.documentElement.classList.contains('dark');
+        const textColor = () => isDark() ? '#9ca3af' : '#6b7280';
+        const gridColor = () => isDark() ? '#374151' : '#e5e7eb';
 
-        function isDarkMode() {
-            return document.documentElement.classList.contains('dark');
-        }
+        // Cash Flow Chart (Area Chart)
+        const cashFlowCtx = document.getElementById('cashFlowChart');
+        if (cashFlowCtx) {
+            const cashFlowData = @json($this->cashFlowChart);
 
-        // Revenue Chart
-        function createRevenueChart() {
-            const ctx = document.getElementById('revenueChart');
-            if (!ctx) return;
-
-            // Destroy existing chart instance
-            const existingChart = Chart.getChart(ctx);
-            if (existingChart) {
-                existingChart.destroy();
-            }
-
-            const isDark = isDarkMode();
-            const data = @json($this->monthlyRevenueChart);
-
-            revenueChart = new Chart(ctx, {
+            new Chart(cashFlowCtx, {
                 type: 'line',
                 data: {
-                    labels: data.map(item => item.month),
-                    datasets: [{
-                        label: 'Pendapatan',
-                        data: data.map(item => item.revenue),
-                        borderColor: 'rgb(37, 99, 235)', // Professional Blue #2563EB
-                        backgroundColor: 'rgba(37, 99, 235, 0.15)',
-                        borderWidth: 3,
-                        fill: true,
-                        tension: 0.4,
-                        pointBackgroundColor: 'rgb(37, 99, 235)',
-                        pointBorderColor: '#fff',
-                        pointBorderWidth: 2,
-                        pointRadius: 5,
-                        pointHoverRadius: 7,
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            backgroundColor: isDark ? '#27272a' : '#ffffff',
-                            titleColor: isDark ? '#fafafa' : '#18181b',
-                            bodyColor: isDark ? '#fafafa' : '#18181b',
-                            borderColor: isDark ? '#3f3f46' : '#e4e4e7',
-                            borderWidth: 1,
-                            callbacks: {
-                                label: function(context) {
-                                    return '{{ __("pages.revenue") }}: Rp ' + new Intl.NumberFormat('id-ID').format(context.parsed.y);
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                color: isDark ? '#a1a1aa' : '#71717a',
-                                callback: function(value) {
-                                    if (value >= 1000000000) return 'Rp ' + (value / 1000000000).toFixed(1) + 'M';
-                                    if (value >= 1000000) return 'Rp ' + (value / 1000000).toFixed(0) + 'Jt';
-                                    return 'Rp ' + (value / 1000).toFixed(0) + 'Rb';
-                                }
-                            },
-                            grid: { color: isDark ? '#27272a' : '#f4f4f5' }
-                        },
-                        x: {
-                            ticks: { color: isDark ? '#a1a1aa' : '#71717a' },
-                            grid: { display: false }
-                        }
-                    }
-                }
-            });
-        }
-
-        // Status Chart
-        function createStatusChart() {
-            const ctx = document.getElementById('statusChart');
-            if (!ctx) return;
-
-            // Destroy existing chart instance
-            const existingChart = Chart.getChart(ctx);
-            if (existingChart) {
-                existingChart.destroy();
-            }
-
-            const isDark = isDarkMode();
-            const data = @json($this->invoiceStatusChart);
-
-            statusChart = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: Object.keys(data),
-                    datasets: [{
-                        data: Object.values(data),
-                        backgroundColor: [
-                            'rgba(161, 161, 170, 0.85)', // draft - zinc-400
-                            'rgba(37, 99, 235, 0.85)',   // sent - Professional Blue
-                            'rgba(5, 150, 105, 0.85)',   // paid - emerald-600
-                            'rgba(217, 119, 6, 0.85)',   // partially_paid - amber-600
-                            'rgba(220, 38, 38, 0.85)'    // overdue - red-600
-                        ],
-                        borderWidth: 3,
-                        borderColor: isDark ? '#18181b' : '#ffffff',
-                        hoverOffset: 8
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: {
-                                color: isDark ? '#fafafa' : '#18181b',
-                                padding: 15,
-                                font: { size: 12 }
-                            }
-                        }
-                    },
-                    cutout: '60%'
-                }
-            });
-        }
-
-        // Profit Chart
-        function createProfitChart() {
-            const ctx = document.getElementById('profitChart');
-            if (!ctx) return;
-
-            // Destroy existing chart instance
-            const existingChart = Chart.getChart(ctx);
-            if (existingChart) {
-                existingChart.destroy();
-            }
-
-            const isDark = isDarkMode();
-            const data = @json($this->profitRevenueChart);
-
-            profitChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: data.map(item => item.month),
+                    labels: cashFlowData.map(d => d.month),
                     datasets: [
                         {
-                            label: '{{ __("pages.revenue") }}',
-                            data: data.map(item => item.revenue),
-                            backgroundColor: 'rgba(37, 99, 235, 0.8)', // Professional Blue
-                            borderColor: 'rgb(37, 99, 235)',
-                            borderWidth: 1,
-                            borderRadius: 8,
-                            hoverBackgroundColor: 'rgba(37, 99, 235, 0.95)'
+                            label: 'Pemasukan',
+                            data: cashFlowData.map(d => d.income),
+                            borderColor: 'rgb(22, 163, 74)',
+                            backgroundColor: 'rgba(22, 163, 74, 0.1)',
+                            fill: true,
+                            tension: 0.4,
+                            borderWidth: 2
                         },
                         {
-                            label: '{{ __("pages.profit") }}',
-                            data: data.map(item => item.profit),
-                            backgroundColor: 'rgba(5, 150, 105, 0.8)', // Emerald Success
-                            borderColor: 'rgb(5, 150, 105)',
-                            borderWidth: 1,
-                            borderRadius: 8,
-                            hoverBackgroundColor: 'rgba(5, 150, 105, 0.95)'
+                            label: 'Pengeluaran',
+                            data: cashFlowData.map(d => d.expenses),
+                            borderColor: 'rgb(220, 38, 38)',
+                            backgroundColor: 'rgba(220, 38, 38, 0.1)',
+                            fill: true,
+                            tension: 0.4,
+                            borderWidth: 2
                         }
                     ]
                 },
@@ -453,22 +387,15 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: {
-                            labels: {
-                                color: isDark ? '#fafafa' : '#18181b',
-                                font: { size: 12 }
-                            }
-                        },
+                        legend: { display: false },
                         tooltip: {
-                            backgroundColor: isDark ? '#27272a' : '#ffffff',
-                            titleColor: isDark ? '#fafafa' : '#18181b',
-                            bodyColor: isDark ? '#fafafa' : '#18181b',
-                            borderColor: isDark ? '#3f3f46' : '#e4e4e7',
+                            backgroundColor: isDark() ? '#1f2937' : '#ffffff',
+                            titleColor: isDark() ? '#f3f4f6' : '#111827',
+                            bodyColor: isDark() ? '#f3f4f6' : '#111827',
+                            borderColor: isDark() ? '#374151' : '#e5e7eb',
                             borderWidth: 1,
                             callbacks: {
-                                label: function(context) {
-                                    return context.dataset.label + ': Rp ' + new Intl.NumberFormat('id-ID').format(context.parsed.y);
-                                }
+                                label: (ctx) => ctx.dataset.label + ': Rp ' + new Intl.NumberFormat('id-ID').format(ctx.parsed.y)
                             }
                         }
                     },
@@ -476,17 +403,17 @@
                         y: {
                             beginAtZero: true,
                             ticks: {
-                                color: isDark ? '#a1a1aa' : '#71717a',
-                                callback: function(value) {
-                                    if (value >= 1000000000) return 'Rp ' + (value / 1000000000).toFixed(1) + 'M';
-                                    if (value >= 1000000) return 'Rp ' + (value / 1000000).toFixed(0) + 'Jt';
-                                    return 'Rp ' + (value / 1000).toFixed(0) + 'Rb';
+                                color: textColor(),
+                                font: { size: 11 },
+                                callback: (value) => {
+                                    if (value >= 1000000) return 'Rp ' + (value / 1000000).toFixed(0) + 'jt';
+                                    return 'Rp ' + (value / 1000).toFixed(0) + 'rb';
                                 }
                             },
-                            grid: { color: isDark ? '#27272a' : '#f4f4f5' }
+                            grid: { color: gridColor() }
                         },
                         x: {
-                            ticks: { color: isDark ? '#a1a1aa' : '#71717a' },
+                            ticks: { color: textColor(), font: { size: 11 } },
                             grid: { display: false }
                         }
                     }
@@ -494,22 +421,120 @@
             });
         }
 
-        // Initialize all charts
-        createRevenueChart();
-        createStatusChart();
-        createProfitChart();
+        // Expense Category Chart (Doughnut)
+        const expenseCategoryCtx = document.getElementById('expenseCategoryChart');
+        if (expenseCategoryCtx) {
+            const categoryData = @json($this->expensesByCategoryChart);
 
-        // Dark mode observer
-        const observer = new MutationObserver(function(mutations) {
-            mutations.forEach(function(mutation) {
-                if (mutation.attributeName === 'class') {
-                    setTimeout(() => {
-                        createRevenueChart();
-                        createStatusChart();
-                        createProfitChart();
-                    }, 100);
+            if (categoryData.length > 0) {
+                new Chart(expenseCategoryCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: categoryData.map(d => d.name),
+                        datasets: [{
+                            data: categoryData.map(d => d.value),
+                            backgroundColor: [
+                                'rgba(37, 99, 235, 0.8)',
+                                'rgba(22, 163, 74, 0.8)',
+                                'rgba(245, 158, 11, 0.8)',
+                                'rgba(168, 85, 247, 0.8)',
+                                'rgba(14, 165, 233, 0.8)',
+                                'rgba(156, 163, 175, 0.8)'
+                            ],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                backgroundColor: isDark() ? '#1f2937' : '#ffffff',
+                                titleColor: isDark() ? '#f3f4f6' : '#111827',
+                                bodyColor: isDark() ? '#f3f4f6' : '#111827',
+                                borderColor: isDark() ? '#374151' : '#e5e7eb',
+                                borderWidth: 1,
+                                callbacks: {
+                                    label: (ctx) => ctx.label + ': Rp ' + new Intl.NumberFormat('id-ID').format(ctx.parsed)
+                                }
+                            }
+                        },
+                        cutout: '65%'
+                    }
+                });
+            }
+        }
+
+        // Revenue vs Expense Chart (Horizontal Bar)
+        const revenueExpenseCtx = document.getElementById('revenueExpenseChart');
+        if (revenueExpenseCtx) {
+            const revenueExpenseData = @json($this->revenueVsExpensesChart);
+
+            new Chart(revenueExpenseCtx, {
+                type: 'bar',
+                data: {
+                    labels: revenueExpenseData.map(d => d.month),
+                    datasets: [
+                        {
+                            label: 'Pendapatan',
+                            data: revenueExpenseData.map(d => d.revenue),
+                            backgroundColor: 'rgba(22, 163, 74, 0.8)',
+                            borderRadius: 4
+                        },
+                        {
+                            label: 'Pengeluaran',
+                            data: revenueExpenseData.map(d => d.expenses),
+                            backgroundColor: 'rgba(220, 38, 38, 0.8)',
+                            borderRadius: 4
+                        }
+                    ]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: isDark() ? '#1f2937' : '#ffffff',
+                            titleColor: isDark() ? '#f3f4f6' : '#111827',
+                            bodyColor: isDark() ? '#f3f4f6' : '#111827',
+                            borderColor: isDark() ? '#374151' : '#e5e7eb',
+                            borderWidth: 1,
+                            callbacks: {
+                                label: (ctx) => ctx.dataset.label + ': Rp ' + new Intl.NumberFormat('id-ID').format(ctx.parsed.x)
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            ticks: {
+                                color: textColor(),
+                                font: { size: 10 },
+                                callback: (value) => {
+                                    if (value >= 1000000) return 'Rp ' + (value / 1000000).toFixed(0) + 'jt';
+                                    return 'Rp ' + (value / 1000).toFixed(0) + 'rb';
+                                }
+                            },
+                            grid: { color: gridColor() }
+                        },
+                        y: {
+                            ticks: { color: textColor(), font: { size: 10 } },
+                            grid: { display: false }
+                        }
+                    }
                 }
             });
+        }
+
+        // Dark mode observer
+        const observer = new MutationObserver(() => {
+            Chart.helpers.each(Chart.instances, (instance) => {
+                instance.destroy();
+            });
+            setupDashboard();
         });
 
         observer.observe(document.documentElement, {
@@ -518,9 +543,10 @@
         });
     }
 
-    // Only use livewire:navigated (handles both first load and SPA navigation)
-    document.addEventListener('livewire:navigated', () => {
-        setupDashboardCharts();
-    });
+    // Initialize charts
+    setupDashboard();
+
+    // Reinitialize on Livewire navigation
+    document.addEventListener('livewire:navigated', setupDashboard);
 </script>
 @endpush

@@ -29,7 +29,7 @@
     </div>
 
     {{-- Table --}}
-    <x-table :headers="$this->headers" :$sort :rows="$this->invoices" selectable wire:model="selected" paginate filter loading>
+    <x-table :headers="$this->headers" :$sort :rows="$this->invoices" selectable wire:model="selected" paginate filter>
         @interact('column_invoice_number', $row)
             <div>
                 <div class="font-mono font-bold text-zinc-600 dark:text-zinc-400">{{ $row->invoice_number }}</div>

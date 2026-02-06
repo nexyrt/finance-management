@@ -4,13 +4,9 @@ namespace App\Livewire;
 
 use App\Models\BankAccount;
 use App\Models\BankTransaction;
-use App\Models\Client;
 use App\Models\Invoice;
-use App\Models\InvoiceItem;
 use App\Models\Payment;
-use App\Models\RecurringTemplate;
-use App\Models\RecurringInvoice;
-use App\Models\Reimbursement;
+use App\Models\TransactionCategory;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
@@ -19,122 +15,79 @@ use Livewire\Attributes\Computed;
 class Dashboard extends Component
 {
     // ============================================
-    // TOP METRICS
+    // FILTER PROPERTIES
     // ============================================
 
-    #[Computed]
-    public function totalRevenue()
+    public $period = 'this_month'; // this_month, last_month, this_quarter, last_quarter, this_year, last_year, custom
+    public $startDate = null;
+    public $endDate = null;
+
+    // Reset computed properties when period changes
+    public function updatedPeriod()
     {
-        return Payment::sum('amount');
+        unset($this->incomeThisMonth);
+        unset($this->expensesThisMonth);
+        unset($this->expensesByCategoryChart);
     }
 
-    #[Computed]
-    public function revenueGrowth()
+    public function updatedStartDate()
     {
-        $currentMonth = Payment::whereMonth('payment_date', Carbon::now()->month)
-            ->whereYear('payment_date', Carbon::now()->year)
-            ->sum('amount');
-
-        $lastMonth = Payment::whereMonth('payment_date', Carbon::now()->subMonth()->month)
-            ->whereYear('payment_date', Carbon::now()->subMonth()->year)
-            ->sum('amount');
-
-        if ($lastMonth == 0)
-            return 0;
-
-        return round((($currentMonth - $lastMonth) / $lastMonth) * 100, 1);
+        unset($this->incomeThisMonth);
+        unset($this->expensesThisMonth);
+        unset($this->expensesByCategoryChart);
     }
 
-    #[Computed]
-    public function outstandingAmount()
+    public function updatedEndDate()
     {
-        $totalOutstanding = Invoice::whereIn('status', ['sent', 'partially_paid', 'overdue'])
-            ->sum('total_amount');
-
-        $totalPaid = Payment::whereHas('invoice', function ($query) {
-            $query->whereIn('status', ['sent', 'partially_paid', 'overdue']);
-        })->sum('amount');
-
-        return $totalOutstanding - $totalPaid;
-    }
-
-    #[Computed]
-    public function overdueInvoices()
-    {
-        return Invoice::where('status', 'overdue')
-            ->orWhere(function ($query) {
-                $query->whereIn('status', ['sent', 'partially_paid'])
-                    ->where('due_date', '<', Carbon::today());
-            })
-            ->count();
-    }
-
-    #[Computed]
-    public function totalInvoices()
-    {
-        return Invoice::count();
-    }
-
-    #[Computed]
-    public function invoiceStatusBreakdown()
-    {
-        return Invoice::select('status', DB::raw('count(*) as count'))
-            ->groupBy('status')
-            ->pluck('count', 'status')
-            ->toArray();
-    }
-
-    #[Computed]
-    public function collectionRate()
-    {
-        $totalInvoiced = Invoice::whereIn('status', ['sent', 'paid', 'partially_paid', 'overdue'])
-            ->sum('total_amount');
-
-        $totalCollected = Payment::sum('amount');
-
-        if ($totalInvoiced == 0)
-            return 0;
-
-        return round(($totalCollected / $totalInvoiced) * 100, 1);
-    }
-
-    #[Computed]
-    public function grossProfit()
-    {
-        $totalRevenue = Invoice::where('status', 'paid')->sum('total_amount');
-        $totalCogs = InvoiceItem::whereHas('invoice', function ($query) {
-            $query->where('status', 'paid');
-        })->where('is_tax_deposit', false)->sum('cogs_amount');
-
-        return $totalRevenue - $totalCogs;
-    }
-
-    #[Computed]
-    public function profitMargin()
-    {
-        $revenue = Invoice::where('status', 'paid')->sum('total_amount');
-        if ($revenue == 0)
-            return 0;
-
-        return round(($this->grossProfit / $revenue) * 100, 1);
-    }
-
-    #[Computed]
-    public function activeClients()
-    {
-        return Client::where('status', 'active')->count();
-    }
-
-    #[Computed]
-    public function newClientsThisMonth()
-    {
-        return Client::whereMonth('created_at', Carbon::now()->month)
-            ->whereYear('created_at', Carbon::now()->year)
-            ->count();
+        unset($this->incomeThisMonth);
+        unset($this->expensesThisMonth);
+        unset($this->expensesByCategoryChart);
     }
 
     // ============================================
-    // BANK & CASH FLOW
+    // HELPER METHODS FOR DATE RANGE
+    // ============================================
+
+    private function getDateRange()
+    {
+        return match ($this->period) {
+            'this_month' => [
+                'start' => Carbon::now()->startOfMonth(),
+                'end' => Carbon::now()->endOfMonth(),
+            ],
+            'last_month' => [
+                'start' => Carbon::now()->subMonth()->startOfMonth(),
+                'end' => Carbon::now()->subMonth()->endOfMonth(),
+            ],
+            'this_quarter' => [
+                'start' => Carbon::now()->startOfQuarter(),
+                'end' => Carbon::now()->endOfQuarter(),
+            ],
+            'last_quarter' => [
+                'start' => Carbon::now()->subQuarter()->startOfQuarter(),
+                'end' => Carbon::now()->subQuarter()->endOfQuarter(),
+            ],
+            'this_year' => [
+                'start' => Carbon::now()->startOfYear(),
+                'end' => Carbon::now()->endOfYear(),
+            ],
+            'last_year' => [
+                'start' => Carbon::now()->subYear()->startOfYear(),
+                'end' => Carbon::now()->subYear()->endOfYear(),
+            ],
+            'custom' => [
+                'start' => $this->startDate ? Carbon::parse($this->startDate) : Carbon::now()->startOfMonth(),
+                'end' => $this->endDate ? Carbon::parse($this->endDate) : Carbon::now()->endOfMonth(),
+            ],
+            default => [
+                'start' => Carbon::now()->startOfMonth(),
+                'end' => Carbon::now()->endOfMonth(),
+            ],
+        };
+    }
+
+    // ============================================
+    // QUICK STATS (4 Cards)
     // ============================================
 
     #[Computed]
@@ -154,214 +107,305 @@ class Dashboard extends Component
     }
 
     #[Computed]
-    public function cashFlowThisMonth()
+    public function incomeThisMonth()
     {
-        $credits = BankTransaction::where('transaction_type', 'credit')
-            ->whereMonth('transaction_date', Carbon::now()->month)
-            ->whereYear('transaction_date', Carbon::now()->year)
+        $dateRange = $this->getDateRange();
+        return BankTransaction::where('transaction_type', 'credit')
+            ->whereBetween('transaction_date', [$dateRange['start'], $dateRange['end']])
             ->sum('amount');
+    }
 
-        $debits = BankTransaction::where('transaction_type', 'debit')
-            ->whereMonth('transaction_date', Carbon::now()->month)
-            ->whereYear('transaction_date', Carbon::now()->year)
+    #[Computed]
+    public function expensesThisMonth()
+    {
+        $dateRange = $this->getDateRange();
+        return BankTransaction::where('transaction_type', 'debit')
+            ->whereBetween('transaction_date', [$dateRange['start'], $dateRange['end']])
             ->sum('amount');
+    }
 
-        return $credits - $debits;
+    #[Computed]
+    public function pendingInvoicesCount()
+    {
+        return Invoice::whereIn('status', ['sent', 'partially_paid', 'overdue'])
+            ->where('due_date', '>=', Carbon::today())
+            ->count();
+    }
+
+    #[Computed]
+    public function pendingInvoicesAmount()
+    {
+        $totalOutstanding = Invoice::whereIn('status', ['sent', 'partially_paid', 'overdue'])
+            ->where('due_date', '>=', Carbon::today())
+            ->sum('total_amount');
+
+        $totalPaid = Payment::whereHas('invoice', function ($query) {
+            $query->whereIn('status', ['sent', 'partially_paid', 'overdue'])
+                ->where('due_date', '>=', Carbon::today());
+        })->sum('amount');
+
+        return $totalOutstanding - $totalPaid;
     }
 
     // ============================================
-    // RECURRING REVENUE
+    // CASH FLOW CHART (6 Months)
     // ============================================
 
     #[Computed]
-    public function monthlyRecurringRevenue()
-    {
-        return RecurringTemplate::where('status', 'active')
-            ->where('frequency', 'monthly')
-            ->get()
-            ->sum(function ($template) {
-                return $template->invoice_template['total_amount'] ?? 0;
-            });
-    }
-
-    #[Computed]
-    public function activeTemplates()
-    {
-        return RecurringTemplate::where('status', 'active')->count();
-    }
-
-    #[Computed]
-    public function draftRecurringInvoices()
-    {
-        return RecurringInvoice::where('status', 'draft')->count();
-    }
-
-    // ============================================
-    // REIMBURSEMENTS
-    // ============================================
-
-    #[Computed]
-    public function pendingReimbursements()
-    {
-        return Reimbursement::where('status', 'pending')->count();
-    }
-
-    #[Computed]
-    public function pendingReimbursementAmount()
-    {
-        return Reimbursement::where('status', 'pending')->sum('amount');
-    }
-
-    // ============================================
-    // CHARTS DATA
-    // ============================================
-
-    #[Computed]
-    public function monthlyRevenueChart()
-    {
-        $data = [];
-        for ($i = 11; $i >= 0; $i--) {
-            $month = Carbon::now()->subMonths($i);
-            $revenue = Payment::whereMonth('payment_date', $month->month)
-                ->whereYear('payment_date', $month->year)
-                ->sum('amount');
-
-            $data[] = [
-                'month' => $month->translatedFormat('M Y'),
-                'revenue' => $revenue,
-            ];
-        }
-        return $data;
-    }
-
-    #[Computed]
-    public function invoiceStatusChart()
-    {
-        $statuses = [
-            'draft' => __('pages.draft'),
-            'sent' => __('pages.sent'),
-            'paid' => __('pages.paid'),
-            'partially_paid' => __('pages.installment'),
-            'overdue' => __('pages.late')
-        ];
-
-        $data = Invoice::select('status', DB::raw('count(*) as count'))
-            ->groupBy('status')
-            ->get()
-            ->mapWithKeys(function ($item) use ($statuses) {
-                return [$statuses[$item->status] ?? $item->status => $item->count];
-            })
-            ->toArray();
-
-        return $data;
-    }
-
-    #[Computed]
-    public function profitRevenueChart()
+    public function cashFlowChart()
     {
         $data = [];
         for ($i = 5; $i >= 0; $i--) {
             $month = Carbon::now()->subMonths($i);
 
-            // Revenue
-            $revenue = Payment::whereMonth('payment_date', $month->month)
-                ->whereYear('payment_date', $month->year)
+            $income = BankTransaction::where('transaction_type', 'credit')
+                ->whereMonth('transaction_date', $month->month)
+                ->whereYear('transaction_date', $month->year)
                 ->sum('amount');
 
-            // COGS for paid invoices in that month
-            $invoiceIds = Invoice::where('status', 'paid')
-                ->whereMonth('issue_date', $month->month)
-                ->whereYear('issue_date', $month->year)
-                ->pluck('id');
-
-            $cogs = InvoiceItem::whereIn('invoice_id', $invoiceIds)
-                ->where('is_tax_deposit', false)
-                ->sum('cogs_amount');
+            $expenses = BankTransaction::where('transaction_type', 'debit')
+                ->whereMonth('transaction_date', $month->month)
+                ->whereYear('transaction_date', $month->year)
+                ->sum('amount');
 
             $data[] = [
                 'month' => $month->translatedFormat('M'),
-                'revenue' => $revenue,
-                'profit' => max(0, $revenue - $cogs),
+                'income' => $income,
+                'expenses' => $expenses,
+                'net' => $income - $expenses,
             ];
         }
         return $data;
     }
 
     // ============================================
-    // TOP LISTS
+    // EXPENSE BY CATEGORY CHART (Pie Chart)
     // ============================================
 
     #[Computed]
-    public function topClients()
+    public function expensesByCategoryChart()
     {
-        return Client::select('clients.*')
-            ->join('invoice_items', 'clients.id', '=', 'invoice_items.client_id')
-            ->join('invoices', 'invoice_items.invoice_id', '=', 'invoices.id')
-            ->where('invoices.status', 'paid')
-            ->groupBy('clients.id', 'clients.name', 'clients.type', 'clients.email', 'clients.NPWP', 'clients.KPP', 'clients.logo', 'clients.status', 'clients.EFIN', 'clients.account_representative', 'clients.ar_phone_number', 'clients.person_in_charge', 'clients.address', 'clients.created_at', 'clients.updated_at')
-            ->selectRaw('SUM(invoice_items.amount) as total_revenue')
-            ->orderBy('total_revenue', 'desc')
-            ->take(5)
-            ->get()
-            ->map(function ($client, $index) {
+        $dateRange = $this->getDateRange();
+
+        // Define consistent colors matching Chart.js
+        $colors = [
+            'rgb(37, 99, 235)',      // Blue
+            'rgb(22, 163, 74)',      // Green
+            'rgb(245, 158, 11)',     // Amber
+            'rgb(168, 85, 247)',     // Purple
+            'rgb(14, 165, 233)',     // Sky
+            'rgb(156, 163, 175)',    // Gray
+        ];
+
+        // Get expenses for selected period grouped by category
+        $transactions = BankTransaction::where('transaction_type', 'debit')
+            ->whereBetween('transaction_date', [$dateRange['start'], $dateRange['end']])
+            ->whereNotNull('category_id')
+            ->with('category')
+            ->get();
+
+        $grouped = $transactions->groupBy('category_id')
+            ->map(function ($group) {
                 return [
-                    'rank' => $index + 1,
-                    'name' => $client->name,
-                    'type' => $client->type,
-                    'total_revenue' => $client->total_revenue,
+                    'name' => $group->first()->category->label ?? 'Lainnya',
+                    'value' => $group->sum('amount'),
                 ];
-            });
+            })
+            ->sortByDesc('value')
+            ->take(5)
+            ->values()
+            ->toArray();
+
+        // Calculate uncategorized
+        $uncategorized = BankTransaction::where('transaction_type', 'debit')
+            ->whereBetween('transaction_date', [$dateRange['start'], $dateRange['end']])
+            ->whereNull('category_id')
+            ->sum('amount');
+
+        if ($uncategorized > 0) {
+            $grouped[] = [
+                'name' => 'Tanpa Kategori',
+                'value' => $uncategorized,
+            ];
+        }
+
+        // Add color to each item
+        foreach ($grouped as $index => $item) {
+            $grouped[$index]['color'] = $colors[$index % count($colors)];
+        }
+
+        return $grouped;
     }
 
+    // ============================================
+    // REVENUE VS EXPENSES CHART (6 Months Bar Chart)
+    // ============================================
+
     #[Computed]
-    public function recentInvoices()
+    public function revenueVsExpensesChart()
+    {
+        $data = [];
+        for ($i = 5; $i >= 0; $i--) {
+            $month = Carbon::now()->subMonths($i);
+
+            $revenue = BankTransaction::where('transaction_type', 'credit')
+                ->whereMonth('transaction_date', $month->month)
+                ->whereYear('transaction_date', $month->year)
+                ->sum('amount');
+
+            $expenses = BankTransaction::where('transaction_type', 'debit')
+                ->whereMonth('transaction_date', $month->month)
+                ->whereYear('transaction_date', $month->year)
+                ->sum('amount');
+
+            $data[] = [
+                'month' => $month->translatedFormat('M'),
+                'revenue' => $revenue,
+                'expenses' => $expenses,
+            ];
+        }
+        return $data;
+    }
+
+    // ============================================
+    // BANK ACCOUNTS LIST
+    // ============================================
+
+    #[Computed]
+    public function bankAccounts()
+    {
+        return BankAccount::all()->map(function ($account) {
+            $credits = BankTransaction::where('bank_account_id', $account->id)
+                ->where('transaction_type', 'credit')
+                ->sum('amount');
+
+            $debits = BankTransaction::where('bank_account_id', $account->id)
+                ->where('transaction_type', 'debit')
+                ->sum('amount');
+
+            $balance = $account->initial_balance + $credits - $debits;
+
+            return [
+                'id' => $account->id,
+                'name' => $account->account_name,
+                'bank' => $account->bank_name,
+                'account_number' => $account->account_number,
+                'balance' => $balance,
+            ];
+        })->sortByDesc('balance')->values();
+    }
+
+    // ============================================
+    // PENDING INVOICES LIST
+    // ============================================
+
+    #[Computed]
+    public function pendingInvoicesList()
     {
         return Invoice::with('client')
-            ->orderBy('created_at', 'desc')
+            ->whereIn('status', ['sent', 'partially_paid', 'overdue'])
+            ->where('due_date', '>=', Carbon::today())
+            ->orderBy('due_date', 'asc')
             ->take(5)
             ->get()
             ->map(function ($invoice) {
+                $totalPaid = Payment::where('invoice_id', $invoice->id)->sum('amount');
+                $remaining = $invoice->total_amount - $totalPaid;
+
                 return [
                     'id' => $invoice->id,
                     'invoice_number' => $invoice->invoice_number,
-                    'client_name' => $invoice->client->name,
-                    'total_amount' => $invoice->total_amount,
+                    'client' => $invoice->client->name,
+                    'amount' => $remaining,
+                    'due_date' => $invoice->due_date,
                     'status' => $invoice->status,
-                    'issue_date' => $invoice->issue_date->format('d M Y'),
+                    'days_until_due' => Carbon::today()->diffInDays($invoice->due_date, false),
                 ];
             });
     }
 
+    // ============================================
+    // RECENT TRANSACTIONS LIST
+    // ============================================
+
     #[Computed]
-    public function topServices()
+    public function recentTransactions()
     {
-        return InvoiceItem::select('service_name', DB::raw('SUM(amount) as total_revenue'))
-            ->where('is_tax_deposit', false)
-            ->groupBy('service_name')
-            ->orderBy('total_revenue', 'desc')
+        // Combine BankTransactions and Payments
+        $bankTransactions = BankTransaction::with(['category', 'bankAccount'])
+            ->orderBy('transaction_date', 'desc')
             ->take(5)
             ->get()
-            ->map(function ($item) {
+            ->map(function ($transaction) {
                 return [
-                    'name' => $item->service_name,
-                    'revenue' => $item->total_revenue,
+                    'date' => $transaction->transaction_date,
+                    'description' => $transaction->description ?: ($transaction->category->label ?? 'Transaksi Bank'),
+                    'type' => $transaction->transaction_type === 'credit' ? 'income' : 'expense',
+                    'amount' => $transaction->amount,
+                    'account' => $transaction->bankAccount->account_name ?? '-',
+                    'category' => $transaction->category->label ?? 'Tanpa Kategori',
                 ];
             });
+
+        $payments = Payment::with(['invoice.client', 'bankAccount'])
+            ->orderBy('payment_date', 'desc')
+            ->take(5)
+            ->get()
+            ->map(function ($payment) {
+                return [
+                    'date' => $payment->payment_date,
+                    'description' => 'Pembayaran ' . $payment->invoice->invoice_number . ' - ' . $payment->invoice->client->name,
+                    'type' => 'income',
+                    'amount' => $payment->amount,
+                    'account' => $payment->bankAccount->account_name ?? '-',
+                    'category' => 'Pembayaran Invoice',
+                ];
+            });
+
+        return collect($bankTransactions)
+            ->concat($payments)
+            ->sortByDesc('date')
+            ->take(5)
+            ->values();
     }
 
     // ============================================
     // HELPER METHODS
     // ============================================
 
+    public function getPeriodLabel()
+    {
+        return match ($this->period) {
+            'this_month' => 'Bulan ini',
+            'last_month' => 'Bulan lalu',
+            'this_quarter' => 'Kuartal ini',
+            'last_quarter' => 'Kuartal lalu',
+            'this_year' => 'Tahun ini',
+            'last_year' => 'Tahun lalu',
+            'custom' => 'Periode kustom',
+            default => 'Bulan ini',
+        };
+    }
+
     public function formatCurrency($amount)
     {
         if ($amount >= 1000000000) {
-            return 'Rp ' . number_format($amount / 1000000000, 1, ',', '.') . ' ' . __('pages.billion');
+            return 'Rp ' . number_format($amount / 1000000000, 1, ',', '.') . 'M';
         } elseif ($amount >= 1000000) {
-            return 'Rp ' . number_format($amount / 1000000, 1, ',', '.') . ' ' . __('pages.million');
+            return 'Rp ' . number_format($amount / 1000000, 1, ',', '.') . 'jt';
         } else {
             return 'Rp ' . number_format($amount, 0, ',', '.');
         }
+    }
+
+    public function formatNumber($number)
+    {
+        if ($number >= 1000000) {
+            return number_format($number / 1000000, 1, ',', '.') . 'jt';
+        } elseif ($number >= 1000) {
+            return number_format($number / 1000, 1, ',', '.') . 'rb';
+        }
+        return number_format($number, 0, ',', '.');
     }
 
     public function render()
