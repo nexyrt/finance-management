@@ -43,6 +43,110 @@ if (darkTheme) {
         ::-webkit-scrollbar-thumb:hover {
             background: #555;
         }
+
+        /* Menu Item Base Styles */
+        .menu-item {
+            @apply flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium;
+            @apply transition-all duration-200;
+            position: relative;
+            /* Default text color - light gray on light mode, lighter gray on dark mode */
+            color: rgb(55 65 81);
+            /* gray-700 */
+        }
+
+        /* Dark mode text color */
+        .dark .menu-item {
+            color: rgb(209 213 219);
+            /* gray-300 */
+        }
+
+        /* Hover State (non-active only) */
+        .menu-item:not(.active):hover {
+            @apply bg-gray-100;
+            transform: translateX(2px);
+        }
+
+        .dark .menu-item:not(.active):hover {
+            @apply bg-dark-800;
+        }
+
+        /* Active State */
+        .menu-item.active {
+            @apply bg-primary-50;
+            @apply border-l-2 border-primary-600;
+            @apply -ml-0.5 pl-[calc(0.75rem+2px)];
+            color: rgb(37 99 235);
+            /* primary-600 */
+        }
+
+        /* Dark mode active state */
+        .dark .menu-item.active {
+            background-color: rgba(37, 99, 235, 0.2);
+            /* primary-900/20 */
+            border-color: rgb(96 165 250);
+            /* primary-400 */
+            color: rgb(96 165 250);
+            /* primary-400 */
+        }
+
+        /* Active Border Animation */
+        .menu-item.active::before {
+            content: '';
+            position: absolute;
+            left: -0.5px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(to bottom,
+                    transparent 0%,
+                    currentColor 10%,
+                    currentColor 90%,
+                    transparent 100%);
+            animation: slideIn 300ms ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: scaleY(0.5);
+            }
+
+            to {
+                opacity: 1;
+                transform: scaleY(1);
+            }
+        }
+
+        /* Icon Transitions */
+        .menu-item svg {
+            @apply transition-transform duration-200;
+        }
+
+        .menu-item:hover svg {
+            transform: scale(1.1);
+        }
+
+        /* Section Headers */
+        nav h3 {
+            color: rgb(107 114 128);
+            /* gray-500 */
+        }
+
+        .dark nav h3 {
+            color: rgb(156 163 175);
+            /* gray-400 */
+        }
+
+        /* Accessibility: Reduce Motion */
+        @media (prefers-reduced-motion: reduce) {
+
+            .menu-item,
+            .menu-item svg,
+            .menu-item::before {
+                animation: none !important;
+                transition: none !important;
+            }
+        }
     </style>
 </head>
 
@@ -52,6 +156,7 @@ if (darkTheme) {
     closeMobileMenu() {
         this.isMobileMenuOpen = false;
     },
+
     isActivePath(path) {
         return window.location.pathname === path;
     }
@@ -110,14 +215,14 @@ window.addEventListener('resize', () => {
             <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-6">
                 <!-- Dashboard -->
                 <div class="space-y-1">
-                    <h3 class="px-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2"
+                    <h3 class="px-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 "
                         :class="{ 'lg:hidden': isCollapsed }">
                         Dashboard
                     </h3>
 
                     <a href="{{ route('dashboard') }}" @click="closeMobileMenu()"
                         :title="isCollapsed ? 'Dashboard' : undefined"
-                        class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-dark-800"
+                        class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-dark-800 menu-item {{ request()->routeIs('dashboard') ? 'active' : '' }}"
                         :class="{
                             'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 border-l-2 border-primary-600 dark:border-primary-400 -ml-0.5 pl-[calc(0.75rem+2px)]': isActivePath(
                                 '{{ route('dashboard') }}'),
@@ -142,7 +247,7 @@ window.addEventListener('resize', () => {
                     @can('view clients')
                         <a href="{{ route('clients') }}" @click="closeMobileMenu()"
                             :title="isCollapsed ? 'Klien' : undefined"
-                            class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-dark-800"
+                            class="menu-item {{ request()->routeIs('clients') ? 'active' : '' }} flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-dark-800"
                             :class="{
                                 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 border-l-2 border-primary-600 dark:border-primary-400 -ml-0.5 pl-[calc(0.75rem+2px)]': isActivePath(
                                     '{{ route('clients') }}'),
@@ -160,7 +265,7 @@ window.addEventListener('resize', () => {
                     @can('view services')
                         <a href="{{ route('services') }}" @click="closeMobileMenu()"
                             :title="isCollapsed ? 'Layanan' : undefined"
-                            class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-dark-800"
+                            class="menu-item {{ request()->routeIs('services') ? 'active' : '' }} flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-dark-800"
                             :class="{
                                 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 border-l-2 border-primary-600 dark:border-primary-400 -ml-0.5 pl-[calc(0.75rem+2px)]': isActivePath(
                                     '{{ route('services') }}'),
@@ -186,7 +291,7 @@ window.addEventListener('resize', () => {
                     @can('view invoices')
                         <a href="{{ route('invoices.index') }}" @click="closeMobileMenu()"
                             :title="isCollapsed ? 'Invoice' : undefined"
-                            class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-dark-800"
+                            class="menu-item {{ request()->routeIs('invoices.index') ? 'active' : '' }} flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-dark-800"
                             :class="{
                                 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 border-l-2 border-primary-600 dark:border-primary-400 -ml-0.5 pl-[calc(0.75rem+2px)]': isActivePath(
                                     '{{ route('invoices.index') }}'),
@@ -204,7 +309,7 @@ window.addEventListener('resize', () => {
                     @can('view recurring-invoices')
                         <a href="{{ route('recurring-invoices.index') }}" @click="closeMobileMenu()"
                             :title="isCollapsed ? 'Invoice Berulang' : undefined"
-                            class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-dark-800"
+                            class="menu-item {{ request()->routeIs('recurring-invoices.index') ? 'active' : '' }} flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-dark-800"
                             :class="{
                                 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 border-l-2 border-primary-600 dark:border-primary-400 -ml-0.5 pl-[calc(0.75rem+2px)]': isActivePath(
                                     '{{ route('recurring-invoices.index') }}'),
@@ -223,7 +328,7 @@ window.addEventListener('resize', () => {
                     @can('view bank-accounts')
                         <a href="{{ route('bank-accounts.index') }}" @click="closeMobileMenu()"
                             :title="isCollapsed ? 'Rekening Bank' : undefined"
-                            class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-dark-800"
+                            class="menu-item {{ request()->routeIs('bank-accounts.index') ? 'active' : '' }} flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-dark-800"
                             :class="{
                                 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 border-l-2 border-primary-600 dark:border-primary-400 -ml-0.5 pl-[calc(0.75rem+2px)]': isActivePath(
                                     '{{ route('bank-accounts.index') }}'),
@@ -242,7 +347,7 @@ window.addEventListener('resize', () => {
                     @can('view cash-flow')
                         <a href="{{ route('cash-flow.index') }}" @click="closeMobileMenu()"
                             :title="isCollapsed ? 'Arus Kas' : undefined"
-                            class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-dark-800"
+                            class="menu-item {{ request()->routeIs('cash-flow.index') ? 'active' : '' }} flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-dark-800"
                             :class="{
                                 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 border-l-2 border-primary-600 dark:border-primary-400 -ml-0.5 pl-[calc(0.75rem+2px)]': isActivePath(
                                     '{{ route('cash-flow.index') }}'),
@@ -260,7 +365,7 @@ window.addEventListener('resize', () => {
                     @can('view categories')
                         <a href="{{ route('transaction-categories.index') }}" @click="closeMobileMenu()"
                             :title="isCollapsed ? 'Kategori' : undefined"
-                            class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-dark-800"
+                            class="menu-item {{ request()->routeIs('transaction-categories.index') ? 'active' : '' }} flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-dark-800"
                             :class="{
                                 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 border-l-2 border-primary-600 dark:border-primary-400 -ml-0.5 pl-[calc(0.75rem+2px)]': isActivePath(
                                     '{{ route('transaction-categories.index') }}'),
@@ -279,7 +384,7 @@ window.addEventListener('resize', () => {
                     @can('view reimbursements')
                         <a href="{{ route('reimbursements.index') }}" @click="closeMobileMenu()"
                             :title="isCollapsed ? 'Reimbursement' : undefined"
-                            class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-dark-800"
+                            class="menu-item {{ request()->routeIs('reimbursements.index') ? 'active' : '' }} flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-dark-800"
                             :class="{
                                 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 border-l-2 border-primary-600 dark:border-primary-400 -ml-0.5 pl-[calc(0.75rem+2px)]': isActivePath(
                                     '{{ route('reimbursements.index') }}'),
@@ -306,7 +411,7 @@ window.addEventListener('resize', () => {
                     @can('view loans')
                         <a href="{{ route('loans.index') }}" @click="closeMobileMenu()"
                             :title="isCollapsed ? 'Pinjaman' : undefined"
-                            class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-dark-800"
+                            class="menu-item {{ request()->routeIs('loans.index') ? 'active' : '' }} flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-dark-800"
                             :class="{
                                 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 border-l-2 border-primary-600 dark:border-primary-400 -ml-0.5 pl-[calc(0.75rem+2px)]': isActivePath(
                                     '{{ route('loans.index') }}'),
@@ -324,7 +429,7 @@ window.addEventListener('resize', () => {
                     @can('view receivables')
                         <a href="{{ route('receivables.index') }}" @click="closeMobileMenu()"
                             :title="isCollapsed ? 'Piutang' : undefined"
-                            class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-dark-800"
+                            class="menu-item {{ request()->routeIs('receivables.index') ? 'active' : '' }} flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-dark-800"
                             :class="{
                                 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 border-l-2 border-primary-600 dark:border-primary-400 -ml-0.5 pl-[calc(0.75rem+2px)]': isActivePath(
                                     '{{ route('receivables.index') }}'),
@@ -350,7 +455,7 @@ window.addEventListener('resize', () => {
                     @can('view feedbacks')
                         <a href="{{ route('feedbacks.index') }}" @click="closeMobileMenu()"
                             :title="isCollapsed ? 'Umpan Balik' : undefined"
-                            class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-dark-800"
+                            class="menu-item {{ request()->routeIs('feedbacks.index') ? 'active' : '' }} flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-dark-800"
                             :class="{
                                 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 border-l-2 border-primary-600 dark:border-primary-400 -ml-0.5 pl-[calc(0.75rem+2px)]': isActivePath(
                                     '{{ route('feedbacks.index') }}'),
@@ -368,7 +473,7 @@ window.addEventListener('resize', () => {
                     @can('view permissions')
                         <a href="{{ route('permissions.index') }}" @click="closeMobileMenu()"
                             :title="isCollapsed ? 'Hak Akses' : undefined"
-                            class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-dark-800"
+                            class="menu-item {{ request()->routeIs('permissions.index') ? 'active' : '' }} flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-dark-800"
                             :class="{
                                 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 border-l-2 border-primary-600 dark:border-primary-400 -ml-0.5 pl-[calc(0.75rem+2px)]': isActivePath(
                                     '{{ route('permissions.index') }}'),
@@ -386,7 +491,7 @@ window.addEventListener('resize', () => {
                     @can('manage users')
                         <a href="{{ route('admin.users') }}" @click="closeMobileMenu()"
                             :title="isCollapsed ? 'Pengguna' : undefined"
-                            class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-dark-800"
+                            class="menu-item {{ request()->routeIs('admin.users') ? 'active' : '' }} flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-dark-800"
                             :class="{
                                 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 border-l-2 border-primary-600 dark:border-primary-400 -ml-0.5 pl-[calc(0.75rem+2px)]': isActivePath(
                                     '{{ route('admin.users') }}'),
