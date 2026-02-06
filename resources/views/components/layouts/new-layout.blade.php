@@ -74,10 +74,10 @@ window.addEventListener('resize', () => {
     <div class="fixed lg:relative z-50 lg:z-0 transform lg:transform-none transition-transform duration-300 ease-in-out"
         :class="isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'">
         <aside
-            class="h-screen bg-white dark:bg-dark-700 border-r border-gray-200 dark:border-dark-800 flex flex-col sidebar-transition w-64 lg:w-64"
+            class="h-screen bg-white dark:bg-dark-700 border-r border-gray-200 dark:border-dark-600 flex flex-col sidebar-transition w-64 lg:w-64"
             :class="{ 'lg:!w-16': isCollapsed }">
             <!-- Logo & Brand -->
-            <div class="h-14 md:h-16 flex items-center border-b border-gray-200 dark:border-dark-800"
+            <div class="h-14 md:h-16 flex items-center border-b border-gray-200 dark:border-dark-600"
                 :class="isCollapsed ? 'lg:justify-center lg:px-2' : 'px-4'">
                 <div class="flex items-center gap-3 flex-1" :class="{ 'lg:justify-center': isCollapsed }">
                     <div
@@ -404,7 +404,7 @@ window.addEventListener('resize', () => {
             </nav>
 
             <!-- User Profile Dropdown -->
-            <div class="border-t border-gray-200 dark:border-dark-800 p-3" x-data="{ userDropdownOpen: false }">
+            <div class="border-t border-gray-200 dark:border-dark-600 p-3" x-data="{ userDropdownOpen: false }">
                 <div class="relative">
                     <button @click="userDropdownOpen = !userDropdownOpen"
                         class="flex items-center gap-3 w-full p-2 rounded-lg transition-colors hover:bg-gray-100 dark:hover:bg-dark-800 text-gray-900 dark:text-white"
@@ -503,7 +503,7 @@ window.addEventListener('resize', () => {
     <div class="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
         <!-- Header -->
         <header
-            class="h-14 md:h-16 border-b border-gray-200 dark:border-dark-700 bg-white/95 dark:bg-dark-800/95 backdrop-blur supports-[backdrop-filter]:bg-white/60 dark:supports-[backdrop-filter]:bg-dark-800/60 px-4 md:px-6 flex items-center justify-between gap-4">
+            class="h-14 md:h-16 border-b border-gray-200 dark:border-dark-600 bg-white/95 dark:bg-dark-900 backdrop-blur px-4 md:px-6 flex items-center justify-between gap-4">
             <!-- Mobile Menu Button -->
             <button @click="isMobileMenuOpen = true"
                 class="lg:hidden text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white flex-shrink-0 p-2 hover:bg-gray-100 dark:hover:bg-dark-700 rounded-md">

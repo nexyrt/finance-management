@@ -3,7 +3,7 @@
     {{-- Quick Actions Card - 2 cols out of 7 --}}
     <div class="lg:col-span-2">
         <div
-            class="bg-white dark:bg-dark-800 border border-zinc-200 dark:border-dark-600 rounded-xl p-4 lg:p-6 h-full flex flex-col">
+            class="bg-white dark:bg-dark-700 border border-zinc-200 dark:border-dark-600 rounded-xl p-4 lg:p-6 h-full flex flex-col">
             <h3 class="text-lg font-semibold text-dark-900 dark:text-dark-50 mb-4">Quick Actions</h3>
 
             {{-- Actions Grid - Responsive --}}
@@ -82,7 +82,7 @@
     {{-- Financial Overview Chart - 5 cols out of 7 --}}
     <div class="lg:col-span-5">
         <div
-            class="bg-white dark:bg-dark-800 border border-zinc-200 dark:border-dark-600 rounded-xl p-4 lg:p-6 h-full min-h-[400px] flex flex-col">
+            class="bg-white dark:bg-dark-700 border border-zinc-200 dark:border-dark-600 rounded-xl p-4 lg:p-6 h-full min-h-[400px] flex flex-col">
             {{-- Chart Header --}}
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
                 <h2 class="text-lg lg:text-xl font-bold text-dark-900 dark:text-dark-50">Financial Overview</h2>

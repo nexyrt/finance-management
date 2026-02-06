@@ -74,7 +74,7 @@
             @foreach ($this->accountsData as $account)
                 <div wire:click="selectAccount({{ $account['id'] }})" wire:loading.class="opacity-60 scale-[0.98]"
                     wire:target="selectAccount({{ $account['id'] }})"
-                    class="relative p-4 bg-white dark:bg-dark-800 border-2 border-zinc-200 dark:border-dark-600 rounded-xl cursor-pointer transition-all duration-200 hover:shadow-md transform hover:scale-[1.02] {{ $selectedAccountId == $account['id'] ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 ring-2 ring-primary-500/20' : '' }}">
+                    class="relative p-4 bg-white dark:bg-dark-700 border-2 border-zinc-200 dark:border-dark-600 rounded-xl cursor-pointer transition-all duration-200 hover:shadow-md transform hover:scale-[1.02] {{ $selectedAccountId == $account['id'] ? 'border-primary-500 bg-primary-50 dark:bg-dark-700 ring-2 ring-primary-500/20' : '' }}">
 
                     {{-- Loading Overlay --}}
                     <div wire:loading wire:target="selectAccount({{ $account['id'] }})"

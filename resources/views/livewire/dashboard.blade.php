@@ -1,4 +1,4 @@
-<div class="min-h-screen bg-gray-50 dark:bg-dark-900 p-6">
+<div class="min-h-screen p-6">
     {{-- Header --}}
     <div class="mb-8">
         <h1 class="text-3xl font-bold text-dark-900 dark:text-white">{{ __('pages.financial_dashboard') }}</h1>
