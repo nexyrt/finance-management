@@ -57,7 +57,6 @@ class TransactionCategorySeeder extends Seeder
 
         foreach ($categories as $category) {
             TransactionCategory::updateOrCreate(
-                ['code' => $category['code']],
                 $category
             );
         }

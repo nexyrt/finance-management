@@ -15,6 +15,6 @@ class TestingPage extends Component
 
     public function render()
     {
-        return view('livewire.testing-page');
+        return view('livewire.testing-page')->layout('components.layouts.new-layout');
     }
 }

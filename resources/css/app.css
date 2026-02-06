@@ -57,9 +57,33 @@
     --color-dark-300: #d4d4d8;
     --color-dark-400: #a1a1aa;
     --color-dark-500: #71717a;
-    --color-dark-700: #27272a;
-    --color-dark-800: #3f3f46;
+    --color-dark-600: #52525b;  /* Added for border consistency */
+    --color-dark-700: #27272a;  /* Sidebar background (dark mode) */
+    --color-dark-800: #3f3f46;  /* Body/Card background (dark mode) */
+    --color-dark-900: #1a1a1a;  /* Added for deeper blacks */
     --color-dark-950: #09090b;
+
+    /* =========================================================================
+       Layout-Specific Variables
+       ========================================================================= */
+    
+    /* Light Mode Colors */
+    --color-background: #ffffff;
+    --color-foreground: #18181b;
+    --color-card: #ffffff;
+    --color-card-foreground: #18181b;
+    --color-muted: #f4f4f5;
+    --color-muted-foreground: #71717a;
+    --color-accent: #f4f4f5;
+    --color-accent-foreground: #18181b;
+    --color-border: #e4e4e7;
+
+    /* Sidebar-specific Colors */
+    --color-sidebar: #ffffff;
+    --color-sidebar-foreground: #18181b;
+    --color-sidebar-border: #e4e4e7;
+    --color-sidebar-accent: #f4f4f5;
+    --color-sidebar-accent-foreground: #18181b;
 }
 
 /* Dark mode is handled by Tailwind's dark: variant and TallStackUI automatically */
@@ -87,5 +111,4 @@ h1, h2, h3, h4, h5, h6,
 .font-heading {
     font-family: var(--font-heading);
 }
-
 
