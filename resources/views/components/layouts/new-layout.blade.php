@@ -9,6 +9,7 @@
         document.documentElement.classList.remove('dark');
     }
 });
+
 // Apply initial state
 if (darkTheme) {
     document.documentElement.classList.add('dark');

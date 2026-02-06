@@ -41,14 +41,10 @@ document.addEventListener('livewire:navigated', initializeQuill);
 document.addEventListener('DOMContentLoaded', () => {
     // Prevent default dragover on entire document
     document.addEventListener('dragover', (e) => {
-        // Check if dragging over an upload component or file input
-        const isOverUpload = e.target.closest('[x-data*="tallstackui_formUpload"]') ||
-                            e.target.closest('input[type="file"]');
+        // Always prevent default to stop browser from opening files
+        e.preventDefault();
 
-        if (isOverUpload) {
-            e.preventDefault();
-            e.stopPropagation();
-        }
+        // DON'T use stopPropagation - let TallStackUI handle the event
     }, false);
 
     // Prevent default drop on entire document
@@ -57,13 +53,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const isOverUpload = e.target.closest('[x-data*="tallstackui_formUpload"]') ||
                             e.target.closest('input[type="file"]');
 
-        if (isOverUpload) {
-            e.preventDefault();
-            e.stopPropagation();
-        } else {
-            // Prevent file opening on any other area
+        if (!isOverUpload) {
+            // Prevent file opening on any other area (non-upload components)
             e.preventDefault();
         }
+
+        // For upload components: only preventDefault is handled by the component itself
+        // DON'T use stopPropagation - let TallStackUI handle the event
     }, false);
 });
 

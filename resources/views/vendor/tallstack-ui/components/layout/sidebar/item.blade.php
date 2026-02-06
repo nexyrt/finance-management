@@ -38,11 +38,8 @@
             <a @if ($route || $href) href="{{ $route ?? $href }}" @endif
             @class([
                 $personalize['item.state.base'],
-                'flex items-center gap-2.5 px-3 py-2 mb-0.5 rounded-md text-sm font-normal transition-all duration-150',
-                'text-slate-800 hover:text-slate-900 hover:bg-slate-400/15',
-                'dark:text-slate-300 dark:hover:text-slate-100 dark:hover:bg-slate-600/25',
                 $personalize['item.state.normal'] => ! $current || (! $smart && ! $matches()),
-                \Illuminate\Support\Arr::toCssClasses(['ts-ui-group-opened', $personalize['item.state.current'], 'bg-slate-400/25 text-slate-900 dark:bg-slate-600/40 dark:text-slate-50']) => $current || ($smart && $matches()),
+                \Illuminate\Support\Arr::toCssClasses(['ts-ui-group-opened', $personalize['item.state.current']]) => $current || ($smart && $matches()),
             ]) x-bind:class="{'{{ $personalize['item.state.collapsed'] }}' : @js($collapsible) && ! $store['tsui.side-bar'].open && ! $store['tsui.side-bar'].mobile }"
                 @if ($navigate && ! $href)
                     wire:navigate
@@ -56,12 +53,12 @@
                     <x-dynamic-component :component="TallStackUi::prefix('icon')"
                                          :icon="TallStackUi::icon($icon)"
                                          internal
-                                         class="{{ $personalize['item.icon'] }} w-[18px] h-[18px] shrink-0" />
+                                         class="{{ $personalize['item.icon'] }}" />
                 @endif
                 @if ($collapsible)
                     <span x-cloak x-show="($store['tsui.side-bar'].open && !$store['tsui.side-bar'].mobile) || $store['tsui.side-bar'].mobile" x-transition class="{{ $personalize['item.text'] }}">{{ $text }}</span>
                 @else
-                    <span class="leading-tight">{{ $text }}</span>
+                    {{ $text }}
                 @endif
             </a>
         </li>

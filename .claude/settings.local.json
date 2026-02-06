@@ -16,7 +16,8 @@
       "Bash(dir:*)",
       "Bash(find:*)",
       "WebFetch(domain:github.com)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(test:*)"
     ]
   }
 }
