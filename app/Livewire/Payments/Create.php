@@ -8,11 +8,10 @@ use App\Models\BankAccount;
 use Livewire\Component;
 use Livewire\Attributes\On;
 use Livewire\WithFileUploads;
-use TallStackUi\Traits\Interactions;
 
 class Create extends Component
 {
-    use Interactions, WithFileUploads;
+    use WithFileUploads;
 
     public ?Invoice $invoice = null;
     public bool $showModal = false;
@@ -40,7 +39,7 @@ class Create extends Component
         $this->invoice = Invoice::with('client')->find($invoiceId);
 
         if (!$this->invoice) {
-            $this->toast()->error('Error', 'Invoice tidak ditemukan')->send();
+            session()->flash('error', 'Invoice tidak ditemukan');
             return;
         }
 
@@ -75,7 +74,7 @@ class Create extends Component
     public function save(): void
     {
         if (!$this->invoice) {
-            $this->toast()->error('Error', 'Invoice tidak ditemukan')->send();
+            session()->flash('error', 'Invoice tidak ditemukan');
             return;
         }
 
@@ -94,7 +93,7 @@ class Create extends Component
             // Handle attachment upload
             $attachmentPath = null;
             $attachmentName = null;
-            
+
             if ($this->attachment) {
                 $attachmentPath = $this->attachment->store('payments', 'public');
                 $attachmentName = $this->attachment->getClientOriginalName();
@@ -116,7 +115,7 @@ class Create extends Component
             $this->invoice->refresh();
             $this->invoice->updateStatus();
 
-            $this->toast()->success('Berhasil', 'Pembayaran berhasil dicatat')->send();
+            session()->flash('success', 'Pembayaran berhasil dicatat');
             $this->resetData();
 
             // Dispatch events
@@ -124,7 +123,7 @@ class Create extends Component
             $this->dispatch('invoice-updated');
 
         } catch (\Exception $e) {
-            $this->toast()->error('Error', 'Gagal menyimpan pembayaran: ' . $e->getMessage())->send();
+            session()->flash('error', 'Gagal menyimpan pembayaran: ' . $e->getMessage());
         }
     }
 

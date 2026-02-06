@@ -9,11 +9,10 @@ use Livewire\Component;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
 use Livewire\WithFileUploads;
-use TallStackUi\Traits\Interactions;
 
 class Create extends Component
 {
-    use Interactions, WithFileUploads;
+    use WithFileUploads;
 
     public bool $modal = false;
     public array $allowedTypes = ['credit', 'debit']; // default both
@@ -175,10 +174,10 @@ class Create extends Component
             $this->resetForm();
             $this->modal = false;
 
-            $this->toast()->success('Berhasil!', 'Transaksi berhasil ditambahkan.')->send();
+            session()->flash('success', 'Transaksi berhasil ditambahkan');
 
         } catch (\Exception $e) {
-            $this->toast()->error('Gagal!', 'Terjadi kesalahan saat menyimpan transaksi.')->send();
+            session()->flash('error', 'Terjadi kesalahan saat menyimpan transaksi');
         }
     }
 

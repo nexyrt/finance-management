@@ -30,7 +30,7 @@
                         <x-input wire:model="title" :label="__('common.title') . ' *'" placeholder="e.g., Taxi to client meeting" />
                     </div>
 
-                    <x-wireui-currency wire:model="amount" :label="__('common.amount') . ' *'" prefix="Rp" thousands="." decimal="," placeholder="0" />
+                    <x-currency-input wire:model="amount" :label="__('common.amount') . ' *'" prefix="Rp" placeholder="0" />
 
                     <x-date wire:model="expense_date" label="Expense Date *" placeholder="Select date" />
 

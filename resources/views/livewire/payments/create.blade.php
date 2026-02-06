@@ -61,12 +61,8 @@
                 </div>
 
                 {{-- File Upload --}}
-                <div>
-                    <x-upload wire:model="attachment" label="Bukti Pembayaran"
-                        hint="Upload screenshot atau dokumen bukti pembayaran (opsional)"
-                        tip="Seret dan letakkan file di sini" accept="image/*,.pdf" delete
-                        delete-method="deleteUpload" />
-                </div>
+                <x-upload wire:model="attachment" label="Bukti Pembayaran"
+                    tip="Upload screenshot atau dokumen bukti pembayaran (Max 5MB)" accept="image/*,.pdf" delete />
 
                 {{-- Payment Summary --}}
                 @if ($amount)
