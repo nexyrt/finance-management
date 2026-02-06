@@ -17,7 +17,9 @@
       "Bash(find:*)",
       "WebFetch(domain:github.com)",
       "Bash(git push:*)",
-      "Bash(test:*)"
+      "Bash(test:*)",
+      "Bash(for:*)",
+      "Bash(do sed -i 's/color=\"\"secondary\"\" outline/color=\"\"zinc\"\"/g' \"$file\")"
     ]
   }
 }

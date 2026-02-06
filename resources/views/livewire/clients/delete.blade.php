@@ -2,13 +2,13 @@
 <div>
     <x-modal wire="clientDeleteModal" id="client-delete-modal" center>
         <x-slot:header>
-            <div class="flex items-center gap-4">
-                <div class="h-12 w-12 bg-gradient-to-br from-red-500 to-red-600 rounded-xl flex items-center justify-center shadow-lg">
-                    <x-icon name="trash" class="w-6 h-6 text-white" />
+            <div class="flex items-center gap-4 my-3">
+                <div class="h-12 w-12 bg-red-50 dark:bg-red-900/20 rounded-xl flex items-center justify-center">
+                    <x-icon name="trash" class="w-6 h-6 text-red-600 dark:text-red-400" />
                 </div>
                 <div>
-                    <h3 class="text-xl font-bold text-gray-900 dark:text-white">{{ __('pages.delete_client') }}</h3>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">{{ __('pages.confirm_client_deletion') }}</p>
+                    <h3 class="text-xl font-bold text-dark-900 dark:text-dark-50">{{ __('pages.delete_client') }}</h3>
+                    <p class="text-sm text-dark-600 dark:text-dark-400">{{ __('pages.confirm_client_deletion') }}</p>
                 </div>
             </div>
         </x-slot:header>
@@ -16,28 +16,25 @@
         @if($client)
             <div class="space-y-6">
                 {{-- Client Info --}}
-                <div class="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-4 border border-gray-200/50 dark:border-gray-700/50">
+                <div class="border border-secondary-200 dark:border-dark-600 rounded-xl p-4">
                     <div class="flex items-center gap-4">
                         <div class="relative">
                             @if($client->logo)
-                                <img class="h-12 w-12 rounded-xl object-cover shadow-md" src="{{ $client->logo }}" alt="{{ $client->name }}">
+                                <img class="h-12 w-12 rounded-xl object-cover" src="{{ $client->logo }}" alt="{{ $client->name }}">
                             @else
-                                <div class="h-12 w-12 rounded-xl flex items-center justify-center shadow-md
-                                    {{ $client->type === 'individual' 
-                                        ? 'bg-gradient-to-br from-blue-500 to-blue-600' 
-                                        : 'bg-gradient-to-br from-purple-500 to-purple-600' }}">
+                                <div class="h-12 w-12 rounded-xl flex items-center justify-center {{ $client->type === 'individual' ? 'bg-blue-50 dark:bg-blue-900/20' : 'bg-purple-50 dark:bg-purple-900/20' }}">
                                     <x-icon name="{{ $client->type === 'individual' ? 'user' : 'building-office' }}"
-                                        class="w-6 h-6 text-white" />
+                                        class="w-6 h-6 {{ $client->type === 'individual' ? 'text-blue-600 dark:text-blue-400' : 'text-purple-600 dark:text-purple-400' }}" />
                                 </div>
                             @endif
                         </div>
                         <div>
-                            <h4 class="text-lg font-semibold text-gray-900 dark:text-white">{{ $client->name }}</h4>
+                            <h4 class="text-lg font-semibold text-dark-900 dark:text-dark-50">{{ $client->name }}</h4>
                             <div class="flex items-center gap-2 mt-1">
                                 <x-badge text="{{ $client->type === 'individual' ? __('pages.individual') : __('pages.company') }}"
                                          color="{{ $client->type === 'individual' ? 'blue' : 'purple' }}" />
                                 @if($client->NPWP)
-                                    <span class="text-xs text-gray-600 dark:text-gray-400 font-mono bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
+                                    <span class="text-xs text-dark-600 dark:text-dark-400 font-mono">
                                         {{ $client->NPWP }}
                                     </span>
                                 @endif
@@ -47,7 +44,7 @@
                 </div>
 
                 {{-- Warning Message --}}
-                @if($client && $client->invoices && $client->invoices->count() > 0)
+                @if($client?->invoices?->count() > 0)
                     <div class="bg-red-50 dark:bg-red-900/20 rounded-xl p-4 border border-red-200/50 dark:border-red-700/50">
                         <div class="flex items-start gap-3">
                             <div class="h-8 w-8 bg-red-500/20 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -83,11 +80,12 @@
         @endif
 
         <x-slot:footer>
-            <div class="flex justify-end gap-3">
-                <x-button wire:click="$toggle('clientDeleteModal')" color="secondary">
+            <div class="flex flex-col sm:flex-row justify-end gap-3">
+                <x-button wire:click="$toggle('clientDeleteModal')" color="secondary" outline class="w-full sm:w-auto order-2 sm:order-1">
                     {{ __('common.cancel') }}
                 </x-button>
-                <x-button wire:click="confirm" x-on:click="$modalClose('client-delete-modal')" color="red" icon="trash" spinner="confirm">
+                <x-button wire:click="confirm" x-on:click="$modalClose('client-delete-modal')" color="red" icon="trash" loading="confirm"
+                    class="w-full sm:w-auto order-1 sm:order-2">
                     {{ __('pages.delete_client') }}
                 </x-button>
             </div>

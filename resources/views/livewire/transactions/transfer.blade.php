@@ -252,7 +252,7 @@
 
         <x-slot:footer>
             <div class="flex flex-col sm:flex-row justify-between w-full gap-3">
-                <x-button wire:click="$set('modal', false)" color="gray" outline
+                <x-button wire:click="$set('modal', false)" color="zinc"
                     class="w-full sm:w-auto order-2 sm:order-1">
                     Batal
                 </x-button>

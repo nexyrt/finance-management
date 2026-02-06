@@ -112,37 +112,821 @@ public function refreshStats(): void
 
 ### Layout Guidelines
 
-**1. Spacing:**
-- Root container: `space-y-8` untuk vertical rhythm
-- Section spacing: `mt-8` atau gunakan parent `space-y-8`
+**CRITICAL: Template ini WAJIB diikuti untuk konsistensi visual yang kuat dan professional!**
+
+**Quick Reference:**
+1. **Page Template** - Root `space-y-6` + Header gradient (Invoice pattern)
+2. **Stats Cards** - 3 info (statis) atau 4 info (dengan trend) + `rounded-xl`
+3. **Filter + Table** - Filter `space-y-4` → Table → Bulk actions (Transactions pattern)
+4. **Rounded Standard** - SELALU `rounded-xl` untuk cards & containers
+
+---
+
+## Standard Page Template
+
+**Reference:** `resources/views/livewire/invoices/index.blade.php`
+
+**FIXED (Tidak Boleh Berubah):**
+```blade
+<div class="space-y-6">
+    {{-- Header Section (WAJIB SAMA DI SEMUA PAGE) --}}
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div class="space-y-1">
+            <h1 class="text-4xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-indigo-800 dark:from-white dark:via-blue-200 dark:to-indigo-200 bg-clip-text text-transparent">
+                {{ __('pages.page_title') }}
+            </h1>
+            <p class="text-gray-600 dark:text-zinc-400 text-lg">
+                {{ __('pages.page_description') }}
+            </p>
+        </div>
+
+        {{-- Action Button (optional) --}}
+        <x-button color="primary" size="sm">
+            <x-slot:left>
+                <x-icon name="plus" class="w-4 h-4" />
+            </x-slot:left>
+            {{ __('common.action') }}
+        </x-button>
+    </div>
+
+    {{-- Page Content (FLEXIBLE - Sesuai Kebutuhan) --}}
+    {{-- Stats cards, filters, tables, forms, dll --}}
+</div>
+```
+
+**Kenapa Template Ini Penting:**
+- ✅ **Brand Identity** - User langsung recognize aplikasi
+- ✅ **Professional** - Konsisten di semua halaman
+- ✅ **Predictable** - User tidak perlu "belajar ulang" tiap pindah page
+- ✅ **Clean** - Tidak over-designed, fokus pada konten
+
+---
+
+## Stats Card Templates
+
+**PENTING: Horizontal layout sekarang menjadi STANDAR DEFAULT untuk stats cards.**
+
+### **Horizontal Layout - Icon + Info (STANDAR DEFAULT)**
+**Reference:** `resources/views/livewire/clients/index.blade.php`
+
+Layout horizontal mengurangi empty space dan lebih compact. **Gunakan layout ini untuk SEMUA stats cards kecuali ada kebutuhan khusus.**
+
+```blade
+{{-- Grid responsive untuk stats cards --}}
+<div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+    {{-- Stats Card dengan icon di kiri, info di kanan --}}
+    <x-card class="hover:shadow-lg transition-shadow">
+        <div class="flex items-center gap-4">
+            <div class="h-12 w-12 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                <x-icon name="users" class="w-6 h-6 text-blue-600 dark:text-blue-400" />
+            </div>
+            <div>
+                <p class="text-sm text-dark-600 dark:text-dark-400">Total Clients</p>
+                <p class="text-2xl font-bold text-dark-900 dark:text-dark-50">152</p>
+            </div>
+        </div>
+    </x-card>
+</div>
+```
+
+**Aturan Horizontal Layout (DEFAULT):**
+- ✅ **Card component**: `<x-card class="hover:shadow-lg transition-shadow">`
+- ✅ **Main layout**: `flex items-center gap-4`
+- ✅ **Icon container**: `h-12 w-12 rounded-xl flex-shrink-0` (mencegah icon compress)
+- ✅ **Icon background**: `bg-{color}-50 dark:bg-{color}-900/20` (SOFT colors, bukan -100)
+- ✅ **Icon color**: `text-{color}-600 dark:text-{color}-400`
+- ✅ **Label**: `text-sm text-dark-600 dark:text-dark-400`
+- ✅ **Value**: `text-2xl font-bold text-dark-900 dark:text-dark-50`
+- ✅ **Hover effect**: `hover:shadow-lg transition-shadow` (pada card)
+- ✅ **Grid gap**: `gap-4` (konsisten, tidak perlu sm:gap-6)
+
+**Color Palette untuk Icons:**
+| Color | Background | Icon Color | Usage |
+|-------|------------|------------|-------|
+| Blue | `bg-blue-50 dark:bg-blue-900/20` | `text-blue-600 dark:text-blue-400` | Total count, general info |
+| Green | `bg-green-50 dark:bg-green-900/20` | `text-green-600 dark:text-green-400` | Active status, positive metrics |
+| Purple | `bg-purple-50 dark:bg-purple-900/20` | `text-purple-600 dark:text-purple-400` | Companies, categories |
+| Red | `bg-red-50 dark:bg-red-900/20` | `text-red-600 dark:text-red-400` | Outstanding, negative metrics |
+| Emerald | `bg-emerald-50 dark:bg-emerald-900/20` | `text-emerald-600 dark:text-emerald-400` | Paid, completed |
+
+**Kapan menggunakan horizontal layout:**
+- ✅ **SEMUA main page stats** (Clients, Invoices, Services, dll)
+- ✅ Inside modals (width terbatas)
+- ✅ Sidebar panels
+- ✅ Compact areas dengan banyak stats cards
+- ✅ **DEFAULT CHOICE** - selalu gunakan kecuali ada alasan kuat
+
+---
+
+### **Vertical Layout - DEPRECATED (Jangan Gunakan)**
+
+Vertical layout sudah **TIDAK DISARANKAN** karena menghasilkan banyak empty space. Gunakan horizontal layout untuk semua stats cards baru.
+
+**Hanya gunakan vertical jika:**
+- Legacy code yang belum direfactor
+- Dashboard dengan chart/graph yang memerlukan vertical alignment khusus
+
+---
+
+### **Stats Card di Modal (Tanpa <x-card>)**
+**Reference:** `resources/views/livewire/clients/show.blade.php` (Financial Tab, Client Header)
+
+Untuk stats card **inside modal** yang tidak memerlukan card wrapper (sudah dalam modal container):
+
+```blade
+{{-- Stats Card tanpa x-card component --}}
+<div class="flex items-center gap-4 p-4 border border-secondary-200 dark:border-dark-600 rounded-xl">
+    <div class="h-12 w-12 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+        <x-icon name="document-duplicate" class="w-6 h-6 text-blue-600 dark:text-blue-400" />
+    </div>
+    <div>
+        <div class="text-sm text-dark-600 dark:text-dark-400">Total Invoices</div>
+        <div class="text-2xl font-bold text-dark-900 dark:text-dark-50">152</div>
+    </div>
+</div>
+```
+
+**Perbedaan dengan card wrapper:**
+- ❌ JANGAN gunakan `<x-card>` component
+- ✅ Gunakan plain `div` dengan `border border-secondary-200 dark:border-dark-600`
+- ✅ Tambahkan `p-4` untuk padding
+- ❌ JANGAN tambahkan `hover:shadow-lg` (tidak perlu di modal)
+
+---
+
+### **Summary: Quick Decision Tree**
+
+```
+Apakah stats card di main page (index)?
+├─ YES → Gunakan horizontal layout dengan <x-card>
+└─ NO → Apakah di dalam modal?
+    ├─ YES → Gunakan horizontal layout TANPA <x-card> (plain div + border)
+    └─ NO → Gunakan horizontal layout dengan <x-card>
+```
+
+---
+
+## Filter + Table Layout
+
+**Reference:** `resources/views/livewire/transactions/listing.blade.php`
+
+**CRITICAL RULES:**
+- ❌ **JANGAN ada judul "Filter"** atau section header
+- ❌ **JANGAN ada border/background** di section filter
+- ❌ **JANGAN ada "Active Filter Tags"** section dengan border-top
+- ✅ **LANGSUNG filter grid + status row** - clean dan minimal
+- ✅ Badge aktif filter + result count **cukup di satu baris**
+
+**WAJIB gunakan template ini untuk semua page dengan filter + table:**
+
+```blade
+<div class="space-y-6">
+    {{-- Filter Section (NO TITLE, NO BORDER!) --}}
+    <div class="space-y-4">
+        <div class="flex flex-col gap-4">
+
+            {{-- Main Filters Grid (Responsive) --}}
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-{n} gap-3">
+                {{-- Filter fields --}}
+                <x-select.styled wire:model.live="filter1" label="Label" ... />
+                <x-select.styled wire:model.live="filter2" label="Label" ... />
+                <x-date wire:model.live="date" label="Date" ... />
+                {{-- etc --}}
+            </div>
+
+            {{-- Search Bar + Filter Status Row --}}
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                {{-- Left: Search + Status Info --}}
+                <div class="flex flex-col sm:flex-row sm:items-center gap-3 flex-1">
+
+                    {{-- Search Field (Fixed Width) --}}
+                    <div class="w-full sm:w-64">
+                        <x-input wire:model.live.debounce.300ms="search"
+                                 placeholder="Cari..."
+                                 icon="magnifying-glass"
+                                 class="h-8" />
+                    </div>
+
+                    {{-- Active Filters Badge + Result Count --}}
+                    <div class="flex items-center gap-3">
+                        @if ($activeFilters > 0)
+                            <x-badge text="{{ $activeFilters }} filter aktif" color="primary" size="sm" />
+                        @endif
+
+                        <div class="text-sm text-gray-500 dark:text-gray-400">
+                            <span class="hidden sm:inline">Menampilkan </span>{{ $rows->count() }}
+                            <span class="hidden sm:inline">dari {{ $rows->total() }}</span> hasil
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Right: Additional Actions (Optional) --}}
+            </div>
+
+        </div>
+    </div>
+
+    {{-- Table --}}
+    <x-table :$headers :$rows :$sort selectable wire:model="selected" paginate loading>
+        {{-- Table columns... --}}
+    </x-table>
+
+    {{-- Bulk Actions Bar (Optional - if selectable) --}}
+    <div x-data="{ show: @entangle('selected').live }" x-show="show.length > 0" x-transition
+         class="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-600 p-4 min-w-80">
+            <div class="flex items-center justify-between gap-4">
+                {{-- Selection info + actions --}}
+            </div>
+        </div>
+    </div>
+</div>
+```
+
+**Spacing Hierarchy (WAJIB):**
+- Root container: `space-y-6`
+- Filter wrapper: `space-y-4`
+- Filter rows: `gap-4`
+- Filter grid: `gap-3`
+- Search width: `w-full sm:w-64`
+
+**Kenapa Layout Ini:**
+- ✅ **Clean & Minimal** - No title, no border, no redundant elements
+- ✅ **Clean Separation** - Filter dan table terpisah jelas
+- ✅ **Responsive** - Grid adaptif mobile/desktop
+- ✅ **Informative** - User tahu filter aktif & jumlah hasil dalam satu baris
+- ✅ **Consistent Spacing** - Visual rhythm yang jelas
+- ✅ **Search Prominent** - Fixed width, mudah ditemukan
+- ✅ **No Over-Styling** - Langsung di page, tidak pakai card wrapper
+
+**Common Mistakes:**
+- ❌ Menambahkan `<h2>Filter</h2>` atau section title
+- ❌ Wrapping filter dalam card atau bordered container
+- ❌ Membuat "Active Filter Tags" section terpisah dengan border-top
+- ❌ Memisahkan badge filter aktif dan result count ke section berbeda
+
+---
+
+## Spacing Rules
+
+**1. Page Level:**
+- Root container: `space-y-6` (STANDARD untuk semua page)
+- Section spacing: Gunakan parent `space-y-6`
+
+**2. Component Level:**
+- Filter section: `space-y-4`
 - Element spacing: `mt-2`, `mt-4` untuk spacing kecil
-- Grid gaps: `gap-6` untuk grid layouts
+- Stats grid gaps: `gap-4 sm:gap-6`
+- Filter grid gaps: `gap-3`
 
-**2. Typography:**
+**3. Typography:**
+- Page Title: `text-4xl font-bold` dengan gradient (dari template)
+- Page Description: `text-lg text-gray-600 dark:text-zinc-400`
+- Section Title: `text-xl font-semibold`
+- Label/Info: `text-sm`
+- Small text: `text-xs`
+
+---
+
+## Modal Form Layout
+
+**Reference:** `resources/views/livewire/transactions/create.blade.php`
+
+**CRITICAL: Semua form dalam modal WAJIB menggunakan styling header & footer ini!**
+
+### Modal Header Structure
+
+**Pattern (Icon + Title + Description):**
+
 ```blade
-{{-- Page Title --}}
-<h1 class="text-2xl font-bold">Page Title</h1>
+<x-modal title="..." wire="modal" size="xl" center persistent>
+    <x-slot:title>
+        <div class="flex items-center gap-4 my-3">
+            {{-- Icon Container --}}
+            <div class="h-12 w-12 bg-primary-50 dark:bg-primary-900/20 rounded-xl flex items-center justify-center">
+                <x-icon name="icon-name" class="w-6 h-6 text-primary-600 dark:text-primary-400" />
+            </div>
 
-{{-- Section Title --}}
-<h2 class="text-xl font-semibold">Section Title</h2>
+            {{-- Title & Description --}}
+            <div>
+                <h3 class="text-xl font-bold text-dark-900 dark:text-dark-50">Modal Title</h3>
+                <p class="text-sm text-dark-600 dark:text-dark-400">Short description of the action</p>
+            </div>
+        </div>
+    </x-slot:title>
 
-{{-- Output/Info Text --}}
-<p class="text-sm">Information text</p>
+    {{-- Form content... --}}
+</x-modal>
 ```
 
-**3. Containers:**
+**Styling Rules:**
+- ✅ Icon container: `h-12 w-12 bg-primary-50 dark:bg-primary-900/20 rounded-xl`
+- ✅ Icon: `w-6 h-6 text-primary-600 dark:text-primary-400`
+- ✅ Title: `text-xl font-bold text-dark-900 dark:text-dark-50`
+- ✅ Description: `text-sm text-dark-600 dark:text-dark-400`
+- ✅ Outer wrapper: `flex items-center gap-4 my-3`
+
+**Icon Color Variations (by context):**
 ```blade
-{{-- Simple section - NO borders/backgrounds by default --}}
+{{-- Default/Primary Action --}}
+bg-primary-50 dark:bg-primary-900/20
+text-primary-600 dark:text-primary-400
+
+{{-- Success/Create Action --}}
+bg-green-50 dark:bg-green-900/20
+text-green-600 dark:text-green-400
+
+{{-- Warning/Edit Action --}}
+bg-yellow-50 dark:bg-yellow-900/20
+text-yellow-600 dark:text-yellow-400
+
+{{-- Danger/Delete Action --}}
+bg-red-50 dark:bg-red-900/20
+text-red-600 dark:text-red-400
+
+{{-- Info Action --}}
+bg-blue-50 dark:bg-blue-900/20
+text-blue-600 dark:text-blue-400
+```
+
+---
+
+### Modal Footer Structure
+
+**Pattern (Responsive Button Layout):**
+
+```blade
+<x-slot:footer>
+    <div class="flex flex-col sm:flex-row justify-end gap-3">
+        {{-- Cancel Button (Zinc, Solid) --}}
+        <x-button wire:click="$set('modal', false)"
+                  color="zinc"
+                  class="w-full sm:w-auto order-2 sm:order-1">
+            Batal
+        </x-button>
+
+        {{-- Submit Button (Primary/Colored, with Icon) --}}
+        <x-button type="submit"
+                  form="form-id"
+                  color="primary"
+                  icon="check"
+                  loading="save"
+                  class="w-full sm:w-auto order-1 sm:order-2">
+            Simpan
+        </x-button>
+    </div>
+</x-slot:footer>
+```
+
+**Styling Rules:**
+- ✅ Wrapper: `flex flex-col sm:flex-row justify-end gap-3`
+- ✅ Cancel button: `color="zinc"` (solid, better contrast in dark mode)
+- ✅ Submit button: `color="primary" icon="check" loading="save" class="w-full sm:w-auto order-1 sm:order-2"`
+- ✅ Mobile: Full width, submit button first (order-1)
+- ✅ Desktop: Auto width, cancel button first (order-1)
+- ✅ **Why zinc?** Better text contrast in dark mode vs outline buttons
+
+**Submit Button Color by Action:**
+```blade
+{{-- Create/Default --}}
+color="primary"
+
+{{-- Confirm/Approve --}}
+color="green"
+
+{{-- Update/Edit --}}
+color="blue"
+
+{{-- Delete/Danger --}}
+color="red"
+
+{{-- Warning Action --}}
+color="yellow"
+```
+
+---
+
+### Form Content Structure
+
+**Pattern (2-Column Grid with Section Headers):**
+
+```blade
+<form id="form-id" wire:submit="save" class="space-y-6">
+    {{-- Optional: Selection/Choice Section --}}
+    <div class="rounded-xl p-4">
+        <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-3">Section Title</h4>
+        {{-- Radio buttons / Choices --}}
+    </div>
+
+    {{-- Main Form Grid --}}
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {{-- Left Column --}}
+        <div class="space-y-4">
+            {{-- Section Header --}}
+            <div class="border-b border-secondary-200 dark:border-dark-600 pb-4">
+                <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-1">Section Title</h4>
+                <p class="text-xs text-dark-500 dark:text-dark-400">Section description</p>
+            </div>
+
+            {{-- Form fields --}}
+            <x-input wire:model="field" label="Label *" />
+            {{-- etc --}}
+        </div>
+
+        {{-- Right Column --}}
+        <div class="space-y-4">
+            {{-- Section Header --}}
+            <div class="border-b border-secondary-200 dark:border-dark-600 pb-4">
+                <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-1">Section Title</h4>
+                <p class="text-xs text-dark-500 dark:text-dark-400">Section description</p>
+            </div>
+
+            {{-- Form fields --}}
+            <x-input wire:model="field" label="Label" />
+            {{-- etc --}}
+        </div>
+    </div>
+</form>
+```
+
+**Styling Rules:**
+- ✅ Form wrapper: `space-y-6`
+- ✅ Column grid: `grid grid-cols-1 lg:grid-cols-2 gap-6`
+- ✅ Column content: `space-y-4`
+- ✅ Section header border: `border-b border-secondary-200 dark:border-dark-600 pb-4`
+- ✅ Section title: `text-sm font-semibold text-dark-900 dark:text-dark-50 mb-1`
+- ✅ Section desc: `text-xs text-dark-500 dark:text-dark-400`
+
+---
+
+### Complete Modal Template
+
+```blade
 <div>
-    <x-component />
-    <p class="mt-2 text-sm">Output</p>
-</div>
+    <x-modal title="Modal Title" wire="modal" size="xl" center persistent>
+        {{-- HEADER --}}
+        <x-slot:title>
+            <div class="flex items-center gap-4 my-3">
+                <div class="h-12 w-12 bg-primary-50 dark:bg-primary-900/20 rounded-xl flex items-center justify-center">
+                    <x-icon name="plus" class="w-6 h-6 text-primary-600 dark:text-primary-400" />
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold text-dark-900 dark:text-dark-50">Form Title</h3>
+                    <p class="text-sm text-dark-600 dark:text-dark-400">Form description</p>
+                </div>
+            </div>
+        </x-slot:title>
 
-{{-- Only add styling when necessary for grouping --}}
-<div class="p-4 border rounded-lg">
-    {{-- Content --}}
+        {{-- FORM CONTENT --}}
+        <form id="my-form" wire:submit="save" class="space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="space-y-4">
+                    <div class="border-b border-secondary-200 dark:border-dark-600 pb-4">
+                        <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-1">Section Title</h4>
+                        <p class="text-xs text-dark-500 dark:text-dark-400">Section description</p>
+                    </div>
+                    {{-- Fields --}}
+                </div>
+
+                <div class="space-y-4">
+                    <div class="border-b border-secondary-200 dark:border-dark-600 pb-4">
+                        <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-1">Section Title</h4>
+                        <p class="text-xs text-dark-500 dark:text-dark-400">Section description</p>
+                    </div>
+                    {{-- Fields --}}
+                </div>
+            </div>
+        </form>
+
+        {{-- FOOTER --}}
+        <x-slot:footer>
+            <div class="flex flex-col sm:flex-row justify-end gap-3">
+                <x-button wire:click="$set('modal', false)" color="zinc"
+                    class="w-full sm:w-auto order-2 sm:order-1">
+                    Batal
+                </x-button>
+                <x-button type="submit" form="my-form" color="primary" icon="check" loading="save"
+                    class="w-full sm:w-auto order-1 sm:order-2">
+                    Simpan
+                </x-button>
+            </div>
+        </x-slot:footer>
+    </x-modal>
 </div>
 ```
+
+---
+
+### Why This Pattern?
+
+- ✅ **Visual Hierarchy** - Icon + title + desc memberikan context jelas
+- ✅ **Professional** - Consistent dengan design system modern (Stripe, Linear, Vercel)
+- ✅ **Responsive** - Button order & width adapt mobile/desktop
+- ✅ **Organized** - Section headers memisahkan form groups dengan jelas
+- ✅ **Accessible** - Loading state, outline cancel, colored action button
+- ✅ **Clean** - No over-styling, focus pada content
+
+---
+
+## Card & Border Radius
+
+**Standard rounded level:** `rounded-xl`
+
+Digunakan di:
+- ✅ Cards (`<x-card>`)
+- ✅ Icon containers
+- ✅ Modals
+- ✅ Dropdowns
+- ✅ Bulk action bars
+- ✅ Semua container utama
+
+**Jangan gunakan:**
+- ❌ `rounded-lg` (terlalu kecil)
+- ❌ `rounded-2xl` (terlalu besar)
+- ❌ `rounded-3xl` (over-designed)
+
+**Konsistensi visual = Professional!**
+
+---
+
+## TallStackUI Soft Personalization
+
+**CRITICAL: SELALU gunakan soft personalization untuk customize TallStackUI components!**
+
+### Workflow: Cara Menemukan Blocks Component
+
+**WAJIB DIIKUTI: Sebelum customize component, HARUS cari tahu blocks-nya terlebih dahulu!**
+
+#### Step 1: Cari File Component di Vendor
+
+```bash
+# Contoh: mencari Card component
+vendor/tallstackui/tallstackui/src/View/Components/Card.php
+```
+
+#### Step 2: Baca Method `personalization()`
+
+Method ini mengembalikan array semua blocks dan classes default:
+
+```php
+public function personalization(): array
+{
+    return Arr::dot([
+        'wrapper' => [
+            'first' => 'flex justify-center gap-4 min-w-full',
+            'second' => 'dark:bg-dark-700 flex w-full flex-col rounded-lg bg-white shadow-md',
+        ],
+        'header' => [
+            'wrapper' => [
+                'base' => 'flex items-center justify-between p-4',
+                'border' => 'dark:border-b-dark-600 border-b border-gray-100',
+            ],
+            'text' => [
+                'size' => 'text-md font-medium',
+                'color' => 'text-secondary-700 dark:text-dark-300',
+            ],
+        ],
+        'body' => 'text-secondary-700 dark:text-dark-300 grow rounded-b-xl px-4 py-5',
+        // ... dst
+    ]);
+}
+```
+
+**Key Learning:**
+- `Arr::dot()` memflatkan nested array menjadi dot notation
+- `wrapper.first` → 'flex justify-center...'
+- `wrapper.second` → 'dark:bg-dark-700 flex w-full flex-col **rounded-lg**...'
+- `header.text.color` → 'text-secondary-700...'
+
+**Jadi jika ingin ganti `rounded-lg` di Card, targetnya adalah block `wrapper.second`!**
+
+#### Step 3: Tentukan Target Block
+
+Dari hasil Step 2, identifikasi:
+1. **Block mana** yang berisi class yang ingin diubah
+2. **Class apa** yang mau di-replace/append/remove/prepend
+
+Contoh:
+- Mau ganti `rounded-lg` → `rounded-xl`: Target block `wrapper.second`
+- Mau ganti `shadow-md` → custom shadow: Target block `wrapper.second`
+- Keduanya di block yang sama? Bisa digabung dalam satu `replace()`!
+
+---
+
+### Syntax Soft Personalization
+
+**File:** `app/Providers/AppServiceProvider.php`
+
+#### Format Dasar
+
+```php
+use TallStackUi\Facades\TallStackUi;
+
+public function boot(): void
+{
+    TallStackUi::personalize()
+        ->component_name()
+        ->block('block.name')      // TANPA parameter kedua!
+        ->replace('old', 'new');   // Baru bisa pakai helper methods
+}
+```
+
+**CRITICAL:**
+- `->block('name')` **TANPA parameter kedua** → Bisa pakai helper methods
+- `->block('name', 'classes')` **DENGAN parameter kedua** → Complete replacement, TIDAK bisa pakai helper methods
+
+#### Helper Methods (hanya jika block tanpa parameter kedua)
+
+```php
+// 1. Replace - Ganti class tertentu
+->block('wrapper.second')
+->replace('rounded-lg', 'rounded-xl')
+
+// 2. Replace Multiple - Ganti banyak class sekaligus
+->block('wrapper.second')
+->replace([
+    'rounded-lg' => 'rounded-xl',
+    'shadow-md' => 'shadow-lg',
+])
+
+// 3. Remove - Hapus class
+->block('wrapper.second')
+->remove('shadow-md')
+
+// 4. Append - Tambah class di akhir
+->block('wrapper.second')
+->append('border border-gray-200')
+
+// 5. Prepend - Tambah class di awal
+->block('wrapper.second')
+->prepend('relative')
+```
+
+#### Fluent Chaining dengan `->and()`
+
+Untuk personalize multiple components sekaligus:
+
+```php
+TallStackUi::personalize()
+    ->modal()
+    ->block('wrapper.first', 'fixed inset-0 bg-black/30')
+    ->and()  // Pindah ke component lain
+    ->card()
+    ->block('wrapper.second')
+    ->replace([
+        'shadow-md' => 'border border-zinc-200 shadow-sm',
+        'rounded-lg' => 'rounded-xl',
+    ])
+    ->and()  // Pindah lagi
+    ->button()
+    ->block('base')
+    ->append('transition-all duration-200');
+```
+
+---
+
+### Current Implementation
+
+**File:** `app/Providers/AppServiceProvider.php`
+
+```php
+// TallStackUI Component Personalization - Professional Blue Theme
+TallStackUi::personalize()
+    ->modal()
+    ->block('wrapper.first', 'fixed inset-0 bg-black/30 transform transition-opacity')
+    ->and()
+    ->card()
+    ->block('wrapper.second')
+    ->replace([
+        'shadow-md' => 'border border-zinc-200 dark:border-dark-600 shadow-sm hover:shadow-md transition-shadow duration-150',
+        'rounded-lg' => 'rounded-xl',
+    ]);
+```
+
+**Explanation:**
+1. **Modal personalization** - Complete replacement untuk `wrapper.first` (backdrop overlay)
+2. **Card personalization** - Replace 2 classes di `wrapper.second`:
+   - `shadow-md` → custom border + shadow
+   - `rounded-lg` → `rounded-xl`
+
+---
+
+### CSS Source Tracking
+
+**WAJIB:** Tambahkan di `resources/css/app.css` agar TailwindCSS track classes dari PHP files:
+
+```css
+@source '../../app/Providers/*.php';
+```
+
+Sudah ada di project ini (line 8 di `app.css`).
+
+---
+
+### Component Usage After Personalization
+
+```blade
+{{-- Card otomatis rounded-xl + custom shadow --}}
+<x-card>
+    Content here
+</x-card>
+
+{{-- Tambah class lain (merge, tidak overwrite) --}}
+<x-card class="hover:shadow-lg transition-shadow">
+    Content here
+</x-card>
+```
+
+---
+
+### Common Mistakes to Avoid
+
+**❌ JANGAN:**
+```php
+// 1. SALAH - Menebak nama block
+->card()
+->block('wrapper')  // Block 'wrapper' tidak ada! Yang ada 'wrapper.first' dan 'wrapper.second'
+->replace('rounded-lg', 'rounded-xl')
+
+// 2. SALAH - Pakai parameter kedua lalu replace
+->card()
+->block('wrapper.second', 'some classes')  // Dengan parameter kedua...
+->replace('rounded-lg', 'rounded-xl')      // ...tidak bisa pakai replace()!
+
+// 3. SALAH - Complete replacement tanpa cek original classes
+->card()
+->block('wrapper.second', 'rounded-xl')  // Menghilangkan SEMUA classes lain!
+```
+
+**✅ LAKUKAN:**
+```php
+// 1. Cek vendor file dulu, pastikan block name
+// vendor/tallstackui/tallstackui/src/View/Components/Card.php
+
+// 2. Gunakan replace untuk partial modification
+->card()
+->block('wrapper.second')  // Tanpa parameter kedua
+->replace('rounded-lg', 'rounded-xl')  // Hanya ganti satu class
+
+// 3. Atau array untuk multiple replacements
+->card()
+->block('wrapper.second')
+->replace([
+    'rounded-lg' => 'rounded-xl',
+    'shadow-md' => 'shadow-lg',
+])
+```
+
+---
+
+### Benefits
+
+- ✅ **Centralized** - Satu tempat untuk modifikasi global
+- ✅ **No File Creation** - Tidak perlu extend class atau publish views
+- ✅ **TailwindCSS Compatible** - Class tracked via @source
+- ✅ **Easy to Maintain** - Ganti di AppServiceProvider, apply ke semua
+- ✅ **Framework Standard** - Mengikuti TallStackUI documentation
+- ✅ **Type Safe** - IDE autocomplete untuk component names
+- ✅ **Partial Modification** - Hanya ubah class yang perlu, sisanya tetap
+
+---
+
+### Debugging Tips
+
+**Jika personalization tidak apply:**
+
+1. **Clear cache:**
+   ```bash
+   php artisan config:clear
+   php artisan view:clear
+   ```
+
+2. **Cek TailwindCSS tracking:**
+   - Pastikan `@source '../../app/Providers/*.php';` ada di `app.css`
+   - Rebuild CSS: `npm run dev` atau `npm run build`
+
+3. **Verify block name:**
+   - Buka `vendor/tallstackui/tallstackui/src/View/Components/{Component}.php`
+   - Lihat method `personalization()` untuk nama block yang benar
+
+4. **Check syntax:**
+   - Pastikan `->block()` tanpa parameter kedua jika mau pakai `->replace()`
+   - Pastikan nama component dan block sesuai dengan vendor file
+
+**JANGAN:**
+```blade
+{{-- ❌ JANGAN tambahkan rounded manual --}}
+<x-card class="rounded-xl">  {{-- Redundant! --}}
+
+{{-- ❌ JANGAN override dengan rounded lain --}}
+<x-card class="rounded-lg">  {{-- Inconsistent! --}}
+```
+
+**Benefit:**
+- ✅ **Zero effort** - Tidak perlu mendefinisikan `rounded-xl` setiap kali
+- ✅ **Konsisten** - Semua card pasti `rounded-xl`
+- ✅ **Single source of truth** - Ganti di 1 tempat, apply ke semua
+- ✅ **Future-proof** - Ganti design system? Edit 1 file aja
 
 ### Component Usage
 
@@ -179,18 +963,25 @@ public function refreshStats(): void
 <h1 class="text-5xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r...">
 ```
 
+**IMPORTANT - Page Header Exception:**
+- **Index/Main Pages**: Menggunakan `text-4xl font-bold` **DENGAN gradient** sesuai Layout Template (line 135)
+- **Testing/Simple Pages**: Menggunakan `text-2xl font-bold` **TANPA gradient**
+- **Modal Headers**: Menggunakan `text-xl font-bold` tanpa gradient
+
 ### Color Scheme
 
 **Default Colors Only:**
-- Text: Default Tailwind (`text-gray-800`, `dark:text-white`)
-- Backgrounds: Clean white/dark mode auto
-- Borders: `border`, `border-gray-200`, `dark:border-gray-700`
-- Accents: Only when necessary (`text-blue-600`, `text-green-600`)
+- Text: `text-dark-900 dark:text-dark-50` untuk primary text
+- Secondary text: `text-dark-600 dark:text-dark-400`
+- Muted text: `text-dark-500 dark:text-dark-400`
+- Backgrounds: Clean white/dark mode (`bg-white dark:bg-dark-800`)
+- Borders: `border-secondary-200 dark:border-dark-600`
+- Accents: Only when necessary (`text-blue-600 dark:text-blue-400`)
 
 **Avoid:**
-- ❌ Custom gradient backgrounds
+- ❌ Custom gradient backgrounds for cards/sections (gradient HANYA untuk page title)
 - ❌ Multiple accent colors dalam satu section
-- ❌ Heavy shadows (`shadow-2xl`, `shadow-lg`)
+- ❌ Heavy shadows (`shadow-2xl`, `shadow-lg`) - gunakan `hover:shadow-lg` untuk stats cards
 - ❌ Bright/neon colors
 
 ### Code Style
@@ -223,12 +1014,35 @@ class PageName extends Component
 }
 ```
 
-### Reference Example
+### Reference Examples
 
-**Good Example (Testing Page):**
+**Good Example (Index/Main Page):**
+```blade
+<div class="space-y-6">
+    {{-- Header with gradient (SESUAI LAYOUT TEMPLATE) --}}
+    <h1 class="text-4xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-indigo-800 dark:from-white dark:via-blue-200 dark:to-indigo-200 bg-clip-text text-transparent">
+        Page Title
+    </h1>
+
+    {{-- Stats Cards --}}
+    <x-card class="hover:shadow-lg transition-shadow">
+        <div class="flex items-center gap-4">
+            <div class="h-12 w-12 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                <x-icon name="icon" class="w-6 h-6 text-blue-600 dark:text-blue-400" />
+            </div>
+            <div>
+                <p class="text-sm text-dark-600 dark:text-dark-400">Label</p>
+                <p class="text-2xl font-bold text-dark-900 dark:text-dark-50">Value</p>
+            </div>
+        </div>
+    </x-card>
+</div>
+```
+
+**Good Example (Testing/Simple Page):**
 ```blade
 <div class="space-y-8">
-    <h1 class="text-2xl font-bold">Page Title</h1>
+    <h1 class="text-2xl font-bold text-dark-900 dark:text-dark-50">Page Title</h1>
 
     {{-- Section 1 --}}
     <div>

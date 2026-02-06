@@ -19,7 +19,10 @@ class AppServiceProvider extends ServiceProvider
             ->and()
             ->card()
             ->block('wrapper.second')
-            ->replace('shadow-md', 'border border-zinc-200 dark:border-dark-600 shadow-sm hover:shadow-md transition-shadow duration-150');
+            ->replace([
+                'shadow-md' => 'border border-zinc-200 dark:border-dark-600 shadow-sm hover:shadow-md transition-shadow duration-150',
+                'rounded-lg' => 'rounded-xl',
+            ]);
 
         // Set locale from session or user preference with fallback
         $availableLocales = config('app.available_locales', ['id', 'zh']);

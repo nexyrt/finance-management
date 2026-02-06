@@ -131,7 +131,7 @@
 
                 {{-- Main Actions --}}
                 <div class="flex items-center gap-3">
-                    <x-button wire:click="$set('showModal', false)" color="secondary">
+                    <x-button wire:click="$set('showModal', false)" color="zinc">
                         Batal
                     </x-button>
                     <x-button wire:click="save" color="primary" icon="check" loading="save">

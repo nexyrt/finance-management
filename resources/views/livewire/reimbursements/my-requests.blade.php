@@ -219,7 +219,7 @@
                     <a href="{{ $previewImage }}" download="{{ $previewName }}">
                         <x-button color="blue" outline icon="arrow-down-tray">Download</x-button>
                     </a>
-                    <x-button wire:click="$set('modal', false)" color="secondary">Close</x-button>
+                    <x-button wire:click="$set('modal', false)" color="zinc">Close</x-button>
                 </div>
             </x-slot:footer>
         @endif

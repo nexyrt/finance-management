@@ -230,7 +230,7 @@
 
         <x-slot:footer>
             <div class="flex justify-between w-full">
-                <x-button wire:click="$set('modal', false)" color="gray" size="sm"
+                <x-button wire:click="$set('modal', false)" color="zinc" size="sm"
                     loading="$set('modal', false)">
                     Tutup
                 </x-button>

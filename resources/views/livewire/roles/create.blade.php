@@ -85,7 +85,7 @@
         {{-- Footer --}}
         <x-slot:footer>
             <div class="flex flex-col sm:flex-row justify-end gap-3">
-                <x-button wire:click="$set('modal', false)" color="secondary" outline
+                <x-button wire:click="$set('modal', false)" color="zinc"
                     class="w-full sm:w-auto order-2 sm:order-1">
                     Cancel
                 </x-button>

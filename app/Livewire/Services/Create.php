@@ -13,13 +13,13 @@ class Create extends Component
     public bool $modal = false;
     public string $name = '';
     public string $type = '';
-    public string $price = '0';
+    public int $price = 0;
 
     public function resetForm(): void
     {
         $this->name = '';
         $this->type = '';
-        $this->price = '0';
+        $this->price = 0;
         $this->resetValidation();
     }
 
@@ -46,9 +46,6 @@ class Create extends Component
 
     public function save(): void
     {
-        // Convert price to int before validation
-        $this->price = (string) (int) preg_replace('/[^0-9]/', '', $this->price);
-
         $this->validate();
 
         try {

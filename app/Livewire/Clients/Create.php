@@ -3,7 +3,6 @@
 namespace App\Livewire\Clients;
 
 use App\Models\Client;
-use Livewire\Attributes\On;
 use Livewire\Component;
 use TallStackUi\Traits\Interactions;
 
@@ -11,7 +10,7 @@ class Create extends Component
 {
     use Interactions;
 
-    public bool $showModal = false;
+    public bool $modal = false;
 
     // Form properties
     public string $name = '';
@@ -40,13 +39,6 @@ class Create extends Component
         'address' => 'nullable|string',
     ];
 
-    #[On('create-client')]
-    public function create()
-    {
-        $this->resetForm();
-        $this->showModal = true;
-    }
-
     public function save()
     {
         $this->validate();
@@ -65,7 +57,7 @@ class Create extends Component
             'address' => $this->address ?: null,
         ]);
 
-        $this->showModal = false;
+        $this->modal = false;
         $this->dispatch('client-created');
         $this->toast()->success("{$client->name} created successfully.")->send();
         $this->resetForm();
@@ -73,7 +65,7 @@ class Create extends Component
 
     public function close()
     {
-        $this->showModal = false;
+        $this->modal = false;
         $this->resetForm();
         $this->resetValidation();
     }

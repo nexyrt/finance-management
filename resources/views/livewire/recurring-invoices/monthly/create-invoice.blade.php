@@ -48,7 +48,7 @@
 
         <x-slot:footer>
             <div class="flex justify-between w-full">
-                <x-button wire:click="$set('modal', false)" color="gray" size="sm">
+                <x-button wire:click="$set('modal', false)" color="zinc" size="sm">
                     Cancel
                 </x-button>
                 <x-button type="submit" form="create-invoice-form" color="primary" loading="save" icon="check"

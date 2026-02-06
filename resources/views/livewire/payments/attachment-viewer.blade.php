@@ -118,7 +118,7 @@
                             <p class="text-gray-600 dark:text-gray-400 mb-4">
                                 File {{ strtoupper($payment->attachment_type) }} • Preview tidak tersedia
                             </p>
-                            <x-button wire:click="downloadAttachment" color="gray" icon="arrow-down-tray">
+                            <x-button wire:click="downloadAttachment" color="zinc" icon="arrow-down-tray">
                                 Download untuk melihat
                             </x-button>
                         </div>
@@ -195,7 +195,7 @@
                 @else
                     <div></div>
                 @endif
-                <x-button wire:click="$set('modal', false)" color="gray">
+                <x-button wire:click="$set('modal', false)" color="zinc">
                     Tutup
                 </x-button>
             </div>

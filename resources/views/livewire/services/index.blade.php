@@ -16,29 +16,32 @@
     </div>
 
     {{-- Stats Cards --}}
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div class="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl p-6">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <x-card class="hover:shadow-lg transition-shadow">
             <div class="flex items-center gap-4">
-                <div class="h-12 w-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
+                <div
+                    class="h-12 w-12 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
                     <x-icon name="squares-2x2" class="w-6 h-6 text-blue-600 dark:text-blue-400" />
                 </div>
                 <div>
-                    <p class="text-sm text-zinc-600 dark:text-zinc-400">{{ __('common.total') }} {{ __('common.services') }}</p>
-                    <p class="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                    <p class="text-sm text-dark-600 dark:text-dark-400">{{ __('common.total') }}
+                        {{ __('common.services') }}</p>
+                    <p class="text-2xl font-bold text-dark-900 dark:text-dark-50">
                         {{ $stats['total_services'] }}
                     </p>
                 </div>
             </div>
-        </div>
+        </x-card>
 
-        <div class="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl p-6">
+        <x-card class="hover:shadow-lg transition-shadow">
             <div class="flex items-center gap-4">
-                <div class="h-12 w-12 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center">
+                <div
+                    class="h-12 w-12 bg-green-50 dark:bg-green-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
                     <x-icon name="banknotes" class="w-6 h-6 text-green-600 dark:text-green-400" />
                 </div>
                 <div>
-                    <p class="text-sm text-zinc-600 dark:text-zinc-400">{{ __('common.price') }}</p>
-                    <p class="text-lg font-bold text-green-600 dark:text-green-400">
+                    <p class="text-sm text-dark-600 dark:text-dark-400">Rata-rata Harga</p>
+                    <p class="text-2xl font-bold text-dark-900 dark:text-dark-50">
                         @if ($stats['avg_price'])
                             Rp {{ number_format($stats['avg_price'], 0, ',', '.') }}
                         @else
@@ -47,16 +50,17 @@
                     </p>
                 </div>
             </div>
-        </div>
+        </x-card>
 
-        <div class="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl p-6">
+        <x-card class="hover:shadow-lg transition-shadow">
             <div class="flex items-center gap-4">
-                <div class="h-12 w-12 bg-purple-100 dark:bg-purple-900/30 rounded-xl flex items-center justify-center">
+                <div
+                    class="h-12 w-12 bg-purple-50 dark:bg-purple-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
                     <x-icon name="star" class="w-6 h-6 text-purple-600 dark:text-purple-400" />
                 </div>
                 <div>
-                    <p class="text-sm text-zinc-600 dark:text-zinc-400">{{ __('common.price') }}</p>
-                    <p class="text-lg font-bold text-purple-600 dark:text-purple-400">
+                    <p class="text-sm text-dark-600 dark:text-dark-400">Harga Tertinggi</p>
+                    <p class="text-2xl font-bold text-dark-900 dark:text-dark-50">
                         @if ($stats['highest_price'])
                             Rp {{ number_format($stats['highest_price'], 0, ',', '.') }}
                         @else
@@ -65,33 +69,36 @@
                     </p>
                 </div>
             </div>
-        </div>
+        </x-card>
 
-        <div class="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl p-6">
+        <x-card class="hover:shadow-lg transition-shadow">
             <div class="flex items-center gap-4">
-                <div class="h-12 w-12 bg-orange-100 dark:bg-orange-900/30 rounded-xl flex items-center justify-center">
+                <div
+                    class="h-12 w-12 bg-orange-50 dark:bg-orange-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
                     <x-icon name="rectangle-group" class="w-6 h-6 text-orange-600 dark:text-orange-400" />
                 </div>
                 <div>
-                    <p class="text-sm text-zinc-600 dark:text-zinc-400">{{ __('common.category') }}</p>
-                    <p class="text-sm font-bold text-orange-600 dark:text-orange-400">
+                    <p class="text-sm text-dark-600 dark:text-dark-400">{{ __('common.category') }} Terbanyak</p>
+                    <p class="text-lg font-semibold text-dark-900 dark:text-dark-50">
                         @if ($stats['by_type']->isNotEmpty())
                             {{ $stats['by_type']->keys()->first() }}
-                            <span class="text-xs">({{ $stats['by_type']->first() }})</span>
+                            <span
+                                class="text-xs text-dark-600 dark:text-dark-400">({{ $stats['by_type']->first() }})</span>
                         @else
                             -
                         @endif
                     </p>
                 </div>
             </div>
-        </div>
+        </x-card>
     </div>
 
     {{-- Filters --}}
     <div class="flex flex-col lg:flex-row gap-4 items-start lg:items-end">
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 flex-1">
             <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('common.category') }}</label>
+                <label
+                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('common.category') }}</label>
                 <x-select.styled wire:model.live="typeFilter" :options="[
                     ['label' => 'Perizinan', 'value' => 'Perizinan'],
                     ['label' => 'Administrasi Perpajakan', 'value' => 'Administrasi Perpajakan'],
@@ -111,18 +118,17 @@
     </div>
 
     {{-- Services Table --}}
-    <x-table :$headers :$sort :rows="$this->services" selectable wire:model="selected" paginate filter loading>
+    <x-table :$headers :$sort :rows="$this->services" selectable wire:model="selected" paginate filter>
 
         {{-- Service Name Column --}}
         @interact('column_name', $row)
             <div class="flex items-center gap-3">
-                <div
-                    class="w-10 h-10 bg-gradient-to-br from-indigo-400 to-indigo-600 rounded-xl flex items-center justify-center">
-                    <x-icon name="cog-6-tooth" class="w-5 h-5 text-white" />
+                <div class="w-10 h-10 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl flex items-center justify-center">
+                    <x-icon name="cog-6-tooth" class="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
                 </div>
                 <div>
-                    <p class="font-semibold text-zinc-900 dark:text-zinc-50">{{ $row->name }}</p>
-                    <p class="text-xs text-zinc-500 dark:text-zinc-400">ID: {{ $row->id }}</p>
+                    <p class="font-semibold text-dark-900 dark:text-dark-50">{{ $row->name }}</p>
+                    <p class="text-xs text-dark-500 dark:text-dark-400">ID: {{ $row->id }}</p>
                 </div>
             </div>
         @endinteract
@@ -140,20 +146,18 @@
 
         {{-- Price Column --}}
         @interact('column_price', $row)
-            <div class="text-right">
-                <p class="font-bold text-lg text-zinc-900 dark:text-zinc-50">
-                    Rp {{ number_format($row->price, 0, ',', '.') }}
-                </p>
-            </div>
+            <p class="font-bold text-lg text-dark-900 dark:text-dark-50">
+                Rp {{ number_format($row->price, 0, ',', '.') }}
+            </p>
         @endinteract
 
         {{-- Created At Column --}}
         @interact('column_created_at', $row)
             <div>
-                <p class="text-sm font-medium text-zinc-900 dark:text-zinc-50">
+                <p class="text-sm font-medium text-dark-900 dark:text-dark-50">
                     {{ $row->created_at->format('d M Y') }}
                 </p>
-                <p class="text-xs text-zinc-500 dark:text-zinc-400">
+                <p class="text-xs text-dark-500 dark:text-dark-400">
                     {{ $row->created_at->diffForHumans() }}
                 </p>
             </div>

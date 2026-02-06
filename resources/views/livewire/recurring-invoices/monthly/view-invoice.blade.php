@@ -239,7 +239,7 @@
 
         <x-slot:footer>
             <div class="flex justify-end">
-                <x-button wire:click="$set('modal', false)" color="gray" loading="$set('modal', false)">
+                <x-button wire:click="$set('modal', false)" color="zinc" loading="$set('modal', false)">
                     Close
                 </x-button>
             </div>

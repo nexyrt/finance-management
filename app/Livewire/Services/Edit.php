@@ -14,7 +14,7 @@ class Edit extends Component
     public ?Service $service = null;
     public string $name = '';
     public string $type = '';
-    public string $price = '0';
+    public int $price = 0;
     public bool $modal = false;
 
     #[On('load::service')]
@@ -23,7 +23,7 @@ class Edit extends Component
         $this->service = $service;
         $this->name = $service->name;
         $this->type = $service->type;
-        $this->price = number_format($service->price, 0, ',', '.');
+        $this->price = $service->price;
         $this->modal = true;
     }
 
@@ -50,9 +50,6 @@ class Edit extends Component
 
     public function save(): void
     {
-        // Convert price to int before validation
-        $this->price = (string) (int) preg_replace('/[^0-9]/', '', $this->price);
-
         $this->validate();
 
         $this->service->update([
