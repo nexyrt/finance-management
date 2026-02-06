@@ -35,7 +35,7 @@
                 {{-- Logo --}}
                 @if ($currentLogo)
                     <div class="space-y-2">
-                        <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Current Logo</label>
+                        <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">Current Logo</label>
                         <div
                             class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4 border border-blue-200 dark:border-blue-800">
                             <div class="flex items-center justify-between">
@@ -58,7 +58,7 @@
                 {{-- Signature --}}
                 @if ($currentSignature)
                     <div class="space-y-2">
-                        <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Current Signature</label>
+                        <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">Current Signature</label>
                         <div
                             class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4 border border-blue-200 dark:border-blue-800">
                             <div class="flex items-center justify-between">
@@ -81,7 +81,7 @@
                 {{-- Stamp --}}
                 @if ($currentStamp)
                     <div class="space-y-2">
-                        <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Current Stamp</label>
+                        <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">Current Stamp</label>
                         <div
                             class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4 border border-blue-200 dark:border-blue-800">
                             <div class="flex items-center justify-between">

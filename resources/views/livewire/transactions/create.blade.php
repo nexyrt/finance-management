@@ -106,11 +106,8 @@
 
                     <div>
                         <div class="flex items-center justify-between mb-1.5">
-                            <div class="flex items-center gap-2">
+                            
                                 <span class="block text-sm font-medium text-gray-700 dark:text-gray-200">Kategori Transaksi *</span>
-                                <x-tooltip color="secondary" text="Kategori disesuaikan dengan jenis transaksi"
-                                    position="top" />
-                            </div>
                             <button type="button"
                                 wire:click="$dispatch('open-inline-category-modal', { transactionType: '{{ $transaction_type }}' })"
                                 class="flex items-center gap-1 px-2 py-1 text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20">
@@ -124,22 +121,18 @@
 
                     <x-wireui-currency prefix="Rp " wire:model.blur="amount" placeholder="0" thousands="."
                         decimal=",">
-                        <x-slot:label>
-                            <div class="flex items-center gap-2">
-                                <span>Jumlah *</span>
-                                <x-tooltip color="secondary" text="Jumlah transaksi dalam Rupiah" position="top" />
-                            </div>
-                        </x-slot:label>
+                        <x-slot name="label">
+                            Jumlah <span class="text-red-500">*</span>
+                        </x-slot>
+                        <x-slot name="hint">
+                            Jumlah transaksi dalam Rupiah
+                        </x-slot>
                     </x-wireui-currency>
 
-                    <x-date wire:model.live="transaction_date" helpers>
-                        <x-slot:label>
-                            <div class="flex items-center gap-2">
-                                <span>Tanggal Transaksi *</span>
-                                <x-tooltip color="secondary" text="Pilih tanggal saat transaksi terjadi"
-                                    position="top" />
-                            </div>
-                        </x-slot:label>
+                    <x-date wire:model.live="transaction_date" helpers label="Tanggal Transaksi *">
+                        <x-slot name="hint">
+                            Pilih tanggal saat transaksi terjadi
+                        </x-slot>
                     </x-date>
                 </div>
 
