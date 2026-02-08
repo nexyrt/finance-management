@@ -112,3 +112,31 @@ h1, h2, h3, h4, h5, h6,
     font-family: var(--font-heading);
 }
 
+/* Thin scrollbar */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: #a1a1aa transparent;
+}
+
+:where(.dark, .dark *) {
+    scrollbar-color: #52525b transparent;
+}
+
+*::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+*::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+    background-color: #a1a1aa;
+    border-radius: 3px;
+}
+
+:where(.dark, .dark *)::-webkit-scrollbar-thumb {
+    background-color: #52525b;
+}
+
