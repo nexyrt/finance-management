@@ -129,7 +129,6 @@ class Dashboard extends Component
     public function pendingInvoicesCount()
     {
         return Invoice::whereIn('status', ['sent', 'partially_paid', 'overdue'])
-            ->where('due_date', '>=', Carbon::today())
             ->count();
     }
 
@@ -137,12 +136,10 @@ class Dashboard extends Component
     public function pendingInvoicesAmount()
     {
         $totalOutstanding = Invoice::whereIn('status', ['sent', 'partially_paid', 'overdue'])
-            ->where('due_date', '>=', Carbon::today())
             ->sum('total_amount');
 
         $totalPaid = Payment::whereHas('invoice', function ($query) {
-            $query->whereIn('status', ['sent', 'partially_paid', 'overdue'])
-                ->where('due_date', '>=', Carbon::today());
+            $query->whereIn('status', ['sent', 'partially_paid', 'overdue']);
         })->sum('amount');
 
         return $totalOutstanding - $totalPaid;
@@ -382,7 +379,6 @@ class Dashboard extends Component
     {
         return Invoice::with('client')
             ->whereIn('status', ['sent', 'partially_paid', 'overdue'])
-            ->where('due_date', '>=', Carbon::today())
             ->orderBy('due_date', 'asc')
             ->take(5)
             ->get()
