@@ -22,26 +22,37 @@ class Dashboard extends Component
     public $startDate = null;
     public $endDate = null;
 
+    public $chartPeriod = '6_months'; // this_month, 6_months, 12_months
+
     // Reset computed properties when period changes
-    public function updatedPeriod()
+    private function resetComputedProperties()
     {
         unset($this->incomeThisMonth);
         unset($this->expensesThisMonth);
         unset($this->expensesByCategoryChart);
+        $this->dispatch('charts-refresh');
+    }
+
+    public function updatedPeriod()
+    {
+        $this->resetComputedProperties();
     }
 
     public function updatedStartDate()
     {
-        unset($this->incomeThisMonth);
-        unset($this->expensesThisMonth);
-        unset($this->expensesByCategoryChart);
+        $this->resetComputedProperties();
     }
 
     public function updatedEndDate()
     {
-        unset($this->incomeThisMonth);
-        unset($this->expensesThisMonth);
-        unset($this->expensesByCategoryChart);
+        $this->resetComputedProperties();
+    }
+
+    public function updatedChartPeriod()
+    {
+        unset($this->cashFlowChart);
+        unset($this->revenueVsExpensesChart);
+        $this->dispatch('charts-refresh');
     }
 
     // ============================================
@@ -93,17 +104,7 @@ class Dashboard extends Component
     #[Computed]
     public function totalBankBalance()
     {
-        return BankAccount::all()->sum(function ($account) {
-            $credits = BankTransaction::where('bank_account_id', $account->id)
-                ->where('transaction_type', 'credit')
-                ->sum('amount');
-
-            $debits = BankTransaction::where('bank_account_id', $account->id)
-                ->where('transaction_type', 'debit')
-                ->sum('amount');
-
-            return $account->initial_balance + $credits - $debits;
-        });
+        return BankAccount::all()->sum(fn ($account) => $account->balance);
     }
 
     #[Computed]
@@ -148,14 +149,19 @@ class Dashboard extends Component
     }
 
     // ============================================
-    // CASH FLOW CHART (6 Months)
+    // CASH FLOW CHART
     // ============================================
 
     #[Computed]
     public function cashFlowChart()
     {
+        if ($this->chartPeriod === 'this_month') {
+            return $this->getWeeklyData();
+        }
+
+        $months = $this->chartPeriod === '12_months' ? 11 : 5;
         $data = [];
-        for ($i = 5; $i >= 0; $i--) {
+        for ($i = $months; $i >= 0; $i--) {
             $month = Carbon::now()->subMonths($i);
 
             $income = BankTransaction::where('transaction_type', 'credit')
@@ -169,12 +175,50 @@ class Dashboard extends Component
                 ->sum('amount');
 
             $data[] = [
-                'month' => $month->translatedFormat('M'),
+                'label' => $this->chartPeriod === '12_months'
+                    ? $month->translatedFormat('M y')
+                    : $month->translatedFormat('M'),
                 'income' => $income,
                 'expenses' => $expenses,
-                'net' => $income - $expenses,
             ];
         }
+        return $data;
+    }
+
+    private function getWeeklyData()
+    {
+        $now = Carbon::now();
+        $startOfMonth = $now->copy()->startOfMonth();
+        $endOfMonth = $now->copy()->endOfMonth();
+
+        $data = [];
+        $week = 1;
+        $weekStart = $startOfMonth->copy();
+
+        while ($weekStart->lte($endOfMonth)) {
+            $weekEnd = $weekStart->copy()->addDays(6);
+            if ($weekEnd->gt($endOfMonth)) {
+                $weekEnd = $endOfMonth->copy();
+            }
+
+            $income = BankTransaction::where('transaction_type', 'credit')
+                ->whereBetween('transaction_date', [$weekStart, $weekEnd])
+                ->sum('amount');
+
+            $expenses = BankTransaction::where('transaction_type', 'debit')
+                ->whereBetween('transaction_date', [$weekStart, $weekEnd])
+                ->sum('amount');
+
+            $data[] = [
+                'label' => 'W' . $week . ' (' . $weekStart->format('d') . '-' . $weekEnd->format('d') . ')',
+                'income' => $income,
+                'expenses' => $expenses,
+            ];
+
+            $week++;
+            $weekStart = $weekEnd->copy()->addDay();
+        }
+
         return $data;
     }
 
@@ -238,14 +282,19 @@ class Dashboard extends Component
     }
 
     // ============================================
-    // REVENUE VS EXPENSES CHART (6 Months Bar Chart)
+    // REVENUE VS EXPENSES CHART
     // ============================================
 
     #[Computed]
     public function revenueVsExpensesChart()
     {
+        if ($this->chartPeriod === 'this_month') {
+            return $this->getWeeklyRevenueExpenseData();
+        }
+
+        $months = $this->chartPeriod === '12_months' ? 11 : 5;
         $data = [];
-        for ($i = 5; $i >= 0; $i--) {
+        for ($i = $months; $i >= 0; $i--) {
             $month = Carbon::now()->subMonths($i);
 
             $revenue = BankTransaction::where('transaction_type', 'credit')
@@ -259,11 +308,50 @@ class Dashboard extends Component
                 ->sum('amount');
 
             $data[] = [
-                'month' => $month->translatedFormat('M'),
+                'label' => $this->chartPeriod === '12_months'
+                    ? $month->translatedFormat('M y')
+                    : $month->translatedFormat('M'),
                 'revenue' => $revenue,
                 'expenses' => $expenses,
             ];
         }
+        return $data;
+    }
+
+    private function getWeeklyRevenueExpenseData()
+    {
+        $now = Carbon::now();
+        $startOfMonth = $now->copy()->startOfMonth();
+        $endOfMonth = $now->copy()->endOfMonth();
+
+        $data = [];
+        $week = 1;
+        $weekStart = $startOfMonth->copy();
+
+        while ($weekStart->lte($endOfMonth)) {
+            $weekEnd = $weekStart->copy()->addDays(6);
+            if ($weekEnd->gt($endOfMonth)) {
+                $weekEnd = $endOfMonth->copy();
+            }
+
+            $revenue = BankTransaction::where('transaction_type', 'credit')
+                ->whereBetween('transaction_date', [$weekStart, $weekEnd])
+                ->sum('amount');
+
+            $expenses = BankTransaction::where('transaction_type', 'debit')
+                ->whereBetween('transaction_date', [$weekStart, $weekEnd])
+                ->sum('amount');
+
+            $data[] = [
+                'label' => 'W' . $week . ' (' . $weekStart->format('d') . '-' . $weekEnd->format('d') . ')',
+                'revenue' => $revenue,
+                'expenses' => $expenses,
+            ];
+
+            $week++;
+            $weekStart = $weekEnd->copy()->addDay();
+        }
+
         return $data;
     }
 
@@ -275,22 +363,12 @@ class Dashboard extends Component
     public function bankAccounts()
     {
         return BankAccount::all()->map(function ($account) {
-            $credits = BankTransaction::where('bank_account_id', $account->id)
-                ->where('transaction_type', 'credit')
-                ->sum('amount');
-
-            $debits = BankTransaction::where('bank_account_id', $account->id)
-                ->where('transaction_type', 'debit')
-                ->sum('amount');
-
-            $balance = $account->initial_balance + $credits - $debits;
-
             return [
                 'id' => $account->id,
                 'name' => $account->account_name,
                 'bank' => $account->bank_name,
                 'account_number' => $account->account_number,
-                'balance' => $balance,
+                'balance' => $account->balance,
             ];
         })->sortByDesc('balance')->values();
     }
@@ -372,6 +450,21 @@ class Dashboard extends Component
     // ============================================
     // HELPER METHODS
     // ============================================
+
+    public function getChartData(string $chartName)
+    {
+        return $this->$chartName;
+    }
+
+    public function getChartPeriodLabel()
+    {
+        return match ($this->chartPeriod) {
+            'this_month' => 'Bulan ini (per minggu)',
+            '6_months' => '6 bulan terakhir',
+            '12_months' => '12 bulan terakhir',
+            default => '6 bulan terakhir',
+        };
+    }
 
     public function getPeriodLabel()
     {
