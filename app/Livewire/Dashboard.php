@@ -480,6 +480,13 @@ class Dashboard extends Component
         };
     }
 
+    public function getPeriodDateRange()
+    {
+        $range = $this->getDateRange();
+
+        return $range['start']->translatedFormat('d M Y') . ' - ' . $range['end']->translatedFormat('d M Y');
+    }
+
     public function formatCurrency($amount)
     {
         if ($amount >= 1000000000) {

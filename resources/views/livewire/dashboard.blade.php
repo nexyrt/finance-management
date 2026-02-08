@@ -11,23 +11,26 @@
         </div>
 
         {{-- Period Filter --}}
-        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
-            <x-select.native wire:model.live="period" class="w-full sm:w-48">
-                <option value="this_month">Bulan Ini</option>
-                <option value="last_month">Bulan Lalu</option>
-                <option value="this_quarter">Kuartal Ini</option>
-                <option value="last_quarter">Kuartal Lalu</option>
-                <option value="this_year">Tahun Ini</option>
-                <option value="last_year">Tahun Lalu</option>
-                <option value="custom">Kustom</option>
-            </x-select.native>
+        <div class="flex flex-col items-end gap-1 w-full sm:w-auto">
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
+                <x-select.native wire:model.live="period" class="w-full sm:w-48">
+                    <option value="this_month">Bulan Ini</option>
+                    <option value="last_month">Bulan Lalu</option>
+                    <option value="this_quarter">Kuartal Ini</option>
+                    <option value="last_quarter">Kuartal Lalu</option>
+                    <option value="this_year">Tahun Ini</option>
+                    <option value="last_year">Tahun Lalu</option>
+                    <option value="custom">Kustom</option>
+                </x-select.native>
 
-            @if ($period === 'custom')
-                <div class="flex gap-2">
-                    <x-input type="date" wire:model.live="startDate" placeholder="Dari" class="w-full sm:w-auto" />
-                    <x-input type="date" wire:model.live="endDate" placeholder="Sampai" class="w-full sm:w-auto" />
-                </div>
-            @endif
+                @if ($period === 'custom')
+                    <div class="flex gap-2">
+                        <x-input type="date" wire:model.live="startDate" placeholder="Dari" class="w-full sm:w-auto" />
+                        <x-input type="date" wire:model.live="endDate" placeholder="Sampai" class="w-full sm:w-auto" />
+                    </div>
+                @endif
+            </div>
+            <span class="text-xs text-gray-500 dark:text-gray-400">{{ $this->getPeriodDateRange() }}</span>
         </div>
     </div>
 
