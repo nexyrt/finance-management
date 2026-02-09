@@ -44,12 +44,12 @@ class Delete extends Component
 
         $this->dialog()
             ->question("Hapus Feedback?", "Feedback \"{$feedback->title}\" akan dihapus permanen. Aksi ini tidak dapat dibatalkan.")
-            ->confirm('Ya, Hapus', 'delete', [$id])
+            ->confirm('Ya, Hapus', 'delete', $id)
             ->cancel('Batal')
             ->send();
     }
 
-    public function delete(int $id): void
+    public function delete($id): void
     {
         $feedback = Feedback::find($id);
 

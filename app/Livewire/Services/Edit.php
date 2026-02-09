@@ -36,18 +36,6 @@ class Edit extends Component
         ];
     }
 
-    public function messages(): array
-    {
-        return [
-            'name.required' => 'Nama layanan wajib diisi',
-            'price.required' => 'Harga layanan wajib diisi',
-            'price.integer' => 'Harga harus berupa angka',
-            'price.min' => 'Harga tidak boleh negatif',
-            'type.required' => 'Kategori layanan wajib dipilih',
-            'type.in' => 'Kategori layanan tidak valid',
-        ];
-    }
-
     public function save(): void
     {
         $this->validate();
@@ -60,7 +48,7 @@ class Edit extends Component
 
         $this->modal = false;
         $this->dispatch('service-updated');
-        $this->toast()->success('Berhasil', 'Layanan berhasil diperbarui')->send();
+        $this->toast()->success(__('common.success'), __('common.updated_successfully'))->send();
     }
 
     public function render()

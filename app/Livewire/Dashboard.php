@@ -7,6 +7,7 @@ use App\Models\BankTransaction;
 use App\Models\Invoice;
 use App\Models\Payment;
 use App\Models\TransactionCategory;
+use App\Services\TranslationService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
@@ -245,10 +246,13 @@ class Dashboard extends Component
             ->with('category')
             ->get();
 
+        $translationService = app(TranslationService::class);
+
         $grouped = $transactions->groupBy('category_id')
-            ->map(function ($group) {
+            ->map(function ($group) use ($translationService) {
+                $categoryName = $group->first()->category->label ?? __('pages.others');
                 return [
-                    'name' => $group->first()->category->label ?? 'Lainnya',
+                    'name' => $translationService->translateCategory($categoryName),
                     'value' => $group->sum('amount'),
                 ];
             })
@@ -265,7 +269,7 @@ class Dashboard extends Component
 
         if ($uncategorized > 0) {
             $grouped[] = [
-                'name' => 'Tanpa Kategori',
+                'name' => __('pages.uncategorized'),
                 'value' => $uncategorized,
             ];
         }
@@ -455,24 +459,24 @@ class Dashboard extends Component
     public function getChartPeriodLabel()
     {
         return match ($this->chartPeriod) {
-            'this_month' => 'Bulan ini (per minggu)',
-            '6_months' => '6 bulan terakhir',
-            '12_months' => '12 bulan terakhir',
-            default => '6 bulan terakhir',
+            'this_month' => __('pages.this_month_per_week'),
+            '6_months' => __('pages.last_6_months'),
+            '12_months' => __('pages.last_12_months'),
+            default => __('pages.last_6_months'),
         };
     }
 
     public function getPeriodLabel()
     {
         return match ($this->period) {
-            'this_month' => 'Bulan ini',
-            'last_month' => 'Bulan lalu',
-            'this_quarter' => 'Kuartal ini',
-            'last_quarter' => 'Kuartal lalu',
-            'this_year' => 'Tahun ini',
-            'last_year' => 'Tahun lalu',
-            'custom' => 'Periode kustom',
-            default => 'Bulan ini',
+            'this_month' => __('pages.this_month'),
+            'last_month' => __('pages.last_month'),
+            'this_quarter' => __('pages.this_quarter'),
+            'last_quarter' => __('pages.last_quarter'),
+            'this_year' => __('pages.this_year'),
+            'last_year' => __('pages.last_year'),
+            'custom' => __('pages.custom_period'),
+            default => __('pages.this_month'),
         };
     }
 

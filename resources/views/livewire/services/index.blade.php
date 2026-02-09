@@ -40,7 +40,7 @@
                     <x-icon name="banknotes" class="w-6 h-6 text-green-600 dark:text-green-400" />
                 </div>
                 <div>
-                    <p class="text-sm text-dark-600 dark:text-dark-400">Rata-rata Harga</p>
+                    <p class="text-sm text-dark-600 dark:text-dark-400">{{ __('pages.average_price') }}</p>
                     <p class="text-2xl font-bold text-dark-900 dark:text-dark-50">
                         @if ($stats['avg_price'])
                             Rp {{ number_format($stats['avg_price'], 0, ',', '.') }}
@@ -59,7 +59,7 @@
                     <x-icon name="star" class="w-6 h-6 text-purple-600 dark:text-purple-400" />
                 </div>
                 <div>
-                    <p class="text-sm text-dark-600 dark:text-dark-400">Harga Tertinggi</p>
+                    <p class="text-sm text-dark-600 dark:text-dark-400">{{ __('pages.highest_price') }}</p>
                     <p class="text-2xl font-bold text-dark-900 dark:text-dark-50">
                         @if ($stats['highest_price'])
                             Rp {{ number_format($stats['highest_price'], 0, ',', '.') }}
@@ -78,10 +78,10 @@
                     <x-icon name="rectangle-group" class="w-6 h-6 text-orange-600 dark:text-orange-400" />
                 </div>
                 <div>
-                    <p class="text-sm text-dark-600 dark:text-dark-400">{{ __('common.category') }} Terbanyak</p>
+                    <p class="text-sm text-dark-600 dark:text-dark-400">{{ __('pages.most_category') }}</p>
                     <p class="text-lg font-semibold text-dark-900 dark:text-dark-50">
                         @if ($stats['by_type']->isNotEmpty())
-                            {{ $stats['by_type']->keys()->first() }}
+                            {{ translate_text($stats['by_type']->keys()->first()) }}
                             <span
                                 class="text-xs text-dark-600 dark:text-dark-400">({{ $stats['by_type']->first() }})</span>
                         @else
@@ -100,11 +100,11 @@
                 <label
                     class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('common.category') }}</label>
                 <x-select.styled wire:model.live="typeFilter" :options="[
-                    ['label' => 'Perizinan', 'value' => 'Perizinan'],
-                    ['label' => 'Administrasi Perpajakan', 'value' => 'Administrasi Perpajakan'],
-                    ['label' => 'Digital Marketing', 'value' => 'Digital Marketing'],
-                    ['label' => 'Sistem Digital', 'value' => 'Sistem Digital'],
-                ]" placeholder="Semua kategori..." />
+                    ['label' => translate_text('Perizinan'), 'value' => 'Perizinan'],
+                    ['label' => translate_text('Administrasi Perpajakan'), 'value' => 'Administrasi Perpajakan'],
+                    ['label' => translate_text('Digital Marketing'), 'value' => 'Digital Marketing'],
+                    ['label' => translate_text('Sistem Digital'), 'value' => 'Sistem Digital'],
+                ]" placeholder="{{ __('pages.all_categories') }}" />
             </div>
         </div>
 
@@ -118,7 +118,7 @@
     </div>
 
     {{-- Services Table --}}
-    <x-table :$headers :$sort :rows="$this->services" selectable wire:model="selected" paginate filter>
+    <x-table :headers="$this->headers" :$sort :rows="$this->services" selectable wire:model="selected" paginate filter>
 
         {{-- Service Name Column --}}
         @interact('column_name', $row)
@@ -127,7 +127,7 @@
                     <x-icon name="cog-6-tooth" class="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
                 </div>
                 <div>
-                    <p class="font-semibold text-dark-900 dark:text-dark-50">{{ $row->name }}</p>
+                    <p class="font-semibold text-dark-900 dark:text-dark-50">{{ translate_text($row->name) }}</p>
                     <p class="text-xs text-dark-500 dark:text-dark-400">ID: {{ $row->id }}</p>
                 </div>
             </div>
@@ -135,7 +135,7 @@
 
         {{-- Type Column --}}
         @interact('column_type', $row)
-            <x-badge :text="$row->type" :color="match ($row->type) {
+            <x-badge :text="translate_text($row->type)" :color="match ($row->type) {
                 'Perizinan' => 'blue',
                 'Administrasi Perpajakan' => 'green',
                 'Digital Marketing' => 'purple',
@@ -187,9 +187,9 @@
                     </div>
                     <div>
                         <div class="font-semibold text-dark-900 dark:text-dark-50"
-                            x-text="`${show.length} layanan dipilih`"></div>
+                            x-text="`${show.length} {{ __('common.services') }} {{ __('pages.selected') }}`"></div>
                         <div class="text-xs text-dark-500 dark:text-dark-400">
-                            Pilih aksi untuk layanan yang dipilih
+                            {{ __('pages.select_action_for_selected') }}
                         </div>
                     </div>
                 </div>

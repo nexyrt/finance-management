@@ -15,24 +15,26 @@
                 </div>
                 <div>
                     <h3 class="text-xl font-bold text-dark-900 dark:text-dark-50">{{ __('pages.add_service') }}</h3>
-                    <p class="text-sm text-dark-600 dark:text-dark-400">Tambahkan layanan baru ke sistem</p>
+                    <p class="text-sm text-dark-600 dark:text-dark-400">{{ __('pages.add_service_description') }}</p>
                 </div>
             </div>
         </x-slot:title>
 
         <form id="create-form" wire:submit="save" class="space-y-4">
-            <x-input wire:model="name" label="{{ __('pages.service_name') }}" hint="{{ __('pages.service_description') }}" placeholder="Contoh: Konsultasi Pajak Tahunan" required />
+            <x-input wire:model="name" label="{{ __('pages.service_name') }}"
+                     hint="{{ __('pages.service_name_hint') }}"
+                     placeholder="{{ __('pages.service_name_placeholder') }}" required />
 
             <x-select.styled wire:model="type" label="{{ __('common.category') }}" :options="[
-                ['label' => 'Perizinan', 'value' => 'Perizinan'],
-                ['label' => 'Administrasi Perpajakan', 'value' => 'Administrasi Perpajakan'],
-                ['label' => 'Digital Marketing', 'value' => 'Digital Marketing'],
-                ['label' => 'Sistem Digital', 'value' => 'Sistem Digital'],
+                ['label' => translate_text('Perizinan'), 'value' => 'Perizinan'],
+                ['label' => translate_text('Administrasi Perpajakan'), 'value' => 'Administrasi Perpajakan'],
+                ['label' => translate_text('Digital Marketing'), 'value' => 'Digital Marketing'],
+                ['label' => translate_text('Sistem Digital'), 'value' => 'Sistem Digital'],
             ]"
-                placeholder="Pilih kategori layanan..." required />
+                placeholder="{{ __('pages.select_category') }}" required />
 
             <x-currency-input wire:model="price" label="{{ __('pages.service_price') }}"
-                hint="Masukkan harga dalam Rupiah (contoh: 500000)" placeholder="0" prefix="Rp" required />
+                hint="{{ __('pages.service_price_hint') }}" placeholder="0" prefix="Rp" required />
         </form>
 
         <x-slot:footer>

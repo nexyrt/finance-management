@@ -630,6 +630,9 @@ window.addEventListener('resize', () => {
 
             <!-- Actions -->
             <div class="flex items-center gap-1 md:gap-2 flex-shrink-0">
+                <!-- Language Switcher -->
+                @livewire('language-switcher')
+
                 <!-- Theme Toggle (from TallStackUI) -->
                 <x-theme-switch sm only-icons />
 

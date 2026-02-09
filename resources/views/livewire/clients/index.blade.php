@@ -104,12 +104,12 @@
                 @endphp
 
                 @if ($activeFilters > 0)
-                    <x-badge text="{{ $activeFilters }} filter aktif" color="primary" size="sm" />
+                    <x-badge text="{{ $activeFilters }} {{ __('pages.active_filters') }}" color="primary" size="sm" />
                 @endif
 
                 <div class="text-sm text-gray-500 dark:text-gray-400">
-                    <span class="hidden sm:inline">Menampilkan </span>{{ $rows->count() }}
-                    <span class="hidden sm:inline">dari {{ $rows->total() }}</span> klien
+                    <span class="hidden sm:inline">{{ __('common.showing') }} </span>{{ $rows->count() }}
+                    <span class="hidden sm:inline">{{ __('common.of') }} {{ $rows->total() }}</span> {{ __('common.clients') }}
                 </div>
             </div>
         </div>
@@ -263,5 +263,4 @@
     <livewire:clients.edit />
     <livewire:clients.delete />
     <livewire:clients.show />
-    <livewire:clients.create />
 </div>

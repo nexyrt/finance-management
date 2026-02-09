@@ -22,15 +22,17 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <x-input label="{{ __('common.name') }} *" wire:model="name" icon="user" required />
-                <x-select.styled label="{{ __('common.type') }} *" wire:model="type" :options="[
+                <x-input label="{{ __('pages.client_name') }} *" wire:model="name" icon="user" required
+                         placeholder="{{ __('pages.enter_client_name') }}" />
+                <x-select.styled label="{{ __('pages.client_type') }} *" wire:model="type" :options="[
                     ['label' => __('pages.individual'), 'value' => 'individual'],
                     ['label' => __('pages.company'), 'value' => 'company'],
                 ]" required />
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <x-input label="{{ __('common.email') }}" wire:model="email" type="email" icon="envelope" />
+                <x-input label="{{ __('common.email') }}" wire:model="email" type="email" icon="envelope"
+                         placeholder="{{ __('common.email_placeholder') }}" />
                 <x-select.styled label="{{ __('common.status') }} *" wire:model="status" :options="[
                     ['label' => __('common.active'), 'value' => 'Active'],
                     ['label' => __('common.inactive'), 'value' => 'Inactive']
@@ -47,11 +49,13 @@
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <x-input label="{{ __('pages.tax_id') }}" wire:model="NPWP" icon="identification"
-                         hint="Nomor Pokok Wajib Pajak" placeholder="01.234.567.8-901.000" />
+                         hint="{{ __('pages.tax_id_number') }}" placeholder="01.234.567.8-901.000" />
                 <x-input label="{{ __('pages.kpp') }}" wire:model="KPP" icon="building-office-2"
-                         hint="{{ __('pages.tax_service_office') }}" placeholder="KPP Pratama Jakarta Selatan" />
+                         hint="{{ __('pages.tax_service_office') }}"
+                         placeholder="{{ __('pages.enter_kpp') }}" />
                 <x-input label="{{ __('pages.efin') }}" wire:model="EFIN" icon="document-text"
-                         hint="{{ __('pages.electronic_filing_number') }}" placeholder="1234567890123456" />
+                         hint="{{ __('pages.electronic_filing_number') }}"
+                         placeholder="{{ __('pages.enter_efin') }}" />
             </div>
         </div>
 
@@ -64,17 +68,17 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <x-input label="{{ __('pages.account_representative') }}" wire:model="account_representative"
-                         icon="user-circle" placeholder="John Doe" />
+                         icon="user-circle" placeholder="{{ __('pages.enter_representative_name') }}" />
                 <x-input label="{{ __('pages.ar_phone_number') }}" wire:model="ar_phone_number"
-                         icon="phone" placeholder="+62 812 3456 7890" />
+                         icon="phone" placeholder="{{ __('pages.enter_phone_number') }}" />
             </div>
 
             <x-input label="{{ __('pages.person_in_charge') }}" wire:model="person_in_charge"
-                     icon="user" placeholder="Jane Smith" />
+                     icon="user" placeholder="{{ __('pages.enter_pic_name') }}" />
 
             <x-input label="{{ __('common.address') }}" wire:model="address" icon="map-pin"
                      hint="{{ __('pages.complete_business_address') }}"
-                     placeholder="Jl. Sudirman No. 123, Jakarta Selatan 12190" />
+                     placeholder="{{ __('pages.enter_address') }}" />
         </div>
     </form>
 

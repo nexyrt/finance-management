@@ -28,8 +28,8 @@ class Delete extends Component
     public function confirm(): void
     {
         $this->dialog()->question(
-            "Hapus Layanan?",
-            "Layanan \"{$this->service->name}\" akan dihapus permanen"
+            __('pages.delete_service'),
+            __('pages.confirm_delete_service', ['name' => $this->service->name])
         )
             ->confirm(method: 'delete')
             ->cancel()
@@ -42,6 +42,6 @@ class Delete extends Component
         $this->service->delete();
 
         $this->dispatch('service-deleted');
-        $this->dialog()->success('Berhasil', 'Layanan berhasil dihapus')->send();
+        $this->dialog()->success(__('common.success'), __('common.deleted_successfully'))->send();
     }
 }

@@ -33,7 +33,7 @@ class Delete extends Component
             $this->client->delete();
             $this->clientDeleteModal = false;
             $this->dispatch('client-deleted');
-            $this->dialog()->success('Klien Dihapus', "{$name} berhasil dihapus.")->send();
+            $this->dialog()->success(__('common.success'), __('common.deleted_successfully'))->send();
         }
     }
 }

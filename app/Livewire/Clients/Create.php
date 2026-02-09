@@ -59,7 +59,7 @@ class Create extends Component
 
         $this->modal = false;
         $this->dispatch('client-created');
-        $this->toast()->success("{$client->name} created successfully.")->send();
+        $this->toast()->success(__('common.success'), __('common.created_successfully'))->send();
         $this->resetForm();
     }
 

@@ -29,13 +29,13 @@ class Index extends Component
     {
         return [
             'headers' => [
-                ['index' => 'name', 'label' => 'Klien'],
-                ['index' => 'type', 'label' => 'Tipe'],
-                ['index' => 'person_in_charge', 'label' => 'Info Kontak'],
-                ['index' => 'status', 'label' => 'Status'],
-                ['index' => 'invoices_count', 'label' => 'Faktur', 'sortable' => false],
-                ['index' => 'financial_summary', 'label' => 'Keuangan', 'sortable' => false],
-                ['index' => 'actions', 'label' => 'Aksi', 'sortable' => false],
+                ['index' => 'name', 'label' => __('common.name')],
+                ['index' => 'type', 'label' => __('common.type')],
+                ['index' => 'person_in_charge', 'label' => __('pages.contact_info')],
+                ['index' => 'status', 'label' => __('common.status')],
+                ['index' => 'invoices_count', 'label' => __('common.invoices'), 'sortable' => false],
+                ['index' => 'financial_summary', 'label' => __('pages.financial'), 'sortable' => false],
+                ['index' => 'actions', 'label' => __('common.actions'), 'sortable' => false],
             ],
             'rows' => Client::query()
                 ->when($this->search, function (Builder $query) {
@@ -69,15 +69,15 @@ class Index extends Component
     public function bulkDelete()
     {
         if (empty($this->selected)) {
-            $this->dialog()->warning('Peringatan', 'Tidak ada klien yang dipilih')->send();
+            $this->dialog()->warning(__('common.warning'), __('pages.no_clients_selected'))->send();
             return;
         }
 
         $count = count($this->selected);
         $this->dialog()
-            ->question('Konfirmasi Hapus', "Apakah Anda yakin ingin menghapus {$count} klien? Tindakan ini tidak dapat dibatalkan.")
-            ->confirm('Hapus', 'confirmBulkDelete', 'Data berhasil dihapus')
-            ->cancel('Batal', 'cancelBulkDelete', 'Operasi dibatalkan')
+            ->question(__('pages.confirm_delete'), __('pages.confirm_delete_clients', ['count' => $count]))
+            ->confirm(__('common.delete'), 'confirmBulkDelete', __('common.deleted_successfully'))
+            ->cancel(__('common.cancel'), 'cancelBulkDelete', __('pages.operation_cancelled'))
             ->send();
     }
 
@@ -85,15 +85,15 @@ class Index extends Component
     {
         $count = Client::whereIn('id', $this->selected)->count();
         Client::whereIn('id', $this->selected)->delete();
-        
+
         $this->selected = [];
-        $this->dialog()->success('Berhasil', $message)->send();
+        $this->dialog()->success(__('common.success'), $message)->send();
         $this->dispatch('client-deleted');
     }
 
     public function cancelBulkDelete(string $message)
     {
-        $this->dialog()->info('Dibatalkan', $message)->send();
+        $this->dialog()->info(__('pages.cancelled'), $message)->send();
     }
 
     public function clearSelection()

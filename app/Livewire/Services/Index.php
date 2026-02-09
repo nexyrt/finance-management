@@ -19,13 +19,16 @@ class Index extends Component
     public ?string $search = null;
     public ?string $typeFilter = null;
 
-    public array $headers = [
-        ['index' => 'name', 'label' => 'Nama Layanan'],
-        ['index' => 'type', 'label' => 'Kategori'],
-        ['index' => 'price', 'label' => 'Harga', 'sortable' => true],
-        ['index' => 'created_at', 'label' => 'Dibuat'],
-        ['index' => 'actions', 'label' => 'Aksi', 'sortable' => false],
-    ];
+    public function getHeadersProperty(): array
+    {
+        return [
+            ['index' => 'name', 'label' => __('pages.service_name')],
+            ['index' => 'type', 'label' => __('common.category')],
+            ['index' => 'price', 'label' => __('common.price'), 'sortable' => true],
+            ['index' => 'created_at', 'label' => __('common.created_at')],
+            ['index' => 'actions', 'label' => __('common.actions'), 'sortable' => false],
+        ];
+    }
 
     public function edit($serviceId): void
     {
@@ -41,12 +44,12 @@ class Index extends Component
     public function bulkDelete(): void
     {
         if (empty($this->selected)) {
-            $this->toast()->warning('Warning', 'Pilih minimal satu layanan untuk dihapus')->send();
+            $this->toast()->warning(__('common.warning'), __('pages.no_services_selected'))->send();
             return;
         }
 
         $this->toast()
-            ->question('Hapus Layanan?', count($this->selected) . ' layanan akan dihapus permanen')
+            ->question(__('pages.delete_services'), __('pages.confirm_delete_services', ['count' => count($this->selected)]))
             ->confirm(method: 'confirmBulkDelete')
             ->cancel()
             ->send();
@@ -58,9 +61,9 @@ class Index extends Component
             $deletedCount = count($this->selected);
             Service::whereIn('id', $this->selected)->delete();
             $this->selected = [];
-            $this->toast()->success('Berhasil', "Berhasil menghapus {$deletedCount} layanan")->send();
+            $this->toast()->success(__('common.success'), __('pages.services_deleted_successfully', ['count' => $deletedCount]))->send();
         } catch (\Exception $e) {
-            $this->toast()->error('Error', 'Gagal menghapus: ' . $e->getMessage())->send();
+            $this->toast()->error(__('common.error'), __('pages.delete_failed') . ': ' . $e->getMessage())->send();
         }
     }
 

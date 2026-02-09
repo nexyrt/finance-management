@@ -64,6 +64,7 @@ return [
     // Common Labels
     'name' => 'Nama',
     'email' => 'Email',
+    'email_placeholder' => 'contoh@email.com',
     'phone' => 'Telepon',
     'address' => 'Alamat',
     'city' => 'Kota',
@@ -90,6 +91,10 @@ return [
     'attachment' => 'Lampiran',
     'created_at' => 'Dibuat Pada',
     'updated_at' => 'Diubah Pada',
+    'showing' => 'Menampilkan',
+    'of' => 'dari',
+    'clients' => 'klien',
+    'selected' => 'dipilih',
 
     // Status
     'active' => 'Aktif',

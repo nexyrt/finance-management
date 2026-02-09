@@ -3,10 +3,10 @@
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div class="space-y-1">
             <h1 class="text-4xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-indigo-800 dark:from-white dark:via-blue-200 dark:to-indigo-200 bg-clip-text text-transparent">
-                Dashboard Keuangan
+                {{ __('pages.financial_dashboard') }}
             </h1>
             <p class="text-gray-600 dark:text-zinc-400 text-lg">
-                Ringkasan keuangan dan aktivitas bisnis
+                {{ __('pages.financial_dashboard_desc') }}
             </p>
         </div>
 
@@ -14,19 +14,19 @@
         <div class="flex flex-col items-end gap-1 w-full sm:w-auto">
             <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
                 <x-select.native wire:model.live="period" class="w-full sm:w-48">
-                    <option value="this_month">Bulan Ini</option>
-                    <option value="last_month">Bulan Lalu</option>
-                    <option value="this_quarter">Kuartal Ini</option>
-                    <option value="last_quarter">Kuartal Lalu</option>
-                    <option value="this_year">Tahun Ini</option>
-                    <option value="last_year">Tahun Lalu</option>
-                    <option value="custom">Kustom</option>
+                    <option value="this_month">{{ __('pages.this_month') }}</option>
+                    <option value="last_month">{{ __('pages.last_month') }}</option>
+                    <option value="this_quarter">{{ __('pages.this_quarter') }}</option>
+                    <option value="last_quarter">{{ __('pages.last_quarter') }}</option>
+                    <option value="this_year">{{ __('pages.this_year') }}</option>
+                    <option value="last_year">{{ __('pages.last_year') }}</option>
+                    <option value="custom">{{ __('pages.custom') }}</option>
                 </x-select.native>
 
                 @if ($period === 'custom')
                     <div class="flex gap-2">
-                        <x-input type="date" wire:model.live="startDate" placeholder="Dari" class="w-full sm:w-auto" />
-                        <x-input type="date" wire:model.live="endDate" placeholder="Sampai" class="w-full sm:w-auto" />
+                        <x-input type="date" wire:model.live="startDate" placeholder="{{ __('pages.from') }}" class="w-full sm:w-auto" />
+                        <x-input type="date" wire:model.live="endDate" placeholder="{{ __('pages.to') }}" class="w-full sm:w-auto" />
                     </div>
                 @endif
             </div>
@@ -39,7 +39,7 @@
         {{-- Card 1: Total Saldo --}}
         <x-card class="hover:shadow-md transition-shadow">
             <div class="flex items-center justify-between mb-2">
-                <span class="text-xs md:text-sm font-medium text-gray-600 dark:text-gray-400">Total Saldo</span>
+                <span class="text-xs md:text-sm font-medium text-gray-600 dark:text-gray-400">{{ __('pages.total_balance') }}</span>
                 <div class="h-7 w-7 md:h-8 md:w-8 rounded-lg bg-blue-500/10 dark:bg-blue-500/20 flex items-center justify-center">
                     <x-icon name="wallet" class="h-3.5 w-3.5 md:h-4 md:w-4 text-blue-600 dark:text-blue-400" />
                 </div>
@@ -47,14 +47,14 @@
             <div class="text-lg md:text-2xl font-bold">{{ $this->formatCurrency($this->totalBankBalance) }}</div>
             <p class="text-[10px] md:text-xs flex items-center gap-1 mt-1">
                 <x-icon name="arrow-trending-up" class="h-3 w-3 text-green-600 dark:text-green-400" />
-                <span class="text-green-600 dark:text-green-400 font-medium">Saldo bank</span>
+                <span class="text-green-600 dark:text-green-400 font-medium">{{ __('pages.bank_balance') }}</span>
             </p>
         </x-card>
 
         {{-- Card 2: Pemasukan --}}
         <x-card class="hover:shadow-md transition-shadow">
             <div class="flex items-center justify-between mb-2">
-                <span class="text-xs md:text-sm font-medium text-gray-600 dark:text-gray-400">Pemasukan</span>
+                <span class="text-xs md:text-sm font-medium text-gray-600 dark:text-gray-400">{{ __('pages.income') }}</span>
                 <div class="h-7 w-7 md:h-8 md:w-8 rounded-lg bg-green-500/10 dark:bg-green-500/20 flex items-center justify-center">
                     <x-icon name="arrow-down-right" class="h-3.5 w-3.5 md:h-4 md:w-4 text-green-600 dark:text-green-400" />
                 </div>
@@ -68,7 +68,7 @@
         {{-- Card 3: Pengeluaran --}}
         <x-card class="hover:shadow-md transition-shadow">
             <div class="flex items-center justify-between mb-2">
-                <span class="text-xs md:text-sm font-medium text-gray-600 dark:text-gray-400">Pengeluaran</span>
+                <span class="text-xs md:text-sm font-medium text-gray-600 dark:text-gray-400">{{ __('pages.expenses') }}</span>
                 <div class="h-7 w-7 md:h-8 md:w-8 rounded-lg bg-red-500/10 dark:bg-red-500/20 flex items-center justify-center">
                     <x-icon name="arrow-up-right" class="h-3.5 w-3.5 md:h-4 md:w-4 text-red-600 dark:text-red-400" />
                 </div>
@@ -82,7 +82,7 @@
         {{-- Card 4: Invoice Tertunda --}}
         <x-card class="hover:shadow-md transition-shadow">
             <div class="flex items-center justify-between mb-2">
-                <span class="text-xs md:text-sm font-medium text-gray-600 dark:text-gray-400">Invoice Tertunda</span>
+                <span class="text-xs md:text-sm font-medium text-gray-600 dark:text-gray-400">{{ __('pages.pending_invoices') }}</span>
                 <div class="h-7 w-7 md:h-8 md:w-8 rounded-lg bg-amber-500/10 dark:bg-amber-500/20 flex items-center justify-center">
                     <x-icon name="document-text" class="h-3.5 w-3.5 md:h-4 md:w-4 text-amber-600 dark:text-amber-400" />
                 </div>
@@ -90,8 +90,8 @@
             <div class="text-lg md:text-2xl font-bold">{{ $this->formatCurrency($this->pendingInvoicesAmount) }}</div>
             <p class="text-[10px] md:text-xs flex items-center gap-1 mt-1">
                 <x-icon name="clock" class="h-3 w-3 text-amber-600 dark:text-amber-400" />
-                <span class="text-amber-600 dark:text-amber-400 font-medium">{{ $this->pendingInvoicesCount }} invoice</span>
-                <span class="text-gray-600 dark:text-gray-400 hidden sm:inline">menunggu</span>
+                <span class="text-amber-600 dark:text-amber-400 font-medium">{{ __('pages.n_invoices', ['count' => $this->pendingInvoicesCount]) }}</span>
+                <span class="text-gray-600 dark:text-gray-400 hidden sm:inline">{{ __('pages.waiting') }}</span>
             </p>
         </x-card>
     </div>
@@ -107,7 +107,7 @@
                             <x-icon name="chart-bar" class="h-4 w-4 text-blue-600 dark:text-blue-400" />
                         </div>
                         <div>
-                            <h3 class="text-sm md:text-base font-semibold">Arus Kas</h3>
+                            <h3 class="text-sm md:text-base font-semibold">{{ __('pages.cash_flow') }}</h3>
                             <p class="text-xs text-gray-600 dark:text-gray-400">{{ $this->getChartPeriodLabel() }}</p>
                         </div>
                     </div>
@@ -116,26 +116,26 @@
                         <div class="hidden sm:flex items-center gap-4 text-xs">
                             <div class="flex items-center gap-1.5">
                                 <div class="w-2.5 h-2.5 rounded-full bg-green-600"></div>
-                                <span class="text-gray-600 dark:text-gray-400">Pemasukan</span>
+                                <span class="text-gray-600 dark:text-gray-400">{{ __('pages.income') }}</span>
                             </div>
                             <div class="flex items-center gap-1.5">
                                 <div class="w-2.5 h-2.5 rounded-full bg-red-600"></div>
-                                <span class="text-gray-600 dark:text-gray-400">Pengeluaran</span>
+                                <span class="text-gray-600 dark:text-gray-400">{{ __('pages.expenses') }}</span>
                             </div>
                         </div>
                         {{-- Chart Period Filter --}}
                         <div class="flex items-center rounded-lg border border-gray-200 dark:border-dark-600 text-xs">
                             <button wire:click="$set('chartPeriod', 'this_month')"
                                 class="px-2.5 py-1 rounded-l-lg transition-colors {{ $chartPeriod === 'this_month' ? 'bg-primary-600 text-white' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-dark-700' }}">
-                                Bulan Ini
+                                {{ __('pages.this_month') }}
                             </button>
                             <button wire:click="$set('chartPeriod', '6_months')"
                                 class="px-2.5 py-1 border-x border-gray-200 dark:border-dark-600 transition-colors {{ $chartPeriod === '6_months' ? 'bg-primary-600 text-white' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-dark-700' }}">
-                                6 Bulan
+                                {{ __('pages.six_months') }}
                             </button>
                             <button wire:click="$set('chartPeriod', '12_months')"
                                 class="px-2.5 py-1 rounded-r-lg transition-colors {{ $chartPeriod === '12_months' ? 'bg-primary-600 text-white' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-dark-700' }}">
-                                12 Bulan
+                                {{ __('pages.twelve_months') }}
                             </button>
                         </div>
                     </div>
@@ -157,7 +157,7 @@
                         <x-icon name="chart-pie" class="h-4 w-4 text-blue-600 dark:text-blue-400" />
                     </div>
                     <div>
-                        <h3 class="text-sm md:text-base font-semibold">Pengeluaran per Kategori</h3>
+                        <h3 class="text-sm md:text-base font-semibold">{{ __('pages.expense_by_category') }}</h3>
                         <p class="text-xs text-gray-600 dark:text-gray-400">{{ ucfirst($this->getPeriodLabel()) }}</p>
                     </div>
                 </div>
@@ -177,7 +177,7 @@
                             <span class="font-medium">{{ $this->formatCurrency($category['value']) }}</span>
                         </div>
                     @empty
-                        <p class="text-xs text-gray-500 dark:text-gray-400 text-center py-4">Belum ada data</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 text-center py-4">{{ __('pages.no_data_yet') }}</p>
                     @endforelse
                 </div>
             </x-card>
@@ -194,7 +194,7 @@
                         <x-icon name="chart-bar" class="h-4 w-4 text-blue-600 dark:text-blue-400" />
                     </div>
                     <div>
-                        <h3 class="text-sm md:text-base font-semibold">Pendapatan vs Pengeluaran</h3>
+                        <h3 class="text-sm md:text-base font-semibold">{{ __('pages.revenue_vs_expenses') }}</h3>
                         <p class="text-xs text-gray-600 dark:text-gray-400">{{ $this->getChartPeriodLabel() }}</p>
                     </div>
                 </div>
@@ -208,11 +208,11 @@
             <div class="flex items-center justify-center gap-4 mt-2 text-xs">
                 <div class="flex items-center gap-1.5">
                     <div class="w-2.5 h-2.5 rounded bg-green-600"></div>
-                    <span class="text-gray-600 dark:text-gray-400">Pendapatan</span>
+                    <span class="text-gray-600 dark:text-gray-400">{{ __('pages.revenue') }}</span>
                 </div>
                 <div class="flex items-center gap-1.5">
                     <div class="w-2.5 h-2.5 rounded bg-red-600"></div>
-                    <span class="text-gray-600 dark:text-gray-400">Pengeluaran</span>
+                    <span class="text-gray-600 dark:text-gray-400">{{ __('pages.expenses') }}</span>
                 </div>
             </div>
         </x-card>
@@ -225,12 +225,12 @@
                         <x-icon name="building-library" class="h-4 w-4 text-blue-600 dark:text-blue-400" />
                     </div>
                     <div>
-                        <h3 class="text-sm md:text-base font-semibold">Saldo Rekening</h3>
-                        <p class="text-xs text-gray-600 dark:text-gray-400">Posisi per bank</p>
+                        <h3 class="text-sm md:text-base font-semibold">{{ __('pages.account_balances') }}</h3>
+                        <p class="text-xs text-gray-600 dark:text-gray-400">{{ __('pages.position_per_bank') }}</p>
                     </div>
                 </div>
                 <a href="{{ route('bank-accounts.index') }}" wire:navigate class="text-xs text-blue-600 hover:underline flex items-center gap-1 dark:text-blue-400">
-                    Kelola <x-icon name="arrow-up-right" class="h-3 w-3" />
+                    {{ __('pages.manage') }} <x-icon name="arrow-up-right" class="h-3 w-3" />
                 </a>
             </div>
             <div class="space-y-2">
@@ -248,11 +248,11 @@
                         <p class="font-semibold">{{ $this->formatCurrency($account['balance']) }}</p>
                     </div>
                 @empty
-                    <p class="text-xs text-gray-500 dark:text-gray-400 text-center py-4">Belum ada rekening</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 text-center py-4">{{ __('pages.no_accounts_yet') }}</p>
                 @endforelse
                 @if ($this->bankAccounts->count() > 0)
                     <div class="flex items-center justify-between p-3 rounded-lg bg-blue-500/5 border border-blue-500/20 dark:bg-blue-500/10 dark:border-blue-500/30">
-                        <span class="font-medium text-sm">Total</span>
+                        <span class="font-medium text-sm">{{ __('common.total') }}</span>
                         <span class="font-bold text-blue-600 dark:text-blue-400">{{ $this->formatCurrency($this->totalBankBalance) }}</span>
                     </div>
                 @endif
@@ -270,12 +270,12 @@
                         <x-icon name="document-text" class="h-4 w-4 text-amber-600 dark:text-amber-400" />
                     </div>
                     <div>
-                        <h3 class="text-sm md:text-base font-semibold">Invoice Tertunda</h3>
-                        <p class="text-xs text-gray-600 dark:text-gray-400">Perlu difollow-up</p>
+                        <h3 class="text-sm md:text-base font-semibold">{{ __('pages.pending_invoices') }}</h3>
+                        <p class="text-xs text-gray-600 dark:text-gray-400">{{ __('pages.needs_followup') }}</p>
                     </div>
                 </div>
                 <a href="{{ route('invoices.index') }}" wire:navigate class="text-xs text-blue-600 hover:underline flex items-center gap-1 dark:text-blue-400">
-                    Lihat Semua <x-icon name="arrow-up-right" class="h-3 w-3" />
+                    {{ __('pages.view_all') }} <x-icon name="arrow-up-right" class="h-3 w-3" />
                 </a>
             </div>
             <div class="space-y-2">
@@ -303,12 +303,12 @@
                         <div class="text-right flex-shrink-0 ml-2">
                             <p class="font-semibold">{{ $this->formatCurrency($invoice['amount']) }}</p>
                             <span class="text-[10px] font-medium {{ $isOverdue ? 'text-red-600 dark:text-red-400' : ($isWarning ? 'text-amber-600 dark:text-amber-400' : 'text-gray-600 dark:text-gray-400') }}">
-                                {{ $isOverdue ? 'Lewat ' . abs($invoice['days_until_due']) . ' hari' : $invoice['days_until_due'] . ' hari lagi' }}
+                                {{ $isOverdue ? __('pages.overdue_days', ['count' => abs($invoice['days_until_due'])]) : __('pages.days_remaining', ['count' => $invoice['days_until_due']]) }}
                             </span>
                         </div>
                     </div>
                 @empty
-                    <p class="text-xs text-gray-500 dark:text-gray-400 text-center py-4">Tidak ada invoice tertunda</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 text-center py-4">{{ __('pages.no_pending_invoices') }}</p>
                 @endforelse
             </div>
         </x-card>
@@ -321,12 +321,12 @@
                         <x-icon name="arrow-trending-up" class="h-4 w-4 text-blue-600 dark:text-blue-400" />
                     </div>
                     <div>
-                        <h3 class="text-sm md:text-base font-semibold">Transaksi Terbaru</h3>
-                        <p class="text-xs text-gray-600 dark:text-gray-400">Aktivitas terakhir</p>
+                        <h3 class="text-sm md:text-base font-semibold">{{ __('pages.recent_transactions') }}</h3>
+                        <p class="text-xs text-gray-600 dark:text-gray-400">{{ __('pages.recent_activity') }}</p>
                     </div>
                 </div>
                 <a href="{{ route('cash-flow.index') }}" wire:navigate class="text-xs text-blue-600 hover:underline flex items-center gap-1 dark:text-blue-400">
-                    Lihat Semua <x-icon name="arrow-up-right" class="h-3 w-3" />
+                    {{ __('pages.view_all') }} <x-icon name="arrow-up-right" class="h-3 w-3" />
                 </a>
             </div>
             <div class="space-y-2">
@@ -350,7 +350,7 @@
                         </p>
                     </div>
                 @empty
-                    <p class="text-xs text-gray-500 dark:text-gray-400 text-center py-4">Belum ada transaksi</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 text-center py-4">{{ __('pages.no_transactions_yet') }}</p>
                 @endforelse
             </div>
         </x-card>
@@ -360,7 +360,18 @@
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    document.addEventListener('alpine:init', () => {
+    // Translation labels for charts
+    const chartLabels = {
+        income: @js(__('pages.income')),
+        expenses: @js(__('pages.expenses')),
+        revenue: @js(__('pages.revenue')),
+    };
+
+    // Register immediately if Alpine is already loaded, otherwise wait for alpine:init
+    function registerDashboardChart() {
+        if (window.__dashboardChartRegistered) return;
+        window.__dashboardChartRegistered = true;
+
         Alpine.data('dashboardChart', (chartType, initialData) => ({
             chart: null,
             data: initialData,
@@ -426,12 +437,12 @@
                         labels: this.data.map(d => d.label),
                         datasets: [
                             {
-                                label: 'Pemasukan', data: this.data.map(d => d.income),
+                                label: chartLabels.income, data: this.data.map(d => d.income),
                                 borderColor: 'rgb(22, 163, 74)', backgroundColor: 'rgba(22, 163, 74, 0.1)',
                                 fill: true, tension: 0.4, borderWidth: 2
                             },
                             {
-                                label: 'Pengeluaran', data: this.data.map(d => d.expenses),
+                                label: chartLabels.expenses, data: this.data.map(d => d.expenses),
                                 borderColor: 'rgb(220, 38, 38)', backgroundColor: 'rgba(220, 38, 38, 0.1)',
                                 fill: true, tension: 0.4, borderWidth: 2
                             }
@@ -484,8 +495,8 @@
                     data: {
                         labels: this.data.map(d => d.label),
                         datasets: [
-                            { label: 'Pendapatan', data: this.data.map(d => d.revenue), backgroundColor: 'rgba(22, 163, 74, 0.8)', borderRadius: 4 },
-                            { label: 'Pengeluaran', data: this.data.map(d => d.expenses), backgroundColor: 'rgba(220, 38, 38, 0.8)', borderRadius: 4 }
+                            { label: chartLabels.revenue, data: this.data.map(d => d.revenue), backgroundColor: 'rgba(22, 163, 74, 0.8)', borderRadius: 4 },
+                            { label: chartLabels.expenses, data: this.data.map(d => d.expenses), backgroundColor: 'rgba(220, 38, 38, 0.8)', borderRadius: 4 }
                         ]
                     },
                     options: {
@@ -506,6 +517,19 @@
                 this.destroyChart();
             }
         }));
+    }
+
+    // Alpine already loaded (e.g. wire:navigate from another page)
+    if (window.Alpine) {
+        registerDashboardChart();
+    }
+    // Alpine not yet loaded (e.g. fresh page load / first visit after login)
+    document.addEventListener('alpine:init', () => registerDashboardChart());
+
+    // Livewire navigation (e.g. redirect after login)
+    document.addEventListener('livewire:navigated', () => {
+        // Small delay to ensure DOM is ready
+        setTimeout(() => registerDashboardChart(), 50);
     });
 </script>
 @endpush

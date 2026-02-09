@@ -32,18 +32,6 @@ class Create extends Component
         ];
     }
 
-    public function messages(): array
-    {
-        return [
-            'name.required' => 'Nama layanan wajib diisi',
-            'price.required' => 'Harga layanan wajib diisi',
-            'price.integer' => 'Harga harus berupa angka',
-            'price.min' => 'Harga tidak boleh negatif',
-            'type.required' => 'Kategori layanan wajib dipilih',
-            'type.in' => 'Kategori layanan tidak valid',
-        ];
-    }
-
     public function save(): void
     {
         $this->validate();
@@ -60,10 +48,10 @@ class Create extends Component
 
             // Delay to prevent snapshot issues
             $this->dispatch('service-created');
-            $this->toast()->success('Berhasil', 'Layanan berhasil ditambahkan')->send();
+            $this->toast()->success(__('common.success'), __('common.created_successfully'))->send();
 
         } catch (\Exception $e) {
-            $this->toast()->error('Error', $e->getMessage())->send();
+            $this->toast()->error(__('common.error'), $e->getMessage())->send();
         }
     }
 

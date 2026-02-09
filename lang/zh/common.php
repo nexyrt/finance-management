@@ -64,6 +64,7 @@ return [
     // Common Labels
     'name' => '名称',
     'email' => '邮箱',
+    'email_placeholder' => 'example@email.com',
     'phone' => '电话',
     'address' => '地址',
     'city' => '城市',
@@ -90,6 +91,10 @@ return [
     'attachment' => '附件',
     'created_at' => '创建时间',
     'updated_at' => '更新时间',
+    'showing' => '显示',
+    'of' => '共',
+    'clients' => '客户',
+    'selected' => '已选',
 
     // Status
     'active' => '活跃',
