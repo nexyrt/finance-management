@@ -41,10 +41,10 @@ class Create extends Component
         foreach ($this->items as $index => $item) {
             // Set default values if empty
             if (empty($item['unit_price']) || trim($item['unit_price']) === '' || $item['unit_price'] === 'Rp ') {
-                $this->addError("items.{$index}.unit_price", 'Harga satuan harus diisi.');
+                $this->addError("items.{$index}.unit_price", __('invoice.unit_price_required'));
             }
             if (empty($item['quantity']) || trim($item['quantity']) === '') {
-                $this->addError("items.{$index}.quantity", 'Jumlah harus diisi.');
+                $this->addError("items.{$index}.quantity", __('invoice.quantity_required'));
             }
         }
 
@@ -155,7 +155,7 @@ class Create extends Component
 
             DB::commit();
 
-            session()->flash('success', "Invoice {$invoiceNumber} created successfully!");
+            session()->flash('success', __('invoice.created_successfully'));
 
             $this->reset(['invoice', 'items', 'discount']);
 
@@ -183,21 +183,21 @@ class Create extends Component
             ]);
 
             // Build detailed user-friendly error message
-            $errorMessage = 'Failed to create invoice.';
+            $errorMessage = __('invoice.creation_failed');
 
             // Add specific error details
             if (strpos($e->getMessage(), 'SQLSTATE') !== false) {
-                $errorMessage .= ' Database error: ' . $e->getMessage();
+                $errorMessage .= ' ' . __('common.database_error') . ': ' . $e->getMessage();
             } elseif (strpos($e->getMessage(), 'column') !== false || strpos($e->getMessage(), 'Column') !== false) {
-                $errorMessage .= ' Missing required field: ' . $e->getMessage();
+                $errorMessage .= ' ' . __('common.missing_required_field') . ': ' . $e->getMessage();
             } elseif (strpos($e->getMessage(), 'Undefined') !== false) {
-                $errorMessage .= ' Data issue: ' . $e->getMessage();
+                $errorMessage .= ' ' . __('common.data_issue') . ': ' . $e->getMessage();
             } else {
                 $errorMessage .= ' ' . $e->getMessage();
             }
 
             // Always show file and line in production for debugging
-            $errorMessage .= "\n\nError location: " . basename($e->getFile()) . ':' . $e->getLine();
+            $errorMessage .= "\n\n" . __('common.error_location') . ': ' . basename($e->getFile()) . ':' . $e->getLine();
 
             session()->flash('error', $errorMessage);
         }

@@ -124,6 +124,12 @@ return [
     'created_successfully' => 'Berhasil dibuat',
     'updated_successfully' => 'Berhasil diubah',
     'saved_successfully' => 'Berhasil disimpan',
+    'delete_file' => 'Hapus File',
+    'view_file' => 'Lihat File',
+    'database_error' => 'Error database',
+    'missing_required_field' => 'Field wajib tidak ada',
+    'data_issue' => 'Masalah data',
+    'error_location' => 'Lokasi error',
 
     // Notifications
     'notifications' => 'Notifikasi',

@@ -81,7 +81,7 @@ class Listing extends Component
     public function executePrint(): void
     {
         if (!$this->printInvoiceId) {
-            $this->toast()->error('Error', 'Invoice tidak ditemukan')->send();
+            $this->toast()->error(__('common.error'), __('invoice.not_found'))->send();
             return;
         }
 
@@ -95,7 +95,7 @@ class Listing extends Component
             $dpParsed = $this->dpAmount ? (int) preg_replace('/[^0-9]/', '', $this->dpAmount) : 0;
 
             if ($dpParsed <= 0 || $dpParsed > $this->printTotalAmount) {
-                $this->toast()->error('Error', 'Nominal DP tidak valid')->send();
+                $this->toast()->error(__('common.error'), __('invoice.invalid_dp_amount'))->send();
                 return;
             }
 
@@ -105,7 +105,7 @@ class Listing extends Component
             $sisaPembayaran = $this->printTotalAmount - $this->printAmountPaid;
 
             if ($sisaPembayaran <= 0) {
-                $this->toast()->error('Error', 'Invoice sudah lunas')->send();
+                $this->toast()->error(__('common.error'), __('invoice.already_paid_full'))->send();
                 return;
             }
 
@@ -261,22 +261,22 @@ class Listing extends Component
             $invoice = Invoice::find($invoiceId);
 
             if (!$invoice || $invoice->status !== 'draft') {
-                $this->toast()->warning('Warning', 'Hanya invoice draft yang bisa dikirim')->send();
+                $this->toast()->warning(__('common.warning'), __('invoice.only_draft_can_send'))->send();
                 return;
             }
 
             $invoice->update(['status' => 'sent']);
-            $this->toast()->success('Berhasil', "Invoice {$invoice->invoice_number} berhasil dikirim")->send();
+            $this->toast()->success(__('common.success'), __('invoice.send_success', ['invoice_number' => $invoice->invoice_number]))->send();
             $this->dispatch('invoice-sent');
         } catch (\Exception $e) {
-            $this->toast()->error('Error', 'Gagal mengirim invoice: ' . $e->getMessage())->send();
+            $this->toast()->error(__('common.error'), __('invoice.send_error') . ': ' . $e->getMessage())->send();
         }
     }
 
     public function bulkPrintInvoices(): void
     {
         if (empty($this->selected)) {
-            $this->toast()->warning('Warning', 'Pilih minimal satu invoice untuk di-print')->send();
+            $this->toast()->warning(__('common.warning'), __('invoice.select_for_print'))->send();
             return;
         }
 
@@ -284,7 +284,7 @@ class Listing extends Component
             $invoices = Invoice::whereIn('id', $this->selected)->get(['id', 'invoice_number']);
 
             if ($invoices->isEmpty()) {
-                $this->toast()->error('Error', 'Invoice tidak ditemukan')->send();
+                $this->toast()->error(__('common.error'), __('invoice.not_found'))->send();
                 return;
             }
 
@@ -299,16 +299,16 @@ class Listing extends Component
             ]);
 
             $this->selected = [];
-            $this->toast()->success('Download Dimulai', "Mengunduh {$invoices->count()} invoice PDF")->send();
+            $this->toast()->success(__('common.success'), __('invoice.download_started', ['count' => $invoices->count()]))->send();
         } catch (\Exception $e) {
-            $this->toast()->error('Error', 'Gagal memulai download: ' . $e->getMessage())->send();
+            $this->toast()->error(__('common.error'), __('invoice.download_error') . ': ' . $e->getMessage())->send();
         }
     }
 
     public function bulkDelete(): void
     {
         if (empty($this->selected)) {
-            $this->toast()->warning('Warning', 'Pilih minimal satu invoice untuk dihapus')->send();
+            $this->toast()->warning(__('common.warning'), __('invoice.select_for_delete'))->send();
             return;
         }
 
@@ -320,10 +320,10 @@ class Listing extends Component
 
             $deletedCount = count($this->selected);
             $this->selected = [];
-            $this->toast()->success('Berhasil', "Berhasil menghapus {$deletedCount} invoice")->send();
+            $this->toast()->success(__('common.success'), __('invoice.bulk_delete_success', ['count' => $deletedCount]))->send();
             $this->dispatch('invoice-deleted');
         } catch (\Exception $e) {
-            $this->toast()->error('Error', 'Gagal menghapus: ' . $e->getMessage())->send();
+            $this->toast()->error(__('common.error'), __('invoice.delete_error') . ': ' . $e->getMessage())->send();
         }
     }
 
@@ -333,15 +333,15 @@ class Listing extends Component
             $invoice = Invoice::find($invoiceId);
 
             if (!$invoice || $invoice->status !== 'sent') {
-                $this->toast()->warning('Warning', 'Hanya invoice terkirim yang bisa dikembalikan ke draft')->send();
+                $this->toast()->warning(__('common.warning'), __('invoice.only_sent_rollback'))->send();
                 return;
             }
 
             $invoice->update(['status' => 'draft']);
-            $this->toast()->success('Berhasil', "Invoice {$invoice->invoice_number} dikembalikan ke draft")->send();
+            $this->toast()->success(__('common.success'), __('invoice.rollback_success', ['invoice_number' => $invoice->invoice_number]))->send();
             $this->dispatch('invoice-updated');
         } catch (\Exception $e) {
-            $this->toast()->error('Error', 'Gagal rollback: ' . $e->getMessage())->send();
+            $this->toast()->error(__('common.error'), __('invoice.rollback_error') . ': ' . $e->getMessage())->send();
         }
     }
 

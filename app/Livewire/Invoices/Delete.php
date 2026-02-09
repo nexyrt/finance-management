@@ -27,25 +27,25 @@ class Delete extends Component
         $this->invoice = Invoice::with(['client', 'items', 'payments'])->find($invoiceId);
 
         if (!$this->invoice) {
-            $this->toast()->error('Error', 'Invoice tidak ditemukan')->send();
+            $this->toast()->error(__('common.error'), __('invoice.not_found'))->send();
             return;
         }
 
         // Build confirmation message
-        $title = "Hapus Invoice {$this->invoice->invoice_number}?";
+        $title = __('invoice.delete_confirm_title') . ' ' . $this->invoice->invoice_number . '?';
         $description = $this->buildConfirmationMessage();
 
         $this->dialog()
             ->question($title, $description)
-            ->confirm('Ya, Hapus Invoice', 'delete', 'Invoice berhasil dihapus')
-            ->cancel('Batal')
+            ->confirm(__('invoice.confirm_delete'), 'delete', __('invoice.delete_success'))
+            ->cancel(__('common.cancel'))
             ->send();
     }
 
     public function delete(): void
     {
         if (!$this->invoice) {
-            $this->toast()->error('Error', 'Invoice tidak ditemukan')->send();
+            $this->toast()->error(__('common.error'), __('invoice.not_found'))->send();
             return;
         }
 
@@ -65,7 +65,7 @@ class Delete extends Component
 
             // Success notification
             $this->toast()
-                ->success('Berhasil', 'Invoice berhasil dihapus')
+                ->success(__('common.success'), __('invoice.deletion_success'))
                 ->send();
 
             // Dispatch refresh events
@@ -74,7 +74,7 @@ class Delete extends Component
 
         } catch (\Exception $e) {
             $this->toast()
-                ->error('Error', 'Gagal menghapus invoice: ' . $e->getMessage())
+                ->error(__('common.error'), __('invoice.delete_error') . ': ' . $e->getMessage())
                 ->send();
         }
 
@@ -88,16 +88,23 @@ class Delete extends Component
         $totalAmount = number_format($this->invoice->total_amount, 0, ',', '.');
         $itemsCount = $this->invoice->items->count();
         $paymentsCount = $this->invoice->payments->count();
-        
-        $message = "Invoice untuk {$clientName} senilai Rp {$totalAmount} dengan {$itemsCount} item";
-        
+
+        $message = __('invoice.delete_confirm_message', [
+            'client_name' => $clientName,
+            'total_amount' => $totalAmount,
+            'items_count' => $itemsCount
+        ]);
+
         if ($paymentsCount > 0) {
             $totalPaid = number_format($this->invoice->amount_paid, 0, ',', '.');
-            $message .= " dan {$paymentsCount} pembayaran (Rp {$totalPaid})";
+            $message .= ' ' . __('invoice.delete_confirm_with_payments', [
+                'payments_count' => $paymentsCount,
+                'total_paid' => $totalPaid
+            ]);
         }
-        
-        $message .= " akan dihapus permanen.";
-        
+
+        $message .= ' ' . __('invoice.delete_permanent_note');
+
         return $message;
     }
 }

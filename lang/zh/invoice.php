@@ -142,9 +142,64 @@ return [
     'payment_to_account' => '付款至账户',
     'payment_before_due_date' => '请在到期日前付款。',
 
+    // Faktur upload
+    'faktur_upload' => '发票（PDF/图片）',
+    'file_selected_success' => '文件选择成功',
+    'upload_instructions' => '点击上传或拖放',
+    'faktur_file_types' => 'PDF, JPG, JPEG, PNG（最大5MB）',
+    'filename_optional' => '文件名（可选）',
+    'filename_example' => '例如：发票-',
+    'filename_note' => '留空以使用原始文件名。扩展名将自动添加。',
+    'new_file_selected' => '新文件已选择',
+    'new_file_replace_note' => '上传新文件以替换当前发票',
+
     // Messages
     'no_items' => '无项目',
     'invoice_created' => '发票创建成功',
     'invoice_updated' => '发票更新成功',
     'invoice_deleted' => '发票删除成功',
+    'unit_price_required' => '必须填写单价。',
+    'quantity_required' => '必须填写数量。',
+    'created_successfully' => '发票创建成功！',
+    'updated_successfully' => '发票更新成功！',
+    'creation_failed' => '发票创建失败。',
+    'update_failed' => '发票更新失败。',
+    'not_found' => '未找到发票',
+    'delete_success' => '发票删除成功',
+    'delete_error' => '删除发票失败',
+    'deletion_success' => '发票删除成功',
+
+    // Delete confirmation
+    'delete_confirm_title' => '删除发票？',
+    'confirm_delete' => '是的，删除发票',
+    'delete_permanent_note' => '将被永久删除。',
+    'delete_confirm_message' => '给 :client_name 的发票，金额 Rp :total_amount，包含 :items_count 项',
+    'delete_confirm_with_payments' => '和 :payments_count 笔付款（Rp :total_paid）',
+
+    // Send & Print
+    'only_draft_can_send' => '只能发送草稿发票',
+    'send_success' => '发票 :invoice_number 发送成功',
+    'send_error' => '发送发票失败',
+    'select_for_print' => '请至少选择一张发票打印',
+    'download_started' => '正在下载 :count 张发票PDF',
+    'download_error' => '下载启动失败',
+
+    // Bulk actions
+    'select_for_delete' => '请至少选择一张发票删除',
+    'bulk_delete_success' => '成功删除 :count 张发票',
+    'only_sent_rollback' => '只能将已发送的发票回退到草稿',
+    'rollback_success' => '发票 :invoice_number 已回退到草稿',
+    'rollback_error' => '回退失败',
+    'invalid_dp_amount' => 'DP金额无效',
+    'already_paid_full' => '发票已全额支付',
+
+    // Templates
+    'template_kisantra' => 'Kisantra',
+    'template_kisantra_desc' => '默认模板',
+    'template_semesta' => 'Semesta',
+    'template_semesta_desc' => '矿业（含PPN + PPH 22）',
+    'template_agsa' => 'AGSA',
+    'template_agsa_desc' => '备选',
+    'template_generic' => 'Generic',
+    'template_generic_desc' => '简单',
 ];

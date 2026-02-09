@@ -150,7 +150,7 @@ class Edit extends Component
 
             DB::commit();
 
-            session()->flash('success', "Invoice {$this->invoice->invoice_number} updated successfully!");
+            session()->flash('success', __('invoice.updated_successfully'));
 
             return $this->redirect(route('invoices.index'), navigate: true);
 
@@ -177,21 +177,21 @@ class Edit extends Component
             ]);
 
             // Build detailed user-friendly error message
-            $errorMessage = 'Failed to update invoice.';
+            $errorMessage = __('invoice.update_failed');
 
             // Add specific error details
             if (strpos($e->getMessage(), 'SQLSTATE') !== false) {
-                $errorMessage .= ' Database error: ' . $e->getMessage();
+                $errorMessage .= ' ' . __('common.database_error') . ': ' . $e->getMessage();
             } elseif (strpos($e->getMessage(), 'column') !== false || strpos($e->getMessage(), 'Column') !== false) {
-                $errorMessage .= ' Missing required field: ' . $e->getMessage();
+                $errorMessage .= ' ' . __('common.missing_required_field') . ': ' . $e->getMessage();
             } elseif (strpos($e->getMessage(), 'Undefined') !== false) {
-                $errorMessage .= ' Data issue: ' . $e->getMessage();
+                $errorMessage .= ' ' . __('common.data_issue') . ': ' . $e->getMessage();
             } else {
                 $errorMessage .= ' ' . $e->getMessage();
             }
 
             // Always show file and line in production for debugging
-            $errorMessage .= "\n\nError location: " . basename($e->getFile()) . ':' . $e->getLine();
+            $errorMessage .= "\n\n" . __('common.error_location') . ': ' . basename($e->getFile()) . ':' . $e->getLine();
 
             session()->flash('error', $errorMessage);
         }

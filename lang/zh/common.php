@@ -122,6 +122,12 @@ return [
     'created_successfully' => '创建成功',
     'updated_successfully' => '更新成功',
     'saved_successfully' => '保存成功',
+    'delete_file' => '删除文件',
+    'view_file' => '查看文件',
+    'database_error' => '数据库错误',
+    'missing_required_field' => '缺少必填字段',
+    'data_issue' => '数据问题',
+    'error_location' => '错误位置',
 
     // Notifications
     'notifications' => '通知',
