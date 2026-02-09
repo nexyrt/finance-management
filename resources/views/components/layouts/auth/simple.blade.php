@@ -3,7 +3,7 @@
     <head>
         @include('partials.head')
     </head>
-    <body class="min-h-screen bg-zinc-50 dark:bg-dark-800 antialiased">
+    <body class="min-h-screen bg-zinc-50 dark:bg-dark-700 antialiased">
         <div class="flex min-h-screen flex-col items-center justify-center p-6 md:p-10">
             <div class="w-full max-w-md">
                 {{-- Logo Section --}}
@@ -19,7 +19,7 @@
                 </div>
 
                 {{-- Auth Card --}}
-                <div class="bg-white dark:bg-dark-800 border border-zinc-200 dark:border-dark-600 rounded-xl shadow-sm p-8">
+                <div class="bg-white dark:bg-dark-900 border border-zinc-200 dark:border-dark-600 rounded-xl shadow-sm p-8">
                     {{ $slot }}
                 </div>
             </div>
