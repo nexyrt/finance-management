@@ -675,19 +675,31 @@ window.addEventListener('resize', () => {
 
             // Sync Alpine.js state if Alpine is loaded
             // Wait a tick to ensure Alpine is fully initialized
+            // Use longer delay for livewire:navigated to allow DOM morphing to complete
+            const delay = document.readyState === 'complete' ? 50 : 0;
             setTimeout(() => {
                 const htmlEl = document.querySelector('html');
                 if (htmlEl && htmlEl.__x && htmlEl.__x.$data) {
                     htmlEl.__x.$data.darkTheme = isDark;
                 }
-            }, 0);
+            }, delay);
         }
 
         // Run on initial load
         initDarkMode();
 
         // Re-run after Livewire navigation
+        // Use immediate execution to set darkTheme before Alpine binds
         document.addEventListener('livewire:navigated', () => {
+            // Immediately set darkTheme on HTML element
+            const htmlEl = document.querySelector('html');
+            if (htmlEl && htmlEl.__x && htmlEl.__x.$data) {
+                const isDark = localStorage.getItem('tallstackui.theme') === 'dark' ||
+                    (!localStorage.getItem('tallstackui.theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                htmlEl.__x.$data.darkTheme = isDark;
+            }
+
+            // Then run full init
             initDarkMode();
         });
 
