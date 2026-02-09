@@ -15,6 +15,7 @@ use App\Livewire\RecurringInvoices\EditTemplate as RecurringInvoicesEditTemplate
 use App\Livewire\RecurringInvoices\Index as RecurringInvoicesIndex;
 use App\Livewire\RecurringInvoices\Monthly\EditInvoice as RecurringInvoicesMonthlyEdit;
 use App\Livewire\Feedbacks\Index as FeedbacksIndex;
+use App\Livewire\FundRequests\Index as FundRequestsIndex;
 use App\Livewire\Reimbursements\Index as ReimbursementIndex;
 use App\Livewire\Services\Index as ServicesIndex;
 use App\Livewire\Settings\Appearance;
@@ -170,6 +171,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/reimbursements', ReimbursementIndex::class)
         ->middleware('can:view reimbursements')
         ->name('reimbursements.index');
+
+    // ------------------------------------------------------------------------
+    // FUND REQUESTS
+    // ------------------------------------------------------------------------
+    Route::get('/fund-requests', FundRequestsIndex::class)
+        ->middleware('can:view fund requests')
+        ->name('fund-requests.index');
 
     // ------------------------------------------------------------------------
     // FEEDBACKS

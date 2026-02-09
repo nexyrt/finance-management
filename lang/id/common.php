@@ -14,6 +14,7 @@ return [
     'loans' => 'Pinjaman',
     'receivables' => 'Piutang',
     'reimbursements' => 'Penggantian',
+    'fund_requests' => 'Pengajuan Dana',
     'categories' => 'Kategori',
     'feedbacks' => 'Umpan Balik',
     'users' => 'Pengguna',

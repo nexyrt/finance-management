@@ -132,6 +132,14 @@ class MasterPermissionSeeder extends Seeder
             'approve reimbursements',
             'pay reimbursements',
 
+            // Fund Requests
+            'view fund requests',
+            'create fund requests',
+            'edit fund requests',
+            'delete fund requests',
+            'approve fund requests',
+            'disburse fund requests',
+
             // Loans
             'view loans',
             'create loans',
@@ -258,6 +266,14 @@ class MasterPermissionSeeder extends Seeder
             'approve reimbursements',
             'pay reimbursements',
 
+            // Fund Requests
+            'view fund requests',
+            'create fund requests',
+            'edit fund requests',
+            'delete fund requests',
+            'approve fund requests',
+            'disburse fund requests',
+
             // Loans & Receivables
             'view loans',
             'create loans',
@@ -308,6 +324,12 @@ class MasterPermissionSeeder extends Seeder
             'create reimbursements',
             'edit reimbursements',
             'delete reimbursements',
+
+            // Fund Requests (own only)
+            'view fund requests',
+            'create fund requests',
+            'edit fund requests',
+            'delete fund requests',
 
             // Receivables (request only)
             'view receivables',

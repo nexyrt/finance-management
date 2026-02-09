@@ -14,6 +14,7 @@ return [
     'loans' => '贷款',
     'receivables' => '应收账款',
     'reimbursements' => '报销',
+    'fund_requests' => '资金申请',
     'categories' => '类别',
     'feedbacks' => '反馈',
     'users' => '用户',

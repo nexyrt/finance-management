@@ -397,6 +397,25 @@ window.addEventListener('resize', () => {
                             <span class="truncate" :class="{ 'lg:hidden': isCollapsed }">Reimbursement</span>
                         </a>
                     @endcan
+
+                    @can('view fund requests')
+                        <a href="{{ route('fund-requests.index') }}" wire:navigate @click="closeMobileMenu()"
+                            :title="isCollapsed ? 'Fund Requests' : undefined"
+                            class="menu-item {{ request()->routeIs('fund-requests.index') ? 'active' : '' }} flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-dark-800"
+                            :class="{
+                                'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 border-l-2 border-primary-600 dark:border-primary-400 -ml-0.5 pl-[calc(0.75rem+2px)]': isActivePath(
+                                    '{{ route('fund-requests.index') }}'),
+                                'text-gray-700 dark:text-gray-300': !isActivePath(
+                                    '{{ route('fund-requests.index') }}'),
+                                'lg:justify-center lg:px-2': isCollapsed
+                            }">
+                            <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span class="truncate" :class="{ 'lg:hidden': isCollapsed }">Fund Requests</span>
+                        </a>
+                    @endcan
                 </div>
 
                 <!-- Utang & Piutang -->

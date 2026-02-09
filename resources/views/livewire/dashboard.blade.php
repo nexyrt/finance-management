@@ -376,7 +376,7 @@
             chart: null,
             data: initialData,
             chartType: chartType,
-
+1
             isDark() { return document.documentElement.classList.contains('dark') },
             textColor() { return this.isDark() ? '#9ca3af' : '#6b7280' },
             gridColor() { return this.isDark() ? '#374151' : '#e5e7eb' },
