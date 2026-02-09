@@ -20,7 +20,7 @@ class Delete extends Component
         $account = BankAccount::find($accountId);
         
         if (!$account) {
-            $this->toast()->error('Error', 'Rekening tidak ditemukan.')->send();
+            $this->toast()->error(__('common.error'), __('pages.account_not_found'))->send();
             return;
         }
 
@@ -30,25 +30,25 @@ class Delete extends Component
         // Get transaction and payment counts
         $transactionCount = $account->transactions()->count();
         $paymentCount = $account->payments()->count();
-        
-        $message = "Yakin ingin menghapus rekening <strong>'{$this->accountName}'</strong>?";
-        
+
+        $message = __('pages.confirm_delete_account', ['name' => "<strong>'{$this->accountName}'</strong>"]);
+
         if ($transactionCount > 0 || $paymentCount > 0) {
-            $message .= "<br><br>Rekening ini memiliki:";
+            $message .= "<br><br>" . __('pages.account_has_data');
             if ($transactionCount > 0) {
-                $message .= "<br>• <span class='text-red-600'>{$transactionCount} transaksi</span>";
+                $message .= "<br>• <span class='text-red-600'>" . __('pages.transaction_count', ['count' => $transactionCount]) . "</span>";
             }
             if ($paymentCount > 0) {
-                $message .= "<br>• <span class='text-red-600'>{$paymentCount} pembayaran</span>";
+                $message .= "<br>• <span class='text-red-600'>" . __('pages.payment_count', ['count' => $paymentCount]) . "</span>";
             }
-            $message .= "<br><br><em>Semua data terkait akan ikut terhapus dan tidak dapat dikembalikan.</em>";
+            $message .= "<br><br><em>" . __('pages.delete_warning_cascade') . "</em>";
         }
 
         // Show confirmation dialog
         $this->dialog()
-            ->question('Hapus Rekening?', $message)
-            ->confirm('Hapus', 'deleteAccount', 'Rekening berhasil dihapus')
-            ->cancel('Batal')
+            ->question(__('pages.delete_account_title'), $message)
+            ->confirm(__('common.delete'), 'deleteAccount', __('pages.account_deleted_successfully'))
+            ->cancel(__('common.cancel'))
             ->send();
     }
 
@@ -61,12 +61,12 @@ class Delete extends Component
             $this->dispatch('account-deleted');
             
             $this->toast()
-                ->success('Berhasil!', 'Rekening berhasil dihapus.')
+                ->success(__('common.success'), __('pages.account_deleted_successfully'))
                 ->send();
-                
+
         } catch (\Exception $e) {
             $this->toast()
-                ->error('Gagal!', 'Terjadi kesalahan saat menghapus rekening.')
+                ->error(__('common.error'), __('pages.account_delete_failed'))
                 ->send();
         }
     }

@@ -41,7 +41,7 @@ class Edit extends Component
         $this->payment = Payment::with(['invoice.client', 'bankAccount'])->find($paymentId);
 
         if (!$this->payment) {
-            $this->toast()->error('Error', 'Payment tidak ditemukan')->send();
+            $this->toast()->error(__('common.error'), __('pages.payment_not_found'))->send();
             return;
         }
 
@@ -76,7 +76,7 @@ class Edit extends Component
     public function save(): void
     {
         if (!$this->payment) {
-            $this->toast()->error('Error', 'Payment tidak ditemukan')->send();
+            $this->toast()->error(__('common.error'), __('pages.payment_not_found'))->send();
             return;
         }
 
@@ -135,7 +135,7 @@ class Edit extends Component
                 }
             });
 
-            $this->toast()->success('Berhasil', 'Pembayaran berhasil diperbarui')->send();
+            $this->toast()->success(__('common.success'), __('pages.payment_updated_successfully'))->send();
             $this->resetData();
 
             // Dispatch events
@@ -143,7 +143,7 @@ class Edit extends Component
             $this->dispatch('invoice-updated');
 
         } catch (\Exception $e) {
-            $this->toast()->error('Error', 'Gagal memperbarui pembayaran: ' . $e->getMessage())->send();
+            $this->toast()->error(__('common.error'), __('pages.payment_update_failed') . ': ' . $e->getMessage())->send();
         }
     }
 
@@ -175,10 +175,10 @@ class Edit extends Component
 
             $this->payment->refresh();
 
-            $this->toast()->success('Berhasil', 'Attachment berhasil dihapus')->send();
+            $this->toast()->success(__('common.success'), __('pages.attachment_deleted_successfully'))->send();
 
         } catch (\Exception $e) {
-            $this->toast()->error('Error', 'Gagal menghapus attachment')->send();
+            $this->toast()->error(__('common.error'), __('pages.attachment_delete_failed'))->send();
         }
     }
 

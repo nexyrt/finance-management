@@ -4,31 +4,31 @@
     <div class="lg:col-span-2">
         <div
             class="bg-white dark:bg-dark-700 border border-zinc-200 dark:border-dark-600 rounded-xl p-4 lg:p-6 h-full flex flex-col">
-            <h3 class="text-lg font-semibold text-dark-900 dark:text-dark-50 mb-4">Quick Actions</h3>
+            <h3 class="text-lg font-semibold text-dark-900 dark:text-dark-50 mb-4">{{ __('pages.quick_actions') }}</h3>
 
             {{-- Actions Grid - Responsive --}}
             <div class="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-1 gap-3 flex-1">
                 <x-button wire:click="addTransaction" loading="addTransaction" color="blue" icon="plus"
                     class="w-full justify-start h-auto">
                     <div class="text-left py-1">
-                        <div class="font-semibold text-sm">Add Transaction</div>
-                        <div class="text-xs opacity-70">Record new transaction</div>
+                        <div class="font-semibold text-sm">{{ __('pages.add_transaction') }}</div>
+                        <div class="text-xs opacity-70">{{ __('pages.record_new_transaction') }}</div>
                     </div>
                 </x-button>
 
                 <x-button wire:click="transferFunds" loading="transferFunds" color="blue" outline icon="arrow-path"
                     class="w-full justify-start h-auto">
                     <div class="text-left py-1">
-                        <div class="font-semibold text-sm">Transfer</div>
-                        <div class="text-xs opacity-70">Move between accounts</div>
+                        <div class="font-semibold text-sm">{{ __('pages.transfer') }}</div>
+                        <div class="text-xs opacity-70">{{ __('pages.move_between_accounts') }}</div>
                     </div>
                 </x-button>
 
                 <x-button wire:click="exportReport" loading="exportReport" color="green" outline
                     icon="document-arrow-down" class="w-full justify-start h-auto">
                     <div class="text-left py-1">
-                        <div class="font-semibold text-sm">Export Report</div>
-                        <div class="text-xs opacity-70">Download history</div>
+                        <div class="font-semibold text-sm">{{ __('pages.export_report') }}</div>
+                        <div class="text-xs opacity-70">{{ __('pages.download_history') }}</div>
                     </div>
                 </x-button>
             </div>
@@ -36,14 +36,14 @@
             {{-- Month Stats - Vertical Stack --}}
             @if ($selectedAccountId)
                 <div class="mt-4 pt-4 border-t border-zinc-200 dark:border-dark-600">
-                    <h4 class="text-sm font-medium text-dark-700 dark:text-dark-300 mb-3">This Month</h4>
+                    <h4 class="text-sm font-medium text-dark-700 dark:text-dark-300 mb-3">{{ __('pages.this_month') }}</h4>
                     <div class="space-y-3">
                         {{-- Income Card --}}
                         <div
                             class="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
                             <div class="flex items-center justify-between">
                                 <div>
-                                    <div class="text-xs text-green-600 dark:text-green-400 font-medium mb-1">INCOME
+                                    <div class="text-xs text-green-600 dark:text-green-400 font-medium mb-1">{{ __('pages.income') }}
                                     </div>
                                     <div class="text-lg font-bold text-green-700 dark:text-green-300">
                                         Rp {{ number_format($this->accountStats['total_income'], 0, ',', '.') }}
@@ -62,7 +62,7 @@
                             class="p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
                             <div class="flex items-center justify-between">
                                 <div>
-                                    <div class="text-xs text-red-600 dark:text-red-400 font-medium mb-1">EXPENSE</div>
+                                    <div class="text-xs text-red-600 dark:text-red-400 font-medium mb-1">{{ __('pages.expense') }}</div>
                                     <div class="text-lg font-bold text-red-700 dark:text-red-300">
                                         Rp {{ number_format($this->accountStats['total_expense'], 0, ',', '.') }}
                                     </div>
@@ -85,20 +85,20 @@
             class="bg-white dark:bg-dark-700 border border-zinc-200 dark:border-dark-600 rounded-xl p-4 lg:p-6 h-full min-h-[400px] flex flex-col">
             {{-- Chart Header --}}
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
-                <h2 class="text-lg lg:text-xl font-bold text-dark-900 dark:text-dark-50">Financial Overview</h2>
+                <h2 class="text-lg lg:text-xl font-bold text-dark-900 dark:text-dark-50">{{ __('pages.financial_overview') }}</h2>
                 @if ($selectedAccountId)
                     <div class="flex items-center gap-4 text-sm">
                         <div class="flex items-center gap-2">
                             <div class="w-3 h-3 bg-green-500 rounded-full"></div>
-                            <span class="text-dark-600 dark:text-dark-400">Income</span>
+                            <span class="text-dark-600 dark:text-dark-400">{{ __('pages.income') }}</span>
                         </div>
                         <div class="flex items-center gap-2">
                             <div class="w-3 h-3 bg-red-500 rounded-full"></div>
-                            <span class="text-dark-600 dark:text-dark-400">Expense</span>
+                            <span class="text-dark-600 dark:text-dark-400">{{ __('pages.expense') }}</span>
                         </div>
                         <div class="flex items-center gap-2">
                             <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
-                            <span class="text-dark-600 dark:text-dark-400">Net Flow</span>
+                            <span class="text-dark-600 dark:text-dark-400">{{ __('pages.net_flow') }}</span>
                         </div>
                     </div>
                 @endif
@@ -117,9 +117,8 @@
                                 class="w-16 h-16 bg-dark-100 dark:bg-dark-700 rounded-full flex items-center justify-center mx-auto mb-4">
                                 <x-icon name="chart-bar" class="w-8 h-8 text-dark-400" />
                             </div>
-                            <h3 class="font-medium text-dark-900 dark:text-dark-50 mb-2">No Account Selected</h3>
-                            <p class="text-sm text-dark-600 dark:text-dark-400">Choose an account to view financial
-                                overview</p>
+                            <h3 class="font-medium text-dark-900 dark:text-dark-50 mb-2">{{ __('pages.no_account_selected') }}</h3>
+                            <p class="text-sm text-dark-600 dark:text-dark-400">{{ __('pages.choose_account_to_view_overview') }}</p>
                         </div>
                     </div>
                 @endif
@@ -159,7 +158,7 @@
                 data: {
                     labels: chartData.map(item => item.month),
                     datasets: [{
-                            label: 'Income',
+                            label: '{{ __('pages.income') }}',
                             data: incomeData,
                             backgroundColor: 'rgba(34, 197, 94, 0.8)',
                             borderColor: 'rgba(34, 197, 94, 1)',
@@ -168,7 +167,7 @@
                             yAxisID: 'y',
                         },
                         {
-                            label: 'Expense',
+                            label: '{{ __('pages.expense') }}',
                             data: expenseData,
                             backgroundColor: 'rgba(239, 68, 68, 0.8)',
                             borderColor: 'rgba(239, 68, 68, 1)',
@@ -177,7 +176,7 @@
                             yAxisID: 'y',
                         },
                         {
-                            label: 'Net Cash Flow',
+                            label: '{{ __('pages.net_cash_flow') }}',
                             data: netData,
                             type: 'line',
                             borderColor: 'rgba(59, 130, 246, 1)',
@@ -225,8 +224,8 @@
 
                                     return [
                                         '',
-                                        `Net: Rp ${new Intl.NumberFormat('id-ID').format(net)}`,
-                                        `Ratio: ${ratio}% income/expense`
+                                        `{{ __('pages.net') }}: Rp ${new Intl.NumberFormat('id-ID').format(net)}`,
+                                        `{{ __('pages.ratio') }}: ${ratio}% {{ __('pages.income_expense_ratio') }}`
                                     ];
                                 }
                             }

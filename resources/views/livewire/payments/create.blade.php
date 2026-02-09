@@ -1,5 +1,5 @@
 <div>
-    <x-modal wire="showModal" title="Catat Pembayaran" size="2xl" center>
+    <x-modal wire="showModal" :title="__('pages.record_payment_title')" size="2xl" center>
         @if ($invoice)
             {{-- Invoice Info Header --}}
             <div
@@ -17,7 +17,7 @@
                     </div>
 
                     <div class="text-right">
-                        <p class="text-sm text-secondary-600 dark:text-dark-400">Sisa Tagihan</p>
+                        <p class="text-sm text-secondary-600 dark:text-dark-400">{{ __('pages.remaining_balance') }}</p>
                         <p class="text-xl font-bold text-secondary-900 dark:text-dark-50">
                             Rp {{ number_format($invoice->amount_remaining, 0, ',', '.') }}
                         </p>
@@ -30,39 +30,39 @@
                 {{-- Amount & Date --}}
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <x-wireui-currency wire:model.live="amount" label="Jumlah Pembayaran *" placeholder="0"
+                        <x-wireui-currency wire:model.live="amount" :label="__('pages.payment_amount_label')" placeholder="0"
                             prefix="Rp" />
                         @if ($invoice->amount_remaining > 0)
                             <p class="text-xs text-secondary-500 dark:text-dark-400 mt-1">
-                                Maksimal: Rp {{ number_format($invoice->amount_remaining, 0, ',', '.') }}
+                                {{ __('pages.max_amount', ['amount' => number_format($invoice->amount_remaining, 0, ',', '.')]) }}
                             </p>
                         @endif
                     </div>
 
-                    <x-input wire:model="payment_date" label="Tanggal Pembayaran *" type="date" icon="calendar" />
+                    <x-input wire:model="payment_date" :label="__('pages.payment_date_label')" type="date" icon="calendar" />
                 </div>
 
                 {{-- Payment Method & Bank Account --}}
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <x-select.styled wire:model.live="payment_method" label="Metode Pembayaran *" :options="[
-                        ['label' => '💳 Transfer Bank', 'value' => 'bank_transfer'],
-                        ['label' => '💵 Tunai', 'value' => 'cash'],
+                    <x-select.styled wire:model.live="payment_method" :label="__('pages.payment_method_label')" :options="[
+                        ['label' => '💳 ' . __('pages.bank_transfer'), 'value' => 'bank_transfer'],
+                        ['label' => '💵 ' . __('pages.cash'), 'value' => 'cash'],
                     ]" />
 
-                    <x-select.styled wire:model="bank_account_id" label="Rekening Tujuan *" :options="$this->bankAccounts"
-                        placeholder="Pilih rekening..." searchable />
+                    <x-select.styled wire:model="bank_account_id" :label="__('pages.bank_account_label')" :options="$this->bankAccounts"
+                        :placeholder="__('pages.select_account')" searchable />
                 </div>
 
                 {{-- Reference Number --}}
                 <div>
-                    <x-input wire:model="reference_number" label="Nomor Referensi"
-                        placeholder="Nomor transaksi, slip, atau referensi lainnya" icon="hashtag"
-                        hint="Opsional - untuk tracking pembayaran" />
+                    <x-input wire:model="reference_number" :label="__('pages.reference_number_label')"
+                        :placeholder="__('pages.reference_placeholder')" icon="hashtag"
+                        :hint="__('pages.reference_hint')" />
                 </div>
 
                 {{-- File Upload --}}
-                <x-upload wire:model="attachment" label="Bukti Pembayaran"
-                    tip="Upload screenshot atau dokumen bukti pembayaran (Max 5MB)" accept="image/*,.pdf" delete />
+                <x-upload wire:model="attachment" :label="__('pages.payment_proof_label')"
+                    :tip="__('pages.payment_proof_tip')" accept="image/*,.pdf" delete />
 
                 {{-- Payment Summary --}}
                 @if ($amount)
@@ -75,45 +75,45 @@
                         class="bg-secondary-50 dark:bg-dark-800 rounded-xl p-4 border border-secondary-200 dark:border-dark-700">
                         <h4 class="font-medium text-secondary-900 dark:text-dark-50 mb-3 flex items-center gap-2">
                             <x-icon name="calculator" class="w-4 h-4" />
-                            Ringkasan Pembayaran
+                            {{ __('pages.payment_summary') }}
                         </h4>
 
                         <div class="space-y-2 text-sm">
                             <div class="flex justify-between">
-                                <span class="text-secondary-600 dark:text-dark-400">Total Invoice:</span>
+                                <span class="text-secondary-600 dark:text-dark-400">{{ __('pages.invoice_total') }}</span>
                                 <span class="font-medium">Rp
                                     {{ number_format($invoice->total_amount, 0, ',', '.') }}</span>
                             </div>
                             <div class="flex justify-between">
-                                <span class="text-secondary-600 dark:text-dark-400">Sudah Dibayar:</span>
+                                <span class="text-secondary-600 dark:text-dark-400">{{ __('pages.already_paid') }}</span>
                                 <span class="font-medium">Rp
                                     {{ number_format($invoice->amount_paid, 0, ',', '.') }}</span>
                             </div>
                             <div class="flex justify-between">
-                                <span class="text-secondary-600 dark:text-dark-400">Pembayaran Ini:</span>
+                                <span class="text-secondary-600 dark:text-dark-400">{{ __('pages.this_payment') }}</span>
                                 <span class="font-medium text-blue-600">Rp
                                     {{ number_format($amountInteger, 0, ',', '.') }}</span>
                             </div>
                             <hr class="border-secondary-300 dark:border-dark-600">
                             <div class="flex justify-between font-bold">
-                                <span class="text-secondary-900 dark:text-dark-50">Sisa Setelah Bayar:</span>
+                                <span class="text-secondary-900 dark:text-dark-50">{{ __('pages.remaining_after_payment') }}</span>
                                 <span class="{{ $remainingAfter <= 0 ? 'text-green-600' : 'text-red-600' }}">
                                     Rp {{ number_format(max(0, $remainingAfter), 0, ',', '.') }}
                                 </span>
                             </div>
                             @if ($remainingAfter <= 0)
                                 <div class="text-xs text-green-600 dark:text-green-400 italic text-center mt-2">
-                                    ✅ Invoice akan lunas setelah pembayaran ini
+                                    {{ __('pages.invoice_will_be_paid') }}
                                 </div>
                             @endif
                             @if ($attachment)
                                 <div class="flex justify-between items-center mt-2">
-                                    <span class="text-secondary-600 dark:text-dark-400">Bukti Pembayaran:</span>
+                                    <span class="text-secondary-600 dark:text-dark-400">{{ __('pages.proof_attached') }}</span>
                                     <div class="flex items-center gap-2">
                                         <x-icon name="check-circle"
                                             class="w-4 h-4 text-green-600 dark:text-green-400" />
                                         <span class="text-sm font-medium text-green-600 dark:text-green-400">
-                                            File siap diupload
+                                            {{ __('pages.file_ready_upload') }}
                                         </span>
                                     </div>
                                 </div>
@@ -132,10 +132,10 @@
                 {{-- Main Actions --}}
                 <div class="flex items-center gap-3">
                     <x-button wire:click="$set('showModal', false)" color="zinc">
-                        Batal
+                        {{ __('common.cancel') }}
                     </x-button>
                     <x-button wire:click="save" color="primary" icon="check" loading="save">
-                        Simpan Pembayaran
+                        {{ __('common.save') }}
                     </x-button>
                 </div>
             </div>

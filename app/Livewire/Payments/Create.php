@@ -39,7 +39,7 @@ class Create extends Component
         $this->invoice = Invoice::with('client')->find($invoiceId);
 
         if (!$this->invoice) {
-            session()->flash('error', 'Invoice tidak ditemukan');
+            session()->flash('error', __('pages.invoice_not_found'));
             return;
         }
 
@@ -74,7 +74,7 @@ class Create extends Component
     public function save(): void
     {
         if (!$this->invoice) {
-            session()->flash('error', 'Invoice tidak ditemukan');
+            session()->flash('error', __('pages.invoice_not_found'));
             return;
         }
 
@@ -86,7 +86,7 @@ class Create extends Component
             // Validasi amount tidak melebihi sisa tagihan
             $remainingAmount = $this->invoice->amount_remaining;
             if ($amountInteger > $remainingAmount) {
-                $this->addError('amount', 'Jumlah pembayaran tidak boleh melebihi sisa tagihan: Rp ' . number_format($remainingAmount, 0, ',', '.'));
+                $this->addError('amount', __('pages.payment_exceeds_remaining', ['amount' => 'Rp ' . number_format($remainingAmount, 0, ',', '.')]));
                 return;
             }
 
@@ -115,7 +115,7 @@ class Create extends Component
             $this->invoice->refresh();
             $this->invoice->updateStatus();
 
-            session()->flash('success', 'Pembayaran berhasil dicatat');
+            session()->flash('success', __('pages.payment_recorded_successfully'));
             $this->resetData();
 
             // Dispatch events
@@ -123,7 +123,7 @@ class Create extends Component
             $this->dispatch('invoice-updated');
 
         } catch (\Exception $e) {
-            session()->flash('error', 'Gagal menyimpan pembayaran: ' . $e->getMessage());
+            session()->flash('error', __('pages.payment_save_failed') . ': ' . $e->getMessage());
         }
     }
 

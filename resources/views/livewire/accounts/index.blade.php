@@ -10,7 +10,7 @@
                     {{ __('common.bank_accounts') }}
                 </h1>
                 <p class="text-dark-600 dark:text-dark-400 text-base sm:text-lg">
-                    {{ __('common.bank_accounts') }}
+                    {{ __('pages.manage_all_bank_accounts') }}
                 </p>
             </div>
 
@@ -30,7 +30,7 @@
                             </p>
                             <p class="text-xs text-white/60">
                                 {{ $this->accountsData->count() }}
-                                {{ Str::plural('account', $this->accountsData->count()) }}
+                                {{ __('pages.accounts') }}
                             </p>
                         </div>
                     </div>
@@ -62,7 +62,7 @@
             <div class="flex items-center justify-between">
                 <div>
                     <h2 class="text-xl font-bold text-dark-900 dark:text-dark-50">{{ __('common.bank_accounts') }}</h2>
-                    <p class="text-sm text-dark-600 dark:text-dark-400">{{ __('common.select') }}</p>
+                    <p class="text-sm text-dark-600 dark:text-dark-400">{{ __('pages.select_account_to_view') }}</p>
                 </div>
                 <x-button wire:click="createAccount" loading="createAccount" color="primary" icon="plus"
                     size="sm">
@@ -138,7 +138,7 @@
             @if ($this->accountsData->count() === 0)
                 <div class="text-center py-8">
                     <x-icon name="building-library" class="w-12 h-12 text-zinc-400 mx-auto mb-3" />
-                    <p class="text-dark-600 dark:text-dark-400 mb-4">{{ __('common.no_data') }}</p>
+                    <p class="text-dark-600 dark:text-dark-400 mb-4">{{ __('pages.no_accounts_yet') }}</p>
                     <x-button wire:click="createAccount" loading="createAccount" color="primary" icon="plus"
                         size="sm">
                         {{ __('common.create') }}
@@ -188,8 +188,8 @@
                 <div
                     class="bg-white dark:bg-dark-800 border border-zinc-200 dark:border-dark-600 rounded-xl p-12 text-center">
                     <x-icon name="building-library" class="w-16 h-16 text-zinc-400 mx-auto mb-4" />
-                    <h3 class="text-xl font-semibold text-dark-900 dark:text-dark-50 mb-2">{{ __('common.select') }}</h3>
-                    <p class="text-dark-600 dark:text-dark-400 mb-6">{{ __('common.bank_accounts') }}</p>
+                    <h3 class="text-xl font-semibold text-dark-900 dark:text-dark-50 mb-2">{{ __('pages.select_account_to_view') }}</h3>
+                    <p class="text-dark-600 dark:text-dark-400 mb-6">{{ __('pages.no_account_selected_message') }}</p>
                     <x-button wire:click="createAccount" loading="createAccount" color="primary" icon="plus">
                         {{ __('common.create') }}
                     </x-button>

@@ -37,7 +37,7 @@ class Delete extends Component
         $this->payment = Payment::with(['invoice.client', 'bankAccount'])->find($paymentId);
 
         if (!$this->payment) {
-            $this->toast()->error('Error', 'Payment tidak ditemukan')->send();
+            $this->toast()->error(__('common.error'), __('pages.payment_not_found'))->send();
             return;
         }
 
@@ -52,7 +52,7 @@ class Delete extends Component
     public function delete(): void
     {
         if (!$this->payment) {
-            $this->toast()->error('Error', 'Payment tidak ditemukan')->send();
+            $this->toast()->error(__('common.error'), __('pages.payment_not_found'))->send();
             return;
         }
 
@@ -80,7 +80,7 @@ class Delete extends Component
             });
 
             // Success feedback
-            $this->toast()->success('Berhasil', 'Payment berhasil dihapus')->send();
+            $this->toast()->success(__('common.success'), __('pages.payment_deleted_successfully'))->send();
 
             // Dispatch events to refresh other components
             $this->dispatch('payment-deleted');
@@ -91,7 +91,7 @@ class Delete extends Component
             $this->reset(['payment', 'invoice', 'predictedStatus', 'remainingPaid', 'statusText', 'statusColor']);
 
         } catch (\Exception $e) {
-            $this->toast()->error('Error', 'Gagal menghapus payment: ' . $e->getMessage())->send();
+            $this->toast()->error(__('common.error'), __('pages.payment_delete_failed') . ': ' . $e->getMessage())->send();
         }
     }
 
@@ -153,11 +153,11 @@ class Delete extends Component
     private function getStatusText(string $status): string
     {
         return match ($status) {
-            'paid' => 'Lunas',
-            'partially_paid' => 'Sebagian Dibayar',
-            'sent' => 'Terkirim',
-            'overdue' => 'Terlambat',
-            'draft' => 'Draft',
+            'paid' => __('invoice.paid'),
+            'partially_paid' => __('invoice.partially_paid'),
+            'sent' => __('invoice.sent'),
+            'overdue' => __('invoice.overdue'),
+            'draft' => __('invoice.draft'),
             default => ucfirst($status)
         };
     }

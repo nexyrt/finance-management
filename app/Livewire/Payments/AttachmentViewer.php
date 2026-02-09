@@ -26,7 +26,7 @@ class AttachmentViewer extends Component
             return;
         }
 
-        $this->toast()->error('Error', 'Payment tidak ditemukan')->send();
+        $this->toast()->error(__('common.error'), __('pages.payment_not_found'))->send();
     }
 
     public function updatedModal(): void
@@ -39,13 +39,13 @@ class AttachmentViewer extends Component
     public function downloadAttachment()
     {
         if (!$this->payment || !$this->payment->attachment_path) {
-            $this->toast()->error('Error', 'Lampiran tidak ditemukan')->send();
+            $this->toast()->error(__('common.error'), __('pages.attachment_not_found'))->send();
             return;
         }
 
         // Gunakan disk public secara eksplisit
         if (!Storage::disk('public')->exists($this->payment->attachment_path)) {
-            $this->toast()->error('Error', 'File tidak ditemukan')->send();
+            $this->toast()->error(__('common.error'), __('pages.file_not_found'))->send();
             return;
         }
 

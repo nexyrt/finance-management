@@ -177,6 +177,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Re-enhance after Livewire updates
     document.addEventListener('livewire:navigated', enhanceUploadComponents);
+
+    // Re-enhance after Livewire component updates (for modals)
+    Livewire.hook('morph.updated', () => {
+        enhanceUploadComponents();
+    });
+
+    // Also enhance after a short delay for modals that appear dynamically
+    document.addEventListener('livewire:navigated', () => {
+        setTimeout(enhanceUploadComponents, 100);
+    });
 });
 
 // Livewire.on('open-preview-delayed', (data) => {

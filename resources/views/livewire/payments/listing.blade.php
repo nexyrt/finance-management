@@ -7,16 +7,16 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3">
                 {{-- Payment Method --}}
                 <div class="sm:col-span-1">
-                    <x-select.styled wire:model.live="paymentMethodFilter" label="Metode" :options="[
-                        ['label' => 'Transfer Bank', 'value' => 'bank_transfer'],
-                        ['label' => 'Tunai', 'value' => 'cash'],
+                    <x-select.styled wire:model.live="paymentMethodFilter" :label="__('pages.payment_method_filter')" :options="[
+                        ['label' => __('pages.bank_transfer'), 'value' => 'bank_transfer'],
+                        ['label' => __('pages.cash'), 'value' => 'cash'],
                     ]"
-                        placeholder="Semua metode..." />
+                        :placeholder="__('pages.all_methods')" />
                 </div>
 
                 {{-- Bank Account --}}
                 <div class="sm:col-span-1 lg:col-span-1">
-                    <x-select.styled wire:model.live="bankAccountFilter" label="Rekening" :disabled="$constrainedBankAccountId !== null"
+                    <x-select.styled wire:model.live="bankAccountFilter" :label="__('pages.bank_account_filter')" :disabled="$constrainedBankAccountId !== null"
                         :options="$this->bankAccounts
                             ->map(
                                 fn($account) => [
@@ -24,29 +24,29 @@
                                     'value' => $account->id,
                                 ],
                             )
-                            ->toArray()" placeholder="Semua rekening..." searchable />
+                            ->toArray()" :placeholder="__('pages.all_accounts')" searchable />
                 </div>
 
                 {{-- Invoice Status --}}
                 <div class="sm:col-span-1 lg:col-span-1">
-                    <x-select.styled wire:model.live="invoiceStatusFilter" label="Status Invoice" :options="[
-                        ['label' => 'Dibayar', 'value' => 'paid'],
-                        ['label' => 'Sebagian', 'value' => 'partially_paid'],
-                        ['label' => 'Terkirim', 'value' => 'sent'],
-                        ['label' => 'Terlambat', 'value' => 'overdue'],
+                    <x-select.styled wire:model.live="invoiceStatusFilter" :label="__('pages.invoice_status_filter')" :options="[
+                        ['label' => __('pages.status_paid'), 'value' => 'paid'],
+                        ['label' => __('pages.status_partially_paid'), 'value' => 'partially_paid'],
+                        ['label' => __('pages.status_sent'), 'value' => 'sent'],
+                        ['label' => __('pages.status_overdue'), 'value' => 'overdue'],
                     ]"
-                        placeholder="Semua status..." />
+                        :placeholder="__('pages.all_statuses')" />
                 </div>
 
                 {{-- Month Picker --}}
                 <div class="sm:col-span-1 lg:col-span-1">
-                    <x-date month-year-only wire:model.live="selectedMonth" label="Bulan"
-                        placeholder="Pilih bulan..." />
+                    <x-date month-year-only wire:model.live="selectedMonth" :label="__('pages.month_picker')"
+                        :placeholder="__('pages.select_month')" />
                 </div>
 
                 {{-- Date Range --}}
                 <div class="sm:col-span-2 lg:col-span-1">
-                    <x-date wire:model.live="dateRange" label="Range Tanggal" range placeholder="Pilih range..." />
+                    <x-date wire:model.live="dateRange" :label="__('pages.date_range')" range :placeholder="__('pages.select_range')" />
                 </div>
             </div>
 
@@ -54,8 +54,8 @@
             <div class="flex flex-col sm:flex-row gap-3">
                 {{-- Search Bar --}}
                 <div class="flex-1">
-                    <x-input wire:model.live.debounce.300ms="search" label="Cari Pembayaran"
-                        placeholder="Cari invoice, klien, referensi..." icon="magnifying-glass" />
+                    <x-input wire:model.live.debounce.300ms="search" :label="__('pages.search_payment')"
+                        :placeholder="__('pages.search_placeholder_payments')" icon="magnifying-glass" />
                 </div>
 
                 {{-- Export Actions --}}
@@ -86,11 +86,10 @@
 
             @if ($activeFilters > 0)
                 <div class="flex items-center justify-between">
-                    <x-badge text="{{ $activeFilters }} filter aktif" color="primary" size="sm" />
+                    <x-badge :text="__('pages.filters_active', ['count' => $activeFilters])" color="primary" size="sm" />
 
                     <div class="text-sm text-gray-500 dark:text-gray-400">
-                        <span class="hidden sm:inline">Menampilkan </span>{{ $this->payments->count() }}
-                        <span class="hidden sm:inline">dari {{ $this->payments->total() }}</span> pembayaran
+                        {{ __('pages.showing_payments', ['count' => $this->payments->count(), 'total' => $this->payments->total()]) }}
                     </div>
                 </div>
             @endif
@@ -123,10 +122,10 @@
                     Status:
                     @php
                         $statusConfig = [
-                            'paid' => ['text' => 'Lunas', 'color' => 'green'],
-                            'partially_paid' => ['text' => 'Sebagian', 'color' => 'yellow'],
-                            'sent' => ['text' => 'Terkirim', 'color' => 'blue'],
-                            'overdue' => ['text' => 'Terlambat', 'color' => 'red'],
+                            'paid' => ['text' => __('pages.status_paid'), 'color' => 'green'],
+                            'partially_paid' => ['text' => __('pages.status_partially_paid'), 'color' => 'yellow'],
+                            'sent' => ['text' => __('pages.status_sent'), 'color' => 'blue'],
+                            'overdue' => ['text' => __('pages.status_overdue'), 'color' => 'red'],
                         ];
                         $config = $statusConfig[$row->invoice_status] ?? [
                             'text' => ucfirst($row->invoice_status),
@@ -154,7 +153,7 @@
                 <div>
                     <p class="font-medium text-dark-900 dark:text-dark-50">{{ $row->client_name }}</p>
                     <div class="text-xs text-dark-500 dark:text-dark-400 capitalize">
-                        {{ $row->client_type === 'individual' ? 'Individu' : 'Perusahaan' }}
+                        {{ $row->client_type === 'individual' ? __('common.individual') : __('common.company') }}
                     </div>
                 </div>
             </div>
@@ -176,7 +175,7 @@
 
         {{-- Payment Method Column --}}
         @interact('column_payment_method', $row)
-            <x-badge :text="$row->payment_method === 'bank_transfer' ? 'Transfer' : 'Tunai'" :color="$row->payment_method === 'bank_transfer' ? 'blue' : 'green'" :icon="$row->payment_method === 'bank_transfer' ? 'credit-card' : 'banknotes'" />
+            <x-badge :text="$row->payment_method === 'bank_transfer' ? __('pages.transfer_badge') : __('pages.cash_badge')" :color="$row->payment_method === 'bank_transfer' ? 'blue' : 'green'" :icon="$row->payment_method === 'bank_transfer' ? 'credit-card' : 'banknotes'" />
         @endinteract
 
         {{-- Bank Account Column --}}
@@ -192,14 +191,14 @@
             <div class="flex items-center gap-1">
                 <x-button.circle icon="eye" color="blue" size="sm"
                     wire:click="viewInvoice({{ $row->invoice_id }})" loading="viewInvoice({{ $row->invoice_id }})"
-                    title="Lihat Invoice" />
+                    :title="__('pages.view_invoice_tooltip')" />
 
                 <x-button.circle icon="pencil" color="green" size="sm" wire:click="editPayment({{ $row->id }})"
-                    loading="editPayment({{ $row->id }})" title="Edit Payment" />
+                    loading="editPayment({{ $row->id }})" :title="__('pages.edit_payment_tooltip')" />
 
                 <x-button.circle icon="trash" color="red" size="sm"
                     wire:click="deletePayment({{ $row->id }})" loading="deletePayment({{ $row->id }})"
-                    title="Hapus Payment" />
+                    :title="__('pages.delete_payment_tooltip')" />
             </div>
         @endinteract
 

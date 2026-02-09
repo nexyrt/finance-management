@@ -298,9 +298,75 @@ return [
 
     // Bank Accounts
     'account_name' => 'Nama Rekening',
+    'account_number' => 'Nomor Rekening',
+    'bank_name' => 'Nama Bank',
+    'branch' => 'Cabang',
     'initial_balance' => 'Saldo Awal',
     'current_balance' => 'Saldo Saat Ini',
     'account_type' => 'Tipe Akun',
+
+    // Bank Accounts - Messages (from PHP files)
+    'account_selected' => 'Akun Dipilih',
+    'viewing_account_data' => 'Melihat data untuk akun yang dipilih',
+    'all_data_refreshed' => 'Semua Data Disegarkan',
+    'data_updated' => 'Data Diperbarui',
+    'information_refreshed' => 'Informasi telah disegarkan',
+    'account_created_successfully' => 'Rekening bank berhasil ditambahkan',
+    'account_save_failed' => 'Terjadi kesalahan saat menyimpan rekening',
+    'account_not_found' => 'Rekening tidak ditemukan',
+    'account_updated_successfully' => 'Rekening bank berhasil diperbarui',
+    'account_update_failed' => 'Terjadi kesalahan saat memperbarui rekening',
+    'account_deleted_successfully' => 'Rekening berhasil dihapus',
+    'account_delete_failed' => 'Terjadi kesalahan saat menghapus rekening',
+
+    // Bank Accounts - Delete Modal
+    'delete_account_title' => 'Hapus Rekening?',
+    'confirm_delete_account' => 'Yakin ingin menghapus rekening :name?',
+    'account_has_data' => 'Rekening ini memiliki:',
+    'transaction_count' => ':count transaksi',
+    'payment_count' => ':count pembayaran',
+    'delete_warning_cascade' => 'Semua data terkait akan ikut terhapus dan tidak dapat dikembalikan.',
+
+    // Bank Accounts - Index Page
+    'manage_all_bank_accounts' => 'Kelola semua rekening bank Anda',
+    'accounts' => 'rekening',
+    'select_account_to_view' => 'Pilih rekening untuk melihat detail',
+    'no_account_selected_message' => 'Pilih rekening dari sidebar untuk melihat transaksi dan pembayaran',
+
+    // Bank Accounts - Quick Actions
+    'select_account_first' => 'Silakan pilih akun terlebih dahulu',
+    'export_started' => 'Ekspor Dimulai',
+    'report_generating' => 'Laporan Anda sedang dibuat',
+    'record_new_transaction' => 'Catat transaksi baru',
+    'transfer' => 'Transfer',
+    'move_between_accounts' => 'Pindahkan antar rekening',
+    'export_report' => 'Ekspor Laporan',
+    'download_history' => 'Unduh riwayat',
+    'financial_overview' => 'Ringkasan Keuangan',
+    'net_flow' => 'Arus Bersih',
+    'net_cash_flow' => 'Arus Kas Bersih',
+    'no_account_selected' => 'Tidak Ada Akun Terpilih',
+    'choose_account_to_view_overview' => 'Pilih akun untuk melihat ringkasan keuangan',
+    'net' => 'Bersih',
+    'ratio' => 'Rasio',
+    'income_expense_ratio' => 'rasio pemasukan/pengeluaran',
+
+    // Bank Accounts - Edit Modal
+    'edit_bank_account' => 'Ubah Rekening Bank',
+    'update_bank_account_info' => 'Perbarui informasi rekening bank',
+    'account_basic_details' => 'Detail dasar rekening bank',
+    'account_name_description' => 'Nama rekening untuk identifikasi',
+    'enter_account_name' => 'Contoh: Rekening Operasional',
+    'bank_name_hint' => 'Nama institusi bank',
+    'enter_bank_name' => 'Contoh: Bank Mandiri',
+    'account_number_hint' => 'Nomor rekening bank',
+    'enter_account_number' => '1234567890',
+    'branch_hint' => 'Cabang atau lokasi bank',
+    'enter_branch' => 'Contoh: Jakarta Pusat',
+    'initial_balance_section_desc' => 'Saldo awal rekening',
+    'enter_initial_balance' => '0',
+    'initial_balance_hint' => 'Saldo saat membuka rekening',
+    'balance_change_warning' => 'Mengubah saldo awal akan mempengaruhi perhitungan saldo keseluruhan. Pastikan Anda memahami dampaknya sebelum menyimpan.',
 
     // Transactions & Cash Flow
     'cash_flow_management' => 'Manajemen Cash Flow',

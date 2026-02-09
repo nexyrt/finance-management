@@ -30,18 +30,21 @@ class Create extends Component
         'initial_balance' => 'required|integer|min:0' // Changed to integer
     ];
 
-    protected $messages = [
-        'account_name.required' => 'Nama rekening wajib diisi.',
-        'account_name.max' => 'Nama rekening maksimal 255 karakter.',
-        'account_number.required' => 'Nomor rekening wajib diisi.',
-        'account_number.unique' => 'Nomor rekening sudah terdaftar.',
-        'bank_name.required' => 'Nama bank wajib diisi.',
-        'bank_name.max' => 'Nama bank maksimal 255 karakter.',
-        'branch.max' => 'Nama cabang maksimal 255 karakter.',
-        'initial_balance.required' => 'Saldo awal wajib diisi.',
-        'initial_balance.integer' => 'Saldo harus berupa angka bulat.',
-        'initial_balance.min' => 'Saldo tidak boleh negatif.'
-    ];
+    protected function messages()
+    {
+        return [
+            'account_name.required' => __('validation.required', ['attribute' => __('pages.account_name')]),
+            'account_name.max' => __('validation.max.string', ['attribute' => __('pages.account_name'), 'max' => 255]),
+            'account_number.required' => __('validation.required', ['attribute' => __('pages.account_number')]),
+            'account_number.unique' => __('validation.unique', ['attribute' => __('pages.account_number')]),
+            'bank_name.required' => __('validation.required', ['attribute' => __('pages.bank_name')]),
+            'bank_name.max' => __('validation.max.string', ['attribute' => __('pages.bank_name'), 'max' => 255]),
+            'branch.max' => __('validation.max.string', ['attribute' => __('pages.branch'), 'max' => 255]),
+            'initial_balance.required' => __('validation.required', ['attribute' => __('pages.initial_balance')]),
+            'initial_balance.integer' => __('validation.integer', ['attribute' => __('pages.initial_balance')]),
+            'initial_balance.min' => __('validation.min.numeric', ['attribute' => __('pages.initial_balance'), 'min' => 0])
+        ];
+    }
 
     #[On('open-create-account-modal')]
     public function openModal()
@@ -75,12 +78,12 @@ class Create extends Component
             $this->dispatch('account-created');
             
             $this->toast()
-                ->success('Berhasil!', 'Rekening bank berhasil ditambahkan.')
+                ->success(__('common.success'), __('pages.account_created_successfully'))
                 ->send();
 
         } catch (\Exception $e) {
             $this->toast()
-                ->error('Gagal!', 'Terjadi kesalahan saat menyimpan rekening.')
+                ->error(__('common.error'), __('pages.account_save_failed'))
                 ->send();
         }
     }

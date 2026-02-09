@@ -37,7 +37,7 @@ class Index extends Component
         // Notify all child components
         $this->dispatch('account-selected', accountId: $accountId);
 
-        $this->toast()->success('Account Selected', 'Viewing data for selected account')->send();
+        $this->toast()->success(__('pages.account_selected'), __('pages.viewing_account_data'))->send();
     }
 
     public function createAccount(): void
@@ -68,14 +68,14 @@ class Index extends Component
     public function refreshAllData(): void
     {
         $this->dispatch('refresh-child-components');
-        $this->toast()->success('All Data Refreshed')->send();
+        $this->toast()->success(__('pages.all_data_refreshed'))->send();
     }
 
     // Event listeners from child components
     #[On('account-created', 'account-updated', 'account-deleted', 'transaction-created', 'transaction-deleted', 'transfer-completed', 'payment-deleted', 'transactions-updated', 'payments-updated', 'refresh-child-components')]
     public function refreshData(): void
     {
-        $this->toast()->success('Data Updated', 'Information has been refreshed')->send();
+        $this->toast()->success(__('pages.data_updated'), __('pages.information_refreshed'))->send();
     }
 
     // Computed properties

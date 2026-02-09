@@ -6,8 +6,8 @@
                     <x-icon name="trash" class="w-6 h-6 text-red-600 dark:text-red-400" />
                 </div>
                 <div>
-                    <h3 class="text-xl font-bold text-dark-900 dark:text-dark-50">Hapus Pembayaran</h3>
-                    <p class="text-sm text-dark-600 dark:text-dark-400">Tindakan ini tidak dapat dibatalkan</p>
+                    <h3 class="text-xl font-bold text-dark-900 dark:text-dark-50">{{ __('payments.delete_payment_title') }}</h3>
+                    <p class="text-sm text-dark-600 dark:text-dark-400">{{ __('payments.delete_permanent_warning') }}</p>
                 </div>
             </div>
         </x-slot:title>
@@ -21,11 +21,10 @@
                             class="w-5 h-5 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />
                         <div class="flex-1">
                             <p class="text-sm font-semibold text-red-900 dark:text-red-100 mb-1">
-                                Peringatan: Data Akan Dihapus Permanen
+                                {{ __('payments.delete_warning_title') }}
                             </p>
                             <p class="text-sm text-red-700 dark:text-red-300">
-                                Pembayaran akan dihapus dan status invoice akan diperbarui. Lampiran yang terkait juga
-                                akan dihapus.
+                                {{ __('payments.delete_warning_message') }}
                             </p>
                         </div>
                     </div>
@@ -34,31 +33,31 @@
                 {{-- Payment Details --}}
                 <div class="space-y-4">
                     <div class="border-b border-secondary-200 dark:border-dark-600 pb-3">
-                        <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-3">Detail Pembayaran</h4>
+                        <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-3">{{ __('payments.payment_details') }}</h4>
 
                         <div class="space-y-2">
                             <div class="flex justify-between items-start">
-                                <span class="text-sm text-dark-600 dark:text-dark-400">Jumlah Pembayaran:</span>
+                                <span class="text-sm text-dark-600 dark:text-dark-400">{{ __('payments.payment_amount_display') }}</span>
                                 <span class="text-sm font-bold text-dark-900 dark:text-dark-50">
                                     Rp {{ number_format($payment->amount, 0, ',', '.') }}
                                 </span>
                             </div>
 
                             <div class="flex justify-between items-start">
-                                <span class="text-sm text-dark-600 dark:text-dark-400">Tanggal Pembayaran:</span>
+                                <span class="text-sm text-dark-600 dark:text-dark-400">{{ __('payments.payment_date_display') }}</span>
                                 <span class="text-sm font-semibold text-dark-900 dark:text-dark-50">
                                     {{ $payment->payment_date->format('d M Y') }}
                                 </span>
                             </div>
 
                             <div class="flex justify-between items-start">
-                                <span class="text-sm text-dark-600 dark:text-dark-400">Metode Pembayaran:</span>
+                                <span class="text-sm text-dark-600 dark:text-dark-400">{{ __('payments.payment_method_display') }}</span>
                                 <x-badge :text="ucfirst(str_replace('_', ' ', $payment->payment_method))" color="blue" />
                             </div>
 
                             @if ($payment->reference_number)
                                 <div class="flex justify-between items-start">
-                                    <span class="text-sm text-dark-600 dark:text-dark-400">Reference Number:</span>
+                                    <span class="text-sm text-dark-600 dark:text-dark-400">{{ __('payments.reference_number_display') }}</span>
                                     <span class="text-sm font-mono text-dark-900 dark:text-dark-50">
                                         {{ $payment->reference_number }}
                                     </span>
@@ -66,7 +65,7 @@
                             @endif
 
                             <div class="flex justify-between items-start">
-                                <span class="text-sm text-dark-600 dark:text-dark-400">Bank Account:</span>
+                                <span class="text-sm text-dark-600 dark:text-dark-400">{{ __('payments.bank_account_display') }}</span>
                                 <span class="text-sm font-semibold text-dark-900 dark:text-dark-50">
                                     {{ $payment->bankAccount->account_name }}
                                 </span>
@@ -81,14 +80,16 @@
                             <x-icon name="document-text" class="w-4 h-4 text-blue-600 dark:text-blue-400 mt-0.5" />
                             <div class="flex-1">
                                 <p class="text-sm font-medium text-blue-900 dark:text-blue-100 mb-1">
-                                    Invoice: {{ $invoice->invoice_number }}
+                                    {{ __('payments.invoice_info') }} {{ $invoice->invoice_number }}
                                 </p>
                                 <p class="text-xs text-blue-700 dark:text-blue-300">
-                                    Client: {{ $invoice->client->name }}
+                                    {{ __('payments.client_info') }} {{ $invoice->client->name }}
                                 </p>
                                 <p class="text-xs text-blue-700 dark:text-blue-300 mt-1">
-                                    Total Invoice: Rp {{ number_format($invoice->total_amount, 0, ',', '.') }} |
-                                    Dibayar: Rp {{ number_format($invoice->amount_paid, 0, ',', '.') }}
+                                    {{ __('payments.invoice_amounts', [
+                                        'total' => number_format($invoice->total_amount, 0, ',', '.'),
+                                        'paid' => number_format($invoice->amount_paid, 0, ',', '.')
+                                    ]) }}
                                 </p>
                             </div>
                         </div>
@@ -98,7 +99,7 @@
                     @if ($payment->hasAttachment())
                         <div class="flex items-center gap-2 text-sm text-dark-600 dark:text-dark-400">
                             <x-icon name="paper-clip" class="w-4 h-4" />
-                            <span>Lampiran: {{ $payment->attachment_name }}</span>
+                            <span>{{ __('payments.attachment_display', ['name' => $payment->attachment_name]) }}</span>
                         </div>
                     @endif
                 </div>
@@ -111,20 +112,19 @@
                             class="w-5 h-5 text-yellow-600 dark:text-yellow-400 mt-0.5 flex-shrink-0" />
                         <div class="flex-1">
                             <p class="text-sm font-semibold text-yellow-900 dark:text-yellow-100 mb-2">
-                                Status invoice akan berubah setelah pembayaran dihapus
+                                {{ __('payments.status_change_warning') }}
                             </p>
 
                             <div class="space-y-1">
                                 <div class="flex items-center gap-2">
-                                    <span class="text-xs text-yellow-700 dark:text-yellow-300">Sisa pembayaran:</span>
+                                    <span class="text-xs text-yellow-700 dark:text-yellow-300">{{ __('payments.remaining_payment_after_delete') }}</span>
                                     <span class="text-xs font-bold text-yellow-900 dark:text-yellow-100">
                                         Rp {{ number_format($remainingPaid, 0, ',', '.') }}
                                     </span>
                                 </div>
 
                                 <div class="flex items-center gap-2">
-                                    <span class="text-xs text-yellow-700 dark:text-yellow-300">Status akan
-                                        menjadi:</span>
+                                    <span class="text-xs text-yellow-700 dark:text-yellow-300">{{ __('payments.new_status') }}</span>
                                     <x-badge :text="$statusText" :color="$statusColor" xs />
                                 </div>
                             </div>
@@ -135,7 +135,7 @@
                 {{-- Confirmation Text --}}
                 <div class="bg-dark-50 dark:bg-dark-800 rounded-lg p-4">
                     <p class="text-sm text-dark-700 dark:text-dark-300 text-center font-medium">
-                        Apakah Anda yakin ingin menghapus pembayaran ini?
+                        {{ __('payments.confirm_delete_payment') }}
                     </p>
                 </div>
             </div>
@@ -145,11 +145,11 @@
             <div class="flex flex-col sm:flex-row justify-end gap-3">
                 <x-button wire:click="$set('modal', false)" color="zinc"
                     class="w-full sm:w-auto order-2 sm:order-1">
-                    Batal
+                    {{ __('common.cancel') }}
                 </x-button>
                 <x-button wire:click="delete" color="red" icon="trash" loading="delete"
                     class="w-full sm:w-auto order-1 sm:order-2">
-                    Ya, Hapus Pembayaran
+                    {{ __('payments.yes_delete_payment') }}
                 </x-button>
             </div>
         </x-slot:footer>

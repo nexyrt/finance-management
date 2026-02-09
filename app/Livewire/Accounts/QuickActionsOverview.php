@@ -36,7 +36,7 @@ class QuickActionsOverview extends Component
     public function addTransaction(): void
     {
         if (!$this->selectedAccountId) {
-            $this->toast()->warning('Warning', 'Please select an account first')->send();
+            $this->toast()->warning(__('common.warning'), __('pages.select_account_first'))->send();
             return;
         }
         $this->dispatch('create-transaction', bankAccountId: $this->selectedAccountId);
@@ -50,7 +50,7 @@ class QuickActionsOverview extends Component
     public function transferFunds(): void
     {
         if (!$this->selectedAccountId) {
-            $this->toast()->warning('Warning', 'Please select an account first')->send();
+            $this->toast()->warning(__('common.warning'), __('pages.select_account_first'))->send();
             return;
         }
         $this->dispatch('open-transfer-modal', fromAccountId: $this->selectedAccountId);
@@ -64,7 +64,7 @@ class QuickActionsOverview extends Component
     public function exportReport(): void
     {
         if (!$this->selectedAccountId) {
-            $this->toast()->warning('Warning', 'Please select an account first')->send();
+            $this->toast()->warning(__('common.warning'), __('pages.select_account_first'))->send();
             return;
         }
 
@@ -73,7 +73,7 @@ class QuickActionsOverview extends Component
         ]);
 
         $this->dispatch('download-pdf', url: $url);
-        $this->toast()->info('Export Started', 'Your report is being generated')->send();
+        $this->toast()->info(__('pages.export_started'), __('pages.report_generating'))->send();
 
         // Re-initialize chart after export (same as account selection)
         $this->dispatch('chartDataUpdated', [
