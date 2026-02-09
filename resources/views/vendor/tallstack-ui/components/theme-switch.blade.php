@@ -2,7 +2,18 @@
     $personalize = $classes();
 @endphp
 
-<div wire:ignore.self x-cloak x-data="{ themeSwitch() { this.$el.dispatchEvent(new CustomEvent('theme', {detail: { darkTheme: darkTheme }})); } }">
+<div wire:ignore.self x-cloak x-data="{
+    darkTheme: localStorage.getItem('tallstackui.theme') === 'dark' || (!localStorage.getItem('tallstackui.theme') && window.matchMedia('(prefers-color-scheme: dark)').matches),
+    themeSwitch() {
+        localStorage.setItem('tallstackui.theme', this.darkTheme ? 'dark' : 'light');
+        if (this.darkTheme) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+        this.$el.dispatchEvent(new CustomEvent('theme', {detail: { darkTheme: this.darkTheme }}));
+    }
+}">
     <button type="button"
             role="switch"
             aria-checked="false"

@@ -2,7 +2,6 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" x-data="{
     darkTheme: localStorage.getItem('tallstackui.theme') === 'dark' || (!localStorage.getItem('tallstackui.theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)
 }" x-init="
-    // Watch for theme changes
     $watch('darkTheme', value => {
         localStorage.setItem('tallstackui.theme', value ? 'dark' : 'light');
         if (value) {
@@ -661,54 +660,28 @@ window.addEventListener('resize', () => {
 
     {{-- Dark Mode Script - Persist across wire:navigate --}}
     <script>
-        // Initialize dark mode from localStorage
+        // Apply dark class to html element based on localStorage
         function initDarkMode() {
             const isDark = localStorage.getItem('tallstackui.theme') === 'dark' ||
                           (!localStorage.getItem('tallstackui.theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
 
-            // Apply dark class to html element
             if (isDark) {
                 document.documentElement.classList.add('dark');
             } else {
                 document.documentElement.classList.remove('dark');
             }
-
-            // Sync Alpine.js state if Alpine is loaded
-            // Wait a tick to ensure Alpine is fully initialized
-            // Use longer delay for livewire:navigated to allow DOM morphing to complete
-            const delay = document.readyState === 'complete' ? 50 : 0;
-            setTimeout(() => {
-                const htmlEl = document.querySelector('html');
-                if (htmlEl && htmlEl.__x && htmlEl.__x.$data) {
-                    htmlEl.__x.$data.darkTheme = isDark;
-                }
-            }, delay);
         }
 
         // Run on initial load
         initDarkMode();
 
-        // Re-run after Livewire navigation
-        // Use immediate execution to set darkTheme before Alpine binds
-        document.addEventListener('livewire:navigated', () => {
-            // Immediately set darkTheme on HTML element
-            const htmlEl = document.querySelector('html');
-            if (htmlEl && htmlEl.__x && htmlEl.__x.$data) {
-                const isDark = localStorage.getItem('tallstackui.theme') === 'dark' ||
-                    (!localStorage.getItem('tallstackui.theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
-                htmlEl.__x.$data.darkTheme = isDark;
-            }
+        // Re-run after Livewire navigation (e.g. login redirect)
+        document.addEventListener('livewire:navigated', () => initDarkMode());
 
-            // Then run full init
-            initDarkMode();
-        });
+        // Re-run after Alpine is initialized
+        document.addEventListener('alpine:init', () => initDarkMode());
 
-        // Re-run after Alpine is initialized (for initial page load)
-        document.addEventListener('alpine:init', () => {
-            initDarkMode();
-        });
-
-        // Watch for localStorage changes (for theme switcher in other tabs)
+        // Watch for localStorage changes (theme switcher in other tabs)
         window.addEventListener('storage', (e) => {
             if (e.key === 'tallstackui.theme') {
                 initDarkMode();
