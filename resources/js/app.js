@@ -4,6 +4,25 @@ window.ApexCharts = ApexCharts;
 import Chart from 'chart.js/auto';
 window.Chart = Chart;
 
+// Import Day.js and locale support
+import dayjs from 'dayjs';
+import 'dayjs/locale/id'; // Indonesian
+import 'dayjs/locale/zh-cn'; // Chinese Simplified
+
+// Set Day.js locale based on Laravel locale
+const locale = document.documentElement.lang || 'id';
+const dayjsLocale = locale === 'zh' ? 'zh-cn' : locale;
+dayjs.locale(dayjsLocale);
+
+// Update Day.js locale when language changes
+document.addEventListener('livewire:navigated', () => {
+    const currentLocale = document.documentElement.lang || 'id';
+    const currentDayjsLocale = currentLocale === 'zh' ? 'zh-cn' : currentLocale;
+    dayjs.locale(currentDayjsLocale);
+});
+
+window.dayjs = dayjs;
+
 // Initialize Quill editor with Livewire compatibility
 function initializeQuill() {
     const editorElement = document.querySelector('#editor');

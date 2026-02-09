@@ -215,7 +215,7 @@
                             <label class="block text-sm font-medium text-dark-900 dark:text-dark-50 mb-1">
                                 {{ __('invoice.filename_optional') }}
                             </label>
-                            <input type="text" wire:model="fakturName" :placeholder="__('invoice.filename_example') + '{{ $invoice['invoice_number'] ?? 'INV001' }}'"
+                            <input type="text" wire:model="fakturName" placeholder="{{ __('invoice.filename_example') }}{{ $invoice['invoice_number'] ?? 'INV001' }}"
                                 class="w-full px-3 py-2 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
                             @error('fakturName')
                                 <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>

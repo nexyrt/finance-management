@@ -10,10 +10,11 @@ use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 use Livewire\WithFileUploads;
+use TallStackUi\Traits\Interactions;
 
 class Create extends Component
 {
-    use WithFileUploads;
+    use WithFileUploads, Interactions;
 
     // Invoice data
     public $invoice = [
@@ -155,7 +156,7 @@ class Create extends Component
 
             DB::commit();
 
-            session()->flash('success', __('invoice.created_successfully'));
+            $this->toast()->success(__('invoice.created_successfully'))->send();
 
             $this->reset(['invoice', 'items', 'discount']);
 
@@ -199,7 +200,7 @@ class Create extends Component
             // Always show file and line in production for debugging
             $errorMessage .= "\n\n" . __('common.error_location') . ': ' . basename($e->getFile()) . ':' . $e->getLine();
 
-            session()->flash('error', $errorMessage);
+            $this->toast()->error($errorMessage)->send();
         }
     }
 

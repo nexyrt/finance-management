@@ -33,7 +33,7 @@
         @interact('column_invoice_number', $row)
             <div>
                 <div class="font-mono font-bold text-zinc-600 dark:text-zinc-400">{{ $row->invoice_number }}</div>
-                <div class="text-xs text-dark-500 dark:text-dark-400">{{ $row->issue_date->format('d/m/Y') }}</div>
+                <div class="text-xs text-dark-500 dark:text-dark-400">{{ $row->issue_date->translatedFormat('d/m/Y') }}</div>
             </div>
         @endinteract
 
@@ -53,7 +53,7 @@
 
         @interact('column_issue_date', $row)
             <div>
-                <div class="text-sm font-medium text-dark-900 dark:text-dark-50">{{ $row->issue_date->format('d M Y') }}
+                <div class="text-sm font-medium text-dark-900 dark:text-dark-50">{{ $row->issue_date->translatedFormat('d M Y') }}
                 </div>
                 <div class="text-xs text-dark-500 dark:text-dark-400">{{ $row->issue_date->diffForHumans() }}</div>
             </div>
@@ -70,7 +70,7 @@
             <div>
                 <div
                     class="text-sm font-medium {{ $isOverdue ? 'text-red-600 dark:text-red-400' : ($isDueSoon ? 'text-yellow-600 dark:text-yellow-400' : 'text-dark-900 dark:text-dark-50') }}">
-                    {{ $row->due_date->format('d M Y') }}
+                    {{ $row->due_date->translatedFormat('d M Y') }}
                 </div>
                 @if ($isOverdue)
                     <div class="text-xs text-red-600 dark:text-red-400">{{ (int) abs($row->due_date->diffInDays(now())) }}
@@ -301,10 +301,10 @@
                 </label>
                 <div class="grid grid-cols-2 gap-3">
                     @foreach([
-                        ['value' => 'kisantra-invoice', 'label' => 'Kisantra', 'desc' => 'Default template'],
-                        ['value' => 'semesta-invoice', 'label' => 'Semesta', 'desc' => 'Mining (PPN + PPH 22)'],
-                        ['value' => 'agsa-invoice', 'label' => 'AGSA', 'desc' => 'Alternative'],
-                        ['value' => 'invoice', 'label' => 'Generic', 'desc' => 'Simple'],
+                        ['value' => 'kisantra-invoice', 'label' => __('invoice.template_kisantra'), 'desc' => __('invoice.template_kisantra_desc')],
+                        ['value' => 'semesta-invoice', 'label' => __('invoice.template_semesta'), 'desc' => __('invoice.template_semesta_desc')],
+                        ['value' => 'agsa-invoice', 'label' => __('invoice.template_agsa'), 'desc' => __('invoice.template_agsa_desc')],
+                        ['value' => 'invoice', 'label' => __('invoice.template_generic'), 'desc' => __('invoice.template_generic_desc')],
                     ] as $tpl)
                         <div wire:click="$set('printTemplate', '{{ $tpl['value'] }}')"
                             class="p-3 border-2 rounded-lg cursor-pointer transition {{ $printTemplate === $tpl['value'] ? 'border-zinc-600 bg-zinc-50 dark:bg-dark-700' : 'border-gray-200 dark:border-dark-600 hover:border-zinc-400' }}">

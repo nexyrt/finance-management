@@ -93,6 +93,7 @@ return [
 
     // Status
     'draft' => '草稿',
+    'sent' => '已发送',
     'paid' => '已付款',
     'unpaid' => '未付款',
     'partially_paid' => '部分付款',

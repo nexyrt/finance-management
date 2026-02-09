@@ -115,6 +115,8 @@ return [
     'warning' => '警告',
     'info' => '信息',
     'loading' => '加载中...',
+    'saving' => '保存中',
+    'updating' => '更新中',
     'no_data' => '无数据',
     'no_results' => '无结果',
     'confirm_delete' => '您确定要删除吗？',

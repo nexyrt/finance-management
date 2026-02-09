@@ -147,6 +147,7 @@ return [
     'electronic_filing_number' => '电子申报号',
     'create_new_client' => '创建新客户',
     'add_new_client_to_system' => '添加新客户到系统',
+    'client_information' => '客户信息',
     'update_client_information' => '更新客户信息',
     'confirm_client_deletion' => '确认删除客户',
     'attention' => '注意！',
@@ -238,6 +239,25 @@ return [
     'total_items' => '总项目',
     'items' => '项目',
     'of_total_invoice' => '占总发票',
+    'auto_generate_on_save' => '保存时自动生成',
+    'owner' => '所有者',
+    'no_clients_found' => '未找到客户',
+    'type_service_name' => '输入服务名称',
+    'no_services_found' => '未找到服务',
+    'no_items_yet' => '暂无项目',
+    'invoice_summary' => '发票摘要',
+    'fixed_amount' => '固定金额',
+    'percentage' => '百分比',
+    'enter_amount' => '输入金额',
+    'enter_percentage' => '输入百分比',
+    'reason_optional' => '原因（可选）',
+    'discount_applied' => '已应用折扣',
+    'net_profit' => '净利润',
+    'save_invoice' => '保存发票',
+    'update_invoice' => '更新发票',
+    'update_invoice_details' => '更新发票详细信息',
+    'multi_client_invoice' => '多客户发票（动态项目）',
+    'please_fix' => '请修复',
 
     // Payments
     'payment_list' => '付款列表',
@@ -410,4 +430,28 @@ return [
     // Currency
     'billion' => '十亿',
     'million' => '百万',
+
+    // Tabs
+    'payments_tab' => '付款',
+    'details' => '详情',
+
+    // Payment Methods
+    'bank_transfer' => '银行转账',
+    'cash' => '现金',
+    'check' => '支票',
+    'credit_card' => '信用卡',
+    'other' => '其他',
+
+    // Client Types
+    'individual' => '个人',
+    'company' => '公司',
+
+    // Invoice Print Modal
+    'select_invoice_type_to_print' => '选择要打印的发票类型',
+    'print_full_invoice' => '打印全额发票',
+    'print_dp_invoice' => '打印首付款发票',
+    'print_settlement_invoice' => '打印结算发票',
+    'select_template' => '选择模板',
+    'dp_amount' => '首付款金额',
+    'settlement_amount' => '结算金额',
 ];

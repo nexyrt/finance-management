@@ -61,9 +61,19 @@
             </div>
 
             {{-- Tabs Content --}}
-            <x-tab :selected="$selectedTab">
+            @php
+                // Map tab identifiers to translated names
+                $tabMap = [
+                    'overview' => __('pages.overview'),
+                    'payments' => __('pages.payments_tab'),
+                    'details' => __('pages.details'),
+                ];
+                $currentSelectedTab = $tabMap[$selectedTab] ?? $selectedTab;
+            @endphp
+
+            <x-tab :selected="$currentSelectedTab">
                 {{-- Tab 1: Overview --}}
-                <x-tab.items tab="overview">
+                <x-tab.items :tab="__('pages.overview')">
                     <x-slot:left>
                         <x-icon name="document-text" class="w-4 h-4" />
                     </x-slot:left>
@@ -74,7 +84,7 @@
                             <div class="bg-white dark:bg-dark-800 border border-zinc-200 dark:border-dark-600 rounded-lg p-4">
                                 <p class="text-xs text-dark-600 dark:text-dark-400">{{ __('invoice.invoice_date') }}</p>
                                 <p class="font-medium text-dark-900 dark:text-dark-50">
-                                    {{ $invoice->issue_date->format('d M Y') }}
+                                    {{ $invoice->issue_date->translatedFormat('d M Y') }}
                                 </p>
                             </div>
                             <div class="bg-white dark:bg-dark-800 border border-zinc-200 dark:border-dark-600 rounded-lg p-4">
@@ -83,7 +93,7 @@
                                     class="font-medium {{ $invoice->due_date->isPast() && $invoice->status !== 'paid'
                                         ? 'text-red-600 dark:text-red-400'
                                         : 'text-dark-900 dark:text-dark-50' }}">
-                                    {{ $invoice->due_date->format('d M Y') }}
+                                    {{ $invoice->due_date->translatedFormat('d M Y') }}
                                 </p>
                             </div>
                             <div class="bg-white dark:bg-dark-800 border border-zinc-200 dark:border-dark-600 rounded-lg p-4">
@@ -107,7 +117,7 @@
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                         </svg>
-                                        Faktur
+                                        {{ __('invoice.faktur') }}
                                     </h4>
                                 </div>
                                 <div class="p-4">
@@ -128,11 +138,11 @@
 
                                     <div class="mt-3 flex items-center justify-between">
                                         <span class="text-sm text-dark-600 dark:text-dark-400">{{ basename($invoice->faktur) }}</span>
-                                        <a href="{{ Storage::url($invoice->faktur) }}" download class="text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 flex items-center gap-1">
+                                        <a href="{{ Storage::url($invoice->faktur) }}" download class="text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 flex items-center gap-1" :title="__('common.download')">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                                             </svg>
-                                            Download
+                                            {{ __('common.download') }}
                                         </a>
                                     </div>
                                 </div>
@@ -219,7 +229,7 @@
                 </x-tab.items>
 
                 {{-- Tab 2: Payments --}}
-                <x-tab.items tab="payments">
+                <x-tab.items :tab="__('pages.payments_tab')">
                     <x-slot:left>
                         <x-icon name="credit-card" class="w-4 h-4" />
                     </x-slot:left>
@@ -275,7 +285,7 @@
                                                     Rp {{ number_format($payment->amount, 0, ',', '.') }}
                                                 </p>
                                                 <p class="text-sm text-gray-600 dark:text-gray-400">
-                                                    {{ $payment->payment_date->format('d M Y') }}
+                                                    {{ $payment->payment_date->translatedFormat('d M Y') }}
                                                 </p>
                                             </div>
                                         </div>
@@ -285,7 +295,7 @@
                                                     {{ $payment->bankAccount->bank_name }}
                                                 </p>
                                                 <p class="text-xs text-gray-600 dark:text-gray-400">
-                                                    {{ ucfirst(str_replace('_', ' ', $payment->payment_method)) }}
+                                                    {{ __('pages.' . $payment->payment_method) }}
                                                 </p>
                                                 @if ($payment->reference_number)
                                                     <p class="text-xs font-mono text-gray-500 dark:text-gray-400">
@@ -342,7 +352,7 @@
                 </x-tab.items>
 
                 {{-- Tab 3: Details --}}
-                <x-tab.items tab="details">
+                <x-tab.items :tab="__('pages.details')">
                     <x-slot:left>
                         <x-icon name="information-circle" class="w-4 h-4" />
                     </x-slot:left>
@@ -358,18 +368,18 @@
                             </h4>
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                                 <div>
-                                    <p class="text-dark-600 dark:text-dark-400">{{ __('pages.name') }}</p>
+                                    <p class="text-dark-600 dark:text-dark-400">{{ __('common.name') }}</p>
                                     <p class="font-medium text-dark-900 dark:text-dark-50">
                                         {{ $invoice->client->name }}</p>
                                 </div>
                                 <div>
-                                    <p class="text-dark-600 dark:text-dark-400">{{ __('pages.type') }}</p>
+                                    <p class="text-dark-600 dark:text-dark-400">{{ __('common.type') }}</p>
                                     <p class="font-medium text-dark-900 dark:text-dark-50">
-                                        {{ ucfirst($invoice->client->type) }}</p>
+                                        {{ __('pages.' . $invoice->client->type) }}</p>
                                 </div>
                                 @if ($invoice->client->email)
                                     <div>
-                                        <p class="text-dark-600 dark:text-dark-400">Email</p>
+                                        <p class="text-dark-600 dark:text-dark-400">{{ __('common.email') }}</p>
                                         <p class="font-medium text-dark-900 dark:text-dark-50 break-all">
                                             {{ $invoice->client->email }}</p>
                                     </div>
@@ -431,7 +441,7 @@
                                         <p class="text-sm font-medium text-dark-900 dark:text-dark-50">{{ __('pages.invoice_created') }}
                                         </p>
                                         <p class="text-xs text-dark-600 dark:text-dark-400">
-                                            {{ $invoice->created_at->format('d M Y H:i') }}
+                                            {{ $invoice->created_at->translatedFormat('d M Y H:i') }}
                                         </p>
                                     </div>
                                 </div>
@@ -442,7 +452,7 @@
                                         <div class="flex-1 min-w-0">
                                             <p class="text-sm font-medium text-dark-900 dark:text-dark-50">{{ __('pages.invoice_sent') }}</p>
                                             <p class="text-xs text-dark-600 dark:text-dark-400">
-                                                {{ $invoice->issue_date->format('d M Y') }}
+                                                {{ $invoice->issue_date->translatedFormat('d M Y') }}
                                             </p>
                                         </div>
                                     </div>
@@ -456,7 +466,7 @@
                                                 {{ __('pages.payment_received') }}
                                             </p>
                                             <p class="text-xs text-dark-600 dark:text-dark-400">
-                                                {{ $payment->payment_date->format('d M Y') }} •
+                                                {{ $payment->payment_date->translatedFormat('d M Y') }} •
                                                 Rp {{ number_format($payment->amount, 0, ',', '.') }}
                                             </p>
                                         </div>
@@ -469,7 +479,7 @@
                                         <div class="flex-1 min-w-0">
                                             <p class="text-sm font-medium text-red-600">{{ __('pages.past_due_date') }}</p>
                                             <p class="text-xs text-red-500">
-                                                {{ $invoice->due_date->format('d M Y') }} •
+                                                {{ $invoice->due_date->translatedFormat('d M Y') }} •
                                                 {{ abs($invoice->due_date->diffInDays(now())) }} {{ __('pages.days_ago') }}
                                             </p>
                                         </div>
@@ -489,10 +499,10 @@
                     templateOpen: false,
                     selectedTemplate: 'kisantra-invoice',
                     templates: [
-                        { value: 'kisantra-invoice', label: 'Kisantra (Default)', desc: 'Template default dengan branding Kisantra' },
-                        { value: 'semesta-invoice', label: 'Semesta (Mining)', desc: 'Template untuk mining/trading dengan PPN + PPH 22' },
-                        { value: 'agsa-invoice', label: 'AGSA', desc: 'Template alternatif AGSA' },
-                        { value: 'invoice', label: 'Generic', desc: 'Template sederhana' }
+                        { value: 'kisantra-invoice', label: @js(__('invoice.template_kisantra')), desc: @js(__('invoice.template_kisantra_desc')) },
+                        { value: 'semesta-invoice', label: @js(__('invoice.template_semesta')), desc: @js(__('invoice.template_semesta_desc')) },
+                        { value: 'agsa-invoice', label: @js(__('invoice.template_agsa')), desc: @js(__('invoice.template_agsa_desc')) },
+                        { value: 'invoice', label: @js(__('invoice.template_generic')), desc: @js(__('invoice.template_generic_desc')) }
                     ]
                 }">
                     @if ($invoice)

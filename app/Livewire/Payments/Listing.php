@@ -32,17 +32,28 @@ class Listing extends Component
     public $dateRange = [];
 
     public array $headers = [
-        ['index' => 'payment_date', 'label' => 'Tanggal'],
-        ['index' => 'invoice_number', 'label' => 'Invoice'],
-        ['index' => 'client_name', 'label' => 'Klien'],
-        ['index' => 'amount', 'label' => 'Jumlah'],
-        ['index' => 'payment_method', 'label' => 'Metode'],
-        ['index' => 'bank_account', 'label' => 'Rekening'],
-        ['index' => 'actions', 'label' => 'Aksi', 'sortable' => false],
+        ['index' => 'payment_date', 'label' => '#'],
+        ['index' => 'invoice_number', 'label' => '#'],
+        ['index' => 'client_name', 'label' => '#'],
+        ['index' => 'amount', 'label' => '#'],
+        ['index' => 'payment_method', 'label' => '#'],
+        ['index' => 'bank_account', 'label' => '#'],
+        ['index' => 'actions', 'label' => '#', 'sortable' => false],
     ];
 
     public function mount()
     {
+        // Translate headers
+        $this->headers = [
+            ['index' => 'payment_date', 'label' => __('pages.date')],
+            ['index' => 'invoice_number', 'label' => __('pages.invoice')],
+            ['index' => 'client_name', 'label' => __('pages.client')],
+            ['index' => 'amount', 'label' => __('common.amount')],
+            ['index' => 'payment_method', 'label' => __('pages.method')],
+            ['index' => 'bank_account', 'label' => __('pages.account')],
+            ['index' => 'actions', 'label' => __('common.actions'), 'sortable' => false],
+        ];
+
         $this->dateRange = [];
 
         // Auto-set bank account filter if constrained

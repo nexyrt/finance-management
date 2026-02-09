@@ -11,10 +11,11 @@ use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 use Livewire\WithFileUploads;
+use TallStackUi\Traits\Interactions;
 
 class Edit extends Component
 {
-    use WithFileUploads;
+    use WithFileUploads, Interactions;
 
     public Invoice $invoice;
 
@@ -150,7 +151,7 @@ class Edit extends Component
 
             DB::commit();
 
-            session()->flash('success', __('invoice.updated_successfully'));
+            $this->toast()->success(__('invoice.updated_successfully'))->send();
 
             return $this->redirect(route('invoices.index'), navigate: true);
 
@@ -193,7 +194,7 @@ class Edit extends Component
             // Always show file and line in production for debugging
             $errorMessage .= "\n\n" . __('common.error_location') . ': ' . basename($e->getFile()) . ':' . $e->getLine();
 
-            session()->flash('error', $errorMessage);
+            $this->toast()->error($errorMessage)->send();
         }
     }
 

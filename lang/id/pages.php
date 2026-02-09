@@ -460,6 +460,7 @@ return [
     'print_full_invoice' => 'Cetak invoice dengan nilai penuh',
     'print_dp_invoice' => 'Cetak invoice dengan nominal DP',
     'dp_amount' => 'Nominal DP',
+    'settlement_amount' => 'Nominal Pelunasan',
     'print_settlement_invoice' => 'Cetak invoice untuk sisa pembayaran',
     'back_to_draft' => 'Kembali ke Draft',
     'multi_client_invoice' => 'Invoice multi-klien dengan item dinamis',
@@ -491,4 +492,19 @@ return [
     'outstanding_profit' => 'Outstanding Profit',
     'from' => 'Dari',
     'revenue' => 'pendapatan',
+
+    // Tabs
+    'payments_tab' => 'Pembayaran',
+    'details' => 'Detail',
+
+    // Payment Methods
+    'bank_transfer' => 'Transfer Bank',
+    'cash' => 'Tunai',
+    'check' => 'Cek',
+    'credit_card' => 'Kartu Kredit',
+    'other' => 'Lainnya',
+
+    // Client Types
+    'individual' => 'Perorangan',
+    'company' => 'Perusahaan',
 ];

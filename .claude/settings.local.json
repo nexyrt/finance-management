@@ -21,7 +21,10 @@
       "Bash(for:*)",
       "Bash(do sed -i 's/color=\"\"secondary\"\" outline/color=\"\"zinc\"\"/g' \"$file\")",
       "Bash(composer dump-autoload:*)",
-      "Bash(php -r:*)"
+      "Bash(php -r:*)",
+      "Bash(do echo \"Checking: $key\")",
+      "Bash(do echo \"Checking invoice.$key\")",
+      "Bash(do echo \"Checking common.$key\")"
     ]
   }
 }

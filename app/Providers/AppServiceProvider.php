@@ -4,6 +4,7 @@
 
 namespace App\Providers;
 
+use Carbon\Carbon;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\ServiceProvider;
 use TallStackUi\Facades\TallStackUi;
@@ -46,5 +47,14 @@ class AppServiceProvider extends ServiceProvider
         }
 
         App::setLocale($locale);
+
+        // Set Carbon locale for date translations
+        // Map locale to Carbon locale codes
+        $carbonLocale = match ($locale) {
+            'zh' => 'zh_CN', // Chinese Simplified
+            'id' => 'id',    // Indonesian
+            default => 'id',
+        };
+        Carbon::setLocale($carbonLocale);
     }
 }

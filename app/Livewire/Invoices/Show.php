@@ -16,6 +16,18 @@ class Show extends Component
     public bool $modal = false;
     public string $selectedTab = 'overview';
 
+    // Get translated tab name for display
+    #[Computed]
+    public function translatedTab(): string
+    {
+        return match($this->selectedTab) {
+            'overview' => __('pages.overview'),
+            'payments' => __('pages.payments_tab'),
+            'details' => __('pages.details'),
+            default => ucfirst($this->selectedTab),
+        };
+    }
+
     #[On('show-invoice')]
     public function show(int $invoiceId, string $tab = 'payments'): void
     {
@@ -23,7 +35,7 @@ class Show extends Component
             ->find($invoiceId);
 
         if (!$this->invoice) {
-            $this->toast()->error('Error', 'Invoice tidak ditemukan')->send();
+            $this->toast()->error(__('common.error'), __('invoice.not_found'))->send();
             return;
         }
 
@@ -76,7 +88,7 @@ class Show extends Component
             return;
 
         $this->invoice->update(['status' => 'sent']);
-        $this->toast()->success('Success', 'Invoice berhasil dikirim')->send();
+        $this->toast()->success(__('common.success'), __('invoice.send_success', ['invoice_number' => $this->invoice->invoice_number]))->send();
         $this->dispatch('invoice-updated');
     }
 

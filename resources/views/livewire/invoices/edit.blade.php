@@ -133,7 +133,7 @@
             {{-- Faktur Upload --}}
             <div class="mt-6 pt-6 border-t border-dark-200 dark:border-dark-600" x-data="{ isDragging: false }">
                 <label class="block text-sm font-medium text-dark-900 dark:text-dark-50 mb-2">
-                    Faktur (PDF/Gambar)
+                    {{ __('invoice.faktur_upload') }}
                 </label>
 
                 @if ($invoice->faktur && !$faktur)
@@ -145,8 +145,8 @@
                                 </svg>
                                 <span class="text-sm text-primary-900 dark:text-primary-100">{{ basename($invoice->faktur) }}</span>
                             </div>
-                            <a href="{{ Storage::url($invoice->faktur) }}" target="_blank" class="text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 underline">
-                                Lihat File
+                            <a href="{{ Storage::url($invoice->faktur) }}" target="_blank" class="text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 underline" :title="__('common.view_file')">
+                                {{ __('common.view_file') }}
                             </a>
                         </div>
                     </div>
@@ -176,14 +176,14 @@
                                         </svg>
                                     </div>
                                     <div>
-                                        <p class="text-sm font-medium text-green-600 dark:text-green-400">File baru dipilih</p>
+                                        <p class="text-sm font-medium text-green-600 dark:text-green-400">{{ __('invoice.new_file_selected') }}</p>
                                         <p class="text-xs text-dark-600 dark:text-dark-400 mt-1">{{ $faktur->getClientOriginalName() }}</p>
                                         <p class="text-xs text-dark-500 dark:text-dark-500 mt-1">{{ number_format($faktur->getSize() / 1024, 2) }} KB</p>
                                     </div>
                                     <button type="button"
                                             wire:click="$set('faktur', null)"
                                             class="pointer-events-auto text-sm text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 font-medium">
-                                        Hapus File
+                                        {{ __('common.delete_file') }}
                                     </button>
                                 </div>
                             @else
@@ -196,14 +196,13 @@
                                     </div>
                                     <div>
                                         <p class="text-sm font-medium text-dark-900 dark:text-dark-50">
-                                            <span class="text-primary-600 dark:text-primary-400">Klik untuk upload</span>
-                                            atau drag & drop
+                                            {{ __('invoice.upload_instructions') }}
                                         </p>
                                         <p class="text-xs text-dark-500 dark:text-dark-400 mt-1">
                                             @if ($invoice->faktur)
-                                                Upload file baru untuk mengganti faktur saat ini
+                                                {{ __('invoice.new_file_replace_note') }}
                                             @else
-                                                PDF, JPG, JPEG, PNG (Maks. 5MB)
+                                                {{ __('invoice.faktur_file_types') }}
                                             @endif
                                         </p>
                                     </div>
@@ -219,14 +218,14 @@
                     @if ($faktur)
                         <div>
                             <label class="block text-sm font-medium text-dark-900 dark:text-dark-50 mb-1">
-                                Nama File (Opsional)
+                                {{ __('invoice.filename_optional') }}
                             </label>
-                            <input type="text" wire:model="fakturName" placeholder="Contoh: Faktur-{{ $invoice->invoice_number }}"
+                            <input type="text" wire:model="fakturName" placeholder="{{ __('invoice.filename_example') }}{{ $invoice->invoice_number }}"
                                 class="w-full px-3 py-2 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
                             @error('fakturName')
                                 <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
                             @enderror
-                            <p class="mt-1 text-xs text-dark-500 dark:text-dark-400">Kosongkan untuk menggunakan nama file asli. Ekstensi file akan ditambahkan otomatis.</p>
+                            <p class="mt-1 text-xs text-dark-500 dark:text-dark-400">{{ __('invoice.filename_note') }}</p>
                         </div>
                     @endif
                 </div>
