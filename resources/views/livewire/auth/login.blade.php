@@ -1,12 +1,12 @@
-<div class="flex flex-col gap-6">
+<div>
     <x-auth-header :title="__('Log in to your account')" :description="__('Enter your email and password below to log in')" />
 
     <!-- Session Status -->
-    <x-auth-session-status class="text-center" :status="session('status')" />
+    <x-auth-session-status class="text-center mb-4" :status="session('status')" />
 
-    <form wire:submit="login" class="flex flex-col gap-6">
+    <form wire:submit="login" class="space-y-4">
         <!-- Email Address -->
-        <flux:input
+        <x-input
             wire:model="email"
             :label="__('Email address')"
             type="email"
@@ -17,35 +17,51 @@
         />
 
         <!-- Password -->
-        <div class="relative">
-            <flux:input
+        <div>
+            <div class="flex items-center justify-between mb-2">
+                <label class="block text-sm font-medium text-dark-900 dark:text-dark-50">
+                    {{ __('Password') }}
+                </label>
+                @if (Route::has('password.request'))
+                    <a href="{{ route('password.request') }}"
+                       class="text-sm text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 transition-colors"
+                       wire:navigate>
+                        {{ __('Forgot your password?') }}
+                    </a>
+                @endif
+            </div>
+            <x-password
                 wire:model="password"
-                :label="__('Password')"
-                type="password"
                 required
                 autocomplete="current-password"
                 :placeholder="__('Password')"
             />
-
-            @if (Route::has('password.request'))
-                <flux:link class="absolute end-0 top-0 text-sm" :href="route('password.request')" wire:navigate>
-                    {{ __('Forgot your password?') }}
-                </flux:link>
-            @endif
         </div>
 
         <!-- Remember Me -->
-        <flux:checkbox wire:model="remember" :label="__('Remember me')" />
+        <div class="flex items-center">
+            <x-checkbox wire:model="remember" id="remember" />
+            <label for="remember" class="ml-2 text-sm text-dark-600 dark:text-dark-400 cursor-pointer">
+                {{ __('Remember me') }}
+            </label>
+        </div>
 
-        <div class="flex items-center justify-end">
-            <flux:button variant="primary" type="submit" class="w-full">{{ __('Log in') }}</flux:button>
+        <!-- Submit Button -->
+        <div class="pt-2">
+            <x-button type="submit" color="primary" class="w-full" loading="login">
+                {{ __('Log in') }}
+            </x-button>
         </div>
     </form>
 
     {{-- @if (Route::has('register'))
-        <div class="space-x-1 rtl:space-x-reverse text-center text-sm text-zinc-600 dark:text-zinc-400">
+        <div class="mt-6 text-center text-sm text-dark-600 dark:text-dark-400">
             {{ __('Don\'t have an account?') }}
-            <flux:link :href="route('register')" wire:navigate>{{ __('Sign up') }}</flux:link>
+            <a href="{{ route('register') }}"
+               class="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium transition-colors"
+               wire:navigate>
+                {{ __('Sign up') }}
+            </a>
         </div>
     @endif --}}
 </div>

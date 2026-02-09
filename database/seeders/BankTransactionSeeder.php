@@ -22,7 +22,7 @@ class BankTransactionSeeder extends Seeder
         $bankAccount = BankAccount::first();
         $incomeCategory = TransactionCategory::where('type', 'income')->first();
         $expenseCategories = TransactionCategory::where('type', 'expense')
-            ->whereNotNull('parent_code')
+            ->whereNotNull('parent_id')
             ->limit(5)
             ->get();
 

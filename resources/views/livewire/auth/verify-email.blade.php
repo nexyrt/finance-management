@@ -1,21 +1,26 @@
-<div class="mt-4 flex flex-col gap-6">
-    <flux:text class="text-center">
+<div class="space-y-6">
+    <p class="text-center text-dark-600 dark:text-dark-400">
         {{ __('Please verify your email address by clicking on the link we just emailed to you.') }}
-    </flux:text>
+    </p>
 
     @if (session('status') == 'verification-link-sent')
-        <flux:text class="text-center font-medium !dark:text-green-400 !text-green-600">
-            {{ __('A new verification link has been sent to the email address you provided during registration.') }}
-        </flux:text>
+        <div class="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl">
+            <p class="text-center text-sm font-medium text-green-600 dark:text-green-400">
+                {{ __('A new verification link has been sent to the email address you provided during registration.') }}
+            </p>
+        </div>
     @endif
 
-    <div class="flex flex-col items-center justify-between space-y-3">
-        <flux:button wire:click="sendVerification" variant="primary" class="w-full">
+    <div class="space-y-3">
+        <x-button wire:click="sendVerification" color="primary" class="w-full" loading="sendVerification">
             {{ __('Resend verification email') }}
-        </flux:button>
+        </x-button>
 
-        <flux:link class="text-sm cursor-pointer" wire:click="logout">
-            {{ __('Log out') }}
-        </flux:link>
+        <div class="text-center">
+            <button wire:click="logout"
+                    class="text-sm text-dark-600 dark:text-dark-400 hover:text-dark-900 dark:hover:text-dark-50 transition-colors cursor-pointer">
+                {{ __('Log out') }}
+            </button>
+        </div>
     </div>
 </div>

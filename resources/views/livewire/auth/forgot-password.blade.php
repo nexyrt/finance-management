@@ -1,12 +1,12 @@
- <div class="flex flex-col gap-6">
+<div>
     <x-auth-header :title="__('Forgot password')" :description="__('Enter your email to receive a password reset link')" />
 
     <!-- Session Status -->
-    <x-auth-session-status class="text-center" :status="session('status')" />
+    <x-auth-session-status class="text-center mb-4" :status="session('status')" />
 
-    <form wire:submit="sendPasswordResetLink" class="flex flex-col gap-6">
+    <form wire:submit="sendPasswordResetLink" class="space-y-4">
         <!-- Email Address -->
-        <flux:input
+        <x-input
             wire:model="email"
             :label="__('Email Address')"
             type="email"
@@ -15,11 +15,20 @@
             placeholder="email@example.com"
         />
 
-        <flux:button variant="primary" type="submit" class="w-full">{{ __('Email password reset link') }}</flux:button>
+        <!-- Submit Button -->
+        <div class="pt-2">
+            <x-button type="submit" color="primary" class="w-full" loading="sendPasswordResetLink">
+                {{ __('Email password reset link') }}
+            </x-button>
+        </div>
     </form>
 
-    <div class="space-x-1 rtl:space-x-reverse text-center text-sm text-zinc-400">
+    <div class="mt-6 text-center text-sm text-dark-600 dark:text-dark-400">
         {{ __('Or, return to') }}
-        <flux:link :href="route('login')" wire:navigate>{{ __('log in') }}</flux:link>
+        <a href="{{ route('login') }}"
+           class="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium transition-colors"
+           wire:navigate>
+            {{ __('log in') }}
+        </a>
     </div>
 </div>

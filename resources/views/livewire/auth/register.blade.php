@@ -1,12 +1,12 @@
-<div class="flex flex-col gap-6">
+<div>
     <x-auth-header :title="__('Create an account')" :description="__('Enter your details below to create your account')" />
 
     <!-- Session Status -->
-    <x-auth-session-status class="text-center" :status="session('status')" />
+    <x-auth-session-status class="text-center mb-4" :status="session('status')" />
 
-    <form wire:submit="register" class="flex flex-col gap-6">
+    <form wire:submit="register" class="space-y-4">
         <!-- Name -->
-        <flux:input
+        <x-input
             wire:model="name"
             :label="__('Name')"
             type="text"
@@ -17,7 +17,7 @@
         />
 
         <!-- Email Address -->
-        <flux:input
+        <x-input
             wire:model="email"
             :label="__('Email address')"
             type="email"
@@ -27,34 +27,37 @@
         />
 
         <!-- Password -->
-        <flux:input
+        <x-password
             wire:model="password"
             :label="__('Password')"
-            type="password"
             required
             autocomplete="new-password"
             :placeholder="__('Password')"
         />
 
         <!-- Confirm Password -->
-        <flux:input
+        <x-password
             wire:model="password_confirmation"
             :label="__('Confirm password')"
-            type="password"
             required
             autocomplete="new-password"
             :placeholder="__('Confirm password')"
         />
 
-        <div class="flex items-center justify-end">
-            <flux:button type="submit" variant="primary" class="w-full">
+        <!-- Submit Button -->
+        <div class="pt-2">
+            <x-button type="submit" color="primary" class="w-full" loading="register">
                 {{ __('Create account') }}
-            </flux:button>
+            </x-button>
         </div>
     </form>
 
-    <div class="space-x-1 rtl:space-x-reverse text-center text-sm text-zinc-600 dark:text-zinc-400">
+    <div class="mt-6 text-center text-sm text-dark-600 dark:text-dark-400">
         {{ __('Already have an account?') }}
-        <flux:link :href="route('login')" wire:navigate>{{ __('Log in') }}</flux:link>
+        <a href="{{ route('login') }}"
+           class="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium transition-colors"
+           wire:navigate>
+            {{ __('Log in') }}
+        </a>
     </div>
 </div>
