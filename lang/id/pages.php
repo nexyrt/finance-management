@@ -439,7 +439,11 @@ return [
     'showing_count_of_total' => 'Menampilkan :count dari :total hasil',
     'clear_filters' => 'Hapus Filter',
     'filter_active' => 'filter aktif',
+    'filter_month' => 'Bulan',
     'results' => 'hasil',
+    'showing' => 'Menampilkan',
+    'of' => 'dari',
+    'export_pdf' => 'Export PDF',
 
     // Fund Requests - Statuses
     'status_draft' => 'Draft',
@@ -456,6 +460,8 @@ return [
 
     // Fund Requests - Table Headers
     'requestor' => 'Pengaju',
+    'request_number' => 'No. Pengajuan',
+    'request_number_auto_hint' => 'Otomatis, bisa diubah',
     'fund_request_title' => 'Judul',
     'needed_by_date' => 'Dibutuhkan Pada',
     'created_date' => 'Dibuat',
@@ -493,7 +499,7 @@ return [
     'item_name_placeholder' => 'Contoh: Laptop Dell Latitude',
     'item_description_label' => 'Deskripsi',
     'item_description_placeholder' => 'Detail spesifikasi atau keterangan tambahan',
-    'quantity_label' => 'Kuantitas *',
+    'quantity_label' => 'Jml *',
     'unit_price_label' => 'Harga Satuan *',
     'category_label' => 'Kategori',
     'select_category' => 'Pilih kategori...',

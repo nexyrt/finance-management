@@ -94,6 +94,24 @@
                 </flux:navlist.item>
             @endcan
 
+            {{-- FUND REQUESTS --}}
+            @can('view fund-requests')
+                <flux:navlist.item icon="document-currency-dollar" :href="route('fund-requests.index')"
+                    :current="request()->routeIs('fund-requests.*')" wire:navigate>
+                    <div class="flex items-center justify-between w-full">
+                        <span>{{ __('common.fund_requests') }}</span>
+                        @can('approve fund-requests')
+                            @php
+                                $pendingFundRequests = \App\Models\FundRequest::where('status', 'pending')->count();
+                            @endphp
+                            @if ($pendingFundRequests > 0)
+                                <flux:badge color="yellow" size="sm">{{ $pendingFundRequests }}</flux:badge>
+                            @endif
+                        @endcan
+                    </div>
+                </flux:navlist.item>
+            @endcan
+
             @can('view reimbursements')
                 <flux:navlist.item icon="receipt-percent" :href="route('reimbursements.index')"
                     :current="request()->routeIs('reimbursements.*')" wire:navigate>

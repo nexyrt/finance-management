@@ -15,6 +15,15 @@
 
         {{-- FORM CONTENT --}}
         <form id="edit-fund-request-form" wire:submit="update" class="space-y-6">
+            {{-- Request Number Badge --}}
+            @if ($fundRequest && $fundRequest->request_number)
+                <div class="flex items-center gap-2 p-3 rounded-xl bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800">
+                    <x-icon name="hashtag" class="w-4 h-4 text-primary-600 dark:text-primary-400 flex-shrink-0" />
+                    <span class="text-xs text-primary-700 dark:text-primary-300">{{ __('pages.request_number') }}:</span>
+                    <span class="text-sm font-mono font-bold text-primary-700 dark:text-primary-300">{{ $fundRequest->request_number }}</span>
+                </div>
+            @endif
+
             {{-- Request Header Section --}}
             <div class="space-y-4">
                 <div class="border-b border-secondary-200 dark:border-dark-600 pb-4">
@@ -127,48 +136,47 @@
                         <table class="w-full text-sm">
                             <thead>
                                 <tr class="border-b border-secondary-200 dark:border-dark-600">
-                                    <th class="text-left pb-2 px-2 text-dark-700 dark:text-dark-300 font-semibold">#</th>
-                                    <th class="text-left pb-2 px-2 text-dark-700 dark:text-dark-300 font-semibold">{{ __('pages.item_description_label') }}</th>
-                                    <th class="text-left pb-2 px-2 text-dark-700 dark:text-dark-300 font-semibold">{{ __('pages.category_label') }}</th>
-                                    <th class="text-left pb-2 px-2 text-dark-700 dark:text-dark-300 font-semibold">{{ __('pages.quantity_label') }}</th>
-                                    <th class="text-left pb-2 px-2 text-dark-700 dark:text-dark-300 font-semibold">{{ __('pages.unit_price_label') }}</th>
-                                    <th class="text-left pb-2 px-2 text-dark-700 dark:text-dark-300 font-semibold">{{ __('common.amount') }}</th>
-                                    <th class="text-left pb-2 px-2 text-dark-700 dark:text-dark-300 font-semibold"></th>
+                                    <th class="text-left pb-2 px-2 text-dark-700 dark:text-dark-300 font-semibold" style="min-width: 40px;">#</th>
+                                    <th class="text-left pb-2 px-2 text-dark-700 dark:text-dark-300 font-semibold" style="min-width: 250px;">{{ __('pages.item_description_label') }}</th>
+                                    <th class="text-left pb-2 px-2 text-dark-700 dark:text-dark-300 font-semibold" style="min-width: 220px;">{{ __('pages.category_label') }}</th>
+                                    <th class="text-left pb-2 px-2 text-dark-700 dark:text-dark-300 font-semibold" style="min-width: 90px;">{{ __('pages.quantity_label') }}</th>
+                                    <th class="text-left pb-2 px-2 text-dark-700 dark:text-dark-300 font-semibold" style="min-width: 160px;">{{ __('pages.unit_price_label') }}</th>
+                                    <th class="text-left pb-2 px-2 text-dark-700 dark:text-dark-300 font-semibold" style="min-width: 130px;">{{ __('common.amount') }}</th>
+                                    <th class="text-left pb-2 px-2 text-dark-700 dark:text-dark-300 font-semibold" style="min-width: 50px;"></th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach ($items as $index => $item)
                                     <tr class="border-b border-secondary-100 dark:border-dark-700">
-                                        <td class="py-3 px-2 text-dark-600 dark:text-dark-400">{{ $index + 1 }}</td>
-                                        <td class="py-3 px-2">
+                                        <td class="py-3 px-2 text-dark-600 dark:text-dark-400" style="min-width: 40px;">{{ $index + 1 }}</td>
+                                        <td class="py-3 px-2" style="min-width: 250px;">
                                             <x-input wire:model.blur="items.{{ $index }}.description"
                                                      placeholder="{{ __('pages.item_description_placeholder') }}"
                                                      class="h-8" />
                                         </td>
-                                        <td class="py-3 px-2" style="min-width: 200px;">
-                                            <x-select.styled wire:model="items.{{ $index }}.category_id" class="h-8">
-                                                <option value="">{{ __('pages.select_category') }}</option>
-                                                @foreach ($this->categories as $category)
-                                                    <option value="{{ $category->id }}">{{ $category->full_path }}</option>
-                                                @endforeach
-                                            </x-select.styled>
+                                        <td class="py-3 px-2" style="min-width: 220px;">
+                                            <x-select.styled wire:model="items.{{ $index }}.category_id"
+                                                             :options="$this->categories"
+                                                             placeholder="{{ __('pages.select_category') }}"
+                                                             searchable
+                                                             class="h-8" />
                                         </td>
-                                        <td class="py-3 px-2" style="min-width: 80px;">
+                                        <td class="py-3 px-2" style="min-width: 90px;">
                                             <x-input type="number"
                                                      wire:model.blur="items.{{ $index }}.quantity"
                                                      placeholder="1"
                                                      min="1"
                                                      class="h-8" />
                                         </td>
-                                        <td class="py-3 px-2" style="min-width: 150px;">
+                                        <td class="py-3 px-2" style="min-width: 160px;">
                                             <x-currency-input wire:model.blur="items.{{ $index }}.unit_price"
                                                             placeholder="0"
                                                             class="h-8" />
                                         </td>
-                                        <td class="py-3 px-2 text-right font-semibold text-dark-900 dark:text-dark-50">
+                                        <td class="py-3 px-2 text-right font-semibold text-dark-900 dark:text-dark-50" style="min-width: 130px;">
                                             Rp {{ number_format($item['amount'] ?? 0, 0, ',', '.') }}
                                         </td>
-                                        <td class="py-3 px-2">
+                                        <td class="py-3 px-2" style="min-width: 50px;">
                                             @if (count($items) > 1)
                                                 <x-button wire:click="removeItem({{ $index }})"
                                                           color="red"

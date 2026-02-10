@@ -23,6 +23,10 @@
                 <div class="p-4 rounded-xl bg-secondary-50 dark:bg-dark-700 border border-secondary-200 dark:border-dark-600">
                     <div class="space-y-2">
                         <div>
+                            <label class="text-xs text-dark-500 dark:text-dark-400">{{ __('pages.request_number') }}</label>
+                            <p class="text-sm font-mono font-semibold text-primary-600 dark:text-primary-400">{{ $fundRequest->request_number ?? '-' }}</p>
+                        </div>
+                        <div>
                             <label class="text-xs text-dark-500 dark:text-dark-400">{{ __('pages.fund_request_title') }}</label>
                             <p class="text-sm font-medium text-dark-900 dark:text-dark-50">{{ $fundRequest->title }}</p>
                         </div>

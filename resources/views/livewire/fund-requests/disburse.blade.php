@@ -24,6 +24,10 @@
 
                     <div class="grid grid-cols-2 gap-4">
                         <div>
+                            <label class="text-xs text-dark-500 dark:text-dark-400">{{ __('pages.request_number') }}</label>
+                            <p class="text-sm font-mono font-semibold text-primary-600 dark:text-primary-400">{{ $fundRequest->request_number ?? '-' }}</p>
+                        </div>
+                        <div>
                             <label class="text-xs text-dark-500 dark:text-dark-400">{{ __('pages.requestor') }}</label>
                             <p class="text-sm font-medium text-dark-900 dark:text-dark-50">{{ $fundRequest->user->name }}</p>
                         </div>
@@ -90,14 +94,14 @@
 
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
                         {{-- Bank Account --}}
-                        <x-select.styled wire:model="bankAccountId" label="{{ __('pages.bank_account_label') }}">
-                            <option value="">{{ __('pages.select_bank_account') }}</option>
-                            @foreach ($this->bankAccounts as $account)
-                                <option value="{{ $account->id }}">
-                                    {{ $account->account_name }} ({{ $account->bank_name }})
-                                </option>
-                            @endforeach
-                        </x-select.styled>
+                        <x-select.styled wire:model="bankAccountId"
+                                         :label="__('pages.bank_account_label')"
+                                         :options="$this->bankAccounts->map(fn($account) => [
+                                             'label' => $account->account_name . ' (' . $account->bank_name . ')',
+                                             'value' => $account->id
+                                         ])->toArray()"
+                                         :placeholder="__('pages.select_bank_account')"
+                                         searchable />
 
                         {{-- Disbursement Date --}}
                         <x-date wire:model="disbursementDate"

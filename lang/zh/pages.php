@@ -158,7 +158,6 @@ return [
     'yes' => '是',
     'no' => '否',
     'total_clients' => '总客户数',
-    'active_clients' => '活跃客户',
     'companies' => '公司',
     'individuals' => '个人',
     'filter_clients' => '筛选客户',
@@ -280,6 +279,7 @@ return [
     'all_accounts' => '所有账户...',
     'invoice_status_filter' => '发票状态',
     'all_statuses' => '所有状态...',
+    'all_priorities' => '所有优先级',
     'month_picker' => '月份',
     'select_month' => '选择月份...',
     'date_range' => '日期范围',
@@ -482,10 +482,7 @@ return [
     'total_transactions' => '总交易数',
     'credit' => '贷方',
     'debit' => '借方',
-    'income' => '收入',
     'expense' => '支出',
-    'expenses' => '支出',
-    'overview' => '概览',
     'transfers' => '转账',
     'adjustments' => '调整',
 
@@ -531,15 +528,15 @@ return [
 
     // Fund Requests - Filters & Search
     'filter_fund_requests' => '筛选申请',
-    'all_statuses' => '所有状态',
-    'all_priorities' => '所有优先级',
     'all_requestors' => '所有申请人',
     'search_fund_requests' => '按标题、目的或申请人搜索...',
     'active_filters_count' => ':count个筛选器',
     'showing_count_of_total' => '显示 :count / :total 结果',
-    'clear_filters' => '清除筛选',
     'filter_active' => '个筛选器',
-    'results' => '结果',
+    'filter_month' => '月份',
+    'showing' => '显示',
+    'of' => '/',
+    'export_pdf' => '导出PDF',
 
     // Fund Requests - Statuses
     'status_draft' => '草稿',
@@ -556,6 +553,8 @@ return [
 
     // Fund Requests - Table Headers
     'requestor' => '申请人',
+    'request_number' => '申请编号',
+    'request_number_auto_hint' => '自动生成，可修改',
     'fund_request_title' => '标题',
     'needed_by_date' => '需要日期',
     'created_date' => '创建时间',
@@ -769,9 +768,6 @@ return [
     'to_date' => '结束日期',
     'all' => '全部',
     'show_entries' => '显示 :count 条',
-    'showing' => '显示',
-    'to' => '至',
-    'of' => '共',
     'entries' => '条',
 
     // Actions & Buttons
@@ -814,6 +810,8 @@ return [
     'no_results_found' => '未找到结果',
     'start_by_creating' => '开始创建',
     'click_to_add' => '点击添加',
+    'clear_filters' => '清除筛选',
+    'results' => '结果',
 
     // Misc
     'loading' => '加载中...',
@@ -839,16 +837,11 @@ return [
     'credit_card' => '信用卡',
     'other' => '其他',
 
-    // Client Types
-    'individual' => '个人',
-    'company' => '公司',
-
     // Invoice Print Modal
     'select_invoice_type_to_print' => '选择要打印的发票类型',
     'print_full_invoice' => '打印全额发票',
     'print_dp_invoice' => '打印首付款发票',
     'print_settlement_invoice' => '打印结算发票',
-    'select_template' => '选择模板',
     'dp_amount' => '首付款金额',
     'settlement_amount' => '结算金额',
 ];

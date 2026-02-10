@@ -4,25 +4,37 @@
         <div class="flex flex-col gap-4">
 
             {{-- Main Filters Grid (Responsive) --}}
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-3">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {{-- Status Filter --}}
-                <x-select.styled wire:model.live="statusFilter" label="{{ __('pages.status') }}">
-                    <option value="">{{ __('pages.all_statuses') }}</option>
-                    <option value="draft">{{ __('pages.status_draft') }}</option>
-                    <option value="pending">{{ __('pages.status_pending') }}</option>
-                    <option value="approved">{{ __('pages.status_approved') }}</option>
-                    <option value="rejected">{{ __('pages.status_rejected') }}</option>
-                    <option value="disbursed">{{ __('pages.status_disbursed') }}</option>
-                </x-select.styled>
+                <x-select.styled wire:model.live="statusFilter"
+                                 :label="__('pages.status')"
+                                 :options="[
+                                     ['label' => __('pages.all_statuses'), 'value' => ''],
+                                     ['label' => __('pages.status_draft'), 'value' => 'draft'],
+                                     ['label' => __('pages.status_pending'), 'value' => 'pending'],
+                                     ['label' => __('pages.status_approved'), 'value' => 'approved'],
+                                     ['label' => __('pages.status_rejected'), 'value' => 'rejected'],
+                                     ['label' => __('pages.status_disbursed'), 'value' => 'disbursed'],
+                                 ]" />
 
                 {{-- Priority Filter --}}
-                <x-select.styled wire:model.live="priorityFilter" label="{{ __('pages.priority') }}">
-                    <option value="">{{ __('pages.all_priorities') }}</option>
-                    <option value="low">{{ __('pages.priority_low') }}</option>
-                    <option value="medium">{{ __('pages.priority_medium') }}</option>
-                    <option value="high">{{ __('pages.priority_high') }}</option>
-                    <option value="urgent">{{ __('pages.priority_urgent') }}</option>
-                </x-select.styled>
+                <x-select.styled wire:model.live="priorityFilter"
+                                 :label="__('pages.priority')"
+                                 :options="[
+                                     ['label' => __('pages.all_priorities'), 'value' => ''],
+                                     ['label' => __('pages.priority_low'), 'value' => 'low'],
+                                     ['label' => __('pages.priority_medium'), 'value' => 'medium'],
+                                     ['label' => __('pages.priority_high'), 'value' => 'high'],
+                                     ['label' => __('pages.priority_urgent'), 'value' => 'urgent'],
+                                 ]" />
+
+                {{-- Month Filter --}}
+                <div>
+                    <label class="block text-sm font-medium text-dark-700 dark:text-dark-300 mb-1.5">{{ __('pages.filter_month') }}</label>
+                    <input type="month"
+                           wire:model.live="monthFilter"
+                           class="w-full h-10 px-3 rounded-xl border border-secondary-300 dark:border-dark-600 bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500" />
+                </div>
             </div>
 
             {{-- Search Bar + Filter Status Row --}}
@@ -51,15 +63,27 @@
                     </div>
                 </div>
 
-                {{-- Right: Clear Filters --}}
-                @if ($this->activeFilters > 0)
-                    <x-button wire:click="clearFilters" color="zinc" size="sm">
-                        <x-slot:left>
-                            <x-icon name="x-mark" class="w-4 h-4" />
-                        </x-slot:left>
-                        {{ __('pages.clear_filters') }}
-                    </x-button>
-                @endif
+                {{-- Right: Export PDF + Clear Filters --}}
+                <div class="flex items-center gap-2">
+                    {{-- Export PDF --}}
+                    <a href="{{ $this->getExportUrl() }}"
+                       target="_blank"
+                       wire:navigate.hover
+                       class="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-xl bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors">
+                        <x-icon name="document-arrow-down" class="w-4 h-4" />
+                        {{ __('pages.export_pdf') }}
+                    </a>
+
+                    {{-- Clear Filters --}}
+                    @if ($this->activeFilters > 0)
+                        <x-button wire:click="clearFilters" color="zinc" size="sm">
+                            <x-slot:left>
+                                <x-icon name="x-mark" class="w-4 h-4" />
+                            </x-slot:left>
+                            {{ __('pages.clear_filters') }}
+                        </x-button>
+                    @endif
+                </div>
             </div>
 
         </div>
@@ -67,6 +91,12 @@
 
     {{-- Table --}}
     <x-table :$headers :rows="$this->rows" :$sort paginate loading>
+        @interact('column_request_number', $row)
+            <div class="font-mono font-semibold text-primary-600 dark:text-primary-400">
+                {{ $row->request_number ?? '-' }}
+            </div>
+        @endinteract
+
         @interact('column_title', $row)
             <div class="flex items-start gap-3">
                 <div class="h-10 w-10 bg-blue-50 dark:bg-blue-900/20 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -113,7 +143,17 @@
                         <x-icon name="fire" class="w-4 h-4 text-red-600 dark:text-red-400" />
                     </div>
                 @endif
-                <span class="text-sm font-medium text-dark-900 dark:text-dark-50">{{ ucfirst($row->priority) }}</span>
+                <span class="text-sm font-medium text-dark-900 dark:text-dark-50">
+                    @if ($row->priority === 'low')
+                        {{ __('pages.priority_low') }}
+                    @elseif ($row->priority === 'medium')
+                        {{ __('pages.priority_medium') }}
+                    @elseif ($row->priority === 'high')
+                        {{ __('pages.priority_high') }}
+                    @else
+                        {{ __('pages.priority_urgent') }}
+                    @endif
+                </span>
             </div>
         @endinteract
 

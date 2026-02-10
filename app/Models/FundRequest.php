@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class FundRequest extends Model
 {
     protected $fillable = [
-        'user_id', 'title', 'purpose', 'total_amount',
+        'request_number', 'user_id', 'title', 'purpose', 'total_amount',
         'priority', 'needed_by_date',
         'attachment_path', 'attachment_name',
         'status', 'reviewed_by', 'reviewed_at', 'review_notes',
@@ -23,6 +23,53 @@ class FundRequest extends Model
         'disbursed_at' => 'datetime',
         'disbursement_date' => 'date',
     ];
+
+    // ===== AUTO-GENERATE REQUEST NUMBER =====
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($fundRequest) {
+            if (empty($fundRequest->request_number)) {
+                $fundRequest->request_number = self::generateRequestNumber();
+            }
+        });
+    }
+
+    public static function generateRequestNumber(): string
+    {
+        $companyProfile = \App\Models\CompanyProfile::current();
+        // Use stored abbreviation if set, otherwise auto-generate from company name initials
+        $companyAbbreviation = $companyProfile
+            ? $companyProfile->computed_abbreviation
+            : 'CO';
+
+        $year = now()->year;
+        $month = now()->month;
+        $romanMonth = self::toRoman($month);
+
+        // Count existing requests in current month
+        $count = self::whereYear('created_at', $year)
+            ->whereMonth('created_at', $month)
+            ->count();
+
+        $sequence = str_pad($count + 1, 3, '0', STR_PAD_LEFT);
+
+        // Format: 001/KSN/I/2026
+        return sprintf('%s/%s/%s/%s', $sequence, $companyAbbreviation, $romanMonth, $year);
+    }
+
+    private static function toRoman(int $number): string
+    {
+        $map = [
+            12 => 'XII', 11 => 'XI', 10 => 'X',
+            9 => 'IX', 8 => 'VIII', 7 => 'VII',
+            6 => 'VI', 5 => 'V', 4 => 'IV',
+            3 => 'III', 2 => 'II', 1 => 'I'
+        ];
+
+        return $map[$number] ?? 'I';
+    }
 
     // ===== AUTO-CALCULATE TOTAL =====
     public function calculateTotalAmount(): void

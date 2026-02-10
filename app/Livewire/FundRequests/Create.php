@@ -19,6 +19,9 @@ class Create extends Component
 
     public bool $modal = false;
 
+    // Auto-generated request number (editable by user)
+    public string $requestNumber = '';
+
     // Header fields
     public string $title = '';
     public string $purpose = '';
@@ -32,6 +35,7 @@ class Create extends Component
     protected function rules(): array
     {
         return [
+            'requestNumber' => 'required|string|max:50|unique:fund_requests,request_number',
             'title' => 'required|string|max:255',
             'purpose' => 'required|string',
             'priority' => 'required|in:low,medium,high,urgent',
@@ -74,6 +78,7 @@ class Create extends Component
     public function openModal(): void
     {
         $this->reset();
+        $this->requestNumber = FundRequest::generateRequestNumber();
         $this->addItem();
         $this->modal = true;
     }
@@ -147,6 +152,7 @@ class Create extends Component
 
             // Create fund request
             $fundRequest = FundRequest::create([
+                'request_number' => $this->requestNumber,
                 'user_id' => auth()->id(),
                 'title' => $this->title,
                 'purpose' => $this->purpose,
@@ -197,6 +203,7 @@ class Create extends Component
 
             // Create fund request
             $fundRequest = FundRequest::create([
+                'request_number' => $this->requestNumber,
                 'user_id' => auth()->id(),
                 'title' => $this->title,
                 'purpose' => $this->purpose,

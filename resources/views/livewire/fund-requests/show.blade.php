@@ -24,6 +24,10 @@
 
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
                         <div>
+                            <label class="text-xs text-dark-500 dark:text-dark-400">{{ __('pages.request_number') }}</label>
+                            <p class="text-sm font-mono font-semibold text-primary-600 dark:text-primary-400">{{ $fundRequest->request_number ?? '-' }}</p>
+                        </div>
+                        <div>
                             <label class="text-xs text-dark-500 dark:text-dark-400">{{ __('pages.requestor') }}</label>
                             <p class="text-sm font-medium text-dark-900 dark:text-dark-50">{{ $fundRequest->user->name }}</p>
                         </div>

@@ -27,6 +27,7 @@ use App\Livewire\TransactionsCategories\Index as TransactionsCategoriesIndex;
 use App\Livewire\Users\Index as UsersIndex;
 use App\Http\Controllers\CashFlowExportController;
 use App\Models\Invoice;
+use App\Services\FundRequestExportService;
 use App\Services\InvoicePrintService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -178,6 +179,49 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/fund-requests', FundRequestsIndex::class)
         ->middleware('can:view fund requests')
         ->name('fund-requests.index');
+
+    Route::get('/fund-requests/export/pdf', function (Request $request) {
+        $filters = [
+            'month'    => $request->query('month'),
+            'status'   => $request->query('status'),
+            'priority' => $request->query('priority'),
+            'user_id'  => $request->query('user_id') ? (int) $request->query('user_id') : null,
+            'search'   => $request->query('search'),
+        ];
+        $showRequestor = (bool) $request->query('show_requestor', false);
+
+        $service = new FundRequestExportService;
+        $pdf = $service->generate($filters, $showRequestor);
+
+        $month = $filters['month'] ?? 'all';
+        $filename = 'Rekap-Pengajuan-Dana-' . $month . '.pdf';
+
+        return response()->streamDownload(function () use ($pdf) {
+            echo $pdf->output();
+        }, $filename, [
+            'Content-Type'        => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ]);
+    })->middleware('can:view fund requests')->name('fund-requests.export.pdf');
+
+    Route::get('/fund-requests/export/pdf/preview', function (Request $request) {
+        $filters = [
+            'month'    => $request->query('month'),
+            'status'   => $request->query('status'),
+            'priority' => $request->query('priority'),
+            'user_id'  => $request->query('user_id') ? (int) $request->query('user_id') : null,
+            'search'   => $request->query('search'),
+        ];
+        $showRequestor = (bool) $request->query('show_requestor', false);
+
+        $service = new FundRequestExportService;
+        $pdf = $service->generate($filters, $showRequestor);
+
+        return response($pdf->output(), 200, [
+            'Content-Type'        => 'application/pdf',
+            'Content-Disposition' => 'inline',
+        ]);
+    })->middleware('can:view fund requests')->name('fund-requests.export.pdf.preview');
 
     // ------------------------------------------------------------------------
     // FEEDBACKS

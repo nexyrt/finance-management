@@ -19,6 +19,7 @@ class AllRequests extends Component
     public string $statusFilter = '';
     public string $priorityFilter = '';
     public string $userFilter = '';
+    public string $monthFilter = '';
     public string $sortField = 'created_at';
     public string $sortDirection = 'desc';
     public array $selected = [];
@@ -39,6 +40,11 @@ class AllRequests extends Component
     }
 
     public function updatingUserFilter(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingMonthFilter(): void
     {
         $this->resetPage();
     }
@@ -71,6 +77,13 @@ class AllRequests extends Component
     {
         $query = FundRequest::with(['user', 'reviewer', 'disburser'])
             ->withCount('items');
+
+        // Month filter
+        if ($this->monthFilter) {
+            [$year, $month] = explode('-', $this->monthFilter);
+            $query->whereYear('created_at', $year)
+                  ->whereMonth('created_at', $month);
+        }
 
         // Search
         if ($this->search) {
@@ -123,28 +136,44 @@ class AllRequests extends Component
         if ($this->userFilter) {
             $count++;
         }
+        if ($this->monthFilter) {
+            $count++;
+        }
 
         return $count;
     }
 
     public function clearFilters(): void
     {
-        $this->reset(['statusFilter', 'priorityFilter', 'userFilter', 'search']);
+        $this->reset(['statusFilter', 'priorityFilter', 'userFilter', 'monthFilter', 'search']);
         $this->resetPage();
+    }
+
+    public function getExportUrl(): string
+    {
+        return route('fund-requests.export.pdf', array_filter([
+            'month'          => $this->monthFilter ?: null,
+            'status'         => $this->statusFilter ?: null,
+            'priority'       => $this->priorityFilter ?: null,
+            'user_id'        => $this->userFilter ?: null,
+            'search'         => $this->search ?: null,
+            'show_requestor' => '1',
+        ]));
     }
 
     public function render()
     {
         return view('livewire.fund-requests.all-requests', [
             'headers' => [
-                ['index' => 'user', 'label' => 'Requestor'],
-                ['index' => 'title', 'label' => 'Request Title', 'sortable' => true],
-                ['index' => 'total_amount', 'label' => 'Amount'],
-                ['index' => 'priority', 'label' => 'Priority'],
-                ['index' => 'needed_by_date', 'label' => 'Needed By'],
-                ['index' => 'status', 'label' => 'Status'],
-                ['index' => 'created_at', 'label' => 'Created', 'sortable' => true],
-                ['index' => 'actions', 'label' => 'Actions'],
+                ['index' => 'request_number', 'label' => __('pages.request_number')],
+                ['index' => 'user', 'label' => __('pages.requestor')],
+                ['index' => 'title', 'label' => __('pages.fund_request_title'), 'sortable' => true],
+                ['index' => 'total_amount', 'label' => __('common.amount')],
+                ['index' => 'priority', 'label' => __('pages.priority')],
+                ['index' => 'needed_by_date', 'label' => __('pages.needed_by_date')],
+                ['index' => 'status', 'label' => __('pages.status')],
+                ['index' => 'created_at', 'label' => __('pages.created_date'), 'sortable' => true],
+                ['index' => 'actions', 'label' => __('common.actions')],
             ],
             'sort' => [
                 'column' => $this->sortField,
