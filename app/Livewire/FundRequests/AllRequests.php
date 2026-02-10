@@ -19,7 +19,7 @@ class AllRequests extends Component
     public string $statusFilter = '';
     public string $priorityFilter = '';
     public string $userFilter = '';
-    public string $monthFilter = '';
+    public ?string $monthFilter = null;
     public string $sortField = 'created_at';
     public string $sortDirection = 'desc';
     public array $selected = [];

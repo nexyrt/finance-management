@@ -17,7 +17,7 @@ class MyRequests extends Component
     public string $search = '';
     public string $statusFilter = '';
     public string $priorityFilter = '';
-    public string $monthFilter = '';
+    public ?string $monthFilter = null;
     public string $sortField = 'created_at';
     public string $sortDirection = 'desc';
     public array $selected = [];

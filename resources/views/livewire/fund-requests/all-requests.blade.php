@@ -37,12 +37,7 @@
                                  )" />
 
                 {{-- Month Filter --}}
-                <div>
-                    <label class="block text-sm font-medium text-dark-700 dark:text-dark-300 mb-1.5">{{ __('pages.filter_month') }}</label>
-                    <input type="month"
-                           wire:model.live="monthFilter"
-                           class="w-full h-10 px-3 rounded-xl border border-secondary-300 dark:border-dark-600 bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500" />
-                </div>
+                <x-date month-year-only wire:model.live="monthFilter" :label="__('pages.filter_month')" placeholder="{{ __('pages.select_month') }}" />
             </div>
 
             {{-- Search Bar + Filter Status Row --}}

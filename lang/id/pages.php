@@ -440,6 +440,7 @@ return [
     'clear_filters' => 'Hapus Filter',
     'filter_active' => 'filter aktif',
     'filter_month' => 'Bulan',
+    'select_month' => 'Pilih bulan...',
     'results' => 'hasil',
     'showing' => 'Menampilkan',
     'of' => 'dari',
