@@ -6,6 +6,7 @@ use App\Livewire\Traits\Alert;
 use App\Models\FundRequest;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
+use Livewire\Attributes\Renderless;
 use Livewire\Component;
 use Livewire\WithPagination;
 use TallStackUi\Traits\Interactions;
@@ -130,34 +131,42 @@ class MyRequests extends Component
             'status'   => $this->statusFilter ?: null,
             'priority' => $this->priorityFilter ?: null,
             'search'   => $this->search ?: null,
+            'user_id'  => auth()->id(),
         ]));
     }
 
+    #[Renderless]
     public function submitRequest(int $id): void
-    {
-        $this->dispatch('submit-request', id: $id);
-    }
-
-    public function confirmSubmit(int $id): void
     {
         $fundRequest = FundRequest::findOrFail($id);
 
-        // Check authorization
         if ($fundRequest->user_id !== auth()->id()) {
-            $this->toast()->error('Unauthorized', 'You cannot submit this request.')->send();
+            $this->toast()->error('Error', __('pages.fund_request_unauthorized'))->send();
 
             return;
         }
 
         if (! $fundRequest->canSubmit()) {
-            $this->toast()->error('Cannot Submit', 'This request cannot be submitted. Please add items first.')->send();
+            $this->toast()->error('Error', __('pages.fund_request_not_found'))->send();
 
             return;
         }
 
+        $this->dialog()
+            ->question(__('pages.submit_fund_request_title'), __('pages.submit_fund_request_description'))
+            ->confirm(__('pages.submit_for_approval'), 'confirmSubmit', $id)
+            ->cancel(__('common.cancel'))
+            ->send();
+    }
+
+    #[Renderless]
+    public function confirmSubmit(int $id): void
+    {
+        $fundRequest = FundRequest::findOrFail($id);
+
         $fundRequest->submit();
 
-        $this->toast()->success('Request Submitted', 'Your fund request has been submitted for review.')->send();
+        $this->toast()->success('Success', __('pages.fund_request_submitted'))->send();
         $this->dispatch('fund-request-submitted');
     }
 

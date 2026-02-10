@@ -272,22 +272,3 @@
         @endinteract
     </x-table>
 </div>
-
-@script
-<script>
-    $wire.on('submit-request', (data) => {
-        $wire.dispatch('confirm', {
-            title: '{{ __('pages.submit_fund_request_title') }}',
-            description: '{{ __('pages.submit_fund_request_description') }}',
-            icon: 'question',
-            accept: {
-                label: '{{ __('pages.submit_for_approval') }}',
-                color: 'green',
-                execute: () => {
-                    $wire.call('confirmSubmit', data[0].id);
-                }
-            }
-        });
-    });
-</script>
-@endscript

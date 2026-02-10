@@ -23,9 +23,9 @@ class FundRequestExportService
         $query = FundRequest::with(['user', 'items'])
             ->orderBy('created_at', 'asc');
 
-        // Apply month filter
+        // Apply month filter (supports both YYYY-MM and YYYY-MM-DD formats)
         if (! empty($filters['month'])) {
-            $date = Carbon::createFromFormat('Y-m', $filters['month']);
+            $date = Carbon::parse($filters['month']);
             $query->whereYear('created_at', $date->year)
                   ->whereMonth('created_at', $date->month);
         }
@@ -97,7 +97,7 @@ class FundRequestExportService
     private function buildPeriodLabel(array $filters): string
     {
         if (! empty($filters['month'])) {
-            $date = Carbon::createFromFormat('Y-m', $filters['month']);
+            $date = Carbon::parse($filters['month']);
             return $date->translatedFormat('F Y');
         }
 
