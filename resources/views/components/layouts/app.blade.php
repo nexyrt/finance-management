@@ -44,7 +44,7 @@
                         <x-theme-switch only-icons />
 
                         {{-- User Dropdown --}}
-                        <x-dropdown text="Hello, {{ auth()->user()->name }}!" position="bottom-end">
+                        <x-dropdown text="{{ __('common.hello_greeting', ['name' => auth()->user()->name]) }}" position="bottom-end">
                             <x-dropdown.items text="{{ __('common.settings') }}" icon="cog" href="{{ route('settings.profile') }}" wire:navigate />
 
                             <x-dropdown.items separator />
@@ -109,7 +109,7 @@
                 @endcanany
 
                 {{-- OPERATIONS --}}
-                <x-side-bar.separator text="{{ __('Operations') }}" />
+                <x-side-bar.separator text="{{ __('common.operations') }}" />
 
                 @can('view categories')
                     <x-side-bar.item text="{{ __('common.categories') }}" icon="tag" :route="route('transaction-categories.index')" />
@@ -151,7 +151,7 @@
 
                 {{-- TESTING (Local Environment Only) --}}
                 @env('local')
-                    <x-side-bar.separator text="{{ __('Development') }}" />
+                    <x-side-bar.separator text="{{ __('common.development') }}" />
                     <x-side-bar.item text="{{ __('common.testing_page') }}" icon="beaker" :route="route('test')" />
                 @endenv
             </x-side-bar>

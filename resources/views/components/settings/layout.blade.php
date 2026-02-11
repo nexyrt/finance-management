@@ -1,11 +1,9 @@
 <div class="flex items-start max-md:flex-col">
     <div class="me-10 w-full pb-4 md:w-[220px]">
         <flux:navlist>
-            <flux:navlist.item :href="route('settings.profile')" wire:navigate>{{ __('Profile') }}</flux:navlist.item>
-            <flux:navlist.item :href="route('settings.password')" wire:navigate>{{ __('Password') }}</flux:navlist.item>
-            <flux:navlist.item :href="route('settings.appearance')" wire:navigate>{{ __('Appearance') }}
-            </flux:navlist.item>
-            <flux:navlist.item :href="route('settings.company')" wire:navigate>{{ __('Company') }}</flux:navlist.item>
+            <flux:navlist.item :href="route('settings.profile')" wire:navigate>{{ __('common.profile') }}</flux:navlist.item>
+            <flux:navlist.item :href="route('settings.password')" wire:navigate>{{ __('common.password') }}</flux:navlist.item>
+            <flux:navlist.item :href="route('settings.company')" wire:navigate>{{ __('common.company') }}</flux:navlist.item>
         </flux:navlist>
     </div>
 

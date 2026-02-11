@@ -24,9 +24,11 @@ return [
     // Menu Groups
     'master_data' => 'Data Master',
     'finance' => 'Keuangan',
+    'operations' => 'Operasional',
     'debt_receivables' => 'Hutang & Piutang',
     'administration' => 'Administrasi',
     'platform' => 'Platform',
+    'development' => 'Pengembangan',
 
     // Additional Menu Items
     'testing_page' => 'Halaman Testing',
@@ -34,6 +36,10 @@ return [
     'documentation' => 'Dokumentasi',
     'log_out' => 'Keluar',
     'profile' => 'Profil',
+    'company' => 'Perusahaan',
+
+    // Greetings
+    'hello_greeting' => 'Halo, :name!',
 
     // Actions
     'actions' => 'Aksi',

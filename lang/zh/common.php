@@ -24,9 +24,11 @@ return [
     // Menu Groups
     'master_data' => '主数据',
     'finance' => '财务',
+    'operations' => '运营',
     'debt_receivables' => '债务与应收账款',
     'administration' => '管理',
     'platform' => '平台',
+    'development' => '开发',
 
     // Additional Menu Items
     'testing_page' => '测试页面',
@@ -34,6 +36,10 @@ return [
     'documentation' => '文档',
     'log_out' => '登出',
     'profile' => '个人资料',
+    'company' => '公司',
+
+    // Greetings
+    'hello_greeting' => '你好，:name！',
 
     // Actions
     'create' => '创建',

@@ -24,7 +24,8 @@
       "Bash(php -r:*)",
       "Bash(do echo \"Checking: $key\")",
       "Bash(do echo \"Checking invoice.$key\")",
-      "Bash(do echo \"Checking common.$key\")"
+      "Bash(do echo \"Checking common.$key\")",
+      "Bash(wc:*)"
     ]
   }
 }
