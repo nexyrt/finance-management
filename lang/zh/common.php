@@ -34,6 +34,11 @@ return [
     'documentation' => '文档',
     'log_out' => '登出',
     'profile' => '个人资料',
+    'my_profile' => '我的资料',
+    'appearance' => '外观',
+    'company_profile' => '公司资料',
+    'search_placeholder' => '搜索...',
+    'finance_management' => '财务管理',
 
     // Actions
     'create' => '创建',

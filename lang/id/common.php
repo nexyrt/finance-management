@@ -34,6 +34,11 @@ return [
     'documentation' => 'Dokumentasi',
     'log_out' => 'Keluar',
     'profile' => 'Profil',
+    'my_profile' => 'Profil Saya',
+    'appearance' => 'Tampilan',
+    'company_profile' => 'Profil Perusahaan',
+    'search_placeholder' => 'Cari...',
+    'finance_management' => 'Finance Management',
 
     // Actions
     'actions' => 'Aksi',
