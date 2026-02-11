@@ -235,7 +235,7 @@ window.addEventListener('resize', () => {
                     </a>
                 </div>
 
-                <!-- Manajemen -->
+                <!-- Master Data -->
                 <div class="space-y-1">
                     <h3 class="px-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2"
                         :class="{ 'lg:hidden': isCollapsed }">
@@ -279,7 +279,7 @@ window.addEventListener('resize', () => {
                     @endcan
                 </div>
 
-                <!-- Keuangan -->
+                <!-- Finance -->
                 <div class="space-y-1">
                     <h3 class="px-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2"
                         :class="{ 'lg:hidden': isCollapsed }">
@@ -359,6 +359,14 @@ window.addEventListener('resize', () => {
                             <span class="truncate" :class="{ 'lg:hidden': isCollapsed }">{{ __('common.cash_flow') }}</span>
                         </a>
                     @endcan
+                </div>
+
+                <!-- Operations -->
+                <div class="space-y-1">
+                    <h3 class="px-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2"
+                        :class="{ 'lg:hidden': isCollapsed }">
+                        {{ __('common.operations') }}
+                    </h3>
 
                     @can('view categories')
                         <a href="{{ route('transaction-categories.index') }}" wire:navigate @click="closeMobileMenu()"
@@ -376,25 +384,6 @@ window.addEventListener('resize', () => {
                                     d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2zM2 10h20" />
                             </svg>
                             <span class="truncate" :class="{ 'lg:hidden': isCollapsed }">{{ __('common.categories') }}</span>
-                        </a>
-                    @endcan
-
-                    @can('view reimbursements')
-                        <a href="{{ route('reimbursements.index') }}" wire:navigate @click="closeMobileMenu()"
-                            :title="isCollapsed ? '{{ __('common.reimbursements') }}' : undefined"
-                            class="menu-item {{ request()->routeIs('reimbursements.index') ? 'active' : '' }} flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-dark-800"
-                            :class="{
-                                'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 border-l-2 border-primary-600 dark:border-primary-400 -ml-0.5 pl-[calc(0.75rem+2px)]': isActivePath(
-                                    '{{ route('reimbursements.index') }}'),
-                                'text-gray-700 dark:text-gray-300': !isActivePath(
-                                    '{{ route('reimbursements.index') }}'),
-                                'lg:justify-center lg:px-2': isCollapsed
-                            }">
-                            <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M21 10c0-4.97-4.03-9-9-9-2.4 0-4.58.94-6.2 2.47M3 14c0 4.97 4.03 9 9 9 2.4 0 4.58-.94 6.2-2.47M3 3v7h7M21 21v-7h-7" />
-                            </svg>
-                            <span class="truncate" :class="{ 'lg:hidden': isCollapsed }">{{ __('common.reimbursements') }}</span>
                         </a>
                     @endcan
 
@@ -416,9 +405,28 @@ window.addEventListener('resize', () => {
                             <span class="truncate" :class="{ 'lg:hidden': isCollapsed }">{{ __('common.fund_requests') }}</span>
                         </a>
                     @endcan
+
+                    @can('view reimbursements')
+                        <a href="{{ route('reimbursements.index') }}" wire:navigate @click="closeMobileMenu()"
+                            :title="isCollapsed ? '{{ __('common.reimbursements') }}' : undefined"
+                            class="menu-item {{ request()->routeIs('reimbursements.index') ? 'active' : '' }} flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-dark-800"
+                            :class="{
+                                'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 border-l-2 border-primary-600 dark:border-primary-400 -ml-0.5 pl-[calc(0.75rem+2px)]': isActivePath(
+                                    '{{ route('reimbursements.index') }}'),
+                                'text-gray-700 dark:text-gray-300': !isActivePath(
+                                    '{{ route('reimbursements.index') }}'),
+                                'lg:justify-center lg:px-2': isCollapsed
+                            }">
+                            <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M21 10c0-4.97-4.03-9-9-9-2.4 0-4.58.94-6.2 2.47M3 14c0 4.97 4.03 9 9 9 2.4 0 4.58-.94 6.2-2.47M3 3v7h7M21 21v-7h-7" />
+                            </svg>
+                            <span class="truncate" :class="{ 'lg:hidden': isCollapsed }">{{ __('common.reimbursements') }}</span>
+                        </a>
+                    @endcan
                 </div>
 
-                <!-- Utang & Piutang -->
+                <!-- Debt & Receivables -->
                 <div class="space-y-1">
                     <h3 class="px-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2"
                         :class="{ 'lg:hidden': isCollapsed }">
@@ -462,7 +470,7 @@ window.addEventListener('resize', () => {
                     @endcan
                 </div>
 
-                <!-- Administrasi -->
+                <!-- Administration -->
                 <div class="space-y-1">
                     <h3 class="px-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2"
                         :class="{ 'lg:hidden': isCollapsed }">

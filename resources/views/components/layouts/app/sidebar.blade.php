@@ -85,66 +85,72 @@
                 @endcan
             @endcanany
 
-            {{-- ================================================================== --}}
-            {{-- CATEGORIES --}}
-            @can('view categories')
-                <flux:navlist.item icon="tag" :href="route('transaction-categories.index')"
-                    :current="request()->routeIs('transaction-categories.*')" wire:navigate>
-                    {{ __('common.categories') }}
-                </flux:navlist.item>
-            @endcan
-
-            {{-- FUND REQUESTS --}}
-            @can('view fund-requests')
-                <flux:navlist.item icon="document-currency-dollar" :href="route('fund-requests.index')"
-                    :current="request()->routeIs('fund-requests.*')" wire:navigate>
-                    <div class="flex items-center justify-between w-full">
-                        <span>{{ __('common.fund_requests') }}</span>
-                        @can('approve fund-requests')
-                            @php
-                                $pendingFundRequests = \App\Models\FundRequest::where('status', 'pending')->count();
-                            @endphp
-                            @if ($pendingFundRequests > 0)
-                                <flux:badge color="yellow" size="sm">{{ $pendingFundRequests }}</flux:badge>
-                            @endif
-                        @endcan
+            {{-- OPERATIONS --}}
+            @canany(['view categories', 'view fund-requests', 'view reimbursements', 'view feedbacks'])
+                <div class="px-3 pt-6 pb-2">
+                    <div class="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                        {{ __('common.operations') }}
                     </div>
-                </flux:navlist.item>
-            @endcan
+                </div>
 
-            @can('view reimbursements')
-                <flux:navlist.item icon="receipt-percent" :href="route('reimbursements.index')"
-                    :current="request()->routeIs('reimbursements.*')" wire:navigate>
-                    <div class="flex items-center justify-between w-full">
-                        <span>{{ __('common.reimbursements') }}</span>
-                        @can('approve reimbursements')
-                            @php
-                                $pendingReimbursements = \App\Models\Reimbursement::pending()->count();
-                            @endphp
-                            @if ($pendingReimbursements > 0)
-                                <flux:badge color="yellow" size="sm">{{ $pendingReimbursements }}</flux:badge>
-                            @endif
-                        @endcan
-                    </div>
-                </flux:navlist.item>
-            @endcan
+                @can('view categories')
+                    <flux:navlist.item icon="tag" :href="route('transaction-categories.index')"
+                        :current="request()->routeIs('transaction-categories.*')" wire:navigate>
+                        {{ __('common.categories') }}
+                    </flux:navlist.item>
+                @endcan
 
-            @can('view feedbacks')
-                <flux:navlist.item icon="chat-bubble-left-ellipsis" :href="route('feedbacks.index')"
-                    :current="request()->routeIs('feedbacks.*')" wire:navigate>
-                    <div class="flex items-center justify-between w-full">
-                        <span>{{ __('common.feedbacks') }}</span>
-                        @can('manage feedbacks')
-                            @php
-                                $openFeedbacks = \App\Models\Feedback::where('status', 'open')->count();
-                            @endphp
-                            @if ($openFeedbacks > 0)
-                                <flux:badge color="red" size="sm">{{ $openFeedbacks }}</flux:badge>
-                            @endif
-                        @endcan
-                    </div>
-                </flux:navlist.item>
-            @endcan
+                @can('view fund-requests')
+                    <flux:navlist.item icon="document-currency-dollar" :href="route('fund-requests.index')"
+                        :current="request()->routeIs('fund-requests.*')" wire:navigate>
+                        <div class="flex items-center justify-between w-full">
+                            <span>{{ __('common.fund_requests') }}</span>
+                            @can('approve fund-requests')
+                                @php
+                                    $pendingFundRequests = \App\Models\FundRequest::where('status', 'pending')->count();
+                                @endphp
+                                @if ($pendingFundRequests > 0)
+                                    <flux:badge color="yellow" size="sm">{{ $pendingFundRequests }}</flux:badge>
+                                @endif
+                            @endcan
+                        </div>
+                    </flux:navlist.item>
+                @endcan
+
+                @can('view reimbursements')
+                    <flux:navlist.item icon="receipt-percent" :href="route('reimbursements.index')"
+                        :current="request()->routeIs('reimbursements.*')" wire:navigate>
+                        <div class="flex items-center justify-between w-full">
+                            <span>{{ __('common.reimbursements') }}</span>
+                            @can('approve reimbursements')
+                                @php
+                                    $pendingReimbursements = \App\Models\Reimbursement::pending()->count();
+                                @endphp
+                                @if ($pendingReimbursements > 0)
+                                    <flux:badge color="yellow" size="sm">{{ $pendingReimbursements }}</flux:badge>
+                                @endif
+                            @endcan
+                        </div>
+                    </flux:navlist.item>
+                @endcan
+
+                @can('view feedbacks')
+                    <flux:navlist.item icon="chat-bubble-left-ellipsis" :href="route('feedbacks.index')"
+                        :current="request()->routeIs('feedbacks.*')" wire:navigate>
+                        <div class="flex items-center justify-between w-full">
+                            <span>{{ __('common.feedbacks') }}</span>
+                            @can('manage feedbacks')
+                                @php
+                                    $openFeedbacks = \App\Models\Feedback::where('status', 'open')->count();
+                                @endphp
+                                @if ($openFeedbacks > 0)
+                                    <flux:badge color="red" size="sm">{{ $openFeedbacks }}</flux:badge>
+                                @endif
+                            @endcan
+                        </div>
+                    </flux:navlist.item>
+                @endcan
+            @endcanany
 
             {{-- DEBT & RECEIVABLES --}}
             @canany(['view loans', 'view receivables'])
