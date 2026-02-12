@@ -16,9 +16,9 @@ class CompanyProfileSettings extends Component
     public $finance_manager_name, $finance_manager_position;
     public $bank_accounts = [];
 
-    public $logo, $signature, $stamp;
-    public $currentLogo, $currentSignature, $currentStamp;
-    public $showLogoModal = false, $showSignatureModal = false, $showStampModal = false;
+    public $logo, $letterHead, $signature, $stamp;
+    public $currentLogo, $currentLetterHead, $currentSignature, $currentStamp;
+    public $showLogoModal = false, $showLetterHeadModal = false, $showSignatureModal = false, $showStampModal = false;
 
     public function mount()
     {
@@ -38,6 +38,7 @@ class CompanyProfileSettings extends Component
             ]));
 
             $this->currentLogo = $company->logo_path;
+            $this->currentLetterHead = $company->letter_head_path;
             $this->currentSignature = $company->signature_path;
             $this->currentStamp = $company->stamp_path;
         }
@@ -56,6 +57,7 @@ class CompanyProfileSettings extends Component
             'finance_manager_name' => 'required|string',
             'finance_manager_position' => 'required|string',
             'logo' => 'nullable|image|max:2048',
+            'letterHead' => 'nullable|image|max:2048',
             'signature' => 'nullable|image|max:2048',
             'stamp' => 'nullable|image|max:2048',
         ];
@@ -83,7 +85,14 @@ class CompanyProfileSettings extends Component
             if ($company->logo_path && Storage::disk('public')->exists($company->logo_path)) {
                 Storage::disk('public')->delete($company->logo_path);
             }
-            $company->logo_path = $this->logo->storeAs('images', 'letter-head.png', 'public');
+            $company->logo_path = $this->logo->storeAs('images', 'logo.png', 'public');
+        }
+
+        if ($this->letterHead) {
+            if ($company->letter_head_path && Storage::disk('public')->exists($company->letter_head_path)) {
+                Storage::disk('public')->delete($company->letter_head_path);
+            }
+            $company->letter_head_path = $this->letterHead->storeAs('images', 'letter-head.png', 'public');
         }
 
         if ($this->signature) {
@@ -103,10 +112,11 @@ class CompanyProfileSettings extends Component
         $company->save();
 
         $this->currentLogo = $company->logo_path;
+        $this->currentLetterHead = $company->letter_head_path;
         $this->currentSignature = $company->signature_path;
         $this->currentStamp = $company->stamp_path;
 
-        $this->reset(['logo', 'signature', 'stamp']);
+        $this->reset(['logo', 'letterHead', 'signature', 'stamp']);
         $this->dispatch('company-updated');
     }
 
@@ -133,6 +143,19 @@ class CompanyProfileSettings extends Component
             $company->signature_path = null;
             $company->save();
             $this->currentSignature = null;
+        }
+    }
+
+    public function deleteExistingLetterHead()
+    {
+        $company = CompanyProfile::first();
+        if ($company && $company->letter_head_path) {
+            if (Storage::disk('public')->exists($company->letter_head_path)) {
+                Storage::disk('public')->delete($company->letter_head_path);
+            }
+            $company->letter_head_path = null;
+            $company->save();
+            $this->currentLetterHead = null;
         }
     }
 

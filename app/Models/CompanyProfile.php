@@ -14,6 +14,7 @@ class CompanyProfile extends Model
         'email',
         'phone',
         'logo_path',
+        'letter_head_path',
         'signature_path',
         'stamp_path',
         'is_pkp',
@@ -48,6 +49,17 @@ class CompanyProfile extends Model
             return '';
 
         $fullPath = public_path($this->signature_path);
+        return file_exists($fullPath)
+            ? 'data:image/png;base64,' . base64_encode(file_get_contents($fullPath))
+            : '';
+    }
+
+    public function getLetterHeadBase64Attribute(): string
+    {
+        if (!$this->letter_head_path)
+            return '';
+
+        $fullPath = public_path($this->letter_head_path);
         return file_exists($fullPath)
             ? 'data:image/png;base64,' . base64_encode(file_get_contents($fullPath))
             : '';

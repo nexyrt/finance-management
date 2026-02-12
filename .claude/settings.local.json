@@ -25,7 +25,9 @@
       "Bash(do echo \"Checking: $key\")",
       "Bash(do echo \"Checking invoice.$key\")",
       "Bash(do echo \"Checking common.$key\")",
-      "Bash(wc:*)"
+      "Bash(wc:*)",
+      "Bash(composer require:*)",
+      "Bash(mysql:*)"
     ]
   }
 }

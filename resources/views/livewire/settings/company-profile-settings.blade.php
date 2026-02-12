@@ -42,7 +42,7 @@
                                 <div class="flex items-center gap-3 cursor-pointer"
                                     wire:click="$set('showLogoModal', true)">
                                     <div>
-                                        <p class="text-sm font-medium text-blue-900 dark:text-blue-100">letter-head.png
+                                        <p class="text-sm font-medium text-blue-900 dark:text-blue-100">logo.png
                                         </p>
                                         <p class="text-xs text-blue-700 dark:text-blue-300">Click to preview</p>
                                     </div>
@@ -53,7 +53,30 @@
                     </div>
                 @endif
                 <x-upload wire:model="logo" label="{{ $currentLogo ? 'Replace Logo' : 'Logo' }}" accept="image/*"
-                    tip="PNG, JPG (Max 2MB)" />
+                    tip="PNG, JPG (Max 2MB). Used for website favicon, navbar, and PDF documents." />
+
+                {{-- Letter Head --}}
+                @if ($currentLetterHead)
+                    <div class="space-y-2">
+                        <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">Current Letter Head</label>
+                        <div
+                            class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4 border border-blue-200 dark:border-blue-800">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-3 cursor-pointer"
+                                    wire:click="$set('showLetterHeadModal', true)">
+                                    <div>
+                                        <p class="text-sm font-medium text-blue-900 dark:text-blue-100">letter-head.png
+                                        </p>
+                                        <p class="text-xs text-blue-700 dark:text-blue-300">Click to preview</p>
+                                    </div>
+                                </div>
+                                <x-button color="red" sm wire:click="deleteExistingLetterHead">Delete</x-button>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+                <x-upload wire:model="letterHead" label="{{ $currentLetterHead ? 'Replace Letter Head' : 'Letter Head' }}" accept="image/*"
+                    tip="PNG, JPG (Max 2MB). Used for PDF document headers." />
 
                 {{-- Signature --}}
                 @if ($currentSignature)
@@ -100,6 +123,28 @@
                 @endif
                 <x-upload wire:model="stamp" label="{{ $currentStamp ? 'Replace Stamp' : 'Stamp' }}" accept="image/*"
                     tip="PNG, JPG (Max 2MB)" />
+
+                {{-- Favicon Generation Info --}}
+                @if ($currentLogo)
+                    <div class="rounded-xl p-4 bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800">
+                        <div class="flex items-start gap-3">
+                            <svg class="w-5 h-5 text-primary-600 dark:text-primary-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <div class="flex-1">
+                                <p class="text-sm font-medium text-primary-900 dark:text-primary-100 mb-1">
+                                    Generate Website Favicons
+                                </p>
+                                <p class="text-xs text-primary-700 dark:text-primary-300 mb-2">
+                                    After uploading a new logo, run this command to generate all favicon sizes for browsers and devices:
+                                </p>
+                                <code class="block px-3 py-2 bg-white dark:bg-dark-800 rounded-lg text-xs font-mono text-primary-600 dark:text-primary-400 border border-primary-200 dark:border-primary-700">
+                                    php artisan favicon:generate
+                                </code>
+                            </div>
+                        </div>
+                    </div>
+                @endif
             </div>
 
             <div class="flex items-center gap-4">
@@ -113,6 +158,12 @@
     <x-modal title="Logo Preview" wire="showLogoModal" size="lg" center>
         @if ($currentLogo)
             <img src="{{ asset('storage/' . $currentLogo) }}" class="w-full" alt="Logo Preview">
+        @endif
+    </x-modal>
+
+    <x-modal title="Letter Head Preview" wire="showLetterHeadModal" size="lg" center>
+        @if ($currentLetterHead)
+            <img src="{{ asset('storage/' . $currentLetterHead) }}" class="w-full" alt="Letter Head Preview">
         @endif
     </x-modal>
 

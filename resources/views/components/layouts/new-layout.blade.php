@@ -581,14 +581,6 @@ window.addEventListener('resize', () => {
                                 </svg>
                                 <span>{{ __('common.my_profile') }}</span>
                             </a>
-                            <a href="{{ route('settings.appearance') }}" wire:navigate
-                                class="flex items-center px-2 py-1.5 text-sm rounded-sm hover:bg-gray-100 dark:hover:bg-dark-700 cursor-pointer text-gray-700 dark:text-gray-300">
-                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10c0 1.821-.487 3.53-1.338 5M16.5 8.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zM10.5 8.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zM16.5 14.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zM12 18.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z" />
-                                </svg>
-                                <span>{{ __('common.appearance') }}</span>
-                            </a>
                             <a href="{{ route('settings.company') }}" wire:navigate
                                 class="flex items-center px-2 py-1.5 text-sm rounded-sm hover:bg-gray-100 dark:hover:bg-dark-700 cursor-pointer text-gray-700 dark:text-gray-300">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

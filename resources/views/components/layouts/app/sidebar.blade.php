@@ -26,7 +26,11 @@
             </flux:navlist.item>
 
             {{-- MASTER DATA --}}
-            @canany(['view clients', 'view services'])
+            @php
+                $canSeeMasterDataSection = auth()->user()->can('view clients') || auth()->user()->can('view services');
+            @endphp
+
+            @if($canSeeMasterDataSection)
                 <div class="px-3 pt-6 pb-2">
                     <div class="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                         {{ __('common.master_data') }}
@@ -46,10 +50,17 @@
                         {{ __('common.services') }}
                     </flux:navlist.item>
                 @endcan
-            @endcanany
+            @endif
 
             {{-- FINANCE --}}
-            @canany(['view invoices', 'view recurring-invoices', 'view bank-accounts', 'view cash-flow'])
+            @php
+                $canSeeFinanceSection = auth()->user()->can('view invoices')
+                    || auth()->user()->can('view recurring-invoices')
+                    || auth()->user()->can('view bank-accounts')
+                    || auth()->user()->can('view cash-flow');
+            @endphp
+
+            @if($canSeeFinanceSection)
                 <div class="px-3 pt-6 pb-2">
                     <div class="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                         {{ __('common.finance') }}
@@ -83,10 +94,17 @@
                         {{ __('common.cash_flow') }}
                     </flux:navlist.item>
                 @endcan
-            @endcanany
+            @endif
 
             {{-- OPERATIONS --}}
-            @canany(['view categories', 'view fund-requests', 'view reimbursements', 'view feedbacks'])
+            @php
+                $canSeeOperationsSection = auth()->user()->can('view categories')
+                    || auth()->user()->can('view fund-requests')
+                    || auth()->user()->can('view reimbursements')
+                    || auth()->user()->can('view feedbacks');
+            @endphp
+
+            @if($canSeeOperationsSection)
                 <div class="px-3 pt-6 pb-2">
                     <div class="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                         {{ __('common.operations') }}
@@ -150,10 +168,14 @@
                         </div>
                     </flux:navlist.item>
                 @endcan
-            @endcanany
+            @endif
 
             {{-- DEBT & RECEIVABLES --}}
-            @canany(['view loans', 'view receivables'])
+            @php
+                $canSeeDebtReceivablesSection = auth()->user()->can('view loans') || auth()->user()->can('view receivables');
+            @endphp
+
+            @if($canSeeDebtReceivablesSection)
                 <div class="px-3 pt-6 pb-2">
                     <div class="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                         {{ __('common.debt_receivables') }}
@@ -183,10 +205,14 @@
                         </div>
                     </flux:navlist.item>
                 @endcan
-            @endcanany
+            @endif
 
             {{-- ADMINISTRATION --}}
-            @canany(['manage users', 'view permissions'])
+            @php
+                $canSeeAdministrationSection = auth()->user()->can('manage users') || auth()->user()->can('view permissions');
+            @endphp
+
+            @if($canSeeAdministrationSection)
                 <div class="px-3 pt-6 pb-2">
                     <div class="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                         {{ __('common.administration') }}
@@ -206,7 +232,7 @@
                         {{ __('common.permissions') }}
                     </flux:navlist.item>
                 @endcan
-            @endcanany
+            @endif
 
             {{-- TESTING (Local Environment Only) --}}
             @env('local')
