@@ -105,7 +105,7 @@ class InvoicePrintService
             'address' => $company->address,
             'email' => $company->email,
             'phone' => $company->phone,
-            'logo_base64' => $company?->logo_path ? $this->getImageBase64($company->logo_path) : '',
+            'logo_base64' => $company?->letter_head_path ? $this->getImageBase64($company->letter_head_path) : '',
             'signature_base64' => $company?->signature_path ? $this->getImageBase64($company->signature_path) : '',
             'stamp_base64' => $company?->stamp_path ? $this->getImageBase64($company->stamp_path) : '',
             'bank_accounts' => $company->bank_accounts,
