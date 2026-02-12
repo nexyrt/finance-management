@@ -64,7 +64,7 @@
                                 'bg-white dark:bg-dark-800'"
                             class="w-full pl-3 pr-10 py-2 text-sm border border-dark-200 dark:border-dark-600 rounded-lg text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                             placeholder="{{ __('pages.auto_generate_on_save') }}">
-                        <button @click="invoice.number_locked = !invoice.number_locked" type="button"
+                        <button @click="invoice.number_locked = !invoice.number_locked; if (invoice.number_locked && invoice.client_id) invoice.invoice_number = generateInvoiceNumber()" type="button"
                             class="absolute right-3 top-1/2 -translate-y-1/2 text-dark-400 hover:text-primary-600 transition">
                             <svg x-show="invoice.number_locked" class="w-5 h-5" fill="none" stroke="currentColor"
                                 viewBox="0 0 24 24">
@@ -245,391 +245,391 @@
                 </div>
             </div>
 
-            {{-- Table Header --}}
-            <div class="hidden lg:grid lg:grid-cols-24 gap-3 px-4 py-3 bg-dark-100 dark:bg-dark-900 rounded-lg mb-2">
-                <div class="col-span-1 text-xs font-semibold text-dark-700 dark:text-dark-300 uppercase text-center">#
-                </div>
-                <div class="col-span-3 text-xs font-semibold text-dark-700 dark:text-dark-300 uppercase">{{ __('invoice.client') }}</div>
-                <div class="col-span-4 text-xs font-semibold text-dark-700 dark:text-dark-300 uppercase">{{ __('common.services') }}</div>
-                <div class="col-span-2 text-xs font-semibold text-dark-700 dark:text-dark-300 uppercase text-center">
-                    {{ __('invoice.qty') }}</div>
-                <div class="col-span-2 text-xs font-semibold text-dark-700 dark:text-dark-300 uppercase text-center">
-                    {{ __('invoice.unit') }}</div>
-                <div class="col-span-3 text-xs font-semibold text-dark-700 dark:text-dark-300 uppercase">{{ __('invoice.unit_price') }}
-                </div>
-                <div class="col-span-3 text-xs font-semibold text-dark-700 dark:text-dark-300 uppercase">{{ __('invoice.amount') }}</div>
-                <div class="col-span-3 text-xs font-semibold text-dark-700 dark:text-dark-300 uppercase">{{ __('pages.cogs') }}</div>
-                <div class="col-span-2 text-xs font-semibold text-dark-700 dark:text-dark-300 uppercase text-center">
-                    {{ __('common.tax') }}</div>
-                <div class="col-span-1 text-xs font-semibold text-dark-700 dark:text-dark-300 uppercase text-center">
-                </div>
-            </div>
+            {{-- Desktop: Table with horizontal scroll --}}
+            <div class="hidden md:block overflow-x-auto">
+                <div class="min-w-[1100px]">
+                    {{-- Table Header --}}
+                    <div class="grid grid-cols-24 gap-3 px-4 py-3 bg-dark-100 dark:bg-dark-900 rounded-lg mb-2">
+                        <div class="col-span-1 text-xs font-semibold text-dark-700 dark:text-dark-300 uppercase text-center">#</div>
+                        <div class="col-span-3 text-xs font-semibold text-dark-700 dark:text-dark-300 uppercase">{{ __('invoice.client') }}</div>
+                        <div class="col-span-4 text-xs font-semibold text-dark-700 dark:text-dark-300 uppercase">{{ __('common.services') }}</div>
+                        <div class="col-span-2 text-xs font-semibold text-dark-700 dark:text-dark-300 uppercase text-center">{{ __('invoice.qty') }}</div>
+                        <div class="col-span-2 text-xs font-semibold text-dark-700 dark:text-dark-300 uppercase text-center">{{ __('invoice.unit') }}</div>
+                        <div class="col-span-3 text-xs font-semibold text-dark-700 dark:text-dark-300 uppercase">{{ __('invoice.unit_price') }}</div>
+                        <div class="col-span-3 text-xs font-semibold text-dark-700 dark:text-dark-300 uppercase">{{ __('invoice.amount') }}</div>
+                        <div class="col-span-3 text-xs font-semibold text-dark-700 dark:text-dark-300 uppercase">{{ __('pages.cogs') }}</div>
+                        <div class="col-span-2 text-xs font-semibold text-dark-700 dark:text-dark-300 uppercase text-center">{{ __('common.tax') }}</div>
+                        <div class="col-span-1 text-xs font-semibold text-dark-700 dark:text-dark-300 uppercase text-center"></div>
+                    </div>
 
-            <div class="space-y-2">
-                <template x-for="(item, index) in items" :key="item.id">
-                    <div>
-                        {{-- Desktop: Grid Row --}}
-                        <div
-                            class="hidden lg:grid lg:grid-cols-24 gap-3 p-4 bg-dark-50 dark:bg-dark-900/50 rounded-lg border border-dark-200 dark:border-dark-700 items-center">
-                            {{-- No (col-span-1) --}}
-                            <div class="col-span-1 text-center">
-                                <span class="text-sm font-semibold text-dark-700 dark:text-dark-300"
-                                    x-text="index + 1"></span>
-                            </div>
-
-                            {{-- Client (col-span-3) --}}
-                            <div class="col-span-3">
-                                <div class="relative">
-                                    <div x-show="!item.client_id"
-                                        @click="itemSelectOpen[item.id] = !itemSelectOpen[item.id]"
-                                        class="w-full px-2 py-1.5 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-500 dark:text-dark-400 cursor-pointer hover:border-primary-400 transition truncate">
-                                        {{ __('common.select') }}
-                                    </div>
-                                    <div x-show="item.client_id"
-                                        class="w-full px-2 py-1.5 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 flex items-center justify-between gap-1">
-                                        <span class="text-dark-900 dark:text-dark-50 truncate text-xs"
-                                            x-text="item.client_name"></span>
-                                        <button @click="clearItemClient(item)" type="button"
-                                            class="text-dark-400 hover:text-red-500 transition flex-shrink-0">
-                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor"
-                                                viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M6 18L18 6M6 6l12 12" />
-                                            </svg>
-                                        </button>
-                                    </div>
-                                    <div x-show="itemSelectOpen[item.id]" x-transition
-                                        class="absolute z-50 mt-1 w-64 bg-white dark:bg-dark-800 border border-dark-200 dark:border-dark-700 rounded-lg shadow-lg max-h-80 overflow-hidden">
-                                        <div class="p-2 border-b border-dark-200 dark:border-dark-700">
-                                            <input type="text" x-model="itemSelectSearch[item.id]" @click.stop
-                                                :placeholder="'{{ __('common.search') }}...'"
-                                                class="w-full px-2 py-1.5 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 placeholder-dark-400 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
-                                        </div>
-                                        <div class="overflow-y-auto max-h-64">
-                                            <template x-for="client in filteredItemClients(item.id)"
-                                                :key="client.id">
-                                                <div @click="selectItemClient(item, client)"
-                                                    class="px-3 py-2 hover:bg-primary-50 dark:hover:bg-primary-900/20 cursor-pointer transition border-b border-dark-100 dark:border-dark-700 last:border-0">
-                                                    <div class="flex items-center gap-2">
-                                                        <div
-                                                            class="w-8 h-8 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white text-xs font-semibold flex-shrink-0">
-                                                            <span x-text="client.name.charAt(0).toUpperCase()"></span>
-                                                        </div>
-                                                        <div class="flex-1 min-w-0">
-                                                            <div class="text-sm font-medium text-dark-900 dark:text-dark-50 truncate"
-                                                                x-text="client.name"></div>
-                                                            <div class="text-xs text-dark-500 dark:text-dark-400 truncate"
-                                                                x-text="client.email || '-'"></div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </template>
-                                            <div x-show="filteredItemClients(item.id).length === 0"
-                                                class="px-3 py-6 text-center text-dark-500 dark:text-dark-400">
-                                                <p class="text-xs">{{ __('pages.no_clients_found') }}</p>
-                                            </div>
-                                        </div>
-                                    </div>
+                    {{-- Table Rows --}}
+                    <div class="space-y-2">
+                        <template x-for="(item, index) in items" :key="'desktop-' + item.id">
+                            <div class="grid grid-cols-24 gap-3 p-4 bg-dark-50 dark:bg-dark-900/50 rounded-lg border border-dark-200 dark:border-dark-700 items-start">
+                                {{-- No --}}
+                                <div class="col-span-1 text-center">
+                                    <span class="text-sm font-semibold text-dark-700 dark:text-dark-300" x-text="index + 1"></span>
                                 </div>
-                            </div>
 
-                            {{-- Service (col-span-4) --}}
-                            <div class="col-span-4">
-                                <div class="relative flex gap-1" @click.away="serviceSelectOpen[item.id] = false">
-                                    <input type="text" x-model="item.service_name"
-                                        class="flex-1 px-2 py-1.5 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                                        :placeholder="'{{ __('pages.type_service_name') }}...'" >
-                                    <button @click="serviceSelectOpen[item.id] = !serviceSelectOpen[item.id]"
-                                        type="button"
-                                        class="px-2 py-1.5 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-600 dark:text-dark-400 hover:bg-dark-50 dark:hover:bg-dark-700 transition flex-shrink-0">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor"
-                                            viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M19 9l-7 7-7-7" />
-                                        </svg>
-                                    </button>
-                                    <div x-show="serviceSelectOpen[item.id]" x-transition
-                                        class="absolute z-50 mt-1 w-96 bg-white dark:bg-dark-800 border border-dark-200 dark:border-dark-700 rounded-lg shadow-lg max-h-80 overflow-hidden">
-                                        <div class="p-2 border-b border-dark-200 dark:border-dark-700">
-                                            <input type="text" x-model="serviceSelectSearch[item.id]" @click.stop
-                                                :placeholder="'{{ __('common.search') }} {{ strtolower(__('common.services')) }}...'"
-                                                class="w-full px-2 py-1.5 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 placeholder-dark-400 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
-                                        </div>
-                                        <div class="overflow-y-auto max-h-64">
-                                            <template x-for="service in filteredItemServices(item.id)"
-                                                :key="service.id">
-                                                <div @click="selectService(item, service)"
-                                                    class="px-3 py-2 hover:bg-primary-50 dark:hover:bg-primary-900/20 cursor-pointer transition border-b border-dark-100 dark:border-dark-700 last:border-0">
-                                                    <div class="font-medium text-sm text-dark-900 dark:text-dark-50"
-                                                        x-text="service.name"></div>
-                                                    <div class="flex items-center justify-between mt-0.5">
-                                                        <span class="text-xs text-primary-600 dark:text-primary-400"
-                                                            x-text="service.type"></span>
-                                                        <span
-                                                            class="text-xs font-semibold text-dark-700 dark:text-dark-300"
-                                                            x-text="service.formatted_price"></span>
-                                                    </div>
-                                                </div>
-                                            </template>
-                                            <div x-show="filteredItemServices(item.id).length === 0"
-                                                class="px-3 py-6 text-center text-dark-500 dark:text-dark-400">
-                                                <p class="text-xs">{{ __('pages.no_services_found') }}</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {{-- Qty (col-span-2) --}}
-                            <div class="col-span-2">
-                                <input type="text" x-model="item.quantity" @input="calculateItem(item)"
-                                    class="w-full px-2 py-1.5 text-sm text-center border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                                    placeholder="1">
-                            </div>
-
-                            {{-- Unit (col-span-2) --}}
-                            <div class="col-span-2">
-                                <select x-model="item.unit"
-                                    class="w-full px-2 py-1.5 text-sm text-center border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
-                                    <option value="pcs">pcs</option>
-                                    <option value="m³">m³</option>
-                                </select>
-                            </div>
-
-                            {{-- Unit Price (col-span-3) --}}
-                            <div class="col-span-3">
-                                <input type="text" x-model="item.unit_price"
-                                    @input="item.unit_price = formatInput($event.target.value); calculateItem(item)"
-                                    class="w-full px-2 py-1.5 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                                    placeholder="0">
-                            </div>
-
-                            {{-- Amount (col-span-3) --}}
-                            <div class="col-span-3">
-                                <div class="px-2 py-1.5 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-dark-100 dark:bg-dark-900 text-dark-900 dark:text-dark-50 font-semibold text-right"
-                                    x-text="formatCurrency(item.amount)"></div>
-                            </div>
-
-                            {{-- COGS (col-span-3) --}}
-                            <div class="col-span-3">
-                                <input type="text" x-model="item.cogs_amount"
-                                    @input="item.cogs_amount = formatInput($event.target.value); calculateItem(item)"
-                                    class="w-full px-2 py-1.5 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                                    placeholder="0">
-                            </div>
-
-                            {{-- Tax Checkbox (col-span-2) --}}
-                            <div class="col-span-2 flex justify-center">
-                                <label class="flex items-center gap-1.5 cursor-pointer">
-                                    <input type="checkbox" x-model="item.is_tax_deposit"
-                                        class="rounded border-dark-300 dark:border-dark-600 text-primary-600 focus:ring-2 focus:ring-primary-500">
-                                    <span class="text-xs text-dark-600 dark:text-dark-400">{{ __('common.tax') }}</span>
-                                </label>
-                            </div>
-
-                            {{-- Remove Button (col-span-1) --}}
-                            <div class="col-span-1 flex justify-center">
-                                <button @click="removeItem(index)" type="button"
-                                    class="p-1.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-
-                        {{-- Mobile: Card Layout --}}
-                        <div
-                            class="block lg:hidden p-4 bg-dark-50 dark:bg-dark-900/50 rounded-lg border border-dark-200 dark:border-dark-700 space-y-3">
-                            <div class="flex items-start justify-between gap-2">
-                                <div class="flex items-center gap-2">
-                                    <span class="text-sm font-semibold text-dark-900 dark:text-dark-50"
-                                        x-text="'#' + (index + 1)"></span>
-                                    <label class="flex items-center gap-1.5 cursor-pointer">
-                                        <input type="checkbox" x-model="item.is_tax_deposit"
-                                            class="rounded border-dark-300 dark:border-dark-600 text-primary-600 focus:ring-2 focus:ring-primary-500">
-                                        <span class="text-xs text-dark-600 dark:text-dark-400">{{ __('invoice.tax_deposit') }}</span>
-                                    </label>
-                                </div>
-                                <button @click="removeItem(index)" type="button"
-                                    class="text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 p-1 rounded transition">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                    </svg>
-                                </button>
-                            </div>
-
-                            <div class="space-y-2">
                                 {{-- Client --}}
-                                <div>
-                                    <label
-                                        class="block text-xs font-medium text-dark-600 dark:text-dark-400 mb-1">{{ __('invoice.client') }}</label>
-                                    <div class="relative">
+                                <div class="col-span-3">
+                                    <div @click.away="itemSelectOpen[item.id] = false">
                                         <div x-show="!item.client_id"
-                                            @click="itemSelectOpen[item.id] = !itemSelectOpen[item.id]"
-                                            class="w-full px-3 py-2 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-500 dark:text-dark-400 cursor-pointer hover:border-primary-400 transition">
-                                            {{ __('pages.select_client') }}
+                                            :id="`clientInput-${item.id}`"
+                                            @click="
+                                                const inputEl = $event.target;
+                                                const rect = inputEl.getBoundingClientRect();
+                                                const dropdownEl = document.getElementById('client-dropdown-' + item.id);
+                                                if (dropdownEl) {
+                                                    dropdownEl.style.top = (rect.bottom + 4) + 'px';
+                                                    dropdownEl.style.left = rect.left + 'px';
+                                                }
+                                                itemSelectOpen[item.id] = true;
+
+                                                // Close dropdown on scroll
+                                                const scrollHandler = () => {
+                                                    itemSelectOpen[item.id] = false;
+                                                    window.removeEventListener('scroll', scrollHandler, true);
+                                                };
+                                                window.addEventListener('scroll', scrollHandler, true);
+                                            "
+                                            class="w-full px-2 py-1.5 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-500 dark:text-dark-400 cursor-pointer hover:border-primary-400 transition truncate">
+                                            {{ __('common.select') }}
                                         </div>
                                         <div x-show="item.client_id"
-                                            class="w-full px-3 py-2 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 flex items-center justify-between">
-                                            <span class="text-dark-900 dark:text-dark-50"
-                                                x-text="item.client_name"></span>
+                                            class="w-full px-2 py-1.5 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 flex items-center justify-between gap-1">
+                                            <span class="text-dark-900 dark:text-dark-50 truncate text-xs" x-text="item.client_name"></span>
                                             <button @click="clearItemClient(item)" type="button"
-                                                class="text-dark-400 hover:text-red-500 transition">
-                                                <svg class="w-5 h-5" fill="none" stroke="currentColor"
-                                                    viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                                class="text-dark-400 hover:text-red-500 transition flex-shrink-0">
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                                                 </svg>
                                             </button>
                                         </div>
-                                        <div x-show="itemSelectOpen[item.id]" x-transition
-                                            class="absolute z-50 mt-1 w-full bg-white dark:bg-dark-800 border border-dark-200 dark:border-dark-700 rounded-lg shadow-lg max-h-80 overflow-hidden">
+
+                                        <template x-teleport="body">
+                                            <div x-show="itemSelectOpen[item.id]" x-transition
+                                                :id="`client-dropdown-${item.id}`"
+                                                @click.away="itemSelectOpen[item.id] = false"
+                                                class="fixed z-[9999] bg-white dark:bg-dark-800 border border-dark-200 dark:border-dark-700 rounded-lg shadow-xl max-h-80 overflow-hidden"
+                                                style="width: 256px;">
                                             <div class="p-2 border-b border-dark-200 dark:border-dark-700">
                                                 <input type="text" x-model="itemSelectSearch[item.id]" @click.stop
-                                                    :placeholder="'{{ __('common.search') }} {{ strtolower(__('common.clients')) }}...'"
-                                                    class="w-full px-3 py-2 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 placeholder-dark-400 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                                                    :placeholder="'{{ __('common.search') }}...'"
+                                                    class="w-full px-2 py-1.5 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 placeholder-dark-400 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
                                             </div>
                                             <div class="overflow-y-auto max-h-64">
-                                                <template x-for="client in filteredItemClients(item.id)"
-                                                    :key="client.id">
+                                                <template x-for="client in filteredItemClients(item.id)" :key="client.id">
                                                     <div @click="selectItemClient(item, client)"
-                                                        class="px-4 py-3 hover:bg-primary-50 dark:hover:bg-primary-900/20 cursor-pointer transition border-b border-dark-100 dark:border-dark-700 last:border-0">
-                                                        <div class="flex items-center gap-3">
-                                                            <div
-                                                                class="w-10 h-10 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white font-semibold flex-shrink-0">
-                                                                <span
-                                                                    x-text="client.name.charAt(0).toUpperCase()"></span>
+                                                        class="px-3 py-2 hover:bg-primary-50 dark:hover:bg-primary-900/20 cursor-pointer transition border-b border-dark-100 dark:border-dark-700 last:border-0">
+                                                        <div class="flex items-center gap-2">
+                                                            <div class="w-8 h-8 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white text-xs font-semibold flex-shrink-0">
+                                                                <span x-text="client.name.charAt(0).toUpperCase()"></span>
                                                             </div>
                                                             <div class="flex-1 min-w-0">
-                                                                <div class="font-medium text-dark-900 dark:text-dark-50 truncate"
-                                                                    x-text="client.name"></div>
-                                                                <div class="text-sm text-dark-500 dark:text-dark-400 truncate"
-                                                                    x-text="client.email || '-'"></div>
+                                                                <div class="text-sm font-medium text-dark-900 dark:text-dark-50 truncate" x-text="client.name"></div>
+                                                                <div class="text-xs text-dark-500 dark:text-dark-400 truncate" x-text="client.email || '-'"></div>
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </template>
                                                 <div x-show="filteredItemClients(item.id).length === 0"
-                                                    class="px-4 py-8 text-center text-dark-500 dark:text-dark-400">
-                                                    <p class="text-sm">{{ __('pages.no_clients_found') }}</p>
+                                                    class="px-3 py-6 text-center text-dark-500 dark:text-dark-400">
+                                                    <p class="text-xs">{{ __('pages.no_clients_found') }}</p>
                                                 </div>
                                             </div>
-                                        </div>
+                                        </template>
                                     </div>
                                 </div>
 
                                 {{-- Service --}}
-                                <div>
-                                    <label
-                                        class="block text-xs font-medium text-dark-600 dark:text-dark-400 mb-1">{{ __('pages.service_name') }}</label>
-                                    <div class="relative flex gap-2" @click.away="serviceSelectOpen[item.id] = false">
+                                <div class="col-span-4">
+                                    <div @click.away="serviceSelectOpen[item.id] = false">
                                         <input type="text" x-model="item.service_name"
-                                            class="flex-1 px-3 py-2 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                                            :placeholder="'{{ __('pages.type_service_name') }}...'" >
-                                        <button @click="serviceSelectOpen[item.id] = !serviceSelectOpen[item.id]"
-                                            type="button"
-                                            class="px-3 py-2 border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-600 dark:text-dark-400 hover:bg-dark-50 dark:hover:bg-dark-700 transition flex-shrink-0">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor"
-                                                viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M19 9l-7 7-7-7" />
-                                            </svg>
-                                        </button>
-                                        <div x-show="serviceSelectOpen[item.id]" x-transition
-                                            class="absolute z-50 mt-1 w-full bg-white dark:bg-dark-800 border border-dark-200 dark:border-dark-700 rounded-lg shadow-lg max-h-80 overflow-hidden">
+                                            :id="`serviceInput-${item.id}`"
+                                            class="w-full px-2 py-1.5 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                            :placeholder="'{{ __('pages.type_service_name') }}...'"
+                                            @click="
+                                                const inputEl = $event.target;
+                                                const rect = inputEl.getBoundingClientRect();
+                                                const dropdownEl = document.getElementById('service-dropdown-' + item.id);
+                                                if (dropdownEl) {
+                                                    dropdownEl.style.top = (rect.bottom + 4) + 'px';
+                                                    dropdownEl.style.left = rect.left + 'px';
+                                                }
+                                                serviceSelectOpen[item.id] = true;
+
+                                                // Close dropdown on scroll
+                                                const scrollHandler = () => {
+                                                    serviceSelectOpen[item.id] = false;
+                                                    window.removeEventListener('scroll', scrollHandler, true);
+                                                };
+                                                window.addEventListener('scroll', scrollHandler, true);
+                                            ">
+
+                                        <template x-teleport="body">
+                                            <div x-show="serviceSelectOpen[item.id]" x-transition
+                                                :id="`service-dropdown-${item.id}`"
+                                                @click.away="serviceSelectOpen[item.id] = false"
+                                                class="fixed z-[9999] bg-white dark:bg-dark-800 border border-dark-200 dark:border-dark-700 rounded-lg shadow-xl max-h-80 overflow-hidden"
+                                                style="width: 288px;">
                                             <div class="p-2 border-b border-dark-200 dark:border-dark-700">
-                                                <input type="text" x-model="serviceSelectSearch[item.id]"
-                                                    @click.stop :placeholder="'{{ __('common.search') }} {{ strtolower(__('common.services')) }}...'"
-                                                    class="w-full px-3 py-2 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 placeholder-dark-400 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                                                <input type="text" x-model="serviceSelectSearch[item.id]" @click.stop
+                                                    :placeholder="'{{ __('common.search') }} {{ strtolower(__('common.services')) }}...'"
+                                                    class="w-full px-2 py-1.5 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 placeholder-dark-400 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
                                             </div>
                                             <div class="overflow-y-auto max-h-64">
-                                                <template x-for="service in filteredItemServices(item.id)"
-                                                    :key="service.id">
+                                                <template x-for="service in filteredItemServices(item.id)" :key="service.id">
                                                     <div @click="selectService(item, service)"
-                                                        class="px-4 py-3 hover:bg-primary-50 dark:hover:bg-primary-900/20 cursor-pointer transition border-b border-dark-100 dark:border-dark-700 last:border-0">
-                                                        <div class="font-medium text-dark-900 dark:text-dark-50"
-                                                            x-text="service.name"></div>
-                                                        <div class="flex items-center justify-between mt-1">
-                                                            <span
-                                                                class="text-xs text-primary-600 dark:text-primary-400"
-                                                                x-text="service.type"></span>
-                                                            <span
-                                                                class="text-sm font-semibold text-dark-700 dark:text-dark-300"
-                                                                x-text="service.formatted_price"></span>
+                                                        class="px-3 py-2 hover:bg-primary-50 dark:hover:bg-primary-900/20 cursor-pointer transition border-b border-dark-100 dark:border-dark-700 last:border-0">
+                                                        <div class="font-medium text-sm text-dark-900 dark:text-dark-50" x-text="service.name"></div>
+                                                        <div class="flex items-center justify-between mt-0.5">
+                                                            <span class="text-xs text-primary-600 dark:text-primary-400" x-text="service.type"></span>
+                                                            <span class="text-xs font-semibold text-dark-700 dark:text-dark-300" x-text="service.formatted_price"></span>
                                                         </div>
                                                     </div>
                                                 </template>
                                                 <div x-show="filteredItemServices(item.id).length === 0"
-                                                    class="px-4 py-8 text-center text-dark-500 dark:text-dark-400">
-                                                    <p class="text-sm">{{ __('pages.no_services_found') }}</p>
+                                                    class="px-3 py-6 text-center text-dark-500 dark:text-dark-400">
+                                                    <p class="text-xs">{{ __('pages.no_services_found') }}</p>
                                                 </div>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+
+                                {{-- Qty --}}
+                                <div class="col-span-2">
+                                    <input type="text" x-model="item.quantity" @input="calculateItem(item)"
+                                        class="w-full px-2 py-1.5 text-sm text-center border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                        placeholder="1">
+                                </div>
+
+                                {{-- Unit --}}
+                                <div class="col-span-2">
+                                    <select x-model="item.unit"
+                                        class="w-full px-2 py-1.5 text-sm text-center border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                                        <option value="pcs">pcs</option>
+                                        <option value="m³">m³</option>
+                                    </select>
+                                </div>
+
+                                {{-- Unit Price --}}
+                                <div class="col-span-3">
+                                    <input type="text" x-model="item.unit_price"
+                                        @input="item.unit_price = formatInput($event.target.value); calculateItem(item)"
+                                        class="w-full px-2 py-1.5 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                        placeholder="0">
+                                </div>
+
+                                {{-- Amount --}}
+                                <div class="col-span-3">
+                                    <div class="px-2 py-1.5 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-dark-100 dark:bg-dark-900 text-dark-900 dark:text-dark-50 font-semibold text-right"
+                                        x-text="formatCurrency(item.amount)"></div>
+                                </div>
+
+                                {{-- COGS --}}
+                                <div class="col-span-3">
+                                    <input type="text" x-model="item.cogs_amount"
+                                        @input="item.cogs_amount = formatInput($event.target.value); calculateItem(item)"
+                                        class="w-full px-2 py-1.5 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                        placeholder="0">
+                                </div>
+
+                                {{-- Tax Checkbox --}}
+                                <div class="col-span-2 flex justify-center">
+                                    <label class="flex items-center gap-1.5 cursor-pointer">
+                                        <input type="checkbox" x-model="item.is_tax_deposit"
+                                            class="rounded border-dark-300 dark:border-dark-600 text-primary-600 focus:ring-2 focus:ring-primary-500">
+                                        <span class="text-xs text-dark-600 dark:text-dark-400">{{ __('common.tax') }}</span>
+                                    </label>
+                                </div>
+
+                                {{-- Remove Button --}}
+                                <div class="col-span-1 flex justify-center">
+                                    <button @click="removeItem(index)" type="button"
+                                        class="p-1.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Mobile: Card Layout --}}
+            <div class="block md:hidden space-y-2">
+                <template x-for="(item, index) in items" :key="'mobile-' + item.id">
+                    <div class="p-4 bg-dark-50 dark:bg-dark-900/50 rounded-lg border border-dark-200 dark:border-dark-700 space-y-3">
+                        <div class="flex items-start justify-between gap-2">
+                            <div class="flex items-center gap-2">
+                                <span class="text-sm font-semibold text-dark-900 dark:text-dark-50"
+                                    x-text="'#' + (index + 1)"></span>
+                                <label class="flex items-center gap-1.5 cursor-pointer">
+                                    <input type="checkbox" x-model="item.is_tax_deposit"
+                                        class="rounded border-dark-300 dark:border-dark-600 text-primary-600 focus:ring-2 focus:ring-primary-500">
+                                    <span class="text-xs text-dark-600 dark:text-dark-400">{{ __('invoice.tax_deposit') }}</span>
+                                </label>
+                            </div>
+                            <button @click="removeItem(index)" type="button"
+                                class="text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 p-1 rounded transition">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                            </button>
+                        </div>
+
+                        <div class="space-y-2">
+                            {{-- Client --}}
+                            <div>
+                                <label class="block text-xs font-medium text-dark-600 dark:text-dark-400 mb-1">{{ __('invoice.client') }}</label>
+                                <div class="relative">
+                                    <div x-show="!item.client_id"
+                                        @click="itemSelectOpen[item.id] = !itemSelectOpen[item.id]"
+                                        class="w-full px-3 py-2 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-500 dark:text-dark-400 cursor-pointer hover:border-primary-400 transition">
+                                        {{ __('pages.select_client') }}
+                                    </div>
+                                    <div x-show="item.client_id"
+                                        class="w-full px-3 py-2 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 flex items-center justify-between">
+                                        <span class="text-dark-900 dark:text-dark-50" x-text="item.client_name"></span>
+                                        <button @click="clearItemClient(item)" type="button"
+                                            class="text-dark-400 hover:text-red-500 transition">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    <div x-show="itemSelectOpen[item.id]" x-transition
+                                        class="absolute z-50 mt-1 w-full bg-white dark:bg-dark-800 border border-dark-200 dark:border-dark-700 rounded-lg shadow-lg max-h-80 overflow-hidden">
+                                        <div class="p-2 border-b border-dark-200 dark:border-dark-700">
+                                            <input type="text" x-model="itemSelectSearch[item.id]" @click.stop
+                                                :placeholder="'{{ __('common.search') }} {{ strtolower(__('common.clients')) }}...'"
+                                                class="w-full px-3 py-2 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 placeholder-dark-400 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                                        </div>
+                                        <div class="overflow-y-auto max-h-64">
+                                            <template x-for="client in filteredItemClients(item.id)" :key="client.id">
+                                                <div @click="selectItemClient(item, client)"
+                                                    class="px-4 py-3 hover:bg-primary-50 dark:hover:bg-primary-900/20 cursor-pointer transition border-b border-dark-100 dark:border-dark-700 last:border-0">
+                                                    <div class="flex items-center gap-3">
+                                                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white font-semibold flex-shrink-0">
+                                                            <span x-text="client.name.charAt(0).toUpperCase()"></span>
+                                                        </div>
+                                                        <div class="flex-1 min-w-0">
+                                                            <div class="font-medium text-dark-900 dark:text-dark-50 truncate" x-text="client.name"></div>
+                                                            <div class="text-sm text-dark-500 dark:text-dark-400 truncate" x-text="client.email || '-'"></div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </template>
+                                            <div x-show="filteredItemClients(item.id).length === 0"
+                                                class="px-4 py-8 text-center text-dark-500 dark:text-dark-400">
+                                                <p class="text-sm">{{ __('pages.no_clients_found') }}</p>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
+                            </div>
 
-                                {{-- Qty, Unit & Unit Price --}}
-                                <div class="grid grid-cols-3 gap-2">
-                                    <div>
-                                        <label
-                                            class="block text-xs font-medium text-dark-600 dark:text-dark-400 mb-1">{{ __('invoice.quantity') }}</label>
-                                        <input type="text" x-model="item.quantity" @input="calculateItem(item)"
-                                            class="w-full px-3 py-2 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                                            placeholder="1">
-                                    </div>
-                                    <div>
-                                        <label
-                                            class="block text-xs font-medium text-dark-600 dark:text-dark-400 mb-1">{{ __('invoice.unit') }}</label>
-                                        <select x-model="item.unit"
-                                            class="w-full px-3 py-2 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
-                                            <option value="pcs">pcs</option>
-                                            <option value="m³">m³</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label
-                                            class="block text-xs font-medium text-dark-600 dark:text-dark-400 mb-1">{{ __('invoice.unit_price') }}</label>
-                                        <input type="text" x-model="item.unit_price"
-                                            @input="item.unit_price = formatInput($event.target.value); calculateItem(item)"
-                                            class="w-full px-3 py-2 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                                            placeholder="0">
-                                    </div>
-                                </div>
-
-                                {{-- Amount & COGS --}}
-                                <div class="grid grid-cols-2 gap-2">
-                                    <div>
-                                        <label
-                                            class="block text-xs font-medium text-dark-600 dark:text-dark-400 mb-1">{{ __('invoice.amount') }}</label>
-                                        <div class="px-3 py-2 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-dark-100 dark:bg-dark-900 text-dark-900 dark:text-dark-50 font-semibold"
-                                            x-text="formatCurrency(item.amount)"></div>
-                                    </div>
-                                    <div>
-                                        <label
-                                            class="block text-xs font-medium text-dark-600 dark:text-dark-400 mb-1">{{ __('pages.cogs') }}</label>
-                                        <input type="text" x-model="item.cogs_amount"
-                                            @input="item.cogs_amount = formatInput($event.target.value); calculateItem(item)"
-                                            class="w-full px-3 py-2 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                                            placeholder="0">
+                            {{-- Service --}}
+                            <div>
+                                <label class="block text-xs font-medium text-dark-600 dark:text-dark-400 mb-1">{{ __('pages.service_name') }}</label>
+                                <div class="relative flex gap-2" @click.away="serviceSelectOpen[item.id] = false">
+                                    <input type="text" x-model="item.service_name"
+                                        class="flex-1 px-3 py-2 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                        :placeholder="'{{ __('pages.type_service_name') }}...'">
+                                    <button @click="serviceSelectOpen[item.id] = !serviceSelectOpen[item.id]"
+                                        type="button"
+                                        class="px-3 py-2 border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-600 dark:text-dark-400 hover:bg-dark-50 dark:hover:bg-dark-700 transition flex-shrink-0">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    </button>
+                                    <div x-show="serviceSelectOpen[item.id]" x-transition
+                                        class="absolute z-50 top-full mt-1 left-0 w-full bg-white dark:bg-dark-800 border border-dark-200 dark:border-dark-700 rounded-lg shadow-lg max-h-80 overflow-hidden">
+                                        <div class="p-2 border-b border-dark-200 dark:border-dark-700">
+                                            <input type="text" x-model="serviceSelectSearch[item.id]"
+                                                @click.stop :placeholder="'{{ __('common.search') }} {{ strtolower(__('common.services')) }}...'"
+                                                class="w-full px-3 py-2 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 placeholder-dark-400 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                                        </div>
+                                        <div class="overflow-y-auto max-h-64">
+                                            <template x-for="service in filteredItemServices(item.id)" :key="service.id">
+                                                <div @click="selectService(item, service)"
+                                                    class="px-4 py-3 hover:bg-primary-50 dark:hover:bg-primary-900/20 cursor-pointer transition border-b border-dark-100 dark:border-dark-700 last:border-0">
+                                                    <div class="font-medium text-dark-900 dark:text-dark-50" x-text="service.name"></div>
+                                                    <div class="flex items-center justify-between mt-1">
+                                                        <span class="text-xs text-primary-600 dark:text-primary-400" x-text="service.type"></span>
+                                                        <span class="text-sm font-semibold text-dark-700 dark:text-dark-300" x-text="service.formatted_price"></span>
+                                                    </div>
+                                                </div>
+                                            </template>
+                                            <div x-show="filteredItemServices(item.id).length === 0"
+                                                class="px-4 py-8 text-center text-dark-500 dark:text-dark-400">
+                                                <p class="text-sm">{{ __('pages.no_services_found') }}</p>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                </template>
 
-                <div x-show="items.length === 0"
-                    class="p-12 text-center border-2 border-dashed border-dark-300 dark:border-dark-600 rounded-lg">
-                    <svg class="w-16 h-16 mx-auto text-dark-400 dark:text-dark-500 mb-3" fill="none"
-                        stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                    <p class="text-dark-600 dark:text-dark-400 text-sm">{{ __('pages.no_items_yet') }}
-                    </p>
-                </div>
+                            {{-- Qty, Unit & Unit Price --}}
+                            <div class="grid grid-cols-3 gap-2">
+                                <div>
+                                    <label class="block text-xs font-medium text-dark-600 dark:text-dark-400 mb-1">{{ __('invoice.quantity') }}</label>
+                                    <input type="text" x-model="item.quantity" @input="calculateItem(item)"
+                                        class="w-full px-3 py-2 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                        placeholder="1">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-dark-600 dark:text-dark-400 mb-1">{{ __('invoice.unit') }}</label>
+                                    <select x-model="item.unit"
+                                        class="w-full px-3 py-2 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                                        <option value="pcs">pcs</option>
+                                        <option value="m³">m³</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-dark-600 dark:text-dark-400 mb-1">{{ __('invoice.unit_price') }}</label>
+                                    <input type="text" x-model="item.unit_price"
+                                        @input="item.unit_price = formatInput($event.target.value); calculateItem(item)"
+                                        class="w-full px-3 py-2 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                        placeholder="0">
+                                </div>
+                            </div>
+
+                            {{-- Amount & COGS --}}
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="block text-xs font-medium text-dark-600 dark:text-dark-400 mb-1">{{ __('invoice.amount') }}</label>
+                                    <div class="px-3 py-2 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-dark-100 dark:bg-dark-900 text-dark-900 dark:text-dark-50 font-semibold"
+                                        x-text="formatCurrency(item.amount)"></div>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-dark-600 dark:text-dark-400 mb-1">{{ __('pages.cogs') }}</label>
+                                    <input type="text" x-model="item.cogs_amount"
+                                        @input="item.cogs_amount = formatInput($event.target.value); calculateItem(item)"
+                                        class="w-full px-3 py-2 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                        placeholder="0">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+
+            {{-- Empty State --}}
+            <div x-show="items.length === 0"
+                class="p-12 text-center border-2 border-dashed border-dark-300 dark:border-dark-600 rounded-lg">
+                <svg class="w-16 h-16 mx-auto text-dark-400 dark:text-dark-500 mb-3" fill="none"
+                    stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <p class="text-dark-600 dark:text-dark-400 text-sm">{{ __('pages.no_items_yet') }}</p>
             </div>
         </div>
 
@@ -838,7 +838,9 @@
                 this.selectSearch = '';
 
                 // Auto-generate invoice number when client is selected
-                if (!this.invoice.number_locked || !this.invoice.invoice_number) {
+                // Saat locked = auto mode, selalu regenerate
+                // Saat unlocked = manual mode, hanya generate jika kosong
+                if (this.invoice.number_locked || !this.invoice.invoice_number) {
                     this.invoice.invoice_number = this.generateInvoiceNumber();
                 }
 
@@ -883,7 +885,9 @@
                     amount: 0,
                     cogs_amount: '',
                     profit: 0,
-                    is_tax_deposit: false
+                    is_tax_deposit: false,
+                    dropdownTop: 0,
+                    dropdownLeft: 0
                 };
                 this.items.push(item);
                 this.itemSelectOpen[item.id] = false;
