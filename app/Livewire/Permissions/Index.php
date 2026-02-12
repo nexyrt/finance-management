@@ -63,11 +63,11 @@ class Index extends Component
             });
         }
 
-        // Group by module (second word in permission name)
+        // Group by module (everything after the first word/action)
         return $allPermissions->groupBy(function ($permission) {
-            $parts = explode(' ', $permission->name);
+            $parts = explode(' ', $permission->name, 2);
 
-            return count($parts) > 1 ? ucfirst($parts[1]) : 'Other';
+            return count($parts) > 1 ? ucwords($parts[1]) : 'Other';
         })->sortKeys();
     }
 

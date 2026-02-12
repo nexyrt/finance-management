@@ -283,7 +283,11 @@ class Create extends Component
     public function generateInvoiceNumber(): string
     {
         $date = now();
-        $sequence = $this->maxInvoiceSequence + 1;
+
+        // Query langsung (bukan computed) agar selalu fresh
+        $maxSequence = $this->getMaxSequenceFromDb($date);
+        $sequence = $maxSequence + 1;
+
         $companyInitials = $this->getCompanyInitials();
         $clientInitials = $this->getClientInitials($this->invoice['client_id']);
         $romanMonth = $this->getRomanMonth($date->month);
@@ -298,6 +302,23 @@ class Create extends Component
             $romanMonth,
             $year
         );
+    }
+
+    private function getMaxSequenceFromDb($date): int
+    {
+        $invoices = Invoice::whereYear('issue_date', $date->year)
+            ->whereMonth('issue_date', $date->month)
+            ->pluck('invoice_number');
+
+        $maxSequence = 0;
+        foreach ($invoices as $invoiceNumber) {
+            if (preg_match('/^(\d+)\/INV\//', $invoiceNumber, $matches)) {
+                $sequence = (int) $matches[1];
+                $maxSequence = max($maxSequence, $sequence);
+            }
+        }
+
+        return $maxSequence;
     }
 
     private function parseAmount($value): int

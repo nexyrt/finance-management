@@ -4,10 +4,10 @@
         <div class="space-y-1">
             <h1
                 class="text-4xl font-bold bg-gradient-to-r from-dark-900 via-primary-800 to-primary-800 dark:from-white dark:via-primary-200 dark:to-primary-200 bg-clip-text text-transparent">
-                Permission Management
+                {{ __('pages.permission_management') }}
             </h1>
             <p class="text-dark-600 dark:text-dark-400 text-lg">
-                Manage role permissions
+                {{ __('pages.permission_management_desc') }}
             </p>
         </div>
 
@@ -29,7 +29,7 @@
                     <div class="text-2xl font-bold text-dark-900 dark:text-dark-50">
                         {{ $this->roles->count() }}
                     </div>
-                    <div class="text-sm text-dark-500 dark:text-dark-400">Total Roles</div>
+                    <div class="text-sm text-dark-500 dark:text-dark-400">{{ __('pages.total_roles') }}</div>
                 </div>
             </div>
         </div>
@@ -44,7 +44,7 @@
                     <div class="text-2xl font-bold text-dark-900 dark:text-dark-50">
                         {{ $this->totalPermissions }}
                     </div>
-                    <div class="text-sm text-dark-500 dark:text-dark-400">Total Permissions</div>
+                    <div class="text-sm text-dark-500 dark:text-dark-400">{{ __('pages.total_permissions') }}</div>
                 </div>
             </div>
         </div>
@@ -59,7 +59,7 @@
                     <div class="text-2xl font-bold text-dark-900 dark:text-dark-50">
                         {{ $this->groupedPermissions->count() }}
                     </div>
-                    <div class="text-sm text-dark-500 dark:text-dark-400">Modules</div>
+                    <div class="text-sm text-dark-500 dark:text-dark-400">{{ __('pages.modules') }}</div>
                 </div>
             </div>
         </div>
@@ -76,7 +76,7 @@
                     class="bg-gradient-to-r from-primary-50 to-primary-100 dark:from-primary-900/20 dark:to-primary-800/20 px-4 py-4 border-b border-dark-200 dark:border-dark-600 rounded-t-xl">
                     <h3 class="font-semibold text-dark-900 dark:text-dark-50 flex items-center gap-2">
                         <x-icon name="user-group" class="w-5 h-5" />
-                        Roles
+                        {{ __('pages.roles') }}
                     </h3>
                 </div>
 
@@ -104,9 +104,9 @@
                                             @endif
                                         </div>
                                         <div class="text-xs text-dark-500 dark:text-dark-400">
-                                            {{ $role->permissions->count() }} permissions
+                                            {{ $role->permissions->count() }} {{ __('common.permissions') }}
                                             @if ($role->users()->count() > 0)
-                                                • {{ $role->users()->count() }} users
+                                                • {{ $role->users()->count() }} {{ __('common.users') }}
                                             @endif
                                         </div>
                                     </div>
@@ -120,7 +120,7 @@
                                     {{-- Edit Button --}}
                                     <x-button.circle icon="pencil" color="blue" size="sm"
                                         wire:click.stop="$dispatch('load::role', { role: {{ $role->id }} })"
-                                        title="Edit Role" />
+                                        title="{{ __('common.edit') }} {{ __('pages.role') }}" />
 
                                     {{-- Delete Button --}}
                                     <div wire:click.stop>
@@ -155,8 +155,7 @@
                                         {{ ucfirst($this->selectedRole->name) }}
                                     </h3>
                                     <p class="text-sm text-dark-600 dark:text-dark-400">
-                                        {{ count($selectedPermissions) }} / {{ $this->totalPermissions }} permissions
-                                        assigned
+                                        {{ __('pages.permissions_assigned', ['count' => count($selectedPermissions), 'total' => $this->totalPermissions]) }}
                                     </p>
                                 </div>
                             </div>
@@ -164,18 +163,18 @@
                             {{-- Header Actions - Only show if can manage --}}
                             <div class="flex flex-wrap gap-2">
                                 <x-input wire:model.live.debounce.300ms="searchPermission"
-                                    placeholder="Search permissions..." icon="magnifying-glass" class="lg:w-64" />
+                                    placeholder="{{ __('pages.search_permissions') }}" icon="magnifying-glass" class="lg:w-64" />
 
                                 @if ($this->canManagePermissions)
                                     <x-button wire:click="revokeAllPermissions" color="red" size="sm" outline
                                         icon="x-mark"
-                                        wire:confirm="Remove all permissions from '{{ $this->selectedRole->name }}' role?">
-                                        Revoke All
+                                        wire:confirm="{{ __('pages.revoke_all_confirm', ['role' => $this->selectedRole->name]) }}">
+                                        {{ __('pages.revoke_all') }}
                                     </x-button>
                                     <x-button wire:click="grantAllPermissions" color="green" size="sm"
                                         icon="check"
-                                        wire:confirm="Grant all permissions to '{{ $this->selectedRole->name }}' role?">
-                                        Grant All
+                                        wire:confirm="{{ __('pages.grant_all_confirm', ['role' => $this->selectedRole->name]) }}">
+                                        {{ __('pages.grant_all') }}
                                     </x-button>
                                 @endif
                             </div>
@@ -192,10 +191,10 @@
                                     <x-icon name="magnifying-glass" class="w-8 h-8 text-gray-400 dark:text-dark-500" />
                                 </div>
                                 <h3 class="text-lg font-semibold text-dark-900 dark:text-dark-50 mb-2">
-                                    No permissions found
+                                    {{ __('pages.no_permissions_found') }}
                                 </h3>
                                 <p class="text-dark-500 dark:text-dark-400">
-                                    Try adjusting your search criteria
+                                    {{ __('pages.try_adjusting_search') }}
                                 </p>
                             </div>
                         @else
@@ -212,7 +211,7 @@
                                                 <h4 class="font-semibold text-dark-900 dark:text-dark-50">
                                                     {{ $module }}
                                                 </h4>
-                                                <x-badge :text="$permissions->count() . ' permissions'" color="gray" size="sm" />
+                                                <x-badge :text="$permissions->count() . ' ' . __('common.permissions')" color="gray" size="sm" />
                                             </div>
 
                                             @if ($this->canManagePermissions)
@@ -272,10 +271,10 @@
                             <x-icon name="arrow-left" class="w-8 h-8 text-gray-400 dark:text-dark-500" />
                         </div>
                         <h3 class="text-lg font-semibold text-dark-900 dark:text-dark-50 mb-2">
-                            Select a role
+                            {{ __('pages.select_a_role') }}
                         </h3>
                         <p class="text-dark-500 dark:text-dark-400">
-                            Choose a role from the sidebar to manage its permissions
+                            {{ __('pages.select_role_desc') }}
                         </p>
                     </div>
                 </div>
