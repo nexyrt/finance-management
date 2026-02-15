@@ -7,8 +7,8 @@
                         <x-icon name="chat-bubble-left-ellipsis" class="w-6 h-6 text-green-600 dark:text-green-400" />
                     </div>
                     <div>
-                        <h3 class="text-xl font-bold text-dark-900 dark:text-dark-50">Respon Feedback</h3>
-                        <p class="text-sm text-dark-600 dark:text-dark-400">Berikan tanggapan untuk feedback pengguna</p>
+                        <h3 class="text-xl font-bold text-dark-900 dark:text-dark-50">{{ __('feedback.respond_title') }}</h3>
+                        <p class="text-sm text-dark-600 dark:text-dark-400">{{ __('feedback.respond_subtitle') }}</p>
                     </div>
                 </div>
             </x-slot:title>
@@ -33,7 +33,7 @@
                             </div>
                             <h4 class="font-semibold text-dark-900 dark:text-white">{{ $this->feedback->title }}</h4>
                             <p class="text-sm text-dark-500 dark:text-dark-400 mt-1">
-                                Dari <span class="font-medium text-dark-700 dark:text-dark-300">{{ $this->feedback->user->name }}</span>
+                                {{ __('feedback.from') }} <span class="font-medium text-dark-700 dark:text-dark-300">{{ $this->feedback->user->name }}</span>
                                 <span class="mx-1">•</span>
                                 {{ $this->feedback->created_at->format('d M Y, H:i') }}
                             </p>
@@ -41,7 +41,9 @@
                     </div>
 
                     <div class="mt-4 p-3 bg-white dark:bg-dark-800 rounded border border-gray-200 dark:border-dark-600">
-                        <p class="text-sm text-dark-700 dark:text-dark-300">{{ $this->feedback->description }}</p>
+                        <div class="prose prose-sm dark:prose-invert max-w-none text-dark-700 dark:text-dark-300">
+                            {!! $this->feedback->safe_description !!}
+                        </div>
                     </div>
 
                     @if ($this->feedback->page_url)
@@ -58,15 +60,14 @@
                 {{-- Response Form --}}
                 <div class="space-y-4">
                     <div>
-                        <x-select.styled wire:model="status" :options="$this->statusOptions" label="Status *"
-                            placeholder="Pilih status..." />
+                        <x-select.styled wire:model="status" :options="$this->statusOptions" :label="__('common.status') . ' *'"
+                            :placeholder="__('feedback.select_status')" />
                     </div>
 
-                    <div>
-                        <x-textarea wire:model="response" label="Respon *"
-                            placeholder="Tulis tanggapan Anda untuk feedback ini..."
-                            rows="5" />
-                        <p class="mt-1 text-xs text-dark-500">Pengguna akan menerima notifikasi tentang respon ini</p>
+                    <div x-data="feedbackEditorRespond" wire:ignore>
+                        <label class="block text-sm font-medium text-dark-700 dark:text-dark-300 mb-1">{{ __('feedback.response') }} *</label>
+                        <div x-ref="editor" class="bg-white dark:bg-dark-800 rounded-b-lg" style="min-height: 150px;"></div>
+                        <p class="mt-1 text-xs text-dark-500">{{ __('feedback.response_notification_hint') }}</p>
                     </div>
                 </div>
 
@@ -75,7 +76,7 @@
                     <div class="flex items-start gap-2">
                         <x-icon name="information-circle" class="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5" />
                         <p class="text-xs text-blue-800 dark:text-blue-200">
-                            Respon Anda akan langsung terkirim ke pengguna sebagai notifikasi dan ditampilkan di detail feedback.
+                            {{ __('feedback.respond_info') }}
                         </p>
                     </div>
                 </div>
@@ -83,14 +84,53 @@
 
             <x-slot:footer>
                 <div class="flex flex-col sm:flex-row justify-end gap-3">
-                    <x-button wire:click="close" color="secondary" outline>
-                        Batal
+                    <x-button wire:click="close" color="zinc"
+                        class="w-full sm:w-auto order-2 sm:order-1">
+                        {{ __('common.cancel') }}
                     </x-button>
-                    <x-button wire:click="save" color="green" icon="paper-airplane" loading="save">
-                        Kirim Respon
+                    <x-button wire:click="save" color="green" icon="paper-airplane" loading="save"
+                        class="w-full sm:w-auto order-1 sm:order-2">
+                        {{ __('feedback.send_response') }}
                     </x-button>
                 </div>
             </x-slot:footer>
         @endif
     </x-modal>
 </div>
+
+@script
+<script>
+    Alpine.data('feedbackEditorRespond', () => ({
+        quill: null,
+
+        init() {
+            this.quill = new Quill(this.$refs.editor, {
+                theme: 'snow',
+                placeholder: @js(__('feedback.response_placeholder')),
+                modules: {
+                    toolbar: [
+                        ['bold', 'italic', 'underline'],
+                        [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                        ['link', 'blockquote', 'code-block'],
+                        ['clean']
+                    ]
+                }
+            });
+
+            const initial = @this.get('response');
+            if (initial) {
+                this.quill.root.innerHTML = initial;
+            }
+
+            this.quill.on('text-change', () => {
+                const html = this.quill.root.innerHTML;
+                @this.set('response', html === '<p><br></p>' ? '' : html);
+            });
+        },
+
+        destroy() {
+            this.quill = null;
+        }
+    }));
+</script>
+@endscript

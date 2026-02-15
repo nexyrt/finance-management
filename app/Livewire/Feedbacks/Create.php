@@ -33,9 +33,7 @@ class Create extends Component
     #[On('open-feedback-form')]
     public function openModal(?string $pageUrl = null): void
     {
-        if ($pageUrl) {
-            $this->pageUrl = $pageUrl;
-        }
+        $this->pageUrl = $pageUrl;
         $this->modal = true;
     }
 
@@ -65,12 +63,12 @@ class Create extends Component
     public function messages(): array
     {
         return [
-            'title.required' => 'Judul harus diisi',
-            'title.max' => 'Judul maksimal 255 karakter',
-            'description.required' => 'Deskripsi harus diisi',
-            'description.max' => 'Deskripsi maksimal 5000 karakter',
-            'attachment.max' => 'Ukuran file maksimal 5MB',
-            'attachment.mimes' => 'File harus berformat JPG, PNG, atau PDF',
+            'title.required' => __('feedback.validation.title_required'),
+            'title.max' => __('feedback.validation.title_max'),
+            'description.required' => __('feedback.validation.description_required'),
+            'description.max' => __('feedback.validation.description_max'),
+            'attachment.max' => __('feedback.validation.attachment_max'),
+            'attachment.mimes' => __('feedback.validation.attachment_mimes'),
         ];
     }
 
@@ -106,7 +104,7 @@ class Create extends Component
         $this->dispatch('feedback-created');
         $this->resetForm();
 
-        $this->success('Feedback berhasil dikirim! Terima kasih atas masukan Anda.');
+        $this->success(__('feedback.created_success'));
     }
 
     private function notifyAdmins(Feedback $feedback): void
@@ -117,8 +115,12 @@ class Create extends Component
             AppNotification::notify(
                 $admin->id,
                 'feedback_submitted',
-                'Feedback Baru Diterima',
-                "{$feedback->type_label} dari {$feedback->user->name}: {$feedback->title}",
+                __('feedback.notification_new_title'),
+                __('feedback.notification_new_message', [
+                    'type' => $feedback->type_label,
+                    'user' => $feedback->user->name,
+                    'title' => $feedback->title,
+                ]),
                 ['feedback_id' => $feedback->id, 'url' => route('feedbacks.index')]
             );
         }

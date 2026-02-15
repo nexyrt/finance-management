@@ -140,3 +140,72 @@ h1, h2, h3, h4, h5, h6,
     background-color: #52525b;
 }
 
+/* Quill Editor - Styling */
+.ql-toolbar.ql-snow {
+    border-radius: 0.75rem 0.75rem 0 0;
+}
+
+.ql-container.ql-snow {
+    border-radius: 0 0 0.75rem 0.75rem;
+    min-height: 150px;
+}
+
+/* Quill Editor - Dark Mode */
+:where(.dark, .dark *) .ql-toolbar.ql-snow {
+    border-color: #52525b;
+    background: #27272a;
+}
+
+:where(.dark, .dark *) .ql-container.ql-snow {
+    border-color: #52525b;
+}
+
+:where(.dark, .dark *) .ql-editor {
+    color: #fafafa;
+}
+
+:where(.dark, .dark *) .ql-editor.ql-blank::before {
+    color: #71717a;
+}
+
+:where(.dark, .dark *) .ql-snow .ql-stroke {
+    stroke: #a1a1aa;
+}
+
+:where(.dark, .dark *) .ql-snow .ql-fill {
+    fill: #a1a1aa;
+}
+
+:where(.dark, .dark *) .ql-snow .ql-picker-label {
+    color: #a1a1aa;
+}
+
+:where(.dark, .dark *) .ql-snow .ql-picker-options {
+    background: #27272a;
+    border-color: #52525b;
+}
+
+:where(.dark, .dark *) .ql-snow .ql-picker-item {
+    color: #a1a1aa;
+}
+
+:where(.dark, .dark *) .ql-snow .ql-picker-item:hover {
+    color: #fafafa;
+}
+
+:where(.dark, .dark *) .ql-snow button:hover .ql-stroke {
+    stroke: #60a5fa;
+}
+
+:where(.dark, .dark *) .ql-snow button:hover .ql-fill {
+    fill: #60a5fa;
+}
+
+:where(.dark, .dark *) .ql-snow button.ql-active .ql-stroke {
+    stroke: #60a5fa;
+}
+
+:where(.dark, .dark *) .ql-snow button.ql-active .ql-fill {
+    fill: #60a5fa;
+}
+

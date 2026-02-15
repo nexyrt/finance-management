@@ -6,8 +6,8 @@
                     <x-icon name="chat-bubble-left-right" class="w-6 h-6 text-primary-600 dark:text-primary-400" />
                 </div>
                 <div>
-                    <h3 class="text-xl font-bold text-dark-900 dark:text-dark-50">{{ __('common.feedbacks') }}</h3>
-                    <p class="text-sm text-dark-600 dark:text-dark-400">Bantu kami meningkatkan sistem ini</p>
+                    <h3 class="text-xl font-bold text-dark-900 dark:text-dark-50">{{ __('feedback.create_title') }}</h3>
+                    <p class="text-sm text-dark-600 dark:text-dark-400">{{ __('feedback.create_subtitle') }}</p>
                 </div>
             </div>
         </x-slot:title>
@@ -16,47 +16,44 @@
             {{-- Type & Priority --}}
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                    <x-select.styled wire:model="type" :options="$this->types" label="Jenis Feedback *"
-                        placeholder="Pilih jenis..." />
+                    <x-select.styled wire:model="type" :options="$this->types" :label="__('feedback.feedback_type') . ' *'"
+                        :placeholder="__('feedback.select_type')" />
                 </div>
                 <div>
-                    <x-select.styled wire:model="priority" :options="$this->priorities" label="Prioritas *"
-                        placeholder="Pilih prioritas..." />
+                    <x-select.styled wire:model="priority" :options="$this->priorities" :label="__('feedback.priority') . ' *'"
+                        :placeholder="__('feedback.select_priority')" />
                 </div>
             </div>
 
             {{-- Title --}}
             <div>
-                <x-input wire:model="title" :label="__('common.title') . ' *'" placeholder="Ringkasan singkat feedback Anda..." />
+                <x-input wire:model="title" :label="__('common.title') . ' *'" :placeholder="__('feedback.title_placeholder')" />
             </div>
 
-            {{-- Description --}}
+            {{-- Description (Rich Text Editor) --}}
+            <div x-data="feedbackEditor" wire:ignore>
+                <label class="block text-sm font-medium text-dark-700 dark:text-dark-300 mb-1">{{ __('common.description') }} *</label>
+                <div x-ref="editor" class="bg-white dark:bg-dark-800 rounded-b-lg" style="min-height: 150px;"></div>
+                <p class="mt-1 text-xs text-dark-500">{{ __('feedback.max_characters', ['count' => 5000]) }}</p>
+            </div>
+
+            {{-- Page URL --}}
             <div>
-                <x-textarea wire:model="description" :label="__('common.description') . ' *'"
-                    placeholder="Jelaskan secara detail... Untuk bug report, sertakan langkah-langkah untuk mereproduksi masalah."
-                    rows="5" />
-                <p class="mt-1 text-xs text-dark-500">Maksimal 5000 karakter</p>
+                <x-input wire:model="pageUrl" :label="__('feedback.page_url')"
+                    placeholder="https://..."
+                    icon="link" />
+                <p class="mt-1 text-xs text-dark-500">{{ __('feedback.page_url_hint') }}</p>
             </div>
-
-            {{-- Page URL Info --}}
-            @if ($pageUrl)
-                <div class="p-3 bg-gray-50 dark:bg-dark-700 rounded-lg">
-                    <p class="text-xs text-dark-500 dark:text-dark-400">
-                        <x-icon name="link" class="w-3 h-3 inline mr-1" />
-                        Dikirim dari: <span class="font-mono text-dark-700 dark:text-dark-300">{{ $pageUrl }}</span>
-                    </p>
-                </div>
-            @endif
 
             {{-- Attachment --}}
             <div class="space-y-2" x-data="clipboardPaste">
                 <div class="border-b border-secondary-200 dark:border-dark-600 pb-2">
-                    <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50">Screenshot / Lampiran</h4>
+                    <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50">{{ __('feedback.screenshot_attachment') }}</h4>
                     <p class="text-xs text-dark-500 dark:text-dark-400">
-                        Opsional - Upload screenshot atau dokumen pendukung
+                        {{ __('feedback.attachment_optional') }}
                         <span class="inline-flex items-center gap-1 ml-1 px-1.5 py-0.5 bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 rounded text-[10px] font-medium">
                             <x-icon name="clipboard" class="w-3 h-3" />
-                            Tekan Ctrl+V untuk paste gambar
+                            {{ __('feedback.paste_hint') }}
                         </span>
                     </p>
                 </div>
@@ -68,11 +65,11 @@
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                         </svg>
-                        <span class="text-sm text-primary-700 dark:text-primary-300">Memproses gambar dari clipboard...</span>
+                        <span class="text-sm text-primary-700 dark:text-primary-300">{{ __('feedback.processing_clipboard') }}</span>
                     </div>
                 </div>
 
-                <x-upload wire:model="attachment" label="File" tip="JPG, PNG, atau PDF (Maks 5MB)"
+                <x-upload wire:model="attachment" :label="__('feedback.file_label')" :tip="__('feedback.file_tip')"
                     accept="image/jpeg,image/png,application/pdf" delete delete-method="deleteUpload" />
             </div>
 
@@ -81,11 +78,11 @@
                 <div class="flex items-start gap-3">
                     <x-icon name="information-circle" class="w-5 h-5 text-blue-500 dark:text-blue-400 flex-shrink-0 mt-0.5" />
                     <div class="text-sm text-blue-900 dark:text-blue-200">
-                        <p class="font-semibold mb-1">Tips untuk feedback yang baik:</p>
+                        <p class="font-semibold mb-1">{{ __('feedback.tips_title') }}</p>
                         <ul class="list-disc list-inside space-y-1 text-xs text-blue-800 dark:text-blue-300">
-                            <li><strong>Bug Report:</strong> Sertakan langkah untuk mereproduksi, perilaku yang diharapkan vs yang terjadi</li>
-                            <li><strong>Feature Request:</strong> Jelaskan use case dan manfaat fitur yang diinginkan</li>
-                            <li><strong>Kritik/Saran:</strong> Berikan konteks dan saran konkret untuk perbaikan</li>
+                            <li><strong>{{ __('feedback.type_bug') }}:</strong> {{ __('feedback.tip_bug') }}</li>
+                            <li><strong>{{ __('feedback.type_feature') }}:</strong> {{ __('feedback.tip_feature') }}</li>
+                            <li><strong>{{ __('feedback.type_feedback') }}:</strong> {{ __('feedback.tip_feedback') }}</li>
                         </ul>
                     </div>
                 </div>
@@ -94,10 +91,12 @@
 
         <x-slot:footer>
             <div class="flex flex-col sm:flex-row justify-end gap-3">
-                <x-button wire:click="resetForm" color="secondary" outline>
+                <x-button wire:click="resetForm" color="zinc"
+                    class="w-full sm:w-auto order-2 sm:order-1">
                     {{ __('common.cancel') }}
                 </x-button>
-                <x-button wire:click="save" color="primary" icon="paper-airplane" loading="save">
+                <x-button wire:click="save" color="primary" icon="paper-airplane" loading="save"
+                    class="w-full sm:w-auto order-1 sm:order-2">
                     {{ __('common.submit') }}
                 </x-button>
             </div>
@@ -107,26 +106,57 @@
 
 @script
 <script>
+    // Alpine.js component for Quill rich text editor
+    Alpine.data('feedbackEditor', () => ({
+        quill: null,
+
+        init() {
+            this.quill = new Quill(this.$refs.editor, {
+                theme: 'snow',
+                placeholder: @js(__('feedback.description_placeholder')),
+                modules: {
+                    toolbar: [
+                        ['bold', 'italic', 'underline'],
+                        [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                        ['link', 'blockquote', 'code-block'],
+                        ['clean']
+                    ]
+                }
+            });
+
+            // Set initial content from Livewire
+            const initial = @this.get('description');
+            if (initial) {
+                this.quill.root.innerHTML = initial;
+            }
+
+            // Sync changes to Livewire
+            this.quill.on('text-change', () => {
+                const html = this.quill.root.innerHTML;
+                @this.set('description', html === '<p><br></p>' ? '' : html);
+            });
+        },
+
+        destroy() {
+            this.quill = null;
+        }
+    }));
+
     // Alpine.js component for handling clipboard paste
     Alpine.data('clipboardPaste', () => ({
         isPasting: false,
 
         init() {
-            // Listen for paste events on the modal
             this.$el.closest('.ts-modal-content')?.addEventListener('paste', this.handlePaste.bind(this));
-
-            // Also listen on document when modal is open
             document.addEventListener('paste', this.handlePaste.bind(this));
         },
 
         async handlePaste(e) {
-            // Only handle if modal is open
             if (!@this.modal) return;
 
             const items = e.clipboardData?.items;
             if (!items) return;
 
-            // Look for image in clipboard
             for (let item of items) {
                 if (item.type.indexOf('image') !== -1) {
                     e.preventDefault();
@@ -139,34 +169,31 @@
                         return;
                     }
 
-                    // Check file size (5MB limit)
-                    const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+                    const maxSize = 5 * 1024 * 1024;
                     if (blob.size > maxSize) {
                         this.isPasting = false;
                         window.$wireui.notify({
-                            title: 'File terlalu besar',
-                            description: 'Ukuran gambar maksimal 5MB',
+                            title: @js(__('feedback.file_too_large')),
+                            description: @js(__('feedback.max_image_size')),
                             icon: 'error'
                         });
                         return;
                     }
 
-                    // Create a File object with timestamp name
                     const timestamp = new Date().getTime();
                     const extension = blob.type.split('/')[1] || 'png';
                     const file = new File([blob], `screenshot-${timestamp}.${extension}`, {
                         type: blob.type
                     });
 
-                    // Upload via Livewire
                     try {
                         await @this.upload('attachment', file, () => {
                             this.isPasting = false;
                         }, (error) => {
                             this.isPasting = false;
                             window.$wireui.notify({
-                                title: 'Upload gagal',
-                                description: 'Terjadi kesalahan saat mengupload gambar',
+                                title: @js(__('feedback.upload_failed')),
+                                description: @js(__('feedback.upload_error')),
                                 icon: 'error'
                             });
                         });

@@ -23,15 +23,20 @@ class AllFeedbacks extends Component
     public int $quantity = 10;
     public array $sort = ['column' => 'created_at', 'direction' => 'desc'];
 
-    public array $headers = [
-        ['index' => 'type', 'label' => 'Jenis', 'sortable' => false],
-        ['index' => 'title', 'label' => 'Judul'],
-        ['index' => 'user', 'label' => 'Pengirim', 'sortable' => false],
-        ['index' => 'priority', 'label' => 'Prioritas', 'sortable' => false],
-        ['index' => 'status', 'label' => 'Status', 'sortable' => false],
-        ['index' => 'created_at', 'label' => 'Dibuat'],
-        ['index' => 'actions', 'label' => 'Aksi', 'sortable' => false],
-    ];
+    public array $headers = [];
+
+    public function mount(): void
+    {
+        $this->headers = [
+            ['index' => 'type', 'label' => __('feedback.header_type'), 'sortable' => false],
+            ['index' => 'title', 'label' => __('feedback.header_title')],
+            ['index' => 'user', 'label' => __('feedback.header_sender'), 'sortable' => false],
+            ['index' => 'priority', 'label' => __('feedback.header_priority'), 'sortable' => false],
+            ['index' => 'status', 'label' => __('feedback.header_status'), 'sortable' => false],
+            ['index' => 'created_at', 'label' => __('feedback.header_created')],
+            ['index' => 'actions', 'label' => __('feedback.header_actions'), 'sortable' => false],
+        ];
+    }
 
     #[On('feedback-created')]
     #[On('feedback-updated')]
@@ -105,12 +110,12 @@ class AllFeedbacks extends Component
         $feedback = Feedback::find($id);
 
         if (!$feedback) {
-            $this->toast()->error('Error', 'Feedback tidak ditemukan')->send();
+            $this->toast()->error(__('common.error'), __('feedback.not_found'))->send();
             return;
         }
 
         $feedback->changeStatus($status);
-        $this->toast()->success('Berhasil', "Status diubah menjadi {$status}")->send();
+        $this->toast()->success(__('common.success'), __('feedback.status_changed', ['status' => $status]))->send();
         $this->dispatch('feedback-updated');
     }
 }

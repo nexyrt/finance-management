@@ -74,6 +74,7 @@ return [
     'select' => 'Pilih',
 
     // Common Labels
+    'title' => 'Judul',
     'name' => 'Nama',
     'email' => 'Email',
     'email_placeholder' => 'contoh@email.com',

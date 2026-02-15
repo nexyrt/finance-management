@@ -6,8 +6,8 @@
                     <x-icon name="pencil-square" class="w-6 h-6 text-blue-600 dark:text-blue-400" />
                 </div>
                 <div>
-                    <h3 class="text-xl font-bold text-dark-900 dark:text-dark-50">{{ __('common.edit') }} {{ __('common.feedbacks') }}</h3>
-                    <p class="text-sm text-dark-600 dark:text-dark-400">{{ __('common.feedbacks') }}</p>
+                    <h3 class="text-xl font-bold text-dark-900 dark:text-dark-50">{{ __('feedback.edit_title') }}</h3>
+                    <p class="text-sm text-dark-600 dark:text-dark-400">{{ __('feedback.edit_subtitle') }}</p>
                 </div>
             </div>
         </x-slot:title>
@@ -16,25 +16,24 @@
             {{-- Type & Priority --}}
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                    <x-select.styled wire:model="type" :options="$this->types" label="Jenis Feedback *"
-                        placeholder="Pilih jenis..." />
+                    <x-select.styled wire:model="type" :options="$this->types" :label="__('feedback.feedback_type') . ' *'"
+                        :placeholder="__('feedback.select_type')" />
                 </div>
                 <div>
-                    <x-select.styled wire:model="priority" :options="$this->priorities" label="Prioritas *"
-                        placeholder="Pilih prioritas..." />
+                    <x-select.styled wire:model="priority" :options="$this->priorities" :label="__('feedback.priority') . ' *'"
+                        :placeholder="__('feedback.select_priority')" />
                 </div>
             </div>
 
             {{-- Title --}}
             <div>
-                <x-input wire:model="title" :label="__('common.title') . ' *'" placeholder="Ringkasan singkat feedback Anda..." />
+                <x-input wire:model="title" :label="__('common.title') . ' *'" :placeholder="__('feedback.title_placeholder')" />
             </div>
 
-            {{-- Description --}}
-            <div>
-                <x-textarea wire:model="description" :label="__('common.description') . ' *'"
-                    placeholder="Jelaskan secara detail..."
-                    rows="5" />
+            {{-- Description (Rich Text Editor) --}}
+            <div x-data="feedbackEditorUpdate" wire:ignore>
+                <label class="block text-sm font-medium text-dark-700 dark:text-dark-300 mb-1">{{ __('common.description') }} *</label>
+                <div x-ref="editor" class="bg-white dark:bg-dark-800 rounded-b-lg" style="min-height: 150px;"></div>
             </div>
 
             {{-- Existing Attachment --}}
@@ -46,7 +45,7 @@
                             <span class="text-sm text-dark-700 dark:text-dark-300">{{ $existingAttachment }}</span>
                         </div>
                         <x-button wire:click="markRemoveAttachment" color="red" size="xs" icon="trash" flat>
-                            Hapus
+                            {{ __('common.delete') }}
                         </x-button>
                     </div>
                 </div>
@@ -56,12 +55,12 @@
             <div class="space-y-2" x-data="clipboardPaste">
                 <div class="border-b border-secondary-200 dark:border-dark-600 pb-2">
                     <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50">
-                        {{ $existingAttachment && !$removeAttachment ? 'Ganti Lampiran' : 'Lampiran' }}
+                        {{ $existingAttachment && !$removeAttachment ? __('feedback.replace_attachment') : __('common.attachment') }}
                     </h4>
                     <p class="text-xs text-dark-500 dark:text-dark-400 mt-1">
                         <span class="inline-flex items-center gap-1 px-1.5 py-0.5 bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 rounded text-[10px] font-medium">
                             <x-icon name="clipboard" class="w-3 h-3" />
-                            Tekan Ctrl+V untuk paste gambar
+                            {{ __('feedback.paste_hint') }}
                         </span>
                     </p>
                 </div>
@@ -73,21 +72,23 @@
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                         </svg>
-                        <span class="text-sm text-primary-700 dark:text-primary-300">Memproses gambar dari clipboard...</span>
+                        <span class="text-sm text-primary-700 dark:text-primary-300">{{ __('feedback.processing_clipboard') }}</span>
                     </div>
                 </div>
 
-                <x-upload wire:model="attachment" label="File" tip="JPG, PNG, atau PDF (Maks 5MB)"
+                <x-upload wire:model="attachment" :label="__('feedback.file_label')" :tip="__('feedback.file_tip')"
                     accept="image/jpeg,image/png,application/pdf" delete delete-method="deleteUpload" />
             </div>
         </form>
 
         <x-slot:footer>
             <div class="flex flex-col sm:flex-row justify-end gap-3">
-                <x-button wire:click="close" color="secondary" outline>
+                <x-button wire:click="close" color="zinc"
+                    class="w-full sm:w-auto order-2 sm:order-1">
                     {{ __('common.cancel') }}
                 </x-button>
-                <x-button wire:click="save" color="primary" icon="check" loading="save">
+                <x-button wire:click="save" color="primary" icon="check" loading="save"
+                    class="w-full sm:w-auto order-1 sm:order-2">
                     {{ __('common.save') }}
                 </x-button>
             </div>
@@ -97,26 +98,55 @@
 
 @script
 <script>
+    // Alpine.js component for Quill rich text editor (Update form)
+    Alpine.data('feedbackEditorUpdate', () => ({
+        quill: null,
+
+        init() {
+            this.quill = new Quill(this.$refs.editor, {
+                theme: 'snow',
+                placeholder: @js(__('feedback.description_placeholder')),
+                modules: {
+                    toolbar: [
+                        ['bold', 'italic', 'underline'],
+                        [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                        ['link', 'blockquote', 'code-block'],
+                        ['clean']
+                    ]
+                }
+            });
+
+            const initial = @this.get('description');
+            if (initial) {
+                this.quill.root.innerHTML = initial;
+            }
+
+            this.quill.on('text-change', () => {
+                const html = this.quill.root.innerHTML;
+                @this.set('description', html === '<p><br></p>' ? '' : html);
+            });
+        },
+
+        destroy() {
+            this.quill = null;
+        }
+    }));
+
     // Alpine.js component for handling clipboard paste
     Alpine.data('clipboardPaste', () => ({
         isPasting: false,
 
         init() {
-            // Listen for paste events on the modal
             this.$el.closest('.ts-modal-content')?.addEventListener('paste', this.handlePaste.bind(this));
-
-            // Also listen on document when modal is open
             document.addEventListener('paste', this.handlePaste.bind(this));
         },
 
         async handlePaste(e) {
-            // Only handle if modal is open
             if (!@this.modal) return;
 
             const items = e.clipboardData?.items;
             if (!items) return;
 
-            // Look for image in clipboard
             for (let item of items) {
                 if (item.type.indexOf('image') !== -1) {
                     e.preventDefault();
@@ -129,34 +159,31 @@
                         return;
                     }
 
-                    // Check file size (5MB limit)
-                    const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+                    const maxSize = 5 * 1024 * 1024;
                     if (blob.size > maxSize) {
                         this.isPasting = false;
                         window.$wireui.notify({
-                            title: 'File terlalu besar',
-                            description: 'Ukuran gambar maksimal 5MB',
+                            title: @js(__('feedback.file_too_large')),
+                            description: @js(__('feedback.max_image_size')),
                             icon: 'error'
                         });
                         return;
                     }
 
-                    // Create a File object with timestamp name
                     const timestamp = new Date().getTime();
                     const extension = blob.type.split('/')[1] || 'png';
                     const file = new File([blob], `screenshot-${timestamp}.${extension}`, {
                         type: blob.type
                     });
 
-                    // Upload via Livewire
                     try {
                         await @this.upload('attachment', file, () => {
                             this.isPasting = false;
                         }, (error) => {
                             this.isPasting = false;
                             window.$wireui.notify({
-                                title: 'Upload gagal',
-                                description: 'Terjadi kesalahan saat mengupload gambar',
+                                title: @js(__('feedback.upload_failed')),
+                                description: @js(__('feedback.upload_error')),
                                 icon: 'error'
                             });
                         });

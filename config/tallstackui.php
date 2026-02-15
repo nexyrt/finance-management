@@ -175,7 +175,7 @@ return [
         | persistent: enables the dialog to not be closed by clicking outside by default.
         */
         'dialog' => [
-            'z-index' => 'z-50',
+            'z-index' => 'z-[70]',
             'overflow' => false,
             'blur' => false,
             'persistent' => false,
@@ -241,7 +241,7 @@ return [
         */
         'modal' => [
             'z-index' => 'z-50',
-            'overflow' => false,
+            'overflow' => true,
             'blur' => false,
             'persistent' => false,
             'size' => '2xl',
@@ -313,7 +313,7 @@ return [
         | timeout: controls the default timeout in seconds.
         */
         'toast' => [
-            'z-index' => 'z-50',
+            'z-index' => 'z-[70]',
             'progress' => true,
             'expandable' => false,
             'position' => 'top-right',

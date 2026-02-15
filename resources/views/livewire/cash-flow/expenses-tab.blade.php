@@ -255,4 +255,5 @@
     {{-- Child Components --}}
     <livewire:transactions.create @transaction-created="$refresh" />
     <livewire:transactions.categorize @transaction-categorized="$refresh" />
+    <livewire:transactions.inline-category-create />
 </div>

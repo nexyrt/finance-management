@@ -119,15 +119,8 @@
                             placeholder="Pilih kategori..." searchable />
                     </div>
 
-                    <x-wireui-currency prefix="Rp " wire:model.blur="amount" placeholder="0" thousands="."
-                        decimal=",">
-                        <x-slot name="label">
-                            Jumlah <span class="text-red-500">*</span>
-                        </x-slot>
-                        <x-slot name="hint">
-                            Jumlah transaksi dalam Rupiah
-                        </x-slot>
-                    </x-wireui-currency>
+                    <x-currency-input wire:model="amount" label="Jumlah *" prefix="Rp"
+                        placeholder="0" hint="Jumlah transaksi dalam Rupiah" />
 
                     <x-date wire:model.live="transaction_date" helpers label="Tanggal Transaksi *">
                         <x-slot name="hint">
@@ -170,7 +163,4 @@
             </div>
         </x-slot:footer>
     </x-modal>
-
-    {{-- Inline Category Creation Component --}}
-    <livewire:transactions.inline-category-create :transactionType="$transaction_type" />
 </div>

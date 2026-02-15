@@ -28,19 +28,19 @@ class Respond extends Component
     public function load(int $id): void
     {
         if (!auth()->user()->can('respond feedbacks')) {
-            $this->error('Anda tidak memiliki akses untuk merespon feedback');
+            $this->error(__('feedback.no_respond_permission'));
             return;
         }
 
         $feedback = Feedback::find($id);
 
         if (!$feedback) {
-            $this->error('Feedback tidak ditemukan');
+            $this->error(__('feedback.not_found'));
             return;
         }
 
         if (!$feedback->canRespond()) {
-            $this->error('Feedback ini tidak dapat direspon');
+            $this->error(__('feedback.cannot_respond'));
             return;
         }
 
@@ -62,9 +62,9 @@ class Respond extends Component
     public function statusOptions(): array
     {
         return [
-            ['label' => 'In Progress', 'value' => 'in_progress'],
-            ['label' => 'Resolved', 'value' => 'resolved'],
-            ['label' => 'Closed', 'value' => 'closed'],
+            ['label' => __('feedback.status_in_progress'), 'value' => 'in_progress'],
+            ['label' => __('feedback.status_resolved'), 'value' => 'resolved'],
+            ['label' => __('feedback.status_closed'), 'value' => 'closed'],
         ];
     }
 
@@ -79,8 +79,8 @@ class Respond extends Component
     public function messages(): array
     {
         return [
-            'response.required' => 'Respon harus diisi',
-            'response.max' => 'Respon maksimal 5000 karakter',
+            'response.required' => __('feedback.validation.response_required'),
+            'response.max' => __('feedback.validation.response_max'),
         ];
     }
 
@@ -91,7 +91,7 @@ class Respond extends Component
         $feedback = Feedback::find($this->feedbackId);
 
         if (!$feedback) {
-            $this->error('Feedback tidak ditemukan');
+            $this->error(__('feedback.not_found'));
             return;
         }
 
@@ -101,15 +101,18 @@ class Respond extends Component
         AppNotification::notify(
             $feedback->user_id,
             'feedback_responded',
-            'Feedback Direspon',
-            "Feedback Anda \"{$feedback->title}\" telah direspon oleh " . auth()->user()->name,
+            __('feedback.notification_responded_title'),
+            __('feedback.notification_responded_message', [
+                'title' => $feedback->title,
+                'responder' => auth()->user()->name,
+            ]),
             ['feedback_id' => $feedback->id, 'url' => route('feedbacks.index')]
         );
 
         $this->dispatch('feedback-responded');
         $this->close();
 
-        $this->success('Respon berhasil dikirim');
+        $this->success(__('feedback.response_sent'));
     }
 
     public function close(): void

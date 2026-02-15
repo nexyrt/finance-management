@@ -164,7 +164,7 @@
                                             <x-currency-input wire:model.blur="items.{{ $index }}.unit_price"
                                                             placeholder="0"
                                                             class="h-8" />
-                                        </td>
+                                        </td>                       
                                         <td class="py-3 px-2 font-semibold text-dark-900 dark:text-dark-50" style="min-width: 130px;">
                                             Rp {{ number_format($item['amount'] ?? 0, 0, ',', '.') }}
                                         </td>

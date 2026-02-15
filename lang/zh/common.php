@@ -74,6 +74,7 @@ return [
     'actions' => '操作',
 
     // Common Labels
+    'title' => '标题',
     'name' => '名称',
     'email' => '邮箱',
     'email_placeholder' => 'example@email.com',

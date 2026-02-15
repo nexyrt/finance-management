@@ -177,6 +177,27 @@ class Feedback extends Model
     }
 
     // =====================================
+    // SAFE HTML ACCESSORS
+    // =====================================
+
+    public function getSafeDescriptionAttribute(): string
+    {
+        return $this->sanitizeHtml($this->description ?? '');
+    }
+
+    public function getSafeAdminResponseAttribute(): string
+    {
+        return $this->sanitizeHtml($this->admin_response ?? '');
+    }
+
+    private function sanitizeHtml(string $html): string
+    {
+        $allowed = '<p><br><strong><em><u><ol><ul><li><a><blockquote><pre><code>';
+
+        return strip_tags($html, $allowed);
+    }
+
+    // =====================================
     // FORMATTERS
     // =====================================
 
@@ -203,9 +224,9 @@ class Feedback extends Model
     public function getTypeLabelAttribute(): string
     {
         return match ($this->type) {
-            'bug' => 'Bug Report',
-            'feature' => 'Feature Request',
-            'feedback' => 'Kritik/Saran',
+            'bug' => __('feedback.type_bug'),
+            'feature' => __('feedback.type_feature'),
+            'feedback' => __('feedback.type_feedback'),
             default => ucfirst($this->type),
         };
     }
@@ -224,10 +245,10 @@ class Feedback extends Model
     public function getPriorityLabelAttribute(): string
     {
         return match ($this->priority) {
-            'low' => 'Low',
-            'medium' => 'Medium',
-            'high' => 'High',
-            'critical' => 'Critical',
+            'low' => __('feedback.priority_low'),
+            'medium' => __('feedback.priority_medium'),
+            'high' => __('feedback.priority_high'),
+            'critical' => __('feedback.priority_critical'),
             default => ucfirst($this->priority),
         };
     }
@@ -246,10 +267,10 @@ class Feedback extends Model
     public function getStatusLabelAttribute(): string
     {
         return match ($this->status) {
-            'open' => 'Open',
-            'in_progress' => 'In Progress',
-            'resolved' => 'Resolved',
-            'closed' => 'Closed',
+            'open' => __('feedback.status_open'),
+            'in_progress' => __('feedback.status_in_progress'),
+            'resolved' => __('feedback.status_resolved'),
+            'closed' => __('feedback.status_closed'),
             default => ucfirst($this->status),
         };
     }
@@ -261,29 +282,29 @@ class Feedback extends Model
     public static function types(): array
     {
         return [
-            ['label' => 'Bug Report', 'value' => 'bug'],
-            ['label' => 'Feature Request', 'value' => 'feature'],
-            ['label' => 'Kritik/Saran', 'value' => 'feedback'],
+            ['label' => __('feedback.type_bug'), 'value' => 'bug'],
+            ['label' => __('feedback.type_feature'), 'value' => 'feature'],
+            ['label' => __('feedback.type_feedback'), 'value' => 'feedback'],
         ];
     }
 
     public static function priorities(): array
     {
         return [
-            ['label' => 'Low', 'value' => 'low'],
-            ['label' => 'Medium', 'value' => 'medium'],
-            ['label' => 'High', 'value' => 'high'],
-            ['label' => 'Critical', 'value' => 'critical'],
+            ['label' => __('feedback.priority_low'), 'value' => 'low'],
+            ['label' => __('feedback.priority_medium'), 'value' => 'medium'],
+            ['label' => __('feedback.priority_high'), 'value' => 'high'],
+            ['label' => __('feedback.priority_critical'), 'value' => 'critical'],
         ];
     }
 
     public static function statuses(): array
     {
         return [
-            ['label' => 'Open', 'value' => 'open'],
-            ['label' => 'In Progress', 'value' => 'in_progress'],
-            ['label' => 'Resolved', 'value' => 'resolved'],
-            ['label' => 'Closed', 'value' => 'closed'],
+            ['label' => __('feedback.status_open'), 'value' => 'open'],
+            ['label' => __('feedback.status_in_progress'), 'value' => 'in_progress'],
+            ['label' => __('feedback.status_resolved'), 'value' => 'resolved'],
+            ['label' => __('feedback.status_closed'), 'value' => 'closed'],
         ];
     }
 

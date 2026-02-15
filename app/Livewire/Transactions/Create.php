@@ -57,6 +57,7 @@ class Create extends Component
     private function resetForm(): void
     {
         $this->reset(['bank_account_id', 'category_id', 'amount', 'description', 'reference_number', 'attachment']);
+        $this->resetValidation();
         $this->transaction_date = now()->format('Y-m-d');
 
         if (!empty($this->allowedTypes)) {
@@ -82,9 +83,6 @@ class Create extends Component
             $this->category_id = $categoryId;
         }
         // If it's a parent category, don't auto-select it since it's disabled in the dropdown
-
-        // Force Livewire to re-render the component
-        $this->dispatch('$refresh');
     }
 
     #[Computed]

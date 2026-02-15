@@ -38,18 +38,18 @@ class Update extends Component
         $feedback = Feedback::find($id);
 
         if (!$feedback) {
-            $this->error('Feedback tidak ditemukan');
+            $this->error(__('feedback.not_found'));
             return;
         }
 
         // Check permission - user can only edit their own and only if status is open
         if ($feedback->user_id !== auth()->id()) {
-            $this->error('Anda tidak memiliki akses untuk mengedit feedback ini');
+            $this->error(__('feedback.no_edit_permission'));
             return;
         }
 
         if (!$feedback->canEdit()) {
-            $this->error('Feedback yang sudah diproses tidak dapat diedit');
+            $this->error(__('feedback.cannot_edit_processed'));
             return;
         }
 
@@ -94,6 +94,18 @@ class Update extends Component
         ];
     }
 
+    public function messages(): array
+    {
+        return [
+            'title.required' => __('feedback.validation.title_required'),
+            'title.max' => __('feedback.validation.title_max'),
+            'description.required' => __('feedback.validation.description_required'),
+            'description.max' => __('feedback.validation.description_max'),
+            'attachment.max' => __('feedback.validation.attachment_max'),
+            'attachment.mimes' => __('feedback.validation.attachment_mimes'),
+        ];
+    }
+
     public function save(): void
     {
         $this->validate();
@@ -101,7 +113,7 @@ class Update extends Component
         $feedback = Feedback::find($this->feedbackId);
 
         if (!$feedback || !$feedback->canEdit()) {
-            $this->error('Feedback tidak dapat diedit');
+            $this->error(__('feedback.cannot_edit'));
             return;
         }
 
@@ -138,7 +150,7 @@ class Update extends Component
         $this->dispatch('feedback-updated');
         $this->close();
 
-        $this->success('Feedback berhasil diperbarui');
+        $this->success(__('feedback.updated_success'));
     }
 
     public function markRemoveAttachment(): void

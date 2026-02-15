@@ -71,4 +71,5 @@
     {{-- Additional Components --}}
     <livewire:transactions.transfer @transfer-completed="$refresh" />
     <livewire:transactions.create @transaction-created="$refresh" />
+    <livewire:transactions.inline-category-create />
 </div>

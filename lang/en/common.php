@@ -69,6 +69,7 @@ return [
     'select' => 'Select',
 
     // Common Labels
+    'title' => 'Title',
     'name' => 'Name',
     'email' => 'Email',
     'email_placeholder' => 'example@email.com',

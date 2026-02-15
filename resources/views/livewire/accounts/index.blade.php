@@ -205,5 +205,6 @@
     <livewire:transactions.create @transaction-created="refreshData" />
     <livewire:transactions.delete @transaction-deleted="refreshData" />
     <livewire:transactions.transfer @transfer-completed="refreshData" />
+    <livewire:transactions.inline-category-create />
     <livewire:payments.delete @payment-deleted="refreshData" />
 </div>

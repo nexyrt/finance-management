@@ -11,9 +11,4 @@ class FloatingFeedbackButton extends Component
     {
         return view('livewire.floating-feedback-button');
     }
-
-    public function openFeedbackForm(): void
-    {
-        $this->dispatch('open-feedback-form', pageUrl: url()->current());
-    }
 }

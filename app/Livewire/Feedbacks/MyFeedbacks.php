@@ -22,14 +22,19 @@ class MyFeedbacks extends Component
     public int $quantity = 10;
     public array $sort = ['column' => 'created_at', 'direction' => 'desc'];
 
-    public array $headers = [
-        ['index' => 'type', 'label' => 'Jenis', 'sortable' => false],
-        ['index' => 'title', 'label' => 'Judul'],
-        ['index' => 'priority', 'label' => 'Prioritas', 'sortable' => false],
-        ['index' => 'status', 'label' => 'Status', 'sortable' => false],
-        ['index' => 'created_at', 'label' => 'Dibuat'],
-        ['index' => 'actions', 'label' => 'Aksi', 'sortable' => false],
-    ];
+    public array $headers = [];
+
+    public function mount(): void
+    {
+        $this->headers = [
+            ['index' => 'type', 'label' => __('feedback.header_type'), 'sortable' => false],
+            ['index' => 'title', 'label' => __('feedback.header_title')],
+            ['index' => 'priority', 'label' => __('feedback.header_priority'), 'sortable' => false],
+            ['index' => 'status', 'label' => __('feedback.header_status'), 'sortable' => false],
+            ['index' => 'created_at', 'label' => __('feedback.header_created')],
+            ['index' => 'actions', 'label' => __('feedback.header_actions'), 'sortable' => false],
+        ];
+    }
 
     #[On('feedback-created')]
     #[On('feedback-updated')]

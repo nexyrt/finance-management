@@ -39,7 +39,7 @@
                         <a href="{{ $this->feedback->page_url }}" target="_blank"
                             class="text-xs text-primary-600 hover:text-primary-800 dark:text-primary-400 flex items-center gap-1">
                             <x-icon name="link" class="w-3 h-3" />
-                            Halaman Asal
+                            {{ __('feedback.source_page') }}
                         </a>
                     @endif
                 </div>
@@ -48,14 +48,14 @@
                 <div>
                     <h4 class="text-sm font-semibold text-dark-900 dark:text-white mb-2">{{ __('common.description') }}</h4>
                     <div class="prose prose-sm dark:prose-invert max-w-none p-4 bg-white dark:bg-dark-800 rounded-lg border border-gray-200 dark:border-dark-600">
-                        {!! nl2br(e($this->feedback->description)) !!}
+                        {!! $this->feedback->safe_description !!}
                     </div>
                 </div>
 
                 {{-- Attachment --}}
                 @if ($this->feedback->hasAttachment())
                     <div>
-                        <h4 class="text-sm font-semibold text-dark-900 dark:text-white mb-2">Lampiran</h4>
+                        <h4 class="text-sm font-semibold text-dark-900 dark:text-white mb-2">{{ __('feedback.attachment_label') }}</h4>
                         <div class="p-4 bg-white dark:bg-dark-800 rounded-lg border border-gray-200 dark:border-dark-600">
                             @if ($this->feedback->isImageAttachment())
                                 <img src="{{ $this->feedback->attachment_url }}" alt="Attachment"
@@ -68,7 +68,7 @@
                                     </div>
                                     <div class="flex-1 min-w-0">
                                         <p class="font-medium text-dark-900 dark:text-white truncate">{{ $this->feedback->attachment_name }}</p>
-                                        <p class="text-xs text-dark-500">Klik untuk membuka</p>
+                                        <p class="text-xs text-dark-500">{{ __('feedback.click_to_open') }}</p>
                                     </div>
                                     <x-icon name="arrow-top-right-on-square" class="w-4 h-4 text-dark-400" />
                                 </a>
@@ -80,7 +80,7 @@
                 {{-- Admin Response --}}
                 @if ($this->feedback->admin_response)
                     <div>
-                        <h4 class="text-sm font-semibold text-dark-900 dark:text-white mb-2">Respon Admin</h4>
+                        <h4 class="text-sm font-semibold text-dark-900 dark:text-white mb-2">{{ __('feedback.admin_response') }}</h4>
                         <div class="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
                             <div class="flex items-center gap-2 mb-2">
                                 <div class="h-6 w-6 rounded-full bg-green-500 flex items-center justify-center">
@@ -94,7 +94,7 @@
                                 </span>
                             </div>
                             <div class="prose prose-sm dark:prose-invert max-w-none text-green-900 dark:text-green-100">
-                                {!! nl2br(e($this->feedback->admin_response)) !!}
+                                {!! $this->feedback->safe_admin_response !!}
                             </div>
                         </div>
                     </div>
@@ -116,7 +116,7 @@
                     @can('respond feedbacks')
                         @if ($this->feedback->canRespond())
                             <x-button wire:click="respondFeedback" color="green" icon="chat-bubble-left-ellipsis">
-                                Respond
+                                {{ __('feedback.respond') }}
                             </x-button>
                         @endif
                     @endcan

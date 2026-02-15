@@ -18,12 +18,20 @@ class AppServiceProvider extends ServiceProvider
             ->modal()
             ->block('wrapper.first', 'fixed inset-0 bg-black/30 transform transition-opacity')
             ->and()
+            ->modal()
+            ->block('wrapper.second')
+            ->replace('overflow-y-auto', 'overflow-y-visible')
+            ->and()
             ->card()
             ->block('wrapper.second')
             ->replace([
                 'shadow-md' => 'border border-zinc-200 dark:border-dark-600 shadow-sm hover:shadow-md transition-shadow duration-150',
                 'rounded-lg' => 'rounded-xl',
-            ]);
+            ])
+            ->and()
+            ->floating()
+            ->block('wrapper')
+            ->replace('z-40', 'z-[55]');
 
         // Set locale from session or user preference with fallback
         $availableLocales = config('app.available_locales', ['id', 'zh']);

@@ -27,13 +27,13 @@ class Show extends Component
         $feedback = Feedback::with(['user', 'responder'])->find($id);
 
         if (!$feedback) {
-            $this->toast()->error('Error', 'Feedback tidak ditemukan')->send();
+            $this->toast()->error(__('common.error'), __('feedback.not_found'))->send();
             return;
         }
 
         // Check permission - user can only view their own or admin can view all
         if ($feedback->user_id !== auth()->id() && !auth()->user()->can('manage feedbacks')) {
-            $this->toast()->error('Error', 'Anda tidak memiliki akses ke feedback ini')->send();
+            $this->toast()->error(__('common.error'), __('feedback.no_view_permission'))->send();
             return;
         }
 

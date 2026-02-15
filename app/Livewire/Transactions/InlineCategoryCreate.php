@@ -71,15 +71,21 @@ class InlineCategoryCreate extends Component
             'parent_id' => $this->parent_id,
         ]);
 
-        $this->dispatch('category-created', categoryId: $category->id);
+        // Tutup modal dulu sebelum dispatch event
         $this->modal = false;
         $this->reset(['label', 'parent_id']);
+        $this->resetValidation();
+
+        // Dispatch event setelah modal ditutup
+        $this->dispatch('category-created', categoryId: $category->id);
         $this->success('Kategori berhasil dibuat');
     }
 
     #[On('open-inline-category-modal')]
     public function openModal(string $transactionType): void
     {
+        $this->reset(['label', 'parent_id']);
+        $this->resetValidation();
         $this->transactionType = $transactionType;
         $this->modal = true;
     }

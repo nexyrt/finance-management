@@ -5,15 +5,15 @@
             <h1 class="text-2xl font-bold text-dark-900 dark:text-white">{{ __('common.feedbacks') }}</h1>
             <p class="text-dark-500 dark:text-dark-400 mt-1">
                 @if ($this->canManageFeedbacks())
-                    Kelola feedback dari semua pengguna
+                    {{ __('feedback.page_subtitle_admin') }}
                 @else
-                    Lihat dan kelola feedback Anda
+                    {{ __('feedback.page_subtitle_user') }}
                 @endif
             </p>
         </div>
         @can('create feedbacks')
-            <x-button wire:click="$dispatch('open-feedback-form')" color="primary" icon="plus">
-                Kirim Feedback Baru
+            <x-button @click="$dispatch('open-feedback-form', { pageUrl: window.location.href })" color="primary" icon="plus">
+                {{ __('feedback.send_new_feedback') }}
             </x-button>
         @endcan
     </div>
@@ -54,7 +54,7 @@
                 </div>
                 <div>
                     <p class="text-2xl font-bold text-blue-600 dark:text-blue-400">{{ $this->stats['in_progress'] }}</p>
-                    <p class="text-xs text-dark-500">In Progress</p>
+                    <p class="text-xs text-dark-500">{{ __('feedback.stat_in_progress') }}</p>
                 </div>
             </div>
         </div>
@@ -67,7 +67,7 @@
                 </div>
                 <div>
                     <p class="text-2xl font-bold text-green-600 dark:text-green-400">{{ $this->stats['resolved'] }}</p>
-                    <p class="text-xs text-dark-500">Resolved</p>
+                    <p class="text-xs text-dark-500">{{ __('feedback.stat_resolved') }}</p>
                 </div>
             </div>
         </div>
@@ -80,7 +80,7 @@
                 </div>
                 <div>
                     <p class="text-2xl font-bold text-red-600 dark:text-red-400">{{ $this->stats['bugs'] }}</p>
-                    <p class="text-xs text-dark-500">Bugs</p>
+                    <p class="text-xs text-dark-500">{{ __('feedback.stat_bugs') }}</p>
                 </div>
             </div>
         </div>
@@ -93,7 +93,7 @@
                 </div>
                 <div>
                     <p class="text-2xl font-bold text-blue-600 dark:text-blue-400">{{ $this->stats['features'] }}</p>
-                    <p class="text-xs text-dark-500">Features</p>
+                    <p class="text-xs text-dark-500">{{ __('feedback.stat_features') }}</p>
                 </div>
             </div>
         </div>
@@ -106,7 +106,7 @@
                 </div>
                 <div>
                     <p class="text-2xl font-bold text-gray-600 dark:text-gray-400">{{ $this->stats['feedbacks'] }}</p>
-                    <p class="text-xs text-dark-500">Saran</p>
+                    <p class="text-xs text-dark-500">{{ __('feedback.stat_suggestions') }}</p>
                 </div>
             </div>
         </div>

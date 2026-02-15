@@ -673,6 +673,12 @@ window.addEventListener('resize', () => {
         </main>
     </div>
 
+    {{-- Floating Feedback Button --}}
+    <livewire:floating-feedback-button />
+
+    {{-- Global Feedback Create Modal --}}
+    <livewire:feedbacks.create />
+
     @livewireScripts
     <wireui:scripts />
     @stack('scripts')
@@ -707,6 +713,7 @@ window.addEventListener('resize', () => {
             }
         });
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
 </body>
 
 </html>

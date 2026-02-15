@@ -2,26 +2,26 @@
     {{-- Filters --}}
     <div class="flex flex-col lg:flex-row gap-4">
         <div class="flex-1">
-            <x-input wire:model.live.debounce.300ms="search" placeholder="Cari judul, deskripsi, atau nama pengirim..." icon="magnifying-glass" />
+            <x-input wire:model.live.debounce.300ms="search" :placeholder="__('feedback.search_all')" icon="magnifying-glass" />
         </div>
         <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 lg:w-auto">
             <x-select.styled wire:model.live="typeFilter" :options="[
-                ['label' => 'Bug Report', 'value' => 'bug'],
-                ['label' => 'Feature Request', 'value' => 'feature'],
-                ['label' => 'Kritik/Saran', 'value' => 'feedback'],
-            ]" placeholder="Jenis" />
+                ['label' => __('feedback.type_bug'), 'value' => 'bug'],
+                ['label' => __('feedback.type_feature'), 'value' => 'feature'],
+                ['label' => __('feedback.type_feedback'), 'value' => 'feedback'],
+            ]" :placeholder="__('feedback.filter_type')" />
             <x-select.styled wire:model.live="statusFilter" :options="[
-                ['label' => 'Open', 'value' => 'open'],
-                ['label' => 'In Progress', 'value' => 'in_progress'],
-                ['label' => 'Resolved', 'value' => 'resolved'],
-                ['label' => 'Closed', 'value' => 'closed'],
+                ['label' => __('feedback.status_open'), 'value' => 'open'],
+                ['label' => __('feedback.status_in_progress'), 'value' => 'in_progress'],
+                ['label' => __('feedback.status_resolved'), 'value' => 'resolved'],
+                ['label' => __('feedback.status_closed'), 'value' => 'closed'],
             ]" :placeholder="__('common.status')" />
             <x-select.styled wire:model.live="priorityFilter" :options="[
-                ['label' => 'Low', 'value' => 'low'],
-                ['label' => 'Medium', 'value' => 'medium'],
-                ['label' => 'High', 'value' => 'high'],
-                ['label' => 'Critical', 'value' => 'critical'],
-            ]" placeholder="Prioritas" />
+                ['label' => __('feedback.priority_low'), 'value' => 'low'],
+                ['label' => __('feedback.priority_medium'), 'value' => 'medium'],
+                ['label' => __('feedback.priority_high'), 'value' => 'high'],
+                ['label' => __('feedback.priority_critical'), 'value' => 'critical'],
+            ]" :placeholder="__('feedback.filter_priority')" />
         </div>
     </div>
 
@@ -48,7 +48,7 @@
                 @if ($row->hasAttachment())
                     <span class="inline-flex items-center gap-1 text-xs text-primary-600 dark:text-primary-400 mt-1">
                         <x-icon name="paper-clip" class="w-3 h-3" />
-                        Lampiran
+                        {{ __('feedback.attachment_label') }}
                     </span>
                 @endif
             </div>
@@ -75,16 +75,16 @@
                 <x-slot:trigger>
                     <x-badge :text="$row->status_label" :color="$row->status_badge_color" class="cursor-pointer" />
                 </x-slot:trigger>
-                <x-dropdown.items text="Open" icon="clock"
+                <x-dropdown.items :text="__('feedback.status_open')" icon="clock"
                     wire:click="changeStatus({{ $row->id }}, 'open')"
                     :separator="$row->status === 'open'" />
-                <x-dropdown.items text="In Progress" icon="arrow-path"
+                <x-dropdown.items :text="__('feedback.status_in_progress')" icon="arrow-path"
                     wire:click="changeStatus({{ $row->id }}, 'in_progress')"
                     :separator="$row->status === 'in_progress'" />
-                <x-dropdown.items text="Resolved" icon="check-circle"
+                <x-dropdown.items :text="__('feedback.status_resolved')" icon="check-circle"
                     wire:click="changeStatus({{ $row->id }}, 'resolved')"
                     :separator="$row->status === 'resolved'" />
-                <x-dropdown.items text="Closed" icon="x-circle"
+                <x-dropdown.items :text="__('feedback.status_closed')" icon="x-circle"
                     wire:click="changeStatus({{ $row->id }}, 'closed')"
                     :separator="$row->status === 'closed'" />
             </x-dropdown>
@@ -116,8 +116,8 @@
             <div class="h-16 w-16 bg-gray-100 dark:bg-dark-700 rounded-full flex items-center justify-center mx-auto mb-4">
                 <x-icon name="inbox" class="w-8 h-8 text-gray-400" />
             </div>
-            <h3 class="text-lg font-medium text-dark-900 dark:text-white mb-1">Belum ada feedback</h3>
-            <p class="text-dark-500">Belum ada feedback yang dikirim oleh pengguna</p>
+            <h3 class="text-lg font-medium text-dark-900 dark:text-white mb-1">{{ __('feedback.no_feedback_yet') }}</h3>
+            <p class="text-dark-500">{{ __('feedback.no_feedback_admin') }}</p>
         </div>
     @endif
 </div>

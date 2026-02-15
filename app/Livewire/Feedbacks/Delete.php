@@ -24,7 +24,7 @@ class Delete extends Component
         $feedback = Feedback::find($id);
 
         if (!$feedback) {
-            $this->toast()->error('Error', 'Feedback tidak ditemukan')->send();
+            $this->toast()->error(__('common.error'), __('feedback.not_found'))->send();
             return;
         }
 
@@ -38,14 +38,14 @@ class Delete extends Component
         }
 
         if (!$canDelete) {
-            $this->toast()->error('Error', 'Anda tidak memiliki akses untuk menghapus feedback ini')->send();
+            $this->toast()->error(__('common.error'), __('feedback.no_delete_permission'))->send();
             return;
         }
 
         $this->dialog()
-            ->question("Hapus Feedback?", "Feedback \"{$feedback->title}\" akan dihapus permanen. Aksi ini tidak dapat dibatalkan.")
-            ->confirm('Ya, Hapus', 'delete', $id)
-            ->cancel('Batal')
+            ->question(__('feedback.delete_title'), __('feedback.delete_confirm_message', ['title' => $feedback->title]))
+            ->confirm(__('feedback.delete_confirm'), 'delete', $id)
+            ->cancel(__('common.cancel'))
             ->send();
     }
 
@@ -54,7 +54,7 @@ class Delete extends Component
         $feedback = Feedback::find($id);
 
         if (!$feedback) {
-            $this->toast()->error('Error', 'Feedback tidak ditemukan')->send();
+            $this->toast()->error(__('common.error'), __('feedback.not_found'))->send();
             return;
         }
 
@@ -68,13 +68,13 @@ class Delete extends Component
         }
 
         if (!$canDelete) {
-            $this->toast()->error('Error', 'Anda tidak memiliki akses untuk menghapus feedback ini')->send();
+            $this->toast()->error(__('common.error'), __('feedback.no_delete_permission'))->send();
             return;
         }
 
         $feedback->delete();
 
         $this->dispatch('feedback-deleted');
-        $this->toast()->success('Berhasil', 'Feedback berhasil dihapus')->send();
+        $this->toast()->success(__('common.success'), __('feedback.deleted_success'))->send();
     }
 }
