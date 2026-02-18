@@ -12,10 +12,11 @@ class TemplatesTab extends Component
     use Interactions;
 
     public string $search = '';
+    public string $statusFilter = 'active';
 
     protected $listeners = [
         'template-created' => '$refresh',
-        'template-updated' => '$refresh', // Match EditTemplate dispatch
+        'template-updated' => '$refresh',
         'template-deleted' => '$refresh',
     ];
 
@@ -24,6 +25,10 @@ class TemplatesTab extends Component
     {
         $query = RecurringTemplate::with(['client', 'recurringInvoices'])
             ->orderBy('created_at', 'desc');
+
+        if ($this->statusFilter !== 'all') {
+            $query->where('status', $this->statusFilter);
+        }
 
         if ($this->search) {
             $query->where(function ($q) {
@@ -35,6 +40,14 @@ class TemplatesTab extends Component
         }
 
         return $query->get();
+    }
+
+    public function restoreTemplate(int $templateId): void
+    {
+        $template = RecurringTemplate::findOrFail($templateId);
+        $template->update(['status' => 'active']);
+        unset($this->templates);
+        $this->toast()->success('Berhasil', "Template '{$template->template_name}' berhasil diaktifkan kembali")->send();
     }
 
     public function editTemplate($templateId)

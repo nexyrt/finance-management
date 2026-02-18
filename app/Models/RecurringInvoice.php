@@ -16,6 +16,8 @@ class RecurringInvoice extends Model
         'template_id',
         'client_id',
         'scheduled_date',
+        'issue_date',
+        'due_date',
         'invoice_data',
         'status',
         'published_invoice_id'
@@ -23,6 +25,8 @@ class RecurringInvoice extends Model
 
     protected $casts = [
         'scheduled_date' => 'date',
+        'issue_date' => 'date',
+        'due_date' => 'date',
         'invoice_data' => 'array'
     ];
 
@@ -73,8 +77,8 @@ class RecurringInvoice extends Model
             'discount_value' => $this->invoice_data['discount_value'] ?? 0,
             'discount_reason' => $this->invoice_data['discount_reason'] ?? null,
             'total_amount' => $this->total_amount,
-            'issue_date' => $this->scheduled_date,
-            'due_date' => $this->scheduled_date->addDays(30),
+            'issue_date' => $this->issue_date ?? $this->scheduled_date,
+            'due_date' => $this->due_date ?? ($this->issue_date ?? $this->scheduled_date)->copy()->addDays(30),
             'status' => 'draft'
         ]);
 
@@ -102,7 +106,7 @@ class RecurringInvoice extends Model
     // Generate invoice number for published invoice (same format as regular invoice)
     private function generateInvoiceNumber(): string
     {
-        $date = $this->scheduled_date;
+        $date = $this->issue_date ?? $this->scheduled_date;
 
         $invoices = Invoice::whereYear('issue_date', $date->year)
             ->whereMonth('issue_date', $date->month)

@@ -1,8 +1,17 @@
 <div class="space-y-6">
-    <!-- Search & Create Action -->
+    <!-- Search, Filter & Create Action -->
     <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-        <x-input wire:model.live.debounce.300ms="search" placeholder="Search templates or clients..."
-            icon="magnifying-glass" class="h-full py-3" />
+        <div class="flex flex-col sm:flex-row gap-3 flex-1">
+            <x-input wire:model.live.debounce.300ms="search" placeholder="Search templates or clients..."
+                icon="magnifying-glass" class="h-full py-3" />
+            <div class="w-full sm:w-48">
+                <x-select.styled wire:model.live="statusFilter" :options="[
+                    ['label' => 'Active', 'value' => 'active'],
+                    ['label' => 'Archived', 'value' => 'archived'],
+                    ['label' => 'Semua', 'value' => 'all'],
+                ]" select="label:label|value:value" placeholder="Status" />
+            </div>
+        </div>
         <x-button size="sm" href="{{ route('recurring-invoices.template.create') }}" wire:navigate title="Create"
             text="Create Template" prefix="true">
             <x-slot:left>
@@ -18,9 +27,13 @@
                 class="bg-white dark:bg-dark-800 rounded-xl border border-zinc-200 dark:border-dark-600 hover:shadow-lg transition-all duration-200 hover:-translate-y-1">
                 <!-- Status Indicator -->
                 <div class="absolute top-4 right-4">
-                    <div
-                        class="w-3 h-3 rounded-full {{ $template->status === 'active' ? 'bg-green-400' : 'bg-gray-400' }}">
-                    </div>
+                    @if ($template->status === 'archived')
+                        <x-badge text="Archived" color="amber" size="sm" />
+                    @else
+                        <div
+                            class="w-3 h-3 rounded-full {{ $template->status === 'active' ? 'bg-green-400' : 'bg-gray-400' }}">
+                        </div>
+                    @endif
                 </div>
 
                 <div class="p-6">
@@ -97,10 +110,18 @@
                             class="flex-1">
                             <x-icon name="eye" class="w-4 h-4" />
                         </x-button>
-                        <x-button href="{{ route('recurring-invoices.template.edit', $template->id) }}" wire:navigate
-                            color="green" size="sm" outline class="flex-1">
-                            <x-icon name="pencil" class="w-4 h-4" />
-                        </x-button>
+                        @if ($template->status === 'archived')
+                            <x-button wire:click="restoreTemplate({{ $template->id }})"
+                                loading="restoreTemplate({{ $template->id }})" color="green" size="sm" outline
+                                class="flex-1">
+                                <x-icon name="arrow-path" class="w-4 h-4" />
+                            </x-button>
+                        @else
+                            <x-button href="{{ route('recurring-invoices.template.edit', $template->id) }}" wire:navigate
+                                color="green" size="sm" outline class="flex-1">
+                                <x-icon name="pencil" class="w-4 h-4" />
+                            </x-button>
+                        @endif
                         <livewire:recurring-invoices.delete-template :template="$template" :key="uniqid()"
                             @template-deleted="$refresh" />
                     </div>

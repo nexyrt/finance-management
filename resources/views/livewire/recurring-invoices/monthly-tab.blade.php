@@ -14,7 +14,7 @@
         </div>
 
         <div class="flex gap-2">
-            <x-button wire:click="generateInvoices" color="primary" icon="plus" loading="generateInvoices">
+            <x-button wire:click="openGenerateModal" color="primary" icon="plus" loading="openGenerateModal">
                 Generate Invoices
             </x-button>
             <livewire:recurring-invoices.monthly.create-invoice @invoice-created="$refresh" />
@@ -126,7 +126,7 @@
         <x-table :headers="[
             ['index' => 'client', 'label' => 'Client'],
             ['index' => 'template', 'label' => 'Template'],
-            ['index' => 'scheduled_date', 'label' => 'Scheduled Date'],
+            ['index' => 'scheduled_date', 'label' => 'Period'],
             ['index' => 'amount', 'label' => 'Amount'],
             ['index' => 'status', 'label' => 'Status'],
             ['index' => 'actions', 'label' => 'Actions', 'sortable' => false],
@@ -155,9 +155,8 @@
             @endinteract
 
             @interact('column_scheduled_date', $row)
-                <div class="text-sm">
-                    <div class="font-medium">{{ $row->scheduled_date->format('d M Y') }}</div>
-                    <div class="text-xs text-gray-500">{{ $row->scheduled_date->format('l') }}</div>
+                <div class="text-sm font-medium">
+                    {{ $row->scheduled_date->format('F Y') }}
                 </div>
             @endinteract
 
@@ -192,8 +191,8 @@
 
                     @if ($row->status === 'draft')
                         <x-button.circle href="{{ route('recurring-invoices.monthly.edit', $row->id) }}" wire:navigate color="green" size="sm" icon="pencil" />
-                        <x-button.circle wire:click="publishInvoice({{ $row->id }})"
-                            loading="publishInvoice({{ $row->id }})" color="primary" size="sm"
+                        <x-button.circle wire:click="openPublishModal({{ $row->id }})"
+                            loading="openPublishModal({{ $row->id }})" color="primary" size="sm"
                             icon="arrow-up-tray" />
                     @endif
 
@@ -203,6 +202,72 @@
             @endinteract
         </x-table>
     </div>
+
+    <!-- Generate Modal -->
+    <x-modal wire="generateModal" size="md" center persistent>
+        <x-slot:title>
+            <div class="flex items-center gap-4 my-3">
+                <div class="h-12 w-12 bg-primary-50 dark:bg-primary-900/20 rounded-xl flex items-center justify-center">
+                    <x-icon name="plus" class="w-6 h-6 text-primary-600 dark:text-primary-400" />
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold text-dark-900 dark:text-dark-50">Generate Invoices</h3>
+                    <p class="text-sm text-dark-600 dark:text-dark-400">Atur tanggal untuk semua invoice yang akan di-generate</p>
+                </div>
+            </div>
+        </x-slot:title>
+
+        <form id="generate-form" wire:submit="generateInvoices" class="space-y-4">
+            <x-date wire:model="generateIssueDate" label="Tanggal Invoice (Issue Date) *" />
+            <x-date wire:model="generateDueDate" label="Tanggal Jatuh Tempo (Due Date) *" />
+        </form>
+
+        <x-slot:footer>
+            <div class="flex flex-col sm:flex-row justify-end gap-3">
+                <x-button wire:click="$set('generateModal', false)" color="zinc"
+                    class="w-full sm:w-auto order-2 sm:order-1">
+                    Batal
+                </x-button>
+                <x-button type="submit" form="generate-form" color="primary" icon="plus" loading="generateInvoices"
+                    class="w-full sm:w-auto order-1 sm:order-2">
+                    Generate
+                </x-button>
+            </div>
+        </x-slot:footer>
+    </x-modal>
+
+    <!-- Publish Modal -->
+    <x-modal wire="publishModal" size="md" center persistent>
+        <x-slot:title>
+            <div class="flex items-center gap-4 my-3">
+                <div class="h-12 w-12 bg-green-50 dark:bg-green-900/20 rounded-xl flex items-center justify-center">
+                    <x-icon name="arrow-up-tray" class="w-6 h-6 text-green-600 dark:text-green-400" />
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold text-dark-900 dark:text-dark-50">Publish Invoice</h3>
+                    <p class="text-sm text-dark-600 dark:text-dark-400">Atur tanggal sebelum publish ke invoice</p>
+                </div>
+            </div>
+        </x-slot:title>
+
+        <form id="publish-form" wire:submit="publishInvoice" class="space-y-4">
+            <x-date wire:model="publishIssueDate" label="Tanggal Invoice (Issue Date) *" />
+            <x-date wire:model="publishDueDate" label="Tanggal Jatuh Tempo (Due Date) *" />
+        </form>
+
+        <x-slot:footer>
+            <div class="flex flex-col sm:flex-row justify-end gap-3">
+                <x-button wire:click="$set('publishModal', false)" color="zinc"
+                    class="w-full sm:w-auto order-2 sm:order-1">
+                    Batal
+                </x-button>
+                <x-button type="submit" form="publish-form" color="green" icon="arrow-up-tray" loading="publishInvoice"
+                    class="w-full sm:w-auto order-1 sm:order-2">
+                    Publish
+                </x-button>
+            </div>
+        </x-slot:footer>
+    </x-modal>
 
     <!-- Include Child Components -->
     <livewire:recurring-invoices.monthly.view-invoice />

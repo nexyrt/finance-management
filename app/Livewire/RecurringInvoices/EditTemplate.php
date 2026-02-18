@@ -105,18 +105,6 @@ class EditTemplate extends Component
                 'total_amount' => $totalAmount,
             ];
 
-            // Calculate next generation date if frequency or start date changed
-            $nextGenerationDate = $this->template->next_generation_date;
-            if (
-                $this->template->start_date->format('Y-m-d') !== $this->templateData['start_date'] ||
-                $this->template->frequency !== $this->templateData['frequency']
-            ) {
-                $nextGenerationDate = $this->calculateNextGenerationDate(
-                    $this->templateData['start_date'],
-                    $this->templateData['frequency']
-                );
-            }
-
             // Update template
             $this->template->update([
                 'client_id' => $this->templateData['client_id'],
@@ -124,7 +112,6 @@ class EditTemplate extends Component
                 'start_date' => $this->templateData['start_date'],
                 'end_date' => $this->templateData['end_date'],
                 'frequency' => $this->templateData['frequency'],
-                'next_generation_date' => $nextGenerationDate,
                 'invoice_template' => $invoiceTemplate,
             ]);
 
@@ -139,19 +126,6 @@ class EditTemplate extends Component
             \Log::error('Failed to update recurring template: ' . $e->getMessage());
             session()->flash('error', 'Failed to update template. Please try again.');
         }
-    }
-
-    private function calculateNextGenerationDate($startDate, $frequency)
-    {
-        $date = \Carbon\Carbon::parse($startDate);
-
-        return match ($frequency) {
-            'monthly' => $date->addMonth(),
-            'quarterly' => $date->addMonths(3),
-            'semi_annual' => $date->addMonths(6),
-            'annual' => $date->addYear(),
-            default => $date->addMonth(),
-        };
     }
 
     private function parseAmount($value): int

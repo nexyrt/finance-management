@@ -19,7 +19,6 @@ class RecurringTemplate extends Model
         'start_date',
         'end_date',
         'frequency',
-        'next_generation_date',
         'status',
         'invoice_template'
     ];
@@ -27,7 +26,6 @@ class RecurringTemplate extends Model
     protected $casts = [
         'start_date' => 'date',
         'end_date' => 'date',
-        'next_generation_date' => 'date',
         'invoice_template' => 'array'
     ];
 
@@ -39,28 +37,6 @@ class RecurringTemplate extends Model
     public function recurringInvoices(): HasMany
     {
         return $this->hasMany(RecurringInvoice::class, 'template_id');
-    }
-
-    // Generate next due date based on frequency
-    public function calculateNextGenerationDate(): Carbon
-    {
-        $current = $this->next_generation_date;
-
-        return match ($this->frequency) {
-            'monthly' => $current->addMonth(),
-            'quarterly' => $current->addMonths(3),
-            'semi_annual' => $current->addMonths(6),
-            'annual' => $current->addYear(),
-            default => $current->addMonth()
-        };
-    }
-
-    // Check if template is due for generation
-    public function isDueForGeneration(): bool
-    {
-        return $this->status === 'active' &&
-            $this->next_generation_date <= now()->toDateString() &&
-            $this->end_date >= now()->toDateString();
     }
 
     // Get template items formatted
@@ -80,15 +56,59 @@ class RecurringTemplate extends Model
         return 'Rp ' . number_format($this->total_amount, 0, ',', '.');
     }
 
+    // Returns all valid billing months based on interval model from start_date.
+    // Each cycle advances from start_date by one interval; invoice is billed
+    // in the month the cycle lands on. A cycle is valid if its date <= end_date.
+    // Example: start=19 Feb, end=10 Dec, monthly → cycles: 19 Mar, 19 Apr, ..., 19 Nov (valid), 19 Dec (> 10 Dec, stop)
+    public function getValidMonths(): array
+    {
+        $cycleDate = $this->start_date->copy();
+        $endDate = $this->end_date->copy();
+        $months = [];
+
+        while (true) {
+            $cycleDate = match ($this->frequency) {
+                'monthly'     => $cycleDate->addMonth(),
+                'quarterly'   => $cycleDate->addMonths(3),
+                'semi_annual' => $cycleDate->addMonths(6),
+                'annual'      => $cycleDate->addYear(),
+                default       => $cycleDate->addMonth(),
+            };
+
+            if ($cycleDate->gt($endDate)) {
+                break;
+            }
+
+            $months[] = [
+                'year'  => $cycleDate->year,
+                'month' => $cycleDate->month,
+            ];
+        }
+
+        return $months;
+    }
+
+    // Check if a specific year/month is a valid billing period for this template
+    public function isValidPeriodForGeneration(int $year, int $month): bool
+    {
+        foreach ($this->getValidMonths() as $validMonth) {
+            if ($validMonth['year'] === $year && $validMonth['month'] === $month) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // Total number of invoices this template should generate over its lifetime
+    public function getTotalInvoicesCount(): int
+    {
+        return count($this->getValidMonths());
+    }
+
     // Get remaining invoices to generate
     public function getRemainingInvoicesAttribute(): int
     {
-        $start = Carbon::parse($this->start_date);
-        $end = Carbon::parse($this->end_date);
-
-        $totalMonths = $start->diffInMonths($end) + 1;
         $generatedCount = $this->recurringInvoices()->count();
-
-        return max(0, $totalMonths - $generatedCount);
+        return max(0, $this->getTotalInvoicesCount() - $generatedCount);
     }
 }

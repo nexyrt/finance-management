@@ -98,12 +98,6 @@ class CreateTemplate extends Component
                 'total_amount' => $totalAmount,
             ];
 
-            // Calculate next generation date
-            $nextGenerationDate = $this->calculateNextGenerationDate(
-                $this->template['start_date'],
-                $this->template['frequency']
-            );
-
             // Create recurring template
             RecurringTemplate::create([
                 'client_id' => $this->template['client_id'],
@@ -111,9 +105,8 @@ class CreateTemplate extends Component
                 'start_date' => $this->template['start_date'],
                 'end_date' => $this->template['end_date'],
                 'frequency' => $this->template['frequency'],
-                'next_generation_date' => $nextGenerationDate,
                 'status' => 'active',
-                'invoice_template' => $invoiceTemplate, // Pass array, model cast to JSON
+                'invoice_template' => $invoiceTemplate,
             ]);
 
             DB::commit();
@@ -127,19 +120,6 @@ class CreateTemplate extends Component
             \Log::error('Failed to create recurring template: ' . $e->getMessage());
             session()->flash('error', 'Failed to create recurring template. Please try again.');
         }
-    }
-
-    private function calculateNextGenerationDate($startDate, $frequency)
-    {
-        $date = \Carbon\Carbon::parse($startDate);
-
-        return match($frequency) {
-            'monthly' => $date->addMonth(),
-            'quarterly' => $date->addMonths(3),
-            'semi_annual' => $date->addMonths(6),
-            'annual' => $date->addYear(),
-            default => $date->addMonth(),
-        };
     }
 
     private function parseAmount($value): int

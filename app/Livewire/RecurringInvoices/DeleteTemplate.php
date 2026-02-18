@@ -30,7 +30,9 @@ class DeleteTemplate extends Component
 
         if ($publishedCount > 0) {
             $this->toast()
-                ->warning('Tidak Dapat Dihapus', "Template memiliki {$publishedCount} invoice yang sudah dipublish")
+                ->question('Arsipkan Template?', "Template memiliki {$publishedCount} invoice yang sudah dipublish. Arsipkan agar tidak di-generate lagi?")
+                ->confirm('Arsipkan', 'archive')
+                ->cancel('Batal')
                 ->send();
             return;
         }
@@ -44,6 +46,13 @@ class DeleteTemplate extends Component
             ->confirm(method: 'delete')
             ->cancel()
             ->send();
+    }
+
+    public function archive(): void
+    {
+        $this->template->update(['status' => 'archived']);
+        $this->dispatch('template-deleted');
+        $this->toast()->success('Berhasil', "Template '{$this->template->template_name}' berhasil diarsipkan")->send();
     }
 
     public function delete(): void

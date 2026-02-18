@@ -4,6 +4,7 @@ namespace App\Livewire\RecurringInvoices;
 
 use App\Models\RecurringInvoice;
 use App\Models\RecurringTemplate;
+use Carbon\Carbon;
 use Livewire\Component;
 use Livewire\Attributes\Computed;
 use Livewire\WithPagination;
@@ -18,6 +19,17 @@ class MonthlyTab extends Component
     public ?int $selectedTemplate = null;
     public string $statusFilter = 'all';
     public array $selected = [];
+
+    // Generate modal
+    public bool $generateModal = false;
+    public ?string $generateIssueDate = null;
+    public ?string $generateDueDate = null;
+
+    // Publish modal
+    public bool $publishModal = false;
+    public ?int $publishingInvoiceId = null;
+    public ?string $publishIssueDate = null;
+    public ?string $publishDueDate = null;
 
     protected $listeners = [
         'invoice-created' => '$refresh',
@@ -123,10 +135,27 @@ class MonthlyTab extends Component
         return $query->orderBy('scheduled_date', 'desc');
     }
 
+    public function openGenerateModal(): void
+    {
+        $this->generateIssueDate = now()->format('Y-m-d');
+        $this->generateDueDate = now()->addDays(30)->format('Y-m-d');
+        $this->generateModal = true;
+    }
+
     public function generateInvoices(): void
     {
+        $this->validate([
+            'generateIssueDate' => 'required|date',
+            'generateDueDate' => 'required|date|after_or_equal:generateIssueDate',
+        ]);
+
+        $scheduledDate = Carbon::create($this->currentYear, $this->currentMonth, 1);
+
+        // Pre-filter: template yang start_date sebelum bulan dipilih dan end_date belum lewat.
+        // Validasi presisi (apakah bulan ini tepat sesuai siklus frequency) dilakukan oleh isValidPeriodForGeneration().
         $templates = RecurringTemplate::where('status', 'active')
-            ->where('next_generation_date', '<=', now())
+            ->where('start_date', '<', $scheduledDate)
+            ->where('end_date', '>=', $scheduledDate)
             ->get();
 
         $generated = 0;
@@ -136,6 +165,8 @@ class MonthlyTab extends Component
                 $generated++;
             }
         }
+
+        $this->generateModal = false;
 
         if ($generated > 0) {
             $this->toast()->success('Success', "$generated invoices generated successfully")->send();
@@ -147,36 +178,70 @@ class MonthlyTab extends Component
 
     private function shouldGenerateForTemplate(RecurringTemplate $template): bool
     {
-        return !RecurringInvoice::where('template_id', $template->id)
+        $alreadyExists = RecurringInvoice::where('template_id', $template->id)
             ->whereYear('scheduled_date', $this->currentYear)
             ->whereMonth('scheduled_date', $this->currentMonth)
             ->exists();
+
+        if ($alreadyExists) {
+            return false;
+        }
+
+        return $template->isValidPeriodForGeneration($this->currentYear, $this->currentMonth);
     }
 
     private function createInvoiceFromTemplate(RecurringTemplate $template): void
     {
-        $scheduledDate = now()->setYear($this->currentYear)->setMonth($this->currentMonth)->startOfMonth();
+        $scheduledDate = Carbon::create($this->currentYear, $this->currentMonth, 1);
 
         RecurringInvoice::create([
             'template_id' => $template->id,
             'client_id' => $template->client_id,
             'scheduled_date' => $scheduledDate,
+            'issue_date' => $this->generateIssueDate,
+            'due_date' => $this->generateDueDate,
             'invoice_data' => $template->invoice_template,
             'status' => 'draft',
         ]);
     }
 
-    public function publishInvoice($invoiceId): void
+    public function openPublishModal(int $invoiceId): void
     {
         $invoice = RecurringInvoice::find($invoiceId);
-
         if (!$invoice || $invoice->status === 'published') {
             $this->toast()->error('Error', 'Invoice cannot be published')->send();
             return;
         }
 
+        $this->publishingInvoiceId = $invoiceId;
+        $this->publishIssueDate = $invoice->issue_date?->format('Y-m-d') ?? $invoice->scheduled_date->format('Y-m-d');
+        $this->publishDueDate = $invoice->due_date?->format('Y-m-d') ?? $invoice->scheduled_date->copy()->addDays(30)->format('Y-m-d');
+        $this->publishModal = true;
+    }
+
+    public function publishInvoice(): void
+    {
+        $this->validate([
+            'publishIssueDate' => 'required|date',
+            'publishDueDate' => 'required|date|after_or_equal:publishIssueDate',
+        ]);
+
+        $invoice = RecurringInvoice::find($this->publishingInvoiceId);
+
+        if (!$invoice || $invoice->status === 'published') {
+            $this->toast()->error('Error', 'Invoice cannot be published')->send();
+            $this->publishModal = false;
+            return;
+        }
+
         try {
+            $invoice->update([
+                'issue_date' => $this->publishIssueDate,
+                'due_date' => $this->publishDueDate,
+            ]);
+
             $publishedInvoice = $invoice->publish();
+            $this->publishModal = false;
             $this->toast()->success('Success', "Invoice published as #{$publishedInvoice->invoice_number}")->send();
             $this->dispatch('$refresh');
         } catch (\Exception $e) {
