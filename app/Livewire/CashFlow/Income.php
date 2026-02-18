@@ -9,12 +9,13 @@ use App\Models\TransactionCategory;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Maatwebsite\Excel\Facades\Excel;
 use TallStackUi\Traits\Interactions;
 
-class IncomeTab extends Component
+class Income extends Component
 {
     use Interactions, WithPagination;
 
@@ -29,9 +30,24 @@ class IncomeTab extends Component
     // Sorting
     public array $sort = ['column' => 'date', 'direction' => 'desc'];
 
-    public function mount()
+    // Headers for x-table
+    public array $headers = [
+        ['index' => 'date', 'label' => 'Tanggal'],
+        ['index' => 'source_type', 'label' => 'Sumber', 'sortable' => false],
+        ['index' => 'client_description', 'label' => 'Klien/Deskripsi', 'sortable' => false],
+        ['index' => 'category_label', 'label' => 'Kategori', 'sortable' => false],
+        ['index' => 'amount', 'label' => 'Jumlah'],
+        ['index' => 'action', 'label' => 'Aksi', 'sortable' => false],
+    ];
+
+    #[On('transaction-created')]
+    #[On('payment-updated')]
+    #[On('payment-deleted')]
+    #[On('transaction-deleted')]
+    public function refreshData(): void
     {
-        $this->dateRange = [];
+        $this->reset('selected');
+        $this->resetPage();
     }
 
     #[Computed]
@@ -60,13 +76,66 @@ class IncomeTab extends Component
     }
 
     #[Computed]
-    public function incomeData(): LengthAwarePaginator
+    public function totalIncome(): int
+    {
+        $payments = Payment::query()
+            ->join('invoices', 'payments.invoice_id', '=', 'invoices.id')
+            ->join('clients', 'invoices.billed_to_id', '=', 'clients.id')
+            ->join('bank_accounts', 'payments.bank_account_id', '=', 'bank_accounts.id');
+
+        if (!empty($this->clientFilters)) {
+            $payments->whereIn('clients.id', $this->clientFilters);
+        }
+
+        if (!empty($this->dateRange) && count($this->dateRange) >= 2 && $this->dateRange[0] && $this->dateRange[1]) {
+            $payments->whereBetween('payments.payment_date', [$this->dateRange[0], $this->dateRange[1]]);
+        }
+
+        if ($this->search) {
+            $payments->where(function ($q) {
+                $q->where('invoices.invoice_number', 'like', '%' . $this->search . '%')
+                    ->orWhere('clients.name', 'like', '%' . $this->search . '%')
+                    ->orWhere('payments.reference_number', 'like', '%' . $this->search . '%')
+                    ->orWhere('bank_accounts.bank_name', 'like', '%' . $this->search . '%');
+            });
+        }
+
+        $paymentTotal = $payments->sum('payments.amount');
+
+        $transactions = BankTransaction::query()
+            ->join('transaction_categories', 'bank_transactions.category_id', '=', 'transaction_categories.id')
+            ->where('bank_transactions.transaction_type', 'credit')
+            ->where('transaction_categories.type', 'income');
+
+        if (!empty($this->categoryFilters)) {
+            $transactions->whereIn('bank_transactions.category_id', $this->categoryFilters);
+        }
+
+        if (!empty($this->dateRange) && count($this->dateRange) >= 2 && $this->dateRange[0] && $this->dateRange[1]) {
+            $transactions->whereBetween('bank_transactions.transaction_date', [$this->dateRange[0], $this->dateRange[1]]);
+        }
+
+        if ($this->search) {
+            $transactions->where(function ($q) {
+                $q->where('bank_transactions.description', 'like', '%' . $this->search . '%')
+                    ->orWhere('bank_transactions.reference_number', 'like', '%' . $this->search . '%');
+            });
+        }
+
+        $transactionTotal = $transactions->sum('bank_transactions.amount');
+
+        return $paymentTotal + $transactionTotal;
+    }
+
+    #[Computed]
+    public function rows(): LengthAwarePaginator
     {
         $payments = Payment::query()
             ->join('invoices', 'payments.invoice_id', '=', 'invoices.id')
             ->join('clients', 'invoices.billed_to_id', '=', 'clients.id')
             ->join('bank_accounts', 'payments.bank_account_id', '=', 'bank_accounts.id')
             ->select([
+                DB::raw("CONCAT('payment-', payments.id) as uid"),
                 'payments.id',
                 'payments.payment_date as date',
                 'payments.amount',
@@ -105,6 +174,7 @@ class IncomeTab extends Component
             ->where('bank_transactions.transaction_type', 'credit')
             ->where('transaction_categories.type', 'income')
             ->select([
+                DB::raw("CONCAT('transaction-', bank_transactions.id) as uid"),
                 'bank_transactions.id',
                 'bank_transactions.transaction_date as date',
                 'bank_transactions.amount',
@@ -160,7 +230,6 @@ class IncomeTab extends Component
         );
     }
 
-    // Get all filtered data (for export)
     private function getFilteredData()
     {
         $payments = Payment::query()
@@ -228,7 +297,6 @@ class IncomeTab extends Component
         return $payments->union($transactions)->get()->sortByDesc('date');
     }
 
-    // Export to Excel
     public function export()
     {
         $data = $this->getFilteredData();
@@ -287,23 +355,19 @@ class IncomeTab extends Component
         }, $filename);
     }
 
-    // Export to PDF
     public function exportPdf()
     {
         $startDate = !empty($this->dateRange) && isset($this->dateRange[0]) ? $this->dateRange[0] : null;
         $endDate = !empty($this->dateRange) && isset($this->dateRange[1]) ? $this->dateRange[1] : null;
 
-        // Build URL with query parameters
         $url = route('cash-flow.export.pdf', array_filter([
             'start_date' => $startDate,
             'end_date' => $endDate,
         ]));
 
-        // Redirect to PDF download
         return redirect($url);
     }
 
-    // Export selected items
     public function exportSelected()
     {
         if (empty($this->selected)) {
@@ -404,7 +468,6 @@ class IncomeTab extends Component
         }, $filename);
     }
 
-    // Filter watchers
     public function updatedDateRange()
     {
         $this->resetPage();
@@ -425,20 +488,6 @@ class IncomeTab extends Component
         $this->resetPage();
     }
 
-    // Sorting
-    public function sortBy($column)
-    {
-        if ($this->sort['column'] === $column) {
-            $this->sort['direction'] = $this->sort['direction'] === 'asc' ? 'desc' : 'asc';
-        } else {
-            $this->sort['column'] = $column;
-            $this->sort['direction'] = 'asc';
-        }
-
-        $this->resetPage();
-    }
-
-    // Actions
     public function viewAttachment($sourceType, $id)
     {
         $this->dispatch('view-attachment', sourceType: $sourceType, id: $id);
@@ -458,7 +507,6 @@ class IncomeTab extends Component
         }
     }
 
-    // Bulk delete
     public function bulkDelete()
     {
         if (empty($this->selected)) {
@@ -498,6 +546,6 @@ class IncomeTab extends Component
 
     public function render()
     {
-        return view('livewire.cash-flow.income-tab');
+        return view('livewire.cash-flow.income');
     }
 }

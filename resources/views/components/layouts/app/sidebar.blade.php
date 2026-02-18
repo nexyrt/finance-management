@@ -56,8 +56,7 @@
             @php
                 $canSeeFinanceSection = auth()->user()->can('view invoices')
                     || auth()->user()->can('view recurring-invoices')
-                    || auth()->user()->can('view bank-accounts')
-                    || auth()->user()->can('view cash-flow');
+                    || auth()->user()->can('view bank-accounts');
             @endphp
 
             @if($canSeeFinanceSection)
@@ -88,13 +87,31 @@
                     </flux:navlist.item>
                 @endcan
 
-                @can('view cash-flow')
-                    <flux:navlist.item icon="chart-bar" :href="route('cash-flow.index')"
-                        :current="request()->routeIs('cash-flow.*')" wire:navigate>
-                        {{ __('common.cash_flow') }}
-                    </flux:navlist.item>
-                @endcan
             @endif
+
+            {{-- ARUS KAS --}}
+            @can('view cash-flow')
+                <div class="px-3 pt-6 pb-2">
+                    <div class="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                        {{ __('common.cash_flow') }}
+                    </div>
+                </div>
+
+                <flux:navlist.item icon="arrow-down-circle" :href="route('cash-flow.income')"
+                    :current="request()->routeIs('cash-flow.income')" wire:navigate>
+                    Pemasukan
+                </flux:navlist.item>
+
+                <flux:navlist.item icon="arrow-up-circle" :href="route('cash-flow.expenses')"
+                    :current="request()->routeIs('cash-flow.expenses')" wire:navigate>
+                    Pengeluaran
+                </flux:navlist.item>
+
+                <flux:navlist.item icon="arrow-path" :href="route('cash-flow.transfers')"
+                    :current="request()->routeIs('cash-flow.transfers')" wire:navigate>
+                    Transfer & Penyesuaian
+                </flux:navlist.item>
+            @endcan
 
             {{-- OPERATIONS --}}
             @php

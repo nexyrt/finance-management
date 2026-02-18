@@ -1,7 +1,9 @@
 <?php
 
 use App\Livewire\Accounts\Index as AccountsIndex;
-use App\Livewire\CashFlow\Index as CashFlowIndex;
+use App\Livewire\CashFlow\Expenses as CashFlowExpenses;
+use App\Livewire\CashFlow\Income as CashFlowIncome;
+use App\Livewire\CashFlow\Transfers as CashFlowTransfers;
 use App\Livewire\Clients\Index as ClientsIndex;
 use App\Livewire\Dashboard;
 use App\Livewire\Invoices\Create as InvoicesCreate;
@@ -146,17 +148,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->middleware('can:view bank-accounts')
         ->name('bank-account.export.pdf.preview');
 
-    Route::get('/cash-flow', CashFlowIndex::class)
-        ->middleware('can:view cash-flow')
-        ->name('cash-flow.index');
+    Route::prefix('cash-flow')->name('cash-flow.')->middleware('can:view cash-flow')->group(function () {
+        Route::get('/', fn() => redirect()->route('cash-flow.income'))->name('index');
+        Route::get('/income', CashFlowIncome::class)->name('income');
+        Route::get('/expenses', CashFlowExpenses::class)->name('expenses');
+        Route::get('/transfers', CashFlowTransfers::class)->name('transfers');
 
-    Route::get('/cash-flow/export/pdf', [CashFlowExportController::class, 'exportPdf'])
-        ->middleware('can:view cash-flow')
-        ->name('cash-flow.export.pdf');
-
-    Route::get('/cash-flow/export/pdf/preview', [CashFlowExportController::class, 'previewPdf'])
-        ->middleware('can:view cash-flow')
-        ->name('cash-flow.export.pdf.preview');
+        Route::get('/export/pdf', [CashFlowExportController::class, 'exportPdf'])->name('export.pdf');
+        Route::get('/export/pdf/preview', [CashFlowExportController::class, 'previewPdf'])->name('export.pdf.preview');
+    });
 
     // ------------------------------------------------------------------------
     // CATEGORIES

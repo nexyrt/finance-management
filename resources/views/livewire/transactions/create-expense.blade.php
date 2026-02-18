@@ -5,7 +5,7 @@
     </x-button>
 
     {{-- Modal --}}
-    <x-modal title="Tambah Pengeluaran" wire="modal" size="xl" center persistent x-on:keydown.enter.window="$wire.save()">
+    <x-modal title="Tambah Pengeluaran" wire="modal" size="xl" center persistent>
         <x-slot:title>
             <div class="flex items-center gap-4 my-3">
                 <div class="h-12 w-12 bg-red-50 dark:bg-red-900/20 rounded-xl flex items-center justify-center">
@@ -18,7 +18,7 @@
             </div>
         </x-slot:title>
 
-        <div class="space-y-6">
+        <form id="expense-create" wire:submit="save" class="space-y-6">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
                 {{-- Left Column: Detail Transaksi --}}
@@ -51,7 +51,7 @@
                             />
                         </div>
                         <div class="flex-shrink-0">
-                            <livewire:transactions-categories.create button-label="+" />
+                            <livewire:transactions-categories.create />
                         </div>
                     </div>
 
@@ -74,14 +74,14 @@
                     <x-file-upload wire:model="attachment" label="Bukti Transaksi (Opsional)" />
                 </div>
             </div>
-        </div>
+        </form>
 
         <x-slot:footer>
             <div class="flex flex-col sm:flex-row justify-end gap-3">
                 <x-button wire:click="$set('modal', false)" color="zinc" class="w-full sm:w-auto order-2 sm:order-1">
                     Batal
                 </x-button>
-                <x-button wire:click="save" color="red" icon="check" loading="save" class="w-full sm:w-auto order-1 sm:order-2">
+                <x-button type="submit" form="expense-create" color="red" icon="check" loading="save" class="w-full sm:w-auto order-1 sm:order-2">
                     Simpan Pengeluaran
                 </x-button>
             </div>

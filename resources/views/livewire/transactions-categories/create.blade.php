@@ -1,7 +1,7 @@
 <div>
     {{-- Trigger Button --}}
-    <x-button wire:click="$toggle('modal')" color="blue">
-        {{ $buttonLabel }}
+    <x-button wire:click="$toggle('modal')" color="zinc" :icon="$buttonIcon">
+        @if($buttonLabel){{ $buttonLabel }}@endif
     </x-button>
 
     {{-- Modal --}}
@@ -15,12 +15,12 @@
                     ['label' => '📉 Expense', 'value' => 'expense'],
                     ['label' => '⚖️ Adjustment', 'value' => 'adjustment'],
                     ['label' => '🔄 Transfer', 'value' => 'transfer'],
-                ]" placeholder="Pilih type category..." required />
+                ]" placeholder="Pilih type category..." />
             </div>
 
             {{-- Label Input --}}
             <div>
-                <x-input label="Label *" wire:model="label" hint="E.g., Client Payment, Office Supplies" required />
+                <x-input label="Label *" wire:model="label" hint="E.g., Client Payment, Office Supplies" />
             </div>
 
             {{-- Parent Selector (conditional) --}}

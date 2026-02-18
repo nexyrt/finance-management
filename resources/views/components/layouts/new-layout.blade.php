@@ -342,24 +342,65 @@ window.addEventListener('resize', () => {
                         </a>
                     @endcan
 
-                    @can('view cash-flow')
-                        <a href="{{ route('cash-flow.index') }}" wire:navigate @click="closeMobileMenu()"
-                            :title="isCollapsed ? '{{ __('common.cash_flow') }}' : undefined"
-                            class="menu-item {{ request()->routeIs('cash-flow.index') ? 'active' : '' }} flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-dark-800"
+                </div>
+
+                <!-- Arus Kas -->
+                @can('view cash-flow')
+                    <div class="space-y-1">
+                        <h3 class="px-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2"
+                            :class="{ 'lg:hidden': isCollapsed }">
+                            {{ __('common.cash_flow') }}
+                        </h3>
+
+                        <a href="{{ route('cash-flow.income') }}" wire:navigate @click="closeMobileMenu()"
+                            :title="isCollapsed ? 'Pemasukan' : undefined"
+                            class="menu-item {{ request()->routeIs('cash-flow.income') ? 'active' : '' }} flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-dark-800"
                             :class="{
                                 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 border-l-2 border-primary-600 dark:border-primary-400 -ml-0.5 pl-[calc(0.75rem+2px)]': isActivePath(
-                                    '{{ route('cash-flow.index') }}'),
-                                'text-gray-700 dark:text-gray-300': !isActivePath('{{ route('cash-flow.index') }}'),
+                                    '{{ route('cash-flow.income') }}'),
+                                'text-gray-700 dark:text-gray-300': !isActivePath('{{ route('cash-flow.income') }}'),
                                 'lg:justify-center lg:px-2': isCollapsed
                             }">
                             <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M22 7L13.5 15.5L8.5 10.5L2 17M22 7h-6m6 0v6" />
+                                    d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10zM8 12l4-4 4 4M12 16V8" />
                             </svg>
-                            <span class="truncate" :class="{ 'lg:hidden': isCollapsed }">{{ __('common.cash_flow') }}</span>
+                            <span class="truncate" :class="{ 'lg:hidden': isCollapsed }">Pemasukan</span>
                         </a>
-                    @endcan
-                </div>
+
+                        <a href="{{ route('cash-flow.expenses') }}" wire:navigate @click="closeMobileMenu()"
+                            :title="isCollapsed ? 'Pengeluaran' : undefined"
+                            class="menu-item {{ request()->routeIs('cash-flow.expenses') ? 'active' : '' }} flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-dark-800"
+                            :class="{
+                                'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 border-l-2 border-primary-600 dark:border-primary-400 -ml-0.5 pl-[calc(0.75rem+2px)]': isActivePath(
+                                    '{{ route('cash-flow.expenses') }}'),
+                                'text-gray-700 dark:text-gray-300': !isActivePath('{{ route('cash-flow.expenses') }}'),
+                                'lg:justify-center lg:px-2': isCollapsed
+                            }">
+                            <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10zM16 12l-4 4-4-4M12 8v8" />
+                            </svg>
+                            <span class="truncate" :class="{ 'lg:hidden': isCollapsed }">Pengeluaran</span>
+                        </a>
+
+                        <a href="{{ route('cash-flow.transfers') }}" wire:navigate @click="closeMobileMenu()"
+                            :title="isCollapsed ? 'Transfer & Penyesuaian' : undefined"
+                            class="menu-item {{ request()->routeIs('cash-flow.transfers') ? 'active' : '' }} flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-dark-800"
+                            :class="{
+                                'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 border-l-2 border-primary-600 dark:border-primary-400 -ml-0.5 pl-[calc(0.75rem+2px)]': isActivePath(
+                                    '{{ route('cash-flow.transfers') }}'),
+                                'text-gray-700 dark:text-gray-300': !isActivePath('{{ route('cash-flow.transfers') }}'),
+                                'lg:justify-center lg:px-2': isCollapsed
+                            }">
+                            <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />
+                            </svg>
+                            <span class="truncate" :class="{ 'lg:hidden': isCollapsed }">Transfer & Penyesuaian</span>
+                        </a>
+                    </div>
+                @endcan
 
                 <!-- Operations -->
                 <div class="space-y-1">

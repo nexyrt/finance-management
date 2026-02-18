@@ -15,7 +15,7 @@ use Livewire\WithPagination;
 use Maatwebsite\Excel\Facades\Excel;
 use TallStackUi\Traits\Interactions;
 
-class ExpensesTab extends Component
+class Expenses extends Component
 {
     use Interactions, WithPagination;
 
@@ -231,22 +231,18 @@ class ExpensesTab extends Component
         }, $filename);
     }
 
-    // Export to PDF
     public function exportPdf()
     {
         $startDate = !empty($this->dateRange) && isset($this->dateRange[0]) ? $this->dateRange[0] : null;
         $endDate = !empty($this->dateRange) && isset($this->dateRange[1]) ? $this->dateRange[1] : null;
 
-        // Build URL with query parameters
         $url = route('cash-flow.export.pdf', array_filter([
             'start_date' => $startDate,
             'end_date' => $endDate,
         ]));
 
-        // Redirect to PDF download
         return redirect($url);
     }
-
 
     public function exportSelected()
     {
@@ -336,7 +332,6 @@ class ExpensesTab extends Component
 
         $transactions = BankTransaction::whereIn('id', $this->selected)->get();
 
-        // Delete attachments
         foreach ($transactions as $transaction) {
             if ($transaction->attachment_path && Storage::exists($transaction->attachment_path)) {
                 Storage::delete($transaction->attachment_path);
@@ -402,6 +397,6 @@ class ExpensesTab extends Component
 
     public function render()
     {
-        return view('livewire.cash-flow.expenses-tab');
+        return view('livewire.cash-flow.expenses');
     }
 }
