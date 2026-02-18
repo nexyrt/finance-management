@@ -227,22 +227,12 @@ class Create extends Component
 
     private function getCompanyInitials(): string
     {
-        // Get company profile from database
         $company = \App\Models\CompanyProfile::first();
         if (!$company || !$company->name) {
-            return 'SPI'; // Default fallback
+            return 'SPI';
         }
 
-        // Extract initials from company name
-        $words = preg_split('/\s+/', $company->name);
-        $initials = '';
-        foreach ($words as $word) {
-            if (!empty($word)) {
-                $initials .= strtoupper($word[0]);
-            }
-        }
-
-        return $initials ?: 'SPI';
+        return $this->extractInitials($company->name) ?: 'SPI';
     }
 
     private function getClientInitials($clientId): string
@@ -252,21 +242,26 @@ class Create extends Component
             return 'XXX';
         }
 
-        // Use company name if type is company, otherwise use personal name
         $name = $client->type === 'company' && $client->company_name
             ? $client->company_name
             : $client->name;
 
-        // Extract initials from name
-        $words = preg_split('/\s+/', $name);
+        return $this->extractInitials($name) ?: 'XXX';
+    }
+
+    private function extractInitials(string $name): string
+    {
+        $skipWords = ['pt', 'pt.', 'cv', 'cv.', 'ud', 'ud.', 'tb', 'tb.', 'pd', 'pd.', 'firma', 'yayasan', 'koperasi', 'perum', 'persero'];
+
+        $words = preg_split('/\s+/', trim($name));
         $initials = '';
         foreach ($words as $word) {
-            if (!empty($word)) {
+            if (!empty($word) && !in_array(strtolower(rtrim($word, '.')), $skipWords) && !in_array(strtolower($word), $skipWords)) {
                 $initials .= strtoupper($word[0]);
             }
         }
 
-        return $initials ?: 'XXX';
+        return $initials;
     }
 
     private function getRomanMonth($month): string

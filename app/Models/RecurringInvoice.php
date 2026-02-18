@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\Client;
+use App\Models\CompanyProfile;
 
 class RecurringInvoice extends Model
 {
@@ -97,12 +99,10 @@ class RecurringInvoice extends Model
         return $invoice;
     }
 
-    // Generate invoice number for published invoice
+    // Generate invoice number for published invoice (same format as regular invoice)
     private function generateInvoiceNumber(): string
     {
         $date = $this->scheduled_date;
-        $currentMonth = $date->format('m');
-        $currentYear = $date->format('y');
 
         $invoices = Invoice::whereYear('issue_date', $date->year)
             ->whereMonth('issue_date', $date->month)
@@ -110,20 +110,76 @@ class RecurringInvoice extends Model
 
         $maxSequence = 0;
         foreach ($invoices as $invoiceNumber) {
-            if (preg_match('/INV\/(\d+)\/KSN\/\d{2}\.\d{2}/', $invoiceNumber, $matches)) {
+            if (preg_match('/^(\d+)\/INV\//', $invoiceNumber, $matches)) {
                 $sequence = (int) $matches[1];
                 $maxSequence = max($maxSequence, $sequence);
             }
         }
 
-        $nextSequence = $maxSequence + 1;
+        $sequence = $maxSequence + 1;
+        $companyInitials = $this->getCompanyInitials();
+        $clientInitials = $this->getClientInitials($this->client_id);
+        $romanMonth = $this->getRomanMonth($date->month);
+        $year = $date->year;
 
         return sprintf(
-            'INV/%02d/KSN/%02d.%s',
-            $nextSequence,
-            (int) $currentMonth,
-            $currentYear
+            '%03d/INV/%s-%s/%s/%d',
+            $sequence,
+            $companyInitials,
+            $clientInitials,
+            $romanMonth,
+            $year
         );
+    }
+
+    private function getCompanyInitials(): string
+    {
+        $company = CompanyProfile::first();
+        if (!$company || !$company->name) {
+            return 'SPI';
+        }
+
+        return $this->extractInitials($company->name) ?: 'SPI';
+    }
+
+    private function getClientInitials($clientId): string
+    {
+        $client = Client::find($clientId);
+        if (!$client) {
+            return 'XXX';
+        }
+
+        $name = $client->type === 'company' && $client->company_name
+            ? $client->company_name
+            : $client->name;
+
+        return $this->extractInitials($name) ?: 'XXX';
+    }
+
+    private function extractInitials(string $name): string
+    {
+        $skipWords = ['pt', 'pt.', 'cv', 'cv.', 'ud', 'ud.', 'tb', 'tb.', 'pd', 'pd.', 'firma', 'yayasan', 'koperasi', 'perum', 'persero'];
+
+        $words = preg_split('/\s+/', trim($name));
+        $initials = '';
+        foreach ($words as $word) {
+            if (!empty($word) && !in_array(strtolower(rtrim($word, '.')), $skipWords) && !in_array(strtolower($word), $skipWords)) {
+                $initials .= strtoupper($word[0]);
+            }
+        }
+
+        return $initials;
+    }
+
+    private function getRomanMonth($month): string
+    {
+        $romans = [
+            1 => 'I', 2 => 'II', 3 => 'III', 4 => 'IV',
+            5 => 'V', 6 => 'VI', 7 => 'VII', 8 => 'VIII',
+            9 => 'IX', 10 => 'X', 11 => 'XI', 12 => 'XII'
+        ];
+
+        return $romans[$month] ?? 'I';
     }
 
     // Scope for monthly filtering
