@@ -8,21 +8,9 @@
 
             {{-- Actions Grid - Responsive --}}
             <div class="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-1 gap-3 flex-1">
-                <x-button wire:click="addTransaction" loading="addTransaction" color="blue" icon="plus"
-                    class="w-full justify-start h-auto">
-                    <div class="text-left py-1">
-                        <div class="font-semibold text-sm">{{ __('pages.add_transaction') }}</div>
-                        <div class="text-xs opacity-70">{{ __('pages.record_new_transaction') }}</div>
-                    </div>
-                </x-button>
+                <livewire:transactions.create-expense @transaction-created="$refresh" />
 
-                <x-button wire:click="transferFunds" loading="transferFunds" color="blue" outline icon="arrow-path"
-                    class="w-full justify-start h-auto">
-                    <div class="text-left py-1">
-                        <div class="font-semibold text-sm">{{ __('pages.transfer') }}</div>
-                        <div class="text-xs opacity-70">{{ __('pages.move_between_accounts') }}</div>
-                    </div>
-                </x-button>
+                <livewire:transactions.create-income @transaction-created="$refresh" />
 
                 <x-button wire:click="exportReport" loading="exportReport" color="green" outline
                     icon="document-arrow-down" class="w-full justify-start h-auto">

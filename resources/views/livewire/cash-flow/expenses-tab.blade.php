@@ -116,8 +116,7 @@
                     </x-button>
                     <x-button wire:click="export" color="green" icon="arrow-down-tray" size="sm"
                         loading="export">Export Excel</x-button>
-                    <x-button wire:click="$dispatch('create-transaction', {allowedTypes: ['debit']})" color="primary"
-                        icon="plus" size="sm">Tambah</x-button>
+                    <livewire:transactions.create-expense @transaction-created="$refresh" />
                 </div>
             </div>
         </div>
@@ -253,7 +252,5 @@
     </div>
 
     {{-- Child Components --}}
-    <livewire:transactions.create @transaction-created="$refresh" />
     <livewire:transactions.categorize @transaction-categorized="$refresh" />
-    <livewire:transactions.inline-category-create />
 </div>

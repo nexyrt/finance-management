@@ -1,7 +1,7 @@
 <div>
     {{-- Trigger Button --}}
-    <x-button wire:click="$toggle('modal')" color="blue" icon="plus" class="w-full sm:w-auto">
-        Add Category
+    <x-button wire:click="$toggle('modal')" color="blue">
+        {{ $buttonLabel }}
     </x-button>
 
     {{-- Modal --}}

@@ -32,35 +32,6 @@ class QuickActionsOverview extends Component
         ]);
     }
 
-    // Quick Actions
-    public function addTransaction(): void
-    {
-        if (!$this->selectedAccountId) {
-            $this->toast()->warning(__('common.warning'), __('pages.select_account_first'))->send();
-            return;
-        }
-        $this->dispatch('create-transaction', bankAccountId: $this->selectedAccountId);
-
-        // Re-initialize chart after action
-        $this->dispatch('reinitialize-chart', [
-            'chartData' => $this->chartData,
-        ]);
-    }
-
-    public function transferFunds(): void
-    {
-        if (!$this->selectedAccountId) {
-            $this->toast()->warning(__('common.warning'), __('pages.select_account_first'))->send();
-            return;
-        }
-        $this->dispatch('open-transfer-modal', fromAccountId: $this->selectedAccountId);
-
-        // Re-initialize chart after action
-        $this->dispatch('reinitialize-chart', [
-            'chartData' => $this->chartData,
-        ]);
-    }
-
     public function exportReport(): void
     {
         if (!$this->selectedAccountId) {

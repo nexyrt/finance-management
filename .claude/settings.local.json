@@ -27,7 +27,8 @@
       "Bash(do echo \"Checking common.$key\")",
       "Bash(wc:*)",
       "Bash(composer require:*)",
-      "Bash(mysql:*)"
+      "Bash(mysql:*)",
+      "Read(//d/TallStackUI/Dokumentasi/**)"
     ]
   }
 }

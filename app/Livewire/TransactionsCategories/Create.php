@@ -16,6 +16,12 @@ class Create extends Component
     public string $label = '';
     public ?int $parent_id = null;
     public bool $modal = false;
+    public string $buttonLabel = 'Add Category';
+
+    public function mount(string $buttonLabel = 'Add Category'): void
+    {
+        $this->buttonLabel = $buttonLabel;
+    }
 
     public function render(): View
     {

@@ -1,34 +1,26 @@
 <?php
 
-namespace App\Livewire;
+namespace App\Livewire\Transactions;
 
-use TallStackUi\Traits\Interactions;
 use App\Models\BankTransaction;
 use Livewire\Component;
 use Livewire\WithFileUploads;
+use TallStackUi\Traits\Interactions;
 
-class TestingPage extends Component
+class CreateExpense extends Component
 {
-    use Interactions; 
     use WithFileUploads;
+    use Interactions;
 
-    public bool $modal = false;
+    public $modal = false;
 
-    // Custom Modal Form Properties
     public $bank_account_id = null;
+
+    public $category_id = null;
 
     public $amount = null;
 
     public $transaction_date = null;
-
-    public function mount(): void
-    {
-        $this->transaction_date = now()->format('Y-m-d');
-    }
-
-    public $transaction_type = 'debit';
-
-    public $category_id = null;
 
     public $description = null;
 
@@ -36,15 +28,19 @@ class TestingPage extends Component
 
     public $attachment = null;
 
-    public function rules(): array
+    public function mount()
+    {
+        $this->transaction_date = now()->format('Y-m-d');
+    }
+
+    public function rules()
     {
         return [
             'bank_account_id'  => 'required|exists:bank_accounts,id',
+            'category_id'      => 'required|exists:transaction_categories,id',
             'amount'           => 'required',
             'transaction_date' => 'required|date',
-            'transaction_type' => 'required|in:credit,debit',
-            'category_id'      => 'nullable|exists:transaction_categories,id',
-            'description'      => 'nullable|string|max:255',
+            'description'      => 'required|string|max:255',
             'reference_number' => 'nullable|string|max:255',
             'attachment'       => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
         ];
@@ -56,32 +52,36 @@ class TestingPage extends Component
 
         $data = [
             'bank_account_id'  => $this->bank_account_id,
-            'amount'           => $this->amount,
-            'transaction_date' => $this->transaction_date,
-            'transaction_type' => $this->transaction_type,
             'category_id'      => $this->category_id,
+            'amount'           => BankTransaction::parseAmount($this->amount),
+            'transaction_date' => $this->transaction_date,
+            'transaction_type' => 'debit',
             'description'      => $this->description,
             'reference_number' => $this->reference_number,
         ];
 
         if ($this->attachment) {
             $filename = time() . '_' . $this->attachment->getClientOriginalName();
-            $path = $this->attachment->storeAs('transactions', $filename, 'public');
+            $path = $this->attachment->storeAs('transaction-attachments', $filename, 'public');
             $data['attachment_path'] = $path;
             $data['attachment_name'] = $this->attachment->getClientOriginalName();
         }
 
         BankTransaction::create($data);
 
-        $this->toast()->success('Transaksi Berhasil Disimpan!')->send();
-        $this->reset(['bank_account_id', 'amount', 'transaction_type', 'category_id', 'description', 'reference_number', 'attachment']);
+        $this->dispatch('transaction-created');
+        $this->toast()->success('Pengeluaran berhasil disimpan!')->send();
+
+        $this->reset(['bank_account_id', 'category_id', 'amount', 'description', 'reference_number', 'attachment']);
+        $this->resetValidation();
         $this->transaction_date = now()->format('Y-m-d');
+
         $this->dispatch('currency-reset');
         $this->dispatch('file-upload-reset');
     }
 
     public function render()
     {
-        return view('livewire.testing-page');
+        return view('livewire.transactions.create-expense');
     }
 }

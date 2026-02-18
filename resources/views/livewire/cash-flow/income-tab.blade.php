@@ -61,7 +61,7 @@
                     <x-button wire:click="export" color="green" icon="arrow-down-tray" size="sm" loading="export">
                         Export Excel
                     </x-button>
-                    <livewire:cash-flow.create-income @income-created="$refresh" />
+                    <livewire:transactions.create-income @transaction-created="$refresh" />
                 </div>
             </div>
         </div>

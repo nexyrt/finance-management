@@ -265,6 +265,45 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     // ------------------------------------------------------------------------
+    // API ENDPOINTS
+    // ------------------------------------------------------------------------
+    Route::get('/api/transaction-categories', function (Request $request) {
+        $type = $request->get('type');
+
+        $categoryTypes = match ($type) {
+            'credit' => ['income', 'adjustment', 'transfer'],
+            'debit'  => ['expense', 'adjustment', 'transfer'],
+            default  => ['income', 'expense', 'adjustment', 'transfer'],
+        };
+
+        return \App\Models\TransactionCategory::whereNull('parent_id')
+            ->whereIn('type', $categoryTypes)
+            ->with('children')
+            ->orderBy('type')
+            ->orderBy('label')
+            ->get()
+            ->flatMap(function ($parent) {
+                $items = [];
+                $items[] = ['label' => $parent->label, 'value' => $parent->id, 'disabled' => true];
+                foreach ($parent->children as $child) {
+                    $items[] = ['label' => '↳ ' . $child->label, 'value' => $child->id];
+                }
+                return $items;
+            })
+            ->values();
+    })->name('api.transaction-categories');
+
+    Route::get('/api/bank-accounts', function () {
+        return \App\Models\BankAccount::orderBy('bank_name')
+            ->orderBy('account_name')
+            ->get()
+            ->map(fn ($account) => [
+                'label' => $account->account_name . ' (' . $account->bank_name . ')',
+                'value' => $account->id,
+            ]);
+    })->name('api.bank-accounts');
+
+    // ------------------------------------------------------------------------
     // TESTING (Local Only)
     // ------------------------------------------------------------------------
     if (app()->environment('local')) {
