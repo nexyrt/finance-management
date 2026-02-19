@@ -696,15 +696,7 @@ window.addEventListener('resize', () => {
                 <x-theme-switch sm only-icons />
 
                 <!-- Notifications -->
-                <button
-                    class="relative text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white h-9 w-9 md:h-10 md:w-10 flex items-center justify-center rounded-md hover:bg-gray-100 dark:hover:bg-dark-700">
-                    <svg class="w-4 h-4 md:w-5 md:w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0" />
-                    </svg>
-                    <span
-                        class="absolute top-1 right-1 md:top-1.5 md:right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
-                </button>
+                @livewire('notifications.bell')
             </div>
         </header>
 

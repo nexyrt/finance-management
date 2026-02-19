@@ -156,6 +156,17 @@ class Create extends Component
 
             DB::commit();
 
+            // Notify admins & finance managers about new invoice
+            $invoice->load('client');
+            $recipients = \App\Models\User::role(['admin', 'finance manager'])->pluck('id')->toArray();
+            \App\Models\AppNotification::notifyMany(
+                $recipients,
+                'invoice_created',
+                'Invoice Baru Dibuat',
+                'Invoice ' . $invoice->invoice_number . ' untuk ' . $invoice->client->name . ' telah dibuat oleh ' . auth()->user()->name,
+                ['invoice_id' => $invoice->id, 'url' => route('invoices.index')]
+            );
+
             $this->toast()->success(__('invoice.created_successfully'))->send();
 
             $this->reset(['invoice', 'items', 'discount']);

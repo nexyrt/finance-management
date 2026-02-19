@@ -114,6 +114,22 @@ class Create extends Component
             // Update invoice status
             $this->invoice->refresh();
             $this->invoice->updateStatus();
+            $this->invoice->refresh();
+
+            // Notify admins & finance managers about payment
+            $statusLabel = match($this->invoice->status) {
+                'paid'           => 'Lunas',
+                'partially_paid' => 'Bayar Sebagian',
+                default          => 'Draft',
+            };
+            $recipients = \App\Models\User::role(['admin', 'finance manager'])->pluck('id')->toArray();
+            \App\Models\AppNotification::notifyMany(
+                $recipients,
+                'invoice_payment_received',
+                'Pembayaran Invoice Diterima',
+                'Pembayaran Rp ' . number_format($amountInteger, 0, ',', '.') . ' untuk invoice ' . $this->invoice->invoice_number . ' dicatat. Status: ' . $statusLabel,
+                ['invoice_id' => $this->invoice->id, 'url' => route('invoices.index')]
+            );
 
             session()->flash('success', __('pages.payment_recorded_successfully'));
             $this->resetData();

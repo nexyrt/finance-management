@@ -27,7 +27,11 @@ class AppServiceProvider extends ServiceProvider
             ->and()
             ->floating()
             ->block('wrapper')
-            ->replace('z-40', 'z-[55]');
+            ->replace('z-40', 'z-[55]')
+            ->and()
+            ->dropdown()
+            ->block('floating.class')
+            ->replace('w-56', 'w-80 sm:w-96');
 
         // Set locale from session or user preference with fallback
         $availableLocales = config('app.available_locales', ['id', 'zh']);

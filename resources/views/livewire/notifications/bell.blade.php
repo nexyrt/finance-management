@@ -1,42 +1,32 @@
-<div x-data="{ show: @entangle('dropdown') }">
-    {{-- Bell Button --}}
-    <button @click="show = !show"
-        x-ref="button"
-        type="button"
-        class="relative p-2 text-dark-500 hover:text-dark-700 dark:text-dark-400 dark:hover:text-dark-200 transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-dark-700">
-        <x-icon name="bell" class="w-6 h-6" />
+<div wire:poll.5s="refresh">
+    <x-dropdown position="bottom-end">
 
-        {{-- Badge --}}
-        @if ($this->unreadCount > 0)
-            <span class="absolute top-1 right-1 flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-bold text-white bg-red-500 rounded-full">
-                {{ $this->unreadCount > 99 ? '99+' : $this->unreadCount }}
-            </span>
-        @endif
-    </button>
-
-    {{-- Floating Dropdown using TallStackUI with Teleport --}}
-    <template x-teleport="body">
-        <x-floating x-show="show"
-            x-anchor="$refs.button"
-            @click.outside="show = false"
-            class="w-80 sm:w-96 bg-white dark:bg-dark-800 rounded-xl shadow-2xl border border-gray-200 dark:border-dark-700"
-            style="z-index: 9999;"
-            x-transition:enter="transition ease-out duration-200"
-            x-transition:enter-start="opacity-0 scale-95"
-            x-transition:enter-end="opacity-100 scale-100"
-            x-transition:leave="transition ease-in duration-150"
-            x-transition:leave-start="opacity-100 scale-100"
-            x-transition:leave-end="opacity-0 scale-95">
+        {{-- Custom Trigger: Bell button dengan unread badge --}}
+        <x-slot:action>
+            <button type="button"
+                x-on:click="show = !show"
+                class="relative p-2 text-dark-500 hover:text-dark-700 dark:text-dark-400 dark:hover:text-dark-200 transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-dark-700">
+                <x-icon name="bell" class="w-6 h-6" />
+                @if ($this->unreadCount > 0)
+                    <span class="absolute top-1 right-1 flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-bold text-white bg-red-500 rounded-full">
+                        {{ $this->unreadCount > 99 ? '99+' : $this->unreadCount }}
+                    </span>
+                @endif
+            </button>
+        </x-slot:action>
 
         {{-- Header --}}
-        <div class="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-dark-700">
-            <h3 class="text-sm font-semibold text-dark-900 dark:text-white">{{ __('common.notifications') }}</h3>
-            @if ($this->unreadCount > 0)
-                <button wire:click="markAllAsRead" class="text-xs text-primary-600 hover:text-primary-800 dark:text-primary-400 hover:underline">
-                    {{ __('common.mark_all_as_read') }}
-                </button>
-            @endif
-        </div>
+        <x-slot:header>
+            <div class="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-dark-700">
+                <h3 class="text-sm font-semibold text-dark-900 dark:text-white">{{ __('common.notifications') }}</h3>
+                @if ($this->unreadCount > 0)
+                    <button wire:click="markAllAsRead"
+                        class="text-xs text-primary-600 hover:text-primary-800 dark:text-primary-400 hover:underline">
+                        {{ __('common.mark_all_as_read') }}
+                    </button>
+                @endif
+            </div>
+        </x-slot:header>
 
         {{-- Notification List --}}
         <div class="max-h-96 overflow-y-auto">
@@ -67,7 +57,7 @@
                     {{-- Unread indicator --}}
                     @if (!$notification->read_at)
                         <div class="flex-shrink-0">
-                            <span class="w-2 h-2 bg-primary-500 rounded-full block"></span>
+                            <span class="w-2 h-2 bg-primary-500 rounded-full block mt-1"></span>
                         </div>
                     @endif
                 </div>
@@ -82,11 +72,12 @@
         {{-- Footer --}}
         @if ($this->notifications->count() > 0)
             <div class="px-4 py-3 border-t border-gray-200 dark:border-dark-700 text-center">
-                <a href="{{ route('feedbacks.index') }}" class="text-xs text-primary-600 hover:text-primary-800 dark:text-primary-400 hover:underline">
+                <a href="{{ route('feedbacks.index') }}"
+                    class="text-xs text-primary-600 hover:text-primary-800 dark:text-primary-400 hover:underline">
                     {{ __('common.view_all_notifications') }}
                 </a>
             </div>
         @endif
-        </x-floating>
-    </template>
+
+    </x-dropdown>
 </div>

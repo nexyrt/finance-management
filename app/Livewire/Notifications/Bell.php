@@ -11,8 +11,6 @@ use Livewire\Component;
 
 class Bell extends Component
 {
-    public bool $dropdown = false;
-
     public function render(): View
     {
         return view('livewire.notifications.bell');
@@ -38,6 +36,9 @@ class Bell extends Component
     #[On('notification-created')]
     #[On('feedback-created')]
     #[On('feedback-responded')]
+    #[On('invoice-created')]
+    #[On('payment-created')]
+    #[On('invoice-deleted')]
     public function refresh(): void
     {
         unset($this->unreadCount);
@@ -87,8 +88,4 @@ class Bell extends Component
         }
     }
 
-    public function toggleDropdown(): void
-    {
-        $this->dropdown = !$this->dropdown;
-    }
 }

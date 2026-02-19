@@ -50,6 +50,11 @@ class Delete extends Component
         }
 
         try {
+            // Capture data before deletion
+            $invoiceNumber = $this->invoice->invoice_number;
+            $clientName    = $this->invoice->client->name;
+            $deletedBy     = auth()->user()->name;
+
             DB::transaction(function () {
                 // Delete payments first
                 if ($this->invoice->payments->count() > 0) {
@@ -62,6 +67,16 @@ class Delete extends Component
                 // Delete the invoice
                 $this->invoice->delete();
             });
+
+            // Notify admins & finance managers about deletion
+            $recipients = \App\Models\User::role(['admin', 'finance manager'])->pluck('id')->toArray();
+            \App\Models\AppNotification::notifyMany(
+                $recipients,
+                'invoice_deleted',
+                'Invoice Dihapus',
+                'Invoice ' . $invoiceNumber . ' (' . $clientName . ') telah dihapus oleh ' . $deletedBy,
+                ['url' => route('invoices.index')]
+            );
 
             // Success notification
             $this->toast()
