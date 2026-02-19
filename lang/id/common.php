@@ -106,7 +106,7 @@ return [
     'updated_at' => 'Diubah Pada',
     'showing' => 'Menampilkan',
     'of' => 'dari',
-    'clients' => 'klien',
+    'clients' => 'Klien',
     'selected' => 'dipilih',
 
     // Status
