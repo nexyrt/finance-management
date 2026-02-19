@@ -252,14 +252,14 @@ class MonthlyTab extends Component
     public function bulkDelete(): void
     {
         if (empty($this->selected)) {
-            $this->toast()->warning('Warning', 'Please select invoices to delete')->send();
+            $this->toast()->warning('Perhatian', 'Pilih invoice yang ingin dihapus')->send();
             return;
         }
 
-        $this->toast()
-            ->question('Delete Selected?', count($this->selected) . ' invoices will be deleted permanently')
-            ->confirm('Delete', 'confirmBulkDelete', 'Invoices deleted successfully')
-            ->cancel('Cancel')
+        $this->dialog()
+            ->question('Hapus Invoice Terpilih?', count($this->selected) . ' invoice akan dihapus permanen')
+            ->confirm('Hapus', 'confirmBulkDelete')
+            ->cancel('Batal')
             ->send();
     }
 
@@ -290,14 +290,14 @@ class MonthlyTab extends Component
     public function bulkPublish(): void
     {
         if (empty($this->selected)) {
-            $this->toast()->warning('Warning', 'Please select invoices to publish')->send();
+            $this->toast()->warning('Perhatian', 'Pilih invoice yang ingin dipublish')->send();
             return;
         }
 
-        $this->toast()
-            ->question('Publish Selected?', count($this->selected) . ' invoices will be published')
-            ->confirm('Publish', 'confirmBulkPublish', 'Invoices published successfully')
-            ->cancel('Cancel')
+        $this->dialog()
+            ->question('Publish Invoice Terpilih?', count($this->selected) . ' invoice akan dipublish dan tidak bisa diedit lagi')
+            ->confirm('Publish', 'confirmBulkPublish')
+            ->cancel('Batal')
             ->send();
     }
 

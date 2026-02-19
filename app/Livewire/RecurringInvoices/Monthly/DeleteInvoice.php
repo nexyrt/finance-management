@@ -26,14 +26,14 @@ class DeleteInvoice extends Component
     public function confirm(): void
     {
         if ($this->invoice->status === 'published') {
-            $this->toast()
-                ->warning('Cannot Delete', 'Published invoices cannot be deleted')
+            $this->dialog()
+                ->warning('Tidak Dapat Dihapus', 'Invoice yang sudah dipublish tidak bisa dihapus')
                 ->send();
             return;
         }
 
-        $this->toast()
-            ->question('Delete Invoice?', 'This draft invoice will be permanently deleted')
+        $this->dialog()
+            ->question('Hapus Invoice?', 'Draft invoice ini akan dihapus permanen')
             ->confirm(method: 'delete')
             ->cancel()
             ->send();

@@ -29,7 +29,7 @@ class DeleteTemplate extends Component
         $publishedCount = $this->template->recurringInvoices()->where('status', 'published')->count();
 
         if ($publishedCount > 0) {
-            $this->toast()
+            $this->dialog()
                 ->question('Arsipkan Template?', "Template memiliki {$publishedCount} invoice yang sudah dipublish. Arsipkan agar tidak di-generate lagi?")
                 ->confirm('Arsipkan', 'archive')
                 ->cancel('Batal')
@@ -41,7 +41,7 @@ class DeleteTemplate extends Component
             ? "Template '{$this->template->template_name}' dan {$recurringCount} draft invoice akan dihapus permanen"
             : "Template '{$this->template->template_name}' akan dihapus permanen";
 
-        $this->toast()
+        $this->dialog()
             ->question('Hapus Template?', $message)
             ->confirm(method: 'delete')
             ->cancel()
