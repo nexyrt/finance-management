@@ -47,7 +47,7 @@
                 {{-- Description --}}
                 <div>
                     <h4 class="text-sm font-semibold text-dark-900 dark:text-white mb-2">{{ __('common.description') }}</h4>
-                    <div class="prose prose-sm dark:prose-invert max-w-none p-4 bg-white dark:bg-dark-800 rounded-lg border border-gray-200 dark:border-dark-600">
+                    <div class="rich-text text-sm text-dark-700 dark:text-dark-300 p-4 bg-white dark:bg-dark-800 rounded-lg border border-gray-200 dark:border-dark-600">
                         {!! $this->feedback->safe_description !!}
                     </div>
                 </div>
@@ -93,7 +93,7 @@
                                     {{ $this->feedback->responded_at?->format('d M Y, H:i') }}
                                 </span>
                             </div>
-                            <div class="prose prose-sm dark:prose-invert max-w-none text-green-900 dark:text-green-100">
+                            <div class="rich-text text-sm text-green-900 dark:text-green-100">
                                 {!! $this->feedback->safe_admin_response !!}
                             </div>
                         </div>

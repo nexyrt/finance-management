@@ -41,7 +41,7 @@
                     </div>
 
                     <div class="mt-4 p-3 bg-white dark:bg-dark-800 rounded border border-gray-200 dark:border-dark-600">
-                        <div class="prose prose-sm dark:prose-invert max-w-none text-dark-700 dark:text-dark-300">
+                        <div class="rich-text text-sm text-dark-700 dark:text-dark-300">
                             {!! $this->feedback->safe_description !!}
                         </div>
                     </div>
