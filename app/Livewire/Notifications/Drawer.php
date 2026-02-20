@@ -9,28 +9,24 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
 use Livewire\Component;
 
-class Bell extends Component
+class Drawer extends Component
 {
+    public $slide = false;
+    public $page = 1;
+    public $perPage = 20;
+
     public function render(): View
     {
-        return view('livewire.notifications.bell');
+        return view('livewire.notifications.drawer');
     }
 
-    #[Computed]
-    public function unreadCount(): int
+    #[On('open-notification-drawer')]
+    public function open(): void
     {
-        return AppNotification::forUser(auth()->id())
-            ->unread()
-            ->count();
-    }
-
-    #[Computed]
-    public function notifications(): Collection
-    {
-        return AppNotification::forUser(auth()->id())
-            ->recent()
-            ->limit(10)
-            ->get();
+        $this->page = 1;
+        $this->slide = true;
+        unset($this->notifications);
+        unset($this->total);
     }
 
     #[On('notification-created')]
@@ -40,24 +36,38 @@ class Bell extends Component
     #[On('payment-created')]
     #[On('invoice-deleted')]
     #[On('payment-deleted')]
-    #[On('notification-read')]
     public function refresh(): void
     {
-        unset($this->unreadCount);
         unset($this->notifications);
+        unset($this->total);
+        unset($this->unreadCount);
     }
 
-    public function markAsRead(int $id): void
+    #[Computed]
+    public function notifications(): Collection
     {
-        $notification = AppNotification::where('user_id', auth()->id())
-            ->where('id', $id)
-            ->first();
+        return AppNotification::forUser(auth()->id())
+            ->recent()
+            ->limit($this->page * $this->perPage)
+            ->get();
+    }
 
-        if ($notification) {
-            $notification->markAsRead();
-            unset($this->unreadCount);
-            unset($this->notifications);
-        }
+    #[Computed]
+    public function total(): int
+    {
+        return AppNotification::forUser(auth()->id())->count();
+    }
+
+    #[Computed]
+    public function unreadCount(): int
+    {
+        return AppNotification::forUser(auth()->id())->unread()->count();
+    }
+
+    public function loadMore(): void
+    {
+        $this->page++;
+        unset($this->notifications);
     }
 
     public function markAllAsRead(): void
@@ -66,8 +76,10 @@ class Bell extends Component
             ->unread()
             ->update(['read_at' => now()]);
 
-        unset($this->unreadCount);
         unset($this->notifications);
+        unset($this->unreadCount);
+
+        $this->dispatch('notification-read');
     }
 
     public function openNotification(int $id): void
@@ -79,20 +91,15 @@ class Bell extends Component
         if ($notification) {
             $notification->markAsRead();
 
-            // If notification has a URL in data, redirect to it
             $url = $notification->data['url'] ?? null;
             if ($url) {
                 $this->redirect($url);
             }
 
-            unset($this->unreadCount);
             unset($this->notifications);
+            unset($this->unreadCount);
+
+            $this->dispatch('notification-read');
         }
     }
-
-    public function openAllNotifications(): void
-    {
-        $this->dispatch('open-notification-drawer');
-    }
-
 }

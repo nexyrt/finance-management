@@ -84,6 +84,7 @@ class AppNotification extends Model
             'invoice_payment_received' => 'banknotes',
             'invoice_due_soon'         => 'clock',
             'invoice_deleted'          => 'trash',
+            'payment_deleted'          => 'trash',
             default                    => 'bell',
         };
     }
@@ -98,6 +99,7 @@ class AppNotification extends Model
             'invoice_payment_received' => 'green',
             'invoice_due_soon'         => 'yellow',
             'invoice_deleted'          => 'red',
+            'payment_deleted'          => 'red',
             default                    => 'gray',
         };
     }

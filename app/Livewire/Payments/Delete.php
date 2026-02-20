@@ -57,7 +57,15 @@ class Delete extends Component
         }
 
         try {
-            DB::transaction(function () {
+            // Capture data before transaction
+            $invoiceNumber = $this->payment->invoice->invoice_number;
+            $clientName    = $this->payment->invoice->client->name;
+            $paymentAmount = $this->payment->amount;
+            $deletedBy     = auth()->user()->name;
+            $oldStatus     = $this->payment->invoice->status;
+            $newStatus     = null;
+
+            DB::transaction(function () use (&$newStatus) {
                 $invoice = $this->payment->invoice;
                 $oldStatus = $invoice->status;
 
@@ -78,6 +86,30 @@ class Delete extends Component
                     $this->logStatusChange($invoice, $oldStatus, $newStatus);
                 }
             });
+
+            // Notify admins & finance managers
+            $statusLabel = match($newStatus) {
+                'paid'           => 'Lunas',
+                'partially_paid' => 'Bayar Sebagian',
+                'overdue'        => 'Jatuh Tempo',
+                'sent'           => 'Terkirim',
+                default          => 'Draft',
+            };
+
+            $message = 'Pembayaran Rp ' . number_format($paymentAmount, 0, ',', '.') . ' untuk invoice ' . $invoiceNumber . ' (' . $clientName . ') dihapus oleh ' . $deletedBy . '.';
+
+            if ($oldStatus !== $newStatus) {
+                $message .= ' Status invoice berubah: ' . $statusLabel . '.';
+            }
+
+            $recipients = \App\Models\User::role(['admin', 'finance manager'])->pluck('id')->toArray();
+            \App\Models\AppNotification::notifyMany(
+                $recipients,
+                'payment_deleted',
+                'Pembayaran Invoice Dihapus',
+                $message,
+                ['invoice_id' => $this->invoice->id, 'url' => route('invoices.index')]
+            );
 
             // Success feedback
             $this->toast()->success(__('common.success'), __('pages.payment_deleted_successfully'))->send();

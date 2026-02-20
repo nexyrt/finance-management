@@ -1,16 +1,14 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" x-data="{
     darkTheme: localStorage.getItem('tallstackui.theme') === 'dark' || (!localStorage.getItem('tallstackui.theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)
-}" x-init="
-    $watch('darkTheme', value => {
-        localStorage.setItem('tallstackui.theme', value ? 'dark' : 'light');
-        if (value) {
-            document.documentElement.classList.add('dark');
-        } else {
-            document.documentElement.classList.remove('dark');
-        }
-    });
-">
+}" x-init="$watch('darkTheme', value => {
+    localStorage.setItem('tallstackui.theme', value ? 'dark' : 'light');
+    if (value) {
+        document.documentElement.classList.add('dark');
+    } else {
+        document.documentElement.classList.remove('dark');
+    }
+});">
 
 <head>
     @include('partials.head')
@@ -236,6 +234,7 @@ window.addEventListener('resize', () => {
                 </div>
 
                 <!-- Master Data -->
+                @canany(['view clients', 'view services'])
                 <div class="space-y-1">
                     <h3 class="px-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2"
                         :class="{ 'lg:hidden': isCollapsed }">
@@ -274,12 +273,15 @@ window.addEventListener('resize', () => {
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16M8 7H4a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-4" />
                             </svg>
-                            <span class="truncate" :class="{ 'lg:hidden': isCollapsed }">{{ __('common.services') }}</span>
+                            <span class="truncate"
+                                :class="{ 'lg:hidden': isCollapsed }">{{ __('common.services') }}</span>
                         </a>
                     @endcan
                 </div>
+                @endcanany
 
                 <!-- Finance -->
+                @canany(['view invoices', 'view recurring-invoices', 'view bank-accounts'])
                 <div class="space-y-1">
                     <h3 class="px-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2"
                         :class="{ 'lg:hidden': isCollapsed }">
@@ -300,7 +302,8 @@ window.addEventListener('resize', () => {
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M16 13H8M16 17H8M10 9H8" />
                             </svg>
-                            <span class="truncate" :class="{ 'lg:hidden': isCollapsed }">{{ __('common.invoices') }}</span>
+                            <span class="truncate"
+                                :class="{ 'lg:hidden': isCollapsed }">{{ __('common.invoices') }}</span>
                         </a>
                     @endcan
 
@@ -319,7 +322,8 @@ window.addEventListener('resize', () => {
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M21 10c0-4.97-4.03-9-9-9-2.4 0-4.58.94-6.2 2.47M3 14c0 4.97 4.03 9 9 9 2.4 0 4.58-.94 6.2-2.47M3 3v7h7M21 21v-7h-7" />
                             </svg>
-                            <span class="truncate" :class="{ 'lg:hidden': isCollapsed }">{{ __('common.recurring_invoices') }}</span>
+                            <span class="truncate"
+                                :class="{ 'lg:hidden': isCollapsed }">{{ __('common.recurring_invoices') }}</span>
                         </a>
                     @endcan
 
@@ -338,11 +342,13 @@ window.addEventListener('resize', () => {
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M3 21h18M9 8h1m-1 4h1m4-4h1m-1 4h1M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16" />
                             </svg>
-                            <span class="truncate" :class="{ 'lg:hidden': isCollapsed }">{{ __('common.bank_accounts') }}</span>
+                            <span class="truncate"
+                                :class="{ 'lg:hidden': isCollapsed }">{{ __('common.bank_accounts') }}</span>
                         </a>
                     @endcan
 
                 </div>
+                @endcanany
 
                 <!-- Arus Kas -->
                 @can('view cash-flow')
@@ -390,7 +396,8 @@ window.addEventListener('resize', () => {
                             :class="{
                                 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 border-l-2 border-primary-600 dark:border-primary-400 -ml-0.5 pl-[calc(0.75rem+2px)]': isActivePath(
                                     '{{ route('cash-flow.transfers') }}'),
-                                'text-gray-700 dark:text-gray-300': !isActivePath('{{ route('cash-flow.transfers') }}'),
+                                'text-gray-700 dark:text-gray-300': !isActivePath(
+                                    '{{ route('cash-flow.transfers') }}'),
                                 'lg:justify-center lg:px-2': isCollapsed
                             }">
                             <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -403,6 +410,7 @@ window.addEventListener('resize', () => {
                 @endcan
 
                 <!-- Operations -->
+                @canany(['view categories', 'view fund requests', 'view reimbursements'])
                 <div class="space-y-1">
                     <h3 class="px-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2"
                         :class="{ 'lg:hidden': isCollapsed }">
@@ -424,7 +432,8 @@ window.addEventListener('resize', () => {
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2zM2 10h20" />
                             </svg>
-                            <span class="truncate" :class="{ 'lg:hidden': isCollapsed }">{{ __('common.categories') }}</span>
+                            <span class="truncate"
+                                :class="{ 'lg:hidden': isCollapsed }">{{ __('common.categories') }}</span>
                         </a>
                     @endcan
 
@@ -443,7 +452,8 @@ window.addEventListener('resize', () => {
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
-                            <span class="truncate" :class="{ 'lg:hidden': isCollapsed }">{{ __('common.fund_requests') }}</span>
+                            <span class="truncate"
+                                :class="{ 'lg:hidden': isCollapsed }">{{ __('common.fund_requests') }}</span>
                         </a>
                     @endcan
 
@@ -462,12 +472,15 @@ window.addEventListener('resize', () => {
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M21 10c0-4.97-4.03-9-9-9-2.4 0-4.58.94-6.2 2.47M3 14c0 4.97 4.03 9 9 9 2.4 0 4.58-.94 6.2-2.47M3 3v7h7M21 21v-7h-7" />
                             </svg>
-                            <span class="truncate" :class="{ 'lg:hidden': isCollapsed }">{{ __('common.reimbursements') }}</span>
+                            <span class="truncate"
+                                :class="{ 'lg:hidden': isCollapsed }">{{ __('common.reimbursements') }}</span>
                         </a>
                     @endcan
                 </div>
+                @endcanany
 
                 <!-- Debt & Receivables -->
+                @canany(['view loans', 'view receivables'])
                 <div class="space-y-1">
                     <h3 class="px-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2"
                         :class="{ 'lg:hidden': isCollapsed }">
@@ -506,12 +519,15 @@ window.addEventListener('resize', () => {
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M21 12V7H5a2 2 0 0 1 0-4h14v4M3 5v14a2 2 0 0 0 2 2h16v-5M18 12h.01" />
                             </svg>
-                            <span class="truncate" :class="{ 'lg:hidden': isCollapsed }">{{ __('common.receivables') }}</span>
+                            <span class="truncate"
+                                :class="{ 'lg:hidden': isCollapsed }">{{ __('common.receivables') }}</span>
                         </a>
                     @endcan
                 </div>
+                @endcanany
 
                 <!-- Administration -->
+                @canany(['view feedbacks', 'view permissions', 'manage users'])
                 <div class="space-y-1">
                     <h3 class="px-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2"
                         :class="{ 'lg:hidden': isCollapsed }">
@@ -532,7 +548,8 @@ window.addEventListener('resize', () => {
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
                             </svg>
-                            <span class="truncate" :class="{ 'lg:hidden': isCollapsed }">{{ __('common.feedbacks') }}</span>
+                            <span class="truncate"
+                                :class="{ 'lg:hidden': isCollapsed }">{{ __('common.feedbacks') }}</span>
                         </a>
                     @endcan
 
@@ -550,7 +567,8 @@ window.addEventListener('resize', () => {
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                             </svg>
-                            <span class="truncate" :class="{ 'lg:hidden': isCollapsed }">{{ __('common.permissions') }}</span>
+                            <span class="truncate"
+                                :class="{ 'lg:hidden': isCollapsed }">{{ __('common.permissions') }}</span>
                         </a>
                     @endcan
 
@@ -572,6 +590,7 @@ window.addEventListener('resize', () => {
                         </a>
                     @endcan
                 </div>
+                @endcanany
             </nav>
 
             <!-- User Profile Dropdown -->
@@ -706,6 +725,9 @@ window.addEventListener('resize', () => {
         </main>
     </div>
 
+    {{-- Notification Drawer (di body level agar tidak tertutup header) --}}
+    <livewire:notifications.drawer />
+
     {{-- Floating Feedback Button --}}
     <livewire:floating-feedback-button />
 
@@ -721,7 +743,7 @@ window.addEventListener('resize', () => {
         // Apply dark class to html element based on localStorage
         function initDarkMode() {
             const isDark = localStorage.getItem('tallstackui.theme') === 'dark' ||
-                          (!localStorage.getItem('tallstackui.theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                (!localStorage.getItem('tallstackui.theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
 
             if (isDark) {
                 document.documentElement.classList.add('dark');
