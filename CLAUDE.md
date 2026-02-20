@@ -100,9 +100,9 @@ public function refreshStats(): void
 
 ## UI/UX Design System
 
-### Design Principles
-
 **CRITICAL: Semua page baru atau redesign HARUS mengikuti design system ini untuk konsistensi.**
+
+### Design Principles
 
 **Core Philosophy:**
 - **Minimalist** - No fancy decorations, focus on functionality
@@ -122,7 +122,7 @@ public function refreshStats(): void
 
 ---
 
-## Standard Page Template
+### Standard Page Template
 
 **Reference:** `resources/views/livewire/invoices/index.blade.php`
 
@@ -162,7 +162,7 @@ public function refreshStats(): void
 
 ---
 
-## Stats Card Templates
+### Stats Card Templates
 
 **PENTING: Horizontal layout sekarang menjadi STANDAR DEFAULT untuk stats cards.**
 
@@ -266,7 +266,7 @@ Apakah stats card di main page (index)?
 
 ---
 
-## Filter + Table Layout
+### Filter + Table Layout
 
 **Reference:** `resources/views/livewire/transactions/listing.blade.php`
 
@@ -367,7 +367,7 @@ Apakah stats card di main page (index)?
 
 ---
 
-## Spacing Rules
+### Spacing Rules
 
 **1. Page Level:**
 - Root container: `space-y-6` (STANDARD untuk semua page)
@@ -388,7 +388,7 @@ Apakah stats card di main page (index)?
 
 ---
 
-## Modal Form Layout
+### Modal Form Layout
 
 **Reference:** `resources/views/livewire/transactions/create.blade.php`
 
@@ -628,7 +628,7 @@ color="yellow"
 
 ---
 
-## Card & Border Radius
+### Card & Border Radius
 
 **Standard rounded level:** `rounded-xl`
 
@@ -646,6 +646,222 @@ Digunakan di:
 - ❌ `rounded-3xl` (over-designed)
 
 **Konsistensi visual = Professional!**
+
+---
+
+### Component Usage
+
+**DO's:**
+```blade
+{{-- Clean, minimal attribute usage --}}
+<x-currency-input
+    wire:model.live="amount"
+    label="Amount"
+/>
+
+{{-- Direct output display --}}
+<p class="mt-2 text-sm">Value: {{ $amount }}</p>
+
+{{-- Descriptive comments --}}
+{{-- Test 1: Tanpa Prefix --}}
+```
+
+**DON'Ts:**
+```blade
+{{-- ❌ Jangan gunakan warna/dekorasi berlebihan --}}
+<div class="border-2 border-green-500 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl shadow-2xl p-8">
+
+{{-- ❌ Jangan nested containers berlebihan --}}
+<div class="wrapper">
+    <div class="inner">
+        <div class="content">
+            <x-input />
+        </div>
+    </div>
+</div>
+
+{{-- ❌ Jangan typography yang berlebihan --}}
+<h1 class="text-5xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r...">
+```
+
+**IMPORTANT - Page Header Exception:**
+- **Index/Main Pages**: Menggunakan `text-4xl font-bold` **DENGAN gradient** sesuai Layout Template (line 135)
+- **Testing/Simple Pages**: Menggunakan `text-2xl font-bold` **TANPA gradient**
+- **Modal Headers**: Menggunakan `text-xl font-bold` tanpa gradient
+
+### Color Scheme
+
+**Default Colors Only:**
+- Text: `text-dark-900 dark:text-dark-50` untuk primary text
+- Secondary text: `text-dark-600 dark:text-dark-400`
+- Muted text: `text-dark-500 dark:text-dark-400`
+- Backgrounds: Clean white/dark mode (`bg-white dark:bg-dark-800`)
+- Borders: `border-secondary-200 dark:border-dark-600`
+- Accents: Only when necessary (`text-blue-600 dark:text-blue-400`)
+
+**Avoid:**
+- ❌ Custom gradient backgrounds for cards/sections (gradient HANYA untuk page title)
+- ❌ Multiple accent colors dalam satu section
+- ❌ Heavy shadows (`shadow-2xl`, `shadow-lg`) - gunakan `hover:shadow-lg` untuk stats cards
+- ❌ Bright/neon colors
+
+### Code Style
+
+**Blade Templates:**
+```blade
+{{-- Descriptive comments for sections --}}
+{{-- Test 1: Description of what this tests --}}
+<div>
+    <x-component
+        wire:model.live="property"
+        label="Label"
+        attribute="value"
+    />
+    <p class="mt-2 text-sm">Output: {{ $property }}</p>
+</div>
+```
+
+**Livewire Components:**
+```php
+class PageName extends Component
+{
+    // Clear, descriptive property comments
+    public $property = 0;
+
+    public function render()
+    {
+        return view('livewire.page-name');
+    }
+}
+```
+
+### Reference Examples
+
+**Good Example (Index/Main Page):**
+```blade
+<div class="space-y-6">
+    {{-- Header with gradient (SESUAI LAYOUT TEMPLATE) --}}
+    <h1 class="text-4xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-indigo-800 dark:from-white dark:via-blue-200 dark:to-indigo-200 bg-clip-text text-transparent">
+        Page Title
+    </h1>
+
+    {{-- Stats Cards --}}
+    <x-card class="hover:shadow-lg transition-shadow">
+        <div class="flex items-center gap-4">
+            <div class="h-12 w-12 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                <x-icon name="icon" class="w-6 h-6 text-blue-600 dark:text-blue-400" />
+            </div>
+            <div>
+                <p class="text-sm text-dark-600 dark:text-dark-400">Label</p>
+                <p class="text-2xl font-bold text-dark-900 dark:text-dark-50">Value</p>
+            </div>
+        </div>
+    </x-card>
+</div>
+```
+
+**Good Example (Testing/Simple Page):**
+```blade
+<div class="space-y-8">
+    <h1 class="text-2xl font-bold text-dark-900 dark:text-dark-50">Page Title</h1>
+
+    {{-- Section 1 --}}
+    <div>
+        <x-component wire:model.live="data" label="Label" />
+        <p class="mt-2 text-sm">Value: {{ $data }}</p>
+    </div>
+</div>
+```
+
+**When to Deviate:**
+- Complex dashboards requiring grid layouts
+- Data tables requiring specific styling
+- Modal/dialog components
+- Alert/notification components with semantic colors
+
+**Always Ask First** jika tidak yakin apakah design memerlukan deviasi dari system ini.
+
+### Typography
+
+**Fonts:**
+- **Headings (h1-h6)**: Plus Jakarta Sans (weights: 600, 700, 800)
+  - Modern dan profesional
+  - Digunakan untuk semua heading dan judul
+- **Body Text**: Inter (weights: 400, 500, 600, 700)
+  - Sangat readable, digunakan di aplikasi finance seperti Stripe, Mercury
+  - Digunakan untuk semua body text, paragraphs, labels
+
+**Implementation:**
+```css
+/* app.css */
+--font-sans: 'Inter', ...;
+--font-heading: 'Plus Jakarta Sans', ...;
+
+/* Auto-applied */
+h1, h2, h3, h4, h5, h6, .heading, .font-heading {
+    font-family: var(--font-heading);
+}
+```
+
+### Dark Mode Color System
+
+**Color Variables** (`resources/css/app.css`):
+
+| Variable | Hex | Usage |
+|----------|-----|-------|
+| `--color-dark-50` | `#fafafa` | Light mode backgrounds, lightest gray |
+| `--color-dark-100` | `#f4f4f5` | Very light backgrounds |
+| `--color-dark-200` | `#e4e4e7` | Light borders, dividers |
+| `--color-dark-300` | `#d4d4d8` | Medium-light text/borders |
+| `--color-dark-400` | `#a1a1aa` | Muted text, icons |
+| `--color-dark-500` | `#71717a` | Secondary text |
+| `--color-dark-700` | `#27272a` | **Sidebar background** (dark mode) |
+| `--color-dark-800` | `#3f3f46` | **Body/Card background** (dark mode) |
+| `--color-dark-950` | `#09090b` | Deepest black (rarely used) |
+
+**Key Dark Mode Classes & Usage:**
+
+| Class | Hex | Primary Usage | Components |
+|-------|-----|---------------|------------|
+| `dark:bg-dark-700` | `#27272a` | **Sidebar, Info boxes, Stats boxes, Selected/Active states** | Sidebar menu, Dashboard stats, Pagination active button, Info sections |
+| `dark:bg-dark-800` | `#3f3f46` | **Primary cards, Body background, Modals, Panels, Table rows** | Cards, Modals, Dropdowns, Notification bell, Language switcher, Table striped rows (`dark:bg-dark-800/50`) |
+| `dark:border-dark-600` | (Missing - needs definition) | **Card borders, Dividers, Separators** | All card borders, Section dividers, Table borders |
+| `dark:border-dark-800` | `#3f3f46` | **Subtle borders, Inner dividers** | Sidebar border, Internal separators |
+
+**Layout Structure:**
+```blade
+<!-- app.blade.php -->
+<body class="dark:bg-dark-800">  <!-- Body: #3f3f46 -->
+    <sidebar class="dark:bg-dark-700">  <!-- Sidebar: #27272a (darker) -->
+    </sidebar>
+    <main>
+        <card class="dark:bg-dark-800 dark:border-dark-600">
+            <!-- Cards use same color as body for flat design -->
+        </card>
+    </main>
+</body>
+```
+
+**Design Principles:**
+- Sidebar (`dark-700`) is **darker** than body (`dark-800`) for depth perception
+- Cards use `dark-800` background with `dark-600` borders for subtle elevation
+- Hover states and active items use `dark-700` for visual feedback
+- Table alternating rows use `dark-800/50` (50% opacity) for zebra striping
+
+**Missing Variables (TODO):**
+- `--color-dark-600`: Should be defined for border consistency (suggested: `#52525b`)
+- `--color-dark-900`: Currently missing, used in some views (suggested: `#1a1a1a`)
+
+### Primary Color Palette
+
+**Professional Blue Theme:**
+- Primary: `#2563eb` (blue-600)
+- Used for: Buttons, links, active states, focus rings
+- Full spectrum: 50-950 defined in `app.css`
+
+**Secondary & Dark:**
+- Secondary: Slate/Gray for neutral elements
+- Dark: Zinc-based for dark mode backgrounds (see table above)
 
 ---
 
@@ -927,138 +1143,6 @@ Sudah ada di project ini (line 8 di `app.css`).
 - ✅ **Konsisten** - Semua card pasti `rounded-xl`
 - ✅ **Single source of truth** - Ganti di 1 tempat, apply ke semua
 - ✅ **Future-proof** - Ganti design system? Edit 1 file aja
-
-### Component Usage
-
-**DO's:**
-```blade
-{{-- Clean, minimal attribute usage --}}
-<x-currency-input
-    wire:model.live="amount"
-    label="Amount"
-/>
-
-{{-- Direct output display --}}
-<p class="mt-2 text-sm">Value: {{ $amount }}</p>
-
-{{-- Descriptive comments --}}
-{{-- Test 1: Tanpa Prefix --}}
-```
-
-**DON'Ts:**
-```blade
-{{-- ❌ Jangan gunakan warna/dekorasi berlebihan --}}
-<div class="border-2 border-green-500 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl shadow-2xl p-8">
-
-{{-- ❌ Jangan nested containers berlebihan --}}
-<div class="wrapper">
-    <div class="inner">
-        <div class="content">
-            <x-input />
-        </div>
-    </div>
-</div>
-
-{{-- ❌ Jangan typography yang berlebihan --}}
-<h1 class="text-5xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r...">
-```
-
-**IMPORTANT - Page Header Exception:**
-- **Index/Main Pages**: Menggunakan `text-4xl font-bold` **DENGAN gradient** sesuai Layout Template (line 135)
-- **Testing/Simple Pages**: Menggunakan `text-2xl font-bold` **TANPA gradient**
-- **Modal Headers**: Menggunakan `text-xl font-bold` tanpa gradient
-
-### Color Scheme
-
-**Default Colors Only:**
-- Text: `text-dark-900 dark:text-dark-50` untuk primary text
-- Secondary text: `text-dark-600 dark:text-dark-400`
-- Muted text: `text-dark-500 dark:text-dark-400`
-- Backgrounds: Clean white/dark mode (`bg-white dark:bg-dark-800`)
-- Borders: `border-secondary-200 dark:border-dark-600`
-- Accents: Only when necessary (`text-blue-600 dark:text-blue-400`)
-
-**Avoid:**
-- ❌ Custom gradient backgrounds for cards/sections (gradient HANYA untuk page title)
-- ❌ Multiple accent colors dalam satu section
-- ❌ Heavy shadows (`shadow-2xl`, `shadow-lg`) - gunakan `hover:shadow-lg` untuk stats cards
-- ❌ Bright/neon colors
-
-### Code Style
-
-**Blade Templates:**
-```blade
-{{-- Descriptive comments for sections --}}
-{{-- Test 1: Description of what this tests --}}
-<div>
-    <x-component
-        wire:model.live="property"
-        label="Label"
-        attribute="value"
-    />
-    <p class="mt-2 text-sm">Output: {{ $property }}</p>
-</div>
-```
-
-**Livewire Components:**
-```php
-class PageName extends Component
-{
-    // Clear, descriptive property comments
-    public $property = 0;
-
-    public function render()
-    {
-        return view('livewire.page-name');
-    }
-}
-```
-
-### Reference Examples
-
-**Good Example (Index/Main Page):**
-```blade
-<div class="space-y-6">
-    {{-- Header with gradient (SESUAI LAYOUT TEMPLATE) --}}
-    <h1 class="text-4xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-indigo-800 dark:from-white dark:via-blue-200 dark:to-indigo-200 bg-clip-text text-transparent">
-        Page Title
-    </h1>
-
-    {{-- Stats Cards --}}
-    <x-card class="hover:shadow-lg transition-shadow">
-        <div class="flex items-center gap-4">
-            <div class="h-12 w-12 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
-                <x-icon name="icon" class="w-6 h-6 text-blue-600 dark:text-blue-400" />
-            </div>
-            <div>
-                <p class="text-sm text-dark-600 dark:text-dark-400">Label</p>
-                <p class="text-2xl font-bold text-dark-900 dark:text-dark-50">Value</p>
-            </div>
-        </div>
-    </x-card>
-</div>
-```
-
-**Good Example (Testing/Simple Page):**
-```blade
-<div class="space-y-8">
-    <h1 class="text-2xl font-bold text-dark-900 dark:text-dark-50">Page Title</h1>
-
-    {{-- Section 1 --}}
-    <div>
-        <x-component wire:model.live="data" label="Label" />
-        <p class="mt-2 text-sm">Value: {{ $data }}</p>
-    </div>
-</div>
-```
-
-**When to Deviate:**
-- Complex dashboards requiring grid layouts
-- Data tables requiring specific styling
-- Modal/dialog components
-- Alert/notification components with semantic colors
-
-**Always Ask First** jika tidak yakin apakah design memerlukan deviasi dari system ini.
 
 ---
 
@@ -2007,92 +2091,6 @@ config/
 | Tiptap | 2.26 | Rich text editor |
 | dayjs | 1.11 | Date handling |
 | Vite | 6.0 | Build tool |
-
----
-
-## Design System
-
-### Typography
-
-**Fonts:**
-- **Headings (h1-h6)**: Plus Jakarta Sans (weights: 600, 700, 800)
-  - Modern dan profesional
-  - Digunakan untuk semua heading dan judul
-- **Body Text**: Inter (weights: 400, 500, 600, 700)
-  - Sangat readable, digunakan di aplikasi finance seperti Stripe, Mercury
-  - Digunakan untuk semua body text, paragraphs, labels
-
-**Implementation:**
-```css
-/* app.css */
---font-sans: 'Inter', ...;
---font-heading: 'Plus Jakarta Sans', ...;
-
-/* Auto-applied */
-h1, h2, h3, h4, h5, h6, .heading, .font-heading {
-    font-family: var(--font-heading);
-}
-```
-
-### Dark Mode Color System
-
-**Color Variables** (`resources/css/app.css`):
-
-| Variable | Hex | Usage |
-|----------|-----|-------|
-| `--color-dark-50` | `#fafafa` | Light mode backgrounds, lightest gray |
-| `--color-dark-100` | `#f4f4f5` | Very light backgrounds |
-| `--color-dark-200` | `#e4e4e7` | Light borders, dividers |
-| `--color-dark-300` | `#d4d4d8` | Medium-light text/borders |
-| `--color-dark-400` | `#a1a1aa` | Muted text, icons |
-| `--color-dark-500` | `#71717a` | Secondary text |
-| `--color-dark-700` | `#27272a` | **Sidebar background** (dark mode) |
-| `--color-dark-800` | `#3f3f46` | **Body/Card background** (dark mode) |
-| `--color-dark-950` | `#09090b` | Deepest black (rarely used) |
-
-**Key Dark Mode Classes & Usage:**
-
-| Class | Hex | Primary Usage | Components |
-|-------|-----|---------------|------------|
-| `dark:bg-dark-700` | `#27272a` | **Sidebar, Info boxes, Stats boxes, Selected/Active states** | Sidebar menu, Dashboard stats, Pagination active button, Info sections |
-| `dark:bg-dark-800` | `#3f3f46` | **Primary cards, Body background, Modals, Panels, Table rows** | Cards, Modals, Dropdowns, Notification bell, Language switcher, Table striped rows (`dark:bg-dark-800/50`) |
-| `dark:border-dark-600` | (Missing - needs definition) | **Card borders, Dividers, Separators** | All card borders, Section dividers, Table borders |
-| `dark:border-dark-800` | `#3f3f46` | **Subtle borders, Inner dividers** | Sidebar border, Internal separators |
-
-**Layout Structure:**
-```blade
-<!-- app.blade.php -->
-<body class="dark:bg-dark-800">  <!-- Body: #3f3f46 -->
-    <sidebar class="dark:bg-dark-700">  <!-- Sidebar: #27272a (darker) -->
-    </sidebar>
-    <main>
-        <card class="dark:bg-dark-800 dark:border-dark-600">
-            <!-- Cards use same color as body for flat design -->
-        </card>
-    </main>
-</body>
-```
-
-**Design Principles:**
-- Sidebar (`dark-700`) is **darker** than body (`dark-800`) for depth perception
-- Cards use `dark-800` background with `dark-600` borders for subtle elevation
-- Hover states and active items use `dark-700` for visual feedback
-- Table alternating rows use `dark-800/50` (50% opacity) for zebra striping
-
-**Missing Variables (TODO):**
-- `--color-dark-600`: Should be defined for border consistency (suggested: `#52525b`)
-- `--color-dark-900`: Currently missing, used in some views (suggested: `#1a1a1a`)
-
-### Primary Color Palette
-
-**Professional Blue Theme:**
-- Primary: `#2563eb` (blue-600)
-- Used for: Buttons, links, active states, focus rings
-- Full spectrum: 50-950 defined in `app.css`
-
-**Secondary & Dark:**
-- Secondary: Slate/Gray for neutral elements
-- Dark: Zinc-based for dark mode backgrounds (see table above)
 
 ---
 

@@ -233,6 +233,10 @@ return [
     'auto_generate' => '自动生成',
     'term_days' => '期限（天）',
     'date' => '日期',
+    'invoice' => '发票',
+    'client' => '客户',
+    'method' => '方式',
+    'account' => '账户',
     'cogs' => '成本',
     'invoice_items' => '发票项目',
     'total_items' => '总项目',
@@ -562,9 +566,18 @@ return [
     'transactions_unit' => ' 条交易',
 
     // Transactions - Table Columns
+    'trx_col_transaction' => '交易',
+    'trx_col_bank_account' => '银行账户',
+    'trx_col_category' => '类别',
+    'trx_col_date' => '日期',
+    'trx_col_amount' => '金额',
     'no_description' => '无描述',
     'income_label' => '收入',
     'expense_label' => '支出',
+    'all_categories_option' => '所有类别',
+    'bulk_delete_confirm_title' => '删除 :count 条交易？',
+    'bulk_delete_confirm_message' => '已删除的交易数据无法恢复。',
+    'bulk_delete_success' => '已成功删除 :count 条交易',
 
     // Transactions - Bulk Actions
     'bulk_selected' => ' 条交易已选中',

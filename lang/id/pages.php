@@ -145,6 +145,10 @@ return [
     'outstanding' => 'Tertunggak',
     'paid_off' => 'Lunas',
     'date' => 'Tanggal',
+    'invoice' => 'Invoice',
+    'client' => 'Klien',
+    'method' => 'Metode',
+    'account' => 'Akun',
     'total_items' => 'Total Item',
     'items' => 'item',
     'of_total_invoice' => 'dari total invoice',
@@ -586,9 +590,18 @@ return [
     'transactions_unit' => ' transaksi',
 
     // Transactions - Table Columns
+    'trx_col_transaction' => 'Transaksi',
+    'trx_col_bank_account' => 'Rekening Bank',
+    'trx_col_category' => 'Kategori',
+    'trx_col_date' => 'Tanggal',
+    'trx_col_amount' => 'Jumlah',
     'no_description' => 'Tidak ada deskripsi',
     'income_label' => 'Pemasukan',
     'expense_label' => 'Pengeluaran',
+    'all_categories_option' => 'Semua Kategori',
+    'bulk_delete_confirm_title' => 'Hapus :count transaksi?',
+    'bulk_delete_confirm_message' => 'Data transaksi yang dihapus tidak dapat dikembalikan.',
+    'bulk_delete_success' => ':count transaksi berhasil dihapus',
 
     // Transactions - Bulk Actions
     'bulk_selected' => ' transaksi dipilih',

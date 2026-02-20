@@ -37,16 +37,26 @@ class Listing extends Component
     public ?BankTransaction $selectedTransaction = null;
 
     public array $headers = [
-        ['index' => 'description', 'label' => 'Transaction'],
-        ['index' => 'bank_account_id', 'label' => 'Bank Account'],
-        ['index' => 'category_id', 'label' => 'Category', 'sortable' => false],
-        ['index' => 'transaction_date', 'label' => 'Date'],
-        ['index' => 'amount', 'label' => 'Amount'],
+        ['index' => 'description', 'label' => '#'],
+        ['index' => 'bank_account_id', 'label' => '#'],
+        ['index' => 'category_id', 'label' => '#', 'sortable' => false],
+        ['index' => 'transaction_date', 'label' => '#'],
+        ['index' => 'amount', 'label' => '#'],
         ['index' => 'action', 'sortable' => false],
     ];
 
     public function mount()
     {
+        // Translate headers
+        $this->headers = [
+            ['index' => 'description', 'label' => __('pages.trx_col_transaction')],
+            ['index' => 'bank_account_id', 'label' => __('pages.trx_col_bank_account')],
+            ['index' => 'category_id', 'label' => __('pages.trx_col_category'), 'sortable' => false],
+            ['index' => 'transaction_date', 'label' => __('pages.trx_col_date')],
+            ['index' => 'amount', 'label' => __('pages.trx_col_amount')],
+            ['index' => 'action', 'sortable' => false],
+        ];
+
         // Auto-set account filter if constrained
         if ($this->constrainedBankAccountId) {
             $this->account_id = (string) $this->constrainedBankAccountId;
@@ -133,7 +143,7 @@ class Listing extends Component
                 'label' => $cat->parent ? $cat->parent->label . ' → ' . $cat->label : $cat->label,
                 'value' => $cat->id,
             ])
-            ->prepend(['label' => 'Semua Kategori', 'value' => null])
+            ->prepend(['label' => __('pages.all_categories_option'), 'value' => null])
             ->toArray();
     }
 
@@ -201,7 +211,7 @@ class Listing extends Component
 
         $count = count($this->selected);
         $this->dialog()
-            ->question("Hapus {$count} transaksi?", "Data transaksi yang dihapus tidak dapat dikembalikan.")
+            ->question(__('pages.bulk_delete_confirm_title', ['count' => $count]), __('pages.bulk_delete_confirm_message'))
             ->confirm(method: 'bulkDelete')
             ->cancel()
             ->send();
@@ -228,7 +238,7 @@ class Listing extends Component
 
         $this->selected = [];
         $this->resetPage();
-        $this->toast()->success("{$count} transaksi berhasil dihapus")->send();
+        $this->toast()->success(__('pages.bulk_delete_success', ['count' => $count]))->send();
 
         // Refresh parent stats
         $this->dispatch('transaction-deleted');
