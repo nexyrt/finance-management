@@ -3,9 +3,9 @@
     <div class="mb-6 space-y-1">
         <h1
             class="text-4xl font-bold bg-gradient-to-r from-dark-900 via-primary-800 to-primary-800 dark:from-white dark:via-primary-200 dark:to-primary-200 bg-clip-text text-transparent">
-            Create Recurring Template
+            {{ __('pages.ri_create_template_page_title') }}
         </h1>
-        <p class="text-dark-600 dark:text-dark-400 text-lg">Set up recurring invoice with schedule and items</p>
+        <p class="text-dark-600 dark:text-dark-400 text-lg">{{ __('pages.ri_create_template_page_desc') }}</p>
     </div>
 
     {{-- Flash Messages --}}
@@ -39,7 +39,7 @@
 
     @if ($errors->any())
         <div class="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-            <h3 class="text-sm font-semibold text-red-900 dark:text-red-200 mb-2">Please fix:</h3>
+            <h3 class="text-sm font-semibold text-red-900 dark:text-red-200 mb-2">{{ __('pages.ri_please_fix') }}</h3>
             <ul class="list-disc list-inside text-sm text-red-700 dark:text-red-300 space-y-1">
                 @foreach ($errors->all() as $error)
                     <li>{{ $error }}</li>
@@ -51,21 +51,20 @@
     <div class="space-y-6">
         {{-- Template Info --}}
         <div class="bg-white dark:bg-dark-800 rounded-xl shadow-sm border border-dark-200 dark:border-dark-600 p-6">
-            <h2 class="text-lg font-semibold text-dark-900 dark:text-dark-50 mb-4">Template Information</h2>
+            <h2 class="text-lg font-semibold text-dark-900 dark:text-dark-50 mb-4">{{ __('pages.ri_template_info_section') }}</h2>
 
             <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
                 {{-- Template Name --}}
                 <div class="md:col-span-6">
-                    <label class="block text-sm font-medium text-dark-900 dark:text-dark-50 mb-1">Template Name
-                        *</label>
+                    <label class="block text-sm font-medium text-dark-900 dark:text-dark-50 mb-1">{{ __('pages.ri_template_name_label') }}</label>
                     <input type="text" x-model="template.template_name"
                         class="w-full px-3 py-2 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                        placeholder="e.g. Monthly Retainer - PT ABC">
+                        placeholder="{{ __('pages.ri_template_name_placeholder') }}">
                 </div>
 
                 {{-- Frequency --}}
                 <div class="md:col-span-6">
-                    <label class="block text-sm font-medium text-dark-900 dark:text-dark-50 mb-1">Frequency *</label>
+                    <label class="block text-sm font-medium text-dark-900 dark:text-dark-50 mb-1">{{ __('pages.ri_frequency_label') }}</label>
                     <select x-model="template.frequency"
                         class="w-full px-3 py-2 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2020%2020%22%3E%3Cpath%20stroke%3D%22%236b7280%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%221.5%22%20d%3D%22m6%208%204%204%204-4%22%2F%3E%3C%2Fsvg%3E')] bg-[length:1.25rem] bg-[right_0.5rem_center] bg-no-repeat pr-10">
                         <template x-for="freq in frequencyOptions" :key="freq.value">
@@ -76,12 +75,11 @@
 
                 {{-- Client --}}
                 <div class="md:col-span-4">
-                    <label class="block text-sm font-medium text-dark-900 dark:text-dark-50 mb-1">Billed To (Owner)
-                        *</label>
+                    <label class="block text-sm font-medium text-dark-900 dark:text-dark-50 mb-1">{{ __('pages.ri_billed_to_label') }}</label>
                     <div class="relative">
                         <div x-show="!template.client_id" @click="selectOpen = !selectOpen"
                             class="w-full px-3 py-2 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-500 dark:text-dark-400 cursor-pointer hover:border-primary-400 transition">
-                            Select client...
+                            {{ __('pages.ri_select_client_placeholder') }}
                         </div>
                         <div x-show="template.client_id"
                             class="w-full px-3 py-2 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 flex items-center justify-between">
@@ -97,7 +95,7 @@
                         <div x-show="selectOpen" x-transition
                             class="absolute z-50 mt-1 w-full bg-white dark:bg-dark-800 border border-dark-200 dark:border-dark-700 rounded-lg shadow-lg max-h-80 overflow-hidden">
                             <div class="p-2 border-b border-dark-200 dark:border-dark-700">
-                                <input type="text" x-model="selectSearch" @click.stop placeholder="Search clients..."
+                                <input type="text" x-model="selectSearch" @click.stop placeholder="{{ __('pages.ri_search_clients_placeholder') }}"
                                     class="w-full px-3 py-2 border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 placeholder-dark-400 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
                             </div>
                             <div class="overflow-y-auto max-h-64">
@@ -120,7 +118,7 @@
                                 </template>
                                 <div x-show="filteredClients.length === 0"
                                     class="px-4 py-8 text-center text-dark-500 dark:text-dark-400">
-                                    <p class="text-sm">No clients found</p>
+                                    <p class="text-sm">{{ __('pages.ri_no_clients_found') }}</p>
                                 </div>
                             </div>
                         </div>
@@ -129,14 +127,14 @@
 
                 {{-- Start Date --}}
                 <div class="md:col-span-4">
-                    <label class="block text-sm font-medium text-dark-900 dark:text-dark-50 mb-1">Start Date *</label>
+                    <label class="block text-sm font-medium text-dark-900 dark:text-dark-50 mb-1">{{ __('pages.ri_start_date_label') }}</label>
                     <input type="date" x-model="template.start_date"
                         class="w-full px-3 py-2 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
                 </div>
 
                 {{-- End Date --}}
                 <div class="md:col-span-4">
-                    <label class="block text-sm font-medium text-dark-900 dark:text-dark-50 mb-1">End Date *</label>
+                    <label class="block text-sm font-medium text-dark-900 dark:text-dark-50 mb-1">{{ __('pages.ri_end_date_label') }}</label>
                     <input type="date" x-model="template.end_date"
                         class="w-full px-3 py-2 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
                 </div>
@@ -181,8 +179,8 @@
             saving: false,
             bulkCount: 1,
             buttonText: {
-                default: 'Save Template',
-                saving: 'Saving...'
+                default: '{{ __('pages.ri_save_template_btn') }}',
+                saving: '{{ __('pages.ri_saving_btn') }}'
             },
 
             init() {

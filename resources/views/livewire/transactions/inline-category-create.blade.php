@@ -1,6 +1,6 @@
 <div>
     {{-- Modal --}}
-    <x-modal title="Tambah Kategori Cepat" center wire="modal" size="lg">
+    <x-modal :title="__('pages.inline_category_title')" center wire="modal" size="lg">
         <form id="inline-category-create" wire:submit="save" class="space-y-4">
 
             {{-- Type Info --}}
@@ -9,9 +9,9 @@
                     <x-icon name="information-circle" class="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
                     <div class="text-sm text-blue-800 dark:text-blue-200">
                         <p class="font-medium">
-                            Membuat kategori untuk:
+                            {{ __('pages.inline_category_creating_for') }}
                             <span class="font-bold">
-                                {{ $transactionType === 'credit' ? '📈 Pemasukan (Income)' : '📉 Pengeluaran (Expense)' }}
+                                {{ $transactionType === 'credit' ? __('pages.inline_income_type') : __('pages.inline_expense_type') }}
                             </span>
                         </p>
                     </div>
@@ -20,22 +20,22 @@
 
             {{-- Label Input --}}
             <div>
-                <x-input label="Nama Kategori *" wire:model="label"
-                    hint="Contoh: Pembayaran Client, Pembelian Alat Tulis"
-                    placeholder="Masukkan nama kategori..."
+                <x-input :label="__('pages.inline_category_name_label')" wire:model="label"
+                    :hint="__('pages.inline_category_name_hint')"
+                    :placeholder="__('pages.inline_category_name_placeholder')"
                     required />
             </div>
 
             {{-- Parent Selector (conditional) --}}
             @if (count($this->parentOptions) > 0)
                 <div>
-                    <x-select.styled label="Parent Kategori (Opsional)" wire:model="parent_id"
+                    <x-select.styled :label="__('pages.inline_parent_category_label')" wire:model="parent_id"
                         :options="$this->parentOptions"
-                        placeholder="Pilih parent atau kosongkan untuk top-level"
+                        :placeholder="__('pages.inline_parent_category_placeholder')"
                         searchable />
                     <p class="mt-1 text-xs text-dark-500 dark:text-dark-400">
                         <x-icon name="information-circle" class="w-4 h-4 inline" />
-                        Kosongkan untuk membuat parent kategori
+                        {{ __('pages.inline_parent_hint') }}
                     </p>
                 </div>
             @else
@@ -43,8 +43,8 @@
                     <div class="flex gap-3">
                         <x-icon name="information-circle" class="w-5 h-5 text-gray-600 dark:text-gray-400 flex-shrink-0" />
                         <div class="text-sm text-gray-700 dark:text-gray-300">
-                            <p>Belum ada parent kategori untuk {{ $transactionType === 'credit' ? 'Income' : 'Expense' }}</p>
-                            <p class="mt-1 text-xs">Kategori ini akan menjadi parent kategori</p>
+                            <p>{{ __('pages.inline_no_parent_message', ['type' => $transactionType === 'credit' ? __('pages.inline_no_parent_income') : __('pages.inline_no_parent_expense')]) }}</p>
+                            <p class="mt-1 text-xs">{{ __('pages.inline_will_be_parent') }}</p>
                         </div>
                     </div>
                 </div>
@@ -55,10 +55,10 @@
         <x-slot:footer>
             <div class="flex justify-between w-full">
                 <x-button color="gray" wire:click="$set('modal', false)">
-                    Batal
+                    {{ __('common.cancel') }}
                 </x-button>
                 <x-button type="submit" form="inline-category-create" color="blue" loading="save" icon="check">
-                    Simpan Kategori
+                    {{ __('pages.save_category_inline_btn') }}
                 </x-button>
             </div>
         </x-slot:footer>

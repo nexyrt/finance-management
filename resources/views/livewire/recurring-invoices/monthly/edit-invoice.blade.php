@@ -3,10 +3,9 @@
     <div class="mb-6 space-y-1">
         <h1
             class="text-4xl font-bold bg-gradient-to-r from-dark-900 via-primary-800 to-primary-800 dark:from-white dark:via-primary-200 dark:to-primary-200 bg-clip-text text-transparent">
-            Edit Monthly Invoice
+            {{ __('pages.ri_edit_invoice_page_title') }}
         </h1>
-        <p class="text-dark-600 dark:text-dark-400 text-lg">Update scheduled invoice for
-            {{ \Carbon\Carbon::parse($invoice->scheduled_date)->format('F Y') }}
+        <p class="text-dark-600 dark:text-dark-400 text-lg">{{ __('pages.ri_edit_invoice_page_desc', ['period' => \Carbon\Carbon::parse($invoice->scheduled_date)->format('F Y')]) }}</p>
     </div>
 
     {{-- Flash Messages --}}
@@ -40,7 +39,7 @@
 
     @if ($errors->any())
         <div class="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-            <h3 class="text-sm font-semibold text-red-900 dark:text-red-200 mb-2">Please fix:</h3>
+            <h3 class="text-sm font-semibold text-red-900 dark:text-red-200 mb-2">{{ __('pages.ri_please_fix') }}</h3>
             <ul class="list-disc list-inside text-sm text-red-700 dark:text-red-300 space-y-1">
                 @foreach ($errors->all() as $error)
                     <li>{{ $error }}</li>
@@ -52,27 +51,26 @@
     <div class="space-y-6">
         {{-- Invoice Info --}}
         <div class="bg-white dark:bg-dark-800 rounded-xl shadow-sm border border-dark-200 dark:border-dark-600 p-6">
-            <h2 class="text-lg font-semibold text-dark-900 dark:text-dark-50 mb-4">Invoice Information</h2>
+            <h2 class="text-lg font-semibold text-dark-900 dark:text-dark-50 mb-4">{{ __('pages.ri_invoice_info_section') }}</h2>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {{-- Template Info (Readonly) --}}
                 <div>
-                    <label class="block text-sm font-medium text-dark-900 dark:text-dark-50 mb-1">From Template</label>
+                    <label class="block text-sm font-medium text-dark-900 dark:text-dark-50 mb-1">{{ __('pages.ri_from_template_label') }}</label>
                     <input type="text" value="{{ $invoice->template->template_name }}" readonly
                         class="w-full px-3 py-2 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-dark-100 dark:bg-dark-700 text-dark-900 dark:text-dark-50 cursor-not-allowed">
                 </div>
 
                 {{-- Client (Readonly) --}}
                 <div>
-                    <label class="block text-sm font-medium text-dark-900 dark:text-dark-50 mb-1">Billed To</label>
+                    <label class="block text-sm font-medium text-dark-900 dark:text-dark-50 mb-1">{{ __('pages.ri_billed_to_readonly_label') }}</label>
                     <input type="text" value="{{ $invoice->client->name }}" readonly
                         class="w-full px-3 py-2 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-dark-100 dark:bg-dark-700 text-dark-900 dark:text-dark-50 cursor-not-allowed">
                 </div>
 
                 {{-- Scheduled Date --}}
                 <div>
-                    <label class="block text-sm font-medium text-dark-900 dark:text-dark-50 mb-1">Scheduled Date
-                        *</label>
+                    <label class="block text-sm font-medium text-dark-900 dark:text-dark-50 mb-1">{{ __('pages.ri_scheduled_date_required_label') }}</label>
                     <input type="date" x-model="invoiceData.scheduled_date"
                         class="w-full px-3 py-2 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
                 </div>
@@ -114,8 +112,8 @@
             saving: false,
             bulkCount: 1,
             buttonText: {
-                default: 'Update Invoice',
-                saving: 'Updating...'
+                default: '{{ __('pages.ri_update_invoice_btn') }}',
+                saving: '{{ __('pages.ri_updating_invoice_btn') }}'
             },
 
             init() {

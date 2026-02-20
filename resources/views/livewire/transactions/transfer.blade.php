@@ -1,15 +1,15 @@
 {{-- resources/views/livewire/transactions/transfer.blade.php --}}
 
 <div>
-    <x-modal title="Transfer Antar Rekening" wire size="3xl" center persistent>
+    <x-modal :title="__('pages.transfer_modal_title')" wire size="3xl" center persistent>
         <x-slot:title>
             <div class="flex items-center gap-4 my-3">
                 <div class="h-12 w-12 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center">
                     <x-icon name="arrow-path" class="w-6 h-6 text-blue-600 dark:text-blue-400" />
                 </div>
                 <div>
-                    <h3 class="text-xl font-bold text-gray-900 dark:text-gray-50">Transfer Antar Rekening</h3>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">Pindahkan dana antar rekening bank</p>
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-gray-50">{{ __('pages.transfer_modal_title') }}</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">{{ __('pages.transfer_modal_desc') }}</p>
                 </div>
             </div>
         </x-slot:title>
@@ -20,26 +20,26 @@
                 class="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 rounded-xl p-6 border border-blue-100 dark:border-blue-900/30">
                 <div class="flex items-center gap-2 mb-4">
                     <x-icon name="building-library" class="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                    <h4 class="text-sm font-semibold text-gray-900 dark:text-gray-50">Pilih Rekening</h4>
+                    <h4 class="text-sm font-semibold text-gray-900 dark:text-gray-50">{{ __('pages.select_accounts_section') }}</h4>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <x-select.styled wire:model.live="from_account_id" :options="$this->fromAccountOptions"
-                        placeholder="Pilih rekening asal..." searchable>
+                        :placeholder="__('pages.from_account_placeholder')" searchable>
                         <x-slot:label>
                             <div class="flex items-center gap-2">
-                                <span>Rekening Asal</span>
-                                <x-tooltip text="Rekening yang akan didebet" position="top" color="zinc" />
+                                <span>{{ __('pages.from_account_label') }}</span>
+                                <x-tooltip :text="__('pages.from_account_tooltip')" position="top" color="zinc" />
                             </div>
                         </x-slot:label>
                     </x-select.styled>
 
                     <x-select.styled wire:model.live="to_account_id" :options="$this->toAccountOptions"
-                        placeholder="Pilih rekening tujuan..." searchable>
+                        :placeholder="__('pages.to_account_placeholder')" searchable>
                         <x-slot:label>
                             <div class="flex items-center gap-2">
-                                <span>Rekening Tujuan</span>
-                                <x-tooltip text="Rekening yang akan dikredit" position="top" color="zinc" />
+                                <span>{{ __('pages.to_account_label') }}</span>
+                                <x-tooltip :text="__('pages.to_account_tooltip')" position="top" color="zinc" />
                             </div>
                         </x-slot:label>
                     </x-select.styled>
@@ -51,7 +51,7 @@
                         <div
                             class="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
                             <div class="h-2 w-2 rounded-full bg-red-500 animate-pulse"></div>
-                            <span class="text-xs font-medium text-gray-700 dark:text-gray-300">Debit</span>
+                            <span class="text-xs font-medium text-gray-700 dark:text-gray-300">{{ __('pages.debit_label') }}</span>
                         </div>
 
                         <div class="flex items-center gap-2">
@@ -70,7 +70,7 @@
                         <div
                             class="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
                             <div class="h-2 w-2 rounded-full bg-green-500 animate-pulse"></div>
-                            <span class="text-xs font-medium text-gray-700 dark:text-gray-300">Kredit</span>
+                            <span class="text-xs font-medium text-gray-700 dark:text-gray-300">{{ __('pages.kredit_label') }}</span>
                         </div>
                     </div>
                 </div>
@@ -79,11 +79,11 @@
             {{-- Category Selection --}}
             <div>
                 <x-select.styled wire:model.live="category_id" :options="$this->transferCategories"
-                    placeholder="Pilih kategori transfer..." searchable>
+                    :placeholder="__('pages.transfer_category_placeholder')" searchable>
                     <x-slot:label>
                         <div class="flex items-center gap-2">
-                            <span>Kategori Transfer *</span>
-                            <x-tooltip text="Kategori untuk mengklasifikasikan transfer" position="top"
+                            <span>{{ __('pages.transfer_category_label') }}</span>
+                            <x-tooltip :text="__('pages.transfer_category_tooltip')" position="top"
                                 color="zinc" />
                         </div>
                     </x-slot:label>
@@ -97,15 +97,15 @@
                     <div class="border-b border-gray-200 dark:border-gray-700 pb-3 mb-4">
                         <div class="flex items-center gap-2">
                             <x-icon name="banknotes" class="w-5 h-5 text-gray-600 dark:text-gray-400" />
-                            <h4 class="text-sm font-semibold text-gray-900 dark:text-gray-50">Detail Nominal</h4>
+                            <h4 class="text-sm font-semibold text-gray-900 dark:text-gray-50">{{ __('pages.nominal_section') }}</h4>
                         </div>
                     </div>
 
                     <x-wireui-currency wire:model.live="amount" prefix="Rp " placeholder="0">
                         <x-slot:label>
                             <div class="flex items-center gap-2">
-                                <span>Jumlah Transfer *</span>
-                                <x-tooltip text="Nominal yang akan ditransfer" position="top" color="zinc" />
+                                <span>{{ __('pages.transfer_amount_label') }}</span>
+                                <x-tooltip :text="__('pages.transfer_amount_tooltip')" position="top" color="zinc" />
                             </div>
                         </x-slot:label>
                     </x-wireui-currency>
@@ -113,8 +113,8 @@
                     <x-wireui-currency wire:model.live="admin_fee" prefix="Rp " placeholder="0">
                         <x-slot:label>
                             <div class="flex items-center gap-2">
-                                <span>Biaya Admin</span>
-                                <x-tooltip text="Biaya administrasi transfer" position="top" color="zinc" />
+                                <span>{{ __('pages.admin_fee_label') }}</span>
+                                <x-tooltip :text="__('pages.admin_fee_tooltip')" position="top" color="zinc" />
                             </div>
                         </x-slot:label>
                     </x-wireui-currency>
@@ -125,24 +125,24 @@
                     <div class="border-b border-gray-200 dark:border-gray-700 pb-3 mb-4">
                         <div class="flex items-center gap-2">
                             <x-icon name="document-text" class="w-5 h-5 text-gray-600 dark:text-gray-400" />
-                            <h4 class="text-sm font-semibold text-gray-900 dark:text-gray-50">Informasi Transfer</h4>
+                            <h4 class="text-sm font-semibold text-gray-900 dark:text-gray-50">{{ __('pages.transfer_info_section') }}</h4>
                         </div>
                     </div>
 
                     <x-date wire:model.live="transfer_date" helpers>
                         <x-slot:label>
                             <div class="flex items-center gap-2">
-                                <span>Tanggal Transfer *</span>
-                                <x-tooltip text="Tanggal eksekusi transfer" position="top" color="zinc" />
+                                <span>{{ __('pages.transfer_date_label') }}</span>
+                                <x-tooltip :text="__('pages.transfer_date_tooltip')" position="top" color="zinc" />
                             </div>
                         </x-slot:label>
                     </x-date>
 
-                    <x-input wire:model.live="description" placeholder="Contoh: Pindah dana operasional...">
+                    <x-input wire:model.live="description" :placeholder="__('pages.transfer_desc_placeholder')">
                         <x-slot:label>
                             <div class="flex items-center gap-2">
-                                <span>Deskripsi Transfer *</span>
-                                <x-tooltip text="Jelaskan tujuan transfer" position="top" color="zinc" />
+                                <span>{{ __('pages.transfer_desc_label') }}</span>
+                                <x-tooltip :text="__('pages.transfer_desc_tooltip')" position="top" color="zinc" />
                             </div>
                         </x-slot:label>
                     </x-input>
@@ -151,12 +151,12 @@
 
             {{-- File Upload --}}
             <div>
-                <x-upload wire:model="attachment" tip="Seret dan letakkan file di sini" accept="image/*,.pdf" delete
+                <x-upload wire:model="attachment" :tip="__('pages.transfer_attachment_tip')" accept="image/*,.pdf" delete
                     delete-method="deleteUpload">
                     <x-slot:label>
                         <div class="flex items-center gap-2">
-                            <span>Bukti Transfer</span>
-                            <x-tooltip text="Upload screenshot atau dokumen bukti transfer (opsional)" position="top"
+                            <span>{{ __('pages.transfer_attachment_label') }}</span>
+                            <x-tooltip :text="__('pages.transfer_attachment_tooltip')" position="top"
                                 color="zinc" />
                         </div>
                     </x-slot:label>
@@ -180,45 +180,41 @@
                             <x-icon name="eye" class="w-5 h-5 text-blue-600 dark:text-blue-400" />
                         </div>
                         <div>
-                            <h5 class="text-base font-semibold text-blue-900 dark:text-blue-100">Preview Transfer</h5>
-                            <p class="text-sm text-blue-700 dark:text-blue-300">Konfirmasi detail sebelum memproses</p>
+                            <h5 class="text-base font-semibold text-blue-900 dark:text-blue-100">{{ __('pages.transfer_preview_title') }}</h5>
+                            <p class="text-sm text-blue-700 dark:text-blue-300">{{ __('pages.transfer_preview_desc') }}</p>
                         </div>
                     </div>
 
                     <div class="bg-white dark:bg-gray-800 rounded-xl p-5 space-y-4 shadow-sm">
                         <div class="grid grid-cols-2 gap-4">
                             <div class="space-y-1">
-                                <span class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">Dari
-                                    Rekening</span>
-                                <p class="font-semibold text-gray-900 dark:text-gray-50">{{ $fromAcc?->account_name }}
-                                </p>
+                                <span class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">{{ __('pages.from_account_preview') }}</span>
+                                <p class="font-semibold text-gray-900 dark:text-gray-50">{{ $fromAcc?->account_name }}</p>
                                 <p class="text-sm text-gray-600 dark:text-gray-400">{{ $fromAcc?->bank_name }}</p>
                             </div>
                             <div class="space-y-1">
-                                <span class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">Ke
-                                    Rekening</span>
-                                <p class="font-semibold text-gray-900 dark:text-gray-50">{{ $toAcc?->account_name }}
-                                </p>
+                                <span class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">{{ __('pages.to_account_preview') }}</span>
+                                <p class="font-semibold text-gray-900 dark:text-gray-50">{{ $toAcc?->account_name }}</p>
                                 <p class="text-sm text-gray-600 dark:text-gray-400">{{ $toAcc?->bank_name }}</p>
                             </div>
                         </div>
 
                         <div class="border-t border-gray-200 dark:border-gray-700 pt-4 space-y-3">
                             <div class="flex justify-between items-center">
-                                <span class="text-sm text-gray-600 dark:text-gray-400">Jumlah Transfer:</span>
+                                <span class="text-sm text-gray-600 dark:text-gray-400">{{ __('pages.transfer_amount_preview') }}</span>
                                 <span class="font-bold text-lg text-blue-600 dark:text-blue-400">
                                     Rp {{ number_format($transferAmount, 0, ',', '.') }}
                                 </span>
                             </div>
                             <div class="flex justify-between items-center">
-                                <span class="text-sm text-gray-600 dark:text-gray-400">Biaya Admin:</span>
+                                <span class="text-sm text-gray-600 dark:text-gray-400">{{ __('pages.admin_fee_preview') }}</span>
                                 <span class="font-medium text-red-600 dark:text-red-400">
                                     Rp {{ number_format($feeAmount, 0, ',', '.') }}
                                 </span>
                             </div>
                             <div class="border-t border-gray-200 dark:border-gray-700 pt-3">
                                 <div class="flex justify-between items-center">
-                                    <span class="font-semibold text-gray-900 dark:text-gray-50">Total Debet:</span>
+                                    <span class="font-semibold text-gray-900 dark:text-gray-50">{{ __('pages.total_debit_preview') }}</span>
                                     <span class="font-bold text-xl text-red-600 dark:text-red-400">
                                         Rp {{ number_format($transferAmount + $feeAmount, 0, ',', '.') }}
                                     </span>
@@ -229,7 +225,7 @@
                         <div class="border-t border-gray-200 dark:border-gray-700 pt-4">
                             <div class="space-y-2">
                                 <span
-                                    class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">Deskripsi</span>
+                                    class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">{{ __('pages.description_preview_label') }}</span>
                                 <p class="text-sm text-gray-900 dark:text-gray-50">{{ $description }}</p>
                             </div>
                         </div>
@@ -240,7 +236,7 @@
                                 <div class="flex items-center gap-2">
                                     <x-icon name="check-circle" class="w-5 h-5 text-green-600 dark:text-green-400" />
                                     <span class="text-sm font-medium text-green-700 dark:text-green-300">
-                                        Bukti transfer siap diupload
+                                        {{ __('pages.transfer_proof_ready') }}
                                     </span>
                                 </div>
                             </div>
@@ -254,13 +250,13 @@
             <div class="flex flex-col sm:flex-row justify-between w-full gap-3">
                 <x-button wire:click="$set('modal', false)" color="zinc"
                     class="w-full sm:w-auto order-2 sm:order-1">
-                    Batal
+                    {{ __('common.cancel') }}
                 </x-button>
 
                 <x-button wire:click="save" color="blue" icon="arrow-path" loading="save"
                     class="w-full sm:w-auto order-1 sm:order-2">
-                    <span wire:loading.remove wire:target="save">Transfer Dana</span>
-                    <span wire:loading wire:target="save">Memproses Transfer...</span>
+                    <span wire:loading.remove wire:target="save">{{ __('pages.transfer_dana_btn') }}</span>
+                    <span wire:loading wire:target="save">{{ __('pages.processing_transfer') }}</span>
                 </x-button>
             </div>
         </x-slot:footer>

@@ -1,5 +1,5 @@
 <div>
-    <x-modal wire title="{{ __('payment_attachment_title') }}" size="4xl" center>
+    <x-modal wire title="{{ __('pages.payment_attachment_title') }}" size="4xl" center>
         @if ($payment && $payment->attachment_path)
             {{-- Header with payment info --}}
             <div
@@ -14,13 +14,13 @@
                                 {{ $payment->attachment_name }}
                             </h3>
                             <p class="text-sm text-gray-600 dark:text-gray-400">
-                                {{ __('payment_for_invoice', ['invoice_number' => $payment->invoice->invoice_number]) }} •
+                                {{ __('pages.payment_for_invoice', ['invoice_number' => $payment->invoice->invoice_number]) }} •
                                 Rp {{ number_format($payment->amount, 0, ',', '.') }}
                             </p>
                         </div>
                     </div>
                     <x-button wire:click="downloadAttachment" color="blue" icon="arrow-down-tray" size="sm">
-                        {{ __('download_attachment') }}
+                        {{ __('pages.download_attachment') }}
                     </x-button>
                 </div>
             </div>
@@ -50,7 +50,7 @@
                         }
                     }">
                         <div class="mb-2 text-center text-sm text-gray-600 dark:text-gray-400">
-                            {{ __('zoom_instructions') }}
+                            {{ __('pages.zoom_instructions') }}
                         </div>
                         <div class="flex justify-center overflow-hidden">
                             <img src="{{ Storage::url($payment->attachment_path) }}"
@@ -61,7 +61,7 @@
                                 @click="reset()">
                         </div>
                         <div class="mt-2 text-center text-xs text-gray-500" x-show="scale !== 1">
-                            <span x-text="`{{ __('zoom_percentage', ['percentage' => '']) }}`.replace(':percentage', Math.round(scale * 100))"></span>
+                            <span x-text="`{{ __('pages.zoom_percentage', ['percentage' => '']) }}`.replace(':percentage', Math.round(scale * 100))"></span>
                         </div>
                     </div>
                 @elseif ($payment->isPdfAttachment())
@@ -77,7 +77,7 @@
                                 </div>
                                 <x-button wire:click="downloadAttachment" color="red" icon="arrow-down-tray"
                                     size="sm" outline>
-                                    {{ __('download_pdf') }}
+                                    {{ __('pages.download_pdf') }}
                                 </x-button>
                             </div>
                         </div>
@@ -94,11 +94,11 @@
                                         <x-icon name="document-text" class="w-8 h-8 text-red-600 dark:text-red-400" />
                                     </div>
                                     <p class="text-gray-600 dark:text-gray-400 mb-4">
-                                        {{ __('browser_not_support_pdf') }}
+                                        {{ __('pages.browser_not_support_pdf') }}
                                     </p>
                                     <x-button wire:click="downloadAttachment" color="red" icon="arrow-down-tray"
                                         size="sm">
-                                        {{ __('download_to_view') }}
+                                        {{ __('pages.download_to_view') }}
                                     </x-button>
                                 </div>
                             </div>
@@ -116,10 +116,10 @@
                                 {{ $payment->attachment_name }}
                             </h4>
                             <p class="text-gray-600 dark:text-gray-400 mb-4">
-                                {{ __('file_type_preview_unavailable', ['type' => strtoupper($payment->attachment_type)]) }}
+                                {{ __('pages.file_type_preview_unavailable', ['type' => strtoupper($payment->attachment_type)]) }}
                             </p>
                             <x-button wire:click="downloadAttachment" color="zinc" icon="arrow-down-tray">
-                                {{ __('download_to_view') }}
+                                {{ __('pages.download_to_view') }}
                             </x-button>
                         </div>
                     </div>
@@ -129,48 +129,48 @@
                 <div class="border border-gray-200 dark:border-gray-600 rounded-xl p-4">
                     <h4 class="font-medium text-gray-900 dark:text-gray-50 mb-3 flex items-center gap-2">
                         <x-icon name="information-circle" class="w-4 h-4" />
-                        {{ __('payment_details_title') }}
+                        {{ __('pages.payment_details_title') }}
                     </h4>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                         <div>
-                            <p class="text-gray-600 dark:text-gray-400">{{ __('invoice_number_label') }}</p>
+                            <p class="text-gray-600 dark:text-gray-400">{{ __('pages.invoice_number_label') }}</p>
                             <p class="font-medium text-gray-900 dark:text-gray-50 font-mono">
                                 {{ $payment->invoice->invoice_number }}
                             </p>
                         </div>
                         <div>
-                            <p class="text-gray-600 dark:text-gray-400">{{ __('client_label') }}</p>
+                            <p class="text-gray-600 dark:text-gray-400">{{ __('pages.client_label') }}</p>
                             <p class="font-medium text-gray-900 dark:text-gray-50">
                                 {{ $payment->invoice->client->name }}
                             </p>
                         </div>
                         <div>
-                            <p class="text-gray-600 dark:text-gray-400">{{ __('payment_amount_label_viewer') }}</p>
+                            <p class="text-gray-600 dark:text-gray-400">{{ __('pages.payment_amount_label_viewer') }}</p>
                             <p class="font-medium text-gray-900 dark:text-gray-50">
                                 Rp {{ number_format($payment->amount, 0, ',', '.') }}
                             </p>
                         </div>
                         <div>
-                            <p class="text-gray-600 dark:text-gray-400">{{ __('payment_date_label_viewer') }}</p>
+                            <p class="text-gray-600 dark:text-gray-400">{{ __('pages.payment_date_label_viewer') }}</p>
                             <p class="font-medium text-gray-900 dark:text-gray-50">
                                 {{ $payment->payment_date->format('d M Y') }}
                             </p>
                         </div>
                         <div>
-                            <p class="text-gray-600 dark:text-gray-400">{{ __('payment_method_label_viewer') }}</p>
+                            <p class="text-gray-600 dark:text-gray-400">{{ __('pages.payment_method_label_viewer') }}</p>
                             <p class="font-medium text-gray-900 dark:text-gray-50">
-                                {{ ucfirst(str_replace('_', ' ', $payment->payment_method)) }}
+                                {{ $payment->payment_method === 'bank_transfer' ? __('pages.transfer_badge') : __('pages.cash_badge') }}
                             </p>
                         </div>
                         <div>
-                            <p class="text-gray-600 dark:text-gray-400">{{ __('bank_label') }}</p>
+                            <p class="text-gray-600 dark:text-gray-400">{{ __('pages.bank_label') }}</p>
                             <p class="font-medium text-gray-900 dark:text-gray-50">
                                 {{ $payment->bankAccount->bank_name }}
                             </p>
                         </div>
                         @if ($payment->reference_number)
                             <div class="sm:col-span-2">
-                                <p class="text-gray-600 dark:text-gray-400">{{ __('reference_number_label_viewer') }}</p>
+                                <p class="text-gray-600 dark:text-gray-400">{{ __('pages.reference_number_label_viewer') }}</p>
                                 <p class="font-medium text-gray-900 dark:text-gray-50 font-mono">
                                     {{ $payment->reference_number }}
                                 </p>
@@ -182,7 +182,7 @@
         @else
             <div class="text-center py-12">
                 <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-                <p class="text-gray-500 mt-2">{{ __('loading_attachment') }}</p>
+                <p class="text-gray-500 mt-2">{{ __('pages.loading_attachment') }}</p>
             </div>
         @endif
 
@@ -190,7 +190,7 @@
             <div class="flex justify-between w-full">
                 @if ($payment && $payment->attachment_path)
                     <x-button wire:click="downloadAttachment" color="blue" icon="arrow-down-tray">
-                        {{ __('download_attachment_button') }}
+                        {{ __('pages.download_attachment_button') }}
                     </x-button>
                 @else
                     <div></div>

@@ -28,7 +28,15 @@
       "Bash(wc:*)",
       "Bash(composer require:*)",
       "Bash(mysql:*)",
-      "Read(//d/TallStackUI/Dokumentasi/**)"
+      "Read(//d/TallStackUI/Dokumentasi/**)",
+      "Bash(cmd /c \"type d:\\\\Laravel\\\\finance-management\\\\resources\\\\views\\\\livewire\\\\transactions\\\\categorize.blade.php\")",
+      "Bash(cmd /c dir \"d:\\\\Laravel\\\\finance-management\\\\resources\\\\views\\\\livewire\\\\transactions\")",
+      "Bash(php:*)",
+      "Bash(cmd /c \"cd /d d:\\\\Laravel\\\\finance-management && dir resources\\\\views\\\\livewire\\\\transactions\")",
+      "Bash(more:*)",
+      "Bash(powershell -Command \"Get-ChildItem ''d:\\\\Laravel\\\\finance-management\\\\resources\\\\views\\\\livewire\\\\transactions''\")",
+      "Bash(powershell -Command \"Get-Content ''d:\\\\Laravel\\\\finance-management\\\\resources\\\\views\\\\livewire\\\\transactions\\\\categorize.blade.php'' -Raw\")",
+      "Bash(powershell -Command:*)"
     ]
   }
 }

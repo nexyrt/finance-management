@@ -15,7 +15,7 @@
         <div class="flex items-center gap-3">
             <button @click="showGuide = !showGuide; localStorage.setItem('ri_guide_dismissed', showGuide ? '0' : '1')"
                     class="h-9 w-9 flex items-center justify-center rounded-xl border border-zinc-200 dark:border-dark-600 bg-white dark:bg-dark-800 text-dark-500 dark:text-dark-400 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-300 dark:hover:border-blue-700 transition-colors"
-                    :title="showGuide ? 'Sembunyikan panduan' : 'Tampilkan panduan'">
+                    :title="showGuide ? '{{ __('pages.ri_guide_hide') }}' : '{{ __('pages.ri_guide_show') }}'"
                 <x-icon name="question-mark-circle" class="w-5 h-5" />
             </button>
             <div
@@ -54,8 +54,8 @@
                     <x-icon name="information-circle" class="w-5 h-5 text-blue-600 dark:text-blue-400" />
                 </div>
                 <div>
-                    <h3 class="font-semibold text-blue-900 dark:text-blue-100">Panduan Recurring Invoices</h3>
-                    <p class="text-xs text-blue-600 dark:text-blue-400">Ikuti 3 langkah berikut — dan pahami konsep periode di bawah</p>
+                    <h3 class="font-semibold text-blue-900 dark:text-blue-100">{{ __('pages.ri_guide_title') }}</h3>
+                    <p class="text-xs text-blue-600 dark:text-blue-400">{{ __('pages.ri_guide_subtitle') }}</p>
                 </div>
             </div>
             <button @click="showGuide = false; localStorage.setItem('ri_guide_dismissed', '1')"
@@ -71,28 +71,28 @@
             <div class="p-6 space-y-3">
                 <div class="flex items-center gap-3">
                     <div class="h-8 w-8 rounded-full bg-blue-600 text-white text-sm font-bold flex items-center justify-center flex-shrink-0">1</div>
-                    <h4 class="font-semibold text-dark-900 dark:text-dark-50">Buat Template</h4>
+                    <h4 class="font-semibold text-dark-900 dark:text-dark-50">{{ __('pages.ri_step1_title') }}</h4>
                 </div>
                 <p class="text-sm text-dark-600 dark:text-dark-400">
-                    Template adalah "resep" invoice yang akan diulang secara berkala. Tentukan client, item tagihan, harga, dan frekuensi.
+                    {{ __('pages.ri_step1_desc') }}
                 </p>
                 <div class="space-y-1.5 text-xs text-dark-500 dark:text-dark-400">
                     <div class="flex items-start gap-2">
                         <x-icon name="check-circle" class="w-3.5 h-3.5 text-green-500 mt-0.5 flex-shrink-0" />
-                        <span><span class="font-medium">Start Date</span> — awal periode pertama (tagihan mulai 1 siklus setelahnya)</span>
+                        <span>{!! __('pages.ri_step1_start_date_hint', ['label' => '<span class="font-medium">Start Date</span>']) !!}</span>
                     </div>
                     <div class="flex items-start gap-2">
                         <x-icon name="check-circle" class="w-3.5 h-3.5 text-green-500 mt-0.5 flex-shrink-0" />
-                        <span><span class="font-medium">End Date</span> — batas akhir; siklus yang melewati tanggal ini tidak akan ditagih</span>
+                        <span>{!! __('pages.ri_step1_end_date_hint', ['label' => '<span class="font-medium">End Date</span>']) !!}</span>
                     </div>
                     <div class="flex items-start gap-2">
                         <x-icon name="check-circle" class="w-3.5 h-3.5 text-green-500 mt-0.5 flex-shrink-0" />
-                        <span><span class="font-medium">Frequency</span> — monthly (tiap bulan), quarterly (tiap 3 bulan), semi-annual (tiap 6 bulan), annual (tiap tahun)</span>
+                        <span>{!! __('pages.ri_step1_frequency_hint', ['label' => '<span class="font-medium">Frequency</span>']) !!}</span>
                     </div>
                 </div>
                 <div class="pt-1">
                     <span class="inline-flex items-center gap-1 text-xs bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-1 rounded-lg">
-                        <x-icon name="arrow-right" class="w-3 h-3" /> Tab: Templates
+                        <x-icon name="arrow-right" class="w-3 h-3" /> {{ __('pages.ri_step1_tab_hint') }}
                     </span>
                 </div>
             </div>
@@ -101,28 +101,28 @@
             <div class="p-6 space-y-3">
                 <div class="flex items-center gap-3">
                     <div class="h-8 w-8 rounded-full bg-blue-600 text-white text-sm font-bold flex items-center justify-center flex-shrink-0">2</div>
-                    <h4 class="font-semibold text-dark-900 dark:text-dark-50">Generate Invoice</h4>
+                    <h4 class="font-semibold text-dark-900 dark:text-dark-50">{{ __('pages.ri_step2_title') }}</h4>
                 </div>
                 <p class="text-sm text-dark-600 dark:text-dark-400">
-                    Buka tab <strong>Monthly</strong>, pilih bulan dan tahun, lalu klik <strong>Generate Invoices</strong>. Sistem akan membuat draft invoice untuk semua template aktif yang sesuai bulan tersebut.
+                    {{ __('pages.ri_step2_desc') }}
                 </p>
                 <div class="space-y-1.5 text-xs text-dark-500 dark:text-dark-400">
                     <div class="flex items-start gap-2">
                         <x-icon name="check-circle" class="w-3.5 h-3.5 text-green-500 mt-0.5 flex-shrink-0" />
-                        <span><span class="font-medium">Issue Date</span> — tanggal yang tercetak di invoice</span>
+                        <span>{!! __('pages.ri_step2_issue_date_hint', ['label' => '<span class="font-medium">Issue Date</span>']) !!}</span>
                     </div>
                     <div class="flex items-start gap-2">
                         <x-icon name="check-circle" class="w-3.5 h-3.5 text-green-500 mt-0.5 flex-shrink-0" />
-                        <span><span class="font-medium">Due Date</span> — tanggal jatuh tempo pembayaran</span>
+                        <span>{!! __('pages.ri_step2_due_date_hint', ['label' => '<span class="font-medium">Due Date</span>']) !!}</span>
                     </div>
                     <div class="flex items-start gap-2">
                         <x-icon name="information-circle" class="w-3.5 h-3.5 text-amber-500 mt-0.5 flex-shrink-0" />
-                        <span>Hanya bulan yang masuk dalam siklus valid template yang bisa di-generate (lihat konsep periode di bawah)</span>
+                        <span>{{ __('pages.ri_step2_warning') }}</span>
                     </div>
                 </div>
                 <div class="pt-1">
                     <span class="inline-flex items-center gap-1 text-xs bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-1 rounded-lg">
-                        <x-icon name="arrow-right" class="w-3 h-3" /> Tab: Monthly
+                        <x-icon name="arrow-right" class="w-3 h-3" /> {{ __('pages.ri_step2_tab_hint') }}
                     </span>
                 </div>
             </div>
@@ -131,28 +131,28 @@
             <div class="p-6 space-y-3">
                 <div class="flex items-center gap-3">
                     <div class="h-8 w-8 rounded-full bg-blue-600 text-white text-sm font-bold flex items-center justify-center flex-shrink-0">3</div>
-                    <h4 class="font-semibold text-dark-900 dark:text-dark-50">Publish Invoice</h4>
+                    <h4 class="font-semibold text-dark-900 dark:text-dark-50">{{ __('pages.ri_step3_title') }}</h4>
                 </div>
                 <p class="text-sm text-dark-600 dark:text-dark-400">
-                    Draft invoice hasil generate perlu di-publish untuk menjadi invoice resmi. Setelah publish, invoice muncul di modul Invoices dan siap untuk pencatatan pembayaran.
+                    {{ __('pages.ri_step3_desc') }}
                 </p>
                 <div class="space-y-1.5 text-xs text-dark-500 dark:text-dark-400">
                     <div class="flex items-start gap-2">
                         <x-icon name="check-circle" class="w-3.5 h-3.5 text-green-500 mt-0.5 flex-shrink-0" />
-                        <span>Bisa publish satu per satu atau <span class="font-medium">Bulk Publish</span> beberapa sekaligus</span>
+                        <span>{{ __('pages.ri_step3_hint1') }}</span>
                     </div>
                     <div class="flex items-start gap-2">
                         <x-icon name="check-circle" class="w-3.5 h-3.5 text-green-500 mt-0.5 flex-shrink-0" />
-                        <span>Tanggal bisa di-override per invoice saat publish</span>
+                        <span>{{ __('pages.ri_step3_hint2') }}</span>
                     </div>
                     <div class="flex items-start gap-2">
                         <x-icon name="information-circle" class="w-3.5 h-3.5 text-amber-500 mt-0.5 flex-shrink-0" />
-                        <span>Invoice yang sudah publish tidak bisa diedit atau dihapus</span>
+                        <span>{{ __('pages.ri_step3_warning') }}</span>
                     </div>
                 </div>
                 <div class="pt-1">
                     <span class="inline-flex items-center gap-1 text-xs bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-1 rounded-lg">
-                        <x-icon name="arrow-right" class="w-3 h-3" /> Tab: Monthly
+                        <x-icon name="arrow-right" class="w-3 h-3" /> {{ __('pages.ri_step3_tab_hint') }}
                     </span>
                 </div>
             </div>
@@ -165,17 +165,16 @@
                     <x-icon name="light-bulb" class="w-4 h-4 text-amber-600 dark:text-amber-400" />
                 </div>
                 <div class="flex-1 min-w-0">
-                    <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-2">Memahami Konsep Periode Tagihan</h4>
+                    <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-2">{{ __('pages.ri_period_concept_title') }}</h4>
                     <p class="text-xs text-dark-600 dark:text-dark-400 mb-3">
-                        Tagihan <strong>tidak dimulai di bulan Start Date</strong>, melainkan di bulan pertama setelah satu siklus penuh berjalan dari Start Date.
-                        Setiap siklus menghasilkan satu invoice yang dijadwalkan di bulan berakhirnya siklus tersebut.
+                        {{ __('pages.ri_period_concept_desc') }}
                     </p>
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
 
                         {{-- Contoh Monthly --}}
                         <div class="bg-white dark:bg-dark-800 border border-amber-200 dark:border-amber-900/50 rounded-lg p-3 space-y-2">
                             <div class="flex items-center gap-2">
-                                <span class="text-xs font-semibold text-amber-700 dark:text-amber-400 uppercase tracking-wide">Contoh: Monthly</span>
+                                <span class="text-xs font-semibold text-amber-700 dark:text-amber-400 uppercase tracking-wide">{{ __('pages.ri_example_monthly_label') }}</span>
                             </div>
                             <div class="text-xs text-dark-500 dark:text-dark-400 space-y-1">
                                 <div><span class="font-medium text-dark-700 dark:text-dark-300">Start:</span> 19 Februari</div>
@@ -201,7 +200,7 @@
                         {{-- Contoh Quarterly --}}
                         <div class="bg-white dark:bg-dark-800 border border-amber-200 dark:border-amber-900/50 rounded-lg p-3 space-y-2">
                             <div class="flex items-center gap-2">
-                                <span class="text-xs font-semibold text-amber-700 dark:text-amber-400 uppercase tracking-wide">Contoh: Quarterly</span>
+                                <span class="text-xs font-semibold text-amber-700 dark:text-amber-400 uppercase tracking-wide">{{ __('pages.ri_example_quarterly_label') }}</span>
                             </div>
                             <div class="text-xs text-dark-500 dark:text-dark-400 space-y-1">
                                 <div><span class="font-medium text-dark-700 dark:text-dark-300">Start:</span> 1 Januari 2026</div>
@@ -231,24 +230,24 @@
                         {{-- Aturan Umum --}}
                         <div class="bg-white dark:bg-dark-800 border border-blue-200 dark:border-blue-900/50 rounded-lg p-3 space-y-2">
                             <div class="flex items-center gap-2">
-                                <span class="text-xs font-semibold text-blue-700 dark:text-blue-400 uppercase tracking-wide">Aturan Umum</span>
+                                <span class="text-xs font-semibold text-blue-700 dark:text-blue-400 uppercase tracking-wide">{{ __('pages.ri_general_rules_label') }}</span>
                             </div>
                             <div class="text-xs text-dark-600 dark:text-dark-400 space-y-1.5">
                                 <div class="flex items-start gap-1.5">
                                     <x-icon name="check-circle" class="w-3.5 h-3.5 text-green-500 mt-0.5 flex-shrink-0" />
-                                    <span>Invoice pertama selalu di bulan <strong>setelah</strong> Start Date (bukan di bulan Start Date itu sendiri)</span>
+                                    <span>{{ __('pages.ri_rule1') }}</span>
                                 </div>
                                 <div class="flex items-start gap-1.5">
                                     <x-icon name="check-circle" class="w-3.5 h-3.5 text-green-500 mt-0.5 flex-shrink-0" />
-                                    <span>Siklus valid jika tanggal akhir siklus ≤ End Date</span>
+                                    <span>{{ __('pages.ri_rule2') }}</span>
                                 </div>
                                 <div class="flex items-start gap-1.5">
                                     <x-icon name="check-circle" class="w-3.5 h-3.5 text-green-500 mt-0.5 flex-shrink-0" />
-                                    <span>Bulan yang bukan bagian dari siklus frequency tidak akan muncul saat generate</span>
+                                    <span>{{ __('pages.ri_rule3') }}</span>
                                 </div>
                                 <div class="flex items-start gap-1.5">
                                     <x-icon name="information-circle" class="w-3.5 h-3.5 text-amber-500 mt-0.5 flex-shrink-0" />
-                                    <span>Jumlah total invoice = jumlah siklus yang berakhir sebelum atau tepat di End Date</span>
+                                    <span>{{ __('pages.ri_rule4') }}</span>
                                 </div>
                             </div>
                         </div>

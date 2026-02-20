@@ -1,5 +1,5 @@
 <div>
-    <x-modal wire="showModal" :title="__('payments.edit_payment_title')" size="2xl" center>
+    <x-modal wire="showModal" :title="__('pages.edit_payment_title')" size="2xl" center>
         @if ($payment)
             {{-- Invoice Info Header --}}
             <div
@@ -18,7 +18,7 @@
                     </div>
 
                     <div class="text-right">
-                        <p class="text-sm text-secondary-600 dark:text-dark-400">{{ __('payments.invoice_total') }}</p>
+                        <p class="text-sm text-secondary-600 dark:text-dark-400">{{ __('pages.invoice_total') }}</p>
                         <p class="text-xl font-bold text-secondary-900 dark:text-dark-50">
                             Rp {{ number_format($payment->invoice->total_amount, 0, ',', '.') }}
                         </p>
@@ -31,7 +31,7 @@
                 {{-- Amount & Date --}}
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <x-wireui-currency wire:model.live="amount" :label="__('payments.payment_amount_label')" placeholder="0"
+                        <x-wireui-currency wire:model.live="amount" :label="__('pages.payment_amount_label')" placeholder="0"
                             prefix="Rp" />
                         @php
                             $otherPayments = $payment->invoice
@@ -41,35 +41,35 @@
                             $maxAllowed = $payment->invoice->total_amount - $otherPayments;
                         @endphp
                         <p class="text-xs text-secondary-500 dark:text-dark-400 mt-1">
-                            {{ __('payments.max_amount', ['amount' => number_format($maxAllowed, 0, ',', '.')]) }}
+                            {{ __('pages.max_amount', ['amount' => number_format($maxAllowed, 0, ',', '.')]) }}
                         </p>
                     </div>
 
-                    <x-input wire:model="payment_date" :label="__('payments.payment_date_label')" type="date" icon="calendar" />
+                    <x-input wire:model="payment_date" :label="__('pages.payment_date_label')" type="date" icon="calendar" />
                 </div>
 
                 {{-- Payment Method & Bank Account --}}
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <x-select.styled wire:model.live="payment_method" :label="__('payments.payment_method_label')" :options="[
-                        ['label' => '💳 ' . __('payments.bank_transfer'), 'value' => 'bank_transfer'],
-                        ['label' => '💵 ' . __('payments.cash'), 'value' => 'cash'],
+                    <x-select.styled wire:model.live="payment_method" :label="__('pages.payment_method_label')" :options="[
+                        ['label' => '💳 ' . __('pages.bank_transfer'), 'value' => 'bank_transfer'],
+                        ['label' => '💵 ' . __('pages.cash'), 'value' => 'cash'],
                     ]" />
 
-                    <x-select.styled wire:model="bank_account_id" :label="__('payments.bank_account_label')" :options="$this->bankAccounts"
-                        :placeholder="__('payments.select_account')" searchable />
+                    <x-select.styled wire:model="bank_account_id" :label="__('pages.bank_account_label')" :options="$this->bankAccounts"
+                        :placeholder="__('pages.select_account')" searchable />
                 </div>
 
                 {{-- Reference Number --}}
                 <div>
-                    <x-input wire:model="reference_number" :label="__('payments.reference_number_label')"
-                        :placeholder="__('payments.reference_placeholder')" icon="hashtag"
-                        :hint="__('payments.reference_hint')" />
+                    <x-input wire:model="reference_number" :label="__('pages.reference_number_label')"
+                        :placeholder="__('pages.reference_placeholder')" icon="hashtag"
+                        :hint="__('pages.reference_hint')" />
                 </div>
 
                 {{-- Existing Attachment Display --}}
                 @if ($payment->hasAttachment())
                     <div class="space-y-2">
-                        <label class="text-sm font-medium text-secondary-900 dark:text-dark-50">{{ __('payments.current_proof') }}</label>
+                        <label class="text-sm font-medium text-secondary-900 dark:text-dark-50">{{ __('pages.current_proof') }}</label>
                         <div
                             class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4 border border-blue-200 dark:border-blue-800">
                             <div class="flex items-center justify-between">
@@ -87,7 +87,7 @@
                                             {{ $payment->attachment_name }}
                                         </p>
                                         <p class="text-xs text-blue-700 dark:text-blue-300">
-                                            {{ __('payments.current_attachment') }}
+                                            {{ __('pages.current_attachment') }}
                                         </p>
                                     </div>
                                 </div>
@@ -101,9 +101,9 @@
                 {{-- File Upload --}}
                 <div>
                     <x-upload wire:model="attachment"
-                        :label="$payment->hasAttachment() ? __('payments.replace_proof') : __('payments.payment_proof_label')"
-                        :hint="__('payments.payment_proof_tip')"
-                        tip="{{ __('payments.payment_proof_tip') }}" accept="image/*,.pdf" delete
+                        :label="$payment->hasAttachment() ? __('pages.replace_proof') : __('pages.payment_proof_label')"
+                        :hint="__('pages.payment_proof_tip')"
+                        tip="{{ __('pages.payment_proof_tip') }}" accept="image/*,.pdf" delete
                         delete-method="deleteUpload" />
                 </div>
 
@@ -120,44 +120,44 @@
                         class="bg-secondary-50 dark:bg-dark-800 rounded-xl p-4 border border-secondary-200 dark:border-dark-700">
                         <h4 class="font-medium text-secondary-900 dark:text-dark-50 mb-3 flex items-center gap-2">
                             <x-icon name="calculator" class="w-4 h-4" />
-                            {{ __('payments.summary_after_edit') }}
+                            {{ __('pages.summary_after_edit') }}
                         </h4>
 
                         <div class="space-y-2 text-sm">
                             <div class="flex justify-between">
-                                <span class="text-secondary-600 dark:text-dark-400">{{ __('payments.invoice_total') }}</span>
+                                <span class="text-secondary-600 dark:text-dark-400">{{ __('pages.invoice_total') }}</span>
                                 <span class="font-medium">Rp
                                     {{ number_format($payment->invoice->total_amount, 0, ',', '.') }}</span>
                             </div>
                             <div class="flex justify-between">
-                                <span class="text-secondary-600 dark:text-dark-400">{{ __('payments.other_payments') }}</span>
+                                <span class="text-secondary-600 dark:text-dark-400">{{ __('pages.other_payments') }}</span>
                                 <span class="font-medium">Rp {{ number_format($otherPayments, 0, ',', '.') }}</span>
                             </div>
                             <div class="flex justify-between">
-                                <span class="text-secondary-600 dark:text-dark-400">{{ __('payments.this_payment') }}</span>
+                                <span class="text-secondary-600 dark:text-dark-400">{{ __('pages.this_payment') }}</span>
                                 <span class="font-medium text-blue-600">Rp
                                     {{ number_format($amountInteger, 0, ',', '.') }}</span>
                             </div>
                             <hr class="border-secondary-300 dark:border-dark-600">
                             <div class="flex justify-between font-bold">
-                                <span class="text-secondary-900 dark:text-dark-50">{{ __('payments.remaining_after_edit') }}</span>
+                                <span class="text-secondary-900 dark:text-dark-50">{{ __('pages.remaining_after_edit') }}</span>
                                 <span class="{{ $remainingAfter <= 0 ? 'text-green-600' : 'text-red-600' }}">
                                     Rp {{ number_format(max(0, $remainingAfter), 0, ',', '.') }}
                                 </span>
                             </div>
                             @if ($remainingAfter <= 0)
                                 <div class="text-xs text-green-600 dark:text-green-400 italic text-center mt-2">
-                                    {{ __('payments.invoice_will_be_paid_after_edit') }}
+                                    {{ __('pages.invoice_will_be_paid_after_edit') }}
                                 </div>
                             @endif
                             @if ($attachment || $payment->hasAttachment())
                                 <div class="flex justify-between items-center mt-2">
-                                    <span class="text-secondary-600 dark:text-dark-400">{{ __('payments.payment_proof_label') }}</span>
+                                    <span class="text-secondary-600 dark:text-dark-400">{{ __('pages.payment_proof_label') }}</span>
                                     <div class="flex items-center gap-2">
                                         <x-icon name="check-circle"
                                             class="w-4 h-4 text-green-600 dark:text-green-400" />
                                         <span class="text-sm font-medium text-green-600 dark:text-green-400">
-                                            {{ $attachment ? __('payments.new_file_ready') : __('payments.file_ready_upload') }}
+                                            {{ $attachment ? __('pages.new_file_ready') : __('pages.file_ready_upload') }}
                                         </span>
                                     </div>
                                 </div>
@@ -174,7 +174,7 @@
                 {{-- Original Payment Info --}}
                 @if ($payment)
                     <div class="text-sm text-secondary-600 dark:text-dark-400">
-                        <div>{{ __('payments.original_payment_info', ['amount' => number_format($payment->getOriginal('amount'), 0, ',', '.')]) }}</div>
+                        <div>{{ __('pages.original_payment_info', ['amount' => number_format($payment->getOriginal('amount'), 0, ',', '.')]) }}</div>
                         <div>{{ \Carbon\Carbon::parse($payment->getOriginal('payment_date'))->format('d M Y') }}</div>
                     </div>
                 @else

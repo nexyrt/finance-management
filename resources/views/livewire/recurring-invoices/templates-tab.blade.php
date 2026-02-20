@@ -2,18 +2,18 @@
     <!-- Search, Filter & Create Action -->
     <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div class="flex flex-col sm:flex-row gap-3 flex-1">
-            <x-input wire:model.live.debounce.300ms="search" placeholder="Search templates or clients..."
+            <x-input wire:model.live.debounce.300ms="search" :placeholder="__('pages.ri_search_templates_placeholder')"
                 icon="magnifying-glass" class="h-full py-3" />
             <div class="w-full sm:w-48">
                 <x-select.styled wire:model.live="statusFilter" :options="[
-                    ['label' => 'Active', 'value' => 'active'],
-                    ['label' => 'Archived', 'value' => 'archived'],
-                    ['label' => 'Semua', 'value' => 'all'],
-                ]" select="label:label|value:value" placeholder="Status" />
+                    ['label' => __('pages.ri_status_active'), 'value' => 'active'],
+                    ['label' => __('pages.ri_status_archived'), 'value' => 'archived'],
+                    ['label' => __('pages.ri_status_all'), 'value' => 'all'],
+                ]" select="label:label|value:value" :placeholder="__('pages.ri_status_filter_placeholder')" />
             </div>
         </div>
         <x-button size="sm" href="{{ route('recurring-invoices.template.create') }}" wire:navigate title="Create"
-            text="Create Template" prefix="true">
+            :text="__('pages.ri_create_template_btn')" prefix="true">
             <x-slot:left>
                 <x-icon name="plus" class="w-4 h-4" />
             </x-slot:left>
@@ -28,7 +28,7 @@
                 <!-- Status Indicator -->
                 <div class="absolute top-4 right-4">
                     @if ($template->status === 'archived')
-                        <x-badge text="Archived" color="amber" size="sm" />
+                        <x-badge :text="__('pages.ri_status_archived')" color="amber" size="sm" />
                     @else
                         <div
                             class="w-3 h-3 rounded-full {{ $template->status === 'active' ? 'bg-green-400' : 'bg-gray-400' }}">
@@ -63,7 +63,7 @@
                                 {{ $template->formatted_total_amount }}
                             </div>
                             <div class="text-sm text-primary-500 dark:text-primary-300">
-                                {{ ucfirst(str_replace('_', ' ', $template->frequency)) }}
+                                {{ __('pages.ri_freq_' . $template->frequency) }}
                             </div>
                         </div>
                     </div>
@@ -76,7 +76,7 @@
                     @endphp
                     <div class="mb-4">
                         <div class="flex justify-between text-sm mb-2">
-                            <span class="text-dark-700 dark:text-dark-300">Progress</span>
+                            <span class="text-dark-700 dark:text-dark-300">{{ __('pages.ri_progress_label') }}</span>
                             <span
                                 class="text-dark-500 dark:text-dark-400">{{ $published }}/{{ $total }}</span>
                         </div>
@@ -90,16 +90,16 @@
                     <div class="grid grid-cols-3 gap-2 mb-4">
                         <div class="text-center p-2 bg-zinc-50 dark:bg-dark-700 rounded-lg">
                             <div class="font-bold text-green-600 dark:text-green-400">{{ $published }}</div>
-                            <div class="text-xs text-dark-500 dark:text-dark-400">Published</div>
+                            <div class="text-xs text-dark-500 dark:text-dark-400">{{ __('pages.ri_published_label') }}</div>
                         </div>
                         <div class="text-center p-2 bg-zinc-50 dark:bg-dark-700 rounded-lg">
                             <div class="font-bold text-amber-600 dark:text-amber-400">{{ $total - $published }}</div>
-                            <div class="text-xs text-dark-500 dark:text-dark-400">Draft</div>
+                            <div class="text-xs text-dark-500 dark:text-dark-400">{{ __('pages.ri_draft_label') }}</div>
                         </div>
                         <div class="text-center p-2 bg-zinc-50 dark:bg-dark-700 rounded-lg">
                             <div class="font-bold text-blue-600 dark:text-blue-400">{{ $template->remaining_invoices }}
                             </div>
-                            <div class="text-xs text-dark-500 dark:text-dark-400">Remaining</div>
+                            <div class="text-xs text-dark-500 dark:text-dark-400">{{ __('pages.ri_remaining_label') }}</div>
                         </div>
                     </div>
 
@@ -138,21 +138,21 @@
                     </div>
                     <h3 class="text-xl font-bold text-dark-900 dark:text-dark-50 mb-2">
                         @if ($search)
-                            No templates found for "{{ $search }}"
+                            {{ __('pages.ri_no_templates_found', ['search' => $search]) }}
                         @else
-                            No Templates Yet
+                            {{ __('pages.ri_no_templates_yet') }}
                         @endif
                     </h3>
                     <p class="text-dark-500 dark:text-dark-400 mb-6">
                         @if ($search)
-                            Try adjusting your search criteria
+                            {{ __('pages.ri_no_templates_search_hint') }}
                         @else
-                            Create your first recurring invoice template
+                            {{ __('pages.ri_no_templates_create_hint') }}
                         @endif
                     </p>
                     @if (!$search)
                         <x-button size="sm" href="{{ route('recurring-invoices.template.create') }}" wire:navigate
-                            title="Create" text="Create Template" prefix="true">
+                            title="Create" :text="__('pages.ri_create_template_btn')" prefix="true">
                             <x-slot:left>
                                 <x-icon name="plus" class="w-4 h-4" />
                             </x-slot:left>

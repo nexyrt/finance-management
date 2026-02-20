@@ -1,4 +1,4 @@
-<x-modal wire title="Template Details" size="6xl" center>
+<x-modal wire :title="__('pages.ri_view_template_title')" size="6xl" center>
     @if ($template)
         <div class="space-y-6">
             <!-- Template Header -->
@@ -10,8 +10,8 @@
                         </h3>
                         <p class="text-sm text-dark-600 dark:text-dark-400 mt-1">{{ $template->client->name }}</p>
                         <div class="flex items-center gap-4 mt-2">
-                            <x-badge :text="ucfirst($template->status)" :color="$template->status === 'active' ? 'green' : 'gray'" />
-                            <x-badge text="{{ ucfirst(str_replace('_', ' ', $template->frequency)) }}" color="blue" />
+                            <x-badge :text="$template->status === 'active' ? __('pages.ri_status_active') : __('pages.ri_status_archived')" :color="$template->status === 'active' ? 'green' : 'gray'" />
+                            <x-badge :text="__('pages.ri_freq_' . $template->frequency)" color="blue" />
                             <span class="text-xs text-dark-600 dark:text-dark-400">
                                 {{ $template->start_date->format('d M Y') }} -
                                 {{ $template->end_date->format('d M Y') }}
@@ -19,7 +19,7 @@
                         </div>
                     </div>
                     <div class="text-right">
-                        <div class="text-xs text-dark-600 dark:text-dark-400">Total Template</div>
+                        <div class="text-xs text-dark-600 dark:text-dark-400">{{ __('pages.ri_total_template_label') }}</div>
                         <div class="text-2xl font-bold text-primary-600 dark:text-primary-400">
                             {{ $template->formatted_total_amount }}
                         </div>
@@ -35,7 +35,7 @@
                         <div>
                             <div class="text-2xl font-bold text-dark-900 dark:text-dark-50">
                                 {{ $this->invoiceStats['total'] }}</div>
-                            <div class="text-xs text-dark-600 dark:text-dark-400">Total Invoice</div>
+                            <div class="text-xs text-dark-600 dark:text-dark-400">{{ __('pages.ri_total_invoice_stat') }}</div>
                         </div>
                     </div>
                 </div>
@@ -46,7 +46,7 @@
                         <div>
                             <div class="text-2xl font-bold text-green-600 dark:text-green-400">
                                 {{ $this->invoiceStats['published'] }}</div>
-                            <div class="text-xs text-dark-600 dark:text-dark-400">Published</div>
+                            <div class="text-xs text-dark-600 dark:text-dark-400">{{ __('pages.ri_published_label') }}</div>
                         </div>
                     </div>
                 </div>
@@ -57,7 +57,7 @@
                         <div>
                             <div class="text-2xl font-bold text-amber-600 dark:text-amber-400">
                                 {{ $this->invoiceStats['draft'] }}</div>
-                            <div class="text-xs text-dark-600 dark:text-dark-400">Draft</div>
+                            <div class="text-xs text-dark-600 dark:text-dark-400">{{ __('pages.ri_draft_label') }}</div>
                         </div>
                     </div>
                 </div>
@@ -69,7 +69,7 @@
                             <div class="text-lg font-bold text-primary-600 dark:text-primary-400">
                                 Rp {{ number_format($this->invoiceStats['total_revenue'], 0, ',', '.') }}
                             </div>
-                            <div class="text-xs text-dark-600 dark:text-dark-400">Revenue</div>
+                            <div class="text-xs text-dark-600 dark:text-dark-400">{{ __('pages.ri_revenue_label') }}</div>
                         </div>
                     </div>
                 </div>
@@ -78,7 +78,7 @@
             <!-- Template Items -->
             <div class="bg-white dark:bg-dark-800 rounded-lg border border-zinc-200 dark:border-dark-600">
                 <div class="p-4 border-b border-zinc-200 dark:border-dark-600">
-                    <h4 class="font-medium text-dark-900 dark:text-dark-50">Template Items</h4>
+                    <h4 class="font-medium text-dark-900 dark:text-dark-50">{{ __('pages.ri_template_items_title') }}</h4>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full">
@@ -86,22 +86,22 @@
                             <tr>
                                 <th
                                     class="px-4 py-2 text-left text-xs font-medium text-dark-600 dark:text-dark-400 uppercase">
-                                    Service</th>
+                                    {{ __('pages.ri_col_service') }}</th>
                                 <th
                                     class="px-4 py-2 text-center text-xs font-medium text-dark-600 dark:text-dark-400 uppercase">
-                                    Qty</th>
+                                    {{ __('pages.ri_col_qty') }}</th>
                                 <th
                                     class="px-4 py-2 text-right text-xs font-medium text-dark-600 dark:text-dark-400 uppercase">
-                                    Price</th>
+                                    {{ __('pages.ri_col_price') }}</th>
                                 <th
                                     class="px-4 py-2 text-right text-xs font-medium text-dark-600 dark:text-dark-400 uppercase">
-                                    COGS</th>
+                                    {{ __('pages.ri_col_cogs') }}</th>
                                 <th
                                     class="px-4 py-2 text-right text-xs font-medium text-dark-600 dark:text-dark-400 uppercase">
-                                    Amount</th>
+                                    {{ __('pages.ri_col_amount') }}</th>
                                 <th
                                     class="px-4 py-2 text-right text-xs font-medium text-dark-600 dark:text-dark-400 uppercase">
-                                    Profit</th>
+                                    {{ __('pages.ri_col_profit') }}</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-zinc-200 dark:divide-dark-600">
@@ -111,7 +111,7 @@
                                         <div class="text-sm font-medium text-dark-900 dark:text-dark-50">
                                             {{ $item['service_name'] }}</div>
                                         @if (isset($item['client_id']) && $item['client_id'] !== $template->client_id)
-                                            <div class="text-xs text-blue-600 dark:text-blue-400">Different Client</div>
+                                            <div class="text-xs text-blue-600 dark:text-blue-400">{{ __('pages.ri_different_client') }}</div>
                                         @endif
                                     </td>
                                     <td class="px-4 py-3 text-center text-sm text-dark-900 dark:text-dark-50">
@@ -141,7 +141,7 @@
                             <tr>
                                 <td colspan="4"
                                     class="px-4 py-3 text-right text-sm font-medium text-dark-900 dark:text-dark-50">
-                                    Subtotal:
+                                    {{ __('pages.ri_subtotal_label') }}
                                 </td>
                                 <td class="px-4 py-3 text-right text-sm font-medium text-dark-900 dark:text-dark-50">
                                     Rp {{ number_format($template->invoice_template['subtotal'], 0, ',', '.') }}
@@ -162,8 +162,8 @@
                                 <tr>
                                     <td colspan="4"
                                         class="px-4 py-2 text-right text-sm text-dark-600 dark:text-dark-400">
-                                        Discount
-                                        ({{ $template->invoice_template['discount_type'] === 'percentage' ? $template->invoice_template['discount_value'] . '%' : 'Fixed' }}):
+                                        {{ __('pages.ri_discount_label_summary') }}
+                                        ({{ $template->invoice_template['discount_type'] === 'percentage' ? $template->invoice_template['discount_value'] . '%' : __('pages.ri_discount_fixed') }}):
                                     </td>
                                     <td class="px-4 py-2 text-right text-sm text-red-600 dark:text-red-400">
                                         -Rp
@@ -175,7 +175,7 @@
                             <tr>
                                 <td colspan="4"
                                     class="px-4 py-3 text-right text-lg font-bold text-dark-900 dark:text-dark-50">
-                                    Total:
+                                    {{ __('pages.ri_total_label_row') }}
                                 </td>
                                 <td
                                     class="px-4 py-3 text-right text-lg font-bold text-primary-600 dark:text-primary-400">
@@ -201,7 +201,7 @@
             @if ($this->nextScheduledInvoices->count() > 0)
                 <div class="bg-white dark:bg-dark-800 rounded-lg border border-zinc-200 dark:border-dark-600">
                     <div class="p-4 border-b border-zinc-200 dark:border-dark-600">
-                        <h4 class="font-medium text-dark-900 dark:text-dark-50">Upcoming Invoices</h4>
+                        <h4 class="font-medium text-dark-900 dark:text-dark-50">{{ __('pages.ri_upcoming_invoices_title') }}</h4>
                     </div>
                     <div class="p-4">
                         <div class="space-y-3">
@@ -217,8 +217,8 @@
                                         </div>
                                     </div>
                                     <div class="flex items-center gap-2">
-                                        <x-badge text="{{ $invoice->formatted_total_amount }}" color="primary" light />
-                                        <x-badge text="Draft" color="amber" />
+                                        <x-badge :text="$invoice->formatted_total_amount" color="primary" light />
+                                        <x-badge :text="__('pages.ri_draft_label')" color="amber" />
                                     </div>
                                 </div>
                             @endforeach
@@ -232,12 +232,12 @@
             <div class="flex justify-between w-full">
                 <x-button wire:click="$set('modal', false)" color="zinc" size="sm"
                     loading="$set('modal', false)">
-                    Tutup
+                    {{ __('pages.ri_close_btn') }}
                 </x-button>
                 <div class="flex gap-2">
                     <x-button wire:click="editTemplate" color="green" size="sm" icon="pencil"
                         loading="editTemplate">
-                        Edit Template
+                        {{ __('pages.ri_edit_template_btn') }}
                     </x-button>
                 </div>
             </div>

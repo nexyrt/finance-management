@@ -2,20 +2,20 @@
     <!-- Filters -->
     <div class="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
         <div class="flex flex-col sm:flex-row gap-3">
-            <x-select.styled wire:model.live="currentMonth" :options="$this->monthOptions" label="Month" />
-            <x-select.styled wire:model.live="currentYear" :options="$this->yearOptions" label="Year" />
-            <x-select.styled wire:model.live="selectedTemplate" :options="$this->templates" placeholder="All Templates"
-                label="Template" />
+            <x-select.styled wire:model.live="currentMonth" :options="$this->monthOptions" :label="__('pages.ri_month_label')" />
+            <x-select.styled wire:model.live="currentYear" :options="$this->yearOptions" :label="__('pages.ri_year_label')" />
+            <x-select.styled wire:model.live="selectedTemplate" :options="$this->templates" :placeholder="__('pages.ri_all_templates_placeholder')"
+                :label="__('pages.ri_template_filter_label')" />
             <x-select.styled wire:model.live="statusFilter" :options="[
-                ['label' => 'All Status', 'value' => 'all'],
-                ['label' => 'Draft', 'value' => 'draft'],
-                ['label' => 'Published', 'value' => 'published'],
-            ]" label="Status" />
+                ['label' => __('pages.ri_all_status_option'), 'value' => 'all'],
+                ['label' => __('pages.ri_draft_label'), 'value' => 'draft'],
+                ['label' => __('pages.ri_published_label'), 'value' => 'published'],
+            ]" select="label:label|value:value" :label="__('pages.ri_status_filter_label')" />
         </div>
 
         <div class="flex gap-2">
             <x-button wire:click="openGenerateModal" color="primary" icon="plus" loading="openGenerateModal">
-                Generate Invoices
+                {{ __('pages.ri_generate_invoices_btn') }}
             </x-button>
             <livewire:recurring-invoices.monthly.create-invoice @invoice-created="$refresh" />
         </div>
@@ -29,7 +29,7 @@
                     <x-icon name="document-text" class="w-6 h-6 text-blue-600 dark:text-blue-400" />
                 </div>
                 <div>
-                    <p class="text-sm text-dark-600 dark:text-dark-400">Total Invoices</p>
+                    <p class="text-sm text-dark-600 dark:text-dark-400">{{ __('pages.ri_total_invoices_label') }}</p>
                     <p class="text-2xl font-bold text-blue-600 dark:text-blue-400">
                         {{ $this->invoices->total() }}
                     </p>
@@ -43,7 +43,7 @@
                     <x-icon name="check-circle" class="w-6 h-6 text-green-600 dark:text-green-400" />
                 </div>
                 <div>
-                    <p class="text-sm text-dark-600 dark:text-dark-400">Published</p>
+                    <p class="text-sm text-dark-600 dark:text-dark-400">{{ __('pages.ri_published_label') }}</p>
                     <p class="text-xl font-bold text-green-600 dark:text-green-400">
                         {{ $this->invoices->where('status', 'published')->count() }}
                     </p>
@@ -57,12 +57,12 @@
                     <x-icon name="clock" class="w-6 h-6 text-amber-600 dark:text-amber-400" />
                 </div>
                 <div>
-                    <p class="text-sm text-dark-600 dark:text-dark-400">Draft</p>
+                    <p class="text-sm text-dark-600 dark:text-dark-400">{{ __('pages.ri_draft_label') }}</p>
                     <p class="text-xl font-bold text-amber-600 dark:text-amber-400">
                         {{ $this->invoices->where('status', 'draft')->count() }}
                     </p>
                     <p class="text-xs text-amber-500 dark:text-amber-400">
-                        Ready to publish
+                        {{ __('pages.ri_ready_to_publish') }}
                     </p>
                 </div>
             </div>
@@ -74,12 +74,12 @@
                     <x-icon name="currency-dollar" class="w-6 h-6 text-purple-600 dark:text-purple-400" />
                 </div>
                 <div>
-                    <p class="text-sm text-dark-600 dark:text-dark-400">Total Value</p>
+                    <p class="text-sm text-dark-600 dark:text-dark-400">{{ __('pages.ri_total_value_label') }}</p>
                     <p class="text-xl font-bold text-purple-600 dark:text-purple-400">
                         Rp {{ number_format($this->stats['total_revenue'], 0, ',', '.') }}
                     </p>
                     <p class="text-xs text-purple-500 dark:text-purple-400">
-                        This month
+                        {{ __('pages.ri_this_month_hint') }}
                     </p>
                 </div>
             </div>
@@ -99,22 +99,22 @@
                     </div>
                     <div>
                         <div class="font-semibold text-gray-900 dark:text-gray-50"
-                            x-text="`${selected.length} invoices selected`"></div>
-                        <div class="text-xs text-gray-500 dark:text-gray-400">Choose action for selected invoices</div>
+                            x-text="`${selected.length}{{ __('pages.ri_bulk_selected') }}`"></div>
+                        <div class="text-xs text-gray-500 dark:text-gray-400">{{ __('pages.ri_bulk_action_hint') }}</div>
                     </div>
                 </div>
                 <div class="flex items-center gap-2 justify-end">
                     <x-button wire:click="bulkPublish" size="sm" color="primary" icon="arrow-up-tray"
                         loading="bulkPublish" class="whitespace-nowrap">
-                        Bulk Publish
+                        {{ __('pages.ri_bulk_publish_btn') }}
                     </x-button>
                     <x-button wire:click="bulkDelete" size="sm" color="red" icon="trash" loading="bulkDelete"
                         class="whitespace-nowrap">
-                        Bulk Delete
+                        {{ __('pages.ri_bulk_delete_btn') }}
                     </x-button>
                     <x-button wire:click="$set('selected', [])" size="sm" color="gray" icon="x-mark"
                         class="whitespace-nowrap">
-                        Cancel
+                        {{ __('common.cancel') }}
                     </x-button>
                 </div>
             </div>
@@ -124,12 +124,12 @@
     <!-- Invoices Table -->
     <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
         <x-table :headers="[
-            ['index' => 'client', 'label' => 'Client'],
-            ['index' => 'template', 'label' => 'Template'],
-            ['index' => 'scheduled_date', 'label' => 'Period'],
-            ['index' => 'amount', 'label' => 'Amount'],
-            ['index' => 'status', 'label' => 'Status'],
-            ['index' => 'actions', 'label' => 'Actions', 'sortable' => false],
+            ['index' => 'client', 'label' => __('pages.ri_col_client')],
+            ['index' => 'template', 'label' => __('pages.ri_col_template')],
+            ['index' => 'scheduled_date', 'label' => __('pages.ri_col_period')],
+            ['index' => 'amount', 'label' => __('pages.ri_col_amount')],
+            ['index' => 'status', 'label' => __('pages.ri_col_status')],
+            ['index' => 'actions', 'label' => __('pages.ri_col_actions'), 'sortable' => false],
         ]" :rows="$this->invoices" selectable wire:model="selected" paginate>
 
             @interact('column_client', $row)
@@ -142,7 +142,7 @@
                     </div>
                     <div>
                         <div class="font-medium text-gray-900 dark:text-gray-100">{{ $row->client->name }}</div>
-                        <div class="text-xs text-gray-500">{{ ucfirst($row->client->type) }}</div>
+                        <div class="text-xs text-gray-500">{{ __('pages.ri_client_type_' . $row->client->type) }}</div>
                     </div>
                 </div>
             @endinteract
@@ -150,7 +150,7 @@
             @interact('column_template', $row)
                 <div>
                     <div class="font-medium text-gray-900 dark:text-gray-100">{{ $row->template->template_name }}</div>
-                    <div class="text-xs text-gray-500">{{ ucfirst(str_replace('_', ' ', $row->template->frequency)) }}</div>
+                    <div class="text-xs text-gray-500">{{ __('pages.ri_freq_' . $row->template->frequency) }}</div>
                 </div>
             @endinteract
 
@@ -175,7 +175,7 @@
 
             @interact('column_status', $row)
                 <div class="space-y-1">
-                    <x-badge :text="ucfirst($row->status)" :color="$row->status === 'published' ? 'green' : 'amber'" />
+                    <x-badge :text="$row->status === 'published' ? __('pages.ri_published_label') : __('pages.ri_draft_label')" :color="$row->status === 'published' ? 'green' : 'amber'" />
                     @if ($row->status === 'published' && $row->publishedInvoice)
                         <div class="text-xs text-green-600 dark:text-green-400">
                             #{{ $row->publishedInvoice->invoice_number }}
@@ -211,26 +211,26 @@
                     <x-icon name="plus" class="w-6 h-6 text-primary-600 dark:text-primary-400" />
                 </div>
                 <div>
-                    <h3 class="text-xl font-bold text-dark-900 dark:text-dark-50">Generate Invoices</h3>
-                    <p class="text-sm text-dark-600 dark:text-dark-400">Atur tanggal untuk semua invoice yang akan di-generate</p>
+                    <h3 class="text-xl font-bold text-dark-900 dark:text-dark-50">{{ __('pages.ri_generate_modal_title') }}</h3>
+                    <p class="text-sm text-dark-600 dark:text-dark-400">{{ __('pages.ri_generate_modal_desc') }}</p>
                 </div>
             </div>
         </x-slot:title>
 
         <form id="generate-form" wire:submit="generateInvoices" class="space-y-4">
-            <x-date wire:model="generateIssueDate" label="Tanggal Invoice (Issue Date) *" />
-            <x-date wire:model="generateDueDate" label="Tanggal Jatuh Tempo (Due Date) *" />
+            <x-date wire:model="generateIssueDate" :label="__('pages.ri_generate_issue_date_label')" />
+            <x-date wire:model="generateDueDate" :label="__('pages.ri_generate_due_date_label')" />
         </form>
 
         <x-slot:footer>
             <div class="flex flex-col sm:flex-row justify-end gap-3">
                 <x-button wire:click="$set('generateModal', false)" color="zinc"
                     class="w-full sm:w-auto order-2 sm:order-1">
-                    Batal
+                    {{ __('common.cancel') }}
                 </x-button>
                 <x-button type="submit" form="generate-form" color="primary" icon="plus" loading="generateInvoices"
                     class="w-full sm:w-auto order-1 sm:order-2">
-                    Generate
+                    {{ __('pages.ri_generate_btn') }}
                 </x-button>
             </div>
         </x-slot:footer>
@@ -244,26 +244,26 @@
                     <x-icon name="arrow-up-tray" class="w-6 h-6 text-green-600 dark:text-green-400" />
                 </div>
                 <div>
-                    <h3 class="text-xl font-bold text-dark-900 dark:text-dark-50">Publish Invoice</h3>
-                    <p class="text-sm text-dark-600 dark:text-dark-400">Atur tanggal sebelum publish ke invoice</p>
+                    <h3 class="text-xl font-bold text-dark-900 dark:text-dark-50">{{ __('pages.ri_publish_modal_title') }}</h3>
+                    <p class="text-sm text-dark-600 dark:text-dark-400">{{ __('pages.ri_publish_modal_desc') }}</p>
                 </div>
             </div>
         </x-slot:title>
 
         <form id="publish-form" wire:submit="publishInvoice" class="space-y-4">
-            <x-date wire:model="publishIssueDate" label="Tanggal Invoice (Issue Date) *" />
-            <x-date wire:model="publishDueDate" label="Tanggal Jatuh Tempo (Due Date) *" />
+            <x-date wire:model="publishIssueDate" :label="__('pages.ri_generate_issue_date_label')" />
+            <x-date wire:model="publishDueDate" :label="__('pages.ri_generate_due_date_label')" />
         </form>
 
         <x-slot:footer>
             <div class="flex flex-col sm:flex-row justify-end gap-3">
                 <x-button wire:click="$set('publishModal', false)" color="zinc"
                     class="w-full sm:w-auto order-2 sm:order-1">
-                    Batal
+                    {{ __('common.cancel') }}
                 </x-button>
                 <x-button type="submit" form="publish-form" color="green" icon="arrow-up-tray" loading="publishInvoice"
                     class="w-full sm:w-auto order-1 sm:order-2">
-                    Publish
+                    {{ __('pages.ri_publish_btn') }}
                 </x-button>
             </div>
         </x-slot:footer>

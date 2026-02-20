@@ -1,6 +1,6 @@
 <div class="bg-white dark:bg-dark-800 rounded-xl shadow-sm border border-dark-200 dark:border-dark-600 p-6">
     <div class="flex items-center justify-between mb-4">
-        <h2 class="text-lg font-semibold text-dark-900 dark:text-dark-50">Invoice Items</h2>
+        <h2 class="text-lg font-semibold text-dark-900 dark:text-dark-50">{{ __('pages.ri_invoice_items_section_title') }}</h2>
         <div class="flex items-center gap-2">
             <input type="number" x-model="bulkCount" min="1" max="50"
                 class="w-16 px-2 py-2 text-sm text-center border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
@@ -9,7 +9,7 @@
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                 </svg>
-                Add Item
+                {{ __('pages.ri_add_item_btn') }}
             </button>
         </div>
     </div>
@@ -18,16 +18,16 @@
     <div class="hidden lg:grid lg:grid-cols-24 gap-3 px-4 py-3 bg-dark-100 dark:bg-dark-900 rounded-lg mb-2">
         <div class="col-span-1 text-xs font-semibold text-dark-700 dark:text-dark-300 uppercase text-center">#
         </div>
-        <div class="col-span-4 text-xs font-semibold text-dark-700 dark:text-dark-300 uppercase">Client</div>
-        <div class="col-span-5 text-xs font-semibold text-dark-700 dark:text-dark-300 uppercase">Service</div>
+        <div class="col-span-4 text-xs font-semibold text-dark-700 dark:text-dark-300 uppercase">{{ __('pages.ri_col_client_header') }}</div>
+        <div class="col-span-5 text-xs font-semibold text-dark-700 dark:text-dark-300 uppercase">{{ __('pages.ri_col_service_header') }}</div>
         <div class="col-span-2 text-xs font-semibold text-dark-700 dark:text-dark-300 uppercase text-center">
-            Qty</div>
-        <div class="col-span-3 text-xs font-semibold text-dark-700 dark:text-dark-300 uppercase">Unit Price
+            {{ __('pages.ri_col_qty_header') }}</div>
+        <div class="col-span-3 text-xs font-semibold text-dark-700 dark:text-dark-300 uppercase">{{ __('pages.ri_col_unit_price_header') }}
         </div>
-        <div class="col-span-3 text-xs font-semibold text-dark-700 dark:text-dark-300 uppercase">Amount</div>
-        <div class="col-span-3 text-xs font-semibold text-dark-700 dark:text-dark-300 uppercase">COGS</div>
+        <div class="col-span-3 text-xs font-semibold text-dark-700 dark:text-dark-300 uppercase">{{ __('pages.ri_col_amount_header') }}</div>
+        <div class="col-span-3 text-xs font-semibold text-dark-700 dark:text-dark-300 uppercase">{{ __('pages.ri_col_cogs_header') }}</div>
         <div class="col-span-2 text-xs font-semibold text-dark-700 dark:text-dark-300 uppercase text-center">
-            Tax</div>
+            {{ __('pages.ri_col_tax_header') }}</div>
         <div class="col-span-1 text-xs font-semibold text-dark-700 dark:text-dark-300 uppercase text-center">
         </div>
     </div>
@@ -48,7 +48,7 @@
                         <div class="relative">
                             <div x-show="!item.client_id" @click="itemSelectOpen[item.id] = !itemSelectOpen[item.id]"
                                 class="w-full px-2 py-1.5 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-500 dark:text-dark-400 cursor-pointer hover:border-primary-400 transition truncate">
-                                Select...
+                                {{ __('pages.ri_item_select_placeholder') }}
                             </div>
                             <div x-show="item.client_id"
                                 class="w-full px-2 py-1.5 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 flex items-center justify-between gap-1">
@@ -66,7 +66,7 @@
                                 class="absolute z-50 mt-1 w-64 bg-white dark:bg-dark-800 border border-dark-200 dark:border-dark-700 rounded-lg shadow-lg max-h-80 overflow-hidden">
                                 <div class="p-2 border-b border-dark-200 dark:border-dark-700">
                                     <input type="text" x-model="itemSelectSearch[item.id]" @click.stop
-                                        placeholder="Search..."
+                                        placeholder="{{ __('pages.ri_search_placeholder') }}"
                                         class="w-full px-2 py-1.5 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 placeholder-dark-400 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
                                 </div>
                                 <div class="overflow-y-auto max-h-64">
@@ -89,7 +89,7 @@
                                     </template>
                                     <div x-show="filteredItemClients(item.id).length === 0"
                                         class="px-3 py-6 text-center text-dark-500 dark:text-dark-400">
-                                        <p class="text-xs">No clients found</p>
+                                        <p class="text-xs">{{ __('pages.ri_no_clients_found') }}</p>
                                     </div>
                                 </div>
                             </div>
@@ -101,7 +101,7 @@
                         <div class="relative flex gap-1" @click.away="serviceSelectOpen[item.id] = false">
                             <input type="text" x-model="item.service_name"
                                 class="flex-1 px-2 py-1.5 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                                placeholder="Type service name...">
+                                placeholder="{{ __('pages.ri_search_services_placeholder') }}">
                             <button @click="serviceSelectOpen[item.id] = !serviceSelectOpen[item.id]" type="button"
                                 class="px-2 py-1.5 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-600 dark:text-dark-400 hover:bg-dark-50 dark:hover:bg-dark-700 transition flex-shrink-0">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -113,7 +113,7 @@
                                 class="absolute z-50 mt-1 w-96 bg-white dark:bg-dark-800 border border-dark-200 dark:border-dark-700 rounded-lg shadow-lg max-h-80 overflow-hidden">
                                 <div class="p-2 border-b border-dark-200 dark:border-dark-700">
                                     <input type="text" x-model="serviceSelectSearch[item.id]" @click.stop
-                                        placeholder="Search services..."
+                                        placeholder="{{ __('pages.ri_search_services_placeholder') }}"
                                         class="w-full px-2 py-1.5 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 placeholder-dark-400 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
                                 </div>
                                 <div class="overflow-y-auto max-h-64">
@@ -132,7 +132,7 @@
                                     </template>
                                     <div x-show="filteredItemServices(item.id).length === 0"
                                         class="px-3 py-6 text-center text-dark-500 dark:text-dark-400">
-                                        <p class="text-xs">No services found</p>
+                                        <p class="text-xs">{{ __('pages.ri_no_services_found') }}</p>
                                     </div>
                                 </div>
                             </div>
@@ -172,7 +172,7 @@
                         <label class="flex items-center gap-1.5 cursor-pointer">
                             <input type="checkbox" x-model="item.is_tax_deposit"
                                 class="rounded border-dark-300 dark:border-dark-600 text-primary-600 focus:ring-2 focus:ring-primary-500">
-                            <span class="text-xs text-dark-600 dark:text-dark-400">Tax</span>
+                            <span class="text-xs text-dark-600 dark:text-dark-400">{{ __('pages.ri_tax_deposit_label') }}</span>
                         </label>
                     </div>
 
@@ -198,7 +198,7 @@
                             <label class="flex items-center gap-1.5 cursor-pointer">
                                 <input type="checkbox" x-model="item.is_tax_deposit"
                                     class="rounded border-dark-300 dark:border-dark-600 text-primary-600 focus:ring-2 focus:ring-primary-500">
-                                <span class="text-xs text-dark-600 dark:text-dark-400">Tax Deposit</span>
+                                <span class="text-xs text-dark-600 dark:text-dark-400">{{ __('pages.ri_tax_deposit_full_label') }}</span>
                             </label>
                         </div>
                         <button @click="removeItem(index)" type="button"
@@ -214,12 +214,12 @@
                         {{-- Client --}}
                         <div>
                             <label
-                                class="block text-xs font-medium text-dark-600 dark:text-dark-400 mb-1">Client</label>
+                                class="block text-xs font-medium text-dark-600 dark:text-dark-400 mb-1">{{ __('pages.ri_client_label_mobile') }}</label>
                             <div class="relative">
                                 <div x-show="!item.client_id"
                                     @click="itemSelectOpen[item.id] = !itemSelectOpen[item.id]"
                                     class="w-full px-3 py-2 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-500 dark:text-dark-400 cursor-pointer hover:border-primary-400 transition">
-                                    Select client...
+                                    {{ __('pages.ri_item_select_client_placeholder') }}
                                 </div>
                                 <div x-show="item.client_id"
                                     class="w-full px-3 py-2 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 flex items-center justify-between">
@@ -237,7 +237,7 @@
                                     class="absolute z-50 mt-1 w-full bg-white dark:bg-dark-800 border border-dark-200 dark:border-dark-700 rounded-lg shadow-lg max-h-80 overflow-hidden">
                                     <div class="p-2 border-b border-dark-200 dark:border-dark-700">
                                         <input type="text" x-model="itemSelectSearch[item.id]" @click.stop
-                                            placeholder="Search clients..."
+                                            placeholder="{{ __('pages.ri_search_clients_placeholder') }}"
                                             class="w-full px-3 py-2 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 placeholder-dark-400 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
                                     </div>
                                     <div class="overflow-y-auto max-h-64">
@@ -261,7 +261,7 @@
                                         </template>
                                         <div x-show="filteredItemClients(item.id).length === 0"
                                             class="px-4 py-8 text-center text-dark-500 dark:text-dark-400">
-                                            <p class="text-sm">No clients found</p>
+                                            <p class="text-sm">{{ __('pages.ri_item_select_placeholder') }}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -270,12 +270,11 @@
 
                         {{-- Service --}}
                         <div>
-                            <label class="block text-xs font-medium text-dark-600 dark:text-dark-400 mb-1">Service
-                                Name</label>
+                            <label class="block text-xs font-medium text-dark-600 dark:text-dark-400 mb-1">{{ __('pages.ri_service_name_label_mobile') }}</label>
                             <div class="relative flex gap-2" @click.away="serviceSelectOpen[item.id] = false">
                                 <input type="text" x-model="item.service_name"
                                     class="flex-1 px-3 py-2 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                                    placeholder="Type service name...">
+                                    placeholder="{{ __('pages.ri_type_service_placeholder') }}">
                                 <button @click="serviceSelectOpen[item.id] = !serviceSelectOpen[item.id]"
                                     type="button"
                                     class="px-3 py-2 border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-600 dark:text-dark-400 hover:bg-dark-50 dark:hover:bg-dark-700 transition flex-shrink-0">
@@ -288,7 +287,7 @@
                                     class="absolute z-50 mt-1 w-full bg-white dark:bg-dark-800 border border-dark-200 dark:border-dark-700 rounded-lg shadow-lg max-h-80 overflow-hidden">
                                     <div class="p-2 border-b border-dark-200 dark:border-dark-700">
                                         <input type="text" x-model="serviceSelectSearch[item.id]" @click.stop
-                                            placeholder="Search services..."
+                                            placeholder="{{ __('pages.ri_search_services_placeholder') }}"
                                             class="w-full px-3 py-2 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 placeholder-dark-400 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
                                     </div>
                                     <div class="overflow-y-auto max-h-64">
@@ -309,7 +308,7 @@
                                         </template>
                                         <div x-show="filteredItemServices(item.id).length === 0"
                                             class="px-4 py-8 text-center text-dark-500 dark:text-dark-400">
-                                            <p class="text-sm">No services found</p>
+                                            <p class="text-sm">{{ __('pages.ri_no_services_found') }}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -320,14 +319,13 @@
                         <div class="grid grid-cols-2 gap-2">
                             <div>
                                 <label
-                                    class="block text-xs font-medium text-dark-600 dark:text-dark-400 mb-1">Quantity</label>
+                                    class="block text-xs font-medium text-dark-600 dark:text-dark-400 mb-1">{{ __('pages.ri_quantity_label_mobile') }}</label>
                                 <input type="number" x-model="item.quantity" @input="calculateItem(item)"
                                     min="1"
                                     class="w-full px-3 py-2 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
                             </div>
                             <div>
-                                <label class="block text-xs font-medium text-dark-600 dark:text-dark-400 mb-1">Unit
-                                    Price</label>
+                                <label class="block text-xs font-medium text-dark-600 dark:text-dark-400 mb-1">{{ __('pages.ri_unit_price_label_mobile') }}</label>
                                 <input type="text" x-model="item.unit_price"
                                     @input="item.unit_price = formatInput($event.target.value); calculateItem(item)"
                                     class="w-full px-3 py-2 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
@@ -339,13 +337,13 @@
                         <div class="grid grid-cols-2 gap-2">
                             <div>
                                 <label
-                                    class="block text-xs font-medium text-dark-600 dark:text-dark-400 mb-1">Amount</label>
+                                    class="block text-xs font-medium text-dark-600 dark:text-dark-400 mb-1">{{ __('pages.ri_amount_label_mobile') }}</label>
                                 <div class="px-3 py-2 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-dark-100 dark:bg-dark-900 text-dark-900 dark:text-dark-50 font-semibold"
                                     x-text="formatCurrency(item.amount)"></div>
                             </div>
                             <div>
                                 <label
-                                    class="block text-xs font-medium text-dark-600 dark:text-dark-400 mb-1">COGS</label>
+                                    class="block text-xs font-medium text-dark-600 dark:text-dark-400 mb-1">{{ __('pages.ri_cogs_label_mobile') }}</label>
                                 <input type="text" x-model="item.cogs_amount"
                                     @input="item.cogs_amount = formatInput($event.target.value); calculateItem(item)"
                                     class="w-full px-3 py-2 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
@@ -363,8 +361,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
-            <p class="text-dark-600 dark:text-dark-400 text-sm">No items yet. Click "Add Item" to get started.
-            </p>
+            <p class="text-dark-600 dark:text-dark-400 text-sm">{{ __('pages.ri_no_items_empty') }}</p>
         </div>
     </div>
 </div>

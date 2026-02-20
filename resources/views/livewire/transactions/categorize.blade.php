@@ -1,5 +1,5 @@
 <div>
-    <x-modal wire title="{{ $isBulk ? 'Kategorikan Transaksi' : 'Kategorikan Transaksi' }}" size="lg" center>
+    <x-modal wire title="{{ __('pages.categorize_transaction_title') }}" size="lg" center>
         <x-slot:title>
             <div class="flex items-center gap-4 my-3">
                 <div class="h-12 w-12 bg-amber-50 dark:bg-amber-900/20 rounded-xl flex items-center justify-center">
@@ -7,10 +7,10 @@
                 </div>
                 <div>
                     <h3 class="text-xl font-bold text-dark-900 dark:text-dark-50">
-                        {{ $isBulk ? 'Kategorikan ' . count($transactionIds) . ' Transaksi' : 'Kategorikan Transaksi' }}
+                        {{ $isBulk ? __('pages.categorize_bulk_title', ['count' => count($transactionIds)]) : __('pages.categorize_transaction_title') }}
                     </h3>
                     <p class="text-sm text-dark-600 dark:text-dark-400">
-                        {{ $isBulk ? 'Pilih kategori untuk diterapkan ke semua transaksi terpilih' : 'Pilih kategori yang sesuai untuk transaksi ini' }}
+                        {{ $isBulk ? __('pages.categorize_bulk_desc') : __('pages.categorize_desc') }}
                     </p>
                 </div>
             </div>
@@ -22,7 +22,7 @@
                 <div
                     class="bg-secondary-50 dark:bg-dark-700 rounded-xl p-4 border border-secondary-200 dark:border-dark-600">
                     <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-3">
-                        Preview Transaksi ({{ count($transactionIds) }} item)
+                        {{ __('pages.preview_transactions_title', ['count' => count($transactionIds)]) }}
                     </h4>
                     <div class="space-y-2 max-h-48 overflow-y-auto">
                         @foreach ($transactions->take(5) as $trans)
@@ -46,7 +46,7 @@
 
                         @if ($transactions->count() > 5)
                             <div class="text-center text-sm text-dark-500 dark:text-dark-400 py-2">
-                                ... dan {{ $transactions->count() - 5 }} transaksi lainnya
+                                {{ __('pages.more_transactions', ['count' => $transactions->count() - 5]) }}
                             </div>
                         @endif
                     </div>
@@ -64,7 +64,7 @@
                                         class="w-4 h-4 text-{{ $transaction->transaction_type === 'credit' ? 'green' : 'red' }}-600 dark:text-{{ $transaction->transaction_type === 'credit' ? 'green' : 'red' }}-400" />
                                     <span
                                         class="text-sm font-semibold text-{{ $transaction->transaction_type === 'credit' ? 'green' : 'red' }}-900 dark:text-{{ $transaction->transaction_type === 'credit' ? 'green' : 'red' }}-100">
-                                        {{ $transaction->transaction_type === 'credit' ? 'Pemasukan' : 'Pengeluaran' }}
+                                        {{ $transaction->transaction_type === 'credit' ? __('pages.income_label') : __('pages.expense_label') }}
                                     </span>
                                 </div>
                                 <div class="text-base font-medium text-dark-900 dark:text-dark-50 mb-1">
@@ -75,7 +75,7 @@
                                     <div>{{ $transaction->bankAccount->bank_name }} -
                                         {{ $transaction->bankAccount->account_number }}</div>
                                     @if ($transaction->reference_number)
-                                        <div class="font-mono">Ref: {{ $transaction->reference_number }}</div>
+                                        <div class="font-mono">{{ __('pages.ref_prefix') }} {{ $transaction->reference_number }}</div>
                                     @endif
                                 </div>
                             </div>
@@ -91,7 +91,7 @@
                                     </div>
                                 @else
                                     <div class="mt-2">
-                                        <x-badge text="Belum dikategorikan" color="amber" size="sm" />
+                                        <x-badge :text="__('pages.not_yet_categorized')" color="amber" size="sm" />
                                     </div>
                                 @endif
                             </div>
@@ -102,13 +102,13 @@
 
             {{-- Category Selection --}}
             <div>
-                <x-select.styled wire:model.live="category_id" :options="$this->categoriesOptions" placeholder="Pilih kategori..."
+                <x-select.styled wire:model.live="category_id" :options="$this->categoriesOptions" :placeholder="__('pages.select_category_placeholder')"
                     searchable>
                     <x-slot:label>
                         <div class="flex items-center gap-2">
-                            <span>{{ $isBulk ? 'Kategori untuk Semua Transaksi *' : 'Kategori Transaksi *' }}</span>
+                            <span>{{ $isBulk ? __('pages.category_for_all_label') : __('pages.category_for_one_label') }}</span>
                             <x-tooltip color="secondary"
-                                text="Kategori akan {{ $isBulk ? 'diterapkan ke semua transaksi yang dipilih' : 'diterapkan ke transaksi ini' }}"
+                                :text="$isBulk ? __('pages.categorize_tooltip_bulk') : __('pages.categorize_tooltip_single')"
                                 position="top" />
                         </div>
                     </x-slot:label>
@@ -124,10 +124,9 @@
                             class="w-5 h-5 text-primary-600 dark:text-primary-400 flex-shrink-0 mt-0.5" />
                         <div class="text-sm text-primary-700 dark:text-primary-300">
                             @if ($isBulk)
-                                Kategori akan diterapkan ke <strong>{{ count($transactionIds) }} transaksi</strong>
-                                sekaligus
+                                {!! __('pages.categorize_info_bulk', ['count' => '<strong>' . count($transactionIds) . '</strong>']) !!}
                             @else
-                                Kategori transaksi akan diperbarui dan dapat diubah kembali nanti
+                                {{ __('pages.categorize_info_single') }}
                             @endif
                         </div>
                     </div>
@@ -139,12 +138,12 @@
             <div class="flex flex-col sm:flex-row justify-end gap-3">
                 <x-button wire:click="$set('modal', false)" color="zinc"
                     class="w-full sm:w-auto order-2 sm:order-1">
-                    Batal
+                    {{ __('common.cancel') }}
                 </x-button>
 
                 <x-button type="submit" form="categorize-form" color="amber" icon="check" loading="save"
                     class="w-full sm:w-auto order-1 sm:order-2">
-                    {{ $isBulk ? 'Terapkan ke Semua' : 'Simpan Kategori' }}
+                    {{ $isBulk ? __('pages.apply_to_all_btn') : __('pages.save_category_btn') }}
                 </x-button>
             </div>
         </x-slot:footer>

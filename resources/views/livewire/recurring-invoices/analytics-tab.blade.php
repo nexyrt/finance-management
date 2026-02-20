@@ -2,12 +2,15 @@
     <!-- Controls -->
     <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div class="flex gap-3">
-            <x-select.styled wire:model.live="selectedYear" :options="$this->yearOptions" label="Year" />
-            <x-select.styled wire:model.live="period" :options="[['label' => 'Monthly', 'value' => 'monthly'], ['label' => 'Quarterly', 'value' => 'quarterly']]" label="Period" />
+            <x-select.styled wire:model.live="selectedYear" :options="$this->yearOptions" :label="__('pages.ri_year_label')" />
+            <x-select.styled wire:model.live="period" :options="[
+                ['label' => __('pages.ri_period_monthly'), 'value' => 'monthly'],
+                ['label' => __('pages.ri_period_quarterly'), 'value' => 'quarterly'],
+            ]" select="label:label|value:value" :label="__('pages.ri_period_label')" />
         </div>
 
         <div class="text-sm text-dark-600 dark:text-dark-400">
-            Last updated: {{ now()->format('d M Y, H:i') }}
+            {{ __('pages.ri_last_updated', ['datetime' => now()->format('d M Y, H:i')]) }}
         </div>
     </div>
 
@@ -19,7 +22,7 @@
                     <x-icon name="chart-bar" class="w-6 h-6 text-blue-600 dark:text-blue-400" />
                 </div>
                 <div>
-                    <p class="text-sm text-dark-600 dark:text-dark-400">{{ $this->selectedYear }} Revenue</p>
+                    <p class="text-sm text-dark-600 dark:text-dark-400">{{ __('pages.ri_year_revenue_label', ['year' => $this->selectedYear]) }}</p>
                     <p class="text-xl font-bold text-blue-600 dark:text-blue-400">
                         Rp {{ number_format($this->revenueMetrics['current_year'], 0, ',', '.') }}
                     </p>
@@ -33,7 +36,7 @@
                     <x-icon name="arrow-trending-up" class="w-6 h-6 text-green-600 dark:text-green-400" />
                 </div>
                 <div>
-                    <p class="text-sm text-dark-600 dark:text-dark-400">YoY Growth</p>
+                    <p class="text-sm text-dark-600 dark:text-dark-400">{{ __('pages.ri_yoy_growth_label') }}</p>
                     <p
                         class="text-xl font-bold {{ $this->revenueMetrics['growth_rate'] >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }}">
                         {{ $this->revenueMetrics['growth_rate'] >= 0 ? '+' : '' }}{{ number_format($this->revenueMetrics['growth_rate'], 1) }}%
@@ -48,7 +51,7 @@
                     <x-icon name="calendar" class="w-6 h-6 text-purple-600 dark:text-purple-400" />
                 </div>
                 <div>
-                    <p class="text-sm text-dark-600 dark:text-dark-400">This Month</p>
+                    <p class="text-sm text-dark-600 dark:text-dark-400">{{ __('pages.ri_this_month_label') }}</p>
                     <p class="text-xl font-bold text-purple-600 dark:text-purple-400">
                         Rp {{ number_format($this->revenueMetrics['current_month'], 0, ',', '.') }}
                     </p>
@@ -62,7 +65,7 @@
                     <x-icon name="calculator" class="w-6 h-6 text-amber-600 dark:text-amber-400" />
                 </div>
                 <div>
-                    <p class="text-sm text-dark-600 dark:text-dark-400">Avg Monthly</p>
+                    <p class="text-sm text-dark-600 dark:text-dark-400">{{ __('pages.ri_avg_monthly_label') }}</p>
                     <p class="text-xl font-bold text-amber-600 dark:text-amber-400">
                         Rp {{ number_format($this->revenueMetrics['average_monthly'], 0, ',', '.') }}
                     </p>
@@ -76,7 +79,7 @@
                     <x-icon name="banknotes" class="w-6 h-6 text-gray-600 dark:text-gray-400" />
                 </div>
                 <div>
-                    <p class="text-sm text-dark-600 dark:text-dark-400">Previous Year</p>
+                    <p class="text-sm text-dark-600 dark:text-dark-400">{{ __('pages.ri_previous_year_label') }}</p>
                     <p class="text-xl font-bold text-gray-600 dark:text-gray-400">
                         Rp {{ number_format($this->revenueMetrics['previous_year'], 0, ',', '.') }}
                     </p>
@@ -89,7 +92,7 @@
     <div class="bg-white dark:bg-dark-800 border border-zinc-200 dark:border-dark-600 rounded-xl p-6">
         <div class="flex justify-between items-center mb-6">
             <h3 class="text-lg font-semibold text-dark-900 dark:text-dark-50">
-                {{ ucfirst($period) }} Revenue Trend
+                {{ __('pages.ri_revenue_trend_title', ['period' => $period === 'monthly' ? __('pages.ri_period_monthly') : __('pages.ri_period_quarterly')]) }}
             </h3>
             <x-badge :text="$this->selectedYear" color="primary" />
         </div>
@@ -103,7 +106,7 @@
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <!-- Template Performance -->
         <div class="bg-white dark:bg-dark-800 border border-zinc-200 dark:border-dark-600 rounded-xl p-6">
-            <h3 class="text-lg font-semibold text-dark-900 dark:text-dark-50 mb-4">Top Templates by Revenue</h3>
+            <h3 class="text-lg font-semibold text-dark-900 dark:text-dark-50 mb-4">{{ __('pages.ri_top_templates_title') }}</h3>
 
             @if (count($this->templatePerformance) > 0)
                 <div class="space-y-3">
@@ -128,7 +131,7 @@
                                     Rp {{ number_format($template['revenue'], 0, ',', '.') }}
                                 </div>
                                 <div class="text-xs text-dark-600 dark:text-dark-400">
-                                    {{ $template['count'] }} invoices
+                                    {{ $template['count'] }} {{ __('pages.ri_invoices_unit') }}
                                 </div>
                             </div>
                         </div>
@@ -137,14 +140,14 @@
             @else
                 <div class="text-center py-8 text-dark-600 dark:text-dark-400">
                     <x-icon name="document-text" class="w-12 h-12 mx-auto mb-2 opacity-50" />
-                    <p>No template data available</p>
+                    <p>{{ __('pages.ri_no_template_data') }}</p>
                 </div>
             @endif
         </div>
 
         <!-- Invoice Status Breakdown -->
         <div class="bg-white dark:bg-dark-800 border border-zinc-200 dark:border-dark-600 rounded-xl p-6">
-            <h3 class="text-lg font-semibold text-dark-900 dark:text-dark-50 mb-4">Invoice Status Breakdown</h3>
+            <h3 class="text-lg font-semibold text-dark-900 dark:text-dark-50 mb-4">{{ __('pages.ri_status_breakdown_title') }}</h3>
 
             <div class="space-y-4">
                 <!-- Published -->
@@ -153,19 +156,19 @@
                     <div class="flex justify-between items-center mb-2">
                         <div class="flex items-center gap-2">
                             <x-icon name="check-circle" class="w-5 h-5 text-green-600 dark:text-green-400" />
-                            <span class="font-medium text-green-800 dark:text-green-200">Published</span>
+                            <span class="font-medium text-green-800 dark:text-green-200">{{ __('pages.ri_published_label') }}</span>
                         </div>
                         <x-badge :text="number_format($this->statusBreakdown['published']['percentage'], 1) . '%'" color="green" />
                     </div>
                     <div class="grid grid-cols-2 gap-4 text-sm">
                         <div>
-                            <div class="text-green-600 dark:text-green-400">Count</div>
+                            <div class="text-green-600 dark:text-green-400">{{ __('pages.ri_count_label') }}</div>
                             <div class="font-bold text-green-800 dark:text-green-200">
                                 {{ number_format($this->statusBreakdown['published']['count']) }}
                             </div>
                         </div>
                         <div>
-                            <div class="text-green-600 dark:text-green-400">Revenue</div>
+                            <div class="text-green-600 dark:text-green-400">{{ __('pages.ri_revenue_label') }}</div>
                             <div class="font-bold text-green-800 dark:text-green-200">
                                 Rp {{ number_format($this->statusBreakdown['published']['revenue'], 0, ',', '.') }}
                             </div>
@@ -179,19 +182,19 @@
                     <div class="flex justify-between items-center mb-2">
                         <div class="flex items-center gap-2">
                             <x-icon name="clock" class="w-5 h-5 text-amber-600 dark:text-amber-400" />
-                            <span class="font-medium text-amber-800 dark:text-amber-200">Draft</span>
+                            <span class="font-medium text-amber-800 dark:text-amber-200">{{ __('pages.ri_draft_label') }}</span>
                         </div>
                         <x-badge :text="number_format($this->statusBreakdown['draft']['percentage'], 1) . '%'" color="amber" />
                     </div>
                     <div class="grid grid-cols-2 gap-4 text-sm">
                         <div>
-                            <div class="text-amber-600 dark:text-amber-400">Count</div>
+                            <div class="text-amber-600 dark:text-amber-400">{{ __('pages.ri_count_label') }}</div>
                             <div class="font-bold text-amber-800 dark:text-amber-200">
                                 {{ number_format($this->statusBreakdown['draft']['count']) }}
                             </div>
                         </div>
                         <div>
-                            <div class="text-amber-600 dark:text-amber-400">Potential Revenue</div>
+                            <div class="text-amber-600 dark:text-amber-400">{{ __('pages.ri_potential_revenue_label') }}</div>
                             <div class="font-bold text-amber-800 dark:text-amber-200">
                                 Rp {{ number_format($this->statusBreakdown['draft']['revenue'], 0, ',', '.') }}
                             </div>
@@ -202,10 +205,10 @@
                 <!-- Total Summary -->
                 <div class="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
                     <div class="flex justify-between items-center">
-                        <span class="font-medium text-blue-800 dark:text-blue-200">Total</span>
+                        <span class="font-medium text-blue-800 dark:text-blue-200">{{ __('pages.ri_total_label') }}</span>
                         <div class="text-right">
                             <div class="font-bold text-blue-800 dark:text-blue-200">
-                                {{ number_format($this->statusBreakdown['total']['count']) }} invoices
+                                {{ number_format($this->statusBreakdown['total']['count']) }} {{ __('pages.ri_invoices_unit') }}
                             </div>
                             <div class="text-sm text-blue-600 dark:text-blue-400">
                                 Rp {{ number_format($this->statusBreakdown['total']['revenue'], 0, ',', '.') }}

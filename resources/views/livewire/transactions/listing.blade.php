@@ -7,43 +7,43 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
                 {{-- Bank Account --}}
                 <div class="sm:col-span-1">
-                    <x-select.styled wire:model.live="account_id" label="Rekening" :disabled="$constrainedBankAccountId !== null" :options="$this->accounts
+                    <x-select.styled wire:model.live="account_id" :label="__('pages.account_filter_label')" :disabled="$constrainedBankAccountId !== null" :options="$this->accounts
                         ->map(
                             fn($account) => [
                                 'label' => $account->account_name,
                                 'value' => $account->id,
                             ],
                         )
-                        ->prepend(['label' => 'Semua Rekening', 'value' => ''])
+                        ->prepend(['label' => __('pages.all_accounts_placeholder'), 'value' => ''])
                         ->toArray()"
-                        placeholder="Filter rekening..." />
+                        :placeholder="__('pages.search_account_placeholder')" />
                 </div>
 
                 {{-- Transaction Type --}}
                 <div class="sm:col-span-1">
-                    <x-select.styled wire:model.live="transaction_type" label="Jenis" :options="[
-                        ['label' => 'Semua Jenis', 'value' => ''],
-                        ['label' => 'Pemasukan', 'value' => 'credit'],
-                        ['label' => 'Pengeluaran', 'value' => 'debit'],
+                    <x-select.styled wire:model.live="transaction_type" :label="__('pages.transaction_type_filter_label')" :options="[
+                        ['label' => __('pages.all_types_placeholder'), 'value' => ''],
+                        ['label' => __('pages.income_option'), 'value' => 'credit'],
+                        ['label' => __('pages.expense_option'), 'value' => 'debit'],
                     ]"
-                        placeholder="Filter jenis..." />
+                        :placeholder="__('pages.search_type_placeholder')" />
                 </div>
 
                 {{-- Category Filter --}}
                 <div class="sm:col-span-1">
-                    <x-select.styled wire:model.live="category_id" :options="$this->categories" label="Kategori"
-                        placeholder="Filter kategori..." searchable />
+                    <x-select.styled wire:model.live="category_id" :options="$this->categories" :label="__('pages.category_filter_label')"
+                        :placeholder="__('pages.search_category_placeholder')" searchable />
                 </div>
 
                 {{-- Month Picker --}}
                 <div class="sm:col-span-1">
-                    <x-date month-year-only wire:model.live="selected_month" label="Bulan"
-                        placeholder="Pilih bulan..." />
+                    <x-date month-year-only wire:model.live="selected_month" :label="__('pages.month_filter_label')"
+                        :placeholder="__('pages.select_month_placeholder')" />
                 </div>
 
                 {{-- Date Range --}}
                 <div class="sm:col-span-1">
-                    <x-date range wire:model.live="date_range" label="Range Tanggal" placeholder="Pilih range..." />
+                    <x-date range wire:model.live="date_range" :label="__('pages.date_range_filter_label')" :placeholder="__('pages.select_range_placeholder')" />
                 </div>
             </div>
 
@@ -53,7 +53,7 @@
                 <div class="flex flex-col sm:flex-row sm:items-center gap-3 flex-1">
                     {{-- Search Field --}}
                     <div class="w-full sm:w-64">
-                        <x-input wire:model.live.debounce.300ms="search" placeholder="Cari transaksi..."
+                        <x-input wire:model.live.debounce.300ms="search" :placeholder="__('pages.search_transaction_placeholder')"
                             icon="magnifying-glass" class="h-8" />
                     </div>
                     {{-- Filter Status --}}
@@ -72,12 +72,11 @@
 
                     <div class="flex items-center gap-3">
                         @if ($activeFilters > 0)
-                            <x-badge text="{{ $activeFilters }} filter aktif" color="primary" size="sm" />
+                            <x-badge :text="__('pages.filters_active_count', ['count' => $activeFilters])" color="primary" size="sm" />
                         @endif
 
                         <div class="text-sm text-gray-500 dark:text-gray-400">
-                            <span class="hidden sm:inline">Menampilkan </span>{{ $this->transactions->count() }}
-                            <span class="hidden sm:inline">dari {{ $this->transactions->total() }}</span> transaksi
+                            <span class="hidden sm:inline">{{ __('pages.showing_from') }}</span>{{ $this->transactions->count() }}<span class="hidden sm:inline">{{ __('pages.showing_of') }}{{ $this->transactions->total() }}</span>{{ __('pages.transactions_unit') }}
                         </div>
                     </div>
                 </div>
@@ -97,7 +96,7 @@
                         class="w-5 h-5 {{ $row->transaction_type === 'credit' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }}" />
                 </div>
                 <div>
-                    <p class="font-medium text-gray-900 dark:text-gray-50">{{ $row->description ?: 'No description' }}</p>
+                    <p class="font-medium text-gray-900 dark:text-gray-50">{{ $row->description ?: __('pages.no_description') }}</p>
                     @if ($row->reference_number)
                         <p class="text-xs text-gray-500 dark:text-gray-400 font-mono">{{ $row->reference_number }}</p>
                     @endif
@@ -133,7 +132,7 @@
                     <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ $row->category->parent->label }}</p>
                 @endif
             @else
-                <x-badge text="Uncategorized" color="gray" size="sm" />
+                <x-badge :text="__('pages.uncategorized')" color="gray" size="sm" />
             @endif
         @endinteract
 
@@ -157,7 +156,7 @@
                     {{ $row->transaction_type === 'credit' ? '+' : '-' }}Rp {{ number_format($row->amount, 0, ',', '.') }}
                 </p>
                 <p class="text-xs text-gray-500 dark:text-gray-400">
-                    {{ $row->transaction_type === 'credit' ? 'Pemasukan' : 'Pengeluaran' }}
+                    {{ $row->transaction_type === 'credit' ? __('pages.income_label') : __('pages.expense_label') }}
                 </p>
             </div>
         @endinteract
@@ -188,20 +187,19 @@
                     </div>
                     <div>
                         <div class="font-semibold text-gray-900 dark:text-gray-50"
-                            x-text="`${show.length} transaksi dipilih`"></div>
-                        <div class="text-xs text-gray-500 dark:text-gray-400">Pilih aksi untuk transaksi yang dipilih
-                        </div>
+                            x-text="`${show.length}{{ __('pages.bulk_selected') }}`"></div>
+                        <div class="text-xs text-gray-500 dark:text-gray-400">{{ __('pages.bulk_action_hint') }}</div>
                     </div>
                 </div>
                 {{-- Actions --}}
                 <div class="flex items-center gap-2 justify-end">
                     <x-button wire:click="confirmBulkDelete" size="sm" color="red" icon="trash"
                         class="whitespace-nowrap">
-                        Hapus
+                        {{ __('pages.bulk_delete_btn') }}
                     </x-button>
                     <x-button wire:click="$set('selected', [])" size="sm" color="gray" icon="x-mark"
                         class="whitespace-nowrap">
-                        Batal
+                        {{ __('pages.bulk_cancel_btn') }}
                     </x-button>
                 </div>
             </div>
@@ -209,11 +207,11 @@
     </div>
 
     {{-- Attachment Modal dengan Zoom --}}
-    <x-modal title="Bukti Transaksi" wire="attachmentModal" center size="4xl">
+    <x-modal :title="__('pages.transaction_attachment_title')" wire="attachmentModal" center size="4xl">
         @if ($selectedTransaction && $selectedTransaction->attachment_path)
             <div class="text-center space-y-4">
                 <h3 class="text-lg font-semibold">{{ $selectedTransaction->description }}</h3>
-                <p class="text-sm text-gray-500">{{ $selectedTransaction->attachment_name ?? 'File attachment' }}</p>
+                <p class="text-sm text-gray-500">{{ $selectedTransaction->attachment_name ?? __('pages.transaction_attachment_file') }}</p>
 
                 @php
                     $extension = pathinfo($selectedTransaction->attachment_path, PATHINFO_EXTENSION);
@@ -237,7 +235,7 @@
 
                         {{-- Image with Pan & Zoom --}}
                         <img src="{{ asset('storage/' . $selectedTransaction->attachment_path) }}"
-                            alt="Bukti Transaksi"
+                            alt="{{ __('pages.transaction_attachment_title') }}"
                             class="absolute inset-0 w-full h-full object-contain cursor-move select-none"
                             :style="`transform: scale(${scale}) translate(${translateX}px, ${translateY}px); transition: ${isDragging ? 'none' : 'transform 0.2s'}`"
                             @mousedown="isDragging = true; startX = $event.clientX - translateX; startY = $event.clientY - translateY"
@@ -261,10 +259,10 @@
                 @else
                     <div class="text-center py-12">
                         <x-icon name="document" class="w-16 h-16 mx-auto text-gray-400 mb-4" />
-                        <p class="text-gray-500">Preview tidak tersedia untuk file ini</p>
+                        <p class="text-gray-500">{{ __('pages.transaction_attachment_no_preview') }}</p>
                         <a href="{{ asset('storage/' . $selectedTransaction->attachment_path) }}" target="_blank"
                             class="text-blue-600 hover:text-blue-800 underline">
-                            Download file
+                            {{ __('pages.transaction_attachment_download') }}
                         </a>
                     </div>
                 @endif
@@ -272,7 +270,7 @@
         @endif
 
         <x-slot:footer>
-            <x-button wire:click="$set('attachmentModal', false)" color="gray">Tutup</x-button>
+            <x-button wire:click="$set('attachmentModal', false)" color="gray">{{ __('pages.transaction_attachment_close') }}</x-button>
         </x-slot:footer>
     </x-modal>
 

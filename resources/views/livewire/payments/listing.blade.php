@@ -61,11 +61,11 @@
                 {{-- Export Actions --}}
                 <div class="flex items-end gap-2">
                     <x-button wire:click="exportExcel" size="sm" color="green" icon="document-text" outline>
-                        <span class="hidden sm:inline">Excel</span>
-                        <span class="sm:hidden">XLS</span>
+                        <span class="hidden sm:inline">{{ __('pages.export_excel') }}</span>
+                        <span class="sm:hidden">{{ __('pages.export_excel_short') }}</span>
                     </x-button>
                     <x-button wire:click="exportPdf" size="sm" color="red" icon="document" outline>
-                        PDF
+                        {{ __('pages.export_pdf') }}
                     </x-button>
                 </div>
             </div>
@@ -119,7 +119,7 @@
                     {{ $row->invoice_number }}
                 </div>
                 <div class="text-xs text-dark-500 dark:text-dark-400">
-                    Status:
+                    {{ __('pages.status_prefix') }}
                     @php
                         $statusConfig = [
                             'paid' => ['text' => __('pages.status_paid'), 'color' => 'green'],
@@ -167,7 +167,7 @@
                 </div>
                 @if ($row->reference_number)
                     <div class="text-xs text-dark-500 dark:text-dark-400 font-mono">
-                        Ref: {{ $row->reference_number }}
+                        {{ __('pages.ref_prefix') }} {{ $row->reference_number }}
                     </div>
                 @endif
             </div>
