@@ -3,7 +3,7 @@
     <button @click="show = !show"
         x-ref="button"
         type="button"
-        class="relative p-2 text-dark-500 hover:text-dark-700 dark:text-dark-400 dark:hover:text-dark-200 transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-dark-700">
+        class="relative pb-1 px-2 text-dark-500 hover:text-dark-700 dark:text-dark-400 dark:hover:text-dark-200 transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-dark-700">
         <span class="text-xl">{{ $availableLocales[$currentLocale]['flag'] }}</span>
     </button>
 
