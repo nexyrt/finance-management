@@ -519,6 +519,55 @@ return [
     'transfers' => 'Transfer',
     'adjustments' => 'Penyesuaian',
 
+    // Cash Flow - Page Labels
+    'period'                     => 'Periode',
+    'all_time'                   => 'Semua Waktu',
+    'expenses_description'       => 'Kelola transaksi pengeluaran operasional',
+    'income_description'         => 'Kelola pemasukan dari pembayaran invoice dan transaksi langsung',
+    'transfers_and_adjustments'  => 'Transfer & Penyesuaian',
+    'transfers_description'      => 'Kelola transfer antar rekening dan penyesuaian saldo',
+
+    // Cash Flow - Stats Cards
+    'total_transfers'            => 'Total Transfer',
+    'total_admin_fees'           => 'Total Biaya Admin',
+    'avg_per_transaction'        => 'Rata-rata per Transaksi',
+    'total_debit'                => 'Total Debit',
+    'total_credit'               => 'Total Credit',
+    'net_adjustment'             => 'Net Adjustment',
+    'net_transfer'               => 'Transfer bersih',
+
+    // Cash Flow - Period Filters (Overview)
+    'last_3_months'              => '3 Bulan Terakhir',
+    'weekly'                     => 'Mingguan',
+    'three_months'               => '3 Bulan',
+
+    // Cash Flow - Charts
+    'income_vs_expense_trend'    => 'Income vs Expense Trend',
+    'top5_expense_categories'    => 'Top 5 Expense Categories',
+    'no_expense_data'            => 'Tidak ada data pengeluaran tersedia',
+
+    // Cash Flow - Source Types
+    'direct'                     => 'Langsung',
+
+    // Cash Flow - Filter Placeholders
+    'select_date_range'          => 'Pilih range tanggal...',
+    'all_banks'                  => 'Semua bank...',
+    'all_categories'             => 'Semua kategori...',
+    'all_clients'                => 'Semua klien...',
+    'search_data'                => 'Cari data...',
+
+    // Cash Flow - Misc
+    'has_attachment'             => 'Ada lampiran',
+    'new_transfer'               => 'Transfer Baru',
+    'debit_negative'             => 'Debit (-)',
+    'credit_positive'            => 'Credit (+)',
+
+    // Cash Flow - Bulk Actions Labels
+    'expenses_selected'          => 'pengeluaran dipilih',
+    'items_selected'             => 'item dipilih',
+    'transfers_selected'         => 'transfer dipilih',
+    'adjustments_selected'       => 'penyesuaian dipilih',
+
     // Transactions - Create Modal
     'add_transaction_title' => 'Tambah Transaksi',
     'add_transaction_desc' => 'Catat transaksi masuk atau keluar',
@@ -617,6 +666,7 @@ return [
     'transaction_attachment_close' => 'Tutup',
 
     // Transactions - Categorize Modal
+    'categorize' => 'Kategorikan',
     'categorize_transaction_title' => 'Kategorikan Transaksi',
     'categorize_bulk_title' => 'Kategorikan :count Transaksi',
     'categorize_desc' => 'Pilih kategori yang sesuai untuk transaksi ini',
@@ -1340,4 +1390,63 @@ return [
     // Client Types
     'individual' => 'Perorangan',
     'company' => 'Perusahaan',
+
+    // Cash Flow - Table Headers (used in PHP Livewire components)
+    'col_date'           => 'Tanggal',
+    'col_category'       => 'Kategori',
+    'col_description'    => 'Deskripsi',
+    'col_bank'           => 'Bank',
+    'col_amount'         => 'Jumlah',
+    'col_action'         => 'Aksi',
+    'col_source'         => 'Sumber',
+    'col_client_desc'    => 'Klien/Deskripsi',
+    'col_from'           => 'Dari',
+    'col_to'             => 'Ke',
+    'col_transfer_amount'=> 'Jumlah Transfer',
+    'col_total_debit'    => 'Total Debit',
+    'col_type'           => 'Tipe',
+
+    // Cash Flow - Toast & Dialog Messages
+    'no_data_to_export'          => 'Tidak ada data untuk diekspor',
+    'select_data_to_export'      => 'Pilih data yang ingin diekspor',
+    'select_transactions_to_cat' => 'Pilih transaksi yang ingin dikategorikan',
+    'export_success'             => ':count item berhasil diekspor',
+    'bulk_delete_expenses'       => 'Hapus :count pengeluaran?',
+    'bulk_delete_income'         => 'Hapus :count item?',
+    'bulk_delete_transfers'      => 'Hapus :count transfer?',
+    'bulk_delete_adjustments'    => 'Hapus :count penyesuaian?',
+    'bulk_delete_irreversible'   => 'Data yang dihapus tidak dapat dikembalikan.',
+    'transfer_pair_deleted'      => 'Transfer dan pasangannya akan dihapus.',
+    'bulk_delete_expenses_done'  => ':count pengeluaran telah dihapus',
+    'bulk_delete_income_done'    => ':count item telah dihapus',
+    'bulk_delete_transfers_done' => ':count transfer telah dihapus',
+    'bulk_delete_adj_done'       => ':count penyesuaian telah dihapus',
+    'attention'                  => 'Perhatian',
+
+    // Cash Flow - Excel Export Headings
+    'excel_date'            => 'Tanggal',
+    'excel_category'        => 'Kategori',
+    'excel_description'     => 'Deskripsi',
+    'excel_bank'            => 'Bank',
+    'excel_reference'       => 'Referensi',
+    'excel_amount'          => 'Jumlah',
+    'excel_source'          => 'Sumber',
+    'excel_invoice'         => 'Invoice',
+    'excel_client'          => 'Klien',
+    'excel_from_bank'       => 'Dari Bank',
+    'excel_to_bank'         => 'Ke Bank',
+    'excel_transfer_amount' => 'Jumlah Transfer',
+    'excel_admin_fee'       => 'Biaya Admin',
+    'excel_total_debit'     => 'Total Debit',
+    'excel_type'            => 'Tipe',
+
+    // Cash Flow - Uncategorized label
+    'uncategorized_warning' => '⚠ Belum Dikategorikan',
+    'uncategorized'         => 'Belum Dikategorikan',
+
+    // Cash Flow - Filter Labels
+    'filter_active'    => 'filter aktif',
+    'showing'          => 'Menampilkan',
+    'of_results'       => 'dari',
+    'results'          => 'hasil',
 ];

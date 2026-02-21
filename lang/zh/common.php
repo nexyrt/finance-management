@@ -146,9 +146,11 @@ return [
 
     // Notifications
     'notifications' => '通知',
+    'all_notifications' => '所有通知',
     'mark_all_as_read' => '全部标记为已读',
     'no_notifications' => '无通知',
     'view_all_notifications' => '查看所有通知',
+    'load_more' => '加载更多',
 
     // Authentication
     'login' => '登录',

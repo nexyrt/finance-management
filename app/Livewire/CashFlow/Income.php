@@ -30,15 +30,20 @@ class Income extends Component
     // Sorting
     public array $sort = ['column' => 'date', 'direction' => 'desc'];
 
-    // Headers for x-table
-    public array $headers = [
-        ['index' => 'date', 'label' => 'Tanggal'],
-        ['index' => 'source_type', 'label' => 'Sumber', 'sortable' => false],
-        ['index' => 'client_description', 'label' => 'Klien/Deskripsi', 'sortable' => false],
-        ['index' => 'category_label', 'label' => 'Kategori', 'sortable' => false],
-        ['index' => 'amount', 'label' => 'Jumlah'],
-        ['index' => 'action', 'label' => 'Aksi', 'sortable' => false],
-    ];
+    // Headers — populated in mount() so __() translation works
+    public array $headers = [];
+
+    public function mount(): void
+    {
+        $this->headers = [
+            ['index' => 'date', 'label' => __('pages.col_date')],
+            ['index' => 'source_type', 'label' => __('pages.col_source'), 'sortable' => false],
+            ['index' => 'client_description', 'label' => __('pages.col_client_desc'), 'sortable' => false],
+            ['index' => 'category_label', 'label' => __('pages.col_category'), 'sortable' => false],
+            ['index' => 'amount', 'label' => __('pages.col_amount')],
+            ['index' => 'action', 'label' => __('pages.col_action'), 'sortable' => false],
+        ];
+    }
 
     #[On('transaction-created')]
     #[On('payment-updated')]
@@ -303,19 +308,33 @@ class Income extends Component
 
         if ($data->isEmpty()) {
             $this->toast()
-                ->warning('Perhatian', 'Tidak ada data untuk diekspor')
+                ->warning(__('common.warning'), __('pages.no_data_to_export'))
                 ->send();
             return;
         }
 
         $filename = 'pemasukan_' . now()->format('Y-m-d_His') . '.xlsx';
 
-        return Excel::download(new class ($data) implements \Maatwebsite\Excel\Concerns\FromCollection, \Maatwebsite\Excel\Concerns\WithHeadings, \Maatwebsite\Excel\Concerns\WithMapping {
-            private $data;
+        $headings = [
+            __('pages.excel_date'),
+            __('pages.excel_source'),
+            __('pages.excel_invoice'),
+            __('pages.excel_client'),
+            __('pages.excel_description'),
+            __('pages.excel_category'),
+            __('pages.excel_bank'),
+            __('pages.excel_reference'),
+            __('pages.excel_amount'),
+        ];
 
-            public function __construct($data)
+        return Excel::download(new class ($data, $headings) implements \Maatwebsite\Excel\Concerns\FromCollection, \Maatwebsite\Excel\Concerns\WithHeadings, \Maatwebsite\Excel\Concerns\WithMapping {
+            private $data;
+            private array $headings;
+
+            public function __construct($data, array $headings)
             {
                 $this->data = $data;
+                $this->headings = $headings;
             }
 
             public function collection()
@@ -325,17 +344,7 @@ class Income extends Component
 
             public function headings(): array
             {
-                return [
-                    'Tanggal',
-                    'Sumber',
-                    'Invoice',
-                    'Klien',
-                    'Deskripsi',
-                    'Kategori',
-                    'Bank',
-                    'Referensi',
-                    'Jumlah'
-                ];
+                return $this->headings;
             }
 
             public function map($row): array
@@ -372,7 +381,7 @@ class Income extends Component
     {
         if (empty($this->selected)) {
             $this->toast()
-                ->warning('Perhatian', 'Pilih data yang ingin diekspor')
+                ->warning(__('common.warning'), __('pages.select_data_to_export'))
                 ->send();
             return;
         }
@@ -420,15 +429,29 @@ class Income extends Component
         $filename = 'pemasukan_selected_' . now()->format('Y-m-d_His') . '.xlsx';
 
         $this->toast()
-            ->success('Berhasil', count($this->selected) . ' item berhasil diekspor')
+            ->success(__('common.success'), __('pages.export_success', ['count' => count($this->selected)]))
             ->send();
 
-        return Excel::download(new class ($data) implements \Maatwebsite\Excel\Concerns\FromCollection, \Maatwebsite\Excel\Concerns\WithHeadings, \Maatwebsite\Excel\Concerns\WithMapping {
-            private $data;
+        $headings = [
+            __('pages.excel_date'),
+            __('pages.excel_source'),
+            __('pages.excel_invoice'),
+            __('pages.excel_client'),
+            __('pages.excel_description'),
+            __('pages.excel_category'),
+            __('pages.excel_bank'),
+            __('pages.excel_reference'),
+            __('pages.excel_amount'),
+        ];
 
-            public function __construct($data)
+        return Excel::download(new class ($data, $headings) implements \Maatwebsite\Excel\Concerns\FromCollection, \Maatwebsite\Excel\Concerns\WithHeadings, \Maatwebsite\Excel\Concerns\WithMapping {
+            private $data;
+            private array $headings;
+
+            public function __construct($data, array $headings)
             {
                 $this->data = $data;
+                $this->headings = $headings;
             }
 
             public function collection()
@@ -438,17 +461,7 @@ class Income extends Component
 
             public function headings(): array
             {
-                return [
-                    'Tanggal',
-                    'Sumber',
-                    'Invoice',
-                    'Klien',
-                    'Deskripsi',
-                    'Kategori',
-                    'Bank',
-                    'Referensi',
-                    'Jumlah'
-                ];
+                return $this->headings;
             }
 
             public function map($row): array
@@ -514,7 +527,7 @@ class Income extends Component
         }
 
         $this->dialog()
-            ->question('Hapus ' . count($this->selected) . ' item?', 'Data yang dihapus tidak dapat dikembalikan.')
+            ->question(__('pages.bulk_delete_income', ['count' => count($this->selected)]), __('pages.bulk_delete_irreversible'))
             ->confirm(method: 'executeBulkDelete')
             ->cancel()
             ->send();
@@ -540,7 +553,7 @@ class Income extends Component
         $this->resetPage();
 
         $this->toast()
-            ->success('Berhasil', $deleted . ' item telah dihapus')
+            ->success(__('common.success'), __('pages.bulk_delete_income_done', ['count' => $deleted]))
             ->send();
     }
 

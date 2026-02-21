@@ -141,9 +141,11 @@ return [
 
     // Notifications
     'notifications' => 'Notifications',
+    'all_notifications' => 'All Notifications',
     'mark_all_as_read' => 'Mark all as read',
     'no_notifications' => 'No notifications',
     'view_all_notifications' => 'View all notifications',
+    'load_more' => 'Load More',
 
     // Authentication
     'login' => 'Login',

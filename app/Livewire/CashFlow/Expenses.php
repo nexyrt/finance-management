@@ -30,15 +30,20 @@ class Expenses extends Component
     // Sorting
     public array $sort = ['column' => 'transaction_date', 'direction' => 'desc'];
 
-    // Headers
-    public array $headers = [
-        ['index' => 'transaction_date', 'label' => 'Tanggal'],
-        ['index' => 'category', 'label' => 'Kategori', 'sortable' => false],
-        ['index' => 'description', 'label' => 'Deskripsi'],
-        ['index' => 'bank_account', 'label' => 'Bank', 'sortable' => false],
-        ['index' => 'amount', 'label' => 'Jumlah'],
-        ['index' => 'action', 'label' => 'Aksi', 'sortable' => false],
-    ];
+    // Headers — populated in mount() so __() translation works
+    public array $headers = [];
+
+    public function mount(): void
+    {
+        $this->headers = [
+            ['index' => 'transaction_date', 'label' => __('pages.col_date')],
+            ['index' => 'category', 'label' => __('pages.col_category'), 'sortable' => false],
+            ['index' => 'description', 'label' => __('pages.col_description')],
+            ['index' => 'bank_account', 'label' => __('pages.col_bank'), 'sortable' => false],
+            ['index' => 'amount', 'label' => __('pages.col_amount')],
+            ['index' => 'action', 'label' => __('pages.col_action'), 'sortable' => false],
+        ];
+    }
 
     #[On('transaction-created')]
     #[On('transaction-updated')]
@@ -75,7 +80,7 @@ class Expenses extends Component
             ->toArray();
 
         array_unshift($categories, [
-            'label' => '⚠ Belum Dikategorikan',
+            'label' => __('pages.uncategorized_warning'),
             'value' => 'uncategorized'
         ]);
 
@@ -189,22 +194,36 @@ class Expenses extends Component
 
         if ($data->isEmpty()) {
             $this->toast()
-                ->warning('Perhatian', 'Tidak ada data untuk diekspor')
+                ->warning(__('common.warning'), __('pages.no_data_to_export'))
                 ->send();
             return;
         }
 
         $filename = 'pengeluaran_' . now()->format('Y-m-d_His') . '.xlsx';
 
-        return Excel::download(new class ($data) implements
+        $headings = [
+            __('pages.excel_date'),
+            __('pages.excel_category'),
+            __('pages.excel_description'),
+            __('pages.excel_bank'),
+            __('pages.excel_reference'),
+            __('pages.excel_amount'),
+        ];
+        $uncategorized = __('pages.uncategorized');
+
+        return Excel::download(new class ($data, $headings, $uncategorized) implements
             \Maatwebsite\Excel\Concerns\FromCollection,
             \Maatwebsite\Excel\Concerns\WithHeadings,
             \Maatwebsite\Excel\Concerns\WithMapping {
             private $data;
+            private array $headings;
+            private string $uncategorized;
 
-            public function __construct($data)
+            public function __construct($data, array $headings, string $uncategorized)
             {
                 $this->data = $data;
+                $this->headings = $headings;
+                $this->uncategorized = $uncategorized;
             }
 
             public function collection()
@@ -214,14 +233,14 @@ class Expenses extends Component
 
             public function headings(): array
             {
-                return ['Tanggal', 'Kategori', 'Deskripsi', 'Bank', 'Referensi', 'Jumlah'];
+                return $this->headings;
             }
 
             public function map($row): array
             {
                 return [
                     \Carbon\Carbon::parse($row->transaction_date)->format('d/m/Y'),
-                    $row->category->full_path ?? 'Belum Dikategorikan',
+                    $row->category->full_path ?? $this->uncategorized,
                     $row->description,
                     $row->bankAccount->bank_name ?? '-',
                     $row->reference_number ?? '-',
@@ -248,7 +267,7 @@ class Expenses extends Component
     {
         if (empty($this->selected)) {
             $this->toast()
-                ->warning('Perhatian', 'Pilih data yang ingin diekspor')
+                ->warning(__('common.warning'), __('pages.select_data_to_export'))
                 ->send();
             return;
         }
@@ -261,18 +280,32 @@ class Expenses extends Component
         $filename = 'pengeluaran_selected_' . now()->format('Y-m-d_His') . '.xlsx';
 
         $this->toast()
-            ->success('Berhasil', count($this->selected) . ' item berhasil diekspor')
+            ->success(__('common.success'), __('pages.export_success', ['count' => count($this->selected)]))
             ->send();
 
-        return Excel::download(new class ($data) implements
+        $headings = [
+            __('pages.excel_date'),
+            __('pages.excel_category'),
+            __('pages.excel_description'),
+            __('pages.excel_bank'),
+            __('pages.excel_reference'),
+            __('pages.excel_amount'),
+        ];
+        $uncategorized = __('pages.uncategorized');
+
+        return Excel::download(new class ($data, $headings, $uncategorized) implements
             \Maatwebsite\Excel\Concerns\FromCollection,
             \Maatwebsite\Excel\Concerns\WithHeadings,
             \Maatwebsite\Excel\Concerns\WithMapping {
             private $data;
+            private array $headings;
+            private string $uncategorized;
 
-            public function __construct($data)
+            public function __construct($data, array $headings, string $uncategorized)
             {
                 $this->data = $data;
+                $this->headings = $headings;
+                $this->uncategorized = $uncategorized;
             }
 
             public function collection()
@@ -282,14 +315,14 @@ class Expenses extends Component
 
             public function headings(): array
             {
-                return ['Tanggal', 'Kategori', 'Deskripsi', 'Bank', 'Referensi', 'Jumlah'];
+                return $this->headings;
             }
 
             public function map($row): array
             {
                 return [
                     \Carbon\Carbon::parse($row->transaction_date)->format('d/m/Y'),
-                    $row->category->full_path ?? 'Belum Dikategorikan',
+                    $row->category->full_path ?? $this->uncategorized,
                     $row->description,
                     $row->bankAccount->bank_name ?? '-',
                     $row->reference_number ?? '-',
@@ -303,7 +336,7 @@ class Expenses extends Component
     {
         if (empty($this->selected)) {
             $this->toast()
-                ->warning('Perhatian', 'Pilih transaksi yang ingin dikategorikan')
+                ->warning(__('common.warning'), __('pages.select_transactions_to_cat'))
                 ->send();
             return;
         }
@@ -318,7 +351,7 @@ class Expenses extends Component
         }
 
         $this->dialog()
-            ->question('Hapus ' . count($this->selected) . ' pengeluaran?', 'Data yang dihapus tidak dapat dikembalikan.')
+            ->question(__('pages.bulk_delete_expenses', ['count' => count($this->selected)]), __('pages.bulk_delete_irreversible'))
             ->confirm(method: 'executeBulkDelete')
             ->cancel()
             ->send();
@@ -345,7 +378,7 @@ class Expenses extends Component
         $this->resetPage();
 
         $this->toast()
-            ->success('Berhasil', "{$count} pengeluaran telah dihapus")
+            ->success(__('common.success'), __('pages.bulk_delete_expenses_done', ['count' => $count]))
             ->send();
     }
 

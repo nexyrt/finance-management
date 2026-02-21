@@ -1,4 +1,4 @@
-<x-modal wire title="Lampiran" size="3xl" center>
+<x-modal wire title="{{ __('common.attachment') }}" size="3xl" center>
     @if ($attachment)
         <x-slot:title>
             <div class="flex items-center gap-4">
@@ -6,9 +6,9 @@
                     <x-icon name="paper-clip" class="w-6 h-6 text-blue-600 dark:text-blue-400" />
                 </div>
                 <div>
-                    <h3 class="text-xl font-bold text-dark-900 dark:text-dark-50">Lampiran</h3>
+                    <h3 class="text-xl font-bold text-dark-900 dark:text-dark-50">{{ __('common.attachment') }}</h3>
                     <p class="text-sm text-dark-600 dark:text-dark-400">
-                        {{ $sourceType === 'payment' ? 'Payment' : 'Transaction' }} -
+                        {{ $sourceType === 'payment' ? __('common.payments') : __('common.transactions') }} -
                         {{ \Carbon\Carbon::parse($attachment->payment_date ?? $attachment->transaction_date)->format('d M Y') }}
                     </p>
                 </div>
@@ -23,11 +23,11 @@
                         {{ $attachment->attachment_name }}
                     </div>
                     <div class="text-xs text-dark-500 dark:text-dark-400 mt-1">
-                        Tipe: {{ strtoupper($attachment->attachment_type) }}
+                        {{ __('pages.type') }}: {{ strtoupper($attachment->attachment_type) }}
                     </div>
                 </div>
                 <x-button wire:click="download" color="blue" size="sm" icon="arrow-down-tray">
-                    Download
+                    {{ __('common.download') }}
                 </x-button>
             </div>
         </div>
@@ -48,10 +48,10 @@
                         <x-icon name="document" class="w-8 h-8 text-zinc-500 dark:text-dark-400" />
                     </div>
                     <p class="text-dark-600 dark:text-dark-400 mb-4">
-                        Preview tidak tersedia untuk tipe file ini
+                        {{ __('pages.transaction_attachment_no_preview') }}
                     </p>
                     <x-button wire:click="download" color="blue" icon="arrow-down-tray">
-                        Download File
+                        {{ __('common.download') }}
                     </x-button>
                 </div>
             @endif
@@ -60,7 +60,7 @@
         {{-- Additional Info --}}
         <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div class="p-3 bg-zinc-50 dark:bg-dark-700 rounded-lg">
-                <div class="text-xs text-dark-500 dark:text-dark-400 mb-1">Jumlah</div>
+                <div class="text-xs text-dark-500 dark:text-dark-400 mb-1">{{ __('common.amount') }}</div>
                 <div class="text-lg font-bold text-green-600 dark:text-green-400">
                     Rp {{ number_format($attachment->amount, 0, ',', '.') }}
                 </div>
@@ -68,7 +68,7 @@
 
             @if ($attachment->reference_number)
                 <div class="p-3 bg-zinc-50 dark:bg-dark-700 rounded-lg">
-                    <div class="text-xs text-dark-500 dark:text-dark-400 mb-1">Referensi</div>
+                    <div class="text-xs text-dark-500 dark:text-dark-400 mb-1">{{ __('common.reference') }}</div>
                     <div class="text-sm font-mono font-medium text-dark-900 dark:text-dark-50">
                         {{ $attachment->reference_number }}
                     </div>
@@ -80,7 +80,7 @@
     <x-slot:footer>
         <div class="flex justify-end">
             <x-button wire:click="$toggle('modal')" color="zinc">
-                Tutup
+                {{ __('common.close') }}
             </x-button>
         </div>
     </x-slot:footer>

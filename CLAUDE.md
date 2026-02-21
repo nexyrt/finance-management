@@ -15,6 +15,10 @@ File ini memberikan panduan kepada Claude Code (claude.ai/code) saat bekerja den
 - Pinjaman (Loans) & Piutang (Receivables)
 - Multi-role Permission System
 - PDF Generation dengan multiple template
+- Notification System (in-app, real-time bell + slide drawer)
+- Feedback System (bug report, feature request, dll)
+- Multi-language Support (Bahasa Indonesia & English)
+- Excel Export (Invoice & Payment)
 
 ## Common Commands
 
@@ -55,7 +59,7 @@ composer install && npm install        # Install dependencies
 
 ### Livewire-First Approach
 
-Aplikasi menggunakan **113 Livewire components** yang diorganisir berdasarkan domain bisnis dengan minimal traditional controllers.
+Aplikasi menggunakan **121 Livewire components** yang diorganisir berdasarkan domain bisnis dengan minimal traditional controllers.
 
 **Component Patterns:**
 | Pattern | Fungsi | Contoh |
@@ -1321,22 +1325,13 @@ balance = initial_balance + payments(credit) + transactions(credit) - transactio
 **Route:** `/cash-flow`
 **Components:** `app/Livewire/CashFlow/`
 
-**Tab-based Navigation:**
-
-| Tab Component | Fungsi |
-|---------------|--------|
+| Component | Fungsi |
+|-----------|--------|
 | `Index.php` | Coordinator dengan tab navigation |
 | `OverviewTab.php` | Summary cash flow (income vs expense) |
 | `IncomeTab.php` | List pemasukan dengan filter |
 | `ExpensesTab.php` | List pengeluaran dengan filter |
-| `AdjustmentsTab.php` | Penyesuaian saldo |
-| `TransfersTab.php` | Transfer antar rekening |
-
-**Supporting Components:**
-
-| Component | Fungsi |
-|-----------|--------|
-| `CreateIncome.php` | Form catat pemasukan |
+| `TransfersTab.php` | Transfer & penyesuaian antar rekening |
 | `AttachmentViewer.php` | Modal view bukti transaksi |
 
 ---
@@ -1350,9 +1345,12 @@ balance = initial_balance + payments(credit) + transactions(credit) - transactio
 | `Index.php` | Coordinator |
 | `Listing.php` | Tabel transaksi dengan filter |
 | `Create.php` | Form catat transaksi (credit/debit) |
+| `CreateIncome.php` | Form catat pemasukan (cash flow) |
+| `CreateExpense.php` | Form catat pengeluaran (cash flow) |
 | `Delete.php` | Modal hapus transaksi |
 | `Categorize.php` | Assign kategori ke transaksi |
 | `Transfer.php` | Transfer antar bank account |
+| `InlineCategoryCreate.php` | Buat kategori baru inline saat input transaksi |
 
 **Transaction Types:** `credit` (masuk) atau `debit` (keluar)
 
@@ -1429,6 +1427,70 @@ $reimbursement->recordPayment(); // Record payment
 
 ---
 
+### Fund Requests Module
+**Route:** `/fund-requests`
+**Components:** `app/Livewire/FundRequests/`
+
+**View Components (Role-based):**
+
+| Component | Fungsi |
+|-----------|--------|
+| `Index.php` | Coordinator dengan role-based tab view |
+| `AllRequests.php` | List semua request (admin/finance manager) |
+| `MyRequests.php` | List request sendiri (staff) |
+
+**CRUD Components:**
+
+| Component | Fungsi |
+|-----------|--------|
+| `Create.php` | Form buat fund request dengan items |
+| `Edit.php` | Form edit fund request (draft/rejected only) |
+| `Delete.php` | Modal konfirmasi hapus |
+| `Show.php` | Detail fund request |
+
+**Workflow Components:**
+
+| Component | Fungsi |
+|-----------|--------|
+| `Review.php` | Form approve/reject (finance manager) |
+| `Disburse.php` | Form catat pencairan dana (finance) |
+
+**Status Flow:**
+```
+draft → pending → approved → disbursed
+              ↘ rejected ↗ (bisa edit & resubmit)
+```
+
+**Priority Levels:** `urgent`, `high`, `medium`, `low`
+
+**Request Number Format:** `{sequence}/{abbreviation}/{roman_month}/{year}`
+- Contoh: `001/KSN/I/2026` (Request pertama Januari 2026)
+- Sequence reset setiap bulan, zero-padded 3 digit
+- Abbreviation dari `CompanyProfile`
+
+**Key Methods:**
+```php
+$fundRequest->submit();                          // draft → pending
+$fundRequest->approve($reviewerId, $notes);      // pending → approved
+$fundRequest->reject($reviewerId, $notes);       // pending → rejected
+$fundRequest->disburse($bankTransactionId, $date, $disbursedBy, $notes); // approved → disbursed
+$fundRequest->calculateTotalAmount();            // Recalculate dari items
+```
+
+**Permission Checks:**
+- `canEdit()` - Draft atau rejected
+- `canDelete()` - Admin selalu bisa, atau draft/rejected
+- `canSubmit()` - Draft dengan minimal 1 item dan total > 0
+- `canReview()` - Status pending
+- `canDisburse()` - Status approved
+
+**Export PDF:**
+```
+GET /fund-requests/export/pdf?month=&status=&priority=&user_id=&search=&show_requestor=
+```
+
+---
+
 ### Loans Module
 **Route:** `/loans`
 **Components:** `app/Livewire/Loans/`
@@ -1497,14 +1559,13 @@ $receivable->debtor_id = $userId              // atau $clientId
 ---
 
 ### Settings Module
-**Route:** `/settings/profile`, `/settings/password`, `/settings/appearance`, `/settings/company`
+**Route:** `/settings/profile`, `/settings/password`, `/settings/company`
 **Components:** `app/Livewire/Settings/`
 
 | Component | Fungsi |
 |-----------|--------|
 | `Profile.php` | Edit profile user |
 | `Password.php` | Ganti password |
-| `Appearance.php` | Theme settings |
 | `CompanyProfileSettings.php` | Edit company profile |
 | `DeleteUserForm.php` | Delete account |
 
@@ -1572,11 +1633,18 @@ $receivable->debtor_id = $userId              // atau $clientId
 |-----------|--------|
 | `Dashboard.php` | Main dashboard |
 | `LanguageSwitcher.php` | Toggle bahasa (id/en) |
-| `Notifications/Bell.php` | Notification dropdown |
+| `Notifications/Bell.php` | Notification bell + dropdown (header) |
+| `Notifications/Drawer.php` | Slide panel semua notifikasi (body level, dipanggil via event `open-notification-drawer`) |
 | `Actions/Logout.php` | Logout action |
 | `Admin/RoleManagement.php` | Role management page |
 | `TestingPage.php` | Testing/development page |
 | `Traits/Alert.php` | Reusable alert trait |
+
+**Notification Event Flow:**
+```
+Bell.php → dispatch('open-notification-drawer') → Drawer.php (x-slide)
+Drawer.php → dispatch('notification-read') → Bell.php (refresh badge count)
+```
 
 ---
 
@@ -1785,6 +1853,68 @@ full_path - "Parent → Child"
 
 ---
 
+### Fund Request Models
+
+#### FundRequest
+**File:** `app/Models/FundRequest.php`
+
+```php
+// Fields
+request_number, user_id, title, purpose, total_amount, priority,
+needed_by_date, attachment_path, attachment_name,
+status, reviewed_by, reviewed_at, review_notes,
+disbursed_by, disbursed_at, disbursement_date, bank_transaction_id, disbursement_notes
+
+// Relationships
+belongsTo(User) as user
+belongsTo(User, 'reviewed_by') as reviewer
+belongsTo(User, 'disbursed_by') as disburser
+belongsTo(BankTransaction)
+hasMany(FundRequestItem) as items
+
+// Status Methods
+submit()                                        // draft → pending
+approve($reviewerId, $notes)                    // pending → approved
+reject($reviewerId, $notes)                     // pending → rejected
+disburse($bankTransactionId, $date, $disbursedBy, $notes) // approved → disbursed
+calculateTotalAmount()                          // Recalculate dari sum items
+
+// Check Methods
+isDraft(), isPending(), isApproved(), isRejected(), isDisbursed()
+canEdit()       // Draft atau rejected
+canDelete($user) // Admin selalu bisa, atau draft/rejected
+canSubmit()     // Draft dengan minimal 1 item dan total > 0
+canReview()     // Pending status
+canDisburse()   // Approved status
+
+// Scopes
+forUser(), byStatus(), pending(), approved(), disbursed()
+byPriority(), urgent(), neededBy($date)
+
+// Auto-generated Request Number
+// Format: {sequence}/{abbreviation}/{roman_month}/{year}
+// Contoh: 001/KSN/I/2026
+```
+
+**priority:** `urgent` | `high` | `medium` | `low`
+**status:** `draft` | `pending` | `approved` | `rejected` | `disbursed`
+
+#### FundRequestItem
+**File:** `app/Models/FundRequestItem.php`
+
+```php
+// Fields
+fund_request_id, description, category_id, amount, notes, quantity, unit_price
+
+// Relationships
+belongsTo(FundRequest)
+belongsTo(TransactionCategory) as category
+
+// Auto-update parent total saat created/updated/deleted
+```
+
+---
+
 ### Loan & Receivable Models
 
 #### Loan
@@ -1908,25 +2038,25 @@ cleanupOld($days)
 | `finance manager` | All operations except user management |
 | `staff` | Limited (view/create own records) |
 
-### Permission Categories (60+ permissions)
+### Permission Categories (50 permissions)
 
 ```
-Clients:         view, create, edit, delete
-Services:        view, create, edit, delete
-Invoices:        view, create, edit, delete, send
-Payments:        view, create, edit, delete
-Bank Accounts:   view, create, edit, delete
-Cash Flow:       view
-Transactions:    view, create, edit, delete, categorize
-Categories:      view, create, edit, delete
-Recurring:       view, create, edit, delete, publish
-Reimbursements:  view, create, edit, delete, approve, pay
-Loans:           view, create, edit, delete, pay
-Receivables:     view, create, edit, delete, approve, pay
-Feedbacks:       view, create, edit, delete, respond
-Permissions:     view, delete
-Users:           manage (admin only)
-Roles:           create, update, delete
+Clients:         view, create, edit, delete                    (4)
+Services:        view, create, edit, delete                    (4)
+Invoices:        view, create, edit, delete                    (4)
+Payments:        view, create, edit, delete                    (4)
+Bank Accounts:   view, create, edit, delete                    (4)
+Cash Flow:       view, manage                                  (2)
+Transactions:    view, create, edit, delete                    (4)
+Categories:      view, manage                                  (2)
+Recurring:       view, create, edit, delete, publish           (5)
+Reimbursements:  view, create, edit, delete, approve, pay      (6)
+Fund Requests:   view, create, edit, delete, approve, disburse (6)
+Loans:           view, create, edit, delete, pay               (5)
+Receivables:     view, create, edit, delete, approve, pay      (6)
+Feedbacks:       view, create, edit, delete, respond, manage   (6)
+Permissions:     view, manage                                  (2)
+Users:           manage (admin only)                           (1)
 ```
 
 ### Route Protection
@@ -1984,20 +2114,21 @@ app/
 │   │   └── Api/
 │   ├── Middleware/
 │   └── Requests/
-├── Livewire/                         # 113 components
+├── Livewire/                         # 121 components
 │   ├── Accounts/                     # (5) Bank account management
 │   ├── Actions/                      # (1) Logout
 │   ├── Admin/                        # (1) RoleManagement
 │   ├── Auth/                         # (6) Authentication flows
-│   ├── CashFlow/                     # (8) Cash flow tracking
+│   ├── CashFlow/                     # (6) Cash flow tracking
 │   ├── Clients/                      # (6) Client CRUD + relationships
 │   ├── Dashboard.php
 │   ├── Feedbacks/                    # (8) Feedback system
 │   ├── FloatingFeedbackButton.php
+│   ├── FundRequests/                 # (9) Fund request workflow
 │   ├── Invoices/                     # (6) Invoice management
 │   ├── LanguageSwitcher.php
 │   ├── Loans/                        # (5) Loan tracking
-│   ├── Notifications/                # (1) Bell
+│   ├── Notifications/                # (2) Bell + Drawer
 │   ├── Payments/                     # (5) Payment processing
 │   ├── Permissions/                  # (2) Permission management
 │   ├── Receivables/                  # (7) Receivables management
@@ -2018,13 +2149,13 @@ app/
 │   ├── Reimbursements/               # (9) Reimbursement workflow
 │   ├── Roles/                        # (3) Role management
 │   ├── Services/                     # (4) Service definitions
-│   ├── Settings/                     # (5) User & company settings
+│   ├── Settings/                     # (4) User & company settings
 │   ├── TestingPage.php
 │   ├── Traits/                       # (1) Alert trait
-│   ├── Transactions/                 # (6) Bank transactions
+│   ├── Transactions/                 # (9) Bank transactions
 │   ├── TransactionsCategories/       # (4) Category management
 │   └── Users/                        # (4) User management
-├── Models/                           # 21 Eloquent models
+├── Models/                           # 23 Eloquent models
 ├── Services/                         # Business logic services
 │   ├── InvoicePrintService.php
 │   ├── InvoiceExportService.php
@@ -2035,7 +2166,7 @@ database/
 ├── migrations/                       # 37 migrations
 └── seeders/
     ├── DatabaseSeeder.php            # Orchestrator
-    ├── MasterPermissionSeeder.php    # 60+ permissions, 3 roles
+    ├── MasterPermissionSeeder.php    # 50 permissions, 3 roles
     ├── UserSeeder.php
     ├── CompanyProfileSeeder.php
     └── ... (commented seeders for testing)
@@ -2102,7 +2233,7 @@ php artisan db:seed
 ```
 1. `UserSeeder` - Test users with roles
 2. `CompanyProfileSeeder` - Company info for PDF
-3. `MasterPermissionSeeder` - 60+ permissions & 3 roles
+3. `MasterPermissionSeeder` - 50 permissions & 3 roles
 
 ### Commented Seeders (manual testing)
 Uncomment in `database/seeders/DatabaseSeeder.php`:
@@ -2153,6 +2284,207 @@ $display = 'Rp ' . number_format($value, 0, ',', '.');
 ---
 
 ## Development Guidelines
+
+### Translation & Localization Protocol
+
+**CRITICAL: Setiap kali diminta untuk translate atau audit translation (baik satu file maupun seluruh folder), WAJIB ikuti langkah-langkah ini secara berurutan tanpa perlu diperintah ulang.**
+
+#### Struktur Translation
+
+```
+lang/
+├── en/        # English (partial coverage)
+├── id/        # Bahasa Indonesia (UTAMA, coverage lengkap)
+│   ├── common.php    # Navigation, actions, labels, status (166 keys)
+│   ├── pages.php     # UI per-module (1,343 keys - TERBESAR)
+│   ├── invoice.php   # Invoice PDF & template (206 keys)
+│   └── feedback.php  # Feedback module (158 keys)
+└── zh/        # Mandarin (harus selalu disync dengan id/)
+```
+
+**Default Locale:** `id` (Bahasa Indonesia)
+**Helper:** `__('file.key')` — contoh: `__('common.save')`, `__('pages.invoice_title')`
+
+---
+
+#### Skenario A: Audit Satu File Blade
+
+**Step 1 — Baca file blade target**
+
+**Step 2 — Identifikasi semua teks hardcoded**
+- Semua teks visible di UI: judul, label, placeholder, tooltip, button, empty state, pesan error/sukses, header tabel, nilai yang divisualisasikan (badge status, tipe, dll)
+- Teks di dalam `x-table` headers, modal show, badge, alert — SEMUANYA harus dicek
+- `__()` yang sudah ada → verifikasi key-nya benar
+
+**Step 3 — Baca file translation**
+```
+Read lang/id/common.php
+Read lang/id/pages.php
+```
+
+**Step 4 — Buat daftar audit**
+Tampilkan hasil audit dalam format tabel:
+| Teks | Status | Key yang Digunakan/Diusulkan | File |
+|------|--------|------------------------------|------|
+| "Simpan" | ✅ Ada | `common.save` | common.php |
+| "Pengajuan Dana" | ❌ Missing | `fund_request_title` | pages.php |
+
+**Step 5 — Tambahkan missing keys**
+- Umum/reusable → `lang/id/common.php`
+- Spesifik module → `lang/id/pages.php`
+- Konvensi: `snake_case`, dikelompokkan dengan comment section
+- **Langsung tambahkan juga ke `lang/zh/` dengan nilai yang sama** (sync)
+
+**Step 6 — Update blade file**
+- Ganti semua hardcoded text dengan `__('file.key')`
+- Termasuk: label tabel, nilai badge/status, placeholder, tooltip, empty state
+
+**Step 7 — Verifikasi**
+- Baca ulang blade — tidak ada teks hardcoded yang tersisa
+- Semua key ada di file translation (tidak ada typo/salah file)
+
+---
+
+#### Skenario B: Audit Seluruh Folder
+
+**Langkah tambahan sebelum Step 1:**
+
+**Step 0 — List semua file blade di folder**
+```bash
+# Dapatkan semua file di folder target
+ls resources/views/livewire/{module}/
+```
+
+**Kemudian untuk setiap file, jalankan Step 1-7 secara berurutan.**
+
+**Setelah semua file selesai:**
+- Baca ulang `lang/id/pages.php` dan `lang/zh/pages.php` untuk pastikan semua key baru sudah tersync
+- Laporkan ringkasan: berapa file diproses, berapa key baru ditambahkan
+
+---
+
+#### Aturan Wajib (Berlaku di Semua Skenario)
+
+**❌ TIDAK BOLEH ada teks hardcoded untuk:**
+- Judul page, deskripsi, subtitle
+- Label form, placeholder input
+- Header kolom tabel
+- Teks tombol / action
+- Badge status (contoh: "Draft", "Pending", "Approved")
+- Tipe data yang divisualisasikan (contoh: "Kredit", "Debit", "Urgent")
+- Pesan empty state, error, sukses
+- Tooltip, label konfirmasi modal
+- Teks apapun yang terlihat user
+
+**✅ BOLEH tidak ditranslate:**
+- Nama brand/produk: `TallStackUI`, `Laravel`
+- Kode/format: `INV/01/KSN/02.26`, `001/KSN/I/2026`
+- Nilai variabel dinamis: `{{ $invoice->number }}`
+- Nama file/path
+
+---
+
+#### Konvensi Penamaan Keys
+
+```php
+// common.php — hal yang dipakai di banyak tempat/module
+'save'                  // Tombol aksi umum
+'cancel'                // Tombol aksi umum
+'status'                // Label field
+'created_at'            // Label kolom tabel
+
+// pages.php — spesifik per module, gunakan prefix module
+'fund_request_title'         // Judul page
+'fund_request_description'   // Deskripsi/subtitle page
+'fund_request_empty'         // Empty state
+'fund_request_status_draft'  // Nilai status spesifik module
+```
+
+#### Sync Bahasa zh/ dengan id/
+
+Setiap key baru yang ditambahkan ke `lang/id/` HARUS langsung ditambahkan juga ke `lang/zh/` dengan nilai yang **sama persis** (bukan translate ke Mandarin, cukup copy value-nya). Tim dapat mengupdate terjemahan Mandarin secara terpisah.
+
+```php
+// lang/id/pages.php
+'fund_request_title' => 'Pengajuan Dana',
+
+// lang/zh/pages.php (tambahkan nilai sama)
+'fund_request_title' => 'Pengajuan Dana',
+```
+
+---
+
+#### Dynamic Translation (Data Dinamis dari Database)
+
+**Kapan menggunakan Dynamic Translation vs Static `__()`:**
+
+| Sumber Teks | Metode | Contoh |
+|-------------|--------|--------|
+| UI string (hardcoded) | `__('file.key')` | `__('common.save')` |
+| Enum/status diketahui | `__('pages.status_' . $model->status)` | `__('pages.status_draft')` |
+| Data dari DB (user-generated) | `translate_text($model->name)` | `translate_text($category->label)` |
+| Nama kategori transaksi | `translate_category($name)` | `translate_category($row->label)` |
+
+**Implementasi yang sudah ada di project:**
+
+File: `app/Services/TranslationService.php`
+File: `app/helpers.php`
+
+```php
+// Translate teks dinamis ke locale user saat ini
+translate_text(string $text, string $sourceLang = 'id'): string
+
+// Translate khusus untuk nama kategori transaksi
+translate_category(string $categoryName): string
+```
+
+**Cara kerja:**
+- Menggunakan Google Translate free endpoint (`translate.googleapis.com/translate_a/single`)
+- Hasil di-cache selama **6 bulan** dengan key `translation.{src}.{target}.{md5(text)}`
+- Fallback ke teks asli jika API gagal (tidak throw exception)
+- Tidak translate jika locale saat ini sama dengan `$sourceLang`
+
+**Usage di Blade template:**
+
+```blade
+{{-- ✅ Data nama dari DB (user-generated, tidak bisa diprediksi) --}}
+{{ translate_text($row->name) }}
+{{ translate_text($row->type) }}
+{{ translate_category($row->category_label) }}
+
+{{-- ✅ Enum/status yang diketahui nilainya → gunakan __() saja --}}
+{{ __('pages.status_' . $row->status) }}
+{{ __('pages.priority_' . $row->priority) }}
+
+{{-- ❌ JANGAN gunakan translate_text untuk static UI strings --}}
+{{ translate_text('Simpan') }}  {{-- Salah! Gunakan __('common.save') --}}
+```
+
+**Contoh dari modul Services (`resources/views/livewire/services/`):**
+
+```blade
+{{-- Table column: nama service (data dari DB) --}}
+{{ translate_text($row->name) }}
+
+{{-- Badge tipe service (data dari DB, nilai tidak tetap) --}}
+{{ translate_text($row->type) }}
+
+{{-- Dropdown option yang hardcoded tapi perlu translate --}}
+'options' => [
+    ['label' => translate_text('Perizinan'), 'value' => 'Perizinan'],
+]
+```
+
+**Audit Checklist untuk Dynamic Translation:**
+
+Saat audit translation, identifikasi juga data yang:
+1. Berasal dari kolom DB yang diisi user (name, description, label, type, dll)
+2. Ditampilkan sebagai teks biasa di tabel/modal (bukan status enum)
+3. Kategori atau label yang user-defined
+
+→ Data tersebut harus menggunakan `translate_text()`, **bukan** `__()`.
+
+---
 
 ### Component Usage Protocol
 

@@ -495,6 +495,55 @@ return [
     'transfers' => '转账',
     'adjustments' => '调整',
 
+    // Cash Flow - Page Labels
+    'period'                     => '时期',
+    'all_time'                   => '所有时间',
+    'expenses_description'       => '管理运营支出交易',
+    'income_description'         => '管理来自发票付款和直接交易的收入',
+    'transfers_and_adjustments'  => '转账与调整',
+    'transfers_description'      => '管理账户间转账和余额调整',
+
+    // Cash Flow - Stats Cards
+    'total_transfers'            => '总转账',
+    'total_admin_fees'           => '总管理费',
+    'avg_per_transaction'        => '每笔交易平均',
+    'total_debit'                => '总借方',
+    'total_credit'               => '总贷方',
+    'net_adjustment'             => '净调整',
+    'net_transfer'               => '净转账',
+
+    // Cash Flow - Period Filters (Overview)
+    'last_3_months'              => '近3个月',
+    'weekly'                     => '每周',
+    'three_months'               => '3个月',
+
+    // Cash Flow - Charts
+    'income_vs_expense_trend'    => '收入与支出趋势',
+    'top5_expense_categories'    => '前5大支出类别',
+    'no_expense_data'            => '暂无支出数据',
+
+    // Cash Flow - Source Types
+    'direct'                     => '直接',
+
+    // Cash Flow - Filter Placeholders
+    'select_date_range'          => '选择日期范围...',
+    'all_banks'                  => '所有银行...',
+    'all_categories'             => '所有类别...',
+    'all_clients'                => '所有客户...',
+    'search_data'                => '搜索数据...',
+
+    // Cash Flow - Misc
+    'has_attachment'             => '有附件',
+    'new_transfer'               => '新转账',
+    'debit_negative'             => '借方(-)',
+    'credit_positive'            => '贷方(+)',
+
+    // Cash Flow - Bulk Actions Labels
+    'expenses_selected'          => '笔支出已选',
+    'items_selected'             => '项已选',
+    'transfers_selected'         => '笔转账已选',
+    'adjustments_selected'       => '笔调整已选',
+
     // Transactions - Create Modal
     'add_transaction_title' => '添加交易',
     'add_transaction_desc' => '记录收入或支出交易',
@@ -593,6 +642,7 @@ return [
     'transaction_attachment_close' => '关闭',
 
     // Transactions - Categorize Modal
+    'categorize' => '分类',
     'categorize_transaction_title' => '分类交易',
     'categorize_bulk_title' => '分类 :count 笔交易',
     'categorize_desc' => '为此交易选择合适的类别',
@@ -1275,4 +1325,63 @@ return [
     'print_settlement_invoice' => '打印结算发票',
     'dp_amount' => '首付款金额',
     'settlement_amount' => '结算金额',
+
+    // Cash Flow - Table Headers (used in PHP Livewire components)
+    'col_date'           => '日期',
+    'col_category'       => '类别',
+    'col_description'    => '描述',
+    'col_bank'           => '银行',
+    'col_amount'         => '金额',
+    'col_action'         => '操作',
+    'col_source'         => '来源',
+    'col_client_desc'    => '客户/描述',
+    'col_from'           => '从',
+    'col_to'             => '到',
+    'col_transfer_amount'=> '转账金额',
+    'col_total_debit'    => '总借记',
+    'col_type'           => '类型',
+
+    // Cash Flow - Toast & Dialog Messages
+    'no_data_to_export'          => '没有数据可导出',
+    'select_data_to_export'      => '请选择要导出的数据',
+    'select_transactions_to_cat' => '请选择要分类的交易',
+    'export_success'             => ':count 个项目导出成功',
+    'bulk_delete_expenses'       => '删除 :count 个支出？',
+    'bulk_delete_income'         => '删除 :count 个项目？',
+    'bulk_delete_transfers'      => '删除 :count 个转账？',
+    'bulk_delete_adjustments'    => '删除 :count 个调整？',
+    'bulk_delete_irreversible'   => '删除的数据无法恢复。',
+    'transfer_pair_deleted'      => '转账及其配对将被删除。',
+    'bulk_delete_expenses_done'  => ':count 个支出已删除',
+    'bulk_delete_income_done'    => ':count 个项目已删除',
+    'bulk_delete_transfers_done' => ':count 个转账已删除',
+    'bulk_delete_adj_done'       => ':count 个调整已删除',
+    'attention'                  => '注意',
+
+    // Cash Flow - Excel Export Headings
+    'excel_date'            => '日期',
+    'excel_category'        => '类别',
+    'excel_description'     => '描述',
+    'excel_bank'            => '银行',
+    'excel_reference'       => '参考号',
+    'excel_amount'          => '金额',
+    'excel_source'          => '来源',
+    'excel_invoice'         => '发票',
+    'excel_client'          => '客户',
+    'excel_from_bank'       => '汇出银行',
+    'excel_to_bank'         => '汇入银行',
+    'excel_transfer_amount' => '转账金额',
+    'excel_admin_fee'       => '手续费',
+    'excel_total_debit'     => '总借记',
+    'excel_type'            => '类型',
+
+    // Cash Flow - Uncategorized label
+    'uncategorized_warning' => '⚠ 未分类',
+    'uncategorized'         => '未分类',
+
+    // Cash Flow - Filter Labels
+    'filter_active'    => '个筛选条件激活',
+    'showing'          => '显示',
+    'of_results'       => '共',
+    'results'          => '条结果',
 ];

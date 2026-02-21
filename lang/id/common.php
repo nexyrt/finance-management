@@ -146,9 +146,11 @@ return [
 
     // Notifications
     'notifications' => 'Notifikasi',
+    'all_notifications' => 'Semua Notifikasi',
     'mark_all_as_read' => 'Tandai semua dibaca',
     'no_notifications' => 'Tidak ada notifikasi',
     'view_all_notifications' => 'Lihat semua notifikasi',
+    'load_more' => 'Muat Lebih Banyak',
 
     // Authentication
     'login' => 'Masuk',

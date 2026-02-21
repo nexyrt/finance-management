@@ -3,10 +3,10 @@
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div class="space-y-1">
             <h1 class="text-4xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-indigo-800 dark:from-white dark:via-blue-200 dark:to-indigo-200 bg-clip-text text-transparent">
-                Transfer & Penyesuaian
+                {{ __('pages.transfers_and_adjustments') }}
             </h1>
             <p class="text-gray-600 dark:text-zinc-400 text-lg">
-                Kelola transfer antar rekening dan penyesuaian saldo
+                {{ __('pages.transfers_description') }}
             </p>
         </div>
     </div>
@@ -20,7 +20,7 @@
                     : 'text-dark-500 dark:text-dark-400 hover:text-dark-700 dark:hover:text-dark-200' }}">
             <div class="flex items-center gap-2">
                 <x-icon name="arrow-path" class="w-4 h-4" />
-                Transfer
+                {{ __('pages.transfers') }}
             </div>
         </button>
         <button wire:click="switchSection('adjustments')"
@@ -30,7 +30,7 @@
                     : 'text-dark-500 dark:text-dark-400 hover:text-dark-700 dark:hover:text-dark-200' }}">
             <div class="flex items-center gap-2">
                 <x-icon name="adjustments-horizontal" class="w-4 h-4" />
-                Penyesuaian
+                {{ __('pages.adjustments') }}
             </div>
         </button>
     </div>
@@ -47,7 +47,7 @@
                         <x-icon name="arrow-path" class="w-6 h-6 text-blue-600 dark:text-blue-400" />
                     </div>
                     <div>
-                        <p class="text-sm text-dark-600 dark:text-dark-400">Total Transfer</p>
+                        <p class="text-sm text-dark-600 dark:text-dark-400">{{ __('pages.total_transfers') }}</p>
                         <p class="text-2xl font-bold text-blue-600 dark:text-blue-400">
                             Rp {{ number_format($this->totalTransfers, 0, ',', '.') }}
                         </p>
@@ -61,7 +61,7 @@
                         <x-icon name="banknotes" class="w-6 h-6 text-orange-600 dark:text-orange-400" />
                     </div>
                     <div>
-                        <p class="text-sm text-dark-600 dark:text-dark-400">Total Biaya Admin</p>
+                        <p class="text-sm text-dark-600 dark:text-dark-400">{{ __('pages.total_admin_fees') }}</p>
                         <p class="text-2xl font-bold text-orange-600 dark:text-orange-400">
                             Rp {{ number_format($this->totalAdminFees, 0, ',', '.') }}
                         </p>
@@ -75,13 +75,13 @@
                         <x-icon name="calendar" class="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
                     </div>
                     <div>
-                        <p class="text-sm text-dark-600 dark:text-dark-400">Periode</p>
+                        <p class="text-sm text-dark-600 dark:text-dark-400">{{ __('pages.period') }}</p>
                         <p class="text-2xl font-bold text-dark-900 dark:text-dark-50">
                             @if (!empty($dateRange) && count($dateRange) >= 2)
                                 {{ \Carbon\Carbon::parse($dateRange[0])->format('d M') }} -
                                 {{ \Carbon\Carbon::parse($dateRange[1])->format('d M Y') }}
                             @else
-                                Semua Waktu
+                                {{ __('pages.all_time') }}
                             @endif
                         </p>
                     </div>
@@ -93,10 +93,10 @@
         <div class="space-y-4">
             <div class="flex flex-col gap-4">
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                    <x-date wire:model.live="dateRange" label="Periode" range placeholder="Pilih range tanggal..." />
-                    <x-select.styled wire:model.live="bankAccountFilters" label="Bank Account" :options="$this->bankAccounts"
-                        placeholder="Semua bank..." multiple searchable />
-                    <x-input wire:model.live.debounce.300ms="search" label="Cari" placeholder="Cari data..."
+                    <x-date wire:model.live="dateRange" label="{{ __('pages.period') }}" range placeholder="{{ __('pages.select_date_range') }}" />
+                    <x-select.styled wire:model.live="bankAccountFilters" label="{{ __('common.bank_accounts') }}" :options="$this->bankAccounts"
+                        placeholder="{{ __('pages.all_banks') }}" multiple searchable />
+                    <x-input wire:model.live.debounce.300ms="search" label="{{ __('common.search') }}" placeholder="{{ __('pages.search_data') }}"
                         icon="magnifying-glass" />
                 </div>
 
@@ -111,19 +111,19 @@
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <div class="flex items-center gap-3">
                         @if ($activeFilters > 0)
-                            <x-badge text="{{ $activeFilters }} filter aktif" color="primary" size="sm" />
+                            <x-badge text="{{ $activeFilters }} {{ __('pages.filter_active') }}" color="primary" size="sm" />
                         @endif
                         <div class="text-sm text-gray-500 dark:text-gray-400">
-                            <span class="hidden sm:inline">Menampilkan </span>{{ $this->rows->count() }}
-                            <span class="hidden sm:inline">dari {{ $this->rows->total() }}</span> hasil
+                            <span class="hidden sm:inline">{{ __('pages.showing') }} </span>{{ $this->rows->count() }}
+                            <span class="hidden sm:inline">{{ __('pages.of') }} {{ $this->rows->total() }}</span> {{ __('pages.results') }}
                         </div>
                     </div>
                     <div class="flex items-center gap-2">
                         <x-button wire:click="export" color="green" icon="arrow-down-tray" size="sm" loading="export">
-                            Export
+                            {{ __('common.export') }}
                         </x-button>
                         <x-button wire:click="$dispatch('open-transfer-modal')" color="blue" icon="plus" size="sm">
-                            Transfer Baru
+                            {{ __('pages.new_transfer') }}
                         </x-button>
                     </div>
                 </div>
@@ -194,7 +194,7 @@
                     <div class="text-lg font-bold text-blue-600 dark:text-blue-400">
                         Rp {{ number_format($row->amount, 0, ',', '.') }}
                     </div>
-                    <div class="text-xs text-dark-500 dark:text-dark-400">Transfer bersih</div>
+                    <div class="text-xs text-dark-500 dark:text-dark-400">{{ __('pages.net_transfer') }}</div>
                 </div>
             @endinteract
 
@@ -204,7 +204,7 @@
                         Rp {{ number_format($row->total_debit, 0, ',', '.') }}
                     </div>
                     <div class="text-xs text-orange-600 dark:text-orange-400">
-                        + Rp {{ number_format($row->total_debit - $row->amount, 0, ',', '.') }} admin
+                        + Rp {{ number_format($row->total_debit - $row->amount, 0, ',', '.') }} {{ __('pages.admin_fee_label') }}
                     </div>
                 </div>
             @endinteract
@@ -214,11 +214,11 @@
                     @if ($row->attachment_path)
                         <x-button.circle icon="paper-clip" color="primary" size="sm"
                             wire:click="$dispatch('view-attachment', {sourceType: 'transaction', id: {{ $row->id }}})"
-                            title="Lihat Lampiran" />
+                            title="{{ __('pages.view_attachment') }}" />
                     @endif
                     <x-button.circle icon="trash" color="red" size="sm"
                         wire:click="$dispatch('delete-transaction', {transactionId: {{ $row->id }}})"
-                        title="Hapus" />
+                        title="{{ __('common.delete') }}" />
                 </div>
             @endinteract
         </x-table>
@@ -233,17 +233,17 @@
                             <x-icon name="check-circle" class="w-5 h-5 text-blue-600 dark:text-blue-400" />
                         </div>
                         <div>
-                            <div class="font-semibold text-dark-900 dark:text-dark-50" x-text="`${show.length} transfer dipilih`"></div>
-                            <div class="text-xs text-dark-500 dark:text-dark-400">Pilih aksi untuk item yang dipilih</div>
+                            <div class="font-semibold text-dark-900 dark:text-dark-50" x-text="`${show.length} {{ __('pages.transfers_selected') }}`"></div>
+                            <div class="text-xs text-dark-500 dark:text-dark-400">{{ __('pages.select_action_for_selected') }}</div>
                         </div>
                     </div>
                     <div class="flex items-center gap-2 justify-end">
                         <x-button wire:click="exportSelected" size="sm" color="green" icon="arrow-down-tray"
-                            loading="exportSelected" class="whitespace-nowrap">Export</x-button>
+                            loading="exportSelected" class="whitespace-nowrap">{{ __('common.export') }}</x-button>
                         <x-button wire:click="bulkDelete" size="sm" color="red" icon="trash"
-                            loading="executeBulkDelete" class="whitespace-nowrap">Hapus</x-button>
+                            loading="executeBulkDelete" class="whitespace-nowrap">{{ __('common.delete') }}</x-button>
                         <x-button wire:click="$set('selected', [])" size="sm" color="secondary" icon="x-mark"
-                            class="whitespace-nowrap">Batal</x-button>
+                            class="whitespace-nowrap">{{ __('common.cancel') }}</x-button>
                     </div>
                 </div>
             </div>
@@ -261,7 +261,7 @@
                         <x-icon name="minus-circle" class="w-6 h-6 text-red-600 dark:text-red-400" />
                     </div>
                     <div>
-                        <p class="text-sm text-dark-600 dark:text-dark-400">Total Debit</p>
+                        <p class="text-sm text-dark-600 dark:text-dark-400">{{ __('pages.total_debit') }}</p>
                         <p class="text-2xl font-bold text-red-600 dark:text-red-400">
                             Rp {{ number_format($this->adjStats['total_debits'], 0, ',', '.') }}
                         </p>
@@ -275,7 +275,7 @@
                         <x-icon name="plus-circle" class="w-6 h-6 text-green-600 dark:text-green-400" />
                     </div>
                     <div>
-                        <p class="text-sm text-dark-600 dark:text-dark-400">Total Credit</p>
+                        <p class="text-sm text-dark-600 dark:text-dark-400">{{ __('pages.total_credit') }}</p>
                         <p class="text-2xl font-bold text-green-600 dark:text-green-400">
                             Rp {{ number_format($this->adjStats['total_credits'], 0, ',', '.') }}
                         </p>
@@ -289,7 +289,7 @@
                         <x-icon name="adjustments-horizontal" class="w-6 h-6 text-amber-600 dark:text-amber-400" />
                     </div>
                     <div>
-                        <p class="text-sm text-dark-600 dark:text-dark-400">Net Adjustment</p>
+                        <p class="text-sm text-dark-600 dark:text-dark-400">{{ __('pages.net_adjustment') }}</p>
                         <p class="text-2xl font-bold {{ $this->adjStats['net_adjustment'] >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }}">
                             Rp {{ number_format($this->adjStats['net_adjustment'], 0, ',', '.') }}
                         </p>
@@ -302,12 +302,12 @@
         <div class="space-y-4">
             <div class="flex flex-col gap-4">
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                    <x-date wire:model.live="adjDateRange" label="Periode" range placeholder="Pilih range tanggal..." />
-                    <x-select.styled wire:model.live="adjCategoryFilters" label="Kategori" :options="$this->adjustmentCategories"
-                        placeholder="Semua kategori..." multiple searchable />
-                    <x-select.styled wire:model.live="adjBankAccountFilters" label="Bank Account" :options="$this->bankAccounts"
-                        placeholder="Semua bank..." multiple searchable />
-                    <x-input wire:model.live.debounce.300ms="adjSearch" label="Cari" placeholder="Cari data..."
+                    <x-date wire:model.live="adjDateRange" label="{{ __('pages.period') }}" range placeholder="{{ __('pages.select_date_range') }}" />
+                    <x-select.styled wire:model.live="adjCategoryFilters" label="{{ __('common.category') }}" :options="$this->adjustmentCategories"
+                        placeholder="{{ __('pages.all_categories') }}" multiple searchable />
+                    <x-select.styled wire:model.live="adjBankAccountFilters" label="{{ __('common.bank_accounts') }}" :options="$this->bankAccounts"
+                        placeholder="{{ __('pages.all_banks') }}" multiple searchable />
+                    <x-input wire:model.live.debounce.300ms="adjSearch" label="{{ __('common.search') }}" placeholder="{{ __('pages.search_data') }}"
                         icon="magnifying-glass" />
                 </div>
 
@@ -323,11 +323,11 @@
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <div class="flex items-center gap-3">
                         @if ($adjActiveFilters > 0)
-                            <x-badge text="{{ $adjActiveFilters }} filter aktif" color="primary" size="sm" />
+                            <x-badge text="{{ $adjActiveFilters }} {{ __('pages.filter_active') }}" color="primary" size="sm" />
                         @endif
                         <div class="text-sm text-gray-500 dark:text-gray-400">
-                            <span class="hidden sm:inline">Menampilkan </span>{{ $this->adjRows->count() }}
-                            <span class="hidden sm:inline">dari {{ $this->adjRows->total() }}</span> hasil
+                            <span class="hidden sm:inline">{{ __('pages.showing') }} </span>{{ $this->adjRows->count() }}
+                            <span class="hidden sm:inline">{{ __('pages.of') }} {{ $this->adjRows->total() }}</span> {{ __('pages.results') }}
                         </div>
                     </div>
                 </div>
@@ -354,7 +354,7 @@
             @endinteract
 
             @interact('column_transaction_type', $row)
-                <x-badge :text="$row->transaction_type === 'debit' ? 'Debit (-)' : 'Credit (+)'" size="sm"
+                <x-badge :text="$row->transaction_type === 'debit' ? __('pages.debit_negative') : __('pages.credit_positive')" size="sm"
                     :color="$row->transaction_type === 'debit' ? 'red' : 'green'" />
             @endinteract
 
@@ -374,9 +374,9 @@
 
             @interact('column_category', $row)
                 @if ($row->category)
-                    <x-badge :text="$row->category->label" size="sm" color="amber" />
+                    <x-badge :text="translate_category($row->category->label)" size="sm" color="amber" />
                 @else
-                    <x-badge text="Uncategorized" size="sm" color="gray" />
+                    <x-badge text="{{ __('pages.uncategorized') }}" size="sm" color="gray" />
                 @endif
             @endinteract
 
@@ -408,11 +408,11 @@
                     @if ($row->attachment_path)
                         <x-button.circle icon="paper-clip" color="primary" size="sm"
                             wire:click="$dispatch('view-attachment', {sourceType: 'transaction', id: {{ $row->id }}})"
-                            title="Lihat Lampiran" />
+                            title="{{ __('pages.view_attachment') }}" />
                     @endif
                     <x-button.circle icon="trash" color="red" size="sm"
                         wire:click="$dispatch('delete-transaction', {transactionId: {{ $row->id }}})"
-                        title="Hapus" />
+                        title="{{ __('common.delete') }}" />
                 </div>
             @endinteract
         </x-table>
@@ -427,15 +427,15 @@
                             <x-icon name="check-circle" class="w-5 h-5 text-amber-600 dark:text-amber-400" />
                         </div>
                         <div>
-                            <div class="font-semibold text-dark-900 dark:text-dark-50" x-text="`${show.length} penyesuaian dipilih`"></div>
-                            <div class="text-xs text-dark-500 dark:text-dark-400">Pilih aksi untuk item yang dipilih</div>
+                            <div class="font-semibold text-dark-900 dark:text-dark-50" x-text="`${show.length} {{ __('pages.adjustments_selected') }}`"></div>
+                            <div class="text-xs text-dark-500 dark:text-dark-400">{{ __('pages.select_action_for_selected') }}</div>
                         </div>
                     </div>
                     <div class="flex items-center gap-2 justify-end">
                         <x-button wire:click="adjBulkDelete" size="sm" color="red" icon="trash"
-                            loading="executeAdjBulkDelete" class="whitespace-nowrap">Hapus</x-button>
+                            loading="executeAdjBulkDelete" class="whitespace-nowrap">{{ __('common.delete') }}</x-button>
                         <x-button wire:click="$set('adjSelected', [])" size="sm" color="secondary" icon="x-mark"
-                            class="whitespace-nowrap">Batal</x-button>
+                            class="whitespace-nowrap">{{ __('common.cancel') }}</x-button>
                     </div>
                 </div>
             </div>

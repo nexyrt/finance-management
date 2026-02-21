@@ -32,15 +32,8 @@ class Transfers extends Component
     public array $selected = [];
     public array $sort = ['column' => 'transaction_date', 'direction' => 'desc'];
 
-    public array $headers = [
-        ['index' => 'transaction_date', 'label' => 'Tanggal'],
-        ['index' => 'from_account', 'label' => 'Dari', 'sortable' => false],
-        ['index' => 'to_account', 'label' => 'Ke', 'sortable' => false],
-        ['index' => 'description', 'label' => 'Deskripsi'],
-        ['index' => 'amount', 'label' => 'Jumlah Transfer'],
-        ['index' => 'total_debit', 'label' => 'Total Debit', 'sortable' => false],
-        ['index' => 'action', 'label' => 'Aksi', 'sortable' => false],
-    ];
+    // Headers — populated in mount() so __() translation works
+    public array $headers = [];
 
     // ==========================================
     // ADJUSTMENT PROPERTIES
@@ -52,15 +45,30 @@ class Transfers extends Component
     public array $adjSelected = [];
     public array $adjSort = ['column' => 'transaction_date', 'direction' => 'desc'];
 
-    public array $adjHeaders = [
-        ['index' => 'transaction_date', 'label' => 'Tanggal'],
-        ['index' => 'transaction_type', 'label' => 'Tipe', 'sortable' => false],
-        ['index' => 'description', 'label' => 'Deskripsi'],
-        ['index' => 'category', 'label' => 'Kategori', 'sortable' => false],
-        ['index' => 'bank_account', 'label' => 'Bank', 'sortable' => false],
-        ['index' => 'amount', 'label' => 'Jumlah'],
-        ['index' => 'action', 'label' => 'Aksi', 'sortable' => false],
-    ];
+    public array $adjHeaders = [];
+
+    public function mount(): void
+    {
+        $this->headers = [
+            ['index' => 'transaction_date', 'label' => __('pages.col_date')],
+            ['index' => 'from_account', 'label' => __('pages.col_from'), 'sortable' => false],
+            ['index' => 'to_account', 'label' => __('pages.col_to'), 'sortable' => false],
+            ['index' => 'description', 'label' => __('pages.col_description')],
+            ['index' => 'amount', 'label' => __('pages.col_transfer_amount')],
+            ['index' => 'total_debit', 'label' => __('pages.col_total_debit'), 'sortable' => false],
+            ['index' => 'action', 'label' => __('pages.col_action'), 'sortable' => false],
+        ];
+
+        $this->adjHeaders = [
+            ['index' => 'transaction_date', 'label' => __('pages.col_date')],
+            ['index' => 'transaction_type', 'label' => __('pages.col_type'), 'sortable' => false],
+            ['index' => 'description', 'label' => __('pages.col_description')],
+            ['index' => 'category', 'label' => __('pages.col_category'), 'sortable' => false],
+            ['index' => 'bank_account', 'label' => __('pages.col_bank'), 'sortable' => false],
+            ['index' => 'amount', 'label' => __('pages.col_amount')],
+            ['index' => 'action', 'label' => __('pages.col_action'), 'sortable' => false],
+        ];
+    }
 
     // ==========================================
     // EVENT LISTENERS
@@ -221,24 +229,36 @@ class Transfers extends Component
         $data = $this->getExportData();
 
         if ($data->isEmpty()) {
-            $this->toast()->warning('Perhatian', 'Tidak ada data untuk diekspor')->send();
+            $this->toast()->warning(__('common.warning'), __('pages.no_data_to_export'))->send();
             return;
         }
 
         $filename = 'transfer_' . now()->format('Y-m-d_His') . '.xlsx';
 
-        return Excel::download(new class ($data) implements
+        $headings = [
+            __('pages.excel_date'),
+            __('pages.excel_from_bank'),
+            __('pages.excel_to_bank'),
+            __('pages.excel_description'),
+            __('pages.excel_transfer_amount'),
+            __('pages.excel_admin_fee'),
+            __('pages.excel_total_debit'),
+            __('pages.excel_reference'),
+        ];
+
+        return Excel::download(new class ($data, $headings) implements
             \Maatwebsite\Excel\Concerns\FromCollection,
             \Maatwebsite\Excel\Concerns\WithHeadings,
             \Maatwebsite\Excel\Concerns\WithMapping {
             private $data;
+            private array $headings;
 
-            public function __construct($data) { $this->data = $data; }
+            public function __construct($data, array $headings) { $this->data = $data; $this->headings = $headings; }
             public function collection() { return $this->data; }
 
             public function headings(): array
             {
-                return ['Tanggal', 'Dari Bank', 'Ke Bank', 'Deskripsi', 'Jumlah Transfer', 'Biaya Admin', 'Total Debit', 'Referensi'];
+                return $this->headings;
             }
 
             public function map($row): array
@@ -260,27 +280,39 @@ class Transfers extends Component
     public function exportSelected()
     {
         if (empty($this->selected)) {
-            $this->toast()->warning('Perhatian', 'Pilih data yang ingin diekspor')->send();
+            $this->toast()->warning(__('common.warning'), __('pages.select_data_to_export'))->send();
             return;
         }
 
         $data = $this->getExportData($this->selected);
         $filename = 'transfer_selected_' . now()->format('Y-m-d_His') . '.xlsx';
 
-        $this->toast()->success('Berhasil', count($this->selected) . ' item berhasil diekspor')->send();
+        $this->toast()->success(__('common.success'), __('pages.export_success', ['count' => count($this->selected)]))->send();
 
-        return Excel::download(new class ($data) implements
+        $headings = [
+            __('pages.excel_date'),
+            __('pages.excel_from_bank'),
+            __('pages.excel_to_bank'),
+            __('pages.excel_description'),
+            __('pages.excel_transfer_amount'),
+            __('pages.excel_admin_fee'),
+            __('pages.excel_total_debit'),
+            __('pages.excel_reference'),
+        ];
+
+        return Excel::download(new class ($data, $headings) implements
             \Maatwebsite\Excel\Concerns\FromCollection,
             \Maatwebsite\Excel\Concerns\WithHeadings,
             \Maatwebsite\Excel\Concerns\WithMapping {
             private $data;
+            private array $headings;
 
-            public function __construct($data) { $this->data = $data; }
+            public function __construct($data, array $headings) { $this->data = $data; $this->headings = $headings; }
             public function collection() { return $this->data; }
 
             public function headings(): array
             {
-                return ['Tanggal', 'Dari Bank', 'Ke Bank', 'Deskripsi', 'Jumlah Transfer', 'Biaya Admin', 'Total Debit', 'Referensi'];
+                return $this->headings;
             }
 
             public function map($row): array
@@ -346,7 +378,7 @@ class Transfers extends Component
         }
 
         $this->dialog()
-            ->question('Hapus ' . count($this->selected) . ' transfer?', 'Transfer dan pasangannya akan dihapus.')
+            ->question(__('pages.bulk_delete_transfers', ['count' => count($this->selected)]), __('pages.transfer_pair_deleted'))
             ->confirm(method: 'executeBulkDelete')
             ->cancel()
             ->send();
@@ -368,7 +400,7 @@ class Transfers extends Component
         $this->selected = [];
         $this->resetPage();
 
-        $this->toast()->success('Berhasil', $count . ' transfer telah dihapus')->send();
+        $this->toast()->success(__('common.success'), __('pages.bulk_delete_transfers_done', ['count' => $count]))->send();
     }
 
     // ==========================================
@@ -445,7 +477,7 @@ class Transfers extends Component
         }
 
         $this->dialog()
-            ->question('Hapus ' . count($this->adjSelected) . ' penyesuaian?', 'Data yang dihapus tidak dapat dikembalikan.')
+            ->question(__('pages.bulk_delete_adjustments', ['count' => count($this->adjSelected)]), __('pages.bulk_delete_irreversible'))
             ->confirm(method: 'executeAdjBulkDelete')
             ->cancel()
             ->send();
@@ -459,7 +491,7 @@ class Transfers extends Component
         $this->adjSelected = [];
         $this->resetPage('adjPage');
 
-        $this->toast()->success('Berhasil', $count . ' penyesuaian telah dihapus')->send();
+        $this->toast()->success(__('common.success'), __('pages.bulk_delete_adj_done', ['count' => $count]))->send();
     }
 
     // ==========================================
