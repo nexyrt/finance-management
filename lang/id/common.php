@@ -170,4 +170,14 @@ return [
     'language' => 'Bahasa',
     'indonesian' => 'Indonesia',
     'chinese' => '中文',
+
+    // Additional Common Labels
+    'important' => 'Penting',
+    'total_amount' => 'Total',
+    'no_data' => 'Tidak ada data',
+    'rejected' => 'Ditolak',
+    'approved' => 'Disetujui',
+    'reimbursements' => 'Penggantian',
+    'save_as_draft' => 'Simpan sebagai Draft',
+    'submit_for_approval' => 'Kirim untuk Review',
 ];

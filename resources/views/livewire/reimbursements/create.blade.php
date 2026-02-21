@@ -13,7 +13,7 @@
                 </div>
                 <div>
                     <h3 class="text-xl font-bold text-dark-900 dark:text-dark-50">{{ __('pages.submit_reimbursement') }}</h3>
-                    <p class="text-sm text-dark-600 dark:text-dark-400">{{ __('pages.submit_reimbursement') }}</p>
+                    <p class="text-sm text-dark-600 dark:text-dark-400">{{ __('pages.reimb_create_title') }}</p>
                 </div>
             </div>
         </x-slot:title>
@@ -21,8 +21,8 @@
         <form id="reimbursement-create" wire:submit="save" class="space-y-6">
             <div class="space-y-4">
                 <div class="border-b border-secondary-200 dark:border-dark-600 pb-4">
-                    <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-1">Expense Details</h4>
-                    <p class="text-xs text-dark-500 dark:text-dark-400">Provide information about your expense</p>
+                    <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-1">{{ __('pages.reimb_expense_details_section') }}</h4>
+                    <p class="text-xs text-dark-500 dark:text-dark-400">{{ __('pages.reimb_expense_details_desc') }}</p>
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -32,17 +32,17 @@
 
                     <x-currency-input wire:model="amount" :label="__('common.amount') . ' *'" prefix="Rp" placeholder="0" />
 
-                    <x-date wire:model="expense_date" label="Expense Date *" placeholder="Select date" />
+                    <x-date wire:model="expense_date" :label="__('pages.reimb_expense_date_label')" :placeholder="__('pages.reimb_expense_date_placeholder')" />
 
                     <div class="lg:col-span-2">
-                        <x-select.styled wire:model="category" :options="$this->categories" :label="__('common.category') . ' (Referensi)'"
+                        <x-select.styled wire:model="category" :options="$this->categories" :label="__('pages.reimb_category_ref_label')"
                             placeholder="Pilih kategori..." searchable
-                            hint="Finance akan menentukan kategori final saat review" />
+                            :hint="__('pages.reimb_category_ref_hint')" />
                     </div>
 
                     <div class="lg:col-span-2">
                         <x-textarea wire:model="description" :label="__('common.description')" rows="3"
-                            placeholder="Optional: Add more details about this expense" />
+                            :placeholder="__('pages.reimb_description_placeholder')" />
                     </div>
                 </div>
             </div>
@@ -50,12 +50,11 @@
             <div class="space-y-4">
                 <div class="border-b border-secondary-200 dark:border-dark-600 pb-4">
                     <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-1">{{ __('common.attachment') }}</h4>
-                    <p class="text-xs text-dark-500 dark:text-dark-400">Upload receipt or supporting document (optional)
-                    </p>
+                    <p class="text-xs text-dark-500 dark:text-dark-400">{{ __('pages.reimb_attachment_desc') }}</p>
                 </div>
 
                 <div>
-                    <x-upload wire:model="attachment" label="Receipt/Document" tip="JPG, PNG, or PDF (Max 5MB)"
+                    <x-upload wire:model="attachment" :label="__('pages.reimb_receipt_label')" :tip="__('pages.reimb_receipt_tip')"
                         accept="image/jpeg,image/png,application/pdf" />
                 </div>
             </div>

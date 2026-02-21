@@ -5,32 +5,32 @@
     </x-button>
 
     {{-- Modal --}}
-    <x-modal title="Create Transaction Category" center wire size="xl">
+    <x-modal :title="__('pages.cat_create_title')" center wire size="xl">
         <form id="category-create" wire:submit="save" class="space-y-4">
-            
+
             {{-- Type Selector --}}
             <div>
-                <x-select.styled label="Type *" wire:model.live="type" :options="[
-                    ['label' => '📈 Income', 'value' => 'income'],
-                    ['label' => '📉 Expense', 'value' => 'expense'],
-                    ['label' => '⚖️ Adjustment', 'value' => 'adjustment'],
-                    ['label' => '🔄 Transfer', 'value' => 'transfer'],
-                ]" placeholder="Pilih type category..." />
+                <x-select.styled :label="__('pages.cat_type_label')" wire:model.live="type" :options="[
+                    ['label' => __('pages.cat_income_option'), 'value' => 'income'],
+                    ['label' => __('pages.cat_expense_option'), 'value' => 'expense'],
+                    ['label' => __('pages.cat_adjustment_option'), 'value' => 'adjustment'],
+                    ['label' => __('pages.cat_transfer_option'), 'value' => 'transfer'],
+                ]" :placeholder="__('pages.cat_type_placeholder')" />
             </div>
 
             {{-- Label Input --}}
             <div>
-                <x-input label="Label *" wire:model="label" hint="E.g., Client Payment, Office Supplies" />
+                <x-input :label="__('pages.cat_label_input')" wire:model="label" :hint="__('pages.cat_label_hint')" />
             </div>
 
             {{-- Parent Selector (conditional) --}}
             @if ($type && count($this->parentOptions) > 0)
                 <div>
-                    <x-select.styled label="Parent Category (Optional)" wire:model="parent_id"
-                        :options="$this->parentOptions" placeholder="Select parent or leave empty for top-level" />
+                    <x-select.styled :label="__('pages.cat_parent_label')" wire:model="parent_id"
+                        :options="$this->parentOptions" :placeholder="__('pages.cat_parent_placeholder')" />
                     <p class="mt-1 text-xs text-dark-500 dark:text-dark-400">
                         <x-icon name="information-circle" class="w-4 h-4 inline" />
-                        Leave empty to create a parent category
+                        {{ __('pages.cat_parent_hint') }}
                     </p>
                 </div>
             @elseif($type)
@@ -38,8 +38,8 @@
                     <div class="flex gap-3">
                         <x-icon name="information-circle" class="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
                         <div class="text-sm text-blue-800 dark:text-blue-200">
-                            <p class="font-medium">No parent categories available</p>
-                            <p class="mt-1">This will be created as a parent category for {{ ucfirst($type) }}</p>
+                            <p class="font-medium">{{ __('pages.cat_no_parent_title') }}</p>
+                            <p class="mt-1">{{ __('pages.cat_no_parent_message', ['type' => ucfirst($type)]) }}</p>
                         </div>
                     </div>
                 </div>
@@ -48,12 +48,12 @@
             {{-- Helper Text --}}
             <div class="bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
                 <p class="text-sm text-dark-600 dark:text-dark-400">
-                    <strong>Tips:</strong>
+                    <strong>{{ __('pages.cat_tips_title') }}</strong>
                 </p>
                 <ul class="mt-2 text-sm text-dark-500 dark:text-dark-400 space-y-1 list-disc list-inside">
-                    <li>Use clear, descriptive labels for easy identification</li>
-                    <li>Parent categories group related child categories</li>
-                    <li>Child categories inherit their parent's type</li>
+                    <li>{{ __('pages.cat_tip_1') }}</li>
+                    <li>{{ __('pages.cat_tip_2') }}</li>
+                    <li>{{ __('pages.cat_tip_3') }}</li>
                 </ul>
             </div>
 
@@ -62,10 +62,10 @@
         <x-slot:footer>
             <div class="flex justify-between w-full">
                 <x-button color="gray" wire:click="$set('modal', false)">
-                    Cancel
+                    {{ __('common.cancel') }}
                 </x-button>
                 <x-button type="submit" form="category-create" color="blue" loading="save" icon="check">
-                    Save Category
+                    {{ __('pages.cat_save_btn') }}
                 </x-button>
             </div>
         </x-slot:footer>

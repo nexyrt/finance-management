@@ -25,7 +25,7 @@
                 {{-- Basic Information --}}
                 <div class="space-y-4">
                     <div class="border-b border-secondary-200 dark:border-dark-600 pb-3">
-                        <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50">Expense Information</h4>
+                        <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50">{{ __('pages.reimb_expense_info_section') }}</h4>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -48,7 +48,7 @@
                                 
                                 @if($this->reimbursement->amount_paid > 0)
                                     <div>
-                                        <label class="text-xs font-medium text-green-700 dark:text-green-300">Amount Paid</label>
+                                        <label class="text-xs font-medium text-green-700 dark:text-green-300">{{ __('pages.reimb_amount_paid_label') }}</label>
                                         <div class="text-2xl font-bold text-green-600 dark:text-green-400 mt-1">
                                             {{ $this->reimbursement->formatted_amount_paid }}
                                         </div>
@@ -56,7 +56,7 @@
                                     
                                     @if($this->reimbursement->amount_remaining > 0)
                                         <div>
-                                            <label class="text-xs font-medium text-amber-700 dark:text-amber-300">Remaining</label>
+                                            <label class="text-xs font-medium text-amber-700 dark:text-amber-300">{{ __('pages.reimb_remaining_amount_label') }}</label>
                                             <div class="text-2xl font-bold text-amber-600 dark:text-amber-400 mt-1">
                                                 {{ $this->reimbursement->formatted_amount_remaining }}
                                             </div>
@@ -146,7 +146,7 @@
                                                 {{ $this->reimbursement->attachment_name }}
                                             </div>
                                             <div class="text-xs text-dark-500 dark:text-dark-400">
-                                                Click to download
+                                                {{ __('pages.reimb_click_to_download') }}
                                             </div>
                                         </div>
                                         <x-icon name="arrow-down-tray" class="w-5 h-5 text-primary-600 dark:text-primary-400" />
@@ -162,8 +162,8 @@
                     <div class="space-y-4">
                         <div class="border-b border-secondary-200 dark:border-dark-600 pb-3">
                             <div class="flex items-center justify-between">
-                                <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50">Payment History</h4>
-                                <x-badge text="{{ $this->reimbursement->payments->count() }} payment(s)" color="blue" />
+                                <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50">{{ __('pages.reimb_payment_history_section') }}</h4>
+                                <x-badge text="{{ __('pages.reimb_payments_count', ['count' => $this->reimbursement->payments->count()]) }}" color="blue" />
                             </div>
                         </div>
 
@@ -183,7 +183,7 @@
                                                     {{ $payment->payment_date->format('d M Y, H:i') }}
                                                 </div>
                                                 <div class="flex items-center gap-2 mt-2 text-sm text-green-700 dark:text-green-300">
-                                                    <span>Paid by:</span>
+                                                    <span>{{ __('pages.reimb_paid_by_label') }}</span>
                                                     <span class="font-medium">{{ $payment->payer->name }}</span>
                                                 </div>
                                                 @if($payment->bankTransaction)
@@ -196,7 +196,7 @@
                                                 @endif
                                                 @if($payment->notes)
                                                     <div class="mt-2 text-xs text-green-600 dark:text-green-400">
-                                                        <span class="font-medium">Note:</span> {{ $payment->notes }}
+                                                        <span class="font-medium">{{ __('pages.reimb_payment_notes_label') }}</span> {{ $payment->notes }}
                                                     </div>
                                                 @endif
                                             </div>
@@ -213,7 +213,7 @@
                 @if ($this->reimbursement->status !== 'draft')
                     <div class="space-y-4">
                         <div class="border-b border-secondary-200 dark:border-dark-600 pb-3">
-                            <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50">Workflow History</h4>
+                            <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50">{{ __('pages.reimb_workflow_history_section') }}</h4>
                         </div>
 
                         @if ($this->reimbursement->reviewed_at)
@@ -242,8 +242,8 @@
                         @else
                             <div class="p-8 text-center bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg">
                                 <x-icon name="clock" class="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                                <div class="text-sm font-medium text-dark-900 dark:text-dark-50 mb-1">Awaiting Review</div>
-                                <div class="text-xs text-dark-500 dark:text-dark-400">Pending approval from finance team</div>
+                                <div class="text-sm font-medium text-dark-900 dark:text-dark-50 mb-1">{{ __('pages.reimb_awaiting_review_title') }}</div>
+                                <div class="text-xs text-dark-500 dark:text-dark-400">{{ __('pages.reimb_awaiting_review_desc') }}</div>
                             </div>
                         @endif
                     </div>
@@ -261,16 +261,16 @@
 
                         @if ($this->reimbursement->canReview() && auth()->user()->can('approve reimbursements'))
                             <x-button wire:click="reviewReimbursement" color="yellow" icon="clipboard-document-check" size="sm">
-                                Review
+                                {{ __('pages.reimb_review_btn') }}
                             </x-button>
                         @endif
 
                         @if ($this->reimbursement->canPay() && auth()->user()->can('pay reimbursements'))
                             <x-button wire:click="payReimbursement" color="green" icon="banknotes" size="sm">
                                 @if($this->reimbursement->hasPartialPayment())
-                                    Lanjut Bayar
+                                    {{ __('pages.reimb_continue_pay_btn') }}
                                 @else
-                                    Process Payment
+                                    {{ __('pages.reimb_process_pay_btn') }}
                                 @endif
                             </x-button>
                         @endif

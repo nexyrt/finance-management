@@ -170,4 +170,14 @@ return [
     'language' => '语言',
     'indonesian' => 'Indonesia',
     'chinese' => '中文',
+
+    // Additional Common Labels
+    'important' => '重要',
+    'total_amount' => '总计',
+    'no_data' => '暂无数据',
+    'rejected' => '已拒绝',
+    'approved' => '已批准',
+    'reimbursements' => '报销',
+    'save_as_draft' => '保存为草稿',
+    'submit_for_approval' => '提交审核',
 ];

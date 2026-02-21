@@ -2,14 +2,14 @@
     {{-- Filters --}}
     <div class="flex flex-col lg:flex-row gap-4 items-start lg:items-end">
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 flex-1">
-            <x-select.styled wire:model.live="statusFilter" :label="__('common.status')" :options="$this->statusOptions" placeholder="All status..." />
+            <x-select.styled wire:model.live="statusFilter" :label="__('common.status')" :options="$this->statusOptions" :placeholder="__('pages.reimb_all_status_placeholder')" />
             <x-select.styled wire:model.live="categoryFilter" :label="__('common.category')" :options="$this->categoryOptions"
-                placeholder="All categories..." />
-            <x-date wire:model.live="dateRange" label="Date Range" range placeholder="Select range..." />
+                :placeholder="__('pages.reimb_all_categories_placeholder')" />
+            <x-date wire:model.live="dateRange" :label="__('pages.reimb_date_range_label')" range :placeholder="__('pages.reimb_date_range_placeholder')" />
         </div>
         @if ($statusFilter || $categoryFilter || !empty($dateRange))
             <x-button wire:click="clearFilters" icon="x-mark" color="gray" outline size="sm">
-                Clear
+                {{ __('pages.reimb_clear_filters_btn') }}
             </x-button>
         @endif
     </div>
@@ -78,7 +78,7 @@
                         <div class="mt-1">
                             <div
                                 class="text-xs {{ $paymentPercentage >= 100 ? 'text-green-600 dark:text-green-400' : 'text-yellow-600 dark:text-yellow-400' }}">
-                                {{ number_format($paymentPercentage, 1) }}% Dibayar
+                                {{ __('pages.reimb_paid_percentage', ['percent' => number_format($paymentPercentage, 1)]) }}
                             </div>
                             <div class="w-full bg-zinc-200 dark:bg-dark-700 rounded-full h-1 mt-1">
                                 <div class="{{ $paymentPercentage >= 100 ? 'bg-green-500' : 'bg-yellow-500' }} h-1 rounded-full"
@@ -87,7 +87,7 @@
                             </div>
                         </div>
                     @else
-                        <div class="text-xs text-dark-500 dark:text-dark-400">Belum dibayar</div>
+                        <div class="text-xs text-dark-500 dark:text-dark-400">{{ __('pages.reimb_not_paid_yet') }}</div>
                     @endif
                 @endif
             </div>
@@ -125,17 +125,17 @@
             <div class="flex items-center gap-1">
                 <x-button.circle icon="eye" color="blue" size="sm"
                     wire:click="$dispatch('load::reimbursement', { id: {{ $row->id }} })"
-                    loading="$dispatch('load::reimbursement', { id: {{ $row->id }} })" title="View" />
+                    loading="$dispatch('load::reimbursement', { id: {{ $row->id }} })" :title="__('pages.reimb_view_tooltip')" />
 
                 @if ($row->canEdit())
                     <x-button.circle icon="pencil" color="green" size="sm"
-                        wire:click="$dispatch('edit::reimbursement', { id: {{ $row->id }} })" title="Edit" />
+                        wire:click="$dispatch('edit::reimbursement', { id: {{ $row->id }} })" :title="__('pages.reimb_edit_tooltip')" />
                 @endif
 
                 @if ($row->canSubmit())
                     <x-button.circle icon="paper-airplane" color="cyan" size="sm"
                         wire:click="submitRequest({{ $row->id }})" loading="submitRequest({{ $row->id }})"
-                        title="Submit" />
+                        :title="__('pages.reimb_submit_tooltip')" />
                 @endif
 
                 @if ($row->canDelete())
@@ -157,14 +157,14 @@
                         <x-icon name="check-circle" class="w-6 h-6 text-white" />
                     </div>
                     <div>
-                        <div class="font-bold text-dark-900 dark:text-dark-50" x-text="`${show.length} selected`"></div>
-                        <div class="text-xs text-dark-500 dark:text-dark-400">Only drafts can be deleted</div>
+                        <div class="font-bold text-dark-900 dark:text-dark-50" x-text="`${show.length} {{ __('common.selected') }}`"></div>
+                        <div class="text-xs text-dark-500 dark:text-dark-400">{{ __('pages.reimb_only_drafts_hint') }}</div>
                     </div>
                 </div>
                 <div class="flex items-center gap-2">
                     <x-button wire:click="confirmBulkDelete" color="red" icon="trash"
-                        loading="confirmBulkDelete">Delete</x-button>
-                    <x-button wire:click="$set('selected', [])" color="gray" outline icon="x-mark">Cancel</x-button>
+                        loading="confirmBulkDelete">{{ __('pages.reimb_delete_btn') }}</x-button>
+                    <x-button wire:click="$set('selected', [])" color="gray" outline icon="x-mark">{{ __('pages.reimb_cancel_btn') }}</x-button>
                 </div>
             </div>
         </div>
@@ -180,7 +180,7 @@
                     </div>
                     <div>
                         <h3 class="font-semibold text-dark-900 dark:text-dark-50">{{ $previewName }}</h3>
-                        <p class="text-xs text-dark-500 dark:text-dark-400">Ctrl + Scroll zoom • Click reset</p>
+                        <p class="text-xs text-dark-500 dark:text-dark-400">{{ __('pages.reimb_image_zoom_hint') }}</p>
                     </div>
                 </div>
             </x-slot:title>
@@ -217,9 +217,9 @@
             <x-slot:footer>
                 <div class="flex justify-between w-full">
                     <a href="{{ $previewImage }}" download="{{ $previewName }}">
-                        <x-button color="blue" outline icon="arrow-down-tray">Download</x-button>
+                        <x-button color="blue" outline icon="arrow-down-tray">{{ __('pages.reimb_download_btn') }}</x-button>
                     </a>
-                    <x-button wire:click="$set('modal', false)" color="zinc">Close</x-button>
+                    <x-button wire:click="$set('modal', false)" color="zinc">{{ __('pages.reimb_close_btn') }}</x-button>
                 </div>
             </x-slot:footer>
         @endif

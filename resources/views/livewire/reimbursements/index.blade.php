@@ -57,8 +57,8 @@
                     <x-icon name="information-circle" class="w-6 h-6 text-primary-600 dark:text-primary-400" />
                 </div>
                 <div>
-                    <h3 class="text-xl font-bold text-dark-900 dark:text-dark-50">Reimbursement Workflow</h3>
-                    <p class="text-sm text-dark-600 dark:text-dark-400">Understanding the reimbursement process</p>
+                    <h3 class="text-xl font-bold text-dark-900 dark:text-dark-50">{{ __('pages.reimb_workflow_guide_title') }}</h3>
+                    <p class="text-sm text-dark-600 dark:text-dark-400">{{ __('pages.reimb_workflow_guide_desc') }}</p>
                 </div>
             </div>
         </x-slot:title>
@@ -67,7 +67,7 @@
             {{-- Step Component --}}
             <x-step selected="1" circles helpers navigate-previous>
                 {{-- Step 1: Create/Submit --}}
-                <x-step.items step="1" title="Create Request" description="Submit your expense">
+                <x-step.items step="1" :title="__('pages.reimb_step1_title')" :description="__('pages.reimb_step1_desc')">
                     <div class="space-y-4">
                         <div
                             class="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
@@ -76,13 +76,13 @@
                                     class="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
                                 <div class="flex-1">
                                     <div class="text-sm font-semibold text-blue-900 dark:text-blue-200 mb-2">
-                                        Create Your Reimbursement
+                                        {{ __('pages.reimb_step1_heading') }}
                                     </div>
                                     <ul
                                         class="text-sm text-blue-800 dark:text-blue-300 space-y-1 list-disc list-inside">
-                                        <li>Fill in expense details (title, amount, date, category)</li>
-                                        <li>Upload supporting documents (receipts, invoices)</li>
-                                        <li>Add description for context</li>
+                                        <li>{{ __('pages.reimb_step1_tip1') }}</li>
+                                        <li>{{ __('pages.reimb_step1_tip2') }}</li>
+                                        <li>{{ __('pages.reimb_step1_tip3') }}</li>
                                     </ul>
                                 </div>
                             </div>
@@ -93,11 +93,10 @@
                                 class="p-4 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg">
                                 <div class="flex items-center gap-2 mb-2">
                                     <x-icon name="document" class="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                                    <span class="text-sm font-semibold text-dark-900 dark:text-dark-50">Save as
-                                        Draft</span>
+                                    <span class="text-sm font-semibold text-dark-900 dark:text-dark-50">{{ __('pages.reimb_step1_save_draft_title') }}</span>
                                 </div>
                                 <p class="text-xs text-dark-500 dark:text-dark-400">
-                                    Save incomplete requests to finish later. You can edit or delete drafts anytime.
+                                    {{ __('pages.reimb_step1_save_draft_desc') }}
                                 </p>
                             </div>
 
@@ -105,11 +104,10 @@
                                 class="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
                                 <div class="flex items-center gap-2 mb-2">
                                     <x-icon name="paper-airplane" class="w-4 h-4 text-green-600 dark:text-green-400" />
-                                    <span class="text-sm font-semibold text-green-900 dark:text-green-200">Submit for
-                                        Approval</span>
+                                    <span class="text-sm font-semibold text-green-900 dark:text-green-200">{{ __('pages.reimb_step1_submit_title') }}</span>
                                 </div>
                                 <p class="text-xs text-green-700 dark:text-green-300">
-                                    Submit directly to finance team for review. Cannot be edited once submitted.
+                                    {{ __('pages.reimb_step1_submit_desc') }}
                                 </p>
                             </div>
                         </div>
@@ -119,15 +117,14 @@
                             <x-icon name="exclamation-triangle"
                                 class="w-4 h-4 text-yellow-600 dark:text-yellow-400 flex-shrink-0 mt-0.5" />
                             <p class="text-xs text-yellow-800 dark:text-yellow-300">
-                                <strong>Important:</strong> Ensure all information is accurate and complete before
-                                submitting.
+                                <strong>{{ __('common.important') }}:</strong> {{ __('pages.reimb_step1_warning') }}
                             </p>
                         </div>
                     </div>
                 </x-step.items>
 
                 {{-- Step 2: Review --}}
-                <x-step.items step="2" title="Finance Review" description="Approval process">
+                <x-step.items step="2" :title="__('pages.reimb_step2_title')" :description="__('pages.reimb_step2_desc')">
                     <div class="space-y-4">
                         <div
                             class="p-4 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg">
@@ -136,13 +133,13 @@
                                     class="w-5 h-5 text-purple-600 dark:text-purple-400 flex-shrink-0 mt-0.5" />
                                 <div class="flex-1">
                                     <div class="text-sm font-semibold text-purple-900 dark:text-purple-200 mb-2">
-                                        Finance Team Reviews Your Request
+                                        {{ __('pages.reimb_step2_heading') }}
                                     </div>
                                     <ul
                                         class="text-sm text-purple-800 dark:text-purple-300 space-y-1 list-disc list-inside">
-                                        <li>Finance manager verifies expense details and attachments</li>
-                                        <li>Assigns transaction category for accounting</li>
-                                        <li>May approve or reject with notes</li>
+                                        <li>{{ __('pages.reimb_step2_tip1') }}</li>
+                                        <li>{{ __('pages.reimb_step2_tip2') }}</li>
+                                        <li>{{ __('pages.reimb_step2_tip3') }}</li>
                                     </ul>
                                 </div>
                             </div>
@@ -154,10 +151,10 @@
                                 <div class="flex items-center gap-2 mb-2">
                                     <x-icon name="check-circle" class="w-4 h-4 text-green-600 dark:text-green-400" />
                                     <span
-                                        class="text-sm font-semibold text-green-900 dark:text-green-200">Approved</span>
+                                        class="text-sm font-semibold text-green-900 dark:text-green-200">{{ __('pages.reimb_step2_approved_title') }}</span>
                                 </div>
                                 <p class="text-xs text-green-700 dark:text-green-300">
-                                    Request is approved and ready for payment processing. You'll be notified once paid.
+                                    {{ __('pages.reimb_step2_approved_desc') }}
                                 </p>
                             </div>
 
@@ -165,10 +162,10 @@
                                 class="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
                                 <div class="flex items-center gap-2 mb-2">
                                     <x-icon name="x-circle" class="w-4 h-4 text-red-600 dark:text-red-400" />
-                                    <span class="text-sm font-semibold text-red-900 dark:text-red-200">Rejected</span>
+                                    <span class="text-sm font-semibold text-red-900 dark:text-red-200">{{ __('pages.reimb_step2_rejected_title') }}</span>
                                 </div>
                                 <p class="text-xs text-red-700 dark:text-red-300">
-                                    Review rejection reason and edit your request with corrections, then resubmit.
+                                    {{ __('pages.reimb_step2_rejected_desc') }}
                                 </p>
                             </div>
                         </div>
@@ -178,15 +175,14 @@
                             <x-icon name="information-circle"
                                 class="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
                             <p class="text-xs text-blue-800 dark:text-blue-300">
-                                Review typically takes 1-3 business days. You'll receive email notification of the
-                                decision.
+                                {{ __('pages.reimb_step2_info') }}
                             </p>
                         </div>
                     </div>
                 </x-step.items>
 
                 {{-- Step 3: Payment --}}
-                <x-step.items step="3" title="Payment Processing" description="Receive reimbursement" completed>
+                <x-step.items step="3" :title="__('pages.reimb_step3_title')" :description="__('pages.reimb_step3_desc')" completed>
                     <div class="space-y-4">
                         <div
                             class="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
@@ -195,13 +191,13 @@
                                     class="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
                                 <div class="flex-1">
                                     <div class="text-sm font-semibold text-green-900 dark:text-green-200 mb-2">
-                                        Finance Processes Your Payment
+                                        {{ __('pages.reimb_step3_heading') }}
                                     </div>
                                     <ul
                                         class="text-sm text-green-800 dark:text-green-300 space-y-1 list-disc list-inside">
-                                        <li>Finance team selects bank account for payment</li>
-                                        <li>Bank transaction is created automatically</li>
-                                        <li>Payment details recorded with reference number</li>
+                                        <li>{{ __('pages.reimb_step3_tip1') }}</li>
+                                        <li>{{ __('pages.reimb_step3_tip2') }}</li>
+                                        <li>{{ __('pages.reimb_step3_tip3') }}</li>
                                     </ul>
                                 </div>
                             </div>
@@ -214,17 +210,17 @@
                                     class="w-5 h-5 text-cyan-600 dark:text-cyan-400 flex-shrink-0 mt-0.5" />
                                 <div class="flex-1">
                                     <div class="text-sm font-semibold text-cyan-900 dark:text-cyan-200 mb-2">
-                                        Payment Details Available
+                                        {{ __('pages.reimb_step3_payment_detail_heading') }}
                                     </div>
                                     <p class="text-sm text-cyan-800 dark:text-cyan-300">
-                                        View complete payment information including:
+                                        {{ __('pages.reimb_step3_payment_detail_desc') }}
                                     </p>
                                     <ul
                                         class="text-xs text-cyan-700 dark:text-cyan-300 space-y-1 list-disc list-inside mt-2">
-                                        <li>Bank account used for payment</li>
-                                        <li>Payment date and time</li>
-                                        <li>Transaction reference number</li>
-                                        <li>Processor name</li>
+                                        <li>{{ __('pages.reimb_step3_detail1') }}</li>
+                                        <li>{{ __('pages.reimb_step3_detail2') }}</li>
+                                        <li>{{ __('pages.reimb_step3_detail3') }}</li>
+                                        <li>{{ __('pages.reimb_step3_detail4') }}</li>
                                     </ul>
                                 </div>
                             </div>
@@ -238,10 +234,10 @@
                                     <x-icon name="check" class="w-8 h-8 text-white" />
                                 </div>
                                 <div class="text-lg font-bold text-green-900 dark:text-green-200">
-                                    Reimbursement Complete!
+                                    {{ __('pages.reimb_step3_complete') }}
                                 </div>
                                 <p class="text-sm text-green-700 dark:text-green-300 mt-1">
-                                    Your reimbursement has been processed successfully
+                                    {{ __('pages.reimb_step3_complete_desc') }}
                                 </p>
                             </div>
                         </div>
@@ -252,29 +248,29 @@
             {{-- Status Legend --}}
             <div class="space-y-3">
                 <div class="border-b border-secondary-200 dark:border-dark-600 pb-3">
-                    <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50">Status Reference</h4>
+                    <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50">{{ __('pages.reimb_status_legend_title') }}</h4>
                 </div>
 
                 <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
                     <div class="flex items-center gap-2">
                         <x-badge text="Draft" color="gray" />
-                        <span class="text-xs text-dark-500 dark:text-dark-400">Editable</span>
+                        <span class="text-xs text-dark-500 dark:text-dark-400">{{ __('pages.reimb_status_editable') }}</span>
                     </div>
                     <div class="flex items-center gap-2">
                         <x-badge text="Pending" color="yellow" />
-                        <span class="text-xs text-dark-500 dark:text-dark-400">In Review</span>
+                        <span class="text-xs text-dark-500 dark:text-dark-400">{{ __('pages.reimb_status_in_review') }}</span>
                     </div>
                     <div class="flex items-center gap-2">
                         <x-badge text="Approved" color="blue" />
-                        <span class="text-xs text-dark-500 dark:text-dark-400">Awaiting Payment</span>
+                        <span class="text-xs text-dark-500 dark:text-dark-400">{{ __('pages.reimb_status_awaiting_payment') }}</span>
                     </div>
                     <div class="flex items-center gap-2">
                         <x-badge text="Rejected" color="red" />
-                        <span class="text-xs text-dark-500 dark:text-dark-400">Needs Revision</span>
+                        <span class="text-xs text-dark-500 dark:text-dark-400">{{ __('pages.reimb_status_needs_revision') }}</span>
                     </div>
                     <div class="flex items-center gap-2">
                         <x-badge text="Paid" color="green" />
-                        <span class="text-xs text-dark-500 dark:text-dark-400">Completed</span>
+                        <span class="text-xs text-dark-500 dark:text-dark-400">{{ __('pages.reimb_status_completed') }}</span>
                     </div>
                 </div>
             </div>
@@ -286,20 +282,20 @@
                         class="w-5 h-5 text-gray-600 dark:text-gray-400 flex-shrink-0 mt-0.5" />
                     <div class="flex-1">
                         <div class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-2">
-                            Role-Based Access
+                            {{ __('pages.reimb_role_access_title') }}
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
                             <div>
                                 <span class="font-medium text-dark-900 dark:text-dark-50">Staff:</span>
-                                <span class="text-dark-500 dark:text-dark-400"> Create & manage own requests</span>
+                                <span class="text-dark-500 dark:text-dark-400"> {{ __('pages.reimb_role_staff') }}</span>
                             </div>
                             <div>
                                 <span class="font-medium text-dark-900 dark:text-dark-50">Finance Manager:</span>
-                                <span class="text-dark-500 dark:text-dark-400"> Review & approve requests</span>
+                                <span class="text-dark-500 dark:text-dark-400"> {{ __('pages.reimb_role_finance') }}</span>
                             </div>
                             <div>
                                 <span class="font-medium text-dark-900 dark:text-dark-50">Admin:</span>
-                                <span class="text-dark-500 dark:text-dark-400"> Full access to all features</span>
+                                <span class="text-dark-500 dark:text-dark-400"> {{ __('pages.reimb_role_admin') }}</span>
                             </div>
                         </div>
                     </div>
@@ -310,7 +306,7 @@
         <x-slot:footer>
             <div class="flex justify-end">
                 <x-button wire:click="$toggle('workflowGuideModal')" color="primary">
-                    Got it!
+                    {{ __('pages.reimb_got_it_btn') }}
                 </x-button>
             </div>
         </x-slot:footer>
