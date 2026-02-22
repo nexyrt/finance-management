@@ -36,7 +36,10 @@
       "Bash(more:*)",
       "Bash(powershell -Command \"Get-ChildItem ''d:\\\\Laravel\\\\finance-management\\\\resources\\\\views\\\\livewire\\\\transactions''\")",
       "Bash(powershell -Command \"Get-Content ''d:\\\\Laravel\\\\finance-management\\\\resources\\\\views\\\\livewire\\\\transactions\\\\categorize.blade.php'' -Raw\")",
-      "Bash(powershell -Command:*)"
+      "Bash(powershell -Command:*)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:packagist.org)",
+      "WebFetch(domain:api.github.com)"
     ]
   }
 }
