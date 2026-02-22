@@ -20,13 +20,18 @@ class Index extends Component
     public ?string $typeFilter = null;
     public array $sort = ['column' => 'type', 'direction' => 'asc'];
 
-    public array $headers = [
-        ['index' => 'type', 'label' => 'Type'],
-        ['index' => 'label', 'label' => 'Label'],
-        ['index' => 'parent', 'label' => 'Parent', 'sortable' => false],
-        ['index' => 'usage', 'label' => 'Usage', 'sortable' => false],
-        ['index' => 'action', 'sortable' => false],
-    ];
+    public array $headers = [];
+
+    public function mount(): void
+    {
+        $this->headers = [
+            ['index' => 'type', 'label' => __('pages.cat_col_type')],
+            ['index' => 'label', 'label' => __('pages.cat_col_label')],
+            ['index' => 'parent', 'label' => __('pages.cat_col_parent'), 'sortable' => false],
+            ['index' => 'usage', 'label' => __('pages.cat_col_usage'), 'sortable' => false],
+            ['index' => 'action', 'sortable' => false],
+        ];
+    }
 
     public function render(): View
     {

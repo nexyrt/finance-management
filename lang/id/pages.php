@@ -1504,6 +1504,10 @@ return [
     'cat_result_count' => 'kategori',
     'cat_transactions_count' => ':count transaksi',
     'cat_children_count' => ':count sub-kategori',
+    'cat_col_type' => 'Tipe',
+    'cat_col_label' => 'Label',
+    'cat_col_parent' => 'Parent',
+    'cat_col_usage' => 'Penggunaan',
 
     // Transaction Categories - Create Modal
     'cat_create_title' => 'Buat Kategori Transaksi',

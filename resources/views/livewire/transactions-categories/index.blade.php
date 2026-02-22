@@ -135,7 +135,7 @@
         {{-- Label Column --}}
         @interact('column_label', $row)
             <div class="font-medium text-dark-900 dark:text-dark-50">
-                {{ $row->label }}
+                {{ translate_text($row->label) }}
             </div>
         @endinteract
 
@@ -144,7 +144,7 @@
             @if ($row->parent)
                 <div class="flex items-center gap-2">
                     <x-icon name="arrow-turn-down-right" class="w-4 h-4 text-gray-400 dark:text-gray-600" />
-                    <span class="text-sm text-dark-600 dark:text-dark-400">{{ $row->parent->label }}</span>
+                    <span class="text-sm text-dark-600 dark:text-dark-400">{{ translate_text($row->parent->label) }}</span>
                 </div>
             @else
                 <x-badge text="Parent" color="gray" light size="sm" />

@@ -1442,6 +1442,10 @@ return [
     'cat_result_count' => '个分类',
     'cat_transactions_count' => ':count 笔交易',
     'cat_children_count' => ':count 个子分类',
+    'cat_col_type' => '类型',
+    'cat_col_label' => '名称',
+    'cat_col_parent' => '父分类',
+    'cat_col_usage' => '使用情况',
 
     // Transaction Categories - Create Modal
     'cat_create_title' => '新建交易分类',
