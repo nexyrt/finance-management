@@ -2311,10 +2311,70 @@ lang/
 
 **Step 1 — Baca file blade target**
 
+**Step 1b — WAJIB: Baca juga PHP Livewire component pasangannya**
+
+Setiap file blade `resources/views/livewire/{module}/listing.blade.php` memiliki pasangan PHP `app/Livewire/{Module}/Listing.php`. File PHP ini WAJIB dibaca karena mengandung:
+- **`$headers` array** — label kolom tabel yang tampil di UI
+- **Toast messages** — `->warning('...')`, `->success('...')`
+- **Dialog messages** — `->question('...')`
+- **Excel export headings** — `headings(): array { return ['Tanggal', ...] }`
+- **Dropdown options** — string yang tampil di filter/select
+- **Error messages** — string hardcoded di method logic
+
+```
+# Pola penamaan pasangan:
+resources/views/livewire/cash-flow/expenses.blade.php
+→ app/Livewire/CashFlow/Expenses.php
+
+resources/views/livewire/invoices/listing.blade.php
+→ app/Livewire/Invoices/Listing.php
+```
+
+**⚠️ KENAPA INI SERING TERLEWAT:**
+Header tabel di TallStackUI `x-table` didefinisikan sebagai PHP property:
+```php
+// DI PHP FILE — bukan di blade!
+public array $headers = [
+    ['index' => 'transaction_date', 'label' => 'Tanggal'],  // ← HARDCODED
+];
+```
+Tanpa membaca PHP file, string ini tidak akan terdeteksi saat audit blade.
+
+**CATATAN PENTING untuk `$headers`:**
+PHP class property initializer tidak mendukung function call, jadi `__()` tidak bisa langsung di property. Harus dipindahkan ke `mount()`:
+```php
+// ❌ SALAH — tidak bisa pakai __() di property initializer
+public array $headers = [
+    ['index' => 'date', 'label' => __('pages.col_date')],  // Error!
+];
+
+// ✅ BENAR — pindahkan ke mount()
+public array $headers = [];
+
+public function mount(): void
+{
+    $this->headers = [
+        ['index' => 'date', 'label' => __('pages.col_date')],
+    ];
+}
+```
+
 **Step 2 — Identifikasi semua teks hardcoded**
-- Semua teks visible di UI: judul, label, placeholder, tooltip, button, empty state, pesan error/sukses, header tabel, nilai yang divisualisasikan (badge status, tipe, dll)
-- Teks di dalam `x-table` headers, modal show, badge, alert — SEMUANYA harus dicek
+
+Cek di **dua tempat**: blade file DAN PHP component file.
+
+**Di Blade:**
+- Judul, label, placeholder, tooltip, button, empty state
+- Badge/status values, teks tabel, pesan konfirmasi
 - `__()` yang sudah ada → verifikasi key-nya benar
+
+**Di PHP Component:**
+- `$headers` array labels
+- `->warning('judul', 'pesan')` — toast warning
+- `->success('judul', 'pesan')` — toast success
+- `->question('judul', 'pesan')` — dialog konfirmasi
+- `headings(): array { return ['...', '...'] }` — Excel headings
+- String hardcoded lain di method logic
 
 **Step 3 — Baca file translation**
 ```
@@ -2323,24 +2383,28 @@ Read lang/id/pages.php
 ```
 
 **Step 4 — Buat daftar audit**
-Tampilkan hasil audit dalam format tabel:
-| Teks | Status | Key yang Digunakan/Diusulkan | File |
-|------|--------|------------------------------|------|
-| "Simpan" | ✅ Ada | `common.save` | common.php |
-| "Pengajuan Dana" | ❌ Missing | `fund_request_title` | pages.php |
+Tampilkan hasil audit dalam format tabel (pisahkan blade vs PHP):
+| Teks | Lokasi | Status | Key yang Digunakan/Diusulkan | File |
+|------|--------|--------|------------------------------|------|
+| "Simpan" | blade | ✅ Ada | `common.save` | common.php |
+| "Tanggal" | PHP `$headers` | ❌ Missing | `col_date` | pages.php |
+| "Berhasil dihapus" | PHP toast | ❌ Missing | `deleted_success` | pages.php |
 
 **Step 5 — Tambahkan missing keys**
 - Umum/reusable → `lang/id/common.php`
 - Spesifik module → `lang/id/pages.php`
 - Konvensi: `snake_case`, dikelompokkan dengan comment section
-- **Langsung tambahkan juga ke `lang/zh/` dengan nilai yang sama** (sync)
+- **Langsung tambahkan juga ke `lang/zh/` dengan nilai Mandarin yang sesuai** (bukan copy Indonesian)
 
-**Step 6 — Update blade file**
-- Ganti semua hardcoded text dengan `__('file.key')`
-- Termasuk: label tabel, nilai badge/status, placeholder, tooltip, empty state
+**Step 6 — Update blade file DAN PHP component file**
+- Blade: ganti semua hardcoded text dengan `__('file.key')`
+- PHP `$headers`: pindahkan ke `mount()` jika belum, gunakan `__()` untuk setiap label
+- PHP toast/dialog: ganti string hardcoded dengan `__('file.key')`
+- PHP Excel headings: extract ke variabel luar anonymous class, inject via constructor
 
 **Step 7 — Verifikasi**
 - Baca ulang blade — tidak ada teks hardcoded yang tersisa
+- Baca ulang PHP component — tidak ada string hardcoded di $headers, toast, dialog, Excel
 - Semua key ada di file translation (tidak ada typo/salah file)
 
 ---
@@ -2349,17 +2413,25 @@ Tampilkan hasil audit dalam format tabel:
 
 **Langkah tambahan sebelum Step 1:**
 
-**Step 0 — List semua file blade di folder**
+**Step 0 — List SEMUA file di folder (blade DAN PHP)**
 ```bash
-# Dapatkan semua file di folder target
+# Blade files (UI)
 ls resources/views/livewire/{module}/
+
+# PHP Livewire component files (logic)
+ls app/Livewire/{Module}/
 ```
 
-**Kemudian untuk setiap file, jalankan Step 1-7 secara berurutan.**
+**Kemudian untuk setiap pasangan (blade + PHP component), jalankan Step 1-7 secara berurutan.**
+
+**Aturan pasangan file:**
+- `resources/views/livewire/cash-flow/expenses.blade.php` ↔ `app/Livewire/CashFlow/Expenses.php`
+- `resources/views/livewire/invoices/listing.blade.php` ↔ `app/Livewire/Invoices/Listing.php`
+- Selalu baca keduanya, jangan hanya blade-nya saja.
 
 **Setelah semua file selesai:**
 - Baca ulang `lang/id/pages.php` dan `lang/zh/pages.php` untuk pastikan semua key baru sudah tersync
-- Laporkan ringkasan: berapa file diproses, berapa key baru ditambahkan
+- Laporkan ringkasan: berapa file diproses (blade + PHP), berapa key baru ditambahkan
 
 ---
 
