@@ -2,48 +2,48 @@
 
 namespace App\Livewire;
 
-use App\Models\BankAccount;
+use GuzzleHttp\Client;
 use Livewire\Component;
-use Stichoza\GoogleTranslate\GoogleTranslate;
 
 class TestingPage extends Component
 {
-    // Section 1: Data dari Model
-    public array $bankAccounts = [];
+    public array $accounts = [];
+    public string $error = '';
 
-    // Section 2: Google Translate
-    public string $inputText = '';
-    public string $translatedText = '';
-    public string $targetLang = 'zh';
-
-    public function loadBankAccounts(): void
+    public function mount(): void
     {
-        $this->bankAccounts = BankAccount::orderBy('bank_name')
-            ->orderBy('account_name')
-            ->get()
-            ->map(fn($a) => [
-                'label' => $a->account_name . ' (' . $a->bank_name . ')',
-                'value' => $a->id,
-            ])
-            ->toArray();
+        $this->loadAccounts();
     }
 
-    public function translateText(): void
+    public function loadAccounts(): void
     {
-        if (blank($this->inputText)) {
-            return;
-        }
-
         try {
-            $tr = new GoogleTranslate($this->targetLang);
-            $tr->setSource('id');
+            $client = new Client(['verify' => false, 'cookies' => true]);
 
-            $this->translatedText = $tr->preserveParameters()
-                ->translate($this->inputText) ?? '(tidak ada hasil)';
+            // Login dulu untuk mendapatkan session
+            $client->post('https://finance.kisantra.com/login', [
+                'form_params' => [
+                    'email'    => 'admin@email.com', // ganti dengan email Anda
+                    'password' => 'password',   // ganti dengan password Anda
+                    '_token'   => $this->getCsrfToken($client),
+                ],
+            ]);
 
+            // Ambil data setelah login
+            $response = $client->get('https://finance.kisantra.com/api/bank-accounts');
+            $this->accounts = json_decode($response->getBody()->getContents(), true) ?? [];
+            $this->error = '';
         } catch (\Exception $e) {
-            $this->translatedText = 'Error: ' . $e->getMessage();
+            $this->error = $e->getMessage();
         }
+    }
+
+    private function getCsrfToken(Client $client): string
+    {
+        $response = $client->get('https://finance.kisantra.com/login');
+        $html = $response->getBody()->getContents();
+        preg_match('/<meta name="csrf-token" content="([^"]+)"/', $html, $matches);
+        return $matches[1] ?? '';
     }
 
     public function render()

@@ -43,6 +43,16 @@ Route::redirect('/', '/login')->name('home');
 // AUTHENTICATED ROUTES
 // ============================================================================
 
+Route::get('/api/bank-accounts', function () {
+        return \App\Models\BankAccount::orderBy('bank_name')
+            ->orderBy('account_name')
+            ->get()
+            ->map(fn ($account) => [
+                'label' => $account->account_name . ' (' . $account->bank_name . ')',
+                'value' => $account->id,
+            ]);
+    })->name('api.bank-accounts');
+
 Route::middleware(['auth', 'verified'])->group(function () {
 
     // ------------------------------------------------------------------------
@@ -293,15 +303,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->values();
     })->name('api.transaction-categories');
 
-    Route::get('/api/bank-accounts', function () {
-        return \App\Models\BankAccount::orderBy('bank_name')
-            ->orderBy('account_name')
-            ->get()
-            ->map(fn ($account) => [
-                'label' => $account->account_name . ' (' . $account->bank_name . ')',
-                'value' => $account->id,
-            ]);
-    })->name('api.bank-accounts');
+    
 
     // ------------------------------------------------------------------------
     // TESTING (Local Only)
