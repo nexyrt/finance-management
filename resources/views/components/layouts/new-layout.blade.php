@@ -235,119 +235,119 @@ window.addEventListener('resize', () => {
 
                 <!-- Master Data -->
                 @canany(['view clients', 'view services'])
-                <div class="space-y-1">
-                    <h3 class="px-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2"
-                        :class="{ 'lg:hidden': isCollapsed }">
-                        {{ __('common.master_data') }}
-                    </h3>
+                    <div class="space-y-1">
+                        <h3 class="px-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2"
+                            :class="{ 'lg:hidden': isCollapsed }">
+                            {{ __('common.master_data') }}
+                        </h3>
 
-                    @can('view clients')
-                        <a href="{{ route('clients') }}" wire:navigate @click="closeMobileMenu()"
-                            :title="isCollapsed ? '{{ __('common.clients') }}' : undefined"
-                            class="menu-item {{ request()->routeIs('clients') ? 'active' : '' }} flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-dark-800"
-                            :class="{
-                                'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 border-l-2 border-primary-600 dark:border-primary-400 -ml-0.5 pl-[calc(0.75rem+2px)]': isActivePath(
-                                    '{{ route('clients') }}'),
-                                'text-gray-700 dark:text-gray-300': !isActivePath('{{ route('clients') }}'),
-                                'lg:justify-center lg:px-2': isCollapsed
-                            }">
-                            <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zm6.5-3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM23 21v-2a4 4 0 0 0-3-3.87" />
-                            </svg>
-                            <span class="truncate" :class="{ 'lg:hidden': isCollapsed }">{{ __('common.clients') }}</span>
-                        </a>
-                    @endcan
+                        @can('view clients')
+                            <a href="{{ route('clients') }}" wire:navigate @click="closeMobileMenu()"
+                                :title="isCollapsed ? '{{ __('common.clients') }}' : undefined"
+                                class="menu-item {{ request()->routeIs('clients') ? 'active' : '' }} flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-dark-800"
+                                :class="{
+                                    'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 border-l-2 border-primary-600 dark:border-primary-400 -ml-0.5 pl-[calc(0.75rem+2px)]': isActivePath(
+                                        '{{ route('clients') }}'),
+                                    'text-gray-700 dark:text-gray-300': !isActivePath('{{ route('clients') }}'),
+                                    'lg:justify-center lg:px-2': isCollapsed
+                                }">
+                                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zm6.5-3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM23 21v-2a4 4 0 0 0-3-3.87" />
+                                </svg>
+                                <span class="truncate" :class="{ 'lg:hidden': isCollapsed }">{{ __('common.clients') }}</span>
+                            </a>
+                        @endcan
 
-                    @can('view services')
-                        <a href="{{ route('services') }}" wire:navigate @click="closeMobileMenu()"
-                            :title="isCollapsed ? '{{ __('common.services') }}' : undefined"
-                            class="menu-item {{ request()->routeIs('services') ? 'active' : '' }} flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-dark-800"
-                            :class="{
-                                'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 border-l-2 border-primary-600 dark:border-primary-400 -ml-0.5 pl-[calc(0.75rem+2px)]': isActivePath(
-                                    '{{ route('services') }}'),
-                                'text-gray-700 dark:text-gray-300': !isActivePath('{{ route('services') }}'),
-                                'lg:justify-center lg:px-2': isCollapsed
-                            }">
-                            <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16M8 7H4a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-4" />
-                            </svg>
-                            <span class="truncate"
-                                :class="{ 'lg:hidden': isCollapsed }">{{ __('common.services') }}</span>
-                        </a>
-                    @endcan
-                </div>
+                        @can('view services')
+                            <a href="{{ route('services') }}" wire:navigate @click="closeMobileMenu()"
+                                :title="isCollapsed ? '{{ __('common.services') }}' : undefined"
+                                class="menu-item {{ request()->routeIs('services') ? 'active' : '' }} flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-dark-800"
+                                :class="{
+                                    'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 border-l-2 border-primary-600 dark:border-primary-400 -ml-0.5 pl-[calc(0.75rem+2px)]': isActivePath(
+                                        '{{ route('services') }}'),
+                                    'text-gray-700 dark:text-gray-300': !isActivePath('{{ route('services') }}'),
+                                    'lg:justify-center lg:px-2': isCollapsed
+                                }">
+                                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16M8 7H4a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-4" />
+                                </svg>
+                                <span class="truncate"
+                                    :class="{ 'lg:hidden': isCollapsed }">{{ __('common.services') }}</span>
+                            </a>
+                        @endcan
+                    </div>
                 @endcanany
 
                 <!-- Finance -->
                 @canany(['view invoices', 'view recurring-invoices', 'view bank-accounts'])
-                <div class="space-y-1">
-                    <h3 class="px-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2"
-                        :class="{ 'lg:hidden': isCollapsed }">
-                        {{ __('common.finance') }}
-                    </h3>
+                    <div class="space-y-1">
+                        <h3 class="px-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2"
+                            :class="{ 'lg:hidden': isCollapsed }">
+                            {{ __('common.finance') }}
+                        </h3>
 
-                    @can('view invoices')
-                        <a href="{{ route('invoices.index') }}" wire:navigate @click="closeMobileMenu()"
-                            :title="isCollapsed ? '{{ __('common.invoices') }}' : undefined"
-                            class="menu-item {{ request()->routeIs('invoices.index') ? 'active' : '' }} flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-dark-800"
-                            :class="{
-                                'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 border-l-2 border-primary-600 dark:border-primary-400 -ml-0.5 pl-[calc(0.75rem+2px)]': isActivePath(
-                                    '{{ route('invoices.index') }}'),
-                                'text-gray-700 dark:text-gray-300': !isActivePath('{{ route('invoices.index') }}'),
-                                'lg:justify-center lg:px-2': isCollapsed
-                            }">
-                            <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M16 13H8M16 17H8M10 9H8" />
-                            </svg>
-                            <span class="truncate"
-                                :class="{ 'lg:hidden': isCollapsed }">{{ __('common.invoices') }}</span>
-                        </a>
-                    @endcan
+                        @can('view invoices')
+                            <a href="{{ route('invoices.index') }}" wire:navigate @click="closeMobileMenu()"
+                                :title="isCollapsed ? '{{ __('common.invoices') }}' : undefined"
+                                class="menu-item {{ request()->routeIs('invoices.index') ? 'active' : '' }} flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-dark-800"
+                                :class="{
+                                    'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 border-l-2 border-primary-600 dark:border-primary-400 -ml-0.5 pl-[calc(0.75rem+2px)]': isActivePath(
+                                        '{{ route('invoices.index') }}'),
+                                    'text-gray-700 dark:text-gray-300': !isActivePath('{{ route('invoices.index') }}'),
+                                    'lg:justify-center lg:px-2': isCollapsed
+                                }">
+                                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M16 13H8M16 17H8M10 9H8" />
+                                </svg>
+                                <span class="truncate"
+                                    :class="{ 'lg:hidden': isCollapsed }">{{ __('common.invoices') }}</span>
+                            </a>
+                        @endcan
 
-                    @can('view recurring-invoices')
-                        <a href="{{ route('recurring-invoices.index') }}" wire:navigate @click="closeMobileMenu()"
-                            :title="isCollapsed ? '{{ __('common.recurring_invoices') }}' : undefined"
-                            class="menu-item {{ request()->routeIs('recurring-invoices.index') ? 'active' : '' }} flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-dark-800"
-                            :class="{
-                                'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 border-l-2 border-primary-600 dark:border-primary-400 -ml-0.5 pl-[calc(0.75rem+2px)]': isActivePath(
-                                    '{{ route('recurring-invoices.index') }}'),
-                                'text-gray-700 dark:text-gray-300': !isActivePath(
-                                    '{{ route('recurring-invoices.index') }}'),
-                                'lg:justify-center lg:px-2': isCollapsed
-                            }">
-                            <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M21 10c0-4.97-4.03-9-9-9-2.4 0-4.58.94-6.2 2.47M3 14c0 4.97 4.03 9 9 9 2.4 0 4.58-.94 6.2-2.47M3 3v7h7M21 21v-7h-7" />
-                            </svg>
-                            <span class="truncate"
-                                :class="{ 'lg:hidden': isCollapsed }">{{ __('common.recurring_invoices') }}</span>
-                        </a>
-                    @endcan
+                        @can('view recurring-invoices')
+                            <a href="{{ route('recurring-invoices.index') }}" wire:navigate @click="closeMobileMenu()"
+                                :title="isCollapsed ? '{{ __('common.recurring_invoices') }}' : undefined"
+                                class="menu-item {{ request()->routeIs('recurring-invoices.index') ? 'active' : '' }} flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-dark-800"
+                                :class="{
+                                    'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 border-l-2 border-primary-600 dark:border-primary-400 -ml-0.5 pl-[calc(0.75rem+2px)]': isActivePath(
+                                        '{{ route('recurring-invoices.index') }}'),
+                                    'text-gray-700 dark:text-gray-300': !isActivePath(
+                                        '{{ route('recurring-invoices.index') }}'),
+                                    'lg:justify-center lg:px-2': isCollapsed
+                                }">
+                                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M21 10c0-4.97-4.03-9-9-9-2.4 0-4.58.94-6.2 2.47M3 14c0 4.97 4.03 9 9 9 2.4 0 4.58-.94 6.2-2.47M3 3v7h7M21 21v-7h-7" />
+                                </svg>
+                                <span class="truncate"
+                                    :class="{ 'lg:hidden': isCollapsed }">{{ __('common.recurring_invoices') }}</span>
+                            </a>
+                        @endcan
 
-                    @can('view bank-accounts')
-                        <a href="{{ route('bank-accounts.index') }}" wire:navigate @click="closeMobileMenu()"
-                            :title="isCollapsed ? '{{ __('common.bank_accounts') }}' : undefined"
-                            class="menu-item {{ request()->routeIs('bank-accounts.index') ? 'active' : '' }} flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-dark-800"
-                            :class="{
-                                'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 border-l-2 border-primary-600 dark:border-primary-400 -ml-0.5 pl-[calc(0.75rem+2px)]': isActivePath(
-                                    '{{ route('bank-accounts.index') }}'),
-                                'text-gray-700 dark:text-gray-300': !isActivePath(
-                                    '{{ route('bank-accounts.index') }}'),
-                                'lg:justify-center lg:px-2': isCollapsed
-                            }">
-                            <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M3 21h18M9 8h1m-1 4h1m4-4h1m-1 4h1M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16" />
-                            </svg>
-                            <span class="truncate"
-                                :class="{ 'lg:hidden': isCollapsed }">{{ __('common.bank_accounts') }}</span>
-                        </a>
-                    @endcan
+                        @can('view bank-accounts')
+                            <a href="{{ route('bank-accounts.index') }}" wire:navigate @click="closeMobileMenu()"
+                                :title="isCollapsed ? '{{ __('common.bank_accounts') }}' : undefined"
+                                class="menu-item {{ request()->routeIs('bank-accounts.index') ? 'active' : '' }} flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-dark-800"
+                                :class="{
+                                    'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 border-l-2 border-primary-600 dark:border-primary-400 -ml-0.5 pl-[calc(0.75rem+2px)]': isActivePath(
+                                        '{{ route('bank-accounts.index') }}'),
+                                    'text-gray-700 dark:text-gray-300': !isActivePath(
+                                        '{{ route('bank-accounts.index') }}'),
+                                    'lg:justify-center lg:px-2': isCollapsed
+                                }">
+                                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M3 21h18M9 8h1m-1 4h1m4-4h1m-1 4h1M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16" />
+                                </svg>
+                                <span class="truncate"
+                                    :class="{ 'lg:hidden': isCollapsed }">{{ __('common.bank_accounts') }}</span>
+                            </a>
+                        @endcan
 
-                </div>
+                    </div>
                 @endcanany
 
                 <!-- Arus Kas -->
@@ -387,7 +387,8 @@ window.addEventListener('resize', () => {
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10zM16 12l-4 4-4-4M12 8v8" />
                             </svg>
-                            <span class="truncate" :class="{ 'lg:hidden': isCollapsed }">{{ __('pages.expenses') }}</span>
+                            <span class="truncate"
+                                :class="{ 'lg:hidden': isCollapsed }">{{ __('pages.expenses') }}</span>
                         </a>
 
                         <a href="{{ route('cash-flow.transfers') }}" wire:navigate @click="closeMobileMenu()"
@@ -404,192 +405,196 @@ window.addEventListener('resize', () => {
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />
                             </svg>
-                            <span class="truncate" :class="{ 'lg:hidden': isCollapsed }">{{ __('pages.transfers_and_adjustments') }}</span>
+                            <span class="truncate"
+                                :class="{ 'lg:hidden': isCollapsed }">{{ __('pages.transfers_and_adjustments') }}</span>
                         </a>
                     </div>
                 @endcan
 
                 <!-- Operations -->
                 @canany(['view categories', 'view fund requests', 'view reimbursements'])
-                <div class="space-y-1">
-                    <h3 class="px-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2"
-                        :class="{ 'lg:hidden': isCollapsed }">
-                        {{ __('common.operations') }}
-                    </h3>
+                    <div class="space-y-1">
+                        <h3 class="px-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2"
+                            :class="{ 'lg:hidden': isCollapsed }">
+                            {{ __('common.operations') }}
+                        </h3>
 
-                    @can('view categories')
-                        <a href="{{ route('transaction-categories.index') }}" wire:navigate @click="closeMobileMenu()"
-                            :title="isCollapsed ? '{{ __('common.categories') }}' : undefined"
-                            class="menu-item {{ request()->routeIs('transaction-categories.index') ? 'active' : '' }} flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-dark-800"
-                            :class="{
-                                'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 border-l-2 border-primary-600 dark:border-primary-400 -ml-0.5 pl-[calc(0.75rem+2px)]': isActivePath(
-                                    '{{ route('transaction-categories.index') }}'),
-                                'text-gray-700 dark:text-gray-300': !isActivePath(
-                                    '{{ route('transaction-categories.index') }}'),
-                                'lg:justify-center lg:px-2': isCollapsed
-                            }">
-                            <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2zM2 10h20" />
-                            </svg>
-                            <span class="truncate"
-                                :class="{ 'lg:hidden': isCollapsed }">{{ __('common.categories') }}</span>
-                        </a>
-                    @endcan
+                        @can('view categories')
+                            <a href="{{ route('transaction-categories.index') }}" wire:navigate @click="closeMobileMenu()"
+                                :title="isCollapsed ? '{{ __('common.categories') }}' : undefined"
+                                class="menu-item {{ request()->routeIs('transaction-categories.index') ? 'active' : '' }} flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-dark-800"
+                                :class="{
+                                    'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 border-l-2 border-primary-600 dark:border-primary-400 -ml-0.5 pl-[calc(0.75rem+2px)]': isActivePath(
+                                        '{{ route('transaction-categories.index') }}'),
+                                    'text-gray-700 dark:text-gray-300': !isActivePath(
+                                        '{{ route('transaction-categories.index') }}'),
+                                    'lg:justify-center lg:px-2': isCollapsed
+                                }">
+                                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2zM2 10h20" />
+                                </svg>
+                                <span class="truncate"
+                                    :class="{ 'lg:hidden': isCollapsed }">{{ __('common.categories') }}</span>
+                            </a>
+                        @endcan
 
-                    @can('view fund requests')
-                        <a href="{{ route('fund-requests.index') }}" wire:navigate @click="closeMobileMenu()"
-                            :title="isCollapsed ? '{{ __('common.fund_requests') }}' : undefined"
-                            class="menu-item {{ request()->routeIs('fund-requests.index') ? 'active' : '' }} flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-dark-800"
-                            :class="{
-                                'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 border-l-2 border-primary-600 dark:border-primary-400 -ml-0.5 pl-[calc(0.75rem+2px)]': isActivePath(
-                                    '{{ route('fund-requests.index') }}'),
-                                'text-gray-700 dark:text-gray-300': !isActivePath(
-                                    '{{ route('fund-requests.index') }}'),
-                                'lg:justify-center lg:px-2': isCollapsed
-                            }">
-                            <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            <span class="truncate"
-                                :class="{ 'lg:hidden': isCollapsed }">{{ __('common.fund_requests') }}</span>
-                        </a>
-                    @endcan
+                        @can('view fund requests')
+                            <a href="{{ route('fund-requests.index') }}" wire:navigate @click="closeMobileMenu()"
+                                :title="isCollapsed ? '{{ __('common.fund_requests') }}' : undefined"
+                                class="menu-item {{ request()->routeIs('fund-requests.index') ? 'active' : '' }} flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-dark-800"
+                                :class="{
+                                    'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 border-l-2 border-primary-600 dark:border-primary-400 -ml-0.5 pl-[calc(0.75rem+2px)]': isActivePath(
+                                        '{{ route('fund-requests.index') }}'),
+                                    'text-gray-700 dark:text-gray-300': !isActivePath(
+                                        '{{ route('fund-requests.index') }}'),
+                                    'lg:justify-center lg:px-2': isCollapsed
+                                }">
+                                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <span class="truncate"
+                                    :class="{ 'lg:hidden': isCollapsed }">{{ __('common.fund_requests') }}</span>
+                            </a>
+                        @endcan
 
-                    @can('view reimbursements')
-                        <a href="{{ route('reimbursements.index') }}" wire:navigate @click="closeMobileMenu()"
-                            :title="isCollapsed ? '{{ __('common.reimbursements') }}' : undefined"
-                            class="menu-item {{ request()->routeIs('reimbursements.index') ? 'active' : '' }} flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-dark-800"
-                            :class="{
-                                'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 border-l-2 border-primary-600 dark:border-primary-400 -ml-0.5 pl-[calc(0.75rem+2px)]': isActivePath(
-                                    '{{ route('reimbursements.index') }}'),
-                                'text-gray-700 dark:text-gray-300': !isActivePath(
-                                    '{{ route('reimbursements.index') }}'),
-                                'lg:justify-center lg:px-2': isCollapsed
-                            }">
-                            <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M21 10c0-4.97-4.03-9-9-9-2.4 0-4.58.94-6.2 2.47M3 14c0 4.97 4.03 9 9 9 2.4 0 4.58-.94 6.2-2.47M3 3v7h7M21 21v-7h-7" />
-                            </svg>
-                            <span class="truncate"
-                                :class="{ 'lg:hidden': isCollapsed }">{{ __('common.reimbursements') }}</span>
-                        </a>
-                    @endcan
-                </div>
+                        @can('view reimbursements')
+                            <a href="{{ route('reimbursements.index') }}" wire:navigate @click="closeMobileMenu()"
+                                :title="isCollapsed ? '{{ __('common.reimbursements') }}' : undefined"
+                                class="menu-item {{ request()->routeIs('reimbursements.index') ? 'active' : '' }} flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-dark-800"
+                                :class="{
+                                    'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 border-l-2 border-primary-600 dark:border-primary-400 -ml-0.5 pl-[calc(0.75rem+2px)]': isActivePath(
+                                        '{{ route('reimbursements.index') }}'),
+                                    'text-gray-700 dark:text-gray-300': !isActivePath(
+                                        '{{ route('reimbursements.index') }}'),
+                                    'lg:justify-center lg:px-2': isCollapsed
+                                }">
+                                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M21 10c0-4.97-4.03-9-9-9-2.4 0-4.58.94-6.2 2.47M3 14c0 4.97 4.03 9 9 9 2.4 0 4.58-.94 6.2-2.47M3 3v7h7M21 21v-7h-7" />
+                                </svg>
+                                <span class="truncate"
+                                    :class="{ 'lg:hidden': isCollapsed }">{{ __('common.reimbursements') }}</span>
+                            </a>
+                        @endcan
+                    </div>
                 @endcanany
 
                 <!-- Debt & Receivables -->
                 @canany(['view loans', 'view receivables'])
-                <div class="space-y-1">
-                    <h3 class="px-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2"
-                        :class="{ 'lg:hidden': isCollapsed }">
-                        {{ __('common.debt_receivables') }}
-                    </h3>
+                    <div class="space-y-1">
+                        <h3 class="px-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2"
+                            :class="{ 'lg:hidden': isCollapsed }">
+                            {{ __('common.debt_receivables') }}
+                        </h3>
 
-                    @can('view loans')
-                        <a href="{{ route('loans.index') }}" wire:navigate @click="closeMobileMenu()"
-                            :title="isCollapsed ? '{{ __('common.loans') }}' : undefined"
-                            class="menu-item {{ request()->routeIs('loans.index') ? 'active' : '' }} flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-dark-800"
-                            :class="{
-                                'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 border-l-2 border-primary-600 dark:border-primary-400 -ml-0.5 pl-[calc(0.75rem+2px)]': isActivePath(
-                                    '{{ route('loans.index') }}'),
-                                'text-gray-700 dark:text-gray-300': !isActivePath('{{ route('loans.index') }}'),
-                                'lg:justify-center lg:px-2': isCollapsed
-                            }">
-                            <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M21 4H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zM1 10h22" />
-                            </svg>
-                            <span class="truncate" :class="{ 'lg:hidden': isCollapsed }">{{ __('common.loans') }}</span>
-                        </a>
-                    @endcan
+                        @can('view loans')
+                            <a href="{{ route('loans.index') }}" wire:navigate @click="closeMobileMenu()"
+                                :title="isCollapsed ? '{{ __('common.loans') }}' : undefined"
+                                class="menu-item {{ request()->routeIs('loans.index') ? 'active' : '' }} flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-dark-800"
+                                :class="{
+                                    'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 border-l-2 border-primary-600 dark:border-primary-400 -ml-0.5 pl-[calc(0.75rem+2px)]': isActivePath(
+                                        '{{ route('loans.index') }}'),
+                                    'text-gray-700 dark:text-gray-300': !isActivePath('{{ route('loans.index') }}'),
+                                    'lg:justify-center lg:px-2': isCollapsed
+                                }">
+                                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M21 4H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zM1 10h22" />
+                                </svg>
+                                <span class="truncate" :class="{ 'lg:hidden': isCollapsed }">{{ __('common.loans') }}</span>
+                            </a>
+                        @endcan
 
-                    @can('view receivables')
-                        <a href="{{ route('receivables.index') }}" wire:navigate @click="closeMobileMenu()"
-                            :title="isCollapsed ? '{{ __('common.receivables') }}' : undefined"
-                            class="menu-item {{ request()->routeIs('receivables.index') ? 'active' : '' }} flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-dark-800"
-                            :class="{
-                                'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 border-l-2 border-primary-600 dark:border-primary-400 -ml-0.5 pl-[calc(0.75rem+2px)]': isActivePath(
-                                    '{{ route('receivables.index') }}'),
-                                'text-gray-700 dark:text-gray-300': !isActivePath('{{ route('receivables.index') }}'),
-                                'lg:justify-center lg:px-2': isCollapsed
-                            }">
-                            <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M21 12V7H5a2 2 0 0 1 0-4h14v4M3 5v14a2 2 0 0 0 2 2h16v-5M18 12h.01" />
-                            </svg>
-                            <span class="truncate"
-                                :class="{ 'lg:hidden': isCollapsed }">{{ __('common.receivables') }}</span>
-                        </a>
-                    @endcan
-                </div>
+                        @can('view receivables')
+                            <a href="{{ route('receivables.index') }}" wire:navigate @click="closeMobileMenu()"
+                                :title="isCollapsed ? '{{ __('common.receivables') }}' : undefined"
+                                class="menu-item {{ request()->routeIs('receivables.index') ? 'active' : '' }} flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-dark-800"
+                                :class="{
+                                    'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 border-l-2 border-primary-600 dark:border-primary-400 -ml-0.5 pl-[calc(0.75rem+2px)]': isActivePath(
+                                        '{{ route('receivables.index') }}'),
+                                    'text-gray-700 dark:text-gray-300': !isActivePath(
+                                        '{{ route('receivables.index') }}'),
+                                    'lg:justify-center lg:px-2': isCollapsed
+                                }">
+                                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M21 12V7H5a2 2 0 0 1 0-4h14v4M3 5v14a2 2 0 0 0 2 2h16v-5M18 12h.01" />
+                                </svg>
+                                <span class="truncate"
+                                    :class="{ 'lg:hidden': isCollapsed }">{{ __('common.receivables') }}</span>
+                            </a>
+                        @endcan
+                    </div>
                 @endcanany
 
                 <!-- Administration -->
                 @canany(['view feedbacks', 'view permissions', 'manage users'])
-                <div class="space-y-1">
-                    <h3 class="px-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2"
-                        :class="{ 'lg:hidden': isCollapsed }">
-                        {{ __('common.administration') }}
-                    </h3>
+                    <div class="space-y-1">
+                        <h3 class="px-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2"
+                            :class="{ 'lg:hidden': isCollapsed }">
+                            {{ __('common.administration') }}
+                        </h3>
 
-                    @can('view feedbacks')
-                        <a href="{{ route('feedbacks.index') }}" wire:navigate @click="closeMobileMenu()"
-                            :title="isCollapsed ? '{{ __('common.feedbacks') }}' : undefined"
-                            class="menu-item {{ request()->routeIs('feedbacks.index') ? 'active' : '' }} flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-dark-800"
-                            :class="{
-                                'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 border-l-2 border-primary-600 dark:border-primary-400 -ml-0.5 pl-[calc(0.75rem+2px)]': isActivePath(
-                                    '{{ route('feedbacks.index') }}'),
-                                'text-gray-700 dark:text-gray-300': !isActivePath('{{ route('feedbacks.index') }}'),
-                                'lg:justify-center lg:px-2': isCollapsed
-                            }">
-                            <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                            </svg>
-                            <span class="truncate"
-                                :class="{ 'lg:hidden': isCollapsed }">{{ __('common.feedbacks') }}</span>
-                        </a>
-                    @endcan
+                        @can('view feedbacks')
+                            <a href="{{ route('feedbacks.index') }}" wire:navigate @click="closeMobileMenu()"
+                                :title="isCollapsed ? '{{ __('common.feedbacks') }}' : undefined"
+                                class="menu-item {{ request()->routeIs('feedbacks.index') ? 'active' : '' }} flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-dark-800"
+                                :class="{
+                                    'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 border-l-2 border-primary-600 dark:border-primary-400 -ml-0.5 pl-[calc(0.75rem+2px)]': isActivePath(
+                                        '{{ route('feedbacks.index') }}'),
+                                    'text-gray-700 dark:text-gray-300': !isActivePath(
+                                        '{{ route('feedbacks.index') }}'),
+                                    'lg:justify-center lg:px-2': isCollapsed
+                                }">
+                                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                                </svg>
+                                <span class="truncate"
+                                    :class="{ 'lg:hidden': isCollapsed }">{{ __('common.feedbacks') }}</span>
+                            </a>
+                        @endcan
 
-                    @can('view permissions')
-                        <a href="{{ route('permissions.index') }}" wire:navigate @click="closeMobileMenu()"
-                            :title="isCollapsed ? '{{ __('common.permissions') }}' : undefined"
-                            class="menu-item {{ request()->routeIs('permissions.index') ? 'active' : '' }} flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-dark-800"
-                            :class="{
-                                'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 border-l-2 border-primary-600 dark:border-primary-400 -ml-0.5 pl-[calc(0.75rem+2px)]': isActivePath(
-                                    '{{ route('permissions.index') }}'),
-                                'text-gray-700 dark:text-gray-300': !isActivePath('{{ route('permissions.index') }}'),
-                                'lg:justify-center lg:px-2': isCollapsed
-                            }">
-                            <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                            </svg>
-                            <span class="truncate"
-                                :class="{ 'lg:hidden': isCollapsed }">{{ __('common.permissions') }}</span>
-                        </a>
-                    @endcan
+                        @can('view permissions')
+                            <a href="{{ route('permissions.index') }}" wire:navigate @click="closeMobileMenu()"
+                                :title="isCollapsed ? '{{ __('common.permissions') }}' : undefined"
+                                class="menu-item {{ request()->routeIs('permissions.index') ? 'active' : '' }} flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-dark-800"
+                                :class="{
+                                    'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 border-l-2 border-primary-600 dark:border-primary-400 -ml-0.5 pl-[calc(0.75rem+2px)]': isActivePath(
+                                        '{{ route('permissions.index') }}'),
+                                    'text-gray-700 dark:text-gray-300': !isActivePath(
+                                        '{{ route('permissions.index') }}'),
+                                    'lg:justify-center lg:px-2': isCollapsed
+                                }">
+                                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                                </svg>
+                                <span class="truncate"
+                                    :class="{ 'lg:hidden': isCollapsed }">{{ __('common.permissions') }}</span>
+                            </a>
+                        @endcan
 
-                    @can('manage users')
-                        <a href="{{ route('admin.users') }}" wire:navigate @click="closeMobileMenu()"
-                            :title="isCollapsed ? '{{ __('common.users') }}' : undefined"
-                            class="menu-item {{ request()->routeIs('admin.users') ? 'active' : '' }} flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-dark-800"
-                            :class="{
-                                'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 border-l-2 border-primary-600 dark:border-primary-400 -ml-0.5 pl-[calc(0.75rem+2px)]': isActivePath(
-                                    '{{ route('admin.users') }}'),
-                                'text-gray-700 dark:text-gray-300': !isActivePath('{{ route('admin.users') }}'),
-                                'lg:justify-center lg:px-2': isCollapsed
-                            }">
-                            <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M12.5 7a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM22 18a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm0 0v1.5m0 0V21m-2.5-3.5l-1.3-.75M22 13.5v-1.5m2.5 3.5l1.3-.75" />
-                            </svg>
-                            <span class="truncate" :class="{ 'lg:hidden': isCollapsed }">{{ __('common.users') }}</span>
-                        </a>
-                    @endcan
-                </div>
+                        @can('manage users')
+                            <a href="{{ route('admin.users') }}" wire:navigate @click="closeMobileMenu()"
+                                :title="isCollapsed ? '{{ __('common.users') }}' : undefined"
+                                class="menu-item {{ request()->routeIs('admin.users') ? 'active' : '' }} flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-dark-800"
+                                :class="{
+                                    'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 border-l-2 border-primary-600 dark:border-primary-400 -ml-0.5 pl-[calc(0.75rem+2px)]': isActivePath(
+                                        '{{ route('admin.users') }}'),
+                                    'text-gray-700 dark:text-gray-300': !isActivePath('{{ route('admin.users') }}'),
+                                    'lg:justify-center lg:px-2': isCollapsed
+                                }">
+                                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M12.5 7a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM22 18a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm0 0v1.5m0 0V21m-2.5-3.5l-1.3-.75M22 13.5v-1.5m2.5 3.5l1.3-.75" />
+                                </svg>
+                                <span class="truncate" :class="{ 'lg:hidden': isCollapsed }">{{ __('common.users') }}</span>
+                            </a>
+                        @endcan
+                    </div>
                 @endcanany
             </nav>
 
@@ -722,11 +727,15 @@ window.addEventListener('resize', () => {
         <!-- Main Content -->
         <main class="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50 dark:bg-dark-900">
             {{ $slot }}
+
+
         </main>
+
+        {{-- Notification Drawer (di body level agar tidak tertutup header) --}}
+        <livewire:notifications.drawer />
     </div>
 
-    {{-- Notification Drawer (di body level agar tidak tertutup header) --}}
-    <livewire:notifications.drawer />
+
 
     {{-- Floating Feedback Button --}}
     <livewire:floating-feedback-button />

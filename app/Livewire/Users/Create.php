@@ -68,6 +68,6 @@ class Create extends Component
         $this->dispatch('created');
         $this->reset();
         $this->status = 'active';
-        $this->success('User created successfully');
+        $this->success(__('pages.user_created'));
     }
 }

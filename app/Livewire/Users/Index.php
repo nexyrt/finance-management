@@ -8,6 +8,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\On;
 use Livewire\Attributes\Renderless;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -21,18 +22,50 @@ class Index extends Component
     public array $sort = ['column' => 'created_at', 'direction' => 'desc'];
     public array $selected = [];
 
-    public array $headers = [
-        ['index' => 'name', 'label' => 'Name'],
-        ['index' => 'email', 'label' => 'Email'],
-        ['index' => 'role', 'label' => 'Role', 'sortable' => false],
-        ['index' => 'status', 'label' => 'Status'],
-        ['index' => 'created_at', 'label' => 'Joined'],
-        ['index' => 'action', 'sortable' => false],
-    ];
+    public array $headers = [];
+
+    public function mount(): void
+    {
+        $this->headers = [
+            ['index' => 'name', 'label' => __('pages.user_col_name')],
+            ['index' => 'email', 'label' => __('pages.user_col_email')],
+            ['index' => 'role', 'label' => __('pages.user_col_role'), 'sortable' => false],
+            ['index' => 'status', 'label' => __('pages.user_col_status')],
+            ['index' => 'created_at', 'label' => __('pages.user_col_joined')],
+            ['index' => 'action', 'sortable' => false],
+        ];
+    }
+
+    #[On('created')]
+    #[On('updated')]
+    #[On('deleted')]
+    public function refreshStats(): void
+    {
+        unset($this->stats);
+        $this->reset('selected');
+        $this->resetPage();
+    }
 
     public function render(): View
     {
         return view('livewire.users.index');
+    }
+
+    #[Computed]
+    public function stats(): array
+    {
+        $total = User::count();
+        $active = User::where('status', 'active')->count();
+        $admins = User::role('admin')->count();
+        $financeManagers = User::role('finance manager')->count();
+
+        return [
+            'total' => $total,
+            'active' => $active,
+            'inactive' => $total - $active,
+            'admins' => $admins,
+            'finance_managers' => $financeManagers,
+        ];
     }
 
     #[Computed]
@@ -53,7 +86,7 @@ class Index extends Component
         if (empty($this->selected)) return;
 
         $count = count($this->selected);
-        $this->question("Delete {$count} users?", "This action cannot be undone.")
+        $this->question(__('pages.user_bulk_delete', ['count' => $count]), __('pages.user_cannot_undo'))
             ->confirm(method: 'bulkDelete')
             ->cancel()
             ->send();
@@ -71,6 +104,6 @@ class Index extends Component
         
         $this->selected = [];
         $this->resetPage();
-        $this->success("{$count} users deleted successfully");
+        $this->success(__('pages.user_bulk_deleted', ['count' => $count]));
     }
 }

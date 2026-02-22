@@ -1,43 +1,60 @@
 <div>
     <x-button wire:click="$toggle('modal')" color="blue" icon="plus" class="w-full sm:w-auto">
-        Add User
+        {{ __('pages.add_user') }}
     </x-button>
 
-    <x-modal title="Create New User" wire size="2xl">
-        <form id="user-create" wire:submit="save" class="space-y-4">
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div class="sm:col-span-2">
-                    <x-input label="Full Name *" wire:model="name" required />
+    <x-modal wire="modal" size="2xl" center persistent>
+        <x-slot:title>
+            <div class="flex items-center gap-4 my-3">
+                <div class="h-12 w-12 bg-green-50 dark:bg-green-900/20 rounded-xl flex items-center justify-center">
+                    <x-icon name="user-plus" class="w-6 h-6 text-green-600 dark:text-green-400" />
                 </div>
                 <div>
-                    <x-input label="Email *" type="email" wire:model="email" required />
+                    <h3 class="text-xl font-bold text-dark-900 dark:text-dark-50">{{ __('pages.create_user_title') }}</h3>
+                    <p class="text-sm text-dark-600 dark:text-dark-400">{{ __('pages.user_management_desc') }}</p>
                 </div>
-                <div>
-                    <x-input label="Phone Number" wire:model="phone_number" />
+            </div>
+        </x-slot:title>
+
+        <form id="user-create" wire:submit="save" class="space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {{-- Left Column: Personal Info --}}
+                <div class="space-y-4">
+                    <div class="border-b border-secondary-200 dark:border-dark-600 pb-4">
+                        <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-1">{{ __('pages.basic_info') }}</h4>
+                        <p class="text-xs text-dark-500 dark:text-dark-400">{{ __('pages.user_full_name') }}</p>
+                    </div>
+                    <x-input :label="__('pages.user_full_name')" wire:model="name" required />
+                    <x-input :label="__('pages.user_email')" type="email" wire:model="email" required />
+                    <x-input :label="__('pages.user_phone')" wire:model="phone_number" />
                 </div>
-                <div>
-                    <x-select.styled label="Role *" wire:model="role" :options="$this->roles" required />
-                </div>
-                <div>
-                    <x-select.native label="Status *" wire:model="status" :options="[
-                        ['label' => 'Active', 'value' => 'active'],
-                        ['label' => 'Inactive', 'value' => 'inactive'],
+
+                {{-- Right Column: Role, Status & Password --}}
+                <div class="space-y-4">
+                    <div class="border-b border-secondary-200 dark:border-dark-600 pb-4">
+                        <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-1">{{ __('pages.user_col_role') }} & {{ __('common.settings') }}</h4>
+                        <p class="text-xs text-dark-500 dark:text-dark-400">{{ __('pages.assign_role') }}</p>
+                    </div>
+                    <x-select.styled :label="__('pages.user_role')" wire:model="role" :options="$this->roles" required />
+                    <x-select.native :label="__('pages.user_status')" wire:model="status" :options="[
+                        ['label' => __('pages.user_status_active'), 'value' => 'active'],
+                        ['label' => __('pages.user_status_inactive'), 'value' => 'inactive'],
                     ]" required />
-                </div>
-                <div>
-                    <x-password label="Password *" wire:model="password" required />
-                </div>
-                <div>
-                    <x-password label="Confirm Password *" wire:model="password_confirmation" required />
+                    <x-password :label="__('pages.user_password')" wire:model="password" required />
+                    <x-password :label="__('pages.user_password_confirm')" wire:model="password_confirmation" required />
                 </div>
             </div>
         </form>
 
         <x-slot:footer>
-            <div class="flex justify-between w-full">
-                <x-button color="gray" wire:click="$set('modal', false)">Cancel</x-button>
-                <x-button type="submit" form="user-create" color="blue" loading="save" icon="check">
-                    Create User
+            <div class="flex flex-col sm:flex-row justify-end gap-3">
+                <x-button wire:click="$set('modal', false)" color="zinc"
+                    class="w-full sm:w-auto order-2 sm:order-1">
+                    {{ __('common.cancel') }}
+                </x-button>
+                <x-button type="submit" form="user-create" color="green" icon="check" loading="save"
+                    class="w-full sm:w-auto order-1 sm:order-2">
+                    {{ __('pages.create_user') }}
                 </x-button>
             </div>
         </x-slot:footer>

@@ -117,8 +117,8 @@
                     <x-icon name="document-text" class="w-5 h-5 text-blue-600 dark:text-blue-400" />
                 </div>
                 <div class="flex flex-col">
-                    <span class="font-semibold text-dark-900 dark:text-dark-50">{{ $row->title }}</span>
-                    <span class="text-xs text-dark-500 dark:text-dark-400 mt-0.5">{{ Str::limit($row->purpose, 60) }}</span>
+                    <span class="font-semibold text-dark-900 dark:text-dark-50">{{ translate_text($row->title) }}</span>
+                    <span class="text-xs text-dark-500 dark:text-dark-400 mt-0.5">{{ Str::limit(translate_text($row->purpose), 60) }}</span>
                 </div>
             </div>
         @endinteract

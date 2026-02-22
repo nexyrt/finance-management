@@ -53,7 +53,7 @@
                         </div>
                         <div class="col-span-2">
                             <label class="text-xs text-dark-500 dark:text-dark-400">{{ __('pages.fund_request_title') }}</label>
-                            <p class="text-sm font-medium text-dark-900 dark:text-dark-50">{{ $fundRequest->title }}</p>
+                            <p class="text-sm font-medium text-dark-900 dark:text-dark-50">{{ translate_text($fundRequest->title) }}</p>
                         </div>
                         <div class="col-span-2">
                             <label class="text-xs text-dark-500 dark:text-dark-400">{{ __('pages.purpose') }}</label>

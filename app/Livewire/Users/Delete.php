@@ -29,11 +29,11 @@ class Delete extends Component
         
         // Prevent deleting current user
         if ($this->user->id === auth()->id()) {
-            $this->error('Cannot delete your own account');
+            $this->error(__('pages.user_cannot_delete_self'));
             return;
         }
-        
-        $this->question("Delete {$this->user->name}?", 'This action cannot be undone.')
+
+        $this->question(__('pages.user_delete_confirm', ['name' => $this->user->name]), __('pages.user_cannot_undo'))
             ->confirm(method: 'delete')
             ->cancel()
             ->send();
@@ -45,6 +45,6 @@ class Delete extends Component
         
         $this->user->delete();
         $this->dispatch('deleted');
-        $this->success('User deleted successfully');
+        $this->success(__('pages.user_deleted'));
     }
 }
