@@ -308,9 +308,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // ------------------------------------------------------------------------
     // TESTING (Local Only)
     // ------------------------------------------------------------------------
-    if (app()->environment('local')) {
-        Route::get('/test', TestingPage::class)->name('test');
-    }
+     Route::get('/test', TestingPage::class)->name('test');
+    
 });
 
 require __DIR__.'/auth.php';
