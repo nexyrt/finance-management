@@ -5,60 +5,69 @@
         <p class="text-gray-600 dark:text-gray-400 text-lg">Eksperimen komponen</p>
     </div>
 
-    {{-- Tombol buka modal --}}
-    <div class="flex gap-3">
-        <x-button wire:click="$toggle('modal')" text="Modal Custom" />
-        <livewire:transactions.create-income />
-        <livewire:transactions.create-expense />
-    </div>
-
-    {{-- ================================================================ --}}
-    {{-- MODAL PEMASUKAN (Custom) --}}
-    {{-- ================================================================ --}}
-
-    <x-modal wire size="md" center scrollable x-on:keydown.enter.window="$wire.save()">
-        <x-slot:title>
-            Modal Custom
-        </x-slot:title>
-
-        <div class="p-4">
-            <x-file-upload wire:model="attachment" label="Lampiran" multiple/>
-
-            <x-select.styled wire:model="bank_account_id" :request="route('api.bank-accounts')" label="Rekening Bank"
-                placeholder="Pilih rekening..." searchable />
-            <x-currency-input wire:model="amount" label="Jumlah" prefix="Rp" placeholder="0" />
-            <x-date wire:model="transaction_date" label="Tanggal Transaksi" placeholder="Pilih tanggal..." />
-
-            <div class="flex items-end gap-2">
-                <div class="flex-1">
-                    <x-select.styled wire:model="category_id" :request="[
-                        'url' => route('api.transaction-categories'),
-                        'method' => 'get',
-                        'params' => ['type' => 'debit'],
-                    ]" placeholder="Pilih kategori..."
-                        searchable label="Kategori *" />
-                </div>
-                <div class="flex-shrink-0">
-                    <livewire:transactions-categories.create button-label="+" />
-                </div>
+    {{-- Test 1: Ambil Data dari Model --}}
+    <x-card>
+        <div class="space-y-4">
+            <div class="border-b border-secondary-200 dark:border-dark-600 pb-3">
+                <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50">Test 1: Ambil Data dari Model</h4>
+                <p class="text-xs text-dark-500 dark:text-dark-400 mt-1">
+                    Klik tombol → load bank accounts (sama logika dengan <code>/api/bank-accounts</code>)
+                </p>
             </div>
 
-            <x-input wire:model="description" label="Deskripsi" placeholder="Masukkan deskripsi..." />
-            <x-input wire:model="reference_number" label="Nomor Referensi" placeholder="Masukkan nomor referensi..." />
+            <x-button wire:click="loadBankAccounts" loading="loadBankAccounts" color="blue" icon="arrow-down-tray">
+                Load Bank Accounts
+            </x-button>
+
+            @if (count($bankAccounts) > 0)
+                <div class="space-y-1">
+                    <p class="text-xs text-dark-500 dark:text-dark-400">{{ count($bankAccounts) }} accounts loaded:</p>
+                    @foreach ($bankAccounts as $account)
+                        <div class="flex items-center gap-2 p-2 bg-gray-50 dark:bg-dark-700 rounded-lg text-sm">
+                            <span class="font-mono text-xs text-dark-400 w-6">{{ $account['value'] }}</span>
+                            <span class="text-dark-900 dark:text-dark-50">{{ $account['label'] }}</span>
+                        </div>
+                    @endforeach
+                </div>
+            @endif
         </div>
+    </x-card>
 
-        <x-slot:footer>
-            <div class="flex justify-end gap-3">
-                <x-button wire:click="$toggle('modal')" color="zinc">
-                    Tutup
-                </x-button>
-
-                <x-button wire:click="save" loading="save" color="blue" icon="check">
-                    Simpan
-                </x-button>
-
+    {{-- Test 2: Google Translate --}}
+    <x-card>
+        <div class="space-y-4">
+            <div class="border-b border-secondary-200 dark:border-dark-600 pb-3">
+                <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50">Test 2: Google Translate</h4>
+                <p class="text-xs text-dark-500 dark:text-dark-400 mt-1">
+                    Test <code>stichoza/google-translate-php</code>. Parameter <code>:name</code>, <code>:count</code>, dll terjaga.
+                </p>
             </div>
-        </x-slot:footer>
-    </x-modal>
 
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div class="space-y-3">
+                    <x-textarea wire:model="inputText" label="Input (Bahasa Indonesia)" rows="4"
+                        placeholder="Contoh: Selamat datang :name, Anda memiliki :count notifikasi" />
+
+                    <x-select.styled wire:model.live="targetLang" label="Target Language"
+                        :options="[
+                            ['value' => 'zh', 'label' => 'Chinese (zh)'],
+                            ['value' => 'en', 'label' => 'English (en)'],
+                            ['value' => 'ja', 'label' => 'Japanese (ja)'],
+                            ['value' => 'ko', 'label' => 'Korean (ko)'],
+                        ]" />
+
+                    <x-button wire:click="translateText" loading="translateText" color="green" icon="language">
+                        Translate
+                    </x-button>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="text-sm font-medium text-dark-900 dark:text-dark-50">Hasil Terjemahan</label>
+                    <div class="min-h-32 p-3 bg-gray-50 dark:bg-dark-700 border border-secondary-200 dark:border-dark-600 rounded-xl text-sm text-dark-900 dark:text-dark-50 whitespace-pre-wrap">
+                        {{ $translatedText ?: '(belum ada hasil)' }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </x-card>
 </div>

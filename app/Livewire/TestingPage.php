@@ -2,82 +2,48 @@
 
 namespace App\Livewire;
 
-use TallStackUi\Traits\Interactions;
-use App\Models\BankTransaction;
+use App\Models\BankAccount;
 use Livewire\Component;
-use Livewire\WithFileUploads;
+use Stichoza\GoogleTranslate\GoogleTranslate;
 
 class TestingPage extends Component
 {
-    use Interactions; 
-    use WithFileUploads;
+    // Section 1: Data dari Model
+    public array $bankAccounts = [];
 
-    public bool $modal = false;
+    // Section 2: Google Translate
+    public string $inputText = '';
+    public string $translatedText = '';
+    public string $targetLang = 'zh';
 
-    // Custom Modal Form Properties
-    public $bank_account_id = null;
-
-    public $amount = null;
-
-    public $transaction_date = null;
-
-    public function mount(): void
+    public function loadBankAccounts(): void
     {
-        $this->transaction_date = now()->format('Y-m-d');
+        $this->bankAccounts = BankAccount::orderBy('bank_name')
+            ->orderBy('account_name')
+            ->get()
+            ->map(fn($a) => [
+                'label' => $a->account_name . ' (' . $a->bank_name . ')',
+                'value' => $a->id,
+            ])
+            ->toArray();
     }
 
-    public $transaction_type = 'debit';
-
-    public $category_id = null;
-
-    public $description = null;
-
-    public $reference_number = null;
-
-    public $attachment = null;
-
-    public function rules(): array
+    public function translateText(): void
     {
-        return [
-            'bank_account_id'  => 'required|exists:bank_accounts,id',
-            'amount'           => 'required',
-            'transaction_date' => 'required|date',
-            'transaction_type' => 'required|in:credit,debit',
-            'category_id'      => 'nullable|exists:transaction_categories,id',
-            'description'      => 'nullable|string|max:255',
-            'reference_number' => 'nullable|string|max:255',
-            'attachment'       => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
-        ];
-    }
-
-    public function save()
-    {
-        $this->validate();
-
-        $data = [
-            'bank_account_id'  => $this->bank_account_id,
-            'amount'           => $this->amount,
-            'transaction_date' => $this->transaction_date,
-            'transaction_type' => $this->transaction_type,
-            'category_id'      => $this->category_id,
-            'description'      => $this->description,
-            'reference_number' => $this->reference_number,
-        ];
-
-        if ($this->attachment) {
-            $filename = time() . '_' . $this->attachment->getClientOriginalName();
-            $path = $this->attachment->storeAs('transactions', $filename, 'public');
-            $data['attachment_path'] = $path;
-            $data['attachment_name'] = $this->attachment->getClientOriginalName();
+        if (blank($this->inputText)) {
+            return;
         }
 
-        BankTransaction::create($data);
+        try {
+            $tr = new GoogleTranslate($this->targetLang);
+            $tr->setSource('id');
 
-        $this->toast()->success('Transaksi Berhasil Disimpan!')->send();
-        $this->reset(['bank_account_id', 'amount', 'transaction_type', 'category_id', 'description', 'reference_number', 'attachment']);
-        $this->transaction_date = now()->format('Y-m-d');
-        $this->dispatch('currency-reset');
-        $this->dispatch('file-upload-reset');
+            $this->translatedText = $tr->preserveParameters()
+                ->translate($this->inputText) ?? '(tidak ada hasil)';
+
+        } catch (\Exception $e) {
+            $this->translatedText = 'Error: ' . $e->getMessage();
+        }
     }
 
     public function render()
