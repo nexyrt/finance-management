@@ -1,11 +1,14 @@
 <?php
 
+use App\Http\Controllers\CashFlowExportController;
 use App\Livewire\Accounts\Index as AccountsIndex;
 use App\Livewire\CashFlow\Expenses as CashFlowExpenses;
 use App\Livewire\CashFlow\Income as CashFlowIncome;
 use App\Livewire\CashFlow\Transfers as CashFlowTransfers;
 use App\Livewire\Clients\Index as ClientsIndex;
 use App\Livewire\Dashboard;
+use App\Livewire\Feedbacks\Index as FeedbacksIndex;
+use App\Livewire\FundRequests\Index as FundRequestsIndex;
 use App\Livewire\Invoices\Create as InvoicesCreate;
 use App\Livewire\Invoices\Edit as InvoicesEdit;
 use App\Livewire\Invoices\Index as InvoicesIndex;
@@ -16,8 +19,6 @@ use App\Livewire\RecurringInvoices\CreateTemplate as RecurringInvoicesCreateTemp
 use App\Livewire\RecurringInvoices\EditTemplate as RecurringInvoicesEditTemplate;
 use App\Livewire\RecurringInvoices\Index as RecurringInvoicesIndex;
 use App\Livewire\RecurringInvoices\Monthly\EditInvoice as RecurringInvoicesMonthlyEdit;
-use App\Livewire\Feedbacks\Index as FeedbacksIndex;
-use App\Livewire\FundRequests\Index as FundRequestsIndex;
 use App\Livewire\Reimbursements\Index as ReimbursementIndex;
 use App\Livewire\Services\Index as ServicesIndex;
 use App\Livewire\Settings\CompanyProfileSettings;
@@ -26,7 +27,6 @@ use App\Livewire\Settings\Profile;
 use App\Livewire\TestingPage;
 use App\Livewire\TransactionsCategories\Index as TransactionsCategoriesIndex;
 use App\Livewire\Users\Index as UsersIndex;
-use App\Http\Controllers\CashFlowExportController;
 use App\Models\Invoice;
 use App\Services\FundRequestExportService;
 use App\Services\InvoicePrintService;
@@ -43,15 +43,42 @@ Route::redirect('/', '/login')->name('home');
 // AUTHENTICATED ROUTES
 // ============================================================================
 
+Route::get('/api/transaction-categories', function (Request $request) {
+    $type = $request->get('type');
+
+    $categoryTypes = match ($type) {
+        'credit' => ['income', 'adjustment', 'transfer'],
+        'debit' => ['expense', 'adjustment', 'transfer'],
+        default => ['income', 'expense', 'adjustment', 'transfer'],
+    };
+
+    return \App\Models\TransactionCategory::whereNull('parent_id')
+        ->whereIn('type', $categoryTypes)
+        ->with('children')
+        ->orderBy('type')
+        ->orderBy('label')
+        ->get()
+        ->flatMap(function ($parent) {
+            $items = [];
+            $items[] = ['label' => $parent->label, 'value' => $parent->id, 'disabled' => true];
+            foreach ($parent->children as $child) {
+                $items[] = ['label' => '↳ '.$child->label, 'value' => $child->id];
+            }
+
+            return $items;
+        })
+        ->values();
+})->name('api.transaction-categories');
+
 Route::get('/api/bank-accounts', function () {
-        return \App\Models\BankAccount::orderBy('bank_name')
-            ->orderBy('account_name')
-            ->get()
-            ->map(fn ($account) => [
-                'label' => $account->account_name . ' (' . $account->bank_name . ')',
-                'value' => $account->id,
-            ]);
-    })->name('api.bank-accounts');
+    return \App\Models\BankAccount::orderBy('bank_name')
+        ->orderBy('account_name')
+        ->get()
+        ->map(fn ($account) => [
+            'label' => $account->account_name.' ('.$account->bank_name.')',
+            'value' => $account->id,
+        ]);
+})->name('api.bank-accounts');
 
 Route::middleware(['auth', 'verified'])->group(function () {
 
@@ -159,7 +186,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('bank-account.export.pdf.preview');
 
     Route::prefix('cash-flow')->name('cash-flow.')->middleware('can:view cash-flow')->group(function () {
-        Route::get('/', fn() => redirect()->route('cash-flow.income'))->name('index');
+        Route::get('/', fn () => redirect()->route('cash-flow.income'))->name('index');
         Route::get('/income', CashFlowIncome::class)->name('income');
         Route::get('/expenses', CashFlowExpenses::class)->name('expenses');
         Route::get('/transfers', CashFlowTransfers::class)->name('transfers');
@@ -191,11 +218,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/fund-requests/export/pdf', function (Request $request) {
         $filters = [
-            'month'    => $request->query('month'),
-            'status'   => $request->query('status'),
+            'month' => $request->query('month'),
+            'status' => $request->query('status'),
             'priority' => $request->query('priority'),
-            'user_id'  => $request->query('user_id') ? (int) $request->query('user_id') : null,
-            'search'   => $request->query('search'),
+            'user_id' => $request->query('user_id') ? (int) $request->query('user_id') : null,
+            'search' => $request->query('search'),
         ];
         $showRequestor = (bool) $request->query('show_requestor', false);
 
@@ -203,23 +230,23 @@ Route::middleware(['auth', 'verified'])->group(function () {
         $pdf = $service->generate($filters, $showRequestor);
 
         $month = $filters['month'] ?? 'all';
-        $filename = 'Rekap-Pengajuan-Dana-' . $month . '.pdf';
+        $filename = 'Rekap-Pengajuan-Dana-'.$month.'.pdf';
 
         return response()->streamDownload(function () use ($pdf) {
             echo $pdf->output();
         }, $filename, [
-            'Content-Type'        => 'application/pdf',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
         ]);
     })->middleware('can:view fund requests')->name('fund-requests.export.pdf');
 
     Route::get('/fund-requests/export/pdf/preview', function (Request $request) {
         $filters = [
-            'month'    => $request->query('month'),
-            'status'   => $request->query('status'),
+            'month' => $request->query('month'),
+            'status' => $request->query('status'),
             'priority' => $request->query('priority'),
-            'user_id'  => $request->query('user_id') ? (int) $request->query('user_id') : null,
-            'search'   => $request->query('search'),
+            'user_id' => $request->query('user_id') ? (int) $request->query('user_id') : null,
+            'search' => $request->query('search'),
         ];
         $showRequestor = (bool) $request->query('show_requestor', false);
 
@@ -227,7 +254,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         $pdf = $service->generate($filters, $showRequestor);
 
         return response($pdf->output(), 200, [
-            'Content-Type'        => 'application/pdf',
+            'Content-Type' => 'application/pdf',
             'Content-Disposition' => 'inline',
         ]);
     })->middleware('can:view fund requests')->name('fund-requests.export.pdf.preview');
@@ -277,33 +304,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // ------------------------------------------------------------------------
     // API ENDPOINTS
     // ------------------------------------------------------------------------
-    Route::get('/api/transaction-categories', function (Request $request) {
-        $type = $request->get('type');
-
-        $categoryTypes = match ($type) {
-            'credit' => ['income', 'adjustment', 'transfer'],
-            'debit'  => ['expense', 'adjustment', 'transfer'],
-            default  => ['income', 'expense', 'adjustment', 'transfer'],
-        };
-
-        return \App\Models\TransactionCategory::whereNull('parent_id')
-            ->whereIn('type', $categoryTypes)
-            ->with('children')
-            ->orderBy('type')
-            ->orderBy('label')
-            ->get()
-            ->flatMap(function ($parent) {
-                $items = [];
-                $items[] = ['label' => $parent->label, 'value' => $parent->id, 'disabled' => true];
-                foreach ($parent->children as $child) {
-                    $items[] = ['label' => '↳ ' . $child->label, 'value' => $child->id];
-                }
-                return $items;
-            })
-            ->values();
-    })->name('api.transaction-categories');
-
-    
 
     // ------------------------------------------------------------------------
     // TESTING (Local Only)
