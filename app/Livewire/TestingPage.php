@@ -17,7 +17,7 @@ class TestingPage extends Component
 
     public function loadAccounts(): void
     {
-        $response = Http::withoutVerifying()->get('https://finance.kisantra.com/api/bank-accounts');
+        $response = Http::withoutVerifying()->get('https://finance.kisantra.com/api/transaction-categories');
         $this->accounts = $response->json() ?? [];
     }
 

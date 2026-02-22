@@ -28,7 +28,8 @@ class TranslationService
         return Cache::remember($cacheKey, now()->addMonths(6), function () use ($text, $targetLang, $sourceLang) {
             try {
                 // Using unofficial Google Translate endpoint (no API key required)
-                $response = Http::timeout(5)->get('https://translate.googleapis.com/translate_a/single', [
+                $response = Http::when(app()->environment('local'), fn ($h) => $h->withoutVerifying())
+                    ->timeout(5)->get('https://translate.googleapis.com/translate_a/single', [
                     'client' => 'gtx',
                     'sl' => $sourceLang,
                     'tl' => $targetLang,
