@@ -180,4 +180,11 @@ return [
     'reimbursements' => '报销',
     'save_as_draft' => '保存为草稿',
     'submit_for_approval' => '提交审核',
+
+    // Settings
+    'delete_account' => 'Hapus Akun',
+    'action_irreversible' => 'Tindakan ini tidak dapat dibatalkan',
+    'current_password' => 'Password Saat Ini',
+    'new_password' => 'Password Baru',
+    'confirm_password' => 'Konfirmasi Password',
 ];

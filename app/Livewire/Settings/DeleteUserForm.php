@@ -9,6 +9,7 @@ use Livewire\Component;
 class DeleteUserForm extends Component
 {
     public string $password = '';
+    public bool $confirmDeletion = false;
 
     /**
      * Delete the currently authenticated user.

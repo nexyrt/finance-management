@@ -180,4 +180,13 @@ return [
     'reimbursements' => 'Penggantian',
     'save_as_draft' => 'Simpan sebagai Draft',
     'submit_for_approval' => 'Kirim untuk Review',
+
+    // Settings
+    'delete_account' => 'Hapus Akun',
+    'action_irreversible' => 'Tindakan ini tidak dapat dibatalkan',
+    'current_password' => 'Password Saat Ini',
+    'new_password' => 'Password Baru',
+    'confirm_password' => 'Konfirmasi Password',
+    'address' => 'Alamat',
+    'phone' => 'Telepon',
 ];

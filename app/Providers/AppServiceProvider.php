@@ -1,7 +1,5 @@
 <?php
 
-// app/Providers/AppServiceProvider.php - Minimal Flux Colors - Text, Background, Outline
-
 namespace App\Providers;
 
 use Carbon\Carbon;

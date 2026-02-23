@@ -1643,4 +1643,44 @@ return [
     'reimb_processing' => '正在处理付款...',
     'reimb_pay_partial_btn' => '分期付款',
     'reimb_pay_full_btn' => '全额付款',
+
+    // Settings Pages
+    'settings_description' => 'Kelola profil dan pengaturan akun Anda',
+    'settings_profile_description' => 'Perbarui nama dan alamat email akun Anda',
+    'settings_password_title' => 'Ubah Kata Sandi',
+    'settings_password_description' => 'Pastikan akun Anda menggunakan kata sandi yang kuat',
+    'settings_company_description' => 'Perbarui informasi perusahaan untuk invoice dan dokumen PDF',
+    'delete_account_description' => 'Hapus akun dan semua data Anda secara permanen',
+    'delete_account_confirm_message' => 'Setelah akun Anda dihapus, semua data akan hilang secara permanen. Masukkan kata sandi Anda untuk mengkonfirmasi.',
+    'email_unverified' => 'Alamat email Anda belum diverifikasi.',
+    'resend_verification' => 'Klik di sini untuk kirim ulang email verifikasi.',
+    'verification_link_sent' => 'Link verifikasi baru telah dikirim ke alamat email Anda.',
+
+    // Company Profile - File Upload Labels
+    'logo' => 'Logo',
+    'replace_logo' => 'Ganti Logo',
+    'letter_head' => 'Kop Surat',
+    'replace_letter_head' => 'Ganti Kop Surat',
+    'signature' => 'Tanda Tangan',
+    'replace_signature' => 'Ganti Tanda Tangan',
+    'stamp' => 'Stempel',
+    'replace_stamp' => 'Ganti Stempel',
+    'click_to_preview' => 'Klik untuk pratinjau',
+
+    // Company Profile - Preview Modal Titles
+    'logo_preview' => 'Pratinjau Logo',
+    'letter_head_preview' => 'Pratinjau Kop Surat',
+    'signature_preview' => 'Pratinjau Tanda Tangan',
+    'stamp_preview' => 'Pratinjau Stempel',
+
+    // Company Profile - Form Fields
+    'company_name' => 'Nama Perusahaan',
+    'position' => 'Jabatan',
+    'pkp_label' => 'Perusahaan Kena Pajak (PKP)',
+    'npwp' => 'NPWP',
+    'ppn_rate' => 'Tarif PPN (%)',
+
+    // Company Profile - Favicon Info
+    'generate_favicons' => 'Generate Favicons',
+    'generate_favicons_hint' => 'Setelah mengupload logo, jalankan perintah berikut untuk generate favicon dari logo:',
 ];
