@@ -79,11 +79,11 @@
                             </div>
                         @endif
 
-                        <x-wireui-currency wire:model="principal_paid" label="Pembayaran Pokok"
-                            hint="Kosongkan jika hanya bayar bunga" prefix="Rp" thousands="." decimal="," />
+                        <x-currency-input wire:model="principal_paid" label="Pembayaran Pokok"
+                            hint="Kosongkan jika hanya bayar bunga" />
 
-                        <x-wireui-currency wire:model="interest_paid" label="Pembayaran Bunga"
-                            hint="Kosongkan jika hanya bayar pokok" prefix="Rp" thousands="." decimal="," />
+                        <x-currency-input wire:model="interest_paid" label="Pembayaran Bunga"
+                            hint="Kosongkan jika hanya bayar pokok" />
 
                         <x-input wire:model="reference_number" label="Nomor Referensi"
                             placeholder="Nomor transaksi / referensi" />

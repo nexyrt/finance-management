@@ -30,8 +30,7 @@
                     <x-input wire:model="lender_name" label="Nama Pemberi Pinjaman *"
                         placeholder="Bank BCA, Bank Mandiri, dll" />
 
-                    <x-wireui-currency wire:model="principal_amount" label="Jumlah Pokok *" placeholder="0"
-                        prefix="Rp" thousands="." decimal="," />
+                    <x-currency-input wire:model="principal_amount" label="Jumlah Pokok *" placeholder="0" />
 
                     <x-select.native wire:model.live="interest_type" label="Tipe Bunga *" :options="[
                         ['label' => 'Jumlah Tetap', 'value' => 'fixed'],
@@ -39,8 +38,7 @@
                     ]" />
 
                     @if ($interest_type === 'fixed')
-                        <x-wireui-currency wire:model="interest_amount" label="Jumlah Bunga (opsional)" placeholder="0"
-                            prefix="Rp" thousands="." decimal="," />
+                        <x-currency-input wire:model="interest_amount" label="Jumlah Bunga (opsional)" placeholder="0" />
                     @else
                         <x-input wire:model="interest_rate" type="number" step="0.01"
                             label="Rate Bunga (% per tahun, opsional)" placeholder="0" suffix="%" />

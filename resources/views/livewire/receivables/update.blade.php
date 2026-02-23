@@ -44,7 +44,7 @@
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                    <x-wireui-currency wire:model="principal_amount" placeholder="Ro. 5.000.000" prefix="Rp ">
+                    <x-currency-input wire:model="principal_amount" placeholder="Rp 5.000.000">
                         <x-slot:label>
                             <div class="flex items-center gap-2">
                                 <span>Jumlah Pokok *</span>
@@ -53,7 +53,7 @@
                                 @endif
                             </div>
                         </x-slot:label>
-                    </x-wireui-currency>
+                    </x-currency-input>
 
                     <x-select.native wire:model.live="interest_type" label="Tipe Bunga *" :options="[
                         ['label' => 'Persentase (% per tahun)', 'value' => 'percentage'],
@@ -62,7 +62,7 @@
 
                     {{-- Interest Input (conditional based on type) --}}
                     @if ($interest_type === 'fixed')
-                        <x-wireui-currency wire:model="interest_amount" label="Jumlah Bunga" placeholder="0"
+                        <x-currency-input wire:model="interest_amount" label="Jumlah Bunga" placeholder="0"
                             hint="Kosongkan jika 0" />
                     @else
                         <x-input wire:model="interest_rate" type="number" step="0.01"

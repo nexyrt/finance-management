@@ -101,23 +101,23 @@
                         </div>
                     </div>
 
-                    <x-wireui-currency wire:model.live="amount" prefix="Rp " placeholder="0">
+                    <x-currency-input wire:model.live="amount" placeholder="0">
                         <x-slot:label>
                             <div class="flex items-center gap-2">
                                 <span>{{ __('pages.transfer_amount_label') }}</span>
                                 <x-tooltip :text="__('pages.transfer_amount_tooltip')" position="top" color="zinc" />
                             </div>
                         </x-slot:label>
-                    </x-wireui-currency>
+                    </x-currency-input>
 
-                    <x-wireui-currency wire:model.live="admin_fee" prefix="Rp " placeholder="0">
+                    <x-currency-input wire:model.live="admin_fee" placeholder="0">
                         <x-slot:label>
                             <div class="flex items-center gap-2">
                                 <span>{{ __('pages.admin_fee_label') }}</span>
                                 <x-tooltip :text="__('pages.admin_fee_tooltip')" position="top" color="zinc" />
                             </div>
                         </x-slot:label>
-                    </x-wireui-currency>
+                    </x-currency-input>
                 </div>
 
                 {{-- Right Column --}}

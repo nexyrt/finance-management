@@ -1,6 +1,5 @@
 @import 'tailwindcss';
 @import '../../vendor/tallstackui/tallstackui/css/v4.css';
-@import '../../vendor/wireui/wireui/ts/global.css';
 
 @plugin '@tailwindcss/forms';
 
@@ -9,7 +8,6 @@
 @source '../../app/TallStackUi/*.php';
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../vendor/tallstackui/tallstackui/**/*.php';
-@source '../../vendor/wireui/wireui';
 
 @custom-variant dark (&:where(.dark, .dark *));
 

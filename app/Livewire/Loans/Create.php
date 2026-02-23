@@ -106,7 +106,6 @@ class Create extends Component
             $attachmentPath = $this->contract_attachment->store('loans', 'public');
         }
 
-        // WireUI Currency already returns clean number, just cast to int
         $principalAmount = (int) $validated['principal_amount'];
         $interestAmount = $validated['interest_type'] === 'fixed'
             ? (int) $validated['interest_amount']

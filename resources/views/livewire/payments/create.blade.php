@@ -30,8 +30,7 @@
                 {{-- Amount & Date --}}
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <x-wireui-currency wire:model.live="amount" :label="__('pages.payment_amount_label')" placeholder="0"
-                            prefix="Rp" />
+                        <x-currency-input wire:model.live="amount" :label="__('pages.payment_amount_label')" placeholder="0" />
                         @if ($invoice->amount_remaining > 0)
                             <p class="text-xs text-secondary-500 dark:text-dark-400 mt-1">
                                 {{ __('pages.max_amount', ['amount' => number_format($invoice->amount_remaining, 0, ',', '.')]) }}

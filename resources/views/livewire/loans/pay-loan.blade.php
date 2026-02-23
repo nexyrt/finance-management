@@ -47,13 +47,11 @@
 
                     <x-date wire:model="payment_date" label="Tanggal Bayar *" />
 
-                    <x-wireui-currency wire:model="principal_paid" label="Pembayaran Pokok"
-                        hint="Kosongkan jika hanya bayar bunga" placeholder="0" prefix="Rp" thousands="."
-                        decimal="," />
+                    <x-currency-input wire:model="principal_paid" label="Pembayaran Pokok"
+                        hint="Kosongkan jika hanya bayar bunga" placeholder="0" />
 
-                    <x-wireui-currency wire:model="interest_paid" label="Pembayaran Bunga"
-                        hint="Kosongkan jika hanya bayar pokok" placeholder="0" prefix="Rp" thousands="."
-                        decimal="," />
+                    <x-currency-input wire:model="interest_paid" label="Pembayaran Bunga"
+                        hint="Kosongkan jika hanya bayar pokok" placeholder="0" />
 
                     <x-input wire:model="reference_number" label="No. Referensi"
                         placeholder="Transfer ID, check number, etc" />

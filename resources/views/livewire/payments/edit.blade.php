@@ -31,8 +31,7 @@
                 {{-- Amount & Date --}}
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <x-wireui-currency wire:model.live="amount" :label="__('pages.payment_amount_label')" placeholder="0"
-                            prefix="Rp" />
+                        <x-currency-input wire:model.live="amount" :label="__('pages.payment_amount_label')" placeholder="0" />
                         @php
                             $otherPayments = $payment->invoice
                                 ->payments()

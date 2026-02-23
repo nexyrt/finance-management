@@ -53,13 +53,10 @@
                 <p class="text-xs text-dark-500 dark:text-dark-400">{{ __('pages.initial_balance_section_desc') }}</p>
             </div>
 
-            {{-- Use WireUI Currency component --}}
-            <x-wireui-currency prefix="Rp "
-                               wire:model.live="initial_balance"
-                               :label="__('pages.initial_balance')"
-                               :placeholder="__('pages.enter_initial_balance')"
-                               color="dark:dark"
-                               :hint="__('pages.initial_balance_hint')" />
+            <x-currency-input wire:model.live="initial_balance"
+                              :label="__('pages.initial_balance')"
+                              :placeholder="__('pages.enter_initial_balance')"
+                              :hint="__('pages.initial_balance_hint')" />
         </div>
 
         {{-- Warning for balance changes --}}

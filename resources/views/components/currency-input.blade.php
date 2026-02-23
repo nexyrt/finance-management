@@ -32,10 +32,14 @@
 x-on:currency-reset.window="clearInput()">
     <x-input
         {{ $attributes->whereDoesntStartWith('wire:model') }}
-        :label="$label"
+        :label="isset($label) && !$label instanceof \Illuminate\View\ComponentSlot ? $label : null"
         :hint="$hint"
         :placeholder="$placeholder"
         x-on:input="formatInput($el)"
         autocomplete="off"
-    />
+    >
+        @if (isset($label) && $label instanceof \Illuminate\View\ComponentSlot)
+            <x-slot:label>{{ $label }}</x-slot:label>
+        @endif
+    </x-input>
 </div>

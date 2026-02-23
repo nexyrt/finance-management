@@ -172,11 +172,9 @@
                     const maxSize = 5 * 1024 * 1024;
                     if (blob.size > maxSize) {
                         this.isPasting = false;
-                        window.$wireui.notify({
-                            title: @js(__('feedback.file_too_large')),
-                            description: @js(__('feedback.max_image_size')),
-                            icon: 'error'
-                        });
+                        window.dispatchEvent(new CustomEvent('tallstackui:toast', {
+                            detail: { type: 'error', title: @js(__('feedback.file_too_large')), description: @js(__('feedback.max_image_size')) }
+                        }));
                         return;
                     }
 
@@ -191,11 +189,9 @@
                             this.isPasting = false;
                         }, (error) => {
                             this.isPasting = false;
-                            window.$wireui.notify({
-                                title: @js(__('feedback.upload_failed')),
-                                description: @js(__('feedback.upload_error')),
-                                icon: 'error'
-                            });
+                            window.dispatchEvent(new CustomEvent('tallstackui:toast', {
+                                detail: { type: 'error', title: @js(__('feedback.upload_failed')), description: @js(__('feedback.upload_error')) }
+                            }));
                         });
                     } catch (error) {
                         this.isPasting = false;

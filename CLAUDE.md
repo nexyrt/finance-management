@@ -2188,8 +2188,7 @@ config/
 ├── permission.php
 ├── dompdf.php
 ├── excel.php
-├── tallstackui.php
-└── wireui.php
+└── tallstackui.php
 ```
 
 ---
@@ -2213,7 +2212,6 @@ config/
 | Package | Version | Purpose |
 |---------|---------|---------|
 | TallStackUI | 2.0 | Livewire UI components |
-| WireUI | 2.4 | Additional UI components |
 | Tailwind CSS | 4.1 | Styling |
 | DaisyUI | 5.0 | UI Components |
 | Alpine.js | 3.14 | JavaScript framework |
@@ -2558,11 +2556,56 @@ Saat audit translation, identifikasi juga data yang:
 
 ---
 
+### Currency Input (`x-currency-input`)
+
+**File:** `resources/views/components/currency-input.blade.php`
+
+Custom Alpine.js component untuk input nominal Rupiah. Menggantikan WireUI currency — **SELALU gunakan ini untuk semua input angka uang.**
+
+**Usage:**
+```blade
+{{-- Basic --}}
+<x-currency-input wire:model="amount" label="Jumlah *" placeholder="0" />
+
+{{-- Live sync --}}
+<x-currency-input wire:model.live="amount" label="Jumlah" hint="Masukkan nominal" />
+
+{{-- Custom label dengan tooltip --}}
+<x-currency-input wire:model="principal_amount" placeholder="0">
+    <x-slot:label>
+        <div class="flex items-center gap-2">
+            <span>Jumlah Pokok *</span>
+            <x-tooltip text="Maksimal Rp 10.000.000" position="top" />
+        </div>
+    </x-slot:label>
+</x-currency-input>
+```
+
+**Props yang tersedia:**
+| Prop | Default | Keterangan |
+|------|---------|------------|
+| `wire:model` / `wire:model.live` | — | Livewire binding (wajib) |
+| `label` | `null` | Label teks biasa |
+| `hint` | `null` | Helper text di bawah input |
+| `placeholder` | `null` | Placeholder input |
+| `prefix` | `'Rp'` | Prefix currency (jarang perlu diubah) |
+
+**Cara kerja:**
+- User ketik angka → otomatis diformat `Rp 1.500.000` (dot separator)
+- Nilai yang disimpan ke Livewire property = **raw integer** (`1500000`), bukan string berformat
+- Support event `currency-reset` untuk clear input dari luar: `$dispatch('currency-reset')`
+
+**JANGAN gunakan:**
+- ❌ `x-wireui-currency` — sudah dihapus dari project
+- ❌ `x-input` biasa untuk nominal uang — tidak ada formatting otomatis
+
+---
+
 ### Component Usage Protocol
 
 **CRITICAL: Always Study Documentation First**
 
-Before implementing ANY external component or library (TallStackUI, WireUI, Laravel packages, JavaScript libraries, etc.), you MUST follow this protocol:
+Before implementing ANY external component or library (TallStackUI, Laravel packages, JavaScript libraries, etc.), you MUST follow this protocol:
 
 1. **Search for official documentation** using WebSearch tool
 2. **Read the complete documentation** using WebFetch tool
@@ -2576,8 +2619,7 @@ Before implementing ANY external component or library (TallStackUI, WireUI, Lara
 **Never implement based on assumptions or memory alone.**
 
 **Examples of components requiring documentation review:**
-- TallStackUI components (`x-currency`, `x-select`, `x-input`, `x-color`, `x-date`, etc.)
-- WireUI components (`x-button`, `x-modal`, `x-notification`, etc.)
+- TallStackUI components (`x-select`, `x-input`, `x-color`, `x-date`, etc.)
 - Third-party Livewire components
 - New Laravel packages (Spatie packages, intervention/image, etc.)
 - JavaScript libraries integration (Chart.js, ApexCharts, Alpine plugins)
