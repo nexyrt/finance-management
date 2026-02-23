@@ -606,7 +606,6 @@ erDiagram
 - **TallStackUI** - UI Components
 - **TailwindCSS 4** - Styling
 - **AlpineJS 3** - JavaScript interactions
-- **Flux** - Layout components (Laravel 12)
 
 ### Additional Tools
 - **Spatie Packages** (Permission, Activity Log, etc.)

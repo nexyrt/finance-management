@@ -2200,7 +2200,6 @@ config/
 |---------|---------|---------|
 | Laravel | 12 | Framework |
 | Livewire | 3.6 | UI Components |
-| Livewire Flux | 2.2 | Additional Livewire features |
 | Livewire Volt | 1.7 | Single-file components |
 | Spatie Permission | 6.21 | Roles & Permissions |
 | Barryvdh DomPDF | 3.1 | PDF Generation |
