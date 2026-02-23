@@ -42,6 +42,10 @@ return [
     'company' => '公司',
     'search_placeholder' => '搜索...',
     'finance_management' => '财务管理',
+    'expand_sidebar' => 'Perlebar sidebar',
+    'collapse_sidebar' => 'Ciutkan sidebar',
+    'light_mode' => 'Mode terang',
+    'dark_mode' => 'Mode gelap',
 
     // Greetings
     'hello_greeting' => '你好，:name！',

@@ -1,156 +1,118 @@
-<div wire:poll.5s="refresh">
-    <x-dropdown position="bottom-end">
+<div wire:poll.5s="refresh"
+    x-data="{
+        open: false,
+        dropdownTop: 0,
+        dropdownRight: 0,
+        toggle() {
+            if (!this.open) {
+                const rect = this.$refs.bellBtn.getBoundingClientRect();
+                this.dropdownTop = rect.bottom + 8;
+                this.dropdownRight = window.innerWidth - rect.right;
+            }
+            this.open = !this.open;
+        },
+    }"
+    @keydown.escape.window="open = false"
+    @scroll.window="open = false">
 
-        {{-- Custom Trigger: Bell button dengan unread badge --}}
-        <x-slot:action>
-            <button type="button"
-                x-on:click="show = !show"
-                class="relative p-2 text-dark-500 hover:text-dark-700 dark:text-dark-400 dark:hover:text-dark-200 transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-dark-700">
-                <x-icon name="bell" class="w-6 h-6" />
-                @if ($this->unreadCount > 0)
-                    <span class="absolute top-1 right-1 flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-bold text-white bg-red-500 rounded-full">
-                        {{ $this->unreadCount > 99 ? '99+' : $this->unreadCount }}
-                    </span>
-                @endif
-            </button>
-        </x-slot:action>
+    {{-- Bell Button --}}
+    <button type="button"
+        x-ref="bellBtn"
+        @click="toggle"
+        class="relative p-2 text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200 transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-white/5">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
+        </svg>
+        @if ($this->unreadCount > 0)
+            <span class="absolute top-1 right-1 flex items-center justify-center min-w-[16px] h-4 px-1 text-[9px] font-bold text-white bg-red-500 rounded-full ring-2 ring-white dark:ring-[#18181b]">
+                {{ $this->unreadCount > 99 ? '99+' : $this->unreadCount }}
+            </span>
+        @endif
+    </button>
 
-        {{-- Header --}}
-        <x-slot:header>
-            <div class="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-dark-700">
-                <h3 class="text-sm font-semibold text-dark-900 dark:text-white">{{ __('common.notifications') }}</h3>
+    {{-- Dropdown Panel --}}
+    <template x-teleport="body">
+        <div
+            x-show="open"
+            x-transition:enter="transition ease-out duration-150"
+            x-transition:enter-start="opacity-0"
+            x-transition:enter-end="opacity-100"
+            x-transition:leave="transition ease-in duration-100"
+            x-transition:leave-start="opacity-100"
+            x-transition:leave-end="opacity-0"
+            x-ref="dropdown"
+            @mousedown.window="if (open && !$refs.dropdown.contains($event.target) && !$refs.bellBtn.contains($event.target)) open = false"
+            :style="`top: ${dropdownTop}px; right: ${dropdownRight}px`"
+            class="fixed w-80 z-[9999]
+                   bg-white dark:bg-[#1c1c1f]
+                   border border-zinc-200 dark:border-white/10
+                   rounded-xl shadow-xl shadow-black/10 dark:shadow-black/40
+                   overflow-hidden"
+            style="display: none;">
+
+            {{-- Header --}}
+            <div class="flex items-center justify-between px-4 py-3 border-b border-zinc-100 dark:border-white/8">
+                <div class="flex items-center gap-2">
+                    <span class="text-sm font-semibold text-zinc-900 dark:text-white">{{ __('common.notifications') }}</span>
+                    @if ($this->unreadCount > 0)
+                        <span class="inline-flex items-center justify-center h-4 min-w-4 px-1 text-[9px] font-bold text-white bg-primary-500 rounded-full">
+                            {{ $this->unreadCount }}
+                        </span>
+                    @endif
+                </div>
                 @if ($this->unreadCount > 0)
                     <button wire:click="markAllAsRead"
-                        class="text-xs text-primary-600 hover:text-primary-800 dark:text-primary-400 hover:underline">
+                        class="text-[11px] text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 font-medium transition-colors">
                         {{ __('common.mark_all_as_read') }}
                     </button>
                 @endif
             </div>
-        </x-slot:header>
 
-        {{-- Notification List --}}
-        <div class="max-h-96 overflow-y-auto">
-            @forelse ($this->notifications as $notification)
-                <div wire:click="openNotification({{ $notification->id }})"
-                    class="flex items-start gap-3 px-4 py-3 cursor-pointer transition-colors
-                        {{ $notification->read_at ? 'bg-white dark:bg-dark-800' : 'bg-primary-50 dark:bg-primary-900/10' }}
-                        hover:bg-gray-50 dark:hover:bg-dark-700 border-b border-gray-100 dark:border-dark-700 last:border-0">
-
-                    {{-- Icon --}}
-                    <div class="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center {{ $notification->icon_bg_color }}">
-                        <x-icon name="{{ $notification->icon }}" class="w-4 h-4 {{ $notification->icon_color }}" />
-                    </div>
-
-                    {{-- Content --}}
-                    <div class="flex-1 min-w-0">
-                        <p class="text-sm font-medium text-dark-900 dark:text-white truncate">
-                            {{ $notification->title }}
-                        </p>
-                        <p class="text-xs text-dark-500 dark:text-dark-400 mt-0.5 line-clamp-2">
-                            {{ $notification->message }}
-                        </p>
-                        <p class="text-[10px] text-dark-400 dark:text-dark-500 mt-1">
-                            {{ $notification->created_at->diffForHumans() }}
-                        </p>
-                    </div>
-
-                    {{-- Unread indicator --}}
-                    @if (!$notification->read_at)
-                        <div class="flex-shrink-0">
-                            <span class="w-2 h-2 bg-primary-500 rounded-full block mt-1"></span>
+            {{-- Notification List --}}
+            <div class="max-h-[360px] overflow-y-auto overscroll-contain">
+                @forelse ($this->notifications as $notification)
+                    <button type="button"
+                        wire:click="openNotification({{ $notification->id }})"
+                        @click="open = false"
+                        class="w-full flex items-start gap-3 px-4 py-3 text-left transition-colors
+                            {{ $notification->read_at ? 'bg-white dark:bg-transparent' : 'bg-primary-50/70 dark:bg-primary-500/5' }}
+                            hover:bg-zinc-50 dark:hover:bg-white/4
+                            border-b border-zinc-100 dark:border-white/5 last:border-0">
+                        <div class="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center mt-0.5 {{ $notification->icon_bg_color }}">
+                            <x-icon name="{{ $notification->icon }}" class="w-4 h-4 {{ $notification->icon_color }}" />
                         </div>
-                    @endif
-                </div>
-            @empty
-                <div class="px-4 py-8 text-center">
-                    <x-icon name="bell-slash" class="w-12 h-12 mx-auto text-dark-300 dark:text-dark-600" />
-                    <p class="mt-2 text-sm text-dark-500 dark:text-dark-400">{{ __('common.no_notifications') }}</p>
-                </div>
-            @endforelse
-        </div>
-
-        {{-- Footer --}}
-        @if ($this->notifications->count() > 0)
-            <div class="px-4 py-3 border-t border-gray-200 dark:border-dark-700 text-center">
-                <button wire:click="openAllNotifications"
-                    class="text-xs text-primary-600 hover:text-primary-800 dark:text-primary-400 hover:underline">
-                    {{ __('common.view_all_notifications') }}
-                </button>
-            </div>
-        @endif
-
-    </x-dropdown>
-
-    {{-- Slide Panel: Semua Notifikasi --}}
-    <x-slide wire="allNotificationsSlide" size="md" blur>
-        <x-slot:title>
-            <div class="flex items-center justify-between gap-4">
-                <div class="flex items-center gap-3">
-                    <div class="h-10 w-10 bg-primary-50 dark:bg-primary-900/20 rounded-xl flex items-center justify-center">
-                        <x-icon name="bell" class="w-5 h-5 text-primary-600 dark:text-primary-400" />
-                    </div>
-                    <div>
-                        <h3 class="text-lg font-bold text-dark-900 dark:text-dark-50">{{ __('common.all_notifications') }}</h3>
-                        <p class="text-sm text-dark-500 dark:text-dark-400">{{ $this->allNotificationsTotal }} {{ __('common.total') }}</p>
-                    </div>
-                </div>
-                @if ($this->unreadCount > 0)
-                    <button wire:click="markAllAsRead"
-                        class="text-xs text-primary-600 hover:text-primary-800 dark:text-primary-400 hover:underline">
-                        {{ __('common.mark_all_as_read') }}
+                        <div class="flex-1 min-w-0">
+                            <p class="text-[13px] font-medium text-zinc-900 dark:text-white leading-snug">{{ $notification->title }}</p>
+                            <p class="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5 line-clamp-2 leading-relaxed">{{ $notification->message }}</p>
+                            <p class="text-[10px] text-zinc-400 dark:text-zinc-500 mt-1">{{ $notification->created_at->diffForHumans() }}</p>
+                        </div>
+                        @if (!$notification->read_at)
+                            <div class="flex-shrink-0 mt-2">
+                                <span class="block w-1.5 h-1.5 bg-primary-500 rounded-full"></span>
+                            </div>
+                        @endif
                     </button>
-                @endif
-            </div>
-        </x-slot:title>
-
-        {{-- Notification list --}}
-        <div class="divide-y divide-gray-100 dark:divide-dark-700">
-            @forelse ($this->allNotifications as $notification)
-                <div wire:click="openNotification({{ $notification->id }})"
-                    class="flex items-start gap-3 px-4 py-3 cursor-pointer transition-colors
-                        {{ $notification->read_at ? '' : 'bg-primary-50 dark:bg-primary-900/10' }}
-                        hover:bg-gray-50 dark:hover:bg-dark-700">
-
-                    {{-- Icon --}}
-                    <div class="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center {{ $notification->icon_bg_color }}">
-                        <x-icon name="{{ $notification->icon }}" class="w-4 h-4 {{ $notification->icon_color }}" />
-                    </div>
-
-                    {{-- Content --}}
-                    <div class="flex-1 min-w-0">
-                        <p class="text-sm font-medium text-dark-900 dark:text-white truncate">
-                            {{ $notification->title }}
-                        </p>
-                        <p class="text-xs text-dark-500 dark:text-dark-400 mt-0.5 line-clamp-2">
-                            {{ $notification->message }}
-                        </p>
-                        <p class="text-[10px] text-dark-400 dark:text-dark-500 mt-1">
-                            {{ $notification->created_at->diffForHumans() }}
-                        </p>
-                    </div>
-
-                    {{-- Unread indicator --}}
-                    @if (!$notification->read_at)
-                        <div class="flex-shrink-0">
-                            <span class="w-2 h-2 bg-primary-500 rounded-full block mt-1"></span>
+                @empty
+                    <div class="px-4 py-10 text-center">
+                        <div class="w-10 h-10 bg-zinc-100 dark:bg-white/5 rounded-full flex items-center justify-center mx-auto">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-zinc-400">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9.143 17.082a24.248 24.248 0 0 0 3.844.148m-3.844-.148a23.856 23.856 0 0 1-5.455-1.31 8.964 8.964 0 0 0 2.3-5.542m3.155 6.852a3 3 0 0 0 5.667 1.418m1.125-8.27c.24-.144.47-.298.686-.463m0 0a9.01 9.01 0 0 0-3.69-3.69M3 3l18 18" />
+                            </svg>
                         </div>
-                    @endif
-                </div>
-            @empty
-                <div class="px-4 py-8 text-center">
-                    <x-icon name="bell-slash" class="w-12 h-12 mx-auto text-dark-300 dark:text-dark-600" />
-                    <p class="mt-2 text-sm text-dark-500 dark:text-dark-400">{{ __('common.no_notifications') }}</p>
-                </div>
-            @endforelse
-        </div>
-
-        {{-- Load More --}}
-        @if ($this->allNotifications->count() < $this->allNotificationsTotal)
-            <div class="px-4 py-4 text-center border-t border-gray-100 dark:border-dark-700">
-                <x-button wire:click="loadMore" color="zinc" size="sm" loading="loadMore">
-                    {{ __('common.load_more') }}
-                </x-button>
+                        <p class="mt-2 text-[13px] text-zinc-500 dark:text-zinc-400">{{ __('common.no_notifications') }}</p>
+                    </div>
+                @endforelse
             </div>
-        @endif
-    </x-slide>
+
+            {{-- Footer —  wire:click openDrawer() dispatch event ke Drawer.php --}}
+            @if ($this->notifications->count() > 0)
+                <div class="px-4 py-2.5 border-t border-zinc-100 dark:border-white/8 text-center">
+                    <button wire:click="openDrawer" @click="open = false"
+                        class="text-[11px] font-medium text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 transition-colors">
+                        {{ __('common.view_all_notifications') }}
+                    </button>
+                </div>
+            @endif
+        </div>
+    </template>
 </div>

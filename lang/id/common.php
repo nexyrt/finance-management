@@ -42,6 +42,10 @@ return [
     'company' => 'Perusahaan',
     'search_placeholder' => 'Cari...',
     'finance_management' => 'Finance Management',
+    'expand_sidebar' => 'Perlebar sidebar',
+    'collapse_sidebar' => 'Ciutkan sidebar',
+    'light_mode' => 'Mode terang',
+    'dark_mode' => 'Mode gelap',
 
     // Greetings
     'hello_greeting' => 'Halo, :name!',

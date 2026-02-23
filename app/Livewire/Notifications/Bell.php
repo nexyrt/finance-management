@@ -11,10 +11,6 @@ use Livewire\Component;
 
 class Bell extends Component
 {
-    public bool $allNotificationsSlide = false;
-    public int $allNotificationsPage = 1;
-    public int $perPage = 20;
-
     public function render(): View
     {
         return view('livewire.notifications.bell');
@@ -37,21 +33,6 @@ class Bell extends Component
             ->get();
     }
 
-    #[Computed]
-    public function allNotifications(): Collection
-    {
-        return AppNotification::forUser(auth()->id())
-            ->latest()
-            ->limit($this->allNotificationsPage * $this->perPage)
-            ->get();
-    }
-
-    #[Computed]
-    public function allNotificationsTotal(): int
-    {
-        return AppNotification::forUser(auth()->id())->count();
-    }
-
     #[On('notification-created')]
     #[On('feedback-created')]
     #[On('feedback-responded')]
@@ -64,22 +45,6 @@ class Bell extends Component
     {
         unset($this->unreadCount);
         unset($this->notifications);
-        unset($this->allNotifications);
-        unset($this->allNotificationsTotal);
-    }
-
-    public function markAsRead(int $id): void
-    {
-        $notification = AppNotification::where('user_id', auth()->id())
-            ->where('id', $id)
-            ->first();
-
-        if ($notification) {
-            $notification->markAsRead();
-            unset($this->unreadCount);
-            unset($this->notifications);
-            unset($this->allNotifications);
-        }
     }
 
     public function markAllAsRead(): void
@@ -90,7 +55,6 @@ class Bell extends Component
 
         unset($this->unreadCount);
         unset($this->notifications);
-        unset($this->allNotifications);
     }
 
     public function openNotification(int $id): void
@@ -102,7 +66,6 @@ class Bell extends Component
         if ($notification) {
             $notification->markAsRead();
 
-            // If notification has a URL in data, redirect to it
             $url = $notification->data['url'] ?? null;
             if ($url) {
                 $this->redirect($url);
@@ -110,20 +73,11 @@ class Bell extends Component
 
             unset($this->unreadCount);
             unset($this->notifications);
-            unset($this->allNotifications);
         }
     }
 
-    public function openAllNotifications(): void
+    public function openDrawer(): void
     {
-        $this->allNotificationsPage = 1;
-        $this->allNotificationsSlide = true;
-        unset($this->allNotifications);
-    }
-
-    public function loadMore(): void
-    {
-        $this->allNotificationsPage++;
-        unset($this->allNotifications);
+        $this->dispatch('open-notification-drawer');
     }
 }

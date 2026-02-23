@@ -11,9 +11,9 @@ use Livewire\Component;
 
 class Drawer extends Component
 {
-    public $slide = false;
-    public $page = 1;
-    public $perPage = 20;
+    public bool $slide = false;
+    public int $page = 1;
+    public int $perPage = 20;
 
     public function render(): View
     {
@@ -27,6 +27,7 @@ class Drawer extends Component
         $this->slide = true;
         unset($this->notifications);
         unset($this->total);
+        unset($this->unreadCount);
     }
 
     #[On('notification-created')]
@@ -47,7 +48,7 @@ class Drawer extends Component
     public function notifications(): Collection
     {
         return AppNotification::forUser(auth()->id())
-            ->recent()
+            ->latest()
             ->limit($this->page * $this->perPage)
             ->get();
     }
@@ -90,10 +91,12 @@ class Drawer extends Component
 
         if ($notification) {
             $notification->markAsRead();
+            $this->slide = false;
 
             $url = $notification->data['url'] ?? null;
             if ($url) {
                 $this->redirect($url);
+                return;
             }
 
             unset($this->notifications);
