@@ -117,7 +117,7 @@
 
         {{-- Type Column --}}
         @interact('column_type', $row)
-            <x-badge :text="ucfirst($row->type)" :color="match ($row->type) {
+            <x-badge :text="__('pages.cat_' . $row->type)" :color="match ($row->type) {
                 'income' => 'green',
                 'expense' => 'red',
                 'adjustment' => 'yellow',
