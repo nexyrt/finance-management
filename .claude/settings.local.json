@@ -42,7 +42,8 @@
       "WebFetch(domain:packagist.org)",
       "WebFetch(domain:api.github.com)",
       "Bash(cat:*)",
-      "Bash(composer remove:*)"
+      "Bash(composer remove:*)",
+      "Bash(npm install:*)"
     ]
   }
 }

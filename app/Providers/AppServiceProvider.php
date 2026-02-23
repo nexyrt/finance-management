@@ -18,6 +18,10 @@ class AppServiceProvider extends ServiceProvider
             ->modal()
             ->block('wrapper.first', 'fixed inset-0 bg-black/30 transform transition-opacity')
             ->and()
+            ->modal()
+            ->block('wrapper.third')
+            ->replace('p-4', 'p-4 pt-16 sm:pt-4')
+            ->and()
             ->card()
             ->block('wrapper.second')
             ->replace([
