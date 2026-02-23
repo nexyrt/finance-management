@@ -12,12 +12,14 @@ if (!function_exists('translate_text')) {
      */
     function translate_text(string $text, string $sourceLang = 'id'): string
     {
-        $translationService = app(TranslationService::class);
         $currentLocale = app()->getLocale();
 
-        if ($currentLocale === $sourceLang) {
+        // If locale is Indonesian, no translation needed
+        if ($currentLocale === 'id') {
             return $text;
         }
+
+        $translationService = app(TranslationService::class);
 
         return $translationService->translate($text, $currentLocale, $sourceLang);
     }

@@ -3,16 +3,16 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Http;
+use Stichoza\GoogleTranslate\GoogleTranslate;
 
 class TranslationService
 {
     /**
-     * Translate text using Google Translate API (free endpoint)
+     * Translate text using Stichoza Google Translate PHP package
      *
      * @param string $text
      * @param string $targetLang 'id' or 'zh'
-     * @param string $sourceLang default 'id'
+     * @param string $sourceLang source language code, or 'auto' for auto-detection
      * @return string
      */
     public function translate(string $text, string $targetLang, string $sourceLang = 'id'): string
@@ -27,29 +27,10 @@ class TranslationService
 
         return Cache::remember($cacheKey, now()->addMonths(6), function () use ($text, $targetLang, $sourceLang) {
             try {
-                // Using unofficial Google Translate endpoint (no API key required)
-                $response = Http::when(app()->environment('local'), fn ($h) => $h->withoutVerifying())
-                    ->timeout(5)->get('https://translate.googleapis.com/translate_a/single', [
-                    'client' => 'gtx',
-                    'sl' => $sourceLang,
-                    'tl' => $targetLang,
-                    'dt' => 't',
-                    'q' => $text,
-                ]);
+                $tr = new GoogleTranslate($targetLang, $sourceLang);
 
-                if ($response->successful()) {
-                    $result = $response->json();
-
-                    // Google Translate returns nested array structure
-                    if (isset($result[0][0][0])) {
-                        return $result[0][0][0];
-                    }
-                }
-
-                // Fallback to original text if translation fails
-                return $text;
+                return $tr->translate($text) ?? $text;
             } catch (\Exception $e) {
-                // Log error but don't break the app
                 \Log::warning("Translation failed for '{$text}': " . $e->getMessage());
                 return $text;
             }

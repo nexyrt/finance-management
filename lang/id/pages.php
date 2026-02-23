@@ -900,6 +900,21 @@ return [
     'disbursement_information' => 'Informasi Pencairan',
     'items' => 'Item',
 
+    // Fund Requests - Status & Priority Labels (for show modal)
+    'fr_status_draft'     => 'Draft',
+    'fr_status_pending'   => 'Menunggu Review',
+    'fr_status_approved'  => 'Disetujui',
+    'fr_status_rejected'  => 'Ditolak',
+    'fr_status_disbursed' => 'Telah Dicairkan',
+    'fr_priority_low'    => 'Rendah',
+    'fr_priority_medium' => 'Sedang',
+    'fr_priority_high'   => 'Tinggi',
+    'fr_priority_urgent' => 'Mendesak',
+
+    // Fund Requests - Process Timeline
+    'process_timeline'            => 'Timeline Proses',
+    'fund_request_submitted_step' => 'Pengajuan Dikirim',
+
     // Fund Requests - Delete Modal
     'delete_fund_request' => 'Hapus Pengajuan Dana',
     'confirm_delete_fund_request' => 'Apakah Anda yakin ingin menghapus pengajuan ":title"?',

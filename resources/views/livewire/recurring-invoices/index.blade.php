@@ -1,7 +1,16 @@
-<div class="space-y-6" x-data="{ showGuide: localStorage.getItem('ri_guide_dismissed') !== '1' }">
-    <!-- Header -->
-    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-        <div>
+<div
+    class="space-y-6"
+    x-data="{
+        activeTab: $persist('templates').as('ri_active_tab'),
+        showGuide: localStorage.getItem('ri_guide_dismissed') !== '1',
+    }"
+>
+
+    {{-- ══════════════════════════════════════════
+        HEADER
+    ══════════════════════════════════════════ --}}
+    <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
+        <div class="space-y-1">
             <h1
                 class="text-4xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-indigo-800 dark:from-white dark:via-blue-200 dark:to-indigo-200 bg-clip-text text-transparent">
                 {{ __('pages.recurring_invoices') }}
@@ -11,33 +20,39 @@
             </p>
         </div>
 
-        <!-- Key Metrics + Guide Toggle -->
-        <div class="flex items-center gap-3">
-            <button @click="showGuide = !showGuide; localStorage.setItem('ri_guide_dismissed', showGuide ? '0' : '1')"
-                    class="h-9 w-9 flex items-center justify-center rounded-xl border border-zinc-200 dark:border-dark-600 bg-white dark:bg-dark-800 text-dark-500 dark:text-dark-400 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-300 dark:hover:border-blue-700 transition-colors"
-                    :title="showGuide ? '{{ __('pages.ri_guide_hide') }}' : '{{ __('pages.ri_guide_show') }}'"
+        {{-- Stats + Guide button --}}
+        <div class="flex items-center gap-3 flex-shrink-0">
+            {{-- Guide toggle --}}
+            <button
+                @click="showGuide = !showGuide; localStorage.setItem('ri_guide_dismissed', showGuide ? '0' : '1')"
+                class="h-10 w-10 flex items-center justify-center rounded-xl border border-zinc-200 dark:border-dark-600 bg-white dark:bg-dark-800 text-dark-400 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-300 dark:hover:border-blue-700 transition-all"
+                :title="showGuide ? '{{ __('pages.ri_guide_hide') }}' : '{{ __('pages.ri_guide_show') }}'"
+            >
                 <x-icon name="question-mark-circle" class="w-5 h-5" />
             </button>
-            <div
-                class="flex gap-6 bg-white dark:bg-dark-800 rounded-xl shadow-sm border border-zinc-200 dark:border-dark-600 p-6">
+
+            {{-- Key metrics --}}
+            <div class="flex gap-5 bg-white dark:bg-dark-800 rounded-xl border border-zinc-200 dark:border-dark-600 px-5 py-4 shadow-sm">
                 <div class="text-center">
-                    <div class="text-2xl font-bold text-primary-600 dark:text-primary-400">
+                    <div class="text-2xl font-bold text-primary-600 dark:text-primary-400 leading-tight">
                         {{ number_format($this->activeTemplatesCount, 0, ',', '.') }}
                     </div>
-                    <div class="text-sm text-dark-600 dark:text-dark-400">{{ __('pages.active_templates') }}</div>
+                    <div class="text-xs text-dark-500 dark:text-dark-400 mt-0.5">{{ __('pages.active_templates') }}</div>
                 </div>
-                <div class="w-px bg-zinc-200 dark:bg-dark-600"></div>
+                <div class="w-px bg-zinc-100 dark:bg-dark-600"></div>
                 <div class="text-center">
-                    <div class="text-xl font-bold text-green-600 dark:text-green-400">
-                        Rp {{ number_format($this->totalProjectedRevenue, 0, ',', '.') }}
+                    <div class="text-2xl font-bold text-green-600 dark:text-green-400 leading-tight">
+                        Rp {{ number_format($this->totalProjectedRevenue / 1000000, 1, ',', '.') }}jt
                     </div>
-                    <div class="text-sm text-dark-600 dark:text-dark-400">{{ __('pages.projected') }} {{ now()->year }}</div>
+                    <div class="text-xs text-dark-500 dark:text-dark-400 mt-0.5">{{ __('pages.projected') }} {{ now()->year }}</div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Getting Started Banner -->
+    {{-- ══════════════════════════════════════════
+        GUIDE BANNER
+    ══════════════════════════════════════════ --}}
     <div x-show="showGuide"
          x-transition:enter="transition ease-out duration-200"
          x-transition:enter-start="opacity-0 -translate-y-2"
@@ -91,9 +106,9 @@
                     </div>
                 </div>
                 <div class="pt-1">
-                    <span class="inline-flex items-center gap-1 text-xs bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-1 rounded-lg">
+                    <button @click="activeTab = 'templates'" class="inline-flex items-center gap-1 text-xs bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2.5 py-1 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors">
                         <x-icon name="arrow-right" class="w-3 h-3" /> {{ __('pages.ri_step1_tab_hint') }}
-                    </span>
+                    </button>
                 </div>
             </div>
 
@@ -121,9 +136,9 @@
                     </div>
                 </div>
                 <div class="pt-1">
-                    <span class="inline-flex items-center gap-1 text-xs bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-1 rounded-lg">
+                    <button @click="activeTab = 'monthly'" class="inline-flex items-center gap-1 text-xs bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2.5 py-1 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors">
                         <x-icon name="arrow-right" class="w-3 h-3" /> {{ __('pages.ri_step2_tab_hint') }}
-                    </span>
+                    </button>
                 </div>
             </div>
 
@@ -151,9 +166,9 @@
                     </div>
                 </div>
                 <div class="pt-1">
-                    <span class="inline-flex items-center gap-1 text-xs bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-1 rounded-lg">
+                    <button @click="activeTab = 'monthly'" class="inline-flex items-center gap-1 text-xs bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2.5 py-1 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors">
                         <x-icon name="arrow-right" class="w-3 h-3" /> {{ __('pages.ri_step3_tab_hint') }}
-                    </span>
+                    </button>
                 </div>
             </div>
         </div>
@@ -258,28 +273,106 @@
         </div>
     </div>
 
-    <!-- Tab Navigation -->
-    <x-tab :selected="__('pages.templates')">
-        <x-tab.items :tab="__('pages.templates')">
-            <x-slot:right>
-                <x-icon name="document-text" class="w-5 h-5" />
-            </x-slot:right>
-            <livewire:recurring-invoices.templates-tab />
-        </x-tab.items>
-        <x-tab.items :tab="__('pages.monthly')">
-            <x-slot:right>
-                <x-icon name="calendar" class="w-5 h-5" />
-            </x-slot:right>
-            <livewire:recurring-invoices.monthly-tab />
-        </x-tab.items>
-        <x-tab.items :tab="__('pages.analytics')">
-            <x-slot:right>
-                <x-icon name="chart-bar" class="w-5 h-5" />
-            </x-slot:right>
-            <livewire:recurring-invoices.analytics-tab />
-        </x-tab.items>
-    </x-tab>
+    {{-- ══════════════════════════════════════════
+        CUSTOM TAB NAVIGATION — segmented control premium
+    ══════════════════════════════════════════ --}}
+    <div class="flex flex-col sm:flex-row sm:items-center gap-3">
 
-    <!-- Modal Components -->
+        {{-- Segmented tab bar --}}
+        <div class="inline-flex items-center gap-1 p-1 bg-zinc-100 dark:bg-dark-700 rounded-xl border border-zinc-200 dark:border-dark-600 self-start">
+
+            {{-- Templates --}}
+            <button
+                @click="activeTab = 'templates'"
+                class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200"
+                :class="activeTab === 'templates'
+                    ? 'bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 shadow-sm border border-zinc-200 dark:border-dark-600'
+                    : 'text-dark-500 dark:text-dark-400 hover:text-dark-800 dark:hover:text-dark-200 hover:bg-zinc-50 dark:hover:bg-dark-600'"
+            >
+                <x-icon name="document-text" class="w-4 h-4 flex-shrink-0" />
+                <span>{{ __('pages.templates') }}</span>
+                <span
+                    class="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full text-[10px] font-bold transition-colors"
+                    :class="activeTab === 'templates'
+                        ? 'bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300'
+                        : 'bg-zinc-200 dark:bg-dark-600 text-dark-500 dark:text-dark-400'"
+                >{{ $this->activeTemplatesCount }}</span>
+            </button>
+
+            {{-- Monthly --}}
+            <button
+                @click="activeTab = 'monthly'"
+                class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200"
+                :class="activeTab === 'monthly'
+                    ? 'bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 shadow-sm border border-zinc-200 dark:border-dark-600'
+                    : 'text-dark-500 dark:text-dark-400 hover:text-dark-800 dark:hover:text-dark-200 hover:bg-zinc-50 dark:hover:bg-dark-600'"
+            >
+                <x-icon name="calendar" class="w-4 h-4 flex-shrink-0" />
+                <span>{{ __('pages.monthly') }}</span>
+            </button>
+
+            {{-- Analytics --}}
+            <button
+                @click="activeTab = 'analytics'"
+                class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200"
+                :class="activeTab === 'analytics'
+                    ? 'bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 shadow-sm border border-zinc-200 dark:border-dark-600'
+                    : 'text-dark-500 dark:text-dark-400 hover:text-dark-800 dark:hover:text-dark-200 hover:bg-zinc-50 dark:hover:bg-dark-600'"
+            >
+                <x-icon name="chart-bar" class="w-4 h-4 flex-shrink-0" />
+                <span>{{ __('pages.analytics') }}</span>
+            </button>
+        </div>
+
+        {{-- Divider line + context subtitle --}}
+        <div class="hidden sm:flex items-center gap-3 flex-1 min-w-0">
+            <div class="h-px flex-1 bg-gradient-to-r from-zinc-200 dark:from-dark-600 to-transparent"></div>
+            <p x-show="activeTab === 'templates'" x-transition.opacity class="text-xs text-dark-400 dark:text-dark-500 flex-shrink-0">
+                {{ __('pages.ri_guide_subtitle') }}
+            </p>
+            <p x-show="activeTab === 'monthly'" x-transition.opacity class="text-xs text-dark-400 dark:text-dark-500 flex-shrink-0">
+                {{ __('pages.ri_step2_tab_hint') }}
+            </p>
+            <p x-show="activeTab === 'analytics'" x-transition.opacity class="text-xs text-dark-400 dark:text-dark-500 flex-shrink-0">
+                {{ __('pages.ri_last_updated', ['datetime' => now()->format('d M Y')]) }}
+            </p>
+        </div>
+    </div>
+
+    {{-- ══════════════════════════════════════════
+        TAB PANELS
+    ══════════════════════════════════════════ --}}
+
+    {{-- Templates Panel --}}
+    <div
+        x-show="activeTab === 'templates'"
+        x-transition:enter="transition ease-out duration-150"
+        x-transition:enter-start="opacity-0 translate-y-1"
+        x-transition:enter-end="opacity-100 translate-y-0"
+    >
+        <livewire:recurring-invoices.templates-tab />
+    </div>
+
+    {{-- Monthly Panel --}}
+    <div
+        x-show="activeTab === 'monthly'"
+        x-transition:enter="transition ease-out duration-150"
+        x-transition:enter-start="opacity-0 translate-y-1"
+        x-transition:enter-end="opacity-100 translate-y-0"
+    >
+        <livewire:recurring-invoices.monthly-tab />
+    </div>
+
+    {{-- Analytics Panel --}}
+    <div
+        x-show="activeTab === 'analytics'"
+        x-transition:enter="transition ease-out duration-150"
+        x-transition:enter-start="opacity-0 translate-y-1"
+        x-transition:enter-end="opacity-100 translate-y-0"
+    >
+        <livewire:recurring-invoices.analytics-tab />
+    </div>
+
+    {{-- Modal Components --}}
     <livewire:recurring-invoices.view-template />
 </div>

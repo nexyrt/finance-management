@@ -84,34 +84,76 @@
     </div>
 
     {{-- Tab Navigation --}}
-    @php
-        // Map tab identifiers to translated names
-        $tabMap = [
-            'my_requests' => __('pages.my_fund_requests'),
-            'all_requests' => __('pages.all_fund_requests'),
-        ];
-        $currentSelectedTab = $tabMap[$activeTab] ?? $activeTab;
-    @endphp
+    <div x-data="{ activeTab: @entangle('activeTab').live }">
+        {{-- Centered Tab Bar --}}
+        <div class="flex justify-center mb-6">
+            <div class="flex flex-col items-center gap-3">
+                <div class="inline-flex items-center gap-1 p-1 bg-zinc-100 dark:bg-dark-700 rounded-xl border border-zinc-200 dark:border-dark-600">
+                    {{-- My Requests Tab --}}
+                    <button
+                        @click="activeTab = 'my_requests'"
+                        :class="activeTab === 'my_requests'
+                            ? 'bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 shadow-sm border border-zinc-200 dark:border-dark-600'
+                            : 'text-dark-500 dark:text-dark-400 hover:text-dark-800 dark:hover:text-dark-200 hover:bg-zinc-50 dark:hover:bg-dark-600'"
+                        class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200"
+                    >
+                        <x-icon name="user" class="w-4 h-4 flex-shrink-0" />
+                        <span>{{ __('pages.my_fund_requests') }}</span>
+                        <span
+                            :class="activeTab === 'my_requests'
+                                ? 'bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300'
+                                : 'bg-zinc-200 dark:bg-dark-600 text-dark-500 dark:text-dark-400'"
+                            class="inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 rounded-full text-xs font-semibold transition-colors duration-200"
+                        >{{ $this->stats['my_total'] }}</span>
+                    </button>
 
-    <x-tab :selected="$currentSelectedTab">
-        {{-- My Requests Tab (Everyone) --}}
-        <x-tab.items :tab="__('pages.my_fund_requests')">
-            <x-slot:right>
-                <x-badge text="{{ $this->stats['my_total'] }}" color="primary" size="sm" />
-            </x-slot:right>
+                    {{-- All Requests Tab (Manager/Admin only) --}}
+                    @can('approve fund requests')
+                        <button
+                            @click="activeTab = 'all_requests'"
+                            :class="activeTab === 'all_requests'
+                                ? 'bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 shadow-sm border border-zinc-200 dark:border-dark-600'
+                                : 'text-dark-500 dark:text-dark-400 hover:text-dark-800 dark:hover:text-dark-200 hover:bg-zinc-50 dark:hover:bg-dark-600'"
+                            class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200"
+                        >
+                            <x-icon name="users" class="w-4 h-4 flex-shrink-0" />
+                            <span>{{ __('pages.all_fund_requests') }}</span>
+                            <span
+                                :class="activeTab === 'all_requests'
+                                    ? 'bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300'
+                                    : 'bg-zinc-200 dark:bg-dark-600 text-dark-500 dark:text-dark-400'"
+                                class="inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 rounded-full text-xs font-semibold transition-colors duration-200"
+                            >{{ $this->stats['all_total'] }}</span>
+                        </button>
+                    @endcan
+                </div>
+
+                {{-- Divider gradient line --}}
+                <div class="w-48 h-px bg-gradient-to-r from-transparent via-zinc-300 dark:via-dark-600 to-transparent"></div>
+            </div>
+        </div>
+
+        {{-- Tab Panels --}}
+        <div
+            x-show="activeTab === 'my_requests'"
+            x-transition:enter="transition ease-out duration-150"
+            x-transition:enter-start="opacity-0 translate-y-1"
+            x-transition:enter-end="opacity-100 translate-y-0"
+        >
             <livewire:fund-requests.my-requests :key="'my-requests-tab'" />
-        </x-tab.items>
+        </div>
 
-        {{-- All Requests Tab (Manager/Admin only) --}}
         @can('approve fund requests')
-            <x-tab.items :tab="__('pages.all_fund_requests')">
-                <x-slot:right>
-                    <x-badge text="{{ $this->stats['all_total'] }}" color="secondary" size="sm" />
-                </x-slot:right>
+            <div
+                x-show="activeTab === 'all_requests'"
+                x-transition:enter="transition ease-out duration-150"
+                x-transition:enter-start="opacity-0 translate-y-1"
+                x-transition:enter-end="opacity-100 translate-y-0"
+            >
                 <livewire:fund-requests.all-requests :key="'all-requests-tab'" />
-            </x-tab.items>
+            </div>
         @endcan
-    </x-tab>
+    </div>
 
     {{-- Modals --}}
     <livewire:fund-requests.create />

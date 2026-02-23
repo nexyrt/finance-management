@@ -64,6 +64,7 @@ return [
     'approve' => 'Setujui',
     'reject' => 'Tolak',
     'close' => 'Tutup',
+    'optional' => 'opsional',
     'back' => 'Kembali',
     'next' => 'Selanjutnya',
     'previous' => 'Sebelumnya',

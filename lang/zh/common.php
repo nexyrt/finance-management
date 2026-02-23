@@ -63,6 +63,7 @@ return [
     'approve' => '批准',
     'reject' => '拒绝',
     'close' => '关闭',
+    'optional' => 'opsional',
     'back' => '返回',
     'next' => '下一步',
     'previous' => '上一步',
