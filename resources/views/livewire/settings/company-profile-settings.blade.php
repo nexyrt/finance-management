@@ -1,4 +1,4 @@
-<section class="w-full">
+<section class="w-full" x-data x-on:keydown.ctrl.enter.window="$wire.call('updateCompanyProfile')">
     <div class="space-y-6">
         {{-- Page Header --}}
         <div class="space-y-1">
@@ -162,9 +162,13 @@
                         </div>
                     @endif
 
-                    <div class="flex items-center gap-4 pt-2">
+                    <div class="flex items-center gap-3 pt-2">
                         <x-button color="primary" type="submit">{{ __('common.save') }}</x-button>
-                        <x-action-message on="company-updated">{{ __('common.saved_successfully') }}</x-action-message>
+                        <span class="text-xs text-dark-400 dark:text-dark-500">
+                            <kbd class="px-1.5 py-0.5 text-[10px] font-mono bg-dark-100 dark:bg-dark-700 border border-dark-200 dark:border-dark-600 rounded">Ctrl</kbd>
+                            +
+                            <kbd class="px-1.5 py-0.5 text-[10px] font-mono bg-dark-100 dark:bg-dark-700 border border-dark-200 dark:border-dark-600 rounded">Enter</kbd>
+                        </span>
                     </div>
                 </form>
             </div>
@@ -174,25 +178,25 @@
     {{-- Preview Modals --}}
     <x-modal title="{{ __('pages.logo_preview') }}" wire="showLogoModal" size="lg" center>
         @if ($currentLogo)
-            <img src="{{ asset('storage/' . $currentLogo) }}" class="w-full" alt="Logo Preview">
+            <img src="{{ asset('storage/' . $currentLogo) }}?v={{ filemtime(storage_path('app/public/' . $currentLogo)) }}" class="w-full" alt="Logo Preview">
         @endif
     </x-modal>
 
     <x-modal title="{{ __('pages.letter_head_preview') }}" wire="showLetterHeadModal" size="lg" center>
         @if ($currentLetterHead)
-            <img src="{{ asset('storage/' . $currentLetterHead) }}" class="w-full" alt="Letter Head Preview">
+            <img src="{{ asset('storage/' . $currentLetterHead) }}?v={{ filemtime(storage_path('app/public/' . $currentLetterHead)) }}" class="w-full" alt="Letter Head Preview">
         @endif
     </x-modal>
 
     <x-modal title="{{ __('pages.signature_preview') }}" wire="showSignatureModal" size="lg" center>
         @if ($currentSignature)
-            <img src="{{ asset('storage/' . $currentSignature) }}" class="w-full" alt="Signature Preview">
+            <img src="{{ asset('storage/' . $currentSignature) }}?v={{ filemtime(storage_path('app/public/' . $currentSignature)) }}" class="w-full" alt="Signature Preview">
         @endif
     </x-modal>
 
     <x-modal title="{{ __('pages.stamp_preview') }}" wire="showStampModal" size="lg" center>
         @if ($currentStamp)
-            <img src="{{ asset('storage/' . $currentStamp) }}" class="w-full" alt="Stamp Preview">
+            <img src="{{ asset('storage/' . $currentStamp) }}?v={{ filemtime(storage_path('app/public/' . $currentStamp)) }}" class="w-full" alt="Stamp Preview">
         @endif
     </x-modal>
 </section>
