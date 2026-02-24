@@ -1,6 +1,16 @@
 {
   "version": 1,
   "skills": {
+    "eloquent-best-practices": {
+      "source": "iserter/laravel-claude-agents",
+      "sourceType": "github",
+      "computedHash": "9ac1268798ae480224524bd7541de58d9bed5f0d5e2c8914f4a61dee23e5f244"
+    },
+    "find-skills": {
+      "source": "vercel-labs/skills",
+      "sourceType": "github",
+      "computedHash": "25872a21881a950edc3db1f3329664d60405d539660ce05b3265db2de06a7dfd"
+    },
     "frontend-design": {
       "source": "anthropics/skills",
       "sourceType": "github",

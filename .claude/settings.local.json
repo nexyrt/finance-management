@@ -43,7 +43,8 @@
       "WebFetch(domain:api.github.com)",
       "Bash(cat:*)",
       "Bash(composer remove:*)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "WebFetch(domain:skills.sh)"
     ]
   }
 }

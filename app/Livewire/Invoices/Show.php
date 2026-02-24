@@ -51,35 +51,46 @@ class Show extends Component
     }
 
     #[Computed]
+    public function invoiceMetrics(): array
+    {
+        if (!$this->invoice) {
+            return ['netRevenue' => 0, 'totalCogs' => 0, 'totalTaxDeposits' => 0, 'grossProfit' => 0];
+        }
+
+        $items = $this->invoice->items;
+        $regular = $items->where('is_tax_deposit', false);
+        $tax = $items->where('is_tax_deposit', true);
+
+        $netRevenue = $regular->sum('amount');
+        $totalCogs = $regular->sum('cogs_amount');
+        $totalTaxDeposits = $tax->sum('amount');
+        $grossProfit = $this->invoice->total_amount - $totalTaxDeposits - $totalCogs;
+
+        return compact('netRevenue', 'totalCogs', 'totalTaxDeposits', 'grossProfit');
+    }
+
+    #[Computed]
     public function netRevenue(): int
     {
-        if (!$this->invoice)
-            return 0;
-        return $this->invoice->items->where('is_tax_deposit', false)->sum('amount');
+        return $this->invoiceMetrics['netRevenue'];
     }
 
     #[Computed]
     public function totalCogs(): int
     {
-        if (!$this->invoice)
-            return 0;
-        return $this->invoice->items->where('is_tax_deposit', false)->sum('cogs_amount');
+        return $this->invoiceMetrics['totalCogs'];
     }
 
     #[Computed]
     public function totalTaxDeposits(): int
     {
-        if (!$this->invoice)
-            return 0;
-        return $this->invoice->items->where('is_tax_deposit', true)->sum('amount');
+        return $this->invoiceMetrics['totalTaxDeposits'];
     }
 
     #[Computed]
     public function grossProfit(): int
     {
-        if (!$this->invoice)
-            return 0;
-        return $this->invoice->total_amount - $this->totalTaxDeposits - $this->totalCogs;
+        return $this->invoiceMetrics['grossProfit'];
     }
 
     public function sendInvoice(): void

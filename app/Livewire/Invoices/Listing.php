@@ -3,6 +3,7 @@
 namespace App\Livewire\Invoices;
 
 use App\Models\Invoice;
+use App\Models\Payment;
 use App\Models\Client;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -131,31 +132,12 @@ class Listing extends Component
     {
         $query = Invoice::query()
             ->join('clients', 'invoices.billed_to_id', '=', 'clients.id')
-            ->leftJoin('payments', 'invoices.id', '=', 'payments.invoice_id')
-            ->select([
+            ->addSelect([
                 'invoices.*',
                 'clients.name as client_name',
                 'clients.type as client_type',
-                DB::raw('COALESCE(SUM(payments.amount), 0) as amount_paid')
-            ])
-            ->groupBy([
-                'invoices.id',
-                'invoices.invoice_number',
-                'invoices.billed_to_id',
-                'invoices.total_amount',
-                'invoices.issue_date',
-                'invoices.due_date',
-                'invoices.status',
-                'invoices.faktur',
-                'invoices.created_at',
-                'invoices.updated_at',
-                'invoices.subtotal',
-                'invoices.discount_amount',
-                'invoices.discount_type',
-                'invoices.discount_value',
-                'invoices.discount_reason',
-                'clients.name',
-                'clients.type'
+                'amount_paid' => Payment::selectRaw('COALESCE(SUM(amount), 0)')
+                    ->whereColumn('payments.invoice_id', 'invoices.id'),
             ]);
 
         $query->when($this->search, function ($q) {

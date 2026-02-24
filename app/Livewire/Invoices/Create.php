@@ -218,22 +218,7 @@ class Create extends Component
     #[Computed]
     public function maxInvoiceSequence()
     {
-        $date = now();
-
-        $invoices = Invoice::whereYear('issue_date', $date->year)
-            ->whereMonth('issue_date', $date->month)
-            ->pluck('invoice_number');
-
-        $maxSequence = 0;
-        foreach ($invoices as $invoiceNumber) {
-            // Match new format: 001/INV/SPI-SAB/I/2026
-            if (preg_match('/^(\d+)\/INV\//', $invoiceNumber, $matches)) {
-                $sequence = (int) $matches[1];
-                $maxSequence = max($maxSequence, $sequence);
-            }
-        }
-
-        return $maxSequence;
+        return $this->getMaxSequenceFromDb(now());
     }
 
     private function getCompanyInitials(): string
@@ -312,19 +297,11 @@ class Create extends Component
 
     private function getMaxSequenceFromDb($date): int
     {
-        $invoices = Invoice::whereYear('issue_date', $date->year)
+        return (int) Invoice::whereYear('issue_date', $date->year)
             ->whereMonth('issue_date', $date->month)
-            ->pluck('invoice_number');
-
-        $maxSequence = 0;
-        foreach ($invoices as $invoiceNumber) {
-            if (preg_match('/^(\d+)\/INV\//', $invoiceNumber, $matches)) {
-                $sequence = (int) $matches[1];
-                $maxSequence = max($maxSequence, $sequence);
-            }
-        }
-
-        return $maxSequence;
+            ->where('invoice_number', 'LIKE', '%/INV/%')
+            ->selectRaw("MAX(CAST(SUBSTRING_INDEX(invoice_number, '/INV/', 1) AS UNSIGNED)) as max_seq")
+            ->value('max_seq') ?? 0;
     }
 
     private function parseAmount($value): int

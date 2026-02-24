@@ -53,6 +53,10 @@ class Invoice extends Model
     // Essential payment tracking
     public function getAmountPaidAttribute(): int
     {
+        if ($this->relationLoaded('payments')) {
+            return $this->payments->sum('amount');
+        }
+
         return $this->payments()->sum('amount');
     }
 
@@ -64,6 +68,10 @@ class Invoice extends Model
     // Essential profit tracking
     public function getTotalCogsAttribute(): int
     {
+        if ($this->relationLoaded('items')) {
+            return $this->items->sum('cogs_amount');
+        }
+
         return $this->items()->sum('cogs_amount');
     }
 
