@@ -89,7 +89,7 @@
                                     @click="
                                         const rect = $refs.clientTrigger.getBoundingClientRect();
                                         const el = document.getElementById('main-client-dd');
-                                        if (el) { el.style.top = (rect.bottom + 4) + 'px'; el.style.left = rect.left + 'px'; el.style.width = rect.width + 'px'; }
+                                        if (el) { el.style.left = rect.left + 'px'; el.style.width = rect.width + 'px'; el.style.top = (rect.bottom + 4) + 'px'; setTimeout(() => { const ddH = el.offsetHeight; const spaceBelow = window.innerHeight - rect.bottom; const spaceAbove = rect.top; el.style.top = (spaceBelow >= ddH || spaceBelow >= spaceAbove ? rect.bottom + 4 : rect.top - ddH - 4) + 'px'; }, 0); }
                                         selectOpen = !selectOpen;
                                         const sh = (e) => {
                                             const dd = document.getElementById('main-client-dd');
@@ -321,7 +321,7 @@
                                                 const trigger = $event.target;
                                                 const rect = trigger.getBoundingClientRect();
                                                 const el = document.getElementById('client-dd-' + item.id);
-                                                if (el) { el.style.top = (rect.bottom + 4) + 'px'; el.style.left = rect.left + 'px'; }
+                                                if (el) { el.style.left = rect.left + 'px'; el.style.top = (rect.bottom + 4) + 'px'; requestAnimationFrame(() => requestAnimationFrame(() => { const ddH = el.offsetHeight; const spaceBelow = window.innerHeight - rect.bottom; const spaceAbove = rect.top; el.style.top = (spaceBelow >= ddH || spaceBelow >= spaceAbove ? rect.bottom + 4 : rect.top - ddH - 4) + 'px'; })); }
                                                 itemSelectOpen[item.id] = true;
                                                 const sh = (e) => {
                                                     const dd = document.getElementById('client-dd-' + item.id);
@@ -377,7 +377,7 @@
                                             @click="
                                                 const rect = $event.target.getBoundingClientRect();
                                                 const el = document.getElementById('service-dd-' + item.id);
-                                                if (el) { el.style.top = (rect.bottom + 4) + 'px'; el.style.left = rect.left + 'px'; }
+                                                if (el) { el.style.left = rect.left + 'px'; el.style.top = (rect.bottom + 4) + 'px'; requestAnimationFrame(() => requestAnimationFrame(() => { const ddH = el.offsetHeight; const spaceBelow = window.innerHeight - rect.bottom; const spaceAbove = rect.top; el.style.top = (spaceBelow >= ddH || spaceBelow >= spaceAbove ? rect.bottom + 4 : rect.top - ddH - 4) + 'px'; })); }
                                                 serviceSelectOpen[item.id] = true;
                                                 const sh = (e) => {
                                                     const dd = document.getElementById('service-dd-' + item.id);

@@ -2508,10 +2508,16 @@ translate_category(string $categoryName): string
 ```
 
 **Cara kerja:**
-- Menggunakan Google Translate free endpoint (`translate.googleapis.com/translate_a/single`)
+- Menggunakan package `stichoza/google-translate-php` (v5+) — **bukan** raw HTTP call
+- Package handle SSL, retry, dan parsing response secara internal
 - Hasil di-cache selama **6 bulan** dengan key `translation.{src}.{target}.{md5(text)}`
-- Fallback ke teks asli jika API gagal (tidak throw exception)
+- Fallback ke teks asli jika API gagal (tidak throw exception, hanya log warning)
 - Tidak translate jika locale saat ini sama dengan `$sourceLang`
+
+**Catatan Environment:**
+- Di **production**: berjalan normal tanpa konfigurasi tambahan
+- Di **local Windows**: jika ada SSL error, package Stichoza sudah handle secara internal — tidak perlu `withoutVerifying()` manual
+- Jika translation tidak muncul di local, coba `php artisan cache:clear` karena cache lama (yang menyimpan fallback teks asli) bisa menghalangi hasil baru
 
 **Usage di Blade template:**
 
