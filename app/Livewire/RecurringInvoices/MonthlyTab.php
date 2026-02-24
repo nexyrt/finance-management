@@ -5,14 +5,22 @@ namespace App\Livewire\RecurringInvoices;
 use App\Models\RecurringInvoice;
 use App\Models\RecurringTemplate;
 use Carbon\Carbon;
-use Livewire\Component;
+use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Lazy;
+use Livewire\Component;
 use Livewire\WithPagination;
 use TallStackUi\Traits\Interactions;
 
+#[Lazy]
 class MonthlyTab extends Component
 {
     use WithPagination, Interactions;
+
+    public function placeholder(): View
+    {
+        return view('livewire.placeholders.table-skeleton');
+    }
 
     public int $currentMonth;
     public int $currentYear;

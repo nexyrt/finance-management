@@ -3,13 +3,21 @@
 namespace App\Livewire\RecurringInvoices;
 
 use App\Models\RecurringTemplate;
-use Livewire\Component;
+use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Lazy;
+use Livewire\Component;
 use TallStackUi\Traits\Interactions;
 
+#[Lazy]
 class TemplatesTab extends Component
 {
     use Interactions;
+
+    public function placeholder(): View
+    {
+        return view('livewire.placeholders.table-skeleton');
+    }
 
     public string $search = '';
     public string $statusFilter = 'active';

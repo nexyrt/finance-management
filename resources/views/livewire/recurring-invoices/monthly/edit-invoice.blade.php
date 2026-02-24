@@ -1,44 +1,23 @@
-<div class="max-w-full mx-auto p-6" x-data="monthlyInvoiceEditForm()" @click.away="closeAllDropdowns()">
+<div class="space-y-6" x-data="monthlyInvoiceEditForm()" @click.away="closeAllDropdowns()">
     {{-- Header --}}
-    <div class="mb-6 space-y-1">
-        <h1
-            class="text-4xl font-bold bg-gradient-to-r from-dark-900 via-primary-800 to-primary-800 dark:from-white dark:via-primary-200 dark:to-primary-200 bg-clip-text text-transparent">
-            {{ __('pages.ri_edit_invoice_page_title') }}
-        </h1>
-        <p class="text-dark-600 dark:text-dark-400 text-lg">{{ __('pages.ri_edit_invoice_page_desc', ['period' => \Carbon\Carbon::parse($invoice->scheduled_date)->format('F Y')]) }}</p>
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div class="space-y-1">
+            <h1 class="text-4xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-indigo-800 dark:from-white dark:via-blue-200 dark:to-indigo-200 bg-clip-text text-transparent">
+                {{ __('pages.ri_edit_invoice_page_title') }}
+            </h1>
+            <p class="text-gray-600 dark:text-zinc-400 text-lg">{{ __('pages.ri_edit_invoice_page_desc', ['period' => \Carbon\Carbon::parse($invoice->scheduled_date)->format('F Y')]) }}</p>
+        </div>
+        <x-button href="{{ route('recurring-invoices.index') }}" wire:navigate color="zinc" size="sm">
+            <x-slot:left>
+                <x-icon name="arrow-left" class="w-4 h-4" />
+            </x-slot:left>
+            {{ __('common.back') }}
+        </x-button>
     </div>
 
-    {{-- Flash Messages --}}
-    @if (session()->has('success'))
-        <div
-            class="mb-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg flex items-start gap-3">
-            <svg class="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor"
-                viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <div>
-                <p class="text-sm text-green-700 dark:text-green-300">{{ session('success') }}</p>
-            </div>
-        </div>
-    @endif
-
-    @if (session()->has('error'))
-        <div
-            class="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg flex items-start gap-3">
-            <svg class="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor"
-                viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <div>
-                <p class="text-sm text-red-700 dark:text-red-300">{{ session('error') }}</p>
-            </div>
-        </div>
-    @endif
-
+    {{-- Validation Errors --}}
     @if ($errors->any())
-        <div class="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+        <div class="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl">
             <h3 class="text-sm font-semibold text-red-900 dark:text-red-200 mb-2">{{ __('pages.ri_please_fix') }}</h3>
             <ul class="list-disc list-inside text-sm text-red-700 dark:text-red-300 space-y-1">
                 @foreach ($errors->all() as $error)
@@ -48,40 +27,71 @@
         </div>
     @endif
 
-    <div class="space-y-6">
-        {{-- Invoice Info --}}
-        <div class="bg-white dark:bg-dark-800 rounded-xl shadow-sm border border-dark-200 dark:border-dark-600 p-6">
-            <h2 class="text-lg font-semibold text-dark-900 dark:text-dark-50 mb-4">{{ __('pages.ri_invoice_info_section') }}</h2>
+    {{-- 2-Column Layout --}}
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+        {{-- Left Column (2/3) --}}
+        <div class="lg:col-span-2 space-y-6">
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {{-- Template Info (Readonly) --}}
-                <div>
-                    <label class="block text-sm font-medium text-dark-900 dark:text-dark-50 mb-1">{{ __('pages.ri_from_template_label') }}</label>
-                    <input type="text" value="{{ $invoice->template->template_name }}" readonly
-                        class="w-full px-3 py-2 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-dark-100 dark:bg-dark-700 text-dark-900 dark:text-dark-50 cursor-not-allowed">
+            {{-- Section 1: Invoice Info --}}
+            <div class="bg-white dark:bg-dark-800 rounded-xl border border-dark-200 dark:border-dark-600 overflow-hidden">
+                {{-- Section Header --}}
+                <div class="px-6 py-4 border-b border-dark-100 dark:border-dark-700 flex items-center gap-3">
+                    <div class="h-8 w-8 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <svg class="w-4 h-4 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 class="text-sm font-semibold text-dark-900 dark:text-dark-50">{{ __('pages.ri_invoice_info_section') }}</h2>
+                        <p class="text-xs text-dark-500 dark:text-dark-400">{{ __('pages.ri_invoice_info_section_desc') }}</p>
+                    </div>
                 </div>
 
-                {{-- Client (Readonly) --}}
-                <div>
-                    <label class="block text-sm font-medium text-dark-900 dark:text-dark-50 mb-1">{{ __('pages.ri_billed_to_readonly_label') }}</label>
-                    <input type="text" value="{{ $invoice->client->name }}" readonly
-                        class="w-full px-3 py-2 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-dark-100 dark:bg-dark-700 text-dark-900 dark:text-dark-50 cursor-not-allowed">
-                </div>
+                <div class="p-6 space-y-5">
+                    {{-- Template + Client (Readonly) --}}
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {{-- Template Info (Readonly) --}}
+                        <div class="space-y-1.5">
+                            <label class="block text-xs font-semibold text-dark-700 dark:text-dark-300 uppercase tracking-wide">{{ __('pages.ri_from_template_label') }}</label>
+                            <input type="text" value="{{ $invoice->template->template_name }}" readonly
+                                class="w-full px-3 py-2.5 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-dark-50 dark:bg-dark-700 text-dark-500 dark:text-dark-400 cursor-not-allowed">
+                        </div>
 
-                {{-- Scheduled Date --}}
-                <div>
-                    <label class="block text-sm font-medium text-dark-900 dark:text-dark-50 mb-1">{{ __('pages.ri_scheduled_date_required_label') }}</label>
-                    <input type="date" x-model="invoiceData.scheduled_date"
-                        class="w-full px-3 py-2 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                        {{-- Client (Readonly) --}}
+                        <div class="space-y-1.5">
+                            <label class="block text-xs font-semibold text-dark-700 dark:text-dark-300 uppercase tracking-wide">{{ __('pages.ri_billed_to_readonly_label') }}</label>
+                            <input type="text" value="{{ $invoice->client->name }}" readonly
+                                class="w-full px-3 py-2.5 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-dark-50 dark:bg-dark-700 text-dark-500 dark:text-dark-400 cursor-not-allowed">
+                        </div>
+                    </div>
+
+                    {{-- Scheduled Date --}}
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="space-y-1.5">
+                            <label class="block text-xs font-semibold text-dark-700 dark:text-dark-300 uppercase tracking-wide">{{ __('pages.ri_scheduled_date_required_label') }}</label>
+                            <div class="relative">
+                                <div class="pointer-events-none absolute inset-y-0 left-3 flex items-center">
+                                    <svg class="w-4 h-4 text-dark-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                    </svg>
+                                </div>
+                                <input type="date" x-model="invoiceData.scheduled_date"
+                                    class="w-full pl-9 pr-3 py-2.5 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:cursor-pointer">
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
+
+            {{-- Section 2: Items --}}
+            @include('livewire.recurring-invoices.partials.items-repeater')
+
         </div>
 
-        {{-- Items Section - Reuse partial --}}
-        @include('livewire.recurring-invoices.partials.items-repeater')
-
-        {{-- Summary Section - Reuse partial --}}
-        @include('livewire.recurring-invoices.partials.summary-section')
+        {{-- Right Column (1/3) Sticky --}}
+        <div class="lg:col-span-1 lg:sticky lg:top-6">
+            @include('livewire.recurring-invoices.partials.summary-section')
+        </div>
     </div>
 </div>
 

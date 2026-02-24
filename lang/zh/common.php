@@ -72,6 +72,7 @@ return [
     'next' => '下一步',
     'previous' => '上一步',
     'view' => '查看',
+    'restore' => '恢复',
     'preview' => '预览',
     'refresh' => '刷新',
     'confirm' => '确认',

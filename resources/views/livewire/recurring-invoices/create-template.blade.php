@@ -1,44 +1,23 @@
-<div class="max-w-full mx-auto p-6" x-data="recurringTemplateForm()" @click.away="closeAllDropdowns()">
+<div class="space-y-6" x-data="recurringTemplateForm()" @click.away="closeAllDropdowns()">
     {{-- Header --}}
-    <div class="mb-6 space-y-1">
-        <h1
-            class="text-4xl font-bold bg-gradient-to-r from-dark-900 via-primary-800 to-primary-800 dark:from-white dark:via-primary-200 dark:to-primary-200 bg-clip-text text-transparent">
-            {{ __('pages.ri_create_template_page_title') }}
-        </h1>
-        <p class="text-dark-600 dark:text-dark-400 text-lg">{{ __('pages.ri_create_template_page_desc') }}</p>
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div class="space-y-1">
+            <h1 class="text-4xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-indigo-800 dark:from-white dark:via-blue-200 dark:to-indigo-200 bg-clip-text text-transparent">
+                {{ __('pages.ri_create_template_page_title') }}
+            </h1>
+            <p class="text-gray-600 dark:text-zinc-400 text-lg">{{ __('pages.ri_create_template_page_desc') }}</p>
+        </div>
+        <x-button href="{{ route('recurring-invoices.index') }}" wire:navigate color="zinc" size="sm">
+            <x-slot:left>
+                <x-icon name="arrow-left" class="w-4 h-4" />
+            </x-slot:left>
+            {{ __('common.back') }}
+        </x-button>
     </div>
 
-    {{-- Flash Messages --}}
-    @if (session()->has('success'))
-        <div
-            class="mb-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg flex items-start gap-3">
-            <svg class="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor"
-                viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <div>
-                <p class="text-sm text-green-700 dark:text-green-300">{{ session('success') }}</p>
-            </div>
-        </div>
-    @endif
-
-    @if (session()->has('error'))
-        <div
-            class="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg flex items-start gap-3">
-            <svg class="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor"
-                viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <div>
-                <p class="text-sm text-red-700 dark:text-red-300">{{ session('error') }}</p>
-            </div>
-        </div>
-    @endif
-
+    {{-- Validation Errors --}}
     @if ($errors->any())
-        <div class="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+        <div class="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl">
             <h3 class="text-sm font-semibold text-red-900 dark:text-red-200 mb-2">{{ __('pages.ri_please_fix') }}</h3>
             <ul class="list-disc list-inside text-sm text-red-700 dark:text-red-300 space-y-1">
                 @foreach ($errors->all() as $error)
@@ -48,104 +27,158 @@
         </div>
     @endif
 
-    <div class="space-y-6">
-        {{-- Template Info --}}
-        <div class="bg-white dark:bg-dark-800 rounded-xl shadow-sm border border-dark-200 dark:border-dark-600 p-6">
-            <h2 class="text-lg font-semibold text-dark-900 dark:text-dark-50 mb-4">{{ __('pages.ri_template_info_section') }}</h2>
+    {{-- 2-Column Layout --}}
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+        {{-- Left Column (2/3) --}}
+        <div class="lg:col-span-2 space-y-6">
 
-            <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
-                {{-- Template Name --}}
-                <div class="md:col-span-6">
-                    <label class="block text-sm font-medium text-dark-900 dark:text-dark-50 mb-1">{{ __('pages.ri_template_name_label') }}</label>
-                    <input type="text" x-model="template.template_name"
-                        class="w-full px-3 py-2 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                        placeholder="{{ __('pages.ri_template_name_placeholder') }}">
+            {{-- Section 1: Template Details --}}
+            <div class="bg-white dark:bg-dark-800 rounded-xl border border-dark-200 dark:border-dark-600 overflow-hidden">
+                {{-- Section Header --}}
+                <div class="px-6 py-4 border-b border-dark-100 dark:border-dark-700 flex items-center gap-3">
+                    <div class="w-8 h-8 bg-primary-50 dark:bg-primary-900/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <svg class="w-4 h-4 text-primary-600 dark:text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 class="text-sm font-semibold text-dark-900 dark:text-dark-50">{{ __('pages.ri_template_info_section') }}</h2>
+                        <p class="text-xs text-dark-500 dark:text-dark-400">{{ __('pages.ri_template_info_section_desc') }}</p>
+                    </div>
                 </div>
 
-                {{-- Frequency --}}
-                <div class="md:col-span-6">
-                    <label class="block text-sm font-medium text-dark-900 dark:text-dark-50 mb-1">{{ __('pages.ri_frequency_label') }}</label>
-                    <select x-model="template.frequency"
-                        class="w-full px-3 py-2 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2020%2020%22%3E%3Cpath%20stroke%3D%22%236b7280%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%221.5%22%20d%3D%22m6%208%204%204%204-4%22%2F%3E%3C%2Fsvg%3E')] bg-[length:1.25rem] bg-[right_0.5rem_center] bg-no-repeat pr-10">
-                        <template x-for="freq in frequencyOptions" :key="freq.value">
-                            <option :value="freq.value" x-text="freq.label"></option>
-                        </template>
-                    </select>
-                </div>
+                <div class="p-6 space-y-5">
+                    {{-- Row 1: Template Name --}}
+                    <div class="space-y-1.5">
+                        <label class="block text-xs font-semibold text-dark-700 dark:text-dark-300 uppercase tracking-wide">
+                            {{ __('pages.ri_template_name_label') }} <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" x-model="template.template_name"
+                            class="w-full px-3 py-2.5 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+                            placeholder="{{ __('pages.ri_template_name_placeholder') }}">
+                    </div>
 
-                {{-- Client --}}
-                <div class="md:col-span-4">
-                    <label class="block text-sm font-medium text-dark-900 dark:text-dark-50 mb-1">{{ __('pages.ri_billed_to_label') }}</label>
-                    <div class="relative">
-                        <div x-show="!template.client_id" @click="selectOpen = !selectOpen"
-                            class="w-full px-3 py-2 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-500 dark:text-dark-400 cursor-pointer hover:border-primary-400 transition">
-                            {{ __('pages.ri_select_client_placeholder') }}
+                    {{-- Row 2: Frequency + Client --}}
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {{-- Frequency --}}
+                        <div class="space-y-1.5">
+                            <label class="block text-xs font-semibold text-dark-700 dark:text-dark-300 uppercase tracking-wide">{{ __('pages.ri_frequency_label') }}</label>
+                            <select x-model="template.frequency"
+                                class="w-full px-3 py-2.5 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2020%2020%22%3E%3Cpath%20stroke%3D%22%236b7280%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%221.5%22%20d%3D%22m6%208%204%204%204-4%22%2F%3E%3C%2Fsvg%3E')] bg-[length:1.25rem] bg-[right_0.5rem_center] bg-no-repeat pr-10">
+                                <template x-for="freq in frequencyOptions" :key="freq.value">
+                                    <option :value="freq.value" x-text="freq.label"></option>
+                                </template>
+                            </select>
                         </div>
-                        <div x-show="template.client_id"
-                            class="w-full px-3 py-2 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 flex items-center justify-between">
-                            <span class="text-dark-900 dark:text-dark-50" x-text="template.client_name"></span>
-                            <button @click="clearClient()" type="button"
-                                class="text-dark-400 hover:text-red-500 transition">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                            </button>
-                        </div>
-                        <div x-show="selectOpen" x-transition
-                            class="absolute z-50 mt-1 w-full bg-white dark:bg-dark-800 border border-dark-200 dark:border-dark-700 rounded-lg shadow-lg max-h-80 overflow-hidden">
-                            <div class="p-2 border-b border-dark-200 dark:border-dark-700">
-                                <input type="text" x-model="selectSearch" @click.stop placeholder="{{ __('pages.ri_search_clients_placeholder') }}"
-                                    class="w-full px-3 py-2 border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 placeholder-dark-400 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
-                            </div>
-                            <div class="overflow-y-auto max-h-64">
-                                <template x-for="client in filteredClients" :key="client.id">
-                                    <div @click="selectClient(client)"
-                                        class="px-4 py-3 hover:bg-primary-50 dark:hover:bg-primary-900/20 cursor-pointer transition border-b border-dark-100 dark:border-dark-700 last:border-0">
-                                        <div class="flex items-center gap-3">
-                                            <div
-                                                class="w-10 h-10 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white font-semibold flex-shrink-0">
-                                                <span x-text="client.name.charAt(0).toUpperCase()"></span>
-                                            </div>
-                                            <div class="flex-1 min-w-0">
-                                                <div class="font-medium text-dark-900 dark:text-dark-50 truncate"
-                                                    x-text="client.name"></div>
-                                                <div class="text-sm text-dark-500 dark:text-dark-400 truncate"
-                                                    x-text="client.email || '-'"></div>
+
+                        {{-- Client --}}
+                        <div class="space-y-1.5">
+                            <label class="block text-xs font-semibold text-dark-700 dark:text-dark-300 uppercase tracking-wide">
+                                {{ __('pages.ri_billed_to_label') }} <span class="text-red-500">*</span>
+                            </label>
+                            <div class="relative" @click.away="selectOpen = false">
+                                <div x-show="!template.client_id"
+                                    x-ref="clientTrigger"
+                                    @click="
+                                        const rect = $refs.clientTrigger.getBoundingClientRect();
+                                        const el = document.getElementById('tmpl-client-dd');
+                                        if (el) { el.style.left = rect.left + 'px'; el.style.width = rect.width + 'px'; el.style.top = (rect.bottom + 4) + 'px'; setTimeout(() => { const ddH = el.offsetHeight; const spaceBelow = window.innerHeight - rect.bottom; const spaceAbove = rect.top; el.style.top = (spaceBelow >= ddH || spaceBelow >= spaceAbove ? rect.bottom + 4 : rect.top - ddH - 4) + 'px'; }, 0); }
+                                        selectOpen = !selectOpen;"
+                                    class="w-full px-3 py-2.5 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-400 dark:text-dark-500 cursor-pointer hover:border-primary-400 dark:hover:border-primary-500 transition-colors flex items-center gap-2">
+                                    <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                    </svg>
+                                    {{ __('pages.ri_select_client_placeholder') }}
+                                </div>
+                                <div x-show="template.client_id"
+                                    class="w-full px-3 py-2.5 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 flex items-center gap-2">
+                                    <div class="w-6 h-6 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
+                                        x-text="template.client_name ? template.client_name.charAt(0).toUpperCase() : ''"></div>
+                                    <span class="flex-1 text-dark-900 dark:text-dark-50 font-medium truncate" x-text="template.client_name"></span>
+                                    <button @click="clearClient()" type="button"
+                                        class="flex-shrink-0 text-dark-300 hover:text-red-500 dark:text-dark-500 dark:hover:text-red-400 transition-colors">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                                <template x-teleport="body">
+                                    <div x-show="selectOpen"
+                                        x-transition:enter="transition ease-out duration-100"
+                                        x-transition:enter-start="opacity-0 scale-95"
+                                        x-transition:enter-end="opacity-100 scale-100"
+                                        id="tmpl-client-dd"
+                                        @click.away="selectOpen = false"
+                                        class="fixed z-[9999] bg-white dark:bg-dark-800 border border-dark-200 dark:border-dark-700 rounded-xl shadow-xl overflow-hidden">
+                                        <div class="p-2 border-b border-dark-100 dark:border-dark-700">
+                                            <input type="text" x-model="selectSearch" @click.stop
+                                                placeholder="{{ __('pages.ri_search_clients_placeholder') }}"
+                                                class="w-full px-3 py-2 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 placeholder-dark-400 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                                        </div>
+                                        <div class="overflow-y-auto max-h-56">
+                                            <template x-for="client in filteredClients" :key="client.id">
+                                                <div @click="selectClient(client)"
+                                                    class="px-3 py-2.5 hover:bg-primary-50 dark:hover:bg-primary-900/20 cursor-pointer flex items-center gap-3 border-b border-dark-50 dark:border-dark-700 last:border-0">
+                                                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
+                                                        x-text="client.name.charAt(0).toUpperCase()"></div>
+                                                    <div class="min-w-0">
+                                                        <div class="text-sm font-medium text-dark-900 dark:text-dark-50 truncate" x-text="client.name"></div>
+                                                        <div class="text-xs text-dark-400 dark:text-dark-500 truncate" x-text="client.email || '-'"></div>
+                                                    </div>
+                                                </div>
+                                            </template>
+                                            <div x-show="filteredClients.length === 0" class="px-4 py-8 text-center">
+                                                <p class="text-sm text-dark-400 dark:text-dark-500">{{ __('pages.ri_no_clients_found') }}</p>
                                             </div>
                                         </div>
                                     </div>
                                 </template>
-                                <div x-show="filteredClients.length === 0"
-                                    class="px-4 py-8 text-center text-dark-500 dark:text-dark-400">
-                                    <p class="text-sm">{{ __('pages.ri_no_clients_found') }}</p>
-                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Row 3: Start Date + End Date --}}
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {{-- Start Date --}}
+                        <div class="space-y-1.5">
+                            <label class="block text-xs font-semibold text-dark-700 dark:text-dark-300 uppercase tracking-wide">
+                                {{ __('pages.ri_start_date_label') }} <span class="text-red-500">*</span>
+                            </label>
+                            <div class="relative">
+                                <svg class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-dark-400 dark:text-dark-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                </svg>
+                                <input type="date" x-model="template.start_date"
+                                    class="w-full pl-9 pr-3 py-2.5 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:cursor-pointer">
+                            </div>
+                        </div>
+
+                        {{-- End Date --}}
+                        <div class="space-y-1.5">
+                            <label class="block text-xs font-semibold text-dark-700 dark:text-dark-300 uppercase tracking-wide">
+                                {{ __('pages.ri_end_date_label') }} <span class="text-red-500">*</span>
+                            </label>
+                            <div class="relative">
+                                <svg class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-dark-400 dark:text-dark-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                </svg>
+                                <input type="date" x-model="template.end_date"
+                                    class="w-full pl-9 pr-3 py-2.5 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:cursor-pointer">
                             </div>
                         </div>
                     </div>
                 </div>
-
-                {{-- Start Date --}}
-                <div class="md:col-span-4">
-                    <label class="block text-sm font-medium text-dark-900 dark:text-dark-50 mb-1">{{ __('pages.ri_start_date_label') }}</label>
-                    <input type="date" x-model="template.start_date"
-                        class="w-full px-3 py-2 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
-                </div>
-
-                {{-- End Date --}}
-                <div class="md:col-span-4">
-                    <label class="block text-sm font-medium text-dark-900 dark:text-dark-50 mb-1">{{ __('pages.ri_end_date_label') }}</label>
-                    <input type="date" x-model="template.end_date"
-                        class="w-full px-3 py-2 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
-                </div>
             </div>
+
+            {{-- Section 2: Items --}}
+            @include('livewire.recurring-invoices.partials.items-repeater')
+
         </div>
 
-        {{-- Items Section - Reuse from invoice create --}}
-        @include('livewire.recurring-invoices.partials.items-repeater')
-
-        {{-- Summary Section - Reuse from invoice create --}}
-        @include('livewire.recurring-invoices.partials.summary-section')
+        {{-- Right Column (1/3) Sticky --}}
+        <div class="lg:col-span-1 lg:sticky lg:top-6">
+            @include('livewire.recurring-invoices.partials.summary-section')
+        </div>
     </div>
 </div>
 

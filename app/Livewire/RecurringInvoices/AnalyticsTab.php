@@ -4,14 +4,22 @@ namespace App\Livewire\RecurringInvoices;
 
 use App\Models\RecurringInvoice;
 use App\Models\RecurringTemplate;
-use Livewire\Component;
-use Livewire\Attributes\Computed;
 use Carbon\Carbon;
+use Illuminate\Contracts\View\View;
+use Livewire\Attributes\Computed;
+use Livewire\Attributes\Lazy;
+use Livewire\Component;
 
+#[Lazy]
 class AnalyticsTab extends Component
 {
     public string $selectedYear;
     public string $period = 'monthly';
+
+    public function placeholder(): View
+    {
+        return view('livewire.placeholders.stats-skeleton');
+    }
 
     public function mount(): void
     {
@@ -45,27 +53,43 @@ class AnalyticsTab extends Component
         ])->toArray();
     }
 
+    /**
+     * Load all invoices for a year in a single query, keyed by month.
+     * Used internally to avoid repeated DB queries across methods.
+     */
+    private function getYearInvoicesByMonth(int $year): \Illuminate\Support\Collection
+    {
+        return RecurringInvoice::whereYear('scheduled_date', $year)
+            ->get(['id', 'scheduled_date', 'invoice_data', 'status'])
+            ->groupBy(fn($inv) => (int) $inv->scheduled_date->format('n'));
+    }
+
     #[Computed]
     public function revenueMetrics(): array
     {
         $currentYear = (int) $this->selectedYear;
         $previousYear = $currentYear - 1;
+        $currentMonth = now()->month;
 
-        $currentData = $this->getYearRevenue($currentYear);
-        $previousData = $this->getYearRevenue($previousYear);
+        // Two queries total (current year + previous year)
+        $currentByMonth = $this->getYearInvoicesByMonth($currentYear);
+        $previousByMonth = $this->getYearInvoicesByMonth($previousYear);
 
-        $currentTotal = $currentData['total'];
-        $previousTotal = $previousData['total'];
+        $currentTotal = $currentByMonth->flatten()->sum(fn($inv) => $inv->invoice_data['total_amount'] ?? 0);
+        $previousTotal = $previousByMonth->flatten()->sum(fn($inv) => $inv->invoice_data['total_amount'] ?? 0);
 
         $growthRate = $previousTotal > 0
             ? (($currentTotal - $previousTotal) / $previousTotal) * 100
             : 0;
 
+        $currentMonthRevenue = ($currentByMonth[$currentMonth] ?? collect())
+            ->sum(fn($inv) => $inv->invoice_data['total_amount'] ?? 0);
+
         return [
             'current_year' => $currentTotal,
             'previous_year' => $previousTotal,
             'growth_rate' => $growthRate,
-            'current_month' => $this->getCurrentMonthRevenue(),
+            'current_month' => $currentMonthRevenue,
             'average_monthly' => $currentTotal > 0 ? $currentTotal / 12 : 0,
         ];
     }
@@ -80,186 +104,118 @@ class AnalyticsTab extends Component
         return $this->getQuarterlyRevenueChart();
     }
 
+    /**
+     * Single query — merged from templateEfficiencyChart + templatePerformance.
+     * Both previously ran identical DB queries separately.
+     */
     #[Computed]
-    public function templateEfficiencyChart(): array
+    public function templateStats(): array
     {
         $templates = RecurringTemplate::with([
-            'recurringInvoices' => function ($query) {
-                $query->whereYear('scheduled_date', (int) $this->selectedYear);
-            },
-            'client'
-        ])->get();
+            'recurringInvoices' => fn($q) => $q->whereYear('scheduled_date', (int) $this->selectedYear)
+                ->select(['id', 'template_id', 'status', 'invoice_data']),
+            'client:id,name',
+        ])->get(['id', 'template_name', 'client_id']);
 
         return $templates->map(function ($template) {
-            $invoices = $template->recurringInvoices;
-            $totalGenerated = $invoices->count();
-            $published = $invoices->where('status', 'published')->count();
-
-            $revenue = $invoices->sum(function ($invoice) {
-                return $invoice->invoice_data['total_amount'] ?? 0;
+            $invoices      = $template->recurringInvoices;
+            $total         = $invoices->count();
+            $published     = $invoices->where('status', 'published')->count();
+            $revenue       = $invoices->sum(fn($inv) => $inv->invoice_data['total_amount'] ?? 0);
+            $totalProfit   = $invoices->sum(function ($inv) {
+                return collect($inv->invoice_data['items'] ?? [])
+                    ->sum(fn($item) => ($item['amount'] ?? 0) - ($item['cogs_amount'] ?? 0));
             });
-
-            $totalProfit = $invoices->sum(function ($invoice) {
-                $items = $invoice->invoice_data['items'] ?? [];
-                return collect($items)->sum(function ($item) {
-                    return ($item['amount'] ?? 0) - ($item['cogs_amount'] ?? 0);
-                });
-            });
-
-            $successRate = $totalGenerated > 0 ? ($published / $totalGenerated) * 100 : 0;
-            $profitMargin = $revenue > 0 ? ($totalProfit / $revenue) * 100 : 0;
+            $successRate   = $total > 0 ? ($published / $total) * 100 : 0;
+            $profitMargin  = $revenue > 0 ? ($totalProfit / $revenue) * 100 : 0;
 
             return [
-                'name' => $template->template_name,
-                'success_rate' => round($successRate, 1),
+                'name'          => $template->template_name,
+                'client'        => $template->client->name,
+                'revenue'       => $revenue,
+                'count'         => $total,
+                'published'     => $published,
+                'success_rate'  => round($successRate, 1),
                 'profit_margin' => round($profitMargin, 1),
-                'revenue' => $revenue,
-            ];
-        })->toArray();
-    }
-
-    #[Computed]
-    public function templatePerformance(): array
-    {
-        $templates = RecurringTemplate::with([
-            'recurringInvoices' => function ($query) {
-                $query->whereYear('scheduled_date', (int) $this->selectedYear);
-            },
-            'client'
-        ])->get();
-
-        return $templates->map(function ($template) {
-            $invoices = $template->recurringInvoices;
-            $totalGenerated = $invoices->count();
-
-            $revenue = $invoices->sum(function ($invoice) {
-                return $invoice->invoice_data['total_amount'] ?? 0;
-            });
-
-            return [
-                'name' => $template->template_name,
-                'client' => $template->client->name,
-                'revenue' => $revenue,
-                'count' => $totalGenerated,
             ];
         })
-            ->sortByDesc('revenue')
-            ->take(5)
-            ->values()
-            ->toArray();
+        ->sortByDesc('revenue')
+        ->values()
+        ->toArray();
     }
 
     #[Computed]
     public function statusBreakdown(): array
     {
-        $invoices = RecurringInvoice::whereYear('scheduled_date', (int) $this->selectedYear)->get();
+        // Single query — group in PHP, no loop queries
+        $invoices = RecurringInvoice::whereYear('scheduled_date', (int) $this->selectedYear)
+            ->get(['id', 'status', 'invoice_data']);
 
         $draft = $invoices->where('status', 'draft');
         $published = $invoices->where('status', 'published');
+        $total = $invoices->count();
 
-        $draftRevenue = $draft->sum(function ($invoice) {
-            return $invoice->invoice_data['total_amount'] ?? 0;
-        });
-
-        $publishedRevenue = $published->sum(function ($invoice) {
-            return $invoice->invoice_data['total_amount'] ?? 0;
-        });
-
-        $totalRevenue = $draftRevenue + $publishedRevenue;
+        $draftRevenue = $draft->sum(fn($inv) => $inv->invoice_data['total_amount'] ?? 0);
+        $publishedRevenue = $published->sum(fn($inv) => $inv->invoice_data['total_amount'] ?? 0);
 
         return [
             'draft' => [
                 'count' => $draft->count(),
                 'revenue' => $draftRevenue,
-                'percentage' => $invoices->count() > 0 ? ($draft->count() / $invoices->count()) * 100 : 0,
+                'percentage' => $total > 0 ? ($draft->count() / $total) * 100 : 0,
             ],
             'published' => [
                 'count' => $published->count(),
                 'revenue' => $publishedRevenue,
-                'percentage' => $invoices->count() > 0 ? ($published->count() / $invoices->count()) * 100 : 0,
+                'percentage' => $total > 0 ? ($published->count() / $total) * 100 : 0,
             ],
             'total' => [
-                'count' => $invoices->count(),
-                'revenue' => $totalRevenue,
+                'count' => $total,
+                'revenue' => $draftRevenue + $publishedRevenue,
             ],
         ];
-    }
-
-    private function getYearRevenue(int $year): array
-    {
-        $invoices = RecurringInvoice::whereYear('scheduled_date', $year)->get();
-
-        $totalRevenue = $invoices->sum(function ($invoice) {
-            return $invoice->invoice_data['total_amount'] ?? 0;
-        });
-
-        return [
-            'total' => $totalRevenue,
-            'count' => $invoices->count(),
-        ];
-    }
-
-    private function getCurrentMonthRevenue(): int
-    {
-        return RecurringInvoice::whereYear('scheduled_date', (int) $this->selectedYear)
-            ->whereMonth('scheduled_date', now()->month)
-            ->get()
-            ->sum(function ($invoice) {
-                return $invoice->invoice_data['total_amount'] ?? 0;
-            });
     }
 
     private function getMonthlyRevenueChart(): array
     {
-        $data = [];
         $year = (int) $this->selectedYear;
 
-        for ($month = 1; $month <= 12; $month++) {
-            $monthRevenue = RecurringInvoice::whereYear('scheduled_date', $year)
-                ->whereMonth('scheduled_date', $month)
-                ->get()
-                ->sum(function ($invoice) {
-                    return $invoice->invoice_data['total_amount'] ?? 0;
-                });
+        // Single query for the whole year, grouped by month in PHP
+        $byMonth = $this->getYearInvoicesByMonth($year);
 
-            $data[] = [
+        return collect(range(1, 12))->map(function ($month) use ($year, $byMonth) {
+            $monthRevenue = ($byMonth[$month] ?? collect())
+                ->sum(fn($inv) => $inv->invoice_data['total_amount'] ?? 0);
+
+            return [
                 'month' => Carbon::create($year, $month)->format('M'),
                 'revenue' => $monthRevenue,
                 'formatted' => 'Rp ' . number_format($monthRevenue / 1000000, 1) . 'M',
             ];
-        }
-
-        return $data;
+        })->toArray();
     }
 
     private function getQuarterlyRevenueChart(): array
     {
-        $data = [];
         $year = (int) $this->selectedYear;
 
-        for ($quarter = 1; $quarter <= 4; $quarter++) {
-            $quarterRevenue = 0;
+        // Single query for the whole year, grouped by quarter in PHP
+        $byMonth = $this->getYearInvoicesByMonth($year);
+
+        return collect(range(1, 4))->map(function ($quarter) use ($year, $byMonth) {
             $startMonth = ($quarter - 1) * 3 + 1;
             $endMonth = $quarter * 3;
 
-            for ($month = $startMonth; $month <= $endMonth; $month++) {
-                $monthRevenue = RecurringInvoice::whereYear('scheduled_date', $year)
-                    ->whereMonth('scheduled_date', $month)
-                    ->get()
-                    ->sum(function ($invoice) {
-                        return $invoice->invoice_data['total_amount'] ?? 0;
-                    });
-                $quarterRevenue += $monthRevenue;
-            }
+            $quarterRevenue = collect(range($startMonth, $endMonth))
+                ->sum(fn($month) => ($byMonth[$month] ?? collect())
+                    ->sum(fn($inv) => $inv->invoice_data['total_amount'] ?? 0));
 
-            $data[] = [
+            return [
                 'quarter' => "Q{$quarter}",
                 'revenue' => $quarterRevenue,
                 'formatted' => 'Rp ' . number_format($quarterRevenue / 1000000, 1) . 'M',
             ];
-        }
-
-        return $data;
+        })->toArray();
     }
 
     public function render()

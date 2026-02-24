@@ -17,7 +17,9 @@
             <x-button wire:click="openGenerateModal" color="primary" icon="plus" loading="openGenerateModal">
                 {{ __('pages.ri_generate_invoices_btn') }}
             </x-button>
-            <livewire:recurring-invoices.monthly.create-invoice @invoice-created="$refresh" />
+            <x-button href="{{ route('recurring-invoices.monthly.create') }}" wire:navigate color="primary" icon="plus">
+                {{ __('pages.ri_create_invoice_btn') }}
+            </x-button>
         </div>
     </div>
 

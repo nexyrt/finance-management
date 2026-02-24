@@ -18,6 +18,7 @@ use App\Livewire\Receivables\Index as ReceivablesIndex;
 use App\Livewire\RecurringInvoices\CreateTemplate as RecurringInvoicesCreateTemplate;
 use App\Livewire\RecurringInvoices\EditTemplate as RecurringInvoicesEditTemplate;
 use App\Livewire\RecurringInvoices\Index as RecurringInvoicesIndex;
+use App\Livewire\RecurringInvoices\Monthly\CreateInvoice as RecurringInvoicesMonthlyCreate;
 use App\Livewire\RecurringInvoices\Monthly\EditInvoice as RecurringInvoicesMonthlyEdit;
 use App\Livewire\Reimbursements\Index as ReimbursementIndex;
 use App\Livewire\Services\Index as ServicesIndex;
@@ -164,6 +165,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/template/{template}/edit', RecurringInvoicesEditTemplate::class)
             ->middleware('can:edit recurring-invoices')
             ->name('template.edit');
+
+        Route::get('/monthly/create', RecurringInvoicesMonthlyCreate::class)
+            ->middleware('can:create recurring-invoices')
+            ->name('monthly.create');
 
         Route::get('/monthly/{invoice}/edit', RecurringInvoicesMonthlyEdit::class)
             ->middleware('can:edit recurring-invoices')

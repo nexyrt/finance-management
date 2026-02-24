@@ -2561,6 +2561,181 @@ Saat audit translation, identifikasi juga data yang:
 
 ---
 
+### Eloquent Performance & Lazy Loading Protocol
+
+**CRITICAL: Setiap kali menulis atau memodifikasi query Eloquent, WAJIB ikuti checklist ini.**
+
+#### Checklist Wajib Query Eloquent
+
+**1. Eager Load Relationships**
+
+Selalu eager load relasi yang diakses di accessor atau blade. Tanpa ini → LazyLoadingViolationException atau N+1 query.
+
+```php
+// ❌ SALAH — N+1: 1 query per row
+$templates = RecurringTemplate::all();
+// blade: $template->client->name  ← query per template
+
+// ✅ BENAR — 1 query total
+$templates = RecurringTemplate::with('client')->get();
+
+// Nested:
+RecurringTemplate::with('recurringInvoices.invoice')->get();
+
+// Selective columns:
+RecurringTemplate::with(['client:id,name'])->get();
+
+// Count tanpa load:
+RecurringTemplate::withCount('recurringInvoices')->get();
+// blade: $template->recurring_invoices_count  ← sudah tersedia
+```
+
+**2. Jangan Query di Dalam Loop**
+
+```php
+// ❌ SALAH — N+1: query per item
+foreach ($items as $item) {
+    $client = Client::find($item['client_id']);  // ← query per iterasi
+}
+
+// ✅ BENAR — batch load dulu, lalu map
+$clientIds = collect($items)->pluck('client_id')->filter()->unique()->toArray();
+$clientNames = Client::whereIn('id', $clientIds)->pluck('name', 'id');
+
+foreach ($items as $item) {
+    $name = $clientNames[$item['client_id']] ?? '';
+}
+```
+
+**3. Hindari Loop Query di Computed Properties**
+
+```php
+// ❌ SALAH — 12 query (1 per bulan)
+for ($m = 1; $m <= 12; $m++) {
+    $revenue = RecurringInvoice::whereMonth('scheduled_date', $m)->get()->sum('total');
+}
+
+// ✅ BENAR — 1 query, group di PHP
+$byMonth = RecurringInvoice::whereYear('scheduled_date', $year)
+    ->get(['id', 'scheduled_date', 'invoice_data'])
+    ->groupBy(fn($inv) => (int) $inv->scheduled_date->format('n'));
+```
+
+**4. DB-level Aggregation**
+
+Gunakan DB aggregate untuk sum/count, jangan load semua rows ke PHP.
+
+```php
+// ❌ SALAH — load semua rows ke memory
+RecurringInvoice::all()->sum('total_amount');
+
+// ✅ BENAR — aggregate di database
+RecurringInvoice::sum('total_amount');
+
+// Untuk JSON column:
+RecurringInvoice::sum(DB::raw("JSON_UNQUOTE(JSON_EXTRACT(invoice_data, '$.total_amount'))"));
+```
+
+**5. Select Hanya Kolom yang Dibutuhkan**
+
+```php
+// ❌ SALAH — SELECT * (termasuk kolom besar seperti JSON)
+RecurringInvoice::get();
+
+// ✅ BENAR — hanya kolom yang dipakai
+RecurringInvoice::get(['id', 'scheduled_date', 'status', 'invoice_data']);
+```
+
+**6. Merge Computed Properties yang Query Sama**
+
+Jika dua `#[Computed]` property menjalankan query identik, merge menjadi satu.
+
+```php
+// ❌ SALAH — dua computed property, query sama persis
+#[Computed]
+public function templateEfficiencyChart(): array { /* query templates */ }
+
+#[Computed]
+public function templatePerformance(): array { /* query templates — SAMA */ }
+
+// ✅ BENAR — merge jadi satu
+#[Computed]
+public function templateStats(): array { /* satu query, return semua data */ }
+```
+
+**7. `once()` untuk Query yang Dipanggil Berulang**
+
+```php
+// Di ViewServiceProvider atau helper yang dipanggil banyak kali:
+$profile = once(fn() => CompanyProfile::first());
+```
+
+---
+
+#### Lazy Loading + Skeleton UI untuk Tab Components
+
+**Pattern wajib untuk semua tab Livewire yang datanya berat.**
+
+**PHP Component:**
+
+```php
+use Livewire\Attributes\Lazy;
+use Illuminate\Contracts\View\View;
+
+#[Lazy]
+class TemplatesTab extends Component
+{
+    public function placeholder(): View
+    {
+        // Gunakan table-skeleton untuk tab dengan tabel/list
+        return view('livewire.placeholders.table-skeleton');
+
+        // Gunakan stats-skeleton untuk tab dengan cards/chart
+        // return view('livewire.placeholders.stats-skeleton');
+    }
+
+    // ... rest of component
+}
+```
+
+**Pilih skeleton yang sesuai:**
+
+| Konten Tab | Skeleton |
+|------------|---------|
+| Tabel / list / cards | `livewire.placeholders.table-skeleton` |
+| Stats cards / chart / analytics | `livewire.placeholders.stats-skeleton` |
+
+**Blade — cara panggil tab dengan Lazy:**
+
+```blade
+{{-- Tab dengan Lazy: TIDAK perlu perubahan di blade --}}
+<livewire:recurring-invoices.templates-tab />
+{{-- Livewire otomatis tampilkan placeholder() dulu, lalu load component --}}
+```
+
+**Kapan WAJIB pakai `#[Lazy]`:**
+
+- ✅ Tab component yang tidak langsung visible saat page load
+- ✅ Component dengan query berat (join banyak tabel, aggregate, JSON parsing)
+- ✅ Component dengan computed property yang tidak bisa di-cache mudah
+- ❌ Jangan pakai di component kecil/ringan yang selalu visible (misal: header, breadcrumb)
+
+---
+
+#### Contoh Implementasi yang Sudah Ada di Project
+
+| File | Fix yang Diterapkan |
+|------|---------------------|
+| `RecurringInvoices/TemplatesTab.php` | `#[Lazy]` + `table-skeleton` placeholder |
+| `RecurringInvoices/MonthlyTab.php` | `#[Lazy]` + `table-skeleton` placeholder |
+| `RecurringInvoices/AnalyticsTab.php` | `#[Lazy]` + `stats-skeleton` + merged `templateStats()` + `getYearInvoicesByMonth()` helper |
+| `RecurringInvoices/Index.php` | DB::raw JSON sum untuk `totalProjectedRevenue()` |
+| `RecurringInvoices/EditTemplate.php` | `Client::whereIn` batch load di `existingItems()` |
+| `RecurringInvoices/Monthly/EditInvoice.php` | `Client::whereIn` batch load di `existingItems()` |
+| `ViewServiceProvider.php` | `once(fn() => CompanyProfile::first())` |
+
+---
+
 ### Currency Input (`x-currency-input`)
 
 **File:** `resources/views/components/currency-input.blade.php`

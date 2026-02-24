@@ -152,12 +152,17 @@ class EditTemplate extends Component
     public function existingItems()
     {
         $templateData = $this->template->invoice_template;
-        return collect($templateData['items'] ?? [])->map(function ($item, $index) {
-            $client = Client::find($item['client_id']);
+        $items = $templateData['items'] ?? [];
+
+        // Batch load all clients to avoid N+1
+        $clientIds = collect($items)->pluck('client_id')->filter()->unique()->values()->toArray();
+        $clientNames = Client::whereIn('id', $clientIds)->pluck('name', 'id');
+
+        return collect($items)->map(function ($item, $index) use ($clientNames) {
             return [
                 'id' => $index + 1,
                 'client_id' => $item['client_id'],
-                'client_name' => $client->name ?? '',
+                'client_name' => $clientNames[$item['client_id']] ?? '',
                 'service_name' => $item['service_name'],
                 'quantity' => $item['quantity'],
                 'unit_price' => number_format($item['unit_price'], 0, ',', '.'),

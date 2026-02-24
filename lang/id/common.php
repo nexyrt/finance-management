@@ -73,6 +73,7 @@ return [
     'next' => 'Selanjutnya',
     'previous' => 'Sebelumnya',
     'view' => 'Lihat',
+    'restore' => 'Pulihkan',
     'preview' => 'Pratinjau',
     'refresh' => 'Muat Ulang',
     'confirm' => 'Konfirmasi',
