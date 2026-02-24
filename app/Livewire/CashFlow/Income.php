@@ -71,6 +71,7 @@ class Income extends Component
     public function incomeCategories()
     {
         return TransactionCategory::where('type', 'income')
+            ->with('parent')
             ->orderBy('label')
             ->get()
             ->map(fn($cat) => [

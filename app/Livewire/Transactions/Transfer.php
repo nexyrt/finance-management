@@ -52,6 +52,7 @@ class Transfer extends Component
         // Get transfer categories (parent and children)
         $parents = TransactionCategory::whereNull('parent_id')
             ->where('type', 'transfer')
+            ->with('children')
             ->orderBy('label')
             ->get();
 

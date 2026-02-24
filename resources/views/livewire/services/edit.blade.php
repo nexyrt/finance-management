@@ -19,12 +19,8 @@
                      hint="{{ __('pages.service_name_hint') }}"
                      placeholder="{{ __('pages.service_name_placeholder') }}" required />
 
-            <x-select.styled wire:model="type" label="{{ __('common.category') }}" :options="[
-                ['label' => translate_text('Perizinan'), 'value' => 'Perizinan'],
-                ['label' => translate_text('Administrasi Perpajakan'), 'value' => 'Administrasi Perpajakan'],
-                ['label' => translate_text('Digital Marketing'), 'value' => 'Digital Marketing'],
-                ['label' => translate_text('Sistem Digital'), 'value' => 'Sistem Digital'],
-            ]"
+            <x-select.styled wire:model="type" label="{{ __('common.category') }}"
+                :options="$this->categoryOptions"
                 placeholder="{{ __('pages.select_category') }}" required />
 
             <x-currency-input wire:model="price" label="{{ __('pages.service_price') }}"

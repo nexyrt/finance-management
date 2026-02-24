@@ -7,9 +7,12 @@ use App\Models\BankAccount;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Lazy;
 use TallStackUi\Traits\Interactions;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Contracts\View\View;
 
+#[Lazy]
 class Listing extends Component
 {
     use WithPagination, Interactions;
@@ -62,6 +65,11 @@ class Listing extends Component
         }
 
         $this->dispatchFilterChange();
+    }
+
+    public function placeholder(): View
+    {
+        return view('livewire.placeholders.listing-skeleton');
     }
 
     #[Computed]

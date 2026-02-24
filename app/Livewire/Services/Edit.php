@@ -4,6 +4,7 @@ namespace App\Livewire\Services;
 
 use TallStackUi\Traits\Interactions;
 use App\Models\Service;
+use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
 use Livewire\Component;
 
@@ -17,9 +18,24 @@ class Edit extends Component
     public int $price = 0;
     public bool $modal = false;
 
-    #[On('load::service')]
-    public function load(Service $service): void
+    // Kategori service — data dinamis dari DB, gunakan translate_text() di PHP
+    #[Computed]
+    public function categoryOptions(): array
     {
+        $types = ['Perizinan', 'Administrasi Perpajakan', 'Digital Marketing', 'Sistem Digital'];
+
+        return array_map(fn($type) => [
+            'label' => translate_text($type),
+            'value' => $type,
+        ], $types);
+    }
+
+    #[On('load::service')]
+    public function load(int $serviceId): void
+    {
+        $service = Service::find($serviceId);
+        if (!$service) return;
+
         $this->service = $service;
         $this->name = $service->name;
         $this->type = $service->type;

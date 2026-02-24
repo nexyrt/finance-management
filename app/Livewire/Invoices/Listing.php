@@ -8,10 +8,13 @@ use App\Models\Client;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Lazy;
 use TallStackUi\Traits\Interactions;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\DB;
 
+#[Lazy]
 class Listing extends Component
 {
     use WithPagination, Interactions;
@@ -58,6 +61,11 @@ class Listing extends Component
         'invoice-deleted' => '$refresh',
         'invoice-sent' => '$refresh'
     ];
+
+    public function placeholder(): View
+    {
+        return view('livewire.placeholders.table-skeleton');
+    }
 
     public function mount()
     {

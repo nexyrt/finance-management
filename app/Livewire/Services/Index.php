@@ -4,11 +4,15 @@ namespace App\Livewire\Services;
 
 use TallStackUi\Traits\Interactions;
 use App\Models\Service;
+use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Lazy;
+use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
+#[Lazy]
 class Index extends Component
 {
     use WithPagination, Interactions;
@@ -19,9 +23,17 @@ class Index extends Component
     public ?string $search = null;
     public ?string $typeFilter = null;
 
-    public function getHeadersProperty(): array
+    // Headers diinisialisasi di mount() agar __() translation berfungsi
+    public array $headers = [];
+
+    public function placeholder(): View
     {
-        return [
+        return view('livewire.placeholders.table-skeleton');
+    }
+
+    public function mount(): void
+    {
+        $this->headers = [
             ['index' => 'name', 'label' => __('pages.service_name')],
             ['index' => 'type', 'label' => __('common.category')],
             ['index' => 'price', 'label' => __('common.price'), 'sortable' => true],
@@ -30,9 +42,24 @@ class Index extends Component
         ];
     }
 
-    public function edit($serviceId): void
+    #[On('service-created')]
+    #[On('service-updated')]
+    #[On('service-deleted')]
+    public function refreshData(): void
     {
-        $this->dispatch('load::service', Service::find($serviceId));
+        $this->reset('selected');
+        unset($this->stats);
+    }
+
+    public function edit(int $serviceId): void
+    {
+        // Dispatch hanya ID — Edit component yang akan query sendiri
+        $this->dispatch('load::service', serviceId: $serviceId);
+    }
+
+    public function confirmDelete(int $serviceId): void
+    {
+        $this->dispatch('delete::service', serviceId: $serviceId);
     }
 
     public function clearFilters(): void
@@ -49,7 +76,7 @@ class Index extends Component
         }
 
         $this->toast()
-            ->question(__('pages.delete_services'), __('pages.confirm_delete_services', ['count' => count($this->selected)]))
+            ->question(__('pages.delete_services'), __('pages.confirm_delete_services', ['count' => \count($this->selected)]))
             ->confirm(method: 'confirmBulkDelete')
             ->cancel()
             ->send();
@@ -58,19 +85,33 @@ class Index extends Component
     public function confirmBulkDelete(): void
     {
         try {
-            $deletedCount = count($this->selected);
+            $deletedCount = \count($this->selected);
             Service::whereIn('id', $this->selected)->delete();
             $this->selected = [];
+            unset($this->stats);
             $this->toast()->success(__('common.success'), __('pages.services_deleted_successfully', ['count' => $deletedCount]))->send();
         } catch (\Exception $e) {
             $this->toast()->error(__('common.error'), __('pages.delete_failed') . ': ' . $e->getMessage())->send();
         }
     }
 
+    // Opsi filter kategori — data dinamis, gunakan translate_text() di PHP
+    #[Computed]
+    public function categoryOptions(): array
+    {
+        $types = ['Perizinan', 'Administrasi Perpajakan', 'Digital Marketing', 'Sistem Digital'];
+
+        return array_map(fn($type) => [
+            'label' => translate_text($type),
+            'value' => $type,
+        ], $types);
+    }
+
     #[Computed]
     public function services(): LengthAwarePaginator
     {
         return Service::query()
+            ->select(['id', 'name', 'type', 'price', 'created_at'])
             ->when($this->search, fn($q) => $q->where('name', 'like', "%{$this->search}%"))
             ->when($this->typeFilter, fn($q) => $q->where('type', $this->typeFilter))
             ->orderBy(...array_values($this->sort))
@@ -81,13 +122,23 @@ class Index extends Component
     #[Computed]
     public function stats(): array
     {
-        $services = Service::all();
+        // Pakai DB agregat — tidak load semua rows ke memory
+        $aggregate = Service::selectRaw('
+            COUNT(*) as total,
+            AVG(price) as avg_price,
+            MAX(price) as highest_price
+        ')->toBase()->first();
+
+        $byType = Service::selectRaw('type, COUNT(*) as count')
+            ->groupBy('type')
+            ->orderByDesc('count')
+            ->pluck('count', 'type');
 
         return [
-            'total_services' => $services->count(),
-            'avg_price' => $services->avg('price'),
-            'highest_price' => $services->max('price'),
-            'by_type' => $services->groupBy('type')->map->count(),
+            'total_services' => (int) ($aggregate->total ?? 0),
+            'avg_price'      => $aggregate->avg_price ?? null,
+            'highest_price'  => $aggregate->highest_price ?? null,
+            'by_type'        => $byType,
         ];
     }
 

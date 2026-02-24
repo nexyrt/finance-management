@@ -71,6 +71,7 @@ class Expenses extends Component
     public function expenseCategories(): array
     {
         $categories = TransactionCategory::where('type', 'expense')
+            ->with('parent')
             ->orderBy('label')
             ->get()
             ->map(fn($cat) => [
@@ -90,7 +91,7 @@ class Expenses extends Component
     #[Computed]
     public function rows(): LengthAwarePaginator
     {
-        return BankTransaction::with(['bankAccount', 'category'])
+        return BankTransaction::with(['bankAccount', 'category.parent'])
             ->where('transaction_type', 'debit')
             ->where(function ($query) {
                 $query->whereHas('category', fn($q) => $q->where('type', 'expense'))
@@ -272,7 +273,7 @@ class Expenses extends Component
             return;
         }
 
-        $data = BankTransaction::with(['bankAccount', 'category'])
+        $data = BankTransaction::with(['bankAccount', 'category.parent'])
             ->whereIn('id', $this->selected)
             ->orderBy('transaction_date', 'desc')
             ->get();
@@ -384,7 +385,7 @@ class Expenses extends Component
 
     private function getFilteredQuery()
     {
-        return BankTransaction::with(['bankAccount', 'category'])
+        return BankTransaction::with(['bankAccount', 'category.parent'])
             ->where('transaction_type', 'debit')
             ->where(function ($query) {
                 $query->whereHas('category', fn($q) => $q->where('type', 'expense'))

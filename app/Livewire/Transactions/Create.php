@@ -96,6 +96,7 @@ class Create extends Component
 
         $parents = TransactionCategory::whereNull('parent_id')
             ->whereIn('type', $categoryTypes)
+            ->with('children')
             ->orderBy('type')
             ->orderBy('label')
             ->get();

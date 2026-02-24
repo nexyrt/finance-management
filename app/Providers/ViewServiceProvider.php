@@ -22,7 +22,7 @@ class ViewServiceProvider extends ServiceProvider
     public function boot(): void
     {
         View::composer('*', function ($view) {
-            $companyProfile = CompanyProfile::first();
+            $companyProfile = once(fn() => CompanyProfile::first());
             $view->with('companyProfile', $companyProfile);
         });
     }

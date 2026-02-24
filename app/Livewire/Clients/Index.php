@@ -3,11 +3,14 @@
 namespace App\Livewire\Clients;
 
 use App\Models\Client;
+use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
+use Livewire\Attributes\Lazy;
 use Livewire\Component;
 use Livewire\WithPagination;
 use TallStackUi\Traits\Interactions;
 
+#[Lazy]
 class Index extends Component
 {
     use WithPagination, Interactions;
@@ -51,6 +54,11 @@ class Index extends Component
                 ->paginate($this->quantity)
                 ->withQueryString()
         ];
+    }
+
+    public function placeholder(): View
+    {
+        return view('livewire.placeholders.table-skeleton');
     }
 
     public function render()

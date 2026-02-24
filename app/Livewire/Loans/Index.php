@@ -8,9 +8,11 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Lazy;
 use Livewire\Component;
 use Livewire\WithPagination;
 
+#[Lazy]
 class Index extends Component
 {
     use WithPagination, Alert;
@@ -31,6 +33,11 @@ class Index extends Component
         ['index' => 'status', 'label' => 'Status'],
         ['index' => 'action', 'sortable' => false],
     ];
+
+    public function placeholder(): View
+    {
+        return view('livewire.placeholders.table-skeleton');
+    }
 
     public function render(): View
     {

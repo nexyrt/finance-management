@@ -12,7 +12,7 @@
                 {{ __('pages.service_list') }}
             </p>
         </div>
-        <livewire:services.create @service-created="$refresh" :key="'create-service'" />
+        <livewire:services.create />
     </div>
 
     {{-- Stats Cards --}}
@@ -99,12 +99,9 @@
             <div>
                 <label
                     class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('common.category') }}</label>
-                <x-select.styled wire:model.live="typeFilter" :options="[
-                    ['label' => translate_text('Perizinan'), 'value' => 'Perizinan'],
-                    ['label' => translate_text('Administrasi Perpajakan'), 'value' => 'Administrasi Perpajakan'],
-                    ['label' => translate_text('Digital Marketing'), 'value' => 'Digital Marketing'],
-                    ['label' => translate_text('Sistem Digital'), 'value' => 'Sistem Digital'],
-                ]" placeholder="{{ __('pages.all_categories') }}" />
+                <x-select.styled wire:model.live="typeFilter"
+                    :options="$this->categoryOptions"
+                    placeholder="{{ __('pages.all_categories') }}" />
             </div>
         </div>
 
@@ -118,7 +115,7 @@
     </div>
 
     {{-- Services Table --}}
-    <x-table :headers="$this->headers" :$sort :rows="$this->services" selectable wire:model="selected" paginate filter>
+    <x-table :$headers :$sort :rows="$this->services" selectable wire:model="selected" paginate filter>
 
         {{-- Service Name Column --}}
         @interact('column_name', $row)
@@ -169,7 +166,8 @@
                 <x-button.circle icon="pencil" color="green" size="sm" wire:click="edit({{ $row->id }})"
                     title="{{ __('common.edit') }}" />
 
-                <livewire:services.delete :service="$row" :key="uniqid()" @service-deleted="$refresh" />
+                <x-button.circle icon="trash" color="red" size="sm" wire:click="confirmDelete({{ $row->id }})"
+                    title="{{ __('common.delete') }}" />
             </div>
         @endinteract
 
@@ -207,6 +205,7 @@
         </div>
     </div>
 
-    {{-- Child Components --}}
-    <livewire:services.edit @service-updated="$refresh" />
+    {{-- Child Components (satu instance, bukan per baris) --}}
+    <livewire:services.edit />
+    <livewire:services.delete />
 </div>

@@ -4,6 +4,7 @@ namespace App\Livewire\Services;
 
 use TallStackUi\Traits\Interactions;
 use App\Models\Service;
+use Livewire\Attributes\Computed;
 use Livewire\Component;
 
 class Create extends Component
@@ -14,6 +15,18 @@ class Create extends Component
     public string $name = '';
     public string $type = '';
     public int $price = 0;
+
+    // Kategori service — data dinamis dari DB, gunakan translate_text() di PHP
+    #[Computed]
+    public function categoryOptions(): array
+    {
+        $types = ['Perizinan', 'Administrasi Perpajakan', 'Digital Marketing', 'Sistem Digital'];
+
+        return array_map(fn($type) => [
+            'label' => translate_text($type),
+            'value' => $type,
+        ], $types);
+    }
 
     public function resetForm(): void
     {
