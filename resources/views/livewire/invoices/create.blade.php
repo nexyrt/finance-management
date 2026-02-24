@@ -757,7 +757,11 @@
 
             getInitials(name) {
                 if (!name) return 'XXX';
-                return name.split(/\s+/).filter(w => w.length > 0).map(w => w[0].toUpperCase()).join('');
+                const prefixes = /^(pt\.?|cv\.?|ud\.?|tbk\.?|persero|inc\.?|llc\.?|ltd\.?|koperasi|yayasan|firma|fa\.?|pp\.?)$/i;
+                const words = name.split(/\s+/).filter(w => w.length > 0);
+                const meaningful = words.filter(w => !prefixes.test(w));
+                const source = meaningful.length > 0 ? meaningful : words;
+                return source.map(w => w[0].toUpperCase()).join('');
             },
 
             generateInvoiceNumber() {

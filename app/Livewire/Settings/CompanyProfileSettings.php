@@ -6,10 +6,11 @@ use App\Models\CompanyProfile;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
 use Livewire\WithFileUploads;
+use TallStackUi\Traits\Interactions;
 
 class CompanyProfileSettings extends Component
 {
-    use WithFileUploads;
+    use WithFileUploads, Interactions;
 
     public $name, $address, $email, $phone;
     public $is_pkp = false, $npwp, $ppn_rate;
@@ -81,32 +82,38 @@ class CompanyProfileSettings extends Component
             'bank_accounts' => $this->bank_accounts,
         ]);
 
+        $ts = time();
+
         if ($this->logo) {
             if ($company->logo_path && Storage::disk('public')->exists($company->logo_path)) {
                 Storage::disk('public')->delete($company->logo_path);
             }
-            $company->logo_path = $this->logo->storeAs('images', 'logo.png', 'public');
+            $ext = $this->logo->getClientOriginalExtension() ?: 'png';
+            $company->logo_path = $this->logo->storeAs('images', "logo-{$ts}.{$ext}", 'public');
         }
 
         if ($this->letterHead) {
             if ($company->letter_head_path && Storage::disk('public')->exists($company->letter_head_path)) {
                 Storage::disk('public')->delete($company->letter_head_path);
             }
-            $company->letter_head_path = $this->letterHead->storeAs('images', 'letter-head.png', 'public');
+            $ext = $this->letterHead->getClientOriginalExtension() ?: 'png';
+            $company->letter_head_path = $this->letterHead->storeAs('images', "letter-head-{$ts}.{$ext}", 'public');
         }
 
         if ($this->signature) {
             if ($company->signature_path && Storage::disk('public')->exists($company->signature_path)) {
                 Storage::disk('public')->delete($company->signature_path);
             }
-            $company->signature_path = $this->signature->storeAs('images', 'pdf-signature.png', 'public');
+            $ext = $this->signature->getClientOriginalExtension() ?: 'png';
+            $company->signature_path = $this->signature->storeAs('images', "pdf-signature-{$ts}.{$ext}", 'public');
         }
 
         if ($this->stamp) {
             if ($company->stamp_path && Storage::disk('public')->exists($company->stamp_path)) {
                 Storage::disk('public')->delete($company->stamp_path);
             }
-            $company->stamp_path = $this->stamp->storeAs('images', 'kisantra-stamp.png', 'public');
+            $ext = $this->stamp->getClientOriginalExtension() ?: 'png';
+            $company->stamp_path = $this->stamp->storeAs('images', "kisantra-stamp-{$ts}.{$ext}", 'public');
         }
 
         $company->save();
@@ -117,7 +124,8 @@ class CompanyProfileSettings extends Component
         $this->currentStamp = $company->stamp_path;
 
         $this->reset(['logo', 'letterHead', 'signature', 'stamp']);
-        $this->dispatch('company-updated');
+        $this->dispatch('file-upload-reset');
+        $this->toast()->success(__('common.success'), __('common.saved_successfully'))->send();
     }
 
     public function deleteExistingLogo()
