@@ -2,7 +2,6 @@
 
 namespace App\Livewire\CashFlow;
 
-use App\Models\BankAccount;
 use App\Models\BankTransaction;
 use App\Models\TransactionCategory;
 use Illuminate\Database\Eloquent\Builder;
@@ -61,18 +60,6 @@ class Expenses extends Component
     {
         $this->reset('selected');
         $this->resetPage();
-    }
-
-    #[Computed]
-    public function bankAccounts(): array
-    {
-        return BankAccount::orderBy('bank_name')
-            ->get()
-            ->map(fn($account) => [
-                'label' => $account->bank_name . ' - ' . $account->account_name,
-                'value' => $account->id,
-            ])
-            ->toArray();
     }
 
     #[Computed]

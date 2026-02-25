@@ -75,10 +75,11 @@
         <div class="flex flex-col gap-4">
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                 <x-date wire:model.live="dateRange" label="{{ __('pages.period') }}" range placeholder="{{ __('pages.select_date_range') }}" />
-                <x-select.styled wire:model.live="clientFilters" label="{{ __('common.clients') }}" :options="$this->clients"
-                    placeholder="{{ __('pages.all_clients') }}" multiple searchable />
-                <x-select.styled wire:model.live="categoryFilters" label="{{ __('common.category') }}" :options="$this->incomeCategories"
-                    placeholder="{{ __('pages.all_categories') }}" multiple searchable />
+                <x-select.styled wire:model.live="clientFilters" :request="route('api.clients')"
+                    label="{{ __('common.clients') }}" placeholder="{{ __('pages.all_clients') }}" multiple searchable />
+                <x-select.styled wire:model.live="categoryFilters"
+                    :request="['url' => route('api.transaction-categories'), 'method' => 'get', 'params' => ['type' => 'income']]"
+                    label="{{ __('common.category') }}" placeholder="{{ __('pages.all_categories') }}" multiple searchable />
                 <x-input wire:model.live.debounce.300ms="search" label="{{ __('common.search') }}" placeholder="{{ __('pages.search_data') }}"
                     icon="magnifying-glass" />
             </div>

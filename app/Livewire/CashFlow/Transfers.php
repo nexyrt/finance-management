@@ -4,7 +4,6 @@ namespace App\Livewire\CashFlow;
 
 use App\Models\BankAccount;
 use App\Models\BankTransaction;
-use App\Models\TransactionCategory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
@@ -94,18 +93,6 @@ class Transfers extends Component
     // ==========================================
     // SHARED COMPUTED
     // ==========================================
-    #[Computed]
-    public function bankAccounts()
-    {
-        return BankAccount::orderBy('bank_name')
-            ->get()
-            ->map(fn($account) => [
-                'label' => $account->bank_name . ' - ' . $account->account_name,
-                'value' => $account->id,
-            ])
-            ->toArray();
-    }
-
     // ==========================================
     // TRANSFER COMPUTED & METHODS
     // ==========================================
@@ -406,16 +393,6 @@ class Transfers extends Component
     // ==========================================
     // ADJUSTMENT COMPUTED & METHODS
     // ==========================================
-    #[Computed]
-    public function adjustmentCategories(): array
-    {
-        return TransactionCategory::where('type', 'adjustment')
-            ->orderBy('label')
-            ->get()
-            ->map(fn($cat) => ['label' => $cat->label, 'value' => $cat->id])
-            ->toArray();
-    }
-
     #[Computed]
     public function adjRows(): LengthAwarePaginator
     {
