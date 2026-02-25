@@ -3,9 +3,7 @@
 namespace App\Livewire\CashFlow;
 
 use App\Models\BankTransaction;
-use App\Models\Client;
 use App\Models\Payment;
-use App\Models\TransactionCategory;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Contracts\View\View;
@@ -61,32 +59,6 @@ class Income extends Component
     {
         $this->reset('selected');
         $this->resetPage();
-    }
-
-    #[Computed]
-    public function clients()
-    {
-        return Client::orderBy('name')
-            ->get()
-            ->map(fn($client) => [
-                'label' => $client->name,
-                'value' => $client->id,
-            ])
-            ->toArray();
-    }
-
-    #[Computed]
-    public function incomeCategories()
-    {
-        return TransactionCategory::where('type', 'income')
-            ->with('parent')
-            ->orderBy('label')
-            ->get()
-            ->map(fn($cat) => [
-                'label' => $cat->full_path,
-                'value' => $cat->id,
-            ])
-            ->toArray();
     }
 
     #[Computed]

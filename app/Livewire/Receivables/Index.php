@@ -28,16 +28,22 @@ class Index extends Component
     // Bulk Actions
     public array $selected = [];
 
-    public array $headers = [
-        ['index' => 'receivable_number', 'label' => 'No. Piutang', 'sortable' => false],
-        ['index' => 'debtor', 'label' => 'Peminjam', 'sortable' => false],
-        ['index' => 'principal_amount', 'label' => 'Pokok'],
-        ['index' => 'interest_amount', 'label' => 'Bunga', 'sortable' => false],
-        ['index' => 'installment_months', 'label' => 'Tenor', 'sortable' => false],
-        ['index' => 'loan_date', 'label' => 'Tanggal'],
-        ['index' => 'status', 'label' => 'Status'],
-        ['index' => 'action', 'sortable' => false],
-    ];
+    // Headers populated in mount() so __() works
+    public array $headers = [];
+
+    public function mount(): void
+    {
+        $this->headers = [
+            ['index' => 'receivable_number', 'label' => __('pages.col_receivable_number'), 'sortable' => false],
+            ['index' => 'debtor', 'label' => __('pages.col_borrower'), 'sortable' => false],
+            ['index' => 'principal_amount', 'label' => __('pages.col_principal')],
+            ['index' => 'interest_amount', 'label' => __('pages.col_interest'), 'sortable' => false],
+            ['index' => 'installment_months', 'label' => __('pages.col_tenor'), 'sortable' => false],
+            ['index' => 'loan_date', 'label' => __('pages.col_loan_date')],
+            ['index' => 'status', 'label' => __('common.status')],
+            ['index' => 'action', 'sortable' => false],
+        ];
+    }
 
     public function placeholder(): View
     {
@@ -50,9 +56,24 @@ class Index extends Component
     }
 
     #[Computed]
+    public function stats(): array
+    {
+        $base = Receivable::query();
+
+        return [
+            'total'                  => (clone $base)->count(),
+            'active'                 => (clone $base)->where('status', 'active')->count(),
+            'pending'                => (clone $base)->where('status', 'pending_approval')->count(),
+            'total_principal_active' => (clone $base)->where('status', 'active')->sum('principal_amount'),
+        ];
+    }
+
+    #[Computed]
     public function rows(): LengthAwarePaginator
     {
-        return Receivable::with(['debtor', 'payments'])
+        return Receivable::with(['debtor'])
+            ->withSum('payments', 'principal_paid')
+            ->withSum('payments', 'interest_paid')
             ->when(
                 $this->search,
                 fn(Builder $query) =>
@@ -74,29 +95,28 @@ class Index extends Component
             ->withQueryString();
     }
 
-    // Index.php
     public function submitReceivable($id): void
     {
         $receivable = Receivable::findOrFail($id);
 
         if ($receivable->status !== 'draft') {
-            $this->error('Hanya draft yang bisa diajukan');
+            $this->error(__('pages.rcv_only_draft_submittable'));
             return;
         }
 
         $receivable->update(['status' => 'pending_approval']);
-        $this->success('Berhasil diajukan');
+        $this->success(__('pages.rcv_submitted_success'));
     }
 
     #[Computed]
     public function statusOptions(): array
     {
         return [
-            ['label' => 'Draft', 'value' => 'draft'],
-            ['label' => 'Menunggu Persetujuan', 'value' => 'pending_approval'],
-            ['label' => 'Aktif', 'value' => 'active'],
-            ['label' => 'Lunas', 'value' => 'paid_off'],
-            ['label' => 'Ditolak', 'value' => 'rejected'],
+            ['label' => __('pages.rcv_status_draft'), 'value' => 'draft'],
+            ['label' => __('pages.rcv_status_pending'), 'value' => 'pending_approval'],
+            ['label' => __('pages.rcv_status_active'), 'value' => 'active'],
+            ['label' => __('pages.rcv_status_paid_off'), 'value' => 'paid_off'],
+            ['label' => __('pages.rcv_status_rejected'), 'value' => 'rejected'],
         ];
     }
 
@@ -104,9 +124,24 @@ class Index extends Component
     public function typeOptions(): array
     {
         return [
-            ['label' => 'Pinjaman Karyawan', 'value' => 'employee_loan'],
-            ['label' => 'Pinjaman Perusahaan', 'value' => 'company_loan'],
+            ['label' => __('pages.rcv_type_employee'), 'value' => 'employee_loan'],
+            ['label' => __('pages.rcv_type_company'), 'value' => 'company_loan'],
         ];
+    }
+
+    public function updatedStatusFilter(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatedTypeFilter(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatedSearch(): void
+    {
+        $this->resetPage();
     }
 
     public function clearFilters(): void

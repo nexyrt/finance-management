@@ -154,7 +154,7 @@ class Update extends Component
 
         $this->dispatch('updated');
         $this->reset();
-        $this->success('Piutang berhasil diperbarui dan dikembalikan ke draft');
+        $this->success(__('pages.rcv_update_success'));
     }
 
     #[Computed]

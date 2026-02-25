@@ -102,10 +102,20 @@ class Create extends Component
 
         // Calculate installment amount
         $principalAmount = (int) $validated['principal_amount'];
-        $interestRate = (float) ($validated['interest_rate'] ?? 0);
         $installmentMonths = (int) ($validated['installment_months'] ?? 1);
 
-        $totalInterest = ($principalAmount * $interestRate / 100);
+        // Calculate interest based on type
+        $interestRate = 0;
+        $totalInterest = 0;
+
+        if ($this->interest_type === 'fixed') {
+            $totalInterest = (int) ($validated['interest_amount'] ?? 0);
+            $interestRate = $principalAmount > 0 ? ($totalInterest / $principalAmount * 100) : 0;
+        } else {
+            $interestRate = (float) ($validated['interest_rate'] ?? 0);
+            $totalInterest = round($principalAmount * $interestRate / 100);
+        }
+
         $installmentAmount = round(($principalAmount + $totalInterest) / $installmentMonths);
 
         // Handle attachment
@@ -147,6 +157,6 @@ class Create extends Component
 
         $this->dispatch('created');
         $this->reset();
-        $this->success('Piutang berhasil dibuat');
+        $this->success(__('pages.rcv_create_success'));
     }
 }

@@ -2,7 +2,7 @@
 
 use App\Http\Controllers\CashFlowExportController;
 use App\Livewire\Accounts\Index as AccountsIndex;
-use App\Livewire\CashFlow\Expenses as CashFlowExpenses;
+use App\Livewire\CashFlow\ExpensesPage as CashFlowExpenses;
 use App\Livewire\CashFlow\Income as CashFlowIncome;
 use App\Livewire\CashFlow\Transfers as CashFlowTransfers;
 use App\Livewire\Clients\Index as ClientsIndex;
@@ -48,9 +48,13 @@ Route::get('/api/transaction-categories', function (Request $request) {
     $type = $request->get('type');
 
     $categoryTypes = match ($type) {
-        'credit' => ['income', 'adjustment', 'transfer'],
-        'debit' => ['expense', 'adjustment', 'transfer'],
-        default => ['income', 'expense', 'adjustment', 'transfer'],
+        'credit'     => ['income', 'adjustment', 'transfer'],
+        'debit'      => ['expense', 'adjustment', 'transfer'],
+        'income'     => ['income'],
+        'expense'    => ['expense'],
+        'adjustment' => ['adjustment'],
+        'transfer'   => ['transfer'],
+        default      => ['income', 'expense', 'adjustment', 'transfer'],
     };
 
     return \App\Models\TransactionCategory::whereNull('parent_id')
@@ -80,6 +84,15 @@ Route::get('/api/bank-accounts', function () {
             'value' => $account->id,
         ]);
 })->name('api.bank-accounts');
+
+Route::get('/api/clients', function () {
+    return \App\Models\Client::orderBy('name')
+        ->get(['id', 'name'])
+        ->map(fn ($client) => [
+            'label' => $client->name,
+            'value' => $client->id,
+        ]);
+})->name('api.clients');
 
 Route::get('/api/clients', function (Request $request) {
     return \App\Models\Client::select('id', 'name')

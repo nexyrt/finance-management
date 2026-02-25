@@ -94,8 +94,8 @@
             <div class="flex flex-col gap-4">
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                     <x-date wire:model.live="dateRange" label="{{ __('pages.period') }}" range placeholder="{{ __('pages.select_date_range') }}" />
-                    <x-select.styled wire:model.live="bankAccountFilters" label="{{ __('common.bank_accounts') }}" :options="$this->bankAccounts"
-                        placeholder="{{ __('pages.all_banks') }}" multiple searchable />
+                    <x-select.styled wire:model.live="bankAccountFilters" :request="route('api.bank-accounts')"
+                        label="{{ __('common.bank_accounts') }}" placeholder="{{ __('pages.all_banks') }}" multiple searchable />
                     <x-input wire:model.live.debounce.300ms="search" label="{{ __('common.search') }}" placeholder="{{ __('pages.search_data') }}"
                         icon="magnifying-glass" />
                 </div>
@@ -131,7 +131,7 @@
         </div>
 
         {{-- Transfer Table --}}
-        <x-table :$headers :$sort :rows="$this->rows" selectable wire:model="selected" paginate filter loading>
+        <x-table :$headers :$sort :rows="$this->rows" selectable wire:model="selected" paginate filter>
 
             @interact('column_transaction_date', $row)
                 <div class="flex items-center gap-3">
@@ -303,10 +303,11 @@
             <div class="flex flex-col gap-4">
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                     <x-date wire:model.live="adjDateRange" label="{{ __('pages.period') }}" range placeholder="{{ __('pages.select_date_range') }}" />
-                    <x-select.styled wire:model.live="adjCategoryFilters" label="{{ __('common.category') }}" :options="$this->adjustmentCategories"
-                        placeholder="{{ __('pages.all_categories') }}" multiple searchable />
-                    <x-select.styled wire:model.live="adjBankAccountFilters" label="{{ __('common.bank_accounts') }}" :options="$this->bankAccounts"
-                        placeholder="{{ __('pages.all_banks') }}" multiple searchable />
+                    <x-select.styled wire:model.live="adjCategoryFilters"
+                        :request="['url' => route('api.transaction-categories'), 'method' => 'get', 'params' => ['type' => 'adjustment']]"
+                        label="{{ __('common.category') }}" placeholder="{{ __('pages.all_categories') }}" multiple searchable />
+                    <x-select.styled wire:model.live="adjBankAccountFilters" :request="route('api.bank-accounts')"
+                        label="{{ __('common.bank_accounts') }}" placeholder="{{ __('pages.all_banks') }}" multiple searchable />
                     <x-input wire:model.live.debounce.300ms="adjSearch" label="{{ __('common.search') }}" placeholder="{{ __('pages.search_data') }}"
                         icon="magnifying-glass" />
                 </div>
@@ -335,7 +336,7 @@
         </div>
 
         {{-- Adjustment Table --}}
-        <x-table :headers="$adjHeaders" :sort="$adjSort" :rows="$this->adjRows" selectable wire:model="adjSelected" paginate loading>
+        <x-table :headers="$adjHeaders" :sort="$adjSort" :rows="$this->adjRows" selectable wire:model="adjSelected" paginate>
 
             @interact('column_transaction_date', $row)
                 <div class="flex items-center gap-3">

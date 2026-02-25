@@ -46,7 +46,15 @@
       "Bash(npm install:*)",
       "WebFetch(domain:skills.sh)",
       "Bash(python3 -c \":*)",
-      "WebFetch(domain:livewire.laravel.com)"
+      "WebFetch(domain:livewire.laravel.com)",
+      "Bash(\"d:/Laravel/finance-management/app/Livewire/Receivables/Index.php\":*)",
+      "Bash(\"d:/Laravel/finance-management/resources/views/livewire/receivables/index.blade.php\":*)",
+      "Bash(python3 -c:*)",
+      "Bash(printf:*)",
+      "Bash(python3:*)",
+      "Bash(py:*)",
+      "Bash(where:*)",
+      "Bash(python:*)"
     ]
   }
 }
