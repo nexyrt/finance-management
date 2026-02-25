@@ -1,5 +1,8 @@
 {{-- Complete Responsive QuickActions Overview --}}
-<div class="grid grid-cols-1 lg:grid-cols-7 gap-4 lg:gap-6">
+<div class="grid grid-cols-1 lg:grid-cols-7 gap-4 lg:gap-6"
+     x-data="cashflowChart(@js($this->chartData))"
+     x-init="initChart()"
+>
     {{-- Quick Actions Card - 2 cols out of 7 --}}
     <div class="lg:col-span-2">
         <div
@@ -115,38 +118,90 @@
     </div>
 </div>
 
-@push('scripts')
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-        // Use window to avoid duplicate declaration on Livewire navigation
-        if (typeof window.cashflowChartInstance === 'undefined') {
-            window.cashflowChartInstance = null;
-        }
+@script
+<script>
+    Alpine.data('cashflowChart', (initialData) => ({
+        chartInstance: null,
 
-        function isDarkMode() {
-            return document.documentElement.classList.contains('dark');
-        }
-
-        function createChart(chartData) {
-            const ctx = document.getElementById('cashflowChart');
-            if (!ctx || !chartData || chartData.length === 0) return;
-
-            if (window.cashflowChartInstance) {
-                window.cashflowChartInstance.destroy();
-                window.cashflowChartInstance = null;
+        initChart() {
+            // Load Chart.js if not already loaded
+            if (typeof Chart === 'undefined') {
+                const script = document.createElement('script');
+                script.src = 'https://cdn.jsdelivr.net/npm/chart.js';
+                script.onload = () => this.createChart(initialData);
+                document.head.appendChild(script);
+            } else {
+                this.$nextTick(() => this.createChart(initialData));
             }
 
-            const isDark = isDarkMode();
+            // Listen for chart updates from Livewire
+            Livewire.on('chartDataUpdated', (data) => {
+                this.createChart(data[0].chartData);
+            });
+
+            Livewire.on('reinitialize-chart', (data) => {
+                this.destroyChart();
+                setTimeout(() => this.createChart(data[0].chartData), 100);
+            });
+
+            // Handle PDF download
+            Livewire.on('download-pdf', (event) => {
+                window.open(event.url, '_blank');
+            });
+
+            // Handle theme changes
+            this._themeObserver = new MutationObserver((mutations) => {
+                mutations.forEach((mutation) => {
+                    if (mutation.attributeName === 'class' && this.chartInstance) {
+                        const labels = this.chartInstance.data.labels;
+                        const datasets = this.chartInstance.data.datasets;
+                        setTimeout(() => {
+                            this.createChart(labels.map((label, index) => ({
+                                month: label,
+                                income: datasets[0].data[index],
+                                expense: datasets[1].data[index]
+                            })));
+                        }, 100);
+                    }
+                });
+            });
+            this._themeObserver.observe(document.documentElement, {
+                attributes: true,
+                attributeFilter: ['class']
+            });
+        },
+
+        destroyChart() {
+            if (this.chartInstance) {
+                this.chartInstance.destroy();
+                this.chartInstance = null;
+            }
+        },
+
+        createChart(chartData) {
+            const ctx = this.$el.querySelector('#cashflowChart');
+            if (!ctx || !chartData || chartData.length === 0) return;
+
+            this.destroyChart();
+
+            const isDark = document.documentElement.classList.contains('dark');
             const incomeData = chartData.map(item => item.income);
             const expenseData = chartData.map(item => item.expense);
             const netData = chartData.map(item => item.income - item.expense);
 
-            window.cashflowChartInstance = new Chart(ctx, {
+            const incomeLabel = @js(__('pages.income'));
+            const expenseLabel = @js(__('pages.expense'));
+            const netCashFlowLabel = @js(__('pages.net_cash_flow'));
+            const netLabel = @js(__('pages.net'));
+            const ratioLabel = @js(__('pages.ratio'));
+            const ratioSuffix = @js(__('pages.income_expense_ratio'));
+
+            this.chartInstance = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: chartData.map(item => item.month),
                     datasets: [{
-                            label: '{{ __('pages.income') }}',
+                            label: incomeLabel,
                             data: incomeData,
                             backgroundColor: 'rgba(34, 197, 94, 0.8)',
                             borderColor: 'rgba(34, 197, 94, 1)',
@@ -155,7 +210,7 @@
                             yAxisID: 'y',
                         },
                         {
-                            label: '{{ __('pages.expense') }}',
+                            label: expenseLabel,
                             data: expenseData,
                             backgroundColor: 'rgba(239, 68, 68, 0.8)',
                             borderColor: 'rgba(239, 68, 68, 1)',
@@ -164,7 +219,7 @@
                             yAxisID: 'y',
                         },
                         {
-                            label: '{{ __('pages.net_cash_flow') }}',
+                            label: netCashFlowLabel,
                             data: netData,
                             type: 'line',
                             borderColor: 'rgba(59, 130, 246, 1)',
@@ -212,8 +267,8 @@
 
                                     return [
                                         '',
-                                        `{{ __('pages.net') }}: Rp ${new Intl.NumberFormat('id-ID').format(net)}`,
-                                        `{{ __('pages.ratio') }}: ${ratio}% {{ __('pages.income_expense_ratio') }}`
+                                        `${netLabel}: Rp ${new Intl.NumberFormat('id-ID').format(net)}`,
+                                        `${ratioLabel}: ${ratio}% ${ratioSuffix}`
                                     ];
                                 }
                             }
@@ -301,64 +356,14 @@
                     }
                 }
             });
+        },
+
+        destroy() {
+            this.destroyChart();
+            if (this._themeObserver) {
+                this._themeObserver.disconnect();
+            }
         }
-
-        // Initialize on page load (Livewire SPA navigation)
-        document.addEventListener('livewire:navigated', () => {
-            const initialData = @json($this->chartData);
-            createChart(initialData);
-        });
-
-        // Listen for chart updates
-        Livewire.on('chartDataUpdated', (data) => {
-            createChart(data[0].chartData);
-        });
-
-        // Reinitialize after actions
-        Livewire.on('reinitialize-chart', (data) => {
-            if (window.cashflowChartInstance) {
-                window.cashflowChartInstance.destroy();
-                window.cashflowChartInstance = null;
-            }
-            setTimeout(() => {
-                createChart(data[0].chartData);
-            }, 100);
-        });
-
-        // Handle theme changes
-        const observer = new MutationObserver(function(mutations) {
-            mutations.forEach(function(mutation) {
-                if (mutation.attributeName === 'class' && window.cashflowChartInstance) {
-                    const currentLabels = window.cashflowChartInstance.data.labels;
-                    const datasets = window.cashflowChartInstance.data.datasets;
-
-                    setTimeout(() => {
-                        createChart(currentLabels.map((label, index) => ({
-                            month: label,
-                            income: datasets[0].data[index],
-                            expense: datasets[1].data[index]
-                        })));
-                    }, 100);
-                }
-            });
-        });
-
-        observer.observe(document.documentElement, {
-            attributes: true,
-            attributeFilter: ['class']
-        });
-
-        // Cleanup
-        window.addEventListener('beforeunload', () => {
-            if (window.cashflowChartInstance) {
-                window.cashflowChartInstance.destroy();
-                window.cashflowChartInstance = null;
-            }
-        });
-
-        // Handle PDF download without page reload
-        Livewire.on('download-pdf', (event) => {
-            window.open(event.url, '_blank');
-        });
-    </script>
-@endpush
+    }));
+</script>
+@endscript

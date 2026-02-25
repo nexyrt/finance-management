@@ -8,13 +8,16 @@ use App\Models\TransactionCategory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Lazy;
 use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Maatwebsite\Excel\Facades\Excel;
 use TallStackUi\Traits\Interactions;
 
+#[Lazy]
 class Expenses extends Component
 {
     use Interactions, WithPagination;
@@ -43,6 +46,11 @@ class Expenses extends Component
             ['index' => 'amount', 'label' => __('pages.col_amount')],
             ['index' => 'action', 'label' => __('pages.col_action'), 'sortable' => false],
         ];
+    }
+
+    public function placeholder(): View
+    {
+        return view('livewire.placeholders.cashflow-skeleton');
     }
 
     #[On('transaction-created')]
@@ -91,54 +99,9 @@ class Expenses extends Component
     #[Computed]
     public function rows(): LengthAwarePaginator
     {
-        return BankTransaction::with(['bankAccount', 'category.parent'])
-            ->where('transaction_type', 'debit')
-            ->where(function ($query) {
-                $query->whereHas('category', fn($q) => $q->where('type', 'expense'))
-                    ->orWhereNull('category_id');
-            })
-            ->when(
-                $this->search,
-                fn(Builder $q) =>
-                $q->where(function ($query) {
-                    $query->where('description', 'like', "%{$this->search}%")
-                        ->orWhere('reference_number', 'like', "%{$this->search}%")
-                        ->orWhereHas(
-                            'bankAccount',
-                            fn($bank) =>
-                            $bank->where('bank_name', 'like', "%{$this->search}%")
-                                ->orWhere('account_name', 'like', "%{$this->search}%")
-                        );
-                })
-            )
-            ->when(
-                !empty($this->categoryFilters),
-                fn(Builder $q) =>
-                $q->where(function ($query) {
-                    $hasUncategorized = in_array('uncategorized', $this->categoryFilters);
-                    $categoryIds = array_filter($this->categoryFilters, fn($val) => $val !== 'uncategorized');
-
-                    if ($hasUncategorized && !empty($categoryIds)) {
-                        $query->whereNull('category_id')
-                            ->orWhereIn('category_id', $categoryIds);
-                    } elseif ($hasUncategorized) {
-                        $query->whereNull('category_id');
-                    } else {
-                        $query->whereIn('category_id', $categoryIds);
-                    }
-                })
-            )
-            ->when(
-                !empty($this->bankAccountFilters),
-                fn(Builder $q) =>
-                $q->whereIn('bank_account_id', $this->bankAccountFilters)
-            )
-            ->when(
-                !empty($this->dateRange) && count($this->dateRange) >= 2,
-                fn(Builder $q) =>
-                $q->whereBetween('transaction_date', [$this->dateRange[0], $this->dateRange[1]])
-            )
-            ->orderBy(...array_values($this->sort))
+        return $this->getFilteredQuery()
+            ->with(['bankAccount', 'category.parent'])
+            ->orderBy('bank_transactions.' . $this->sort['column'], $this->sort['direction'])
             ->paginate($this->quantity)
             ->withQueryString();
     }
@@ -146,52 +109,15 @@ class Expenses extends Component
     #[Computed]
     public function totalExpense(): int
     {
-        return BankTransaction::where('transaction_type', 'debit')
-            ->where(function ($query) {
-                $query->whereHas('category', fn($q) => $q->where('type', 'expense'))
-                    ->orWhereNull('category_id');
-            })
-            ->when(
-                $this->search,
-                fn(Builder $q) =>
-                $q->where(function ($query) {
-                    $query->where('description', 'like', "%{$this->search}%")
-                        ->orWhere('reference_number', 'like', "%{$this->search}%");
-                })
-            )
-            ->when(
-                !empty($this->categoryFilters),
-                fn(Builder $q) =>
-                $q->where(function ($query) {
-                    $hasUncategorized = in_array('uncategorized', $this->categoryFilters);
-                    $categoryIds = array_filter($this->categoryFilters, fn($val) => $val !== 'uncategorized');
-
-                    if ($hasUncategorized && !empty($categoryIds)) {
-                        $query->whereNull('category_id')
-                            ->orWhereIn('category_id', $categoryIds);
-                    } elseif ($hasUncategorized) {
-                        $query->whereNull('category_id');
-                    } else {
-                        $query->whereIn('category_id', $categoryIds);
-                    }
-                })
-            )
-            ->when(
-                !empty($this->bankAccountFilters),
-                fn(Builder $q) =>
-                $q->whereIn('bank_account_id', $this->bankAccountFilters)
-            )
-            ->when(
-                !empty($this->dateRange) && count($this->dateRange) >= 2,
-                fn(Builder $q) =>
-                $q->whereBetween('transaction_date', [$this->dateRange[0], $this->dateRange[1]])
-            )
-            ->sum('amount');
+        return (int) $this->getFilteredQuery()->sum('bank_transactions.amount');
     }
 
     public function export()
     {
-        $data = $this->getFilteredQuery()->get();
+        $data = $this->getFilteredQuery()
+            ->with(['bankAccount', 'category.parent'])
+            ->orderBy('bank_transactions.transaction_date', 'desc')
+            ->get();
 
         if ($data->isEmpty()) {
             $this->toast()
@@ -364,16 +290,17 @@ class Expenses extends Component
             return;
         }
 
-        $transactions = BankTransaction::whereIn('id', $this->selected)->get();
+        $attachments = BankTransaction::whereIn('id', $this->selected)
+            ->whereNotNull('attachment_path')
+            ->pluck('attachment_path');
 
-        foreach ($transactions as $transaction) {
-            if ($transaction->attachment_path && Storage::exists($transaction->attachment_path)) {
-                Storage::delete($transaction->attachment_path);
+        foreach ($attachments as $path) {
+            if (Storage::exists($path)) {
+                Storage::delete($path);
             }
         }
 
-        $count = $transactions->count();
-        BankTransaction::whereIn('id', $this->selected)->delete();
+        $count = BankTransaction::whereIn('id', $this->selected)->delete();
 
         $this->selected = [];
         $this->resetPage();
@@ -383,20 +310,25 @@ class Expenses extends Component
             ->send();
     }
 
-    private function getFilteredQuery()
+    private function getFilteredQuery(): Builder
     {
-        return BankTransaction::with(['bankAccount', 'category.parent'])
-            ->where('transaction_type', 'debit')
+        return BankTransaction::query()
+            ->where('bank_transactions.transaction_type', 'debit')
+            ->leftJoin('transaction_categories', 'bank_transactions.category_id', '=', 'transaction_categories.id')
+            ->join('bank_accounts', 'bank_transactions.bank_account_id', '=', 'bank_accounts.id')
             ->where(function ($query) {
-                $query->whereHas('category', fn($q) => $q->where('type', 'expense'))
-                    ->orWhereNull('category_id');
+                $query->where('transaction_categories.type', 'expense')
+                    ->orWhereNull('bank_transactions.category_id');
             })
+            ->select('bank_transactions.*')
             ->when(
                 $this->search,
                 fn(Builder $q) =>
                 $q->where(function ($query) {
-                    $query->where('description', 'like', "%{$this->search}%")
-                        ->orWhere('reference_number', 'like', "%{$this->search}%");
+                    $query->where('bank_transactions.description', 'like', "%{$this->search}%")
+                        ->orWhere('bank_transactions.reference_number', 'like', "%{$this->search}%")
+                        ->orWhere('bank_accounts.bank_name', 'like', "%{$this->search}%")
+                        ->orWhere('bank_accounts.account_name', 'like', "%{$this->search}%");
                 })
             )
             ->when(
@@ -407,26 +339,25 @@ class Expenses extends Component
                     $categoryIds = array_filter($this->categoryFilters, fn($val) => $val !== 'uncategorized');
 
                     if ($hasUncategorized && !empty($categoryIds)) {
-                        $query->whereNull('category_id')
-                            ->orWhereIn('category_id', $categoryIds);
+                        $query->whereNull('bank_transactions.category_id')
+                            ->orWhereIn('bank_transactions.category_id', $categoryIds);
                     } elseif ($hasUncategorized) {
-                        $query->whereNull('category_id');
+                        $query->whereNull('bank_transactions.category_id');
                     } else {
-                        $query->whereIn('category_id', $categoryIds);
+                        $query->whereIn('bank_transactions.category_id', $categoryIds);
                     }
                 })
             )
             ->when(
                 !empty($this->bankAccountFilters),
                 fn(Builder $q) =>
-                $q->whereIn('bank_account_id', $this->bankAccountFilters)
+                $q->whereIn('bank_transactions.bank_account_id', $this->bankAccountFilters)
             )
             ->when(
                 !empty($this->dateRange) && count($this->dateRange) >= 2,
                 fn(Builder $q) =>
-                $q->whereBetween('transaction_date', [$this->dateRange[0], $this->dateRange[1]])
-            )
-            ->orderBy('transaction_date', 'desc');
+                $q->whereBetween('bank_transactions.transaction_date', [$this->dateRange[0], $this->dateRange[1]])
+            );
     }
 
     public function render()

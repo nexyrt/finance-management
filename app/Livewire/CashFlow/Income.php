@@ -8,13 +8,16 @@ use App\Models\Payment;
 use App\Models\TransactionCategory;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Lazy;
 use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Maatwebsite\Excel\Facades\Excel;
 use TallStackUi\Traits\Interactions;
 
+#[Lazy]
 class Income extends Component
 {
     use Interactions, WithPagination;
@@ -43,6 +46,11 @@ class Income extends Component
             ['index' => 'amount', 'label' => __('pages.col_amount')],
             ['index' => 'action', 'label' => __('pages.col_action'), 'sortable' => false],
         ];
+    }
+
+    public function placeholder(): View
+    {
+        return view('livewire.placeholders.cashflow-skeleton');
     }
 
     #[On('transaction-created')]
@@ -84,51 +92,8 @@ class Income extends Component
     #[Computed]
     public function totalIncome(): int
     {
-        $payments = Payment::query()
-            ->join('invoices', 'payments.invoice_id', '=', 'invoices.id')
-            ->join('clients', 'invoices.billed_to_id', '=', 'clients.id')
-            ->join('bank_accounts', 'payments.bank_account_id', '=', 'bank_accounts.id');
-
-        if (!empty($this->clientFilters)) {
-            $payments->whereIn('clients.id', $this->clientFilters);
-        }
-
-        if (!empty($this->dateRange) && count($this->dateRange) >= 2 && $this->dateRange[0] && $this->dateRange[1]) {
-            $payments->whereBetween('payments.payment_date', [$this->dateRange[0], $this->dateRange[1]]);
-        }
-
-        if ($this->search) {
-            $payments->where(function ($q) {
-                $q->where('invoices.invoice_number', 'like', '%' . $this->search . '%')
-                    ->orWhere('clients.name', 'like', '%' . $this->search . '%')
-                    ->orWhere('payments.reference_number', 'like', '%' . $this->search . '%')
-                    ->orWhere('bank_accounts.bank_name', 'like', '%' . $this->search . '%');
-            });
-        }
-
-        $paymentTotal = $payments->sum('payments.amount');
-
-        $transactions = BankTransaction::query()
-            ->join('transaction_categories', 'bank_transactions.category_id', '=', 'transaction_categories.id')
-            ->where('bank_transactions.transaction_type', 'credit')
-            ->where('transaction_categories.type', 'income');
-
-        if (!empty($this->categoryFilters)) {
-            $transactions->whereIn('bank_transactions.category_id', $this->categoryFilters);
-        }
-
-        if (!empty($this->dateRange) && count($this->dateRange) >= 2 && $this->dateRange[0] && $this->dateRange[1]) {
-            $transactions->whereBetween('bank_transactions.transaction_date', [$this->dateRange[0], $this->dateRange[1]]);
-        }
-
-        if ($this->search) {
-            $transactions->where(function ($q) {
-                $q->where('bank_transactions.description', 'like', '%' . $this->search . '%')
-                    ->orWhere('bank_transactions.reference_number', 'like', '%' . $this->search . '%');
-            });
-        }
-
-        $transactionTotal = $transactions->sum('bank_transactions.amount');
+        $paymentTotal = (int) $this->buildPaymentsQuery()->sum('payments.amount');
+        $transactionTotal = (int) $this->buildTransactionsQuery()->sum('bank_transactions.amount');
 
         return $paymentTotal + $transactionTotal;
     }
@@ -136,10 +101,7 @@ class Income extends Component
     #[Computed]
     public function rows(): LengthAwarePaginator
     {
-        $payments = Payment::query()
-            ->join('invoices', 'payments.invoice_id', '=', 'invoices.id')
-            ->join('clients', 'invoices.billed_to_id', '=', 'clients.id')
-            ->join('bank_accounts', 'payments.bank_account_id', '=', 'bank_accounts.id')
+        $payments = $this->buildPaymentsQuery()
             ->select([
                 DB::raw("CONCAT('payment-', payments.id) as uid"),
                 'payments.id',
@@ -157,28 +119,7 @@ class Income extends Component
                 DB::raw('NULL as description'),
             ]);
 
-        if (!empty($this->clientFilters)) {
-            $payments->whereIn('clients.id', $this->clientFilters);
-        }
-
-        if (!empty($this->dateRange) && count($this->dateRange) >= 2 && $this->dateRange[0] && $this->dateRange[1]) {
-            $payments->whereBetween('payments.payment_date', [$this->dateRange[0], $this->dateRange[1]]);
-        }
-
-        if ($this->search) {
-            $payments->where(function ($q) {
-                $q->where('invoices.invoice_number', 'like', '%' . $this->search . '%')
-                    ->orWhere('clients.name', 'like', '%' . $this->search . '%')
-                    ->orWhere('payments.reference_number', 'like', '%' . $this->search . '%')
-                    ->orWhere('bank_accounts.bank_name', 'like', '%' . $this->search . '%');
-            });
-        }
-
-        $transactions = BankTransaction::query()
-            ->join('bank_accounts', 'bank_transactions.bank_account_id', '=', 'bank_accounts.id')
-            ->join('transaction_categories', 'bank_transactions.category_id', '=', 'transaction_categories.id')
-            ->where('bank_transactions.transaction_type', 'credit')
-            ->where('transaction_categories.type', 'income')
+        $transactions = $this->buildTransactionsQuery()
             ->select([
                 DB::raw("CONCAT('transaction-', bank_transactions.id) as uid"),
                 'bank_transactions.id',
@@ -196,36 +137,25 @@ class Income extends Component
                 'bank_transactions.description',
             ]);
 
-        if (!empty($this->categoryFilters)) {
-            $transactions->whereIn('bank_transactions.category_id', $this->categoryFilters);
-        }
-
-        if (!empty($this->dateRange) && count($this->dateRange) >= 2 && $this->dateRange[0] && $this->dateRange[1]) {
-            $transactions->whereBetween('bank_transactions.transaction_date', [$this->dateRange[0], $this->dateRange[1]]);
-        }
-
-        if ($this->search) {
-            $transactions->where(function ($q) {
-                $q->where('bank_transactions.description', 'like', '%' . $this->search . '%')
-                    ->orWhere('bank_transactions.reference_number', 'like', '%' . $this->search . '%')
-                    ->orWhere('bank_accounts.bank_name', 'like', '%' . $this->search . '%');
-            });
-        }
-
-        $query = $payments->union($transactions);
-        $results = $query->get();
-
-        // Sorting
         $sortColumn = $this->sort['column'];
-        $results = $this->sort['direction'] === 'desc'
-            ? $results->sortByDesc($sortColumn)
-            : $results->sortBy($sortColumn);
-
-        // Pagination
-        $total = $results->count();
+        $sortDirection = $this->sort['direction'];
         $currentPage = $this->getPage();
         $offset = ($currentPage - 1) * $this->quantity;
-        $items = $results->slice($offset, $this->quantity)->values();
+
+        // Wrap UNION in a subquery for proper ORDER BY + LIMIT at DB level
+        $unionQuery = DB::query()
+            ->fromSub(function ($query) use ($payments, $transactions) {
+                $query->fromSub($payments, 'p')
+                    ->unionAll(DB::query()->fromSub($transactions, 't'));
+            }, 'combined');
+
+        $total = $unionQuery->count();
+
+        $items = (clone $unionQuery)
+            ->orderBy($sortColumn, $sortDirection)
+            ->offset($offset)
+            ->limit($this->quantity)
+            ->get();
 
         return new LengthAwarePaginator(
             $items,
@@ -238,10 +168,7 @@ class Income extends Component
 
     private function getFilteredData()
     {
-        $payments = Payment::query()
-            ->join('invoices', 'payments.invoice_id', '=', 'invoices.id')
-            ->join('clients', 'invoices.billed_to_id', '=', 'clients.id')
-            ->join('bank_accounts', 'payments.bank_account_id', '=', 'bank_accounts.id')
+        $payments = $this->buildPaymentsQuery()
             ->select([
                 'payments.payment_date as date',
                 'payments.amount',
@@ -254,26 +181,7 @@ class Income extends Component
                 DB::raw('NULL as description'),
             ]);
 
-        if (!empty($this->clientFilters)) {
-            $payments->whereIn('clients.id', $this->clientFilters);
-        }
-
-        if (!empty($this->dateRange) && count($this->dateRange) >= 2) {
-            $payments->whereBetween('payments.payment_date', [$this->dateRange[0], $this->dateRange[1]]);
-        }
-
-        if ($this->search) {
-            $payments->where(function ($q) {
-                $q->where('invoices.invoice_number', 'like', '%' . $this->search . '%')
-                    ->orWhere('clients.name', 'like', '%' . $this->search . '%');
-            });
-        }
-
-        $transactions = BankTransaction::query()
-            ->join('bank_accounts', 'bank_transactions.bank_account_id', '=', 'bank_accounts.id')
-            ->join('transaction_categories', 'bank_transactions.category_id', '=', 'transaction_categories.id')
-            ->where('bank_transactions.transaction_type', 'credit')
-            ->where('transaction_categories.type', 'income')
+        $transactions = $this->buildTransactionsQuery()
             ->select([
                 'bank_transactions.transaction_date as date',
                 'bank_transactions.amount',
@@ -286,21 +194,13 @@ class Income extends Component
                 'bank_transactions.description',
             ]);
 
-        if (!empty($this->categoryFilters)) {
-            $transactions->whereIn('bank_transactions.category_id', $this->categoryFilters);
-        }
-
-        if (!empty($this->dateRange) && count($this->dateRange) >= 2) {
-            $transactions->whereBetween('bank_transactions.transaction_date', [$this->dateRange[0], $this->dateRange[1]]);
-        }
-
-        if ($this->search) {
-            $transactions->where(function ($q) {
-                $q->where('bank_transactions.description', 'like', '%' . $this->search . '%');
-            });
-        }
-
-        return $payments->union($transactions)->get()->sortByDesc('date');
+        return DB::query()
+            ->fromSub(function ($query) use ($payments, $transactions) {
+                $query->fromSub($payments, 'p')
+                    ->unionAll(DB::query()->fromSub($transactions, 't'));
+            }, 'combined')
+            ->orderByDesc('date')
+            ->get();
     }
 
     public function export()
@@ -425,7 +325,13 @@ class Income extends Component
                 'bank_transactions.description',
             ]);
 
-        $data = $payments->union($transactions)->get()->sortByDesc('date');
+        $data = DB::query()
+            ->fromSub(function ($query) use ($payments, $transactions) {
+                $query->fromSub($payments, 'p')
+                    ->unionAll(DB::query()->fromSub($transactions, 't'));
+            }, 'combined')
+            ->orderByDesc('date')
+            ->get();
 
         $filename = 'pemasukan_selected_' . now()->format('Y-m-d_His') . '.xlsx';
 
@@ -536,18 +442,26 @@ class Income extends Component
 
     public function executeBulkDelete()
     {
-        $deleted = 0;
+        $paymentIds = [];
+        $transactionIds = [];
 
         foreach ($this->selected as $item) {
             [$type, $id] = explode('-', $item);
-
             if ($type === 'payment') {
-                Payment::find($id)?->delete();
-                $deleted++;
+                $paymentIds[] = $id;
             } elseif ($type === 'transaction') {
-                BankTransaction::find($id)?->delete();
-                $deleted++;
+                $transactionIds[] = $id;
             }
+        }
+
+        $deleted = 0;
+
+        if (!empty($paymentIds)) {
+            $deleted += Payment::whereIn('id', $paymentIds)->delete();
+        }
+
+        if (!empty($transactionIds)) {
+            $deleted += BankTransaction::whereIn('id', $transactionIds)->delete();
         }
 
         $this->selected = [];
@@ -556,6 +470,66 @@ class Income extends Component
         $this->toast()
             ->success(__('common.success'), __('pages.bulk_delete_income_done', ['count' => $deleted]))
             ->send();
+    }
+
+    /**
+     * Base query for payment income records with filters applied.
+     */
+    private function buildPaymentsQuery()
+    {
+        $query = Payment::query()
+            ->join('invoices', 'payments.invoice_id', '=', 'invoices.id')
+            ->join('clients', 'invoices.billed_to_id', '=', 'clients.id')
+            ->join('bank_accounts', 'payments.bank_account_id', '=', 'bank_accounts.id');
+
+        if (!empty($this->clientFilters)) {
+            $query->whereIn('clients.id', $this->clientFilters);
+        }
+
+        if (!empty($this->dateRange) && count($this->dateRange) >= 2 && $this->dateRange[0] && $this->dateRange[1]) {
+            $query->whereBetween('payments.payment_date', [$this->dateRange[0], $this->dateRange[1]]);
+        }
+
+        if ($this->search) {
+            $query->where(function ($q) {
+                $q->where('invoices.invoice_number', 'like', '%' . $this->search . '%')
+                    ->orWhere('clients.name', 'like', '%' . $this->search . '%')
+                    ->orWhere('payments.reference_number', 'like', '%' . $this->search . '%')
+                    ->orWhere('bank_accounts.bank_name', 'like', '%' . $this->search . '%');
+            });
+        }
+
+        return $query;
+    }
+
+    /**
+     * Base query for transaction income records with filters applied.
+     */
+    private function buildTransactionsQuery()
+    {
+        $query = BankTransaction::query()
+            ->join('bank_accounts', 'bank_transactions.bank_account_id', '=', 'bank_accounts.id')
+            ->join('transaction_categories', 'bank_transactions.category_id', '=', 'transaction_categories.id')
+            ->where('bank_transactions.transaction_type', 'credit')
+            ->where('transaction_categories.type', 'income');
+
+        if (!empty($this->categoryFilters)) {
+            $query->whereIn('bank_transactions.category_id', $this->categoryFilters);
+        }
+
+        if (!empty($this->dateRange) && count($this->dateRange) >= 2 && $this->dateRange[0] && $this->dateRange[1]) {
+            $query->whereBetween('bank_transactions.transaction_date', [$this->dateRange[0], $this->dateRange[1]]);
+        }
+
+        if ($this->search) {
+            $query->where(function ($q) {
+                $q->where('bank_transactions.description', 'like', '%' . $this->search . '%')
+                    ->orWhere('bank_transactions.reference_number', 'like', '%' . $this->search . '%')
+                    ->orWhere('bank_accounts.bank_name', 'like', '%' . $this->search . '%');
+            });
+        }
+
+        return $query;
     }
 
     public function render()

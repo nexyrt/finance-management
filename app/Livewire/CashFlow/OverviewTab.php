@@ -3,13 +3,13 @@
 namespace App\Livewire\CashFlow;
 
 use App\Models\BankTransaction;
-use App\Models\Payment;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
-use Livewire\Component;
-use Illuminate\Contracts\View\View;
-use Livewire\Attributes\Computed;
 use Carbon\Carbon;
+use Illuminate\Contracts\View\View;
+use Illuminate\Support\Facades\DB;
+use Livewire\Attributes\Computed;
+use Livewire\Component;
 
 class OverviewTab extends Component
 {
@@ -27,61 +27,140 @@ class OverviewTab extends Component
         $startDate = $this->getStartDate();
         $endDate = now();
 
-        // Income: Bank income + Invoice profit
-        $bankIncome = BankTransaction::where('transaction_type', 'credit')
-            ->whereHas('category', fn($q) => $q->where('type', 'income'))
-            ->whereBetween('transaction_date', [$startDate, $endDate])
-            ->sum('amount');
+        // Bank transactions aggregated in a single query using JOIN
+        $bankStats = BankTransaction::query()
+            ->join('transaction_categories', 'bank_transactions.category_id', '=', 'transaction_categories.id')
+            ->whereBetween('bank_transactions.transaction_date', [$startDate, $endDate])
+            ->selectRaw("
+                SUM(CASE WHEN bank_transactions.transaction_type = 'credit' AND transaction_categories.type = 'income' THEN bank_transactions.amount ELSE 0 END) as bank_income,
+                SUM(CASE WHEN bank_transactions.transaction_type = 'debit' AND transaction_categories.type = 'expense' THEN bank_transactions.amount ELSE 0 END) as total_expenses,
+                SUM(CASE WHEN bank_transactions.transaction_type = 'debit' AND transaction_categories.type = 'transfer' THEN bank_transactions.amount ELSE 0 END) as total_transfers
+            ")
+            ->first();
 
-        $totalRevenue = Invoice::whereBetween('issue_date', [$startDate, $endDate])->sum('total_amount');
-        $totalCogs = InvoiceItem::whereHas('invoice', fn($q) => $q->whereBetween('issue_date', [$startDate, $endDate]))
-            ->where('is_tax_deposit', false)
-            ->sum('cogs_amount');
-        $totalTaxDeposits = InvoiceItem::whereHas('invoice', fn($q) => $q->whereBetween('issue_date', [$startDate, $endDate]))
-            ->where('is_tax_deposit', true)
-            ->sum('amount');
+        // Invoice profit in a single query
+        $invoiceStats = Invoice::whereBetween('issue_date', [$startDate, $endDate])
+            ->selectRaw('COALESCE(SUM(total_amount), 0) as total_revenue')
+            ->first();
 
-        $invoiceProfit = $totalRevenue - $totalCogs - $totalTaxDeposits;
-        $totalIncome = $bankIncome + $invoiceProfit;
+        $itemStats = InvoiceItem::query()
+            ->join('invoices', 'invoice_items.invoice_id', '=', 'invoices.id')
+            ->whereBetween('invoices.issue_date', [$startDate, $endDate])
+            ->selectRaw("
+                COALESCE(SUM(CASE WHEN invoice_items.is_tax_deposit = 0 THEN invoice_items.cogs_amount ELSE 0 END), 0) as total_cogs,
+                COALESCE(SUM(CASE WHEN invoice_items.is_tax_deposit = 1 THEN invoice_items.amount ELSE 0 END), 0) as total_tax_deposits
+            ")
+            ->first();
 
-        // Expenses
-        $totalExpenses = BankTransaction::where('transaction_type', 'debit')
-            ->whereHas('category', fn($q) => $q->where('type', 'expense'))
-            ->whereBetween('transaction_date', [$startDate, $endDate])
-            ->sum('amount');
-
-        // Transfers
-        $totalTransfers = BankTransaction::where('transaction_type', 'debit')
-            ->whereHas('category', fn($q) => $q->where('type', 'transfer'))
-            ->whereBetween('transaction_date', [$startDate, $endDate])
-            ->sum('amount');
+        $invoiceProfit = $invoiceStats->total_revenue - $itemStats->total_cogs - $itemStats->total_tax_deposits;
+        $totalIncome = $bankStats->bank_income + $invoiceProfit;
 
         return [
             'total_income' => $totalIncome,
-            'total_expenses' => $totalExpenses,
-            'net_cash_flow' => $totalIncome - $totalExpenses,
-            'total_transfers' => $totalTransfers,
+            'total_expenses' => (int) $bankStats->total_expenses,
+            'net_cash_flow' => $totalIncome - $bankStats->total_expenses,
+            'total_transfers' => (int) $bankStats->total_transfers,
         ];
     }
 
     #[Computed]
     public function monthlyTrendData(): array
     {
-        return match($this->period) {
-            'this_month' => $this->getWeeklyData(),
-            'last_3_months' => $this->getThreeMonthsData(),
-            'last_year' => $this->getYearlyData(),
-            default => $this->getYearlyData(),
+        $periods = match ($this->period) {
+            'this_month' => $this->getWeekPeriods(),
+            'last_3_months' => $this->getThreeMonthPeriods(),
+            'last_year' => $this->getYearlyPeriods(),
+            default => $this->getYearlyPeriods(),
         };
+
+        if (empty($periods)) {
+            return [];
+        }
+
+        $globalStart = $periods[0]['start'];
+        $globalEnd = end($periods)['end'];
+
+        // Batch query 1: Bank income by period
+        $bankIncomeRows = DB::table('bank_transactions')
+            ->join('transaction_categories', 'bank_transactions.category_id', '=', 'transaction_categories.id')
+            ->where('bank_transactions.transaction_type', 'credit')
+            ->where('transaction_categories.type', 'income')
+            ->whereBetween('bank_transactions.transaction_date', [$globalStart, $globalEnd])
+            ->select('bank_transactions.transaction_date', 'bank_transactions.amount')
+            ->get();
+
+        // Batch query 2: Expenses by period
+        $expenseRows = DB::table('bank_transactions')
+            ->join('transaction_categories', 'bank_transactions.category_id', '=', 'transaction_categories.id')
+            ->where('bank_transactions.transaction_type', 'debit')
+            ->where('transaction_categories.type', 'expense')
+            ->whereBetween('bank_transactions.transaction_date', [$globalStart, $globalEnd])
+            ->select('bank_transactions.transaction_date', 'bank_transactions.amount')
+            ->get();
+
+        // Batch query 3: Invoice revenue by period
+        $invoiceRows = DB::table('invoices')
+            ->whereBetween('issue_date', [$globalStart, $globalEnd])
+            ->select('id', 'issue_date', 'total_amount')
+            ->get();
+
+        $invoiceIds = $invoiceRows->pluck('id');
+
+        // Batch query 4: Invoice items (COGS + tax deposits)
+        $itemRows = $invoiceIds->isNotEmpty()
+            ? DB::table('invoice_items')
+                ->whereIn('invoice_id', $invoiceIds)
+                ->select('invoice_id', 'is_tax_deposit', 'cogs_amount', 'amount')
+                ->get()
+            : collect();
+
+        // Index items by invoice_id for fast lookup
+        $itemsByInvoice = $itemRows->groupBy('invoice_id');
+
+        // Assign data to periods
+        return array_map(function ($period) use ($bankIncomeRows, $expenseRows, $invoiceRows, $itemsByInvoice) {
+            $start = $period['start'];
+            $end = $period['end'];
+
+            $bankIncome = $bankIncomeRows
+                ->whereBetween('transaction_date', [$start, $end])
+                ->sum('amount');
+
+            $expenses = $expenseRows
+                ->whereBetween('transaction_date', [$start, $end])
+                ->sum('amount');
+
+            $periodInvoices = $invoiceRows->whereBetween('issue_date', [$start, $end]);
+            $revenue = $periodInvoices->sum('total_amount');
+            $cogs = 0;
+            $taxDeposits = 0;
+
+            foreach ($periodInvoices as $inv) {
+                $items = $itemsByInvoice->get($inv->id, collect());
+                foreach ($items as $item) {
+                    if ($item->is_tax_deposit) {
+                        $taxDeposits += $item->amount;
+                    } else {
+                        $cogs += $item->cogs_amount;
+                    }
+                }
+            }
+
+            $income = $bankIncome + ($revenue - $cogs - $taxDeposits);
+
+            return [
+                'month' => $period['label'],
+                'income' => (int) $income,
+                'expenses' => (int) $expenses,
+            ];
+        }, $periods);
     }
 
-    private function getWeeklyData(): array
+    private function getWeekPeriods(): array
     {
         $startOfMonth = now()->startOfMonth();
         $endOfMonth = now()->endOfMonth();
         $weeks = [];
-
-        // Generate week ranges
         $currentWeek = $startOfMonth->copy();
         $weekNumber = 1;
 
@@ -97,27 +176,13 @@ class OverviewTab extends Component
 
             $currentWeek->addWeek()->startOfWeek();
             $weekNumber++;
-
-            // Safety: max 5 weeks
             if ($weekNumber > 5) break;
         }
 
-        return array_map(function ($week) {
-            $start = Carbon::parse($week['start']);
-            $end = Carbon::parse($week['end']);
-
-            $income = $this->calculateIncome($start, $end);
-            $expenses = $this->calculateExpenses($start, $end);
-
-            return [
-                'month' => $week['label'],
-                'income' => $income,
-                'expenses' => $expenses,
-            ];
-        }, $weeks);
+        return $weeks;
     }
 
-    private function getThreeMonthsData(): array
+    private function getThreeMonthPeriods(): array
     {
         $months = [];
         for ($i = 2; $i >= 0; $i--) {
@@ -128,69 +193,14 @@ class OverviewTab extends Component
                 'end' => $month->copy()->endOfMonth()->format('Y-m-d'),
             ];
         }
-
-        return array_map(function ($month) {
-            $start = Carbon::parse($month['start']);
-            $end = Carbon::parse($month['end']);
-
-            $income = $this->calculateIncome($start, $end);
-            $expenses = $this->calculateExpenses($start, $end);
-
-            return [
-                'month' => $month['label'],
-                'income' => $income,
-                'expenses' => $expenses,
-            ];
-        }, $months);
+        return $months;
     }
 
-    private function getYearlyData(): array
+    private function getYearlyPeriods(): array
     {
         $startDate = now()->subMonths(11)->startOfMonth();
         $endDate = now();
-        $months = $this->generateMonthLabels($startDate, $endDate);
-
-        return array_map(function ($month) {
-            $start = Carbon::parse($month['start']);
-            $end = Carbon::parse($month['end']);
-
-            $income = $this->calculateIncome($start, $end);
-            $expenses = $this->calculateExpenses($start, $end);
-
-            return [
-                'month' => $month['label'],
-                'income' => $income,
-                'expenses' => $expenses,
-            ];
-        }, $months);
-    }
-
-    private function calculateIncome(Carbon $start, Carbon $end): int
-    {
-        // Bank Income
-        $bankIncome = BankTransaction::where('transaction_type', 'credit')
-            ->whereHas('category', fn($q) => $q->where('type', 'income'))
-            ->whereBetween('transaction_date', [$start, $end])
-            ->sum('amount');
-
-        // Invoice Profit
-        $revenue = Invoice::whereBetween('issue_date', [$start, $end])->sum('total_amount');
-        $cogs = InvoiceItem::whereHas('invoice', fn($q) => $q->whereBetween('issue_date', [$start, $end]))
-            ->where('is_tax_deposit', false)
-            ->sum('cogs_amount');
-        $taxDeposits = InvoiceItem::whereHas('invoice', fn($q) => $q->whereBetween('issue_date', [$start, $end]))
-            ->where('is_tax_deposit', true)
-            ->sum('amount');
-
-        return $bankIncome + ($revenue - $cogs - $taxDeposits);
-    }
-
-    private function calculateExpenses(Carbon $start, Carbon $end): int
-    {
-        return BankTransaction::where('transaction_type', 'debit')
-            ->whereHas('category', fn($q) => $q->where('type', 'expense'))
-            ->whereBetween('transaction_date', [$start, $end])
-            ->sum('amount');
+        return $this->generateMonthLabels($startDate, $endDate);
     }
 
     #[Computed]
@@ -199,43 +209,18 @@ class OverviewTab extends Component
         $startDate = $this->getStartDate();
         $endDate = now();
 
-        $transactions = BankTransaction::with('category.parent')
-            ->where('transaction_type', 'debit')
-            ->whereHas('category', fn($q) => $q->where('type', 'expense'))
-            ->whereBetween('transaction_date', [$startDate, $endDate])
-            ->get();
-
-        // Group by parent category (or self if no parent)
-        $grouped = [];
-        foreach ($transactions as $transaction) {
-            if (!$transaction->category) {
-                $key = 'Uncategorized';
-            } else {
-                // Use parent label if exists, otherwise use own label
-                $key = $transaction->category->parent 
-                    ? $transaction->category->parent->label 
-                    : $transaction->category->label;
-            }
-
-            if (!isset($grouped[$key])) {
-                $grouped[$key] = 0;
-            }
-            $grouped[$key] += $transaction->amount;
-        }
-
-        // Convert to array format
-        $result = [];
-        foreach ($grouped as $category => $total) {
-            $result[] = [
-                'category' => $category,
-                'total' => $total,
-            ];
-        }
-
-        // Sort by total descending
-        usort($result, fn($a, $b) => $b['total'] <=> $a['total']);
-
-        return $result;
+        return DB::table('bank_transactions')
+            ->join('transaction_categories as cat', 'bank_transactions.category_id', '=', 'cat.id')
+            ->leftJoin('transaction_categories as parent', 'cat.parent_code', '=', 'parent.code')
+            ->where('bank_transactions.transaction_type', 'debit')
+            ->where('cat.type', 'expense')
+            ->whereBetween('bank_transactions.transaction_date', [$startDate, $endDate])
+            ->selectRaw('COALESCE(parent.label, cat.label) as category, SUM(bank_transactions.amount) as total')
+            ->groupByRaw('COALESCE(parent.label, cat.label)')
+            ->orderByDesc('total')
+            ->get()
+            ->map(fn($row) => ['category' => $row->category, 'total' => (int) $row->total])
+            ->toArray();
     }
 
     #[Computed]
@@ -247,9 +232,12 @@ class OverviewTab extends Component
     #[Computed]
     public function recentTransactions()
     {
-        return BankTransaction::with(['bankAccount', 'category'])
-            ->whereHas('category', fn($q) => $q->whereIn('type', ['income', 'expense']))
-            ->latest('transaction_date')
+        return BankTransaction::query()
+            ->join('transaction_categories', 'bank_transactions.category_id', '=', 'transaction_categories.id')
+            ->whereIn('transaction_categories.type', ['income', 'expense'])
+            ->select('bank_transactions.*')
+            ->with(['bankAccount', 'category'])
+            ->latest('bank_transactions.transaction_date')
             ->take(10)
             ->get();
     }

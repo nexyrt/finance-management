@@ -4,6 +4,7 @@ namespace App\Livewire\Accounts;
 
 use App\Models\BankAccount;
 use App\Models\BankTransaction;
+use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Computed;
@@ -16,9 +17,17 @@ class Index extends Component
 
     // Core state
     public $selectedAccountId = null;
+    public bool $ready = false;
 
     public function mount(): void
     {
+        // Defer heavy data loading to wire:init for faster initial render
+    }
+
+    public function loadData(): void
+    {
+        $this->ready = true;
+
         if ($this->accountsData->count() > 0) {
             $this->selectedAccountId = $this->accountsData->first()['id'];
         }
@@ -82,17 +91,35 @@ class Index extends Component
     #[Computed]
     public function accountsData()
     {
-        return BankAccount::with([
-            'transactions' => fn($query) => $query->latest()->take(3)
-        ])->get()->map(function ($account) {
+        $accounts = BankAccount::with(['transactions', 'payments'])->get();
+
+        // Batch trend calculation: 1 query instead of 2 per account
+        $accountIds = $accounts->pluck('id');
+        $trends = DB::table('bank_transactions')
+            ->whereIn('bank_account_id', $accountIds)
+            ->where('transaction_type', 'credit')
+            ->whereIn(DB::raw('MONTH(transaction_date)'), [now()->month, now()->subMonth()->month])
+            ->selectRaw('bank_account_id, MONTH(transaction_date) as m, SUM(amount) as total')
+            ->groupBy('bank_account_id', DB::raw('MONTH(transaction_date)'))
+            ->get()
+            ->groupBy('bank_account_id');
+
+        $thisMonth = now()->month;
+        $lastMonth = now()->subMonth()->month;
+
+        return $accounts->map(function ($account) use ($trends, $thisMonth, $lastMonth) {
+            $accountTrends = $trends->get($account->id, collect());
+            $thisMonthTotal = $accountTrends->firstWhere('m', $thisMonth)?->total ?? 0;
+            $lastMonthTotal = $accountTrends->firstWhere('m', $lastMonth)?->total ?? 0;
+
             return [
                 'id' => $account->id,
                 'name' => $account->account_name,
                 'bank' => $account->bank_name,
                 'account_number' => $account->account_number,
                 'balance' => $account->balance,
-                'recent_transactions' => $account->transactions,
-                'trend' => $this->calculateTrend($account->id)
+                'recent_transactions' => $account->transactions->sortByDesc('transaction_date')->take(3),
+                'trend' => $thisMonthTotal >= $lastMonthTotal ? 'up' : 'down',
             ];
         });
     }
@@ -100,24 +127,6 @@ class Index extends Component
     #[Computed]
     public function totalBalance()
     {
-        return BankAccount::all()->sum(function ($account) {
-            return $account->balance;
-        });
-    }
-
-    // Helper methods
-    private function calculateTrend($accountId): string
-    {
-        $thisMonth = BankTransaction::where('bank_account_id', $accountId)
-            ->where('transaction_type', 'credit')
-            ->whereMonth('transaction_date', now()->month)
-            ->sum('amount');
-
-        $lastMonth = BankTransaction::where('bank_account_id', $accountId)
-            ->where('transaction_type', 'credit')
-            ->whereMonth('transaction_date', now()->subMonth()->month)
-            ->sum('amount');
-
-        return $thisMonth >= $lastMonth ? 'up' : 'down';
+        return $this->accountsData->sum('balance');
     }
 }

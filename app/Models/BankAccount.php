@@ -42,9 +42,15 @@ class BankAccount extends Model
     // Current balance calculation
     public function getBalanceAttribute(): int
     {
-        $payments = $this->payments()->sum('amount');
-        $credits = $this->transactions()->where('transaction_type', 'credit')->sum('amount');
-        $debits = $this->transactions()->where('transaction_type', 'debit')->sum('amount');
+        if ($this->relationLoaded('payments') && $this->relationLoaded('transactions')) {
+            $payments = $this->payments->sum('amount');
+            $credits = $this->transactions->where('transaction_type', 'credit')->sum('amount');
+            $debits = $this->transactions->where('transaction_type', 'debit')->sum('amount');
+        } else {
+            $payments = $this->payments()->sum('amount');
+            $credits = $this->transactions()->where('transaction_type', 'credit')->sum('amount');
+            $debits = $this->transactions()->where('transaction_type', 'debit')->sum('amount');
+        }
 
         return $this->initial_balance + $payments + $credits - $debits;
     }

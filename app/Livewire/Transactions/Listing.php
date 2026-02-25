@@ -69,36 +69,37 @@ class Listing extends Component
     public function transactions()
     {
         return BankTransaction::with(['bankAccount', 'category.parent'])
+            ->join('bank_accounts', 'bank_transactions.bank_account_id', '=', 'bank_accounts.id')
+            ->select('bank_transactions.*')
             ->when(
                 $this->search,
                 fn($query) =>
-                $query->whereHas(
-                    'bankAccount',
-                    fn($q) =>
-                    $q->where('account_name', 'like', "%{$this->search}%")
-                )->orWhere('description', 'like', "%{$this->search}%")
-                    ->orWhere('reference_number', 'like', "%{$this->search}%")
+                $query->where(function ($q) {
+                    $q->where('bank_transactions.description', 'like', "%{$this->search}%")
+                        ->orWhere('bank_transactions.reference_number', 'like', "%{$this->search}%")
+                        ->orWhere('bank_accounts.account_name', 'like', "%{$this->search}%");
+                })
             )
             ->when(
                 $this->account_id || $this->constrainedBankAccountId,
                 fn($query) =>
-                $query->where('bank_account_id', $this->constrainedBankAccountId ?? $this->account_id)
+                $query->where('bank_transactions.bank_account_id', $this->constrainedBankAccountId ?? $this->account_id)
             )
             ->when(
                 $this->transaction_type,
                 fn($query) =>
-                $query->where('transaction_type', $this->transaction_type)
+                $query->where('bank_transactions.transaction_type', $this->transaction_type)
             )
             ->when(
                 $this->category_id,
                 fn($query) =>
-                $query->where('category_id', $this->category_id)
+                $query->where('bank_transactions.category_id', $this->category_id)
             )
             // Date filtering - range overrides month
             ->when(
                 $this->date_range,
                 fn($query) =>
-                $query->whereBetween('transaction_date', [
+                $query->whereBetween('bank_transactions.transaction_date', [
                     $this->date_range[0],
                     $this->date_range[1] ?? $this->date_range[0]
                 ])
@@ -108,19 +109,16 @@ class Listing extends Component
                 fn($query) =>
                 $query->when(
                     $this->selected_month,
-                    fn($q) => $q->whereYear('transaction_date', substr($this->selected_month, 0, 4))
-                        ->whereMonth('transaction_date', substr($this->selected_month, 5, 2))
+                    fn($q) => $q->whereYear('bank_transactions.transaction_date', substr($this->selected_month, 0, 4))
+                        ->whereMonth('bank_transactions.transaction_date', substr($this->selected_month, 5, 2))
                 )
             )
             ->when(
                 $this->sort['column'] === 'bank_account_id',
                 fn($query) =>
-                $query->join('bank_accounts', 'bank_transactions.bank_account_id', '=', 'bank_accounts.id')
-                    ->orderBy('bank_accounts.account_name', $this->sort['direction'])
-                    ->select('bank_transactions.*')
-                ,
+                $query->orderBy('bank_accounts.account_name', $this->sort['direction']),
                 fn($query) =>
-                $query->orderBy($this->sort['column'], $this->sort['direction'])
+                $query->orderBy('bank_transactions.' . $this->sort['column'], $this->sort['direction'])
             )
             ->paginate($this->quantity)
             ->withQueryString();
@@ -224,16 +222,30 @@ class Listing extends Component
 
         $count = count($this->selected);
 
-        foreach ($this->selected as $transactionId) {
-            $transaction = BankTransaction::find($transactionId);
-            if (!$transaction)
-                continue;
+        // Batch load all selected transactions instead of N+1
+        $transactions = BankTransaction::whereIn('id', $this->selected)->get();
 
-            if ($transaction->reference_number && str_starts_with($transaction->reference_number, 'TRF')) {
-                BankTransaction::where('reference_number', $transaction->reference_number)->delete();
-            } else {
-                $transaction->delete();
-            }
+        // Collect transfer reference numbers that need paired deletion
+        $transferRefs = $transactions
+            ->filter(fn($t) => $t->reference_number && str_starts_with($t->reference_number, 'TRF'))
+            ->pluck('reference_number')
+            ->unique()
+            ->values()
+            ->all();
+
+        // Delete transfer pairs in one query
+        if (!empty($transferRefs)) {
+            BankTransaction::whereIn('reference_number', $transferRefs)->delete();
+        }
+
+        // Delete remaining non-transfer transactions
+        $nonTransferIds = $transactions
+            ->filter(fn($t) => !$t->reference_number || !str_starts_with($t->reference_number, 'TRF'))
+            ->pluck('id')
+            ->all();
+
+        if (!empty($nonTransferIds)) {
+            BankTransaction::whereIn('id', $nonTransferIds)->delete();
         }
 
         $this->selected = [];

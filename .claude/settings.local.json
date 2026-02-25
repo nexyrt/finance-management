@@ -44,7 +44,9 @@
       "Bash(cat:*)",
       "Bash(composer remove:*)",
       "Bash(npm install:*)",
-      "WebFetch(domain:skills.sh)"
+      "WebFetch(domain:skills.sh)",
+      "Bash(python3 -c \":*)",
+      "WebFetch(domain:livewire.laravel.com)"
     ]
   }
 }

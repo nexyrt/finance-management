@@ -1,6 +1,6 @@
 {{-- resources/views/livewire/accounts/index.blade.php --}}
 
-<div>
+<div wire:init="loadData">
     {{-- Header Section --}}
     <div class="mb-8">
         <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
@@ -16,46 +16,61 @@
 
             {{-- Total Balance + Settings --}}
             <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                {{-- Total Balance Card --}}
-                <div
-                    class="px-6 py-4 bg-gradient-to-br from-primary-500 to-primary-700 dark:from-primary-600 dark:to-primary-800 rounded-xl shadow-lg">
-                    <div class="flex items-center gap-3">
-                        <div class="h-12 w-12 bg-white/20 rounded-lg flex items-center justify-center">
-                            <x-icon name="currency-dollar" class="w-6 h-6 text-white" />
-                        </div>
-                        <div>
-                            <p class="text-xs text-white/70 font-medium">{{ __('common.total') }}</p>
-                            <p class="text-2xl font-bold text-white">
-                                Rp {{ number_format($this->totalBalance, 0, ',', '.') }}
-                            </p>
-                            <p class="text-xs text-white/60">
-                                {{ $this->accountsData->count() }}
-                                {{ __('pages.accounts') }}
-                            </p>
+                @if ($ready)
+                    {{-- Total Balance Card --}}
+                    <div
+                        class="px-6 py-4 bg-gradient-to-br from-primary-500 to-primary-700 dark:from-primary-600 dark:to-primary-800 rounded-xl shadow-lg">
+                        <div class="flex items-center gap-3">
+                            <div class="h-12 w-12 bg-white/20 rounded-lg flex items-center justify-center">
+                                <x-icon name="currency-dollar" class="w-6 h-6 text-white" />
+                            </div>
+                            <div>
+                                <p class="text-xs text-white/70 font-medium">{{ __('common.total') }}</p>
+                                <p class="text-2xl font-bold text-white">
+                                    Rp {{ number_format($this->totalBalance, 0, ',', '.') }}
+                                </p>
+                                <p class="text-xs text-white/60">
+                                    {{ $this->accountsData->count() }}
+                                    {{ __('pages.accounts') }}
+                                </p>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                {{-- Account Settings --}}
-                @if ($selectedAccountId)
-                    <x-dropdown icon="cog-6-tooth" position="bottom-end">
-                        <x-slot:trigger>
-                            <x-button color="secondary" outline icon="cog-6-tooth" class="w-full sm:w-auto">
-                                {{ __('common.settings') }}
-                            </x-button>
-                        </x-slot:trigger>
-                        <x-dropdown.items text="{{ __('common.edit') }}" icon="pencil"
-                            wire:click="editAccount({{ $selectedAccountId }})" />
-                        <x-dropdown.items text="{{ __('common.delete') }}" icon="trash"
-                            wire:click="deleteAccount({{ $selectedAccountId }})"
-                            class="text-red-600 dark:text-red-400" />
-                    </x-dropdown>
+                    {{-- Account Settings --}}
+                    @if ($selectedAccountId)
+                        <x-dropdown icon="cog-6-tooth" position="bottom-end">
+                            <x-slot:trigger>
+                                <x-button color="secondary" outline icon="cog-6-tooth" class="w-full sm:w-auto">
+                                    {{ __('common.settings') }}
+                                </x-button>
+                            </x-slot:trigger>
+                            <x-dropdown.items text="{{ __('common.edit') }}" icon="pencil"
+                                wire:click="editAccount({{ $selectedAccountId }})" />
+                            <x-dropdown.items text="{{ __('common.delete') }}" icon="trash"
+                                wire:click="deleteAccount({{ $selectedAccountId }})"
+                                class="text-red-600 dark:text-red-400" />
+                        </x-dropdown>
+                    @endif
+                @else
+                    {{-- Balance Skeleton --}}
+                    <div class="px-6 py-4 bg-gradient-to-br from-primary-500 to-primary-700 dark:from-primary-600 dark:to-primary-800 rounded-xl shadow-lg animate-pulse">
+                        <div class="flex items-center gap-3">
+                            <div class="h-12 w-12 bg-white/20 rounded-lg"></div>
+                            <div class="space-y-2">
+                                <div class="h-3 bg-white/30 rounded w-16"></div>
+                                <div class="h-7 bg-white/30 rounded w-36"></div>
+                                <div class="h-3 bg-white/20 rounded w-20"></div>
+                            </div>
+                        </div>
+                    </div>
                 @endif
             </div>
         </div>
     </div>
 
-    {{-- Ganti flex layout dengan grid --}}
+    @if ($ready)
+    {{-- Main Content Grid --}}
     <div class="grid grid-cols-1 xl:grid-cols-[320px_1fr] 2xl:grid-cols-[384px_1fr] gap-6">
         {{-- Left Sidebar - Fixed Width --}}
         <div class="space-y-4">
@@ -197,6 +212,55 @@
             @endif
         </div>
     </div>
+    @else
+    {{-- Loading Skeleton --}}
+    <div class="grid grid-cols-1 xl:grid-cols-[320px_1fr] 2xl:grid-cols-[384px_1fr] gap-6 animate-pulse">
+        {{-- Left Sidebar Skeleton --}}
+        <div class="space-y-4">
+            <div class="flex items-center justify-between">
+                <div class="space-y-2">
+                    <div class="h-6 bg-gray-200 dark:bg-dark-700 rounded w-36"></div>
+                    <div class="h-4 bg-gray-200 dark:bg-dark-700 rounded w-48"></div>
+                </div>
+                <div class="h-8 bg-gray-200 dark:bg-dark-700 rounded-lg w-20"></div>
+            </div>
+
+            @foreach (range(1, 3) as $i)
+                <div class="p-4 bg-white dark:bg-dark-800 border border-gray-200 dark:border-dark-600 rounded-xl">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="flex items-center gap-3">
+                            <div class="h-12 w-12 bg-gray-200 dark:bg-dark-700 rounded-lg"></div>
+                            <div class="space-y-2">
+                                <div class="h-4 bg-gray-200 dark:bg-dark-700 rounded w-28"></div>
+                                <div class="h-3 bg-gray-200 dark:bg-dark-700 rounded w-20"></div>
+                            </div>
+                        </div>
+                        <div class="h-4 w-4 bg-gray-200 dark:bg-dark-700 rounded"></div>
+                    </div>
+                    <div class="mb-3 space-y-2">
+                        <div class="h-7 bg-gray-200 dark:bg-dark-700 rounded w-40"></div>
+                        <div class="h-3 bg-gray-200 dark:bg-dark-700 rounded w-32"></div>
+                    </div>
+                    <div class="space-y-2">
+                        <div class="flex justify-between">
+                            <div class="h-3 bg-gray-200 dark:bg-dark-700 rounded w-24"></div>
+                            <div class="h-3 bg-gray-200 dark:bg-dark-700 rounded w-12"></div>
+                        </div>
+                        <div class="flex justify-between">
+                            <div class="h-3 bg-gray-200 dark:bg-dark-700 rounded w-20"></div>
+                            <div class="h-3 bg-gray-200 dark:bg-dark-700 rounded w-14"></div>
+                        </div>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+
+        {{-- Right Content Skeleton --}}
+        <div class="min-w-0 space-y-6">
+            @include('livewire.placeholders.quick-actions-skeleton')
+        </div>
+    </div>
+    @endif
 
     {{-- Child Components --}}
     <livewire:accounts.create @account-created="refreshData" />
