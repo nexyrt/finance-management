@@ -131,7 +131,7 @@
         </div>
 
         {{-- Transfer Table --}}
-        <x-table :$headers :$sort :rows="$this->rows" selectable wire:model="selected" paginate filter loading>
+        <x-table :$headers :$sort :rows="$this->rows" selectable wire:model="selected" paginate filter>
 
             @interact('column_transaction_date', $row)
                 <div class="flex items-center gap-3">
@@ -335,7 +335,7 @@
         </div>
 
         {{-- Adjustment Table --}}
-        <x-table :headers="$adjHeaders" :sort="$adjSort" :rows="$this->adjRows" selectable wire:model="adjSelected" paginate loading>
+        <x-table :headers="$adjHeaders" :sort="$adjSort" :rows="$this->adjRows" selectable wire:model="adjSelected" paginate>
 
             @interact('column_transaction_date', $row)
                 <div class="flex items-center gap-3">

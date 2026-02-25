@@ -109,7 +109,7 @@
     </div>
 
     {{-- Table --}}
-    <x-table :$headers :$sort :rows="$this->rows" selectable wire:model="selected" paginate filter loading>
+    <x-table :$headers :$sort :rows="$this->rows" selectable wire:model="selected" paginate filter>
 
         @interact('column_transaction_date', $row)
             <div class="flex items-center gap-3">
