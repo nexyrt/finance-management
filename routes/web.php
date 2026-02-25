@@ -2,7 +2,7 @@
 
 use App\Http\Controllers\CashFlowExportController;
 use App\Livewire\Accounts\Index as AccountsIndex;
-use App\Livewire\CashFlow\Expenses as CashFlowExpenses;
+use App\Livewire\CashFlow\ExpensesPage as CashFlowExpenses;
 use App\Livewire\CashFlow\Income as CashFlowIncome;
 use App\Livewire\CashFlow\Transfers as CashFlowTransfers;
 use App\Livewire\Clients\Index as ClientsIndex;

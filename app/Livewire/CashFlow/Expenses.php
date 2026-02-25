@@ -7,18 +7,19 @@ use App\Models\TransactionCategory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Lazy;
 use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Maatwebsite\Excel\Facades\Excel;
 use TallStackUi\Traits\Interactions;
 
+#[Lazy]
 class Expenses extends Component
 {
     use Interactions, WithPagination;
-
-    public bool $isLoaded = false;
 
     // Filters
     public $dateRange = [];
@@ -46,9 +47,9 @@ class Expenses extends Component
         ];
     }
 
-    public function loadData(): void
+    public function placeholder(): View
     {
-        $this->isLoaded = true;
+        return view('livewire.placeholders.cashflow-skeleton');
     }
 
     #[On('transaction-created')]
