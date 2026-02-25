@@ -1453,9 +1453,13 @@ return [
     'manage_track_invoices' => 'Kelola dan lacak semua invoice Anda di sini',
     'total_revenue' => 'Total Pendapatan',
     'total_cogs_label' => 'Total COSS (Cost of Services Sales)',
+    'total_cogs_short' => 'Total COSS',
+    'total_cogs_tooltip' => 'Cost of Services Sales — total biaya langsung yang dikeluarkan untuk menghasilkan pendapatan',
     'total_profit' => 'Total Profit',
     'margin' => 'margin',
     'outstanding_profit' => 'Outstanding Profit',
+    'of_revenue' => 'dari pendapatan',
+    'paid_this_month' => 'dibayar bulan ini',
     'from' => 'Dari',
     'revenue' => 'pendapatan',
 

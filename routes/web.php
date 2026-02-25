@@ -81,6 +81,16 @@ Route::get('/api/bank-accounts', function () {
         ]);
 })->name('api.bank-accounts');
 
+Route::get('/api/clients', function (Request $request) {
+    return \App\Models\Client::select('id', 'name')
+        ->orderBy('name')
+        ->get()
+        ->map(fn ($client) => [
+            'label' => $client->name,
+            'value' => $client->id,
+        ]);
+})->name('api.clients');
+
 Route::middleware(['auth', 'verified'])->group(function () {
 
     // ------------------------------------------------------------------------

@@ -14,22 +14,9 @@ class Show extends Component
 
     public ?Invoice $invoice = null;
     public bool $modal = false;
-    public string $selectedTab = 'overview';
-
-    // Get translated tab name for display
-    #[Computed]
-    public function translatedTab(): string
-    {
-        return match($this->selectedTab) {
-            'overview' => __('pages.overview'),
-            'payments' => __('pages.payments_tab'),
-            'details' => __('pages.details'),
-            default => ucfirst($this->selectedTab),
-        };
-    }
 
     #[On('show-invoice')]
-    public function show(int $invoiceId, string $tab = 'payments'): void
+    public function show(int $invoiceId): void
     {
         $this->invoice = Invoice::with(['client', 'items.client', 'payments.bankAccount'])
             ->find($invoiceId);
@@ -39,7 +26,6 @@ class Show extends Component
             return;
         }
 
-        $this->selectedTab = $tab;
         $this->modal = true;
     }
 
@@ -47,7 +33,6 @@ class Show extends Component
     {
         $this->invoice = null;
         $this->modal = false;
-        $this->selectedTab = 'overview';
     }
 
     #[Computed]

@@ -4,77 +4,23 @@
     {{-- Header --}}
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div class="space-y-1">
-            <h1
-                class="text-4xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-indigo-800 dark:from-white dark:via-blue-200 dark:to-indigo-200 bg-clip-text text-transparent">
+            <h1 class="text-4xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-indigo-800 dark:from-white dark:via-blue-200 dark:to-indigo-200 bg-clip-text text-transparent">
                 {{ __('pages.invoice_management') }}
             </h1>
             <p class="text-gray-600 dark:text-zinc-400 text-lg">
                 {{ __('pages.manage_track_invoices') }}
             </p>
         </div>
-        {{-- <livewire:invoices.create @invoice-created="$refresh" /> --}}
-        <x-button size="sm" href="{{ route('invoices.create') }}" wire:navigate :title="__('common.create')" :text="__('invoice.create_invoice')"
-            prefix="true">
+        <x-button size="sm" href="{{ route('invoices.create') }}" wire:navigate color="primary">
             <x-slot:left>
                 <x-icon name="plus" class="w-4 h-4" />
             </x-slot:left>
+            {{ __('invoice.create_invoice') }}
         </x-button>
     </div>
 
-    {{-- Stats Cards (Synced with Listing filters) --}}
-    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6">
-        <x-card class="hover:shadow-lg transition-shadow">
-            <div class="flex items-center justify-between mb-4">
-                <div class="h-12 w-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
-                    <x-icon name="chart-bar" class="w-6 h-6 text-blue-600 dark:text-blue-400" />
-                </div>
-            </div>
-            <p class="text-sm text-dark-600 dark:text-dark-400 mb-1">{{ __('pages.total_revenue') }}</p>
-            <p class="text-2xl font-bold text-dark-900 dark:text-white">
-                Rp {{ number_format($this->stats['total_revenue'], 0, ',', '.') }}
-            </p>
-        </x-card>
-
-        <x-card class="hover:shadow-lg transition-shadow">
-            <div class="flex items-center justify-between mb-4">
-                <div class="h-12 w-12 bg-red-100 dark:bg-red-900/30 rounded-xl flex items-center justify-center">
-                    <x-icon name="currency-dollar" class="w-6 h-6 text-red-600 dark:text-red-400" />
-                </div>
-            </div>
-            <p class="text-sm text-dark-600 dark:text-dark-400 mb-1">{{ __('pages.total_cogs_label') }}</p>
-            <p class="text-2xl font-bold text-dark-900 dark:text-white">
-                Rp {{ number_format($this->stats['total_cogs'], 0, ',', '.') }}
-            </p>
-        </x-card>
-
-        <x-card class="hover:shadow-lg transition-shadow">
-            <div class="flex items-center justify-between mb-4">
-                <div class="h-12 w-12 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center">
-                    <x-icon name="arrow-trending-up" class="w-6 h-6 text-green-600 dark:text-green-400" />
-                </div>
-                <x-badge :text="number_format($this->stats['profit_margin'], 1) . '% ' . __('pages.margin')" color="green" sm />
-            </div>
-            <p class="text-sm text-dark-600 dark:text-dark-400 mb-1">{{ __('pages.total_profit') }}</p>
-            <p class="text-2xl font-bold text-dark-900 dark:text-white">
-                Rp {{ number_format($this->stats['total_profit'], 0, ',', '.') }}
-            </p>
-        </x-card>
-
-        <x-card class="hover:shadow-lg transition-shadow">
-            <div class="flex items-center justify-between mb-4">
-                <div class="h-12 w-12 bg-orange-100 dark:bg-orange-900/30 rounded-xl flex items-center justify-center">
-                    <x-icon name="exclamation-triangle" class="w-6 h-6 text-orange-600 dark:text-orange-400" />
-                </div>
-            </div>
-            <p class="text-sm text-dark-600 dark:text-dark-400 mb-1">{{ __('pages.outstanding_profit') }}</p>
-            <p class="text-2xl font-bold text-dark-900 dark:text-white">
-                Rp {{ number_format($this->stats['outstanding_profit'], 0, ',', '.') }}
-            </p>
-        </x-card>
-    </div>
-
-    {{-- Invoices Table Component --}}
-    <livewire:invoices.listing @invoice-sent="$refresh" @invoice-deleted="$refresh" />
+    {{-- Stats + Table (Lazy) --}}
+    <livewire:invoices.listing />
 
     {{-- Child Components --}}
     <livewire:invoices.show />

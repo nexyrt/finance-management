@@ -86,6 +86,10 @@
         /* ── Breadcrumb separator ── */
         .breadcrumb-sep { opacity: 0.35; }
 
+        /* ── Breadcrumb scroll ── */
+        .scrollbar-none { scrollbar-width: none; }
+        .scrollbar-none::-webkit-scrollbar { display: none; }
+
         /* ── Header blur ── */
         .header-blur { backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
 
@@ -533,7 +537,7 @@
                     $breadcrumbs = $map[$routeName] ?? [['label' => __('common.dashboard')]];
                 @endphp
 
-                <nav class="flex items-center gap-1 text-sm min-w-0 flex-1">
+                <nav class="flex items-center gap-1 text-sm flex-1 overflow-x-auto scrollbar-none">
                     <a href="{{ route('dashboard') }}" wire:navigate
                         class="flex-shrink-0 text-gray-400 dark:text-zinc-500 hover:text-gray-600 dark:hover:text-zinc-300 transition-colors">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
@@ -547,14 +551,14 @@
                         </svg>
 
                         @if ($loop->last)
-                            <span class="text-gray-700 dark:text-zinc-200 font-medium truncate text-sm">{{ $crumb['label'] }}</span>
+                            <span class="text-gray-700 dark:text-zinc-200 font-medium whitespace-nowrap text-sm flex-shrink-0">{{ $crumb['label'] }}</span>
                         @elseif (isset($crumb['url']))
                             <a href="{{ $crumb['url'] }}" wire:navigate
-                                class="text-gray-400 dark:text-zinc-500 hover:text-gray-600 dark:hover:text-zinc-300 transition-colors text-sm truncate hidden sm:block">
+                                class="text-gray-400 dark:text-zinc-500 hover:text-gray-600 dark:hover:text-zinc-300 transition-colors text-sm whitespace-nowrap flex-shrink-0">
                                 {{ $crumb['label'] }}
                             </a>
                         @else
-                            <span class="text-gray-400 dark:text-zinc-600 text-sm truncate hidden sm:block">{{ $crumb['label'] }}</span>
+                            <span class="text-gray-400 dark:text-zinc-600 text-sm whitespace-nowrap flex-shrink-0">{{ $crumb['label'] }}</span>
                         @endif
                     @endforeach
                 </nav>
