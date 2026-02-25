@@ -42,7 +42,7 @@ class Approve extends Component
         $receivable = Receivable::findOrFail($this->receivableId);
 
         if ($receivable->status !== 'pending_approval') {
-            $this->error('Hanya piutang pending yang bisa disetujui');
+            $this->error(__('pages.rcv_approve_error'));
             return;
         }
 
@@ -69,7 +69,7 @@ class Approve extends Component
 
         $this->dispatch('approved');
         $this->reset();
-        $this->success('Piutang berhasil disetujui');
+        $this->success(__('pages.rcv_approve_success'));
     }
 
     public function reject(): void
@@ -81,7 +81,7 @@ class Approve extends Component
         $receivable = Receivable::findOrFail($this->receivableId);
 
         if ($receivable->status !== 'pending_approval') {
-            $this->error('Hanya piutang pending yang bisa ditolak');
+            $this->error(__('pages.rcv_reject_error'));
             return;
         }
 
@@ -94,6 +94,6 @@ class Approve extends Component
 
         $this->dispatch('approved');
         $this->reset();
-        $this->success('Piutang berhasil ditolak');
+        $this->success(__('pages.rcv_reject_success'));
     }
 }

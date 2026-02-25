@@ -115,7 +115,7 @@ class PayReceivable extends Component
 
         // Validation: at least one must be filled
         if (empty($validated['principal_paid']) && empty($validated['interest_paid'])) {
-            $this->error('Minimal salah satu harus diisi: Pembayaran Pokok atau Bunga');
+            $this->error(__('pages.rcv_pay_error_empty'));
             return;
         }
 
@@ -177,6 +177,6 @@ class PayReceivable extends Component
         $this->dispatch('paid');
         $this->reset();
         $this->payment_date = now()->format('Y-m-d');
-        $this->success('Pembayaran berhasil dicatat');
+        $this->success(__('pages.rcv_pay_success'));
     }
 }
