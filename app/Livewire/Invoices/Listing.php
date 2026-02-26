@@ -294,8 +294,8 @@ class Listing extends Component
             return;
         }
 
-        $previewUrl  = route('invoice.preview', $this->printInvoiceId);
-        $downloadUrl = route('invoice.download', $this->printInvoiceId);
+        $previewUrl    = route('invoice.preview',  $this->printInvoiceId);
+        $downloadUrl   = route('invoice.download', $this->printInvoiceId);
         $templateParam = '?template=' . $this->printTemplate;
 
         if ($this->printType === 'dp') {

@@ -483,28 +483,27 @@
 
     <livewire:payments.delete @payment-deleted="$refresh" @invoice-updated="$refresh" />
     <livewire:payments.attachment-viewer />
-</div>
 
-<script>
-    function printInvoiceWithTemplate(invoiceId, template = 'kisantra-invoice') {
-        const previewUrl = `/invoice/${invoiceId}/preview?template=${template}`;
-        const downloadUrl = `/invoice/${invoiceId}/download?template=${template}`;
-        window.open(previewUrl, '_blank');
-        setTimeout(() => {
-            const link = document.createElement('a');
-            link.href = downloadUrl;
-            link.download = `Invoice-${invoiceId}.pdf`;
-            link.style.display = 'none';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }, 500);
-    }
+    @script
+    <script>
+        window.printInvoiceWithTemplate = function(invoiceId, template = 'kisantra-invoice') {
+            const previewUrl  = @js(route('invoice.preview',  ['invoice' => '__ID__'])).replace('__ID__', invoiceId) + '?template=' + template;
+            const downloadUrl = @js(route('invoice.download', ['invoice' => '__ID__'])).replace('__ID__', invoiceId) + '?template=' + template;
+            window.open(previewUrl, '_blank');
+            setTimeout(() => {
+                const link = document.createElement('a');
+                link.href = downloadUrl;
+                link.style.display = 'none';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }, 500);
+        };
 
-    document.addEventListener('livewire:init', () => {
-        Livewire.on('print-invoice', (data) => {
+        $wire.on('print-invoice', (data) => {
             const { invoiceId } = data[0];
-            printInvoiceWithTemplate(invoiceId, 'kisantra-invoice');
+            window.printInvoiceWithTemplate(invoiceId, 'kisantra-invoice');
         });
-    });
-</script>
+    </script>
+    @endscript
+</div>

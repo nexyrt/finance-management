@@ -474,11 +474,9 @@
         </x-slot:footer>
     </x-modal>
 
-</div>
-
-<script>
-    function setupPrintListeners() {
-        Livewire.on('execute-print', (data) => {
+    @script
+    <script>
+        $wire.on('execute-print', (data) => {
             const { previewUrl, downloadUrl } = data[0];
             window.open(previewUrl, '_blank');
             setTimeout(() => {
@@ -491,7 +489,7 @@
             }, 500);
         });
 
-        Livewire.on('start-bulk-download', (data) => {
+        $wire.on('start-bulk-download', (data) => {
             const { downloads, delay } = data[0];
             let currentIndex = 0;
             function downloadNext() {
@@ -507,9 +505,7 @@
             }
             downloadNext();
         });
-    }
+    </script>
+    @endscript
 
-    document.addEventListener('livewire:navigated', () => {
-        setupPrintListeners();
-    });
-</script>
+</div>
