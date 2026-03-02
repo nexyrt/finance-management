@@ -16,7 +16,7 @@
                 class="h-9 px-4 flex items-center gap-2 rounded-xl border border-zinc-200 dark:border-dark-600 bg-white dark:bg-dark-800 text-dark-500 dark:text-dark-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-300 dark:hover:border-indigo-700 text-sm font-medium transition-all"
             >
                 <x-icon name="information-circle" class="w-4 h-4" />
-                {{ __('pages.cat_guide_btn') }}
+                {{ __('pages.client_guide_btn') }}
             </button>
             <livewire:transactions-categories.create @created="$refresh" />
         </div>
@@ -192,11 +192,11 @@
     <livewire:transactions-categories.update @updated="$refresh" />
 
     {{-- Workflow Guide Modal --}}
-    <x-modal wire="guideModal" size="3xl" center>
+    <x-modal wire="guideModal" size="2xl" center>
         <x-slot:title>
             <div class="flex items-center gap-4 my-3">
-                <div class="h-12 w-12 bg-purple-50 dark:bg-purple-900/20 rounded-xl flex items-center justify-center">
-                    <x-icon name="tag" class="w-6 h-6 text-purple-600 dark:text-purple-400" />
+                <div class="h-12 w-12 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl flex items-center justify-center">
+                    <x-icon name="tag" class="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
                 </div>
                 <div>
                     <h3 class="text-xl font-bold text-dark-900 dark:text-dark-50">{{ __('pages.cat_guide_title') }}</h3>
@@ -205,166 +205,131 @@
             </div>
         </x-slot:title>
 
-        <div x-data="{ tab: 'workflow' }" class="space-y-5">
-            {{-- Tab Navigation --}}
-            <div class="flex flex-wrap gap-1 p-1 bg-zinc-100 dark:bg-dark-700 rounded-xl border border-zinc-200 dark:border-dark-600">
-                <button
-                    @click="tab = 'workflow'"
-                    class="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 flex-1 justify-center"
-                    :class="tab === 'workflow'
-                        ? 'bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 shadow-sm border border-zinc-200 dark:border-dark-600'
-                        : 'text-dark-500 dark:text-dark-400 hover:text-dark-800 dark:hover:text-dark-200'"
-                >
-                    <x-icon name="arrow-path" class="w-3.5 h-3.5 flex-shrink-0" />
-                    <span>{{ __('pages.cat_guide_tab_workflow') }}</span>
-                </button>
-                <button
-                    @click="tab = 'types'"
-                    class="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 flex-1 justify-center"
-                    :class="tab === 'types'
-                        ? 'bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 shadow-sm border border-zinc-200 dark:border-dark-600'
-                        : 'text-dark-500 dark:text-dark-400 hover:text-dark-800 dark:hover:text-dark-200'"
-                >
-                    <x-icon name="squares-2x2" class="w-3.5 h-3.5 flex-shrink-0" />
-                    <span>{{ __('pages.cat_guide_tab_types') }}</span>
-                </button>
-            </div>
+        <div class="space-y-6">
 
-            {{-- TAB 1: ALUR KERJA --}}
-            <div x-show="tab === 'workflow'" x-transition:enter="transition ease-out duration-150" x-transition:enter-start="opacity-0 translate-y-1" x-transition:enter-end="opacity-100 translate-y-0">
-                <div class="relative">
-                    <div class="absolute left-6 top-10 bottom-10 w-0.5 bg-gradient-to-b from-blue-300 via-purple-300 to-emerald-300 dark:from-blue-700 dark:via-purple-700 dark:to-emerald-700 hidden sm:block"></div>
-                    <div class="space-y-4">
-                        {{-- Step 1 --}}
-                        <div class="flex gap-4">
-                            <div class="flex-shrink-0 w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center shadow-lg shadow-blue-200 dark:shadow-blue-900/40 z-10">
-                                <span class="text-white font-bold text-sm">1</span>
-                            </div>
-                            <div class="flex-1 bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-900/40 rounded-xl p-4">
-                                <div class="flex items-start gap-3">
-                                    <x-icon name="folder" class="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
-                                    <div class="flex-1">
-                                        <h4 class="font-semibold text-blue-900 dark:text-blue-200 mb-1">{{ __('pages.cat_guide_step1_title') }}</h4>
-                                        <p class="text-sm text-blue-700 dark:text-blue-300 mb-2">{{ __('pages.cat_guide_step1_desc') }}</p>
-                                        <div class="grid grid-cols-2 gap-2">
-                                            <div class="flex items-start gap-2 text-xs text-blue-600 dark:text-blue-400">
-                                                <x-icon name="check-circle" class="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
-                                                <span>{{ __('pages.cat_guide_step1_tip1') }}</span>
-                                            </div>
-                                            <div class="flex items-start gap-2 text-xs text-blue-600 dark:text-blue-400">
-                                                <x-icon name="check-circle" class="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
-                                                <span>{{ __('pages.cat_guide_step1_tip2') }}</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+            {{-- Section 1: Timeline 3 Langkah --}}
+            <div class="relative">
+                {{-- Connecting gradient line --}}
+                <div class="absolute left-5 top-10 bottom-10 w-0.5 bg-gradient-to-b from-blue-400 via-purple-400 to-emerald-400 hidden sm:block"></div>
 
-                        {{-- Step 2 --}}
-                        <div class="flex gap-4">
-                            <div class="flex-shrink-0 w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center shadow-lg shadow-purple-200 dark:shadow-purple-900/40 z-10">
-                                <span class="text-white font-bold text-sm">2</span>
-                            </div>
-                            <div class="flex-1 bg-purple-50 dark:bg-purple-900/10 border border-purple-200 dark:border-purple-900/40 rounded-xl p-4">
-                                <div class="flex items-start gap-3">
-                                    <x-icon name="squares-2x2" class="w-5 h-5 text-purple-600 dark:text-purple-400 flex-shrink-0 mt-0.5" />
-                                    <div class="flex-1">
-                                        <h4 class="font-semibold text-purple-900 dark:text-purple-200 mb-1">{{ __('pages.cat_guide_step2_title') }}</h4>
-                                        <p class="text-sm text-purple-700 dark:text-purple-300 mb-2">{{ __('pages.cat_guide_step2_desc') }}</p>
-                                        <div class="grid grid-cols-2 gap-2">
-                                            <div class="flex items-start gap-2 text-xs text-purple-600 dark:text-purple-400">
-                                                <x-icon name="check-circle" class="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
-                                                <span>{{ __('pages.cat_guide_step2_tip1') }}</span>
-                                            </div>
-                                            <div class="flex items-start gap-2 text-xs text-purple-600 dark:text-purple-400">
-                                                <x-icon name="check-circle" class="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
-                                                <span>{{ __('pages.cat_guide_step2_tip2') }}</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {{-- Step 3 --}}
-                        <div class="flex gap-4">
-                            <div class="flex-shrink-0 w-12 h-12 bg-emerald-600 rounded-full flex items-center justify-center shadow-lg shadow-emerald-200 dark:shadow-emerald-900/40 z-10">
-                                <span class="text-white font-bold text-sm">3</span>
-                            </div>
-                            <div class="flex-1 bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-200 dark:border-emerald-900/40 rounded-xl p-4">
-                                <div class="flex items-start gap-3">
-                                    <x-icon name="check-circle" class="w-5 h-5 text-emerald-600 dark:text-emerald-400 flex-shrink-0 mt-0.5" />
-                                    <div class="flex-1">
-                                        <h4 class="font-semibold text-emerald-900 dark:text-emerald-200 mb-1">{{ __('pages.cat_guide_step3_title') }}</h4>
-                                        <p class="text-sm text-emerald-700 dark:text-emerald-300">{{ __('pages.cat_guide_step3_desc') }}</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {{-- TAB 2: TIPE & ATURAN --}}
-            <div x-show="tab === 'types'" x-transition:enter="transition ease-out duration-150" x-transition:enter-start="opacity-0 translate-y-1" x-transition:enter-end="opacity-100 translate-y-0">
                 <div class="space-y-4">
-                    {{-- 4 Types --}}
-                    <div class="grid grid-cols-2 gap-3">
-                        <div class="p-3 bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-900/40 rounded-xl">
-                            <div class="flex items-center gap-2 mb-1.5">
-                                <x-icon name="arrow-trending-up" class="w-4 h-4 text-green-600 dark:text-green-400" />
-                                <span class="text-xs font-semibold text-green-900 dark:text-green-200">{{ __('pages.cat_guide_type_income') }}</span>
-                            </div>
-                            <p class="text-xs text-green-700 dark:text-green-300">{{ __('pages.cat_guide_type_income_desc') }}</p>
+                    {{-- Step 1 --}}
+                    <div class="flex gap-4">
+                        <div class="flex-shrink-0 w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center z-10">
+                            <span class="text-sm font-bold text-blue-600 dark:text-blue-400">1</span>
                         </div>
-                        <div class="p-3 bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-900/40 rounded-xl">
-                            <div class="flex items-center gap-2 mb-1.5">
-                                <x-icon name="arrow-trending-down" class="w-4 h-4 text-red-600 dark:text-red-400" />
-                                <span class="text-xs font-semibold text-red-900 dark:text-red-200">{{ __('pages.cat_guide_type_expense') }}</span>
+                        <div class="flex-1 pb-4">
+                            <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-1">{{ __('pages.cat_guide_step1_title') }}</h4>
+                            <p class="text-sm text-dark-600 dark:text-dark-400 mb-2">{{ __('pages.cat_guide_step1_desc') }}</p>
+                            <div class="flex items-start gap-2 bg-blue-50 dark:bg-blue-900/10 rounded-xl px-3 py-2">
+                                <x-icon name="light-bulb" class="w-4 h-4 text-blue-500 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+                                <p class="text-xs text-blue-700 dark:text-blue-300">{{ __('pages.cat_guide_step1_tip') }}</p>
                             </div>
-                            <p class="text-xs text-red-700 dark:text-red-300">{{ __('pages.cat_guide_type_expense_desc') }}</p>
-                        </div>
-                        <div class="p-3 bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-900/40 rounded-xl">
-                            <div class="flex items-center gap-2 mb-1.5">
-                                <x-icon name="arrows-right-left" class="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                                <span class="text-xs font-semibold text-blue-900 dark:text-blue-200">{{ __('pages.cat_guide_type_transfer') }}</span>
-                            </div>
-                            <p class="text-xs text-blue-700 dark:text-blue-300">{{ __('pages.cat_guide_type_transfer_desc') }}</p>
-                        </div>
-                        <div class="p-3 bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-900/40 rounded-xl">
-                            <div class="flex items-center gap-2 mb-1.5">
-                                <x-icon name="adjustments-horizontal" class="w-4 h-4 text-amber-600 dark:text-amber-400" />
-                                <span class="text-xs font-semibold text-amber-900 dark:text-amber-200">{{ __('pages.cat_guide_type_adjustment') }}</span>
-                            </div>
-                            <p class="text-xs text-amber-700 dark:text-amber-300">{{ __('pages.cat_guide_type_adjustment_desc') }}</p>
                         </div>
                     </div>
 
-                    {{-- Rules --}}
-                    <div class="p-4 bg-gray-50 dark:bg-dark-700 rounded-xl border border-gray-200 dark:border-dark-600">
-                        <div class="flex items-start gap-3">
-                            <x-icon name="exclamation-triangle" class="w-5 h-5 text-amber-500 dark:text-amber-400 flex-shrink-0 mt-0.5" />
-                            <div class="flex-1">
-                                <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-2">{{ __('pages.cat_guide_rules_title') }}</h4>
-                                <div class="space-y-1.5">
-                                    <div class="flex items-start gap-2 text-xs text-dark-500 dark:text-dark-400">
-                                        <x-icon name="x-circle" class="w-3.5 h-3.5 flex-shrink-0 mt-0.5 text-red-500" />
-                                        <span>{{ __('pages.cat_guide_rule1') }}</span>
-                                    </div>
-                                    <div class="flex items-start gap-2 text-xs text-dark-500 dark:text-dark-400">
-                                        <x-icon name="x-circle" class="w-3.5 h-3.5 flex-shrink-0 mt-0.5 text-red-500" />
-                                        <span>{{ __('pages.cat_guide_rule2') }}</span>
-                                    </div>
-                                    <div class="flex items-start gap-2 text-xs text-dark-500 dark:text-dark-400">
-                                        <x-icon name="check-circle" class="w-3.5 h-3.5 flex-shrink-0 mt-0.5 text-green-500" />
-                                        <span>{{ __('pages.cat_guide_rule3') }}</span>
-                                    </div>
-                                </div>
+                    {{-- Step 2 --}}
+                    <div class="flex gap-4">
+                        <div class="flex-shrink-0 w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center z-10">
+                            <span class="text-sm font-bold text-purple-600 dark:text-purple-400">2</span>
+                        </div>
+                        <div class="flex-1 pb-4">
+                            <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-1">{{ __('pages.cat_guide_step2_title') }}</h4>
+                            <p class="text-sm text-dark-600 dark:text-dark-400 mb-2">{{ __('pages.cat_guide_step2_desc') }}</p>
+                            <div class="flex items-start gap-2 bg-purple-50 dark:bg-purple-900/10 rounded-xl px-3 py-2">
+                                <x-icon name="light-bulb" class="w-4 h-4 text-purple-500 dark:text-purple-400 flex-shrink-0 mt-0.5" />
+                                <p class="text-xs text-purple-700 dark:text-purple-300">{{ __('pages.cat_guide_step2_tip') }}</p>
                             </div>
                         </div>
                     </div>
+
+                    {{-- Step 3 --}}
+                    <div class="flex gap-4">
+                        <div class="flex-shrink-0 w-10 h-10 bg-emerald-100 dark:bg-emerald-900/30 rounded-full flex items-center justify-center z-10">
+                            <span class="text-sm font-bold text-emerald-600 dark:text-emerald-400">3</span>
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-1">{{ __('pages.cat_guide_step3_title') }}</h4>
+                            <p class="text-sm text-dark-600 dark:text-dark-400">{{ __('pages.cat_guide_step3_desc') }}</p>
+                        </div>
+                    </div>
                 </div>
+            </div>
+
+            {{-- Section 2: 4 Tipe Kategori (2x2 grid) --}}
+            <div>
+                <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-3">{{ __('pages.cat_guide_types_title') }}</h4>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {{-- Pemasukan --}}
+                    <div class="flex items-start gap-3 p-3 bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800/30 rounded-xl">
+                        <div class="h-8 w-8 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <x-icon name="arrow-trending-up" class="w-4 h-4 text-green-600 dark:text-green-400" />
+                        </div>
+                        <div>
+                            <p class="text-sm font-semibold text-green-700 dark:text-green-400">{{ __('pages.cat_guide_type_income') }}</p>
+                            <p class="text-xs text-green-600 dark:text-green-500 mt-0.5">{{ __('pages.cat_guide_type_income_desc') }}</p>
+                        </div>
+                    </div>
+
+                    {{-- Pengeluaran --}}
+                    <div class="flex items-start gap-3 p-3 bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800/30 rounded-xl">
+                        <div class="h-8 w-8 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <x-icon name="arrow-trending-down" class="w-4 h-4 text-red-600 dark:text-red-400" />
+                        </div>
+                        <div>
+                            <p class="text-sm font-semibold text-red-700 dark:text-red-400">{{ __('pages.cat_guide_type_expense') }}</p>
+                            <p class="text-xs text-red-600 dark:text-red-500 mt-0.5">{{ __('pages.cat_guide_type_expense_desc') }}</p>
+                        </div>
+                    </div>
+
+                    {{-- Transfer --}}
+                    <div class="flex items-start gap-3 p-3 bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800/30 rounded-xl">
+                        <div class="h-8 w-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <x-icon name="arrows-right-left" class="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                        </div>
+                        <div>
+                            <p class="text-sm font-semibold text-blue-700 dark:text-blue-400">{{ __('pages.cat_guide_type_transfer') }}</p>
+                            <p class="text-xs text-blue-600 dark:text-blue-500 mt-0.5">{{ __('pages.cat_guide_type_transfer_desc') }}</p>
+                        </div>
+                    </div>
+
+                    {{-- Penyesuaian --}}
+                    <div class="flex items-start gap-3 p-3 bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800/30 rounded-xl">
+                        <div class="h-8 w-8 bg-amber-100 dark:bg-amber-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <x-icon name="adjustments-horizontal" class="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                        </div>
+                        <div>
+                            <p class="text-sm font-semibold text-amber-700 dark:text-amber-400">{{ __('pages.cat_guide_type_adjustment') }}</p>
+                            <p class="text-xs text-amber-600 dark:text-amber-500 mt-0.5">{{ __('pages.cat_guide_type_adjustment_desc') }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Section 3: Aturan & Tips --}}
+            <div class="bg-gray-50 dark:bg-dark-700 border border-gray-200 dark:border-dark-600 rounded-xl p-4">
+                <div class="flex items-center gap-2 mb-3">
+                    <x-icon name="light-bulb" class="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                    <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50">{{ __('pages.cat_guide_rules_title') }}</h4>
+                </div>
+                <ul class="space-y-2">
+                    <li class="flex items-start gap-2 text-sm text-dark-600 dark:text-dark-400">
+                        <span class="text-green-500 flex-shrink-0">✅</span>
+                        <span>{{ __('pages.cat_guide_rule1') }}</span>
+                    </li>
+                    <li class="flex items-start gap-2 text-sm text-dark-600 dark:text-dark-400">
+                        <span class="text-green-500 flex-shrink-0">✅</span>
+                        <span>{{ __('pages.cat_guide_rule2') }}</span>
+                    </li>
+                    <li class="flex items-start gap-2 text-sm text-dark-600 dark:text-dark-400">
+                        <span class="text-amber-500 flex-shrink-0">⚠</span>
+                        <span>{{ __('pages.cat_guide_rule3') }}</span>
+                    </li>
+                    <li class="flex items-start gap-2 text-sm text-dark-600 dark:text-dark-400">
+                        <span class="text-green-500 flex-shrink-0">✅</span>
+                        <span>{{ __('pages.cat_guide_rule4') }}</span>
+                    </li>
+                </ul>
             </div>
         </div>
 

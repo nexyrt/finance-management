@@ -18,6 +18,7 @@ class Transfers extends Component
 {
     use Interactions, WithPagination;
 
+    // UI State
     public bool $guideModal = false;
 
     // Section toggle: 'transfers' or 'adjustments'

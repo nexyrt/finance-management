@@ -15,7 +15,7 @@
                 class="h-9 px-4 flex items-center gap-2 rounded-xl border border-zinc-200 dark:border-dark-600 bg-white dark:bg-dark-800 text-dark-500 dark:text-dark-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-300 dark:hover:border-indigo-700 text-sm font-medium transition-all"
             >
                 <x-icon name="information-circle" class="w-4 h-4" />
-                {{ __('pages.cf_income_guide_btn') }}
+                {{ __('pages.client_guide_btn') }}
             </button>
             <x-button wire:click="exportPdf" color="red" icon="document-text" size="sm" loading="exportPdf">
                 {{ __('pages.export_pdf') }}
@@ -246,202 +246,138 @@
     <livewire:payments.delete @payment-deleted="$refresh" />
     <livewire:transactions.delete @transaction-deleted="$refresh" />
 
-    {{-- Workflow Guide Modal --}}
-    <x-modal wire="guideModal" size="3xl" center>
+    {{-- Income Workflow Guide Modal --}}
+    <x-modal wire="guideModal" size="2xl" center>
         <x-slot:title>
             <div class="flex items-center gap-4 my-3">
                 <div class="h-12 w-12 bg-green-50 dark:bg-green-900/20 rounded-xl flex items-center justify-center">
                     <x-icon name="arrow-trending-up" class="w-6 h-6 text-green-600 dark:text-green-400" />
                 </div>
                 <div>
-                    <h3 class="text-xl font-bold text-dark-900 dark:text-dark-50">{{ __('pages.cf_income_guide_title') }}</h3>
-                    <p class="text-sm text-dark-600 dark:text-dark-400">{{ __('pages.cf_income_guide_desc') }}</p>
+                    <h3 class="text-xl font-bold text-dark-900 dark:text-dark-50">{{ __('pages.income_guide_title') }}</h3>
+                    <p class="text-sm text-dark-600 dark:text-dark-400">{{ __('pages.income_guide_desc') }}</p>
                 </div>
             </div>
         </x-slot:title>
 
-        <div x-data="{ tab: 'workflow' }" class="space-y-5">
-            {{-- Tab Navigation --}}
-            <div class="flex flex-wrap gap-1 p-1 bg-zinc-100 dark:bg-dark-700 rounded-xl border border-zinc-200 dark:border-dark-600">
-                <button
-                    @click="tab = 'workflow'"
-                    class="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 flex-1 justify-center"
-                    :class="tab === 'workflow'
-                        ? 'bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 shadow-sm border border-zinc-200 dark:border-dark-600'
-                        : 'text-dark-500 dark:text-dark-400 hover:text-dark-800 dark:hover:text-dark-200'"
-                >
-                    <x-icon name="arrow-path" class="w-3.5 h-3.5 flex-shrink-0" />
-                    <span>{{ __('pages.cf_income_guide_tab_workflow') }}</span>
+        {{-- Tab Navigation --}}
+        <div x-data="{ tab: 'flow' }" class="space-y-6">
+            <div class="flex gap-1 p-1 bg-secondary-100 dark:bg-dark-700 rounded-xl w-fit">
+                <button @click="tab = 'flow'"
+                    :class="tab === 'flow' ? 'bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 shadow-sm' : 'text-dark-500 dark:text-dark-400 hover:text-dark-700 dark:hover:text-dark-200'"
+                    class="px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200">
+                    {{ __('pages.income_guide_tab_flow') }}
                 </button>
-                <button
-                    @click="tab = 'features'"
-                    class="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 flex-1 justify-center"
-                    :class="tab === 'features'
-                        ? 'bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 shadow-sm border border-zinc-200 dark:border-dark-600'
-                        : 'text-dark-500 dark:text-dark-400 hover:text-dark-800 dark:hover:text-dark-200'"
-                >
-                    <x-icon name="sparkles" class="w-3.5 h-3.5 flex-shrink-0" />
-                    <span>{{ __('pages.cf_income_guide_tab_features') }}</span>
+                <button @click="tab = 'export'"
+                    :class="tab === 'export' ? 'bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 shadow-sm' : 'text-dark-500 dark:text-dark-400 hover:text-dark-700 dark:hover:text-dark-200'"
+                    class="px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200">
+                    {{ __('pages.income_guide_tab_export') }}
                 </button>
             </div>
 
-            {{-- TAB 1: ALUR KERJA --}}
-            <div x-show="tab === 'workflow'" x-transition:enter="transition ease-out duration-150" x-transition:enter-start="opacity-0 translate-y-1" x-transition:enter-end="opacity-100 translate-y-0">
-                <div class="relative">
-                    <div class="absolute left-6 top-10 bottom-10 w-0.5 bg-gradient-to-b from-blue-300 via-purple-300 to-emerald-300 dark:from-blue-700 dark:via-purple-700 dark:to-emerald-700 hidden sm:block"></div>
-                    <div class="space-y-4">
-                        {{-- Step 1 --}}
-                        <div class="flex gap-4">
-                            <div class="flex-shrink-0 w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center shadow-lg shadow-blue-200 dark:shadow-blue-900/40 z-10">
-                                <span class="text-white font-bold text-sm">1</span>
+            {{-- Tab 1: Alur & Sumber --}}
+            <div x-show="tab === 'flow'" class="space-y-4">
+                {{-- Timeline --}}
+                <div class="space-y-4">
+                    {{-- Step 1 --}}
+                    <div class="flex gap-4">
+                        <div class="flex flex-col items-center">
+                            <div class="h-9 w-9 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                                <span class="text-sm font-bold text-blue-600 dark:text-blue-400">1</span>
                             </div>
-                            <div class="flex-1 bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-900/40 rounded-xl p-4">
-                                <div class="flex items-start gap-3">
-                                    <x-icon name="plus-circle" class="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
-                                    <div class="flex-1">
-                                        <h4 class="font-semibold text-blue-900 dark:text-blue-200 mb-1">{{ __('pages.cf_income_guide_step1_title') }}</h4>
-                                        <p class="text-sm text-blue-700 dark:text-blue-300 mb-2">{{ __('pages.cf_income_guide_step1_desc') }}</p>
-                                        <div class="grid grid-cols-2 gap-2">
-                                            <div class="flex items-start gap-2 text-xs text-blue-600 dark:text-blue-400">
-                                                <x-icon name="check-circle" class="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
-                                                <span>{{ __('pages.cf_income_guide_step1_tip1') }}</span>
-                                            </div>
-                                            <div class="flex items-start gap-2 text-xs text-blue-600 dark:text-blue-400">
-                                                <x-icon name="check-circle" class="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
-                                                <span>{{ __('pages.cf_income_guide_step1_tip2') }}</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+                            <div class="w-0.5 bg-secondary-200 dark:bg-dark-600 flex-1 mt-2"></div>
+                        </div>
+                        <div class="pb-4 flex-1">
+                            <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-1">{{ __('pages.income_guide_step1_title') }}</h4>
+                            <p class="text-sm text-dark-600 dark:text-dark-400 mb-3">{{ __('pages.income_guide_step1_desc') }}</p>
+                            <div class="flex flex-wrap gap-2">
+                                <x-badge text="{{ __('pages.income_guide_step1_source1') }}" color="green" size="sm" />
+                                <x-badge text="{{ __('pages.income_guide_step1_source2') }}" color="blue" size="sm" />
                             </div>
                         </div>
+                    </div>
 
-                        {{-- Step 2 --}}
-                        <div class="flex gap-4">
-                            <div class="flex-shrink-0 w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center shadow-lg shadow-purple-200 dark:shadow-purple-900/40 z-10">
-                                <span class="text-white font-bold text-sm">2</span>
+                    {{-- Step 2 --}}
+                    <div class="flex gap-4">
+                        <div class="flex flex-col items-center">
+                            <div class="h-9 w-9 bg-purple-50 dark:bg-purple-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                                <span class="text-sm font-bold text-purple-600 dark:text-purple-400">2</span>
                             </div>
-                            <div class="flex-1 bg-purple-50 dark:bg-purple-900/10 border border-purple-200 dark:border-purple-900/40 rounded-xl p-4">
-                                <div class="flex items-start gap-3">
-                                    <x-icon name="tag" class="w-5 h-5 text-purple-600 dark:text-purple-400 flex-shrink-0 mt-0.5" />
-                                    <div class="flex-1">
-                                        <h4 class="font-semibold text-purple-900 dark:text-purple-200 mb-1">{{ __('pages.cf_income_guide_step2_title') }}</h4>
-                                        <p class="text-sm text-purple-700 dark:text-purple-300 mb-2">{{ __('pages.cf_income_guide_step2_desc') }}</p>
-                                        <div class="grid grid-cols-2 gap-2">
-                                            <div class="flex items-start gap-2 text-xs text-purple-600 dark:text-purple-400">
-                                                <x-icon name="check-circle" class="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
-                                                <span>{{ __('pages.cf_income_guide_step2_tip1') }}</span>
-                                            </div>
-                                            <div class="flex items-start gap-2 text-xs text-purple-600 dark:text-purple-400">
-                                                <x-icon name="check-circle" class="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
-                                                <span>{{ __('pages.cf_income_guide_step2_tip2') }}</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+                            <div class="w-0.5 bg-secondary-200 dark:bg-dark-600 flex-1 mt-2"></div>
+                        </div>
+                        <div class="pb-4 flex-1">
+                            <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-1">{{ __('pages.income_guide_step2_title') }}</h4>
+                            <p class="text-sm text-dark-600 dark:text-dark-400">{{ __('pages.income_guide_step2_desc') }}</p>
+                        </div>
+                    </div>
+
+                    {{-- Step 3 --}}
+                    <div class="flex gap-4">
+                        <div class="flex flex-col items-center">
+                            <div class="h-9 w-9 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                                <span class="text-sm font-bold text-emerald-600 dark:text-emerald-400">3</span>
                             </div>
                         </div>
-
-                        {{-- Step 3 --}}
-                        <div class="flex gap-4">
-                            <div class="flex-shrink-0 w-12 h-12 bg-emerald-600 rounded-full flex items-center justify-center shadow-lg shadow-emerald-200 dark:shadow-emerald-900/40 z-10">
-                                <span class="text-white font-bold text-sm">3</span>
-                            </div>
-                            <div class="flex-1 bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-200 dark:border-emerald-900/40 rounded-xl p-4">
-                                <div class="flex items-start gap-3">
-                                    <x-icon name="document-arrow-down" class="w-5 h-5 text-emerald-600 dark:text-emerald-400 flex-shrink-0 mt-0.5" />
-                                    <div class="flex-1">
-                                        <h4 class="font-semibold text-emerald-900 dark:text-emerald-200 mb-1">{{ __('pages.cf_income_guide_step3_title') }}</h4>
-                                        <p class="text-sm text-emerald-700 dark:text-emerald-300 mb-2">{{ __('pages.cf_income_guide_step3_desc') }}</p>
-                                        <div class="grid grid-cols-2 gap-2">
-                                            <div class="flex items-start gap-2 text-xs text-emerald-600 dark:text-emerald-400">
-                                                <x-icon name="check-circle" class="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
-                                                <span>{{ __('pages.cf_income_guide_step3_tip1') }}</span>
-                                            </div>
-                                            <div class="flex items-start gap-2 text-xs text-emerald-600 dark:text-emerald-400">
-                                                <x-icon name="check-circle" class="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
-                                                <span>{{ __('pages.cf_income_guide_step3_tip2') }}</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                        <div class="flex-1">
+                            <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-1">{{ __('pages.income_guide_step3_title') }}</h4>
+                            <p class="text-sm text-dark-600 dark:text-dark-400">{{ __('pages.income_guide_step3_desc') }}</p>
                         </div>
                     </div>
                 </div>
+
+                {{-- Info Card --}}
+                <div class="flex items-start gap-3 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl">
+                    <x-icon name="information-circle" class="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+                    <p class="text-sm text-blue-700 dark:text-blue-300">{{ __('pages.income_guide_formula') }}</p>
+                </div>
             </div>
 
-            {{-- TAB 2: FITUR & FILTER --}}
-            <div x-show="tab === 'features'" x-transition:enter="transition ease-out duration-150" x-transition:enter-start="opacity-0 translate-y-1" x-transition:enter-end="opacity-100 translate-y-0">
-                <div class="space-y-4">
-                    {{-- Data Sources --}}
-                    <div class="p-4 bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-900/40 rounded-xl">
-                        <div class="flex items-start gap-3">
-                            <div class="h-9 w-9 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center flex-shrink-0">
-                                <x-icon name="circle-stack" class="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                            </div>
-                            <div class="flex-1">
-                                <h4 class="text-sm font-semibold text-blue-900 dark:text-blue-200 mb-2">{{ __('pages.cf_income_guide_source_title') }}</h4>
-                                <div class="grid grid-cols-2 gap-2">
-                                    <div class="p-2.5 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-                                        <p class="text-xs font-semibold text-blue-800 dark:text-blue-200">{{ __('pages.cf_income_guide_source_payment') }}</p>
-                                        <p class="text-xs text-blue-600 dark:text-blue-400 mt-0.5">{{ __('pages.cf_income_guide_source_payment_desc') }}</p>
-                                    </div>
-                                    <div class="p-2.5 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-                                        <p class="text-xs font-semibold text-blue-800 dark:text-blue-200">{{ __('pages.cf_income_guide_source_direct') }}</p>
-                                        <p class="text-xs text-blue-600 dark:text-blue-400 mt-0.5">{{ __('pages.cf_income_guide_source_direct_desc') }}</p>
-                                    </div>
-                                </div>
-                            </div>
+            {{-- Tab 2: Filter & Ekspor --}}
+            <div x-show="tab === 'export'" class="space-y-4">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    {{-- Filter Card --}}
+                    <div class="flex items-start gap-3 p-4 border border-secondary-200 dark:border-dark-600 rounded-xl">
+                        <div class="h-10 w-10 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                            <x-icon name="funnel" class="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-1">{{ __('pages.income_guide_filter_title') }}</h4>
+                            <p class="text-xs text-dark-600 dark:text-dark-400">{{ __('pages.income_guide_filter_desc') }}</p>
                         </div>
                     </div>
 
-                    {{-- Filters --}}
-                    <div class="p-4 bg-purple-50 dark:bg-purple-900/10 border border-purple-200 dark:border-purple-900/40 rounded-xl">
-                        <div class="flex items-start gap-3">
-                            <div class="h-9 w-9 bg-purple-100 dark:bg-purple-900/30 rounded-xl flex items-center justify-center flex-shrink-0">
-                                <x-icon name="funnel" class="w-4 h-4 text-purple-600 dark:text-purple-400" />
-                            </div>
-                            <div class="flex-1">
-                                <h4 class="text-sm font-semibold text-purple-900 dark:text-purple-200 mb-1">{{ __('pages.cf_income_guide_filter_title') }}</h4>
-                                <div class="space-y-1.5 mt-2">
-                                    <div class="flex items-start gap-2 text-xs text-purple-600 dark:text-purple-400">
-                                        <x-icon name="check-circle" class="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
-                                        <span>{{ __('pages.cf_income_guide_filter1') }}</span>
-                                    </div>
-                                    <div class="flex items-start gap-2 text-xs text-purple-600 dark:text-purple-400">
-                                        <x-icon name="check-circle" class="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
-                                        <span>{{ __('pages.cf_income_guide_filter2') }}</span>
-                                    </div>
-                                    <div class="flex items-start gap-2 text-xs text-purple-600 dark:text-purple-400">
-                                        <x-icon name="check-circle" class="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
-                                        <span>{{ __('pages.cf_income_guide_filter3') }}</span>
-                                    </div>
-                                </div>
-                            </div>
+                    {{-- Excel Card --}}
+                    <div class="flex items-start gap-3 p-4 border border-secondary-200 dark:border-dark-600 rounded-xl">
+                        <div class="h-10 w-10 bg-green-50 dark:bg-green-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                            <x-icon name="table-cells" class="w-5 h-5 text-green-600 dark:text-green-400" />
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-1">{{ __('pages.income_guide_excel_title') }}</h4>
+                            <p class="text-xs text-dark-600 dark:text-dark-400">{{ __('pages.income_guide_excel_desc') }}</p>
                         </div>
                     </div>
 
-                    {{-- Bulk Actions --}}
-                    <div class="p-4 bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-200 dark:border-emerald-900/40 rounded-xl">
-                        <div class="flex items-start gap-3">
-                            <div class="h-9 w-9 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl flex items-center justify-center flex-shrink-0">
-                                <x-icon name="squares-2x2" class="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                            </div>
-                            <div class="flex-1">
-                                <h4 class="text-sm font-semibold text-emerald-900 dark:text-emerald-200 mb-1">{{ __('pages.cf_income_guide_bulk_title') }}</h4>
-                                <div class="space-y-1.5 mt-2">
-                                    <div class="flex items-start gap-2 text-xs text-emerald-600 dark:text-emerald-400">
-                                        <x-icon name="check-circle" class="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
-                                        <span>{{ __('pages.cf_income_guide_bulk1') }}</span>
-                                    </div>
-                                    <div class="flex items-start gap-2 text-xs text-emerald-600 dark:text-emerald-400">
-                                        <x-icon name="check-circle" class="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
-                                        <span>{{ __('pages.cf_income_guide_bulk2') }}</span>
-                                    </div>
-                                </div>
-                            </div>
+                    {{-- PDF Card --}}
+                    <div class="flex items-start gap-3 p-4 border border-secondary-200 dark:border-dark-600 rounded-xl">
+                        <div class="h-10 w-10 bg-red-50 dark:bg-red-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                            <x-icon name="document-text" class="w-5 h-5 text-red-600 dark:text-red-400" />
                         </div>
+                        <div>
+                            <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-1">{{ __('pages.income_guide_pdf_title') }}</h4>
+                            <p class="text-xs text-dark-600 dark:text-dark-400">{{ __('pages.income_guide_pdf_desc') }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Tips --}}
+                <div class="space-y-2">
+                    <div class="flex items-start gap-2 text-sm text-dark-600 dark:text-dark-400">
+                        <x-icon name="light-bulb" class="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
+                        <span>{{ __('pages.income_guide_tip1') }}</span>
+                    </div>
+                    <div class="flex items-start gap-2 text-sm text-dark-600 dark:text-dark-400">
+                        <x-icon name="light-bulb" class="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
+                        <span>{{ __('pages.income_guide_tip2') }}</span>
                     </div>
                 </div>
             </div>

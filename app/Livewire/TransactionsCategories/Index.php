@@ -15,12 +15,11 @@ class Index extends Component
 {
     use WithPagination, Alert;
 
-    public bool $guideModal = false;
-
     public ?int $quantity = 10;
     public ?string $search = null;
     public ?string $typeFilter = null;
     public array $sort = ['column' => 'type', 'direction' => 'asc'];
+    public bool $guideModal = false;
 
     public array $headers = [];
 
