@@ -55,7 +55,9 @@
       "Bash(py:*)",
       "Bash(where:*)",
       "Bash(python:*)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "Bash(pip install:*)",
+      "Bash(sed:*)"
     ]
   }
 }
