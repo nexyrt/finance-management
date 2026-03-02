@@ -21,6 +21,8 @@ class Expenses extends Component
 {
     use Interactions, WithPagination;
 
+    public bool $guideModal = false;
+
     // Filters
     public $dateRange = [];
     public $categoryFilters = [];

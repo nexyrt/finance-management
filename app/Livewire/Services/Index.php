@@ -22,6 +22,7 @@ class Index extends Component
     public ?int $quantity = 10;
     public ?string $search = null;
     public ?string $typeFilter = null;
+    public bool $guideModal = false;
 
     // Headers diinisialisasi di mount() agar __() translation berfungsi
     public array $headers = [];

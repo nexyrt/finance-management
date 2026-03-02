@@ -8,6 +8,8 @@ use Livewire\Component;
 
 class Index extends Component
 {
+    public bool $guideModal = false;
+
     public string $activeTab = 'my_requests';
 
     public function mount(): void

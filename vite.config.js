@@ -19,16 +19,16 @@ export default defineConfig(({ mode }) => {
         content: [
             './vendor/masmerise/livewire-toaster/resources/views/*.blade.php',
         ],
-        server: {
-            cors: true,
-            host: '0.0.0.0',
-            hmr: {
-                host: hmrHost || 'localhost',
-            },
-            ...(hmrHost ? {
-                origin: `http://${hmrHost}:5173`,
-            } : {}),
-        },
+        // server: {
+        //     cors: true,
+        //     host: '0.0.0.0',
+        //     hmr: {
+        //         host: hmrHost || 'localhost',
+        //     },
+        //     ...(hmrHost ? {
+        //         origin: `http://${hmrHost}:5173`,
+        //     } : {}),
+        // },
         build: {
             chunkSizeWarningLimit: 1500,
         },
