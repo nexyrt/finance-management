@@ -79,7 +79,7 @@
                         <div>
                             <label class="text-xs font-medium text-dark-500 dark:text-dark-400">{{ __('common.category') }}</label>
                             <div class="mt-1">
-                                <x-badge :text="$this->reimbursement->category_label" :color="match ($this->reimbursement->category) {
+                                <x-badge :text="$this->reimbursement->category_label" :color="match ($this->reimbursement->category_input) {
                                     'transport' => 'blue',
                                     'meals' => 'orange',
                                     'office_supplies' => 'green',

@@ -48,7 +48,7 @@ class AllRequests extends Component
     #[Computed]
     public function rows(): LengthAwarePaginator
     {
-        return Reimbursement::with(['user', 'reviewer', 'payments.payer', 'payments.bankTransaction.bankAccount'])
+        return Reimbursement::with(['user', 'reviewer', 'category', 'payments.payer', 'payments.bankTransaction.bankAccount'])
             ->when($this->search, fn(Builder $query) => $query->where(function ($q) {
                 $q->whereAny(['title', 'description', 'category'], 'like', '%' . trim($this->search) . '%')
                     ->orWhereHas('user', fn($user) => $user->where('name', 'like', '%' . trim($this->search) . '%'));

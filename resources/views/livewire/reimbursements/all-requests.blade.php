@@ -79,7 +79,7 @@
 
         {{-- Category Column --}}
         @interact('column_category', $row)
-            <x-badge :text="$row->category_label" :color="match ($row->category) {
+            <x-badge :text="$row->category_label" :color="match ($row->category_input) {
                 'transport' => 'blue',
                 'meals' => 'orange',
                 'office_supplies' => 'green',
