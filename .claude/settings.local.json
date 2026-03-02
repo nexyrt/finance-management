@@ -54,7 +54,8 @@
       "Bash(python3:*)",
       "Bash(py:*)",
       "Bash(where:*)",
-      "Bash(python:*)"
+      "Bash(python:*)",
+      "Bash(rm:*)"
     ]
   }
 }
