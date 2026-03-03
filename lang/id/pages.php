@@ -91,6 +91,7 @@ return [
     'account_balances' => 'Saldo Rekening',
     'position_per_bank' => 'Posisi per bank',
     'no_accounts_yet' => 'Belum ada rekening',
+    'add_new_account' => 'Tambah Rekening Baru',
 
     // Dashboard - Pending Invoices
     'needs_followup' => 'Perlu difollow-up',

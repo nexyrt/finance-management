@@ -4,6 +4,7 @@ namespace App\Livewire\Accounts;
 
 use App\Models\BankAccount;
 use App\Models\BankTransaction;
+use App\Models\Payment;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 use Livewire\Attributes\On;
@@ -129,5 +130,46 @@ class Index extends Component
     public function totalBalance()
     {
         return $this->accountsData->sum('balance');
+    }
+
+    #[Computed]
+    public function stats(): array
+    {
+        if (!$this->ready) {
+            return ['income' => 0, 'expense' => 0];
+        }
+
+        $thisMonthStart = now()->startOfMonth();
+        $thisMonthEnd = now()->endOfMonth();
+
+        $trxStats = BankTransaction::whereBetween('transaction_date', [$thisMonthStart, $thisMonthEnd])
+            ->selectRaw("
+                SUM(CASE WHEN transaction_type = 'credit' THEN amount ELSE 0 END) as credit_total,
+                SUM(CASE WHEN transaction_type = 'debit' THEN amount ELSE 0 END) as debit_total
+            ")
+            ->first();
+
+        $paymentsIncome = (int) Payment::whereBetween('payment_date', [$thisMonthStart, $thisMonthEnd])
+            ->sum('amount');
+
+        return [
+            'income' => $paymentsIncome + (int) $trxStats->credit_total,
+            'expense' => (int) $trxStats->debit_total,
+        ];
+    }
+
+    public function exportReport(): void
+    {
+        if (!$this->selectedAccountId) {
+            $this->toast()->warning(__('common.warning'), __('pages.select_account_first'))->send();
+            return;
+        }
+
+        $url = route('bank-account.export.pdf', [
+            'bank_account_id' => $this->selectedAccountId,
+        ]);
+
+        $this->dispatch('download-pdf', url: $url);
+        $this->toast()->info(__('pages.export_started'), __('pages.report_generating'))->send();
     }
 }

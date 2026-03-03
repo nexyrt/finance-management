@@ -1,120 +1,91 @@
-{{-- Complete Responsive QuickActions Overview --}}
-<div class="grid grid-cols-1 lg:grid-cols-7 gap-4 lg:gap-6"
-     x-data="cashflowChart(@js($this->chartData))"
+{{-- Quick Actions Overview — Chart full-width (quick actions panel removed) --}}
+<div x-data="cashflowChart(@js($this->chartData))"
      x-init="initChart()"
+     class="bg-white dark:bg-dark-700 border border-zinc-200 dark:border-dark-600 rounded-xl p-4 lg:p-6"
 >
-    {{-- Quick Actions Card - 2 cols out of 7 --}}
-    <div class="lg:col-span-2">
-        <div
-            class="bg-white dark:bg-dark-700 border border-zinc-200 dark:border-dark-600 rounded-xl p-4 lg:p-6 h-full flex flex-col">
-            <h3 class="text-lg font-semibold text-dark-900 dark:text-dark-50 mb-4">{{ __('pages.quick_actions') }}</h3>
-
-            {{-- Actions Grid - Responsive --}}
-            <div class="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-1 gap-3 flex-1">
-                <livewire:transactions.create-expense @transaction-created="$refresh" />
-
-                <livewire:transactions.create-income @transaction-created="$refresh" />
-
-                <x-button wire:click="exportReport" loading="exportReport" color="green" outline
-                    icon="document-arrow-down" class="w-full justify-start h-auto">
-                    <div class="text-left py-1">
-                        <div class="font-semibold text-sm">{{ __('pages.export_report') }}</div>
-                        <div class="text-xs opacity-70">{{ __('pages.download_history') }}</div>
-                    </div>
-                </x-button>
-            </div>
-
-            {{-- Month Stats - Vertical Stack --}}
-            @if ($selectedAccountId)
-                <div class="mt-4 pt-4 border-t border-zinc-200 dark:border-dark-600">
-                    <h4 class="text-sm font-medium text-dark-700 dark:text-dark-300 mb-3">{{ __('pages.this_month') }}</h4>
-                    <div class="space-y-3">
-                        {{-- Income Card --}}
-                        <div
-                            class="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <div class="text-xs text-green-600 dark:text-green-400 font-medium mb-1">{{ __('pages.income') }}
-                                    </div>
-                                    <div class="text-lg font-bold text-green-700 dark:text-green-300">
-                                        Rp {{ number_format($this->accountStats['total_income'], 0, ',', '.') }}
-                                    </div>
-                                </div>
-                                <div
-                                    class="w-8 h-8 bg-green-100 dark:bg-green-800 rounded-full flex items-center justify-center">
-                                    <x-icon name="arrow-trending-up"
-                                        class="w-4 h-4 text-green-600 dark:text-green-400" />
-                                </div>
-                            </div>
-                        </div>
-
-                        {{-- Expense Card --}}
-                        <div
-                            class="p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <div class="text-xs text-red-600 dark:text-red-400 font-medium mb-1">{{ __('pages.expense') }}</div>
-                                    <div class="text-lg font-bold text-red-700 dark:text-red-300">
-                                        Rp {{ number_format($this->accountStats['total_expense'], 0, ',', '.') }}
-                                    </div>
-                                </div>
-                                <div
-                                    class="w-8 h-8 bg-red-100 dark:bg-red-800 rounded-full flex items-center justify-center">
-                                    <x-icon name="arrow-trending-down" class="w-4 h-4 text-red-600 dark:text-red-400" />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+    {{-- Chart Header --}}
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+        <h2 class="text-lg lg:text-xl font-bold text-dark-900 dark:text-dark-50">{{ __('pages.financial_overview') }}</h2>
+        @if ($selectedAccountId)
+            <div class="flex items-center gap-4 text-sm">
+                <div class="flex items-center gap-2">
+                    <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                    <span class="text-dark-600 dark:text-dark-400">{{ __('pages.income') }}</span>
                 </div>
-            @endif
-        </div>
+                <div class="flex items-center gap-2">
+                    <div class="w-3 h-3 bg-red-500 rounded-full"></div>
+                    <span class="text-dark-600 dark:text-dark-400">{{ __('pages.expense') }}</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
+                    <span class="text-dark-600 dark:text-dark-400">{{ __('pages.net_flow') }}</span>
+                </div>
+            </div>
+        @endif
     </div>
 
-    {{-- Financial Overview Chart - 5 cols out of 7 --}}
-    <div class="lg:col-span-5">
-        <div
-            class="bg-white dark:bg-dark-700 border border-zinc-200 dark:border-dark-600 rounded-xl p-4 lg:p-6 h-full min-h-[400px] flex flex-col">
-            {{-- Chart Header --}}
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
-                <h2 class="text-lg lg:text-xl font-bold text-dark-900 dark:text-dark-50">{{ __('pages.financial_overview') }}</h2>
-                @if ($selectedAccountId)
-                    <div class="flex items-center gap-4 text-sm">
-                        <div class="flex items-center gap-2">
-                            <div class="w-3 h-3 bg-green-500 rounded-full"></div>
-                            <span class="text-dark-600 dark:text-dark-400">{{ __('pages.income') }}</span>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <div class="w-3 h-3 bg-red-500 rounded-full"></div>
-                            <span class="text-dark-600 dark:text-dark-400">{{ __('pages.expense') }}</span>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
-                            <span class="text-dark-600 dark:text-dark-400">{{ __('pages.net_flow') }}</span>
-                        </div>
-                    </div>
-                @endif
+    {{-- Month Stats (compact inline — 3 mini cards) --}}
+    @if ($selectedAccountId)
+        <div class="grid grid-cols-3 gap-3 mb-4">
+            {{-- Income --}}
+            <div class="flex items-center gap-3 p-3 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-100 dark:border-green-900/30">
+                <div class="h-8 w-8 bg-green-100 dark:bg-green-900/40 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <x-icon name="arrow-trending-up" class="w-4 h-4 text-green-600 dark:text-green-400" />
+                </div>
+                <div class="min-w-0">
+                    <p class="text-xs text-green-600 dark:text-green-400 font-medium truncate">{{ __('pages.income') }}</p>
+                    <p class="text-sm font-bold text-green-700 dark:text-green-300 truncate">
+                        Rp {{ number_format($this->accountStats['total_income'], 0, ',', '.') }}
+                    </p>
+                </div>
             </div>
 
-            {{-- Chart Content --}}
-            <div class="flex-1 min-h-0">
-                @if ($selectedAccountId)
-                    <div class="h-full min-h-[300px]">
-                        <canvas id="cashflowChart"></canvas>
-                    </div>
-                @else
-                    <div class="h-full flex items-center justify-center min-h-[300px]">
-                        <div class="text-center">
-                            <div
-                                class="w-16 h-16 bg-dark-100 dark:bg-dark-700 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <x-icon name="chart-bar" class="w-8 h-8 text-dark-400" />
-                            </div>
-                            <h3 class="font-medium text-dark-900 dark:text-dark-50 mb-2">{{ __('pages.no_account_selected') }}</h3>
-                            <p class="text-sm text-dark-600 dark:text-dark-400">{{ __('pages.choose_account_to_view_overview') }}</p>
-                        </div>
-                    </div>
-                @endif
+            {{-- Expense --}}
+            <div class="flex items-center gap-3 p-3 bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-100 dark:border-red-900/30">
+                <div class="h-8 w-8 bg-red-100 dark:bg-red-900/40 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <x-icon name="arrow-trending-down" class="w-4 h-4 text-red-600 dark:text-red-400" />
+                </div>
+                <div class="min-w-0">
+                    <p class="text-xs text-red-600 dark:text-red-400 font-medium truncate">{{ __('pages.expense') }}</p>
+                    <p class="text-sm font-bold text-red-700 dark:text-red-300 truncate">
+                        Rp {{ number_format($this->accountStats['total_expense'], 0, ',', '.') }}
+                    </p>
+                </div>
+            </div>
+
+            {{-- Net --}}
+            @php $net = $this->accountStats['net_cashflow']; @endphp
+            <div class="flex items-center gap-3 p-3 {{ $net >= 0 ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-100 dark:border-blue-900/30' : 'bg-orange-50 dark:bg-orange-900/20 border-orange-100 dark:border-orange-900/30' }} rounded-xl border">
+                <div class="h-8 w-8 {{ $net >= 0 ? 'bg-blue-100 dark:bg-blue-900/40' : 'bg-orange-100 dark:bg-orange-900/40' }} rounded-lg flex items-center justify-center flex-shrink-0">
+                    <x-icon name="{{ $net >= 0 ? 'plus-circle' : 'minus-circle' }}" class="w-4 h-4 {{ $net >= 0 ? 'text-blue-600 dark:text-blue-400' : 'text-orange-600 dark:text-orange-400' }}" />
+                </div>
+                <div class="min-w-0">
+                    <p class="text-xs {{ $net >= 0 ? 'text-blue-600 dark:text-blue-400' : 'text-orange-600 dark:text-orange-400' }} font-medium truncate">{{ __('pages.net_flow') }}</p>
+                    <p class="text-sm font-bold {{ $net >= 0 ? 'text-blue-700 dark:text-blue-300' : 'text-orange-700 dark:text-orange-300' }} truncate">
+                        {{ $net >= 0 ? '+' : '' }}Rp {{ number_format($net, 0, ',', '.') }}
+                    </p>
+                </div>
             </div>
         </div>
+    @endif
+
+    {{-- Chart --}}
+    <div class="min-h-[320px] lg:min-h-[380px]">
+        @if ($selectedAccountId)
+            <div class="h-[320px] lg:h-[380px]">
+                <canvas id="cashflowChart"></canvas>
+            </div>
+        @else
+            <div class="h-[320px] flex items-center justify-center">
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-zinc-100 dark:bg-dark-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <x-icon name="chart-bar" class="w-8 h-8 text-zinc-400" />
+                    </div>
+                    <h3 class="font-medium text-dark-900 dark:text-dark-50 mb-2">{{ __('pages.no_account_selected') }}</h3>
+                    <p class="text-sm text-dark-600 dark:text-dark-400">{{ __('pages.choose_account_to_view_overview') }}</p>
+                </div>
+            </div>
+        @endif
     </div>
 </div>
 
@@ -124,7 +95,6 @@
         chartInstance: null,
 
         initChart() {
-            // Load Chart.js if not already loaded
             if (typeof Chart === 'undefined') {
                 const script = document.createElement('script');
                 script.src = 'https://cdn.jsdelivr.net/npm/chart.js';
@@ -134,7 +104,6 @@
                 this.$nextTick(() => this.createChart(initialData));
             }
 
-            // Listen for chart updates from Livewire
             Livewire.on('chartDataUpdated', (data) => {
                 this.createChart(data[0].chartData);
             });
@@ -144,12 +113,10 @@
                 setTimeout(() => this.createChart(data[0].chartData), 100);
             });
 
-            // Handle PDF download
             Livewire.on('download-pdf', (event) => {
                 window.open(event.url, '_blank');
             });
 
-            // Handle theme changes
             this._themeObserver = new MutationObserver((mutations) => {
                 mutations.forEach((mutation) => {
                     if (mutation.attributeName === 'class' && this.chartInstance) {
@@ -279,9 +246,7 @@
                                 color: isDark ? '#9ca3af' : '#6b7280',
                                 usePointStyle: true,
                                 padding: 20,
-                                font: {
-                                    size: 12
-                                }
+                                font: { size: 12 }
                             }
                         }
                     },
@@ -293,9 +258,7 @@
                             },
                             ticks: {
                                 color: isDark ? '#9ca3af' : '#6b7280',
-                                font: {
-                                    size: 11
-                                }
+                                font: { size: 11 }
                             }
                         },
                         y: {
@@ -308,19 +271,12 @@
                             },
                             ticks: {
                                 color: isDark ? '#9ca3af' : '#6b7280',
-                                font: {
-                                    size: 11
-                                },
+                                font: { size: 11 },
                                 callback: function(value) {
-                                    if (value >= 1000000000) {
-                                        return 'Rp ' + (value / 1000000000).toFixed(1) + 'B';
-                                    } else if (value >= 1000000) {
-                                        return 'Rp ' + (value / 1000000).toFixed(0) + 'Jt';
-                                    } else if (value >= 1000) {
-                                        return 'Rp ' + (value / 1000).toFixed(0) + 'K';
-                                    } else {
-                                        return 'Rp ' + new Intl.NumberFormat('id-ID').format(value);
-                                    }
+                                    if (value >= 1000000000) return 'Rp ' + (value / 1000000000).toFixed(1) + 'B';
+                                    if (value >= 1000000) return 'Rp ' + (value / 1000000).toFixed(0) + 'Jt';
+                                    if (value >= 1000) return 'Rp ' + (value / 1000).toFixed(0) + 'K';
+                                    return 'Rp ' + new Intl.NumberFormat('id-ID').format(value);
                                 }
                             }
                         },
@@ -328,31 +284,21 @@
                             type: 'linear',
                             display: true,
                             position: 'right',
-                            grid: {
-                                drawOnChartArea: false,
-                            },
+                            grid: { drawOnChartArea: false },
                             ticks: {
                                 color: isDark ? '#60a5fa' : '#3b82f6',
-                                font: {
-                                    size: 11
-                                },
+                                font: { size: 11 },
                                 callback: function(value) {
                                     const sign = value >= 0 ? '+' : '';
-                                    if (Math.abs(value) >= 1000000) {
-                                        return sign + (value / 1000000).toFixed(1) + 'Jt';
-                                    } else if (Math.abs(value) >= 1000) {
-                                        return sign + (value / 1000).toFixed(0) + 'K';
-                                    } else {
-                                        return sign + new Intl.NumberFormat('id-ID').format(value);
-                                    }
+                                    if (Math.abs(value) >= 1000000) return sign + (value / 1000000).toFixed(1) + 'Jt';
+                                    if (Math.abs(value) >= 1000) return sign + (value / 1000).toFixed(0) + 'K';
+                                    return sign + new Intl.NumberFormat('id-ID').format(value);
                                 }
                             }
                         }
                     },
                     elements: {
-                        bar: {
-                            borderWidth: 2,
-                        }
+                        bar: { borderWidth: 2 }
                     }
                 }
             });

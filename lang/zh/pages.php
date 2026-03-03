@@ -103,6 +103,7 @@ return [
     'account_balances' => '账户余额',
     'position_per_bank' => '各银行余额',
     'no_accounts_yet' => '暂无账户',
+    'add_new_account' => '添加新账户',
 
     // Dashboard - Pending Invoices
     'needs_followup' => '需要跟进',

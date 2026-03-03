@@ -10,13 +10,9 @@ use Livewire\Component;
 use Livewire\Attributes\Lazy;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Computed;
-use TallStackUi\Traits\Interactions;
-
 #[Lazy]
 class QuickActionsOverview extends Component
 {
-    use Interactions;
-
     public $selectedAccountId;
 
     public function placeholder(): View
@@ -36,26 +32,6 @@ class QuickActionsOverview extends Component
         $this->selectedAccountId = $accountId;
 
         // Update chart
-        $this->dispatch('chartDataUpdated', [
-            'chartData' => $this->chartData,
-        ]);
-    }
-
-    public function exportReport(): void
-    {
-        if (!$this->selectedAccountId) {
-            $this->toast()->warning(__('common.warning'), __('pages.select_account_first'))->send();
-            return;
-        }
-
-        $url = route('bank-account.export.pdf', [
-            'bank_account_id' => $this->selectedAccountId,
-        ]);
-
-        $this->dispatch('download-pdf', url: $url);
-        $this->toast()->info(__('pages.export_started'), __('pages.report_generating'))->send();
-
-        // Re-initialize chart after export (same as account selection)
         $this->dispatch('chartDataUpdated', [
             'chartData' => $this->chartData,
         ]);
