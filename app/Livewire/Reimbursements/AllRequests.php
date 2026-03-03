@@ -9,10 +9,12 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Lazy;
 use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithPagination;
 
+#[Lazy]
 class AllRequests extends Component
 {
     use Alert, WithPagination;
@@ -44,6 +46,11 @@ class AllRequests extends Component
             ['index' => 'payment_status', 'label' => __('pages.reimb_col_payment')],
             ['index' => 'action', 'sortable' => false],
         ];
+    }
+
+    public function placeholder(): View
+    {
+        return view('livewire.placeholders.reimbursements-skeleton');
     }
 
     public function render(): View

@@ -9,11 +9,13 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Lazy;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Renderless;
 use Livewire\Component;
 use Livewire\WithPagination;
 
+#[Lazy]
 class MyRequests extends Component
 {
     use Alert, WithPagination;
@@ -36,20 +38,26 @@ class MyRequests extends Component
     public $previewImage = null;
     public $previewName = null;
 
+    public array $headers = [];
+
+    public function mount(): void
+    {
+        $this->headers = [
+            ['index' => 'request', 'label' => __('pages.reimb_col_request_info')],
+            ['index' => 'amount', 'label' => __('pages.reimb_col_amount')],
+            ['index' => 'status', 'label' => __('common.status')],
+            ['index' => 'actions', 'sortable' => false],
+        ];
+    }
+
+    public function placeholder(): View
+    {
+        return view('livewire.placeholders.reimbursements-skeleton');
+    }
+
     public function render(): View
     {
         return view('livewire.reimbursements.my-requests');
-    }
-
-    #[Computed]
-    public function headers(): array
-    {
-        return [
-            ['index' => 'request', 'label' => 'Request Information'],
-            ['index' => 'amount', 'label' => 'Amount'],
-            ['index' => 'status', 'label' => 'Status'],
-            ['index' => 'actions', 'sortable' => false],
-        ];
     }
 
     /**
@@ -180,21 +188,33 @@ class MyRequests extends Component
             return;
         }
 
-        $reimbursements = Reimbursement::whereIn('id', $this->selected)
+        // Fetch only attachment paths to clean up storage before deleting
+        $attachments = Reimbursement::whereIn('id', $this->selected)
             ->where('user_id', auth()->id())
             ->where('status', 'draft')
-            ->get();
+            ->whereNotNull('attachment_path')
+            ->pluck('attachment_path');
 
-        $count = $reimbursements->count();
+        $count = Reimbursement::whereIn('id', $this->selected)
+            ->where('user_id', auth()->id())
+            ->where('status', 'draft')
+            ->count();
 
         if ($count === 0) {
             $this->error('No deletable reimbursements selected');
             return;
         }
 
-        foreach ($reimbursements as $reimbursement) {
-            $reimbursement->delete();
+        // Delete files from storage
+        foreach ($attachments as $path) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($path);
         }
+
+        // Batch delete — single query instead of N queries
+        Reimbursement::whereIn('id', $this->selected)
+            ->where('user_id', auth()->id())
+            ->where('status', 'draft')
+            ->delete();
 
         $this->selected = [];
         $this->resetPage();

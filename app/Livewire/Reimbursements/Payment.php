@@ -77,7 +77,9 @@ class Payment extends Component
     #[Computed]
     public function bankAccounts(): array
     {
-        return BankAccount::orderBy('account_name')
+        // Eager load payments + transactions so balance accessor uses collections, not N+1 queries
+        return BankAccount::with(['payments', 'transactions'])
+            ->orderBy('account_name')
             ->get()
             ->map(fn($bank) => [
                 'label' => $bank->account_name . ' - ' . $bank->bank_name . ' (' . $bank->formatted_balance . ')',

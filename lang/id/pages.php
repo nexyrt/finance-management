@@ -1748,6 +1748,23 @@ return [
     'cat_children_label' => 'Sub-kategori:',
     'cat_update_btn' => 'Perbarui Kategori',
 
+    // Reimbursements - Table Columns & Stats
+    'reimb_col_title' => 'Judul',
+    'reimb_col_requestor' => 'Pemohon',
+    'reimb_col_amount' => 'Jumlah',
+    'reimb_col_payment' => 'Status Bayar',
+    'reimb_col_request_info' => 'Info Pengajuan',
+    'reimb_stat_total' => 'Total Pengajuan',
+    'reimb_stat_my_total' => 'Total Saya',
+    'reimb_stat_pending' => 'Menunggu Review',
+    'reimb_stat_approved' => 'Disetujui',
+    'reimb_stat_paid' => 'Dibayar',
+    'reimb_stat_draft' => 'Draft',
+    'reimb_stat_draft_hint' => 'Belum disubmit',
+    'reimb_stat_in_progress' => 'Diproses',
+    'reimb_stat_pending_short' => 'pending',
+    'reimb_stat_approved_short' => 'disetujui',
+
     // Reimbursements - Index Workflow Guide Modal
     'reimb_workflow_guide_title' => 'Alur Kerja Reimbursement',
     'reimb_workflow_guide_desc' => 'Memahami proses reimbursement',
