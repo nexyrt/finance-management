@@ -247,7 +247,7 @@
                         @endcan
 
                         @can('view bank-accounts')
-                            <a href="{{ route('bank-accounts.index') }}" @click="closeSidebar()"
+                            <a href="{{ route('bank-accounts.index') }}"  wire:navigate @click="closeSidebar()"
                                 class="nav-item {{ request()->routeIs('bank-accounts*') ? 'nav-active' : '' }}"
                                 :title="sidebarCollapsed ? '{{ __('common.bank_accounts') }}' : undefined">
                                 <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">

@@ -1,32 +1,8 @@
-{{-- Quick Actions Overview — Chart full-width (quick actions panel removed) --}}
-<div x-data="cashflowChart(@js($this->chartData))"
-     x-init="initChart()"
-     class="bg-white dark:bg-dark-700 border border-zinc-200 dark:border-dark-600 rounded-xl p-4 lg:p-6"
->
-    {{-- Chart Header --}}
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
-        <h2 class="text-lg lg:text-xl font-bold text-dark-900 dark:text-dark-50">{{ __('pages.financial_overview') }}</h2>
-        @if ($selectedAccountId)
-            <div class="flex items-center gap-4 text-sm">
-                <div class="flex items-center gap-2">
-                    <div class="w-3 h-3 bg-green-500 rounded-full"></div>
-                    <span class="text-dark-600 dark:text-dark-400">{{ __('pages.income') }}</span>
-                </div>
-                <div class="flex items-center gap-2">
-                    <div class="w-3 h-3 bg-red-500 rounded-full"></div>
-                    <span class="text-dark-600 dark:text-dark-400">{{ __('pages.expense') }}</span>
-                </div>
-                <div class="flex items-center gap-2">
-                    <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
-                    <span class="text-dark-600 dark:text-dark-400">{{ __('pages.net_flow') }}</span>
-                </div>
-            </div>
-        @endif
-    </div>
-
-    {{-- Month Stats (compact inline — 3 mini cards) --}}
+{{-- Quick Actions Overview — Charts with wire:ignore for reliable rendering --}}
+<div class="space-y-4">
+    {{-- Month Stats (3 mini cards) --}}
     @if ($selectedAccountId)
-        <div class="grid grid-cols-3 gap-3 mb-4">
+        <div class="grid grid-cols-3 gap-3">
             {{-- Income --}}
             <div class="flex items-center gap-3 p-3 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-100 dark:border-green-900/30">
                 <div class="h-8 w-8 bg-green-100 dark:bg-green-900/40 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -69,247 +45,322 @@
         </div>
     @endif
 
-    {{-- Chart --}}
-    <div class="min-h-[320px] lg:min-h-[380px]">
-        @if ($selectedAccountId)
-            <div class="h-[320px] lg:h-[380px]">
-                <canvas id="cashflowChart"></canvas>
-            </div>
-        @else
-            <div class="h-[320px] flex items-center justify-center">
-                <div class="text-center">
-                    <div class="w-16 h-16 bg-zinc-100 dark:bg-dark-700 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <x-icon name="chart-bar" class="w-8 h-8 text-zinc-400" />
+    {{-- Charts Grid: Income vs Expense (left) + Category Breakdown (right) --}}
+    @if ($selectedAccountId)
+        <div class="grid grid-cols-1 lg:grid-cols-5 gap-4">
+            {{-- Income vs Expense Bar Chart --}}
+            <div class="lg:col-span-3 bg-white dark:bg-dark-800 rounded-xl border border-secondary-200 dark:border-dark-600 p-4 lg:p-5">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-3">
+                        <div class="h-9 w-9 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                            <x-icon name="chart-bar" class="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-semibold text-dark-900 dark:text-dark-50">{{ __('pages.income_vs_expense') }}</h3>
+                            <p class="text-xs text-dark-500 dark:text-dark-400">{{ __('pages.last_12_months') }}</p>
+                        </div>
                     </div>
-                    <h3 class="font-medium text-dark-900 dark:text-dark-50 mb-2">{{ __('pages.no_account_selected') }}</h3>
-                    <p class="text-sm text-dark-600 dark:text-dark-400">{{ __('pages.choose_account_to_view_overview') }}</p>
+                    <div class="flex items-center gap-3 text-xs">
+                        <div class="flex items-center gap-1.5">
+                            <div class="w-2.5 h-2.5 bg-green-500 rounded-full"></div>
+                            <span class="text-dark-500 dark:text-dark-400">{{ __('pages.income') }}</span>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <div class="w-2.5 h-2.5 bg-red-500 rounded-full"></div>
+                            <span class="text-dark-500 dark:text-dark-400">{{ __('pages.expense') }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="h-[260px]" wire:ignore
+                     x-data="bankAccountCharts('incomeExpense', @js($this->chartData))"
+                     >
+                    <canvas x-ref="canvas"></canvas>
                 </div>
             </div>
-        @endif
-    </div>
+
+            {{-- Category Breakdown Donut --}}
+            <div class="lg:col-span-2 bg-white dark:bg-dark-800 rounded-xl border border-secondary-200 dark:border-dark-600 p-4 lg:p-5">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="h-9 w-9 bg-purple-50 dark:bg-purple-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                        <x-icon name="chart-pie" class="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-semibold text-dark-900 dark:text-dark-50">{{ __('pages.category_breakdown') }}</h3>
+                        <p class="text-xs text-dark-500 dark:text-dark-400">{{ __('pages.this_month_expenses') }}</p>
+                    </div>
+                </div>
+
+                @if (count($this->categoryBreakdown) > 0)
+                    <div class="h-[160px] mb-3" wire:ignore
+                         x-data="bankAccountCharts('categoryBreakdown', @js($this->categoryBreakdown))"
+                         >
+                        <canvas x-ref="canvas"></canvas>
+                    </div>
+
+                    {{-- Category Legend --}}
+                    <div class="space-y-1.5">
+                        @php
+                            $colors = ['#8b5cf6', '#06b6d4', '#f59e0b', '#ef4444', '#10b981', '#6366f1'];
+                            $totalExpense = collect($this->categoryBreakdown)->sum('total');
+                        @endphp
+                        @foreach ($this->categoryBreakdown as $i => $cat)
+                            <div class="flex items-center justify-between text-xs">
+                                <div class="flex items-center gap-2 min-w-0">
+                                    <div class="w-2 h-2 rounded-full flex-shrink-0" style="background-color: {{ $colors[$i] ?? '#9ca3af' }}"></div>
+                                    <span class="text-dark-600 dark:text-dark-400 truncate">{{ $cat['name'] }}</span>
+                                </div>
+                                <div class="flex items-center gap-2 flex-shrink-0">
+                                    <span class="font-medium text-dark-900 dark:text-dark-50">
+                                        Rp {{ number_format($cat['total'], 0, ',', '.') }}
+                                    </span>
+                                    <span class="text-dark-400 dark:text-dark-500 w-8 text-right">
+                                        {{ $totalExpense > 0 ? round(($cat['total'] / $totalExpense) * 100) : 0 }}%
+                                    </span>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                @else
+                    <div class="h-[200px] flex items-center justify-center">
+                        <div class="text-center">
+                            <div class="w-12 h-12 bg-gray-100 dark:bg-dark-700 rounded-full flex items-center justify-center mx-auto mb-3">
+                                <x-icon name="chart-pie" class="w-6 h-6 text-gray-400 dark:text-dark-500" />
+                            </div>
+                            <p class="text-sm text-dark-500 dark:text-dark-400">{{ __('pages.no_category_data') }}</p>
+                        </div>
+                    </div>
+                @endif
+            </div>
+        </div>
+    @else
+        {{-- No Account Selected --}}
+        <div class="bg-white dark:bg-dark-800 rounded-xl border border-secondary-200 dark:border-dark-600 p-8">
+            <div class="flex items-center justify-center min-h-[200px]">
+                <div class="text-center">
+                    <div class="w-14 h-14 bg-gray-100 dark:bg-dark-700 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <x-icon name="chart-bar" class="w-7 h-7 text-gray-400 dark:text-dark-500" />
+                    </div>
+                    <h3 class="font-medium text-dark-900 dark:text-dark-50 mb-1">{{ __('pages.no_account_selected') }}</h3>
+                    <p class="text-sm text-dark-500 dark:text-dark-400">{{ __('pages.choose_account_to_view_overview') }}</p>
+                </div>
+            </div>
+        </div>
+    @endif
 </div>
 
 @script
 <script>
-    Alpine.data('cashflowChart', (initialData) => ({
-        chartInstance: null,
+(function() {
+    // Guard against duplicate registration
+    if (window.__bankAccountChartsRegistered) return;
+    window.__bankAccountChartsRegistered = true;
 
-        initChart() {
-            if (typeof Chart === 'undefined') {
-                const script = document.createElement('script');
-                script.src = 'https://cdn.jsdelivr.net/npm/chart.js';
-                script.onload = () => this.createChart(initialData);
-                document.head.appendChild(script);
-            } else {
-                this.$nextTick(() => this.createChart(initialData));
-            }
+    function registerCharts() {
+        if (typeof Alpine === 'undefined') return;
 
-            Livewire.on('chartDataUpdated', (data) => {
-                this.createChart(data[0].chartData);
-            });
+        Alpine.data('bankAccountCharts', (chartType, initialData) => ({
+            chart: null,
+            data: initialData,
 
-            Livewire.on('reinitialize-chart', (data) => {
-                this.destroyChart();
-                setTimeout(() => this.createChart(data[0].chartData), 100);
-            });
+            isDark() { return document.documentElement.classList.contains('dark'); },
+            textColor() { return this.isDark() ? '#9ca3af' : '#6b7280'; },
+            gridColor() { return this.isDark() ? '#374151' : '#f3f4f6'; },
 
-            Livewire.on('download-pdf', (event) => {
-                window.open(event.url, '_blank');
-            });
+            formatRp(value) {
+                if (Math.abs(value) >= 1000000000) return 'Rp ' + (value / 1000000000).toFixed(1) + 'B';
+                if (Math.abs(value) >= 1000000) return 'Rp ' + (value / 1000000).toFixed(0) + 'Jt';
+                if (Math.abs(value) >= 1000) return 'Rp ' + (value / 1000).toFixed(0) + 'K';
+                return 'Rp ' + new Intl.NumberFormat('id-ID').format(value);
+            },
 
-            this._themeObserver = new MutationObserver((mutations) => {
-                mutations.forEach((mutation) => {
-                    if (mutation.attributeName === 'class' && this.chartInstance) {
-                        const labels = this.chartInstance.data.labels;
-                        const datasets = this.chartInstance.data.datasets;
-                        setTimeout(() => {
-                            this.createChart(labels.map((label, index) => ({
-                                month: label,
-                                income: datasets[0].data[index],
-                                expense: datasets[1].data[index]
-                            })));
-                        }, 100);
+            render() {
+                if (typeof Chart === 'undefined') return;
+                if (chartType === 'incomeExpense') this.renderBarChart();
+                if (chartType === 'categoryBreakdown') this.renderDonutChart();
+            },
+
+            init() {
+                const self = this;
+
+                // Load Chart.js if not present
+                if (typeof Chart === 'undefined') {
+                    const script = document.createElement('script');
+                    script.src = 'https://cdn.jsdelivr.net/npm/chart.js';
+                    script.onload = () => self.render();
+                    document.head.appendChild(script);
+                } else {
+                    this.$nextTick(() => self.render());
+                }
+
+                // Listen for data updates from Livewire
+                Livewire.on('account-charts-updated', (payload) => {
+                    const newData = payload[0];
+                    if (chartType === 'incomeExpense' && newData.incomeExpense) {
+                        self.data = newData.incomeExpense;
+                        self.renderBarChart();
+                    }
+                    if (chartType === 'categoryBreakdown' && newData.categoryBreakdown) {
+                        self.data = newData.categoryBreakdown;
+                        self.renderDonutChart();
                     }
                 });
-            });
-            this._themeObserver.observe(document.documentElement, {
-                attributes: true,
-                attributeFilter: ['class']
-            });
-        },
 
-        destroyChart() {
-            if (this.chartInstance) {
-                this.chartInstance.destroy();
-                this.chartInstance = null;
-            }
-        },
+                // Listen for PDF download
+                Livewire.on('download-pdf', (event) => {
+                    window.open(event.url, '_blank');
+                });
 
-        createChart(chartData) {
-            const ctx = this.$el.querySelector('#cashflowChart');
-            if (!ctx || !chartData || chartData.length === 0) return;
-
-            this.destroyChart();
-
-            const isDark = document.documentElement.classList.contains('dark');
-            const incomeData = chartData.map(item => item.income);
-            const expenseData = chartData.map(item => item.expense);
-            const netData = chartData.map(item => item.income - item.expense);
-
-            const incomeLabel = @js(__('pages.income'));
-            const expenseLabel = @js(__('pages.expense'));
-            const netCashFlowLabel = @js(__('pages.net_cash_flow'));
-            const netLabel = @js(__('pages.net'));
-            const ratioLabel = @js(__('pages.ratio'));
-            const ratioSuffix = @js(__('pages.income_expense_ratio'));
-
-            this.chartInstance = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: chartData.map(item => item.month),
-                    datasets: [{
-                            label: incomeLabel,
-                            data: incomeData,
-                            backgroundColor: 'rgba(34, 197, 94, 0.8)',
-                            borderColor: 'rgba(34, 197, 94, 1)',
-                            borderWidth: 2,
-                            borderRadius: 8,
-                            yAxisID: 'y',
-                        },
-                        {
-                            label: expenseLabel,
-                            data: expenseData,
-                            backgroundColor: 'rgba(239, 68, 68, 0.8)',
-                            borderColor: 'rgba(239, 68, 68, 1)',
-                            borderWidth: 2,
-                            borderRadius: 8,
-                            yAxisID: 'y',
-                        },
-                        {
-                            label: netCashFlowLabel,
-                            data: netData,
-                            type: 'line',
-                            borderColor: 'rgba(59, 130, 246, 1)',
-                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                            borderWidth: 3,
-                            tension: 0.4,
-                            fill: true,
-                            yAxisID: 'y1',
-                            pointRadius: 4,
-                            pointHoverRadius: 6,
-                            pointBackgroundColor: 'rgba(59, 130, 246, 1)',
-                            pointBorderColor: '#fff',
-                            pointBorderWidth: 2,
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    interaction: {
-                        mode: 'index',
-                        intersect: false,
-                    },
-                    plugins: {
-                        tooltip: {
-                            backgroundColor: isDark ? '#1f2937' : '#ffffff',
-                            titleColor: isDark ? '#f3f4f6' : '#111827',
-                            bodyColor: isDark ? '#d1d5db' : '#374151',
-                            borderColor: isDark ? '#374151' : '#e5e7eb',
-                            borderWidth: 1,
-                            cornerRadius: 8,
-                            displayColors: true,
-                            callbacks: {
-                                label: function(context) {
-                                    const value = context.parsed.y;
-                                    return context.dataset.label + ': Rp ' +
-                                        new Intl.NumberFormat('id-ID').format(value);
-                                },
-                                afterBody: function(tooltipItems) {
-                                    const dataIndex = tooltipItems[0].dataIndex;
-                                    const income = incomeData[dataIndex];
-                                    const expense = expenseData[dataIndex];
-                                    const net = income - expense;
-                                    const ratio = expense > 0 ? ((income / expense) * 100).toFixed(1) : '∞';
-
-                                    return [
-                                        '',
-                                        `${netLabel}: Rp ${new Intl.NumberFormat('id-ID').format(net)}`,
-                                        `${ratioLabel}: ${ratio}% ${ratioSuffix}`
-                                    ];
-                                }
-                            }
-                        },
-                        legend: {
-                            position: 'bottom',
-                            labels: {
-                                color: isDark ? '#9ca3af' : '#6b7280',
-                                usePointStyle: true,
-                                padding: 20,
-                                font: { size: 12 }
-                            }
-                        }
-                    },
-                    scales: {
-                        x: {
-                            grid: {
-                                color: isDark ? '#374151' : '#f3f4f6',
-                                drawBorder: false,
-                            },
-                            ticks: {
-                                color: isDark ? '#9ca3af' : '#6b7280',
-                                font: { size: 11 }
-                            }
-                        },
-                        y: {
-                            type: 'linear',
-                            display: true,
-                            position: 'left',
-                            grid: {
-                                color: isDark ? '#374151' : '#f3f4f6',
-                                drawBorder: false,
-                            },
-                            ticks: {
-                                color: isDark ? '#9ca3af' : '#6b7280',
-                                font: { size: 11 },
-                                callback: function(value) {
-                                    if (value >= 1000000000) return 'Rp ' + (value / 1000000000).toFixed(1) + 'B';
-                                    if (value >= 1000000) return 'Rp ' + (value / 1000000).toFixed(0) + 'Jt';
-                                    if (value >= 1000) return 'Rp ' + (value / 1000).toFixed(0) + 'K';
-                                    return 'Rp ' + new Intl.NumberFormat('id-ID').format(value);
-                                }
-                            }
-                        },
-                        y1: {
-                            type: 'linear',
-                            display: true,
-                            position: 'right',
-                            grid: { drawOnChartArea: false },
-                            ticks: {
-                                color: isDark ? '#60a5fa' : '#3b82f6',
-                                font: { size: 11 },
-                                callback: function(value) {
-                                    const sign = value >= 0 ? '+' : '';
-                                    if (Math.abs(value) >= 1000000) return sign + (value / 1000000).toFixed(1) + 'Jt';
-                                    if (Math.abs(value) >= 1000) return sign + (value / 1000).toFixed(0) + 'K';
-                                    return sign + new Intl.NumberFormat('id-ID').format(value);
-                                }
-                            }
-                        }
-                    },
-                    elements: {
-                        bar: { borderWidth: 2 }
+                // Dark mode observer
+                this._themeObserver = new MutationObserver(() => {
+                    if (self.chart) {
+                        setTimeout(() => self.render(), 50);
                     }
-                }
-            });
-        },
+                });
+                this._themeObserver.observe(document.documentElement, {
+                    attributes: true,
+                    attributeFilter: ['class']
+                });
+            },
 
-        destroy() {
-            this.destroyChart();
-            if (this._themeObserver) {
-                this._themeObserver.disconnect();
+            destroyChart() {
+                if (this.chart) {
+                    this.chart.destroy();
+                    this.chart = null;
+                }
+            },
+
+            renderBarChart() {
+                this.destroyChart();
+                if (!this.data || this.data.length === 0 || !this.$refs.canvas) return;
+
+                const isDark = this.isDark();
+
+                this.chart = new Chart(this.$refs.canvas, {
+                    type: 'bar',
+                    data: {
+                        labels: this.data.map(item => item.month),
+                        datasets: [
+                            {
+                                label: 'Pemasukan',
+                                data: this.data.map(item => item.income),
+                                backgroundColor: 'rgba(34, 197, 94, 0.8)',
+                                borderColor: 'rgba(34, 197, 94, 1)',
+                                borderWidth: 1,
+                                borderRadius: 6,
+                            },
+                            {
+                                label: 'Pengeluaran',
+                                data: this.data.map(item => item.expense),
+                                backgroundColor: 'rgba(239, 68, 68, 0.8)',
+                                borderColor: 'rgba(239, 68, 68, 1)',
+                                borderWidth: 1,
+                                borderRadius: 6,
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: { mode: 'index', intersect: false },
+                        plugins: {
+                            tooltip: {
+                                backgroundColor: isDark ? '#1f2937' : '#ffffff',
+                                titleColor: isDark ? '#f3f4f6' : '#111827',
+                                bodyColor: isDark ? '#d1d5db' : '#374151',
+                                borderColor: isDark ? '#374151' : '#e5e7eb',
+                                borderWidth: 1,
+                                cornerRadius: 8,
+                                callbacks: {
+                                    label: (ctx) => {
+                                        return ctx.dataset.label + ': Rp ' + new Intl.NumberFormat('id-ID').format(ctx.parsed.y);
+                                    }
+                                }
+                            },
+                            legend: { display: false }
+                        },
+                        scales: {
+                            x: {
+                                grid: { color: this.gridColor(), drawBorder: false },
+                                ticks: { color: this.textColor(), font: { size: 10 } }
+                            },
+                            y: {
+                                grid: { color: this.gridColor(), drawBorder: false },
+                                ticks: {
+                                    color: this.textColor(),
+                                    font: { size: 10 },
+                                    callback: (value) => this.formatRp(value)
+                                }
+                            }
+                        }
+                    }
+                });
+            },
+
+            renderDonutChart() {
+                this.destroyChart();
+                if (!this.data || this.data.length === 0 || !this.$refs.canvas) return;
+
+                const isDark = this.isDark();
+                const colors = ['#8b5cf6', '#06b6d4', '#f59e0b', '#ef4444', '#10b981', '#6366f1'];
+
+                this.chart = new Chart(this.$refs.canvas, {
+                    type: 'doughnut',
+                    data: {
+                        labels: this.data.map(item => item.name),
+                        datasets: [{
+                            data: this.data.map(item => item.total),
+                            backgroundColor: colors.slice(0, this.data.length),
+                            borderColor: isDark ? '#27272a' : '#ffffff',
+                            borderWidth: 2,
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '65%',
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                backgroundColor: isDark ? '#1f2937' : '#ffffff',
+                                titleColor: isDark ? '#f3f4f6' : '#111827',
+                                bodyColor: isDark ? '#d1d5db' : '#374151',
+                                borderColor: isDark ? '#374151' : '#e5e7eb',
+                                borderWidth: 1,
+                                cornerRadius: 8,
+                                callbacks: {
+                                    label: (ctx) => {
+                                        const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
+                                        const pct = total > 0 ? Math.round((ctx.parsed / total) * 100) : 0;
+                                        return ctx.label + ': Rp ' + new Intl.NumberFormat('id-ID').format(ctx.parsed) + ' (' + pct + '%)';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            },
+
+            destroy() {
+                this.destroyChart();
+                if (this._themeObserver) {
+                    this._themeObserver.disconnect();
+                }
             }
-        }
-    }));
+        }));
+    }
+
+    // Register immediately or on Alpine init
+    if (window.Alpine) {
+        registerCharts();
+    } else {
+        document.addEventListener('alpine:init', () => registerCharts());
+    }
+
+    // Re-register after Livewire SPA navigation
+    document.addEventListener('livewire:navigated', () => {
+        window.__bankAccountChartsRegistered = false;
+        setTimeout(() => registerCharts(), 50);
+    });
+})();
 </script>
 @endscript

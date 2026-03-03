@@ -4,12 +4,12 @@ namespace App\Livewire\Accounts;
 
 use App\Models\BankTransaction;
 use App\Models\Payment;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Contracts\View\View;
-use Livewire\Component;
+use Livewire\Attributes\Computed;
 use Livewire\Attributes\Lazy;
 use Livewire\Attributes\On;
-use Livewire\Attributes\Computed;
+use Livewire\Component;
+
 #[Lazy]
 class QuickActionsOverview extends Component
 {
@@ -25,23 +25,41 @@ class QuickActionsOverview extends Component
         return view('livewire.accounts.quick-actions-overview');
     }
 
-    // Listen to account changes from parent
     #[On('account-selected')]
     public function handleAccountChange($accountId): void
     {
         $this->selectedAccountId = $accountId;
 
-        // Update chart
-        $this->dispatch('chartDataUpdated', [
-            'chartData' => $this->chartData,
+        // Invalidate computed caches
+        unset($this->chartData, $this->accountStats, $this->categoryBreakdown);
+
+        // Dispatch all chart data to Alpine
+        $this->dispatch('account-charts-updated', [
+            'incomeExpense' => $this->chartData,
+            'categoryBreakdown' => $this->categoryBreakdown,
         ]);
     }
 
-    // Chart data -- 3 batch queries instead of 36
+    /**
+     * Wire-callable method for Alpine to fetch fresh chart data.
+     */
+    public function getChartData(string $chartName): array
+    {
+        return match ($chartName) {
+            'incomeExpense' => $this->chartData,
+            'categoryBreakdown' => $this->categoryBreakdown,
+            default => [],
+        };
+    }
+
+    /**
+     * Income vs Expense bar chart data — 12 months.
+     * 2 batch queries (payments + transactions).
+     */
     #[Computed]
     public function chartData(): array
     {
-        if (!$this->selectedAccountId) {
+        if (! $this->selectedAccountId) {
             return [];
         }
 
@@ -54,9 +72,9 @@ class QuickActionsOverview extends Component
             ->selectRaw('YEAR(payment_date) as y, MONTH(payment_date) as m, SUM(amount) as total')
             ->groupByRaw('YEAR(payment_date), MONTH(payment_date)')
             ->get()
-            ->keyBy(fn($row) => $row->y . '-' . $row->m);
+            ->keyBy(fn ($row) => $row->y.'-'.$row->m);
 
-        // Batch query 2: Transaction income/expense by month (CASE WHEN)
+        // Batch query 2: Transaction income/expense by month
         $trxByMonth = BankTransaction::where('bank_account_id', $this->selectedAccountId)
             ->whereBetween('transaction_date', [$globalStart, $globalEnd])
             ->selectRaw("
@@ -67,15 +85,14 @@ class QuickActionsOverview extends Component
             ")
             ->groupByRaw('YEAR(transaction_date), MONTH(transaction_date)')
             ->get()
-            ->keyBy(fn($row) => $row->y . '-' . $row->m);
+            ->keyBy(fn ($row) => $row->y.'-'.$row->m);
 
-        // Build months from cached data
         $months = [];
         $currentDate = $globalStart->copy();
 
         for ($i = 0; $i < 12; $i++) {
             $month = $currentDate->copy()->addMonths($i);
-            $key = $month->year . '-' . $month->month;
+            $key = $month->year.'-'.$month->month;
 
             $paymentIncome = (int) ($paymentsByMonth[$key]->total ?? 0);
             $creditIncome = (int) ($trxByMonth[$key]->credit_total ?? 0);
@@ -91,11 +108,38 @@ class QuickActionsOverview extends Component
         return $months;
     }
 
-    // Account stats -- 2 queries instead of 4
+    /**
+     * Top expense categories for current month — donut chart.
+     * 1 query with JOIN + GROUP BY.
+     */
+    #[Computed]
+    public function categoryBreakdown(): array
+    {
+        if (! $this->selectedAccountId) {
+            return [];
+        }
+
+        return BankTransaction::where('bank_transactions.bank_account_id', $this->selectedAccountId)
+            ->where('bank_transactions.transaction_type', 'debit')
+            ->whereBetween('bank_transactions.transaction_date', [now()->startOfMonth(), now()->endOfMonth()])
+            ->whereNotNull('bank_transactions.category_id')
+            ->join('transaction_categories', 'bank_transactions.category_id', '=', 'transaction_categories.id')
+            ->selectRaw('transaction_categories.label as name, SUM(bank_transactions.amount) as total')
+            ->groupBy('transaction_categories.id', 'transaction_categories.label')
+            ->orderByDesc('total')
+            ->limit(6)
+            ->get()
+            ->toArray();
+    }
+
+    /**
+     * Account stats for current month — mini stat cards.
+     * 2 queries (transactions CASE WHEN + payments SUM).
+     */
     #[Computed]
     public function accountStats(): array
     {
-        if (!$this->selectedAccountId) {
+        if (! $this->selectedAccountId) {
             return [
                 'total_income' => 0,
                 'total_expense' => 0,
@@ -107,7 +151,6 @@ class QuickActionsOverview extends Component
         $thisMonthStart = now()->startOfMonth();
         $thisMonthEnd = now()->endOfMonth();
 
-        // Single query for all transaction stats using CASE WHEN
         $trxStats = BankTransaction::where('bank_account_id', $this->selectedAccountId)
             ->whereBetween('transaction_date', [$thisMonthStart, $thisMonthEnd])
             ->selectRaw("
@@ -117,7 +160,6 @@ class QuickActionsOverview extends Component
             ")
             ->first();
 
-        // Separate query for payments (different table)
         $paymentsIncome = (int) Payment::where('bank_account_id', $this->selectedAccountId)
             ->whereBetween('payment_date', [$thisMonthStart, $thisMonthEnd])
             ->sum('amount');

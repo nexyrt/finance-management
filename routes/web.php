@@ -48,13 +48,13 @@ Route::get('/api/transaction-categories', function (Request $request) {
     $type = $request->get('type');
 
     $categoryTypes = match ($type) {
-        'credit'     => ['income', 'adjustment', 'transfer'],
-        'debit'      => ['expense', 'adjustment', 'transfer'],
-        'income'     => ['income'],
-        'expense'    => ['expense'],
+        'credit' => ['income', 'adjustment', 'transfer'],
+        'debit' => ['expense', 'adjustment', 'transfer'],
+        'income' => ['income'],
+        'expense' => ['expense'],
         'adjustment' => ['adjustment'],
-        'transfer'   => ['transfer'],
-        default      => ['income', 'expense', 'adjustment', 'transfer'],
+        'transfer' => ['transfer'],
+        default => ['income', 'expense', 'adjustment', 'transfer'],
     };
 
     return \App\Models\TransactionCategory::whereNull('parent_id')
@@ -88,16 +88,6 @@ Route::get('/api/bank-accounts', function () {
 Route::get('/api/clients', function () {
     return \App\Models\Client::orderBy('name')
         ->get(['id', 'name'])
-        ->map(fn ($client) => [
-            'label' => $client->name,
-            'value' => $client->id,
-        ]);
-})->name('api.clients');
-
-Route::get('/api/clients', function (Request $request) {
-    return \App\Models\Client::select('id', 'name')
-        ->orderBy('name')
-        ->get()
         ->map(fn ($client) => [
             'label' => $client->name,
             'value' => $client->id,
@@ -336,8 +326,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // ------------------------------------------------------------------------
     // TESTING (Local Only)
     // ------------------------------------------------------------------------
-     Route::get('/test', TestingPage::class)->name('test');
-    
+    Route::get('/test', TestingPage::class)->name('test');
+
 });
 
 require __DIR__.'/auth.php';

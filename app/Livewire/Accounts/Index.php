@@ -6,10 +6,9 @@ use App\Models\BankAccount;
 use App\Models\BankTransaction;
 use App\Models\Payment;
 use Illuminate\Support\Facades\DB;
-use Livewire\Component;
-use Livewire\Attributes\On;
 use Livewire\Attributes\Computed;
-use Livewire\Attributes\Renderless;
+use Livewire\Attributes\On;
+use Livewire\Component;
 use TallStackUi\Traits\Interactions;
 
 class Index extends Component
@@ -18,7 +17,9 @@ class Index extends Component
 
     // Core state
     public $selectedAccountId = null;
+
     public bool $ready = false;
+
     public bool $guideModal = false;
 
     public function mount(): void
@@ -69,23 +70,22 @@ class Index extends Component
     #[On('refresh-data')]
     public function handleRefresh(): void
     {
-        // Atau dispatch ke komponen spesifik
         $this->dispatch('refresh-transactions');
         $this->dispatch('refresh-payments');
         $this->dispatch('refresh-quick-actions');
     }
 
-    // Method untuk manual refresh
     public function refreshAllData(): void
     {
         $this->dispatch('refresh-child-components');
         $this->toast()->success(__('pages.all_data_refreshed'))->send();
     }
 
-    // Event listeners from child components
+    // Event listeners from child components — invalidate computed caches
     #[On('account-created', 'account-updated', 'account-deleted', 'transaction-created', 'transaction-deleted', 'transfer-completed', 'payment-deleted', 'transactions-updated', 'payments-updated', 'refresh-child-components')]
     public function refreshData(): void
     {
+        unset($this->accountsData, $this->totalBalance, $this->monthlySummary);
         $this->toast()->success(__('pages.data_updated'), __('pages.information_refreshed'))->send();
     }
 
@@ -132,10 +132,13 @@ class Index extends Component
         return $this->accountsData->sum('balance');
     }
 
+    /**
+     * Monthly summary for sidebar — income & expense across ALL accounts.
+     */
     #[Computed]
-    public function stats(): array
+    public function monthlySummary(): array
     {
-        if (!$this->ready) {
+        if (! $this->ready) {
             return ['income' => 0, 'expense' => 0];
         }
 
@@ -160,8 +163,9 @@ class Index extends Component
 
     public function exportReport(): void
     {
-        if (!$this->selectedAccountId) {
+        if (! $this->selectedAccountId) {
             $this->toast()->warning(__('common.warning'), __('pages.select_account_first'))->send();
+
             return;
         }
 

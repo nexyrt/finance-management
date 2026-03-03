@@ -57,7 +57,14 @@
       "Bash(python:*)",
       "Bash(rm:*)",
       "Bash(pip install:*)",
-      "Bash(sed:*)"
+      "Bash(sed:*)",
+      "Read(//tmp/**)",
+      "Read(//dev/**)",
+      "Bash(vendor/bin/pint --dirty --format agent)",
+      "mcp__laravel-boost__get-absolute-url",
+      "mcp__laravel-boost__database-query",
+      "Bash(netstat -ano)",
+      "Bash(ss -tlnp)"
     ]
   }
 }

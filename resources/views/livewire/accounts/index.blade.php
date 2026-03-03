@@ -1,9 +1,8 @@
 {{-- resources/views/livewire/accounts/index.blade.php --}}
-
 <div wire:init="loadData" class="space-y-6">
 
     {{-- ============================================================ --}}
-    {{-- HEADER SECTION                                               --}}
+    {{-- HEADER                                                       --}}
     {{-- ============================================================ --}}
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div class="space-y-1">
@@ -17,10 +16,8 @@
 
         <div class="flex items-center gap-3 flex-wrap">
             {{-- Guide Button --}}
-            <button
-                wire:click="$toggle('guideModal')"
-                class="h-9 px-4 flex items-center gap-2 rounded-xl border border-zinc-200 dark:border-dark-600 bg-white dark:bg-dark-800 text-dark-500 dark:text-dark-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-300 dark:hover:border-indigo-700 text-sm font-medium transition-all"
-            >
+            <button wire:click="$toggle('guideModal')"
+                class="h-9 px-4 flex items-center gap-2 rounded-xl border border-zinc-200 dark:border-dark-600 bg-white dark:bg-dark-800 text-dark-500 dark:text-dark-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-300 dark:hover:border-indigo-700 text-sm font-medium transition-all">
                 <x-icon name="information-circle" class="w-4 h-4" />
                 {{ __('pages.client_guide_btn') }}
             </button>
@@ -29,300 +26,400 @@
             <x-button wire:click="createAccount" loading="createAccount" color="primary" size="sm" icon="plus">
                 {{ __('common.create') }}
             </x-button>
-
-            {{-- Settings Dropdown (only if account selected) --}}
-            @if ($ready && $selectedAccountId)
-                <x-dropdown position="bottom-end">
-                    <x-slot:trigger>
-                        <x-button color="secondary" outline icon="cog-6-tooth" size="sm">
-                            {{ __('common.settings') }}
-                        </x-button>
-                    </x-slot:trigger>
-                    <x-dropdown.items text="{{ __('common.edit') }}" icon="pencil"
-                        wire:click="editAccount({{ $selectedAccountId }})" />
-                    <x-dropdown.items text="{{ __('common.delete') }}" icon="trash"
-                        wire:click="deleteAccount({{ $selectedAccountId }})"
-                        class="text-red-600 dark:text-red-400" />
-                </x-dropdown>
-            @endif
         </div>
     </div>
 
     {{-- ============================================================ --}}
-    {{-- STATS CARDS (4 horizontal — only when ready)                 --}}
+    {{-- MAIN CONTENT                                                 --}}
     {{-- ============================================================ --}}
     @if ($ready)
-        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-            {{-- Total Saldo --}}
-            <x-card class="hover:shadow-lg transition-shadow">
-                <div class="flex items-center gap-4">
-                    <div class="h-12 w-12 bg-primary-50 dark:bg-primary-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
-                        <x-icon name="building-library" class="w-6 h-6 text-primary-600 dark:text-primary-400" />
-                    </div>
-                    <div>
-                        <p class="text-sm text-dark-600 dark:text-dark-400">{{ __('pages.total_balance') }}</p>
-                        <p class="text-2xl font-bold text-dark-900 dark:text-dark-50">
-                            Rp {{ number_format($this->totalBalance, 0, ',', '.') }}
-                        </p>
-                    </div>
-                </div>
-            </x-card>
+        {{-- Mobile: Horizontal scroll account switcher --}}
+        <div class="lg:hidden">
+            @if ($this->accountsData->count() > 0)
+                <div class="overflow-x-auto pb-2 -mx-1 px-1">
+                    <div class="flex gap-3 min-w-max">
+                        @foreach ($this->accountsData as $account)
+                            <button wire:click="selectAccount({{ $account['id'] }})"
+                                wire:loading.attr="disabled"
+                                class="flex-shrink-0 w-52 p-3 rounded-xl border-2 transition-all text-left
+                                    {{ $selectedAccountId == $account['id']
+                                        ? 'border-primary-400 dark:border-primary-600 bg-primary-50 dark:bg-primary-900/20'
+                                        : 'border-secondary-200 dark:border-dark-600 bg-white dark:bg-dark-800 hover:border-primary-300 dark:hover:border-primary-700' }}">
+                                <div class="flex items-center gap-2.5 mb-2">
+                                    <div class="h-8 w-8 bg-gradient-to-br from-primary-400 to-primary-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                                        <x-icon name="building-library" class="w-4 h-4 text-white" />
+                                    </div>
+                                    <div class="min-w-0">
+                                        <div class="font-semibold text-sm text-dark-900 dark:text-dark-50 truncate">{{ $account['name'] }}</div>
+                                        <div class="text-xs text-dark-500 dark:text-dark-400">{{ $account['bank'] }}</div>
+                                    </div>
+                                </div>
+                                <div class="text-sm font-bold text-dark-900 dark:text-dark-50">
+                                    Rp {{ number_format($account['balance'], 0, ',', '.') }}
+                                </div>
+                            </button>
+                        @endforeach
 
-            {{-- Jumlah Rekening --}}
-            <x-card class="hover:shadow-lg transition-shadow">
-                <div class="flex items-center gap-4">
-                    <div class="h-12 w-12 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
-                        <x-icon name="credit-card" class="w-6 h-6 text-blue-600 dark:text-blue-400" />
-                    </div>
-                    <div>
-                        <p class="text-sm text-dark-600 dark:text-dark-400">{{ __('pages.accounts') }}</p>
-                        <p class="text-2xl font-bold text-dark-900 dark:text-dark-50">
-                            {{ $this->accountsData->count() }}
-                        </p>
+                        {{-- Add New (mobile) --}}
+                        <button wire:click="createAccount"
+                            class="flex-shrink-0 w-32 p-3 rounded-xl border-2 border-dashed border-zinc-300 dark:border-dark-600 hover:border-primary-400 dark:hover:border-primary-500 flex flex-col items-center justify-center gap-2 transition-colors">
+                            <x-icon name="plus" class="w-5 h-5 text-dark-400 dark:text-dark-500" />
+                            <span class="text-xs text-dark-500 dark:text-dark-400">{{ __('pages.add_new_account') }}</span>
+                        </button>
                     </div>
                 </div>
-            </x-card>
 
-            {{-- Pemasukan Bulan Ini --}}
-            <x-card class="hover:shadow-lg transition-shadow">
-                <div class="flex items-center gap-4">
-                    <div class="h-12 w-12 bg-green-50 dark:bg-green-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
-                        <x-icon name="arrow-trending-up" class="w-6 h-6 text-green-600 dark:text-green-400" />
+                {{-- Mobile: Summary stats compact --}}
+                <div class="grid grid-cols-3 gap-2 mt-3">
+                    <div class="bg-white dark:bg-dark-800 rounded-xl border border-secondary-200 dark:border-dark-600 p-3 text-center">
+                        <p class="text-xs text-dark-500 dark:text-dark-400">{{ __('pages.total_balance') }}</p>
+                        <p class="text-sm font-bold text-dark-900 dark:text-dark-50">Rp {{ number_format($this->totalBalance, 0, ',', '.') }}</p>
                     </div>
-                    <div>
-                        <p class="text-sm text-dark-600 dark:text-dark-400">{{ __('pages.income') }} ({{ now()->format('M Y') }})</p>
-                        <p class="text-2xl font-bold text-green-600 dark:text-green-400">
-                            Rp {{ number_format($this->stats['income'], 0, ',', '.') }}
-                        </p>
+                    <div class="bg-white dark:bg-dark-800 rounded-xl border border-secondary-200 dark:border-dark-600 p-3 text-center">
+                        <p class="text-xs text-dark-500 dark:text-dark-400">{{ __('pages.income') }}</p>
+                        <p class="text-sm font-bold text-green-600 dark:text-green-400">Rp {{ number_format($this->monthlySummary['income'], 0, ',', '.') }}</p>
                     </div>
-                </div>
-            </x-card>
-
-            {{-- Pengeluaran Bulan Ini --}}
-            <x-card class="hover:shadow-lg transition-shadow">
-                <div class="flex items-center gap-4">
-                    <div class="h-12 w-12 bg-red-50 dark:bg-red-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
-                        <x-icon name="arrow-trending-down" class="w-6 h-6 text-red-600 dark:text-red-400" />
-                    </div>
-                    <div>
-                        <p class="text-sm text-dark-600 dark:text-dark-400">{{ __('pages.expense') }} ({{ now()->format('M Y') }})</p>
-                        <p class="text-2xl font-bold text-red-600 dark:text-red-400">
-                            Rp {{ number_format($this->stats['expense'], 0, ',', '.') }}
-                        </p>
+                    <div class="bg-white dark:bg-dark-800 rounded-xl border border-secondary-200 dark:border-dark-600 p-3 text-center">
+                        <p class="text-xs text-dark-500 dark:text-dark-400">{{ __('pages.expense') }}</p>
+                        <p class="text-sm font-bold text-red-600 dark:text-red-400">Rp {{ number_format($this->monthlySummary['expense'], 0, ',', '.') }}</p>
                     </div>
                 </div>
-            </x-card>
+            @endif
         </div>
-    @else
-        {{-- Stats Skeleton --}}
-        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 animate-pulse">
-            @foreach (range(1, 4) as $i)
-                <div class="bg-white dark:bg-dark-800 border border-gray-200 dark:border-dark-600 rounded-xl p-4">
-                    <div class="flex items-center gap-4">
-                        <div class="h-12 w-12 bg-gray-200 dark:bg-dark-700 rounded-xl flex-shrink-0"></div>
-                        <div class="space-y-2 flex-1">
-                            <div class="h-3 bg-gray-200 dark:bg-dark-700 rounded w-24"></div>
-                            <div class="h-6 bg-gray-200 dark:bg-dark-700 rounded w-32"></div>
+
+        {{-- Master-Detail Grid --}}
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+            {{-- ======================================================== --}}
+            {{-- LEFT SIDEBAR (Desktop only — sticky)                     --}}
+            {{-- ======================================================== --}}
+            <div class="hidden lg:block lg:col-span-3">
+                <div class="lg:sticky lg:top-6 space-y-4">
+
+                    {{-- Account List Card --}}
+                    <div class="bg-white dark:bg-dark-800 rounded-xl border border-secondary-200 dark:border-dark-600 overflow-hidden">
+                        <div class="px-4 py-3 border-b border-secondary-200 dark:border-dark-600">
+                            <div class="flex items-center justify-between">
+                                <h3 class="text-sm font-semibold text-dark-900 dark:text-dark-50 flex items-center gap-2">
+                                    <x-icon name="building-library" class="w-4 h-4 text-primary-600 dark:text-primary-400" />
+                                    {{ __('pages.accounts') }}
+                                </h3>
+                                <span class="text-xs text-dark-500 dark:text-dark-400">{{ $this->accountsData->count() }}</span>
+                            </div>
+                        </div>
+
+                        <div class="p-2 space-y-1 max-h-[calc(100vh-28rem)] overflow-y-auto">
+                            @foreach ($this->accountsData as $account)
+                                <button wire:click="selectAccount({{ $account['id'] }})"
+                                    wire:loading.attr="disabled"
+                                    class="w-full text-left px-3 py-3 rounded-xl transition-all duration-150
+                                        {{ $selectedAccountId == $account['id']
+                                            ? 'bg-primary-50 dark:bg-primary-900/20 border border-primary-300 dark:border-primary-700'
+                                            : 'hover:bg-gray-50 dark:hover:bg-dark-700 border border-transparent' }}">
+                                    <div class="flex items-center gap-3">
+                                        <div class="h-9 w-9 bg-gradient-to-br from-primary-400 to-primary-600 rounded-xl flex items-center justify-center flex-shrink-0">
+                                            <x-icon name="building-library" class="w-4 h-4 text-white" />
+                                        </div>
+                                        <div class="min-w-0 flex-1">
+                                            <div class="font-semibold text-sm text-dark-900 dark:text-dark-50 truncate">
+                                                {{ $account['name'] }}
+                                            </div>
+                                            <div class="text-xs text-dark-500 dark:text-dark-400">
+                                                {{ $account['bank'] }}
+                                            </div>
+                                        </div>
+                                        {{-- Trend indicator --}}
+                                        <div class="flex-shrink-0">
+                                            @if ($account['trend'] === 'up')
+                                                <x-icon name="arrow-trending-up" class="w-4 h-4 text-green-500" />
+                                            @else
+                                                <x-icon name="arrow-trending-down" class="w-4 h-4 text-red-500" />
+                                            @endif
+                                        </div>
+                                    </div>
+                                    <div class="mt-1.5 pl-12">
+                                        <span class="text-sm font-bold {{ $account['balance'] >= 0 ? 'text-dark-900 dark:text-dark-50' : 'text-red-600 dark:text-red-400' }}">
+                                            Rp {{ number_format($account['balance'], 0, ',', '.') }}
+                                        </span>
+                                    </div>
+                                </button>
+                            @endforeach
+
+                            {{-- Add New Account --}}
+                            <button wire:click="createAccount"
+                                class="w-full flex items-center justify-center gap-2 px-3 py-3 rounded-xl border-2 border-dashed border-zinc-300 dark:border-dark-600 hover:border-primary-400 dark:hover:border-primary-500 text-dark-400 dark:text-dark-500 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">
+                                <x-icon name="plus" class="w-4 h-4" />
+                                <span class="text-xs font-medium">{{ __('pages.add_new_account') }}</span>
+                            </button>
                         </div>
                     </div>
-                </div>
-            @endforeach
-        </div>
-    @endif
 
-    {{-- ============================================================ --}}
-    {{-- ACCOUNT CARDS GRID                                           --}}
-    {{-- ============================================================ --}}
-    @if ($ready)
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            @foreach ($this->accountsData as $account)
-                <div
-                    wire:click="selectAccount({{ $account['id'] }})"
-                    wire:loading.class="opacity-60 scale-[0.98]"
-                    wire:target="selectAccount({{ $account['id'] }})"
-                    class="relative p-5 bg-white dark:bg-dark-700 border-2 rounded-xl cursor-pointer transition-all duration-200 hover:shadow-md transform hover:scale-[1.01]
-                        {{ $selectedAccountId == $account['id']
-                            ? 'border-primary-500 ring-2 ring-primary-500/20 bg-primary-50/30 dark:bg-primary-900/10'
-                            : 'border-zinc-200 dark:border-dark-600 hover:border-primary-300 dark:hover:border-primary-700' }}"
-                >
-                    {{-- Loading Overlay --}}
-                    <div wire:loading wire:target="selectAccount({{ $account['id'] }})"
-                        class="absolute inset-0 rounded-xl backdrop-blur-md bg-white/30 dark:bg-dark-900/30 z-10">
-                        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex items-center gap-2 px-4 py-2 bg-white/80 dark:bg-dark-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-white/30 dark:border-dark-600/30">
-                            <x-icon name="arrow-path" class="w-4 h-4 text-primary-600 animate-spin" />
-                            <span class="text-sm text-primary-600 dark:text-primary-400 font-medium">{{ __('common.loading') }}</span>
+                    {{-- Monthly Summary Stats --}}
+                    <div class="bg-white dark:bg-dark-800 rounded-xl border border-secondary-200 dark:border-dark-600 p-4 space-y-3">
+                        <h4 class="text-xs font-semibold text-dark-500 dark:text-dark-400 uppercase tracking-wider">
+                            {{ __('pages.monthly_summary') }}
+                        </h4>
+
+                        {{-- Total Balance --}}
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-dark-600 dark:text-dark-400">{{ __('pages.total_balance') }}</span>
+                            <span class="text-sm font-bold text-dark-900 dark:text-dark-50">
+                                Rp {{ number_format($this->totalBalance, 0, ',', '.') }}
+                            </span>
+                        </div>
+
+                        <div class="h-px bg-secondary-200 dark:bg-dark-600"></div>
+
+                        {{-- Monthly Income --}}
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                                <span class="text-xs text-dark-600 dark:text-dark-400">{{ __('pages.income') }}</span>
+                            </div>
+                            <span class="text-sm font-semibold text-green-600 dark:text-green-400">
+                                Rp {{ number_format($this->monthlySummary['income'], 0, ',', '.') }}
+                            </span>
+                        </div>
+
+                        {{-- Monthly Expense --}}
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <div class="w-2 h-2 bg-red-500 rounded-full"></div>
+                                <span class="text-xs text-dark-600 dark:text-dark-400">{{ __('pages.expense') }}</span>
+                            </div>
+                            <span class="text-sm font-semibold text-red-600 dark:text-red-400">
+                                Rp {{ number_format($this->monthlySummary['expense'], 0, ',', '.') }}
+                            </span>
+                        </div>
+
+                        {{-- Net --}}
+                        @php $netTotal = $this->monthlySummary['income'] - $this->monthlySummary['expense']; @endphp
+                        <div class="h-px bg-secondary-200 dark:bg-dark-600"></div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-medium text-dark-600 dark:text-dark-400">{{ __('pages.net_flow') }}</span>
+                            <span class="text-sm font-bold {{ $netTotal >= 0 ? 'text-blue-600 dark:text-blue-400' : 'text-orange-600 dark:text-orange-400' }}">
+                                {{ $netTotal >= 0 ? '+' : '' }}Rp {{ number_format($netTotal, 0, ',', '.') }}
+                            </span>
                         </div>
                     </div>
 
-                    {{-- Card Header: Icon + Name + Trend --}}
-                    <div class="flex items-start justify-between mb-4">
+                </div>
+            </div>
+
+            {{-- ======================================================== --}}
+            {{-- RIGHT PANEL                                              --}}
+            {{-- ======================================================== --}}
+            <div class="lg:col-span-9 space-y-6">
+                @if ($selectedAccountId)
+                    @php $selectedAccount = $this->accountsData->firstWhere('id', $selectedAccountId); @endphp
+
+                    {{-- Selected Account Header + Actions --}}
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div class="flex items-center gap-3">
-                            <div class="h-11 w-11 bg-gradient-to-br from-primary-400 to-primary-600 rounded-xl flex items-center justify-center shadow-sm flex-shrink-0">
-                                <x-icon name="building-library" class="w-5 h-5 text-white" />
+                            <div class="h-12 w-12 bg-gradient-to-br from-primary-400 to-primary-600 rounded-xl flex items-center justify-center flex-shrink-0">
+                                <x-icon name="building-library" class="w-6 h-6 text-white" />
                             </div>
                             <div>
-                                <h3 class="font-semibold text-dark-900 dark:text-dark-50 leading-tight">{{ $account['name'] }}</h3>
-                                <p class="text-xs text-dark-500 dark:text-dark-400">{{ $account['bank'] }}</p>
+                                <h2 class="text-xl font-bold text-dark-900 dark:text-dark-50">
+                                    {{ $selectedAccount['name'] }}
+                                </h2>
+                                <p class="text-sm text-dark-500 dark:text-dark-400">
+                                    {{ $selectedAccount['bank'] }} &middot; {{ $selectedAccount['account_number'] }}
+                                </p>
                             </div>
-                        </div>
-
-                        <div class="flex items-center gap-2">
-                            @if ($selectedAccountId == $account['id'])
-                                <div class="w-2 h-2 bg-primary-500 rounded-full animate-pulse"></div>
-                            @endif
-                            <div class="flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium
-                                {{ $account['trend'] === 'up'
-                                    ? 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400'
-                                    : 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400' }}">
-                                <x-icon
-                                    name="{{ $account['trend'] === 'up' ? 'arrow-trending-up' : 'arrow-trending-down' }}"
-                                    class="w-3.5 h-3.5" />
-                            </div>
-                        </div>
-                    </div>
-
-                    {{-- Balance --}}
-                    <div class="mb-3">
-                        <p class="text-2xl font-bold {{ $account['balance'] >= 0 ? 'text-dark-900 dark:text-dark-50' : 'text-red-600 dark:text-red-400' }}">
-                            Rp {{ number_format($account['balance'], 0, ',', '.') }}
-                        </p>
-                        <p class="text-xs text-dark-400 dark:text-dark-500 mt-0.5 font-mono">
-                            •••• •••• •••• {{ substr($account['account_number'], -4) }}
-                        </p>
-                    </div>
-
-                    {{-- Recent Transactions --}}
-                    @if ($account['recent_transactions']->count() > 0)
-                        <div class="space-y-1.5 pt-3 border-t border-zinc-100 dark:border-dark-600">
-                            @foreach ($account['recent_transactions']->take(2) as $transaction)
-                                <div class="flex items-center justify-between text-xs">
-                                    <span class="text-dark-500 dark:text-dark-400 truncate flex-1 pr-2">{{ Str::limit($transaction->description, 22) }}</span>
-                                    <span class="{{ $transaction->transaction_type === 'credit' ? 'text-green-600 dark:text-green-400' : 'text-red-500 dark:text-red-400' }} font-semibold font-mono">
-                                        {{ $transaction->transaction_type === 'credit' ? '+' : '-' }}{{ number_format($transaction->amount / 1000, 0) }}k
+                            <div class="ml-2">
+                                @if ($selectedAccount['trend'] === 'up')
+                                    <span class="inline-flex items-center gap-1 text-xs font-medium text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 px-2 py-1 rounded-lg">
+                                        <x-icon name="arrow-trending-up" class="w-3.5 h-3.5" />
+                                        {{ __('pages.trending_up') }}
                                     </span>
-                                </div>
-                            @endforeach
+                                @else
+                                    <span class="inline-flex items-center gap-1 text-xs font-medium text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded-lg">
+                                        <x-icon name="arrow-trending-down" class="w-3.5 h-3.5" />
+                                        {{ __('pages.trending_down') }}
+                                    </span>
+                                @endif
+                            </div>
                         </div>
-                    @endif
-                </div>
-            @endforeach
 
-            {{-- Add Account Card (dashed) --}}
-            <div
-                wire:click="createAccount"
-                wire:loading.class="opacity-60"
-                wire:target="createAccount"
-                class="flex flex-col items-center justify-center p-5 border-2 border-dashed border-zinc-300 dark:border-dark-600 rounded-xl cursor-pointer transition-all duration-200 hover:border-primary-400 dark:hover:border-primary-600 hover:bg-primary-50/30 dark:hover:bg-primary-900/10 group min-h-[160px]"
-            >
-                <div class="h-11 w-11 bg-zinc-100 dark:bg-dark-700 rounded-xl flex items-center justify-center mb-3 group-hover:bg-primary-100 dark:group-hover:bg-primary-900/30 transition-colors">
-                    <x-icon name="plus" class="w-5 h-5 text-zinc-400 dark:text-zinc-500 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors" />
-                </div>
-                <p class="text-sm font-medium text-zinc-400 dark:text-zinc-500 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
-                    {{ __('pages.add_new_account') }}
-                </p>
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <livewire:transactions.create-expense :selectedAccountId="$selectedAccountId" @transaction-created="refreshData" />
+                            <livewire:transactions.create-income :selectedAccountId="$selectedAccountId" @transaction-created="refreshData" />
+
+                            <x-dropdown position="bottom-end">
+                                <x-slot:trigger>
+                                    <x-button color="secondary" outline icon="ellipsis-vertical" size="sm" />
+                                </x-slot:trigger>
+                                <x-dropdown.items text="{{ __('common.edit') }}" icon="pencil"
+                                    wire:click="editAccount({{ $selectedAccountId }})" />
+                                <x-dropdown.items text="{{ __('pages.export_report') }}" icon="document-arrow-down"
+                                    wire:click="exportReport" />
+                                <x-dropdown.items text="{{ __('common.delete') }}" icon="trash"
+                                    wire:click="deleteAccount({{ $selectedAccountId }})"
+                                    separator class="text-red-600 dark:text-red-400" />
+                            </x-dropdown>
+                        </div>
+                    </div>
+
+                    {{-- Charts Section (QuickActionsOverview) --}}
+                    <livewire:accounts.quick-actions-overview
+                        :selectedAccountId="$selectedAccountId"
+                        :key="'qao-' . $selectedAccountId" />
+
+                    {{-- Custom Tabs: Transactions | Payments --}}
+                    <div x-data="{ activeTab: $persist('transactions').as('ba_active_tab') }">
+                        {{-- Tab Bar --}}
+                        <div class="flex items-center gap-4 mb-4">
+                            <div class="inline-flex items-center gap-1 p-1 bg-zinc-100 dark:bg-dark-700 rounded-xl border border-zinc-200 dark:border-dark-600">
+                                <button @click="activeTab = 'transactions'"
+                                    class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200"
+                                    :class="activeTab === 'transactions'
+                                        ? 'bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 shadow-sm border border-zinc-200 dark:border-dark-600'
+                                        : 'text-dark-500 dark:text-dark-400 hover:text-dark-800 dark:hover:text-dark-200 hover:bg-zinc-50 dark:hover:bg-dark-600'">
+                                    <x-icon name="arrows-right-left" class="w-4 h-4 flex-shrink-0" />
+                                    <span>{{ __('common.transactions') }}</span>
+                                </button>
+                                <button @click="activeTab = 'payments'"
+                                    class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200"
+                                    :class="activeTab === 'payments'
+                                        ? 'bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 shadow-sm border border-zinc-200 dark:border-dark-600'
+                                        : 'text-dark-500 dark:text-dark-400 hover:text-dark-800 dark:hover:text-dark-200 hover:bg-zinc-50 dark:hover:bg-dark-600'">
+                                    <x-icon name="banknotes" class="w-4 h-4 flex-shrink-0" />
+                                    <span>{{ __('common.payments') }}</span>
+                                </button>
+                            </div>
+
+                            {{-- Context subtitle --}}
+                            <div class="hidden sm:flex items-center gap-3 flex-1 min-w-0">
+                                <div class="h-px flex-1 bg-gradient-to-r from-zinc-200 dark:from-dark-600 to-transparent"></div>
+                                <p x-show="activeTab === 'transactions'" x-transition.opacity
+                                    class="text-xs text-dark-400 dark:text-dark-500 whitespace-nowrap">
+                                    {{ __('pages.ba_tab_transactions_hint') }}
+                                </p>
+                                <p x-show="activeTab === 'payments'" x-transition.opacity
+                                    class="text-xs text-dark-400 dark:text-dark-500 whitespace-nowrap">
+                                    {{ __('pages.ba_tab_payments_hint') }}
+                                </p>
+                            </div>
+                        </div>
+
+                        {{-- Tab Panels --}}
+                        <div x-show="activeTab === 'transactions'"
+                            x-transition:enter="transition ease-out duration-150"
+                            x-transition:enter-start="opacity-0 translate-y-1"
+                            x-transition:enter-end="opacity-100 translate-y-0">
+                            <livewire:accounts.transaction-list
+                                :selectedAccountId="$selectedAccountId"
+                                :key="'txn-list-' . $selectedAccountId" />
+                        </div>
+
+                        <div x-show="activeTab === 'payments'"
+                            x-transition:enter="transition ease-out duration-150"
+                            x-transition:enter-start="opacity-0 translate-y-1"
+                            x-transition:enter-end="opacity-100 translate-y-0">
+                            <livewire:accounts.payment-list
+                                :selectedAccountId="$selectedAccountId"
+                                :key="'pmt-list-' . $selectedAccountId" />
+                        </div>
+                    </div>
+
+                @elseif ($this->accountsData->count() > 0)
+                    {{-- No Account Selected --}}
+                    <div class="bg-white dark:bg-dark-800 border border-secondary-200 dark:border-dark-600 rounded-xl flex items-center justify-center min-h-[400px]">
+                        <div class="text-center p-8">
+                            <div class="h-16 w-16 bg-gray-100 dark:bg-dark-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <x-icon name="cursor-arrow-rays" class="w-8 h-8 text-gray-400 dark:text-dark-500" />
+                            </div>
+                            <h3 class="text-lg font-semibold text-dark-900 dark:text-dark-50 mb-2">
+                                {{ __('pages.no_account_selected') }}
+                            </h3>
+                            <p class="text-dark-500 dark:text-dark-400">
+                                {{ __('pages.no_account_selected_message') }}
+                            </p>
+                        </div>
+                    </div>
+
+                @else
+                    {{-- Empty State: No Accounts --}}
+                    <div class="bg-white dark:bg-dark-800 border border-secondary-200 dark:border-dark-600 rounded-xl p-12 text-center">
+                        <x-icon name="building-library" class="w-16 h-16 text-zinc-300 dark:text-zinc-600 mx-auto mb-4" />
+                        <h3 class="text-xl font-semibold text-dark-900 dark:text-dark-50 mb-2">{{ __('pages.no_accounts_yet') }}</h3>
+                        <p class="text-dark-600 dark:text-dark-400 mb-6">{{ __('pages.no_account_selected_message') }}</p>
+                        <x-button wire:click="createAccount" loading="createAccount" color="primary" icon="plus">
+                            {{ __('common.create') }}
+                        </x-button>
+                    </div>
+                @endif
             </div>
+
         </div>
+
     @else
-        {{-- Account Grid Skeleton --}}
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 animate-pulse">
-            @foreach (range(1, 3) as $i)
-                <div class="p-5 bg-white dark:bg-dark-800 border border-gray-200 dark:border-dark-600 rounded-xl space-y-4">
-                    <div class="flex items-start justify-between">
+        {{-- Loading Skeleton --}}
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 animate-pulse">
+            {{-- Sidebar Skeleton --}}
+            <div class="hidden lg:block lg:col-span-3 space-y-4">
+                <div class="bg-white dark:bg-dark-800 border border-secondary-200 dark:border-dark-600 rounded-xl p-4 space-y-3">
+                    @foreach (range(1, 3) as $i)
                         <div class="flex items-center gap-3">
-                            <div class="h-11 w-11 bg-gray-200 dark:bg-dark-700 rounded-xl flex-shrink-0"></div>
-                            <div class="space-y-1.5">
-                                <div class="h-4 bg-gray-200 dark:bg-dark-700 rounded w-28"></div>
-                                <div class="h-3 bg-gray-200 dark:bg-dark-700 rounded w-20"></div>
+                            <div class="h-9 w-9 bg-gray-200 dark:bg-dark-700 rounded-xl flex-shrink-0"></div>
+                            <div class="flex-1 space-y-1.5">
+                                <div class="h-3 bg-gray-200 dark:bg-dark-700 rounded w-24"></div>
+                                <div class="h-3 bg-gray-200 dark:bg-dark-700 rounded w-16"></div>
                             </div>
                         </div>
-                        <div class="h-6 w-10 bg-gray-200 dark:bg-dark-700 rounded-lg"></div>
-                    </div>
-                    <div class="space-y-1.5">
-                        <div class="h-7 bg-gray-200 dark:bg-dark-700 rounded w-36"></div>
-                        <div class="h-3 bg-gray-200 dark:bg-dark-700 rounded w-28"></div>
-                    </div>
-                    <div class="space-y-1.5 pt-3 border-t border-gray-100 dark:border-dark-700">
-                        <div class="flex justify-between">
-                            <div class="h-3 bg-gray-200 dark:bg-dark-700 rounded w-24"></div>
-                            <div class="h-3 bg-gray-200 dark:bg-dark-700 rounded w-10"></div>
-                        </div>
-                        <div class="flex justify-between">
-                            <div class="h-3 bg-gray-200 dark:bg-dark-700 rounded w-20"></div>
-                            <div class="h-3 bg-gray-200 dark:bg-dark-700 rounded w-12"></div>
-                        </div>
+                    @endforeach
+                </div>
+                <div class="bg-white dark:bg-dark-800 border border-secondary-200 dark:border-dark-600 rounded-xl p-4 space-y-3">
+                    <div class="h-3 bg-gray-200 dark:bg-dark-700 rounded w-28"></div>
+                    <div class="h-5 bg-gray-200 dark:bg-dark-700 rounded w-36"></div>
+                    <div class="h-4 bg-gray-200 dark:bg-dark-700 rounded w-32"></div>
+                    <div class="h-4 bg-gray-200 dark:bg-dark-700 rounded w-32"></div>
+                </div>
+            </div>
+
+            {{-- Main Panel Skeleton --}}
+            <div class="lg:col-span-9 space-y-6">
+                {{-- Header skeleton --}}
+                <div class="flex items-center gap-3">
+                    <div class="h-12 w-12 bg-gray-200 dark:bg-dark-700 rounded-xl"></div>
+                    <div class="space-y-2">
+                        <div class="h-5 bg-gray-200 dark:bg-dark-700 rounded w-40"></div>
+                        <div class="h-3 bg-gray-200 dark:bg-dark-700 rounded w-56"></div>
                     </div>
                 </div>
-            @endforeach
+
+                {{-- Stats skeleton --}}
+                <div class="grid grid-cols-3 gap-3">
+                    @foreach (range(1, 3) as $i)
+                        <div class="h-16 bg-gray-200 dark:bg-dark-700 rounded-xl"></div>
+                    @endforeach
+                </div>
+
+                {{-- Chart skeleton --}}
+                <div class="grid grid-cols-1 lg:grid-cols-5 gap-4">
+                    <div class="lg:col-span-3 bg-white dark:bg-dark-800 border border-secondary-200 dark:border-dark-600 rounded-xl p-5">
+                        <div class="h-4 bg-gray-200 dark:bg-dark-700 rounded w-36 mb-4"></div>
+                        <div class="h-[260px] bg-gray-100 dark:bg-dark-700 rounded-xl"></div>
+                    </div>
+                    <div class="lg:col-span-2 bg-white dark:bg-dark-800 border border-secondary-200 dark:border-dark-600 rounded-xl p-5">
+                        <div class="h-4 bg-gray-200 dark:bg-dark-700 rounded w-28 mb-4"></div>
+                        <div class="h-[160px] bg-gray-100 dark:bg-dark-700 rounded-xl"></div>
+                    </div>
+                </div>
+
+                {{-- Table skeleton --}}
+                <div class="bg-white dark:bg-dark-800 border border-secondary-200 dark:border-dark-600 rounded-xl p-4 space-y-3">
+                    @foreach (range(1, 5) as $i)
+                        <div class="h-10 bg-gray-100 dark:bg-dark-700 rounded-lg"></div>
+                    @endforeach
+                </div>
+            </div>
         </div>
     @endif
 
     {{-- ============================================================ --}}
-    {{-- SELECTED ACCOUNT DETAIL SECTION                              --}}
-    {{-- ============================================================ --}}
-    @if ($ready && $selectedAccountId)
-        <div class="space-y-4">
-
-            {{-- Action Buttons Row --}}
-            <div class="flex flex-wrap items-center gap-3">
-                <livewire:transactions.create-expense @transaction-created="$refresh" />
-                <livewire:transactions.create-income @transaction-created="$refresh" />
-
-                <x-button
-                    wire:click="exportReport"
-                    loading="exportReport"
-                    color="zinc"
-                    outline
-                    icon="document-arrow-down"
-                    size="sm"
-                >
-                    {{ __('pages.export_report') }}
-                </x-button>
-            </div>
-
-            {{-- Chart (QuickActionsOverview — full-width, chart only) --}}
-            <livewire:accounts.quick-actions-overview :selectedAccountId="$selectedAccountId" :key="'qao-' . $selectedAccountId" />
-
-            {{-- Transactions + Payments Tab --}}
-            <div class="overflow-hidden">
-                <x-tab selected="transactions" scroll-on-mobile>
-                    <x-tab.items tab="transactions" :title="__('common.transactions')">
-                        <x-slot:left>
-                            <x-icon name="arrows-right-left" class="w-4 h-4" />
-                        </x-slot:left>
-                        <div class="mt-3 overflow-x-auto">
-                            <div class="min-w-full px-1">
-                                <livewire:transactions.listing :constrainedBankAccountId="$selectedAccountId" :key="'transactions-' . $selectedAccountId" />
-                            </div>
-                        </div>
-                    </x-tab.items>
-
-                    <x-tab.items tab="payments" :title="__('common.payments')">
-                        <x-slot:left>
-                            <x-icon name="banknotes" class="w-4 h-4" />
-                        </x-slot:left>
-                        <div class="mt-3 overflow-x-auto">
-                            <div class="min-w-full px-1">
-                                <livewire:payments.listing :constrainedBankAccountId="$selectedAccountId" :key="'payments-' . $selectedAccountId" />
-                            </div>
-                        </div>
-                    </x-tab.items>
-                </x-tab>
-            </div>
-        </div>
-    @elseif ($ready && $this->accountsData->count() === 0)
-        {{-- Empty State --}}
-        <div class="bg-white dark:bg-dark-800 border border-zinc-200 dark:border-dark-600 rounded-xl p-12 text-center">
-            <x-icon name="building-library" class="w-16 h-16 text-zinc-300 dark:text-zinc-600 mx-auto mb-4" />
-            <h3 class="text-xl font-semibold text-dark-900 dark:text-dark-50 mb-2">{{ __('pages.no_accounts_yet') }}</h3>
-            <p class="text-dark-600 dark:text-dark-400 mb-6">{{ __('pages.no_account_selected_message') }}</p>
-            <x-button wire:click="createAccount" loading="createAccount" color="primary" icon="plus">
-                {{ __('common.create') }}
-            </x-button>
-        </div>
-    @endif
-
-    {{-- ============================================================ --}}
-    {{-- WORKFLOW GUIDE MODAL (unchanged)                             --}}
+    {{-- WORKFLOW GUIDE MODAL                                         --}}
     {{-- ============================================================ --}}
     <x-modal wire="guideModal" size="3xl" center>
         <x-slot:title>
@@ -652,7 +749,7 @@
     </x-modal>
 
     {{-- ============================================================ --}}
-    {{-- CHILD COMPONENTS (unchanged)                                 --}}
+    {{-- CHILD COMPONENTS                                             --}}
     {{-- ============================================================ --}}
     <livewire:accounts.create @account-created="refreshData" />
     <livewire:accounts.delete @account-deleted="refreshData" />
