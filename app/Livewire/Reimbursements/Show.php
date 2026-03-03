@@ -32,6 +32,7 @@ class Show extends Component
             ? Reimbursement::with([
                 'user',
                 'reviewer',
+                'category',
                 'payments.payer',
                 'payments.bankTransaction.bankAccount'
             ])

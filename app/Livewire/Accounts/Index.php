@@ -18,6 +18,7 @@ class Index extends Component
     // Core state
     public $selectedAccountId = null;
     public bool $ready = false;
+    public bool $guideModal = false;
 
     public function mount(): void
     {

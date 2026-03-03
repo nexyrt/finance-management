@@ -17,6 +17,8 @@ class Index extends Component
 {
     use WithPagination, Alert;
 
+    public bool $guideModal = false;
+
     // Filters - NO TYPE DECLARATION
     public $quantity = 10;
     public $search = null;

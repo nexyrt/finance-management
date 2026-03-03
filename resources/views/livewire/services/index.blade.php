@@ -12,7 +12,18 @@
                 {{ __('pages.service_list') }}
             </p>
         </div>
-        <livewire:services.create />
+        <div class="flex items-center gap-3">
+            {{-- Workflow Guide Button --}}
+            <button
+                wire:click="$toggle('guideModal')"
+                class="h-9 px-4 flex items-center gap-2 rounded-xl border border-zinc-200 dark:border-dark-600 bg-white dark:bg-dark-800 text-dark-500 dark:text-dark-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-300 dark:hover:border-indigo-700 text-sm font-medium transition-all"
+            >
+                <x-icon name="information-circle" class="w-4 h-4" />
+                {{ __('pages.client_guide_btn') }}
+            </button>
+
+            <livewire:services.create />
+        </div>
     </div>
 
     {{-- Stats Cards --}}
@@ -204,6 +215,174 @@
             </div>
         </div>
     </div>
+
+    {{-- Workflow Guide Modal --}}
+    <x-modal wire="guideModal" size="3xl" center>
+        <x-slot:title>
+            <div class="flex items-center gap-4 my-3">
+                <div class="h-12 w-12 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl flex items-center justify-center">
+                    <x-icon name="map" class="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold text-dark-900 dark:text-dark-50">{{ __('pages.service_guide_title') }}</h3>
+                    <p class="text-sm text-dark-600 dark:text-dark-400">{{ __('pages.service_guide_desc') }}</p>
+                </div>
+            </div>
+        </x-slot:title>
+
+        <div class="space-y-6">
+            {{-- Workflow Steps Timeline --}}
+            <div class="relative">
+                {{-- Connecting line --}}
+                <div class="absolute left-6 top-10 bottom-10 w-0.5 bg-gradient-to-b from-blue-300 via-purple-300 to-green-300 dark:from-blue-700 dark:via-purple-700 dark:to-green-700 hidden sm:block"></div>
+
+                <div class="space-y-4">
+                    {{-- Step 1 --}}
+                    <div class="flex gap-4">
+                        <div class="flex-shrink-0 w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center shadow-lg shadow-blue-200 dark:shadow-blue-900/40 z-10">
+                            <span class="text-white font-bold text-sm">1</span>
+                        </div>
+                        <div class="flex-1 bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-900/40 rounded-xl p-4">
+                            <div class="flex items-start gap-3">
+                                <x-icon name="plus-circle" class="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+                                <div class="flex-1">
+                                    <h4 class="font-semibold text-blue-900 dark:text-blue-200 mb-1">{{ __('pages.service_guide_step1_title') }}</h4>
+                                    <p class="text-sm text-blue-700 dark:text-blue-300 mb-3">{{ __('pages.service_guide_step1_desc') }}</p>
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <div class="flex items-start gap-2 text-xs text-blue-600 dark:text-blue-400">
+                                            <x-icon name="check-circle" class="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+                                            <span>{{ __('pages.service_guide_step1_tip1') }}</span>
+                                        </div>
+                                        <div class="flex items-start gap-2 text-xs text-blue-600 dark:text-blue-400">
+                                            <x-icon name="check-circle" class="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+                                            <span>{{ __('pages.service_guide_step1_tip2') }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Step 2 --}}
+                    <div class="flex gap-4">
+                        <div class="flex-shrink-0 w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center shadow-lg shadow-purple-200 dark:shadow-purple-900/40 z-10">
+                            <span class="text-white font-bold text-sm">2</span>
+                        </div>
+                        <div class="flex-1 bg-purple-50 dark:bg-purple-900/10 border border-purple-200 dark:border-purple-900/40 rounded-xl p-4">
+                            <div class="flex items-start gap-3">
+                                <x-icon name="document-text" class="w-5 h-5 text-purple-600 dark:text-purple-400 flex-shrink-0 mt-0.5" />
+                                <div class="flex-1">
+                                    <h4 class="font-semibold text-purple-900 dark:text-purple-200 mb-1">{{ __('pages.service_guide_step2_title') }}</h4>
+                                    <p class="text-sm text-purple-700 dark:text-purple-300 mb-3">{{ __('pages.service_guide_step2_desc') }}</p>
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <div class="flex items-start gap-2 text-xs text-purple-600 dark:text-purple-400">
+                                            <x-icon name="check-circle" class="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+                                            <span>{{ __('pages.service_guide_step2_tip1') }}</span>
+                                        </div>
+                                        <div class="flex items-start gap-2 text-xs text-purple-600 dark:text-purple-400">
+                                            <x-icon name="check-circle" class="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+                                            <span>{{ __('pages.service_guide_step2_tip2') }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Step 3 --}}
+                    <div class="flex gap-4">
+                        <div class="flex-shrink-0 w-12 h-12 bg-emerald-600 rounded-full flex items-center justify-center shadow-lg shadow-emerald-200 dark:shadow-emerald-900/40 z-10">
+                            <span class="text-white font-bold text-sm">3</span>
+                        </div>
+                        <div class="flex-1 bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-200 dark:border-emerald-900/40 rounded-xl p-4">
+                            <div class="flex items-start gap-3">
+                                <x-icon name="pencil-square" class="w-5 h-5 text-emerald-600 dark:text-emerald-400 flex-shrink-0 mt-0.5" />
+                                <div class="flex-1">
+                                    <h4 class="font-semibold text-emerald-900 dark:text-emerald-200 mb-1">{{ __('pages.service_guide_step3_title') }}</h4>
+                                    <p class="text-sm text-emerald-700 dark:text-emerald-300">{{ __('pages.service_guide_step3_desc') }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Service Categories --}}
+            <div class="border-t border-secondary-200 dark:border-dark-600 pt-5">
+                <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-3">{{ __('pages.service_guide_categories_title') }}</h4>
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="flex items-start gap-3 p-3 bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-900/40 rounded-xl">
+                        <div class="h-8 w-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <x-icon name="document-check" class="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                        </div>
+                        <div>
+                            <p class="text-sm font-semibold text-blue-900 dark:text-blue-200">{{ __('pages.service_cat_perizinan') }}</p>
+                            <p class="text-xs text-blue-600 dark:text-blue-400">{{ __('pages.service_cat_perizinan_desc') }}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-3 p-3 bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-900/40 rounded-xl">
+                        <div class="h-8 w-8 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <x-icon name="calculator" class="w-4 h-4 text-green-600 dark:text-green-400" />
+                        </div>
+                        <div>
+                            <p class="text-sm font-semibold text-green-900 dark:text-green-200">{{ __('pages.service_cat_pajak') }}</p>
+                            <p class="text-xs text-green-600 dark:text-green-400">{{ __('pages.service_cat_pajak_desc') }}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-3 p-3 bg-purple-50 dark:bg-purple-900/10 border border-purple-200 dark:border-purple-900/40 rounded-xl">
+                        <div class="h-8 w-8 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <x-icon name="megaphone" class="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                        </div>
+                        <div>
+                            <p class="text-sm font-semibold text-purple-900 dark:text-purple-200">{{ __('pages.service_cat_marketing') }}</p>
+                            <p class="text-xs text-purple-600 dark:text-purple-400">{{ __('pages.service_cat_marketing_desc') }}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-3 p-3 bg-orange-50 dark:bg-orange-900/10 border border-orange-200 dark:border-orange-900/40 rounded-xl">
+                        <div class="h-8 w-8 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <x-icon name="computer-desktop" class="w-4 h-4 text-orange-600 dark:text-orange-400" />
+                        </div>
+                        <div>
+                            <p class="text-sm font-semibold text-orange-900 dark:text-orange-200">{{ __('pages.service_cat_digital') }}</p>
+                            <p class="text-xs text-orange-600 dark:text-orange-400">{{ __('pages.service_cat_digital_desc') }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Tips --}}
+            <div class="p-4 bg-gray-50 dark:bg-dark-700 rounded-xl border border-gray-200 dark:border-dark-600">
+                <div class="flex items-start gap-3">
+                    <x-icon name="light-bulb" class="w-5 h-5 text-yellow-500 dark:text-yellow-400 flex-shrink-0 mt-0.5" />
+                    <div class="flex-1">
+                        <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-2">{{ __('pages.service_guide_tips_title') }}</h4>
+                        <ul class="space-y-1.5 text-xs text-dark-500 dark:text-dark-400">
+                            <li class="flex items-start gap-2">
+                                <x-icon name="check-circle" class="w-3.5 h-3.5 flex-shrink-0 mt-0.5 text-green-500" />
+                                <span>{{ __('pages.service_guide_tip1') }}</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <x-icon name="check-circle" class="w-3.5 h-3.5 flex-shrink-0 mt-0.5 text-green-500" />
+                                <span>{{ __('pages.service_guide_tip2') }}</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <x-icon name="check-circle" class="w-3.5 h-3.5 flex-shrink-0 mt-0.5 text-green-500" />
+                                <span>{{ __('pages.service_guide_tip3') }}</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <x-slot:footer>
+            <div class="flex justify-end">
+                <x-button wire:click="$toggle('guideModal')" color="primary" icon="check">
+                    {{ __('pages.client_guide_got_it') }}
+                </x-button>
+            </div>
+        </x-slot:footer>
+    </x-modal>
 
     {{-- Child Components (satu instance, bukan per baris) --}}
     <livewire:services.edit />

@@ -10,6 +10,8 @@ class Index extends Component
 {
     public string $activeTab = 'my_requests';
 
+    public bool $guideModal = false;
+
     public function mount(): void
     {
         // If user can view all requests (admin/finance manager), show all requests tab by default

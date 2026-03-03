@@ -27,6 +27,7 @@ class Index extends Component
     public ?string $search = null;
     public ?string $typeFilter = null;
     public ?string $statusFilter = null;
+    public bool $guideModal = false;
 
     public function with(): array
     {

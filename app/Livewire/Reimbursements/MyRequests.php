@@ -7,6 +7,7 @@ use App\Models\Reimbursement;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Renderless;
@@ -51,35 +52,62 @@ class MyRequests extends Component
         ];
     }
 
+    /**
+     * Shared base query — avoids duplicating WHERE clauses between rows() and stats().
+     */
+    private function getFilteredQuery(): Builder
+    {
+        return Reimbursement::where('user_id', auth()->id())
+            ->when(
+                $this->search,
+                fn(Builder $q) => $q->whereAny(['title', 'description', 'category_input'], 'like', '%' . trim($this->search) . '%')
+            )
+            ->when($this->statusFilter, fn(Builder $q) => $q->where('status', $this->statusFilter))
+            ->when($this->categoryFilter, fn(Builder $q) => $q->where('category_input', $this->categoryFilter))
+            ->when(
+                !empty($this->dateRange) && count($this->dateRange) === 2,
+                fn(Builder $q) => $q->whereBetween('expense_date', $this->dateRange)
+            );
+    }
+
     #[Computed]
     public function rows(): LengthAwarePaginator
     {
-        return Reimbursement::with(['reviewer'])
-            ->where('user_id', auth()->id())
-            ->when(
-                $this->search,
-                fn(Builder $query) =>
-                $query->whereAny(['title', 'description', 'category_input'], 'like', '%' . trim($this->search) . '%')
-            )
-            ->when(
-                $this->statusFilter,
-                fn(Builder $query) =>
-                $query->where('status', $this->statusFilter)
-            )
-            ->when(
-                $this->categoryFilter,
-                fn(Builder $query) =>
-                $query->where('category_input', $this->categoryFilter)
-            )
-            ->when(
-                !empty($this->dateRange) && count($this->dateRange) === 2,
-                fn(Builder $query) =>
-                $query->whereBetween('expense_date', $this->dateRange)
-            )
+        return $this->getFilteredQuery()
+            ->with(['reviewer'])
             ->withSum('payments', 'amount')
             ->orderBy($this->sort['column'], $this->sort['direction'])
             ->paginate($this->quantity)
             ->withQueryString();
+    }
+
+    /**
+     * Stats summary — single CASE WHEN query.
+     */
+    #[Computed]
+    public function stats(): array
+    {
+        $result = $this->getFilteredQuery()
+            ->selectRaw("
+                COUNT(*) as total,
+                SUM(amount) as total_amount,
+                SUM(CASE WHEN status = 'draft' THEN 1 ELSE 0 END) as draft_count,
+                SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending_count,
+                SUM(CASE WHEN status = 'approved' THEN 1 ELSE 0 END) as approved_count,
+                SUM(CASE WHEN status = 'paid' THEN 1 ELSE 0 END) as paid_count,
+                SUM(amount_paid) as total_paid
+            ")
+            ->first();
+
+        return [
+            'total'         => (int) ($result->total ?? 0),
+            'total_amount'  => (int) ($result->total_amount ?? 0),
+            'draft_count'   => (int) ($result->draft_count ?? 0),
+            'pending_count' => (int) ($result->pending_count ?? 0),
+            'approved_count'=> (int) ($result->approved_count ?? 0),
+            'paid_count'    => (int) ($result->paid_count ?? 0),
+            'total_paid'    => (int) ($result->total_paid ?? 0),
+        ];
     }
 
     #[Computed]
@@ -199,6 +227,6 @@ class MyRequests extends Component
     #[On('paid')]
     public function refresh(): void
     {
-        unset($this->rows);
+        unset($this->rows, $this->stats);
     }
 }

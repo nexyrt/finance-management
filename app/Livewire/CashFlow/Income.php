@@ -20,6 +20,9 @@ class Income extends Component
 {
     use Interactions, WithPagination;
 
+    // UI State
+    public bool $guideModal = false;
+
     // Filters
     public $dateRange = [];
     public $categoryFilters = [];

@@ -19,6 +19,7 @@ class Index extends Component
     public ?string $search = null;
     public ?string $typeFilter = null;
     public array $sort = ['column' => 'type', 'direction' => 'asc'];
+    public bool $guideModal = false;
 
     public array $headers = [];
 
