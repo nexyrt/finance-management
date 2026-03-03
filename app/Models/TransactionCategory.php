@@ -79,8 +79,14 @@ class TransactionCategory extends Model
      */
     public function getFullPathAttribute(): string
     {
-        return $this->isParent()
-            ? $this->label
-            : ($this->parent ? $this->parent->label . ' → ' . $this->label : $this->label);
+        if ($this->isParent()) {
+            return $this->label;
+        }
+
+        if ($this->relationLoaded('parent') && $this->parent) {
+            return $this->parent->label . ' → ' . $this->label;
+        }
+
+        return $this->label;
     }
 }

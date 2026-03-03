@@ -27,15 +27,24 @@ class FundRequestItem extends Model
     protected static function booted()
     {
         static::created(function ($item) {
-            $item->fundRequest->calculateTotalAmount();
+            $fundRequest = $item->relationLoaded('fundRequest')
+                ? $item->fundRequest
+                : FundRequest::find($item->fund_request_id);
+            $fundRequest?->calculateTotalAmount();
         });
 
         static::updated(function ($item) {
-            $item->fundRequest->calculateTotalAmount();
+            $fundRequest = $item->relationLoaded('fundRequest')
+                ? $item->fundRequest
+                : FundRequest::find($item->fund_request_id);
+            $fundRequest?->calculateTotalAmount();
         });
 
         static::deleted(function ($item) {
-            $item->fundRequest->calculateTotalAmount();
+            $fundRequest = $item->relationLoaded('fundRequest')
+                ? $item->fundRequest
+                : FundRequest::find($item->fund_request_id);
+            $fundRequest?->calculateTotalAmount();
         });
     }
 }

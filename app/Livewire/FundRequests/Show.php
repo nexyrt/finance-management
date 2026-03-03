@@ -4,6 +4,8 @@ namespace App\Livewire\FundRequests;
 
 use App\Livewire\Traits\Alert;
 use App\Models\FundRequest;
+use Illuminate\Contracts\View\View;
+use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
 use Livewire\Component;
 
@@ -11,22 +13,16 @@ class Show extends Component
 {
     use Alert;
     public bool $modal = false;
-    public ?FundRequest $fundRequest = null;
+    public ?int $fundRequestId = null;
 
     #[On('show::fund-request')]
     public function openModal(int $id): void
     {
-        $this->fundRequest = FundRequest::with([
-            'user',
-            'items.category',
-            'reviewer',
-            'disburser',
-            'bankTransaction',
-        ])->findOrFail($id);
+        $fundRequest = FundRequest::findOrFail($id);
 
         // Check authorization
         $canView = auth()->user()->can('view fund requests');
-        $isOwner = $this->fundRequest->user_id === auth()->id();
+        $isOwner = $fundRequest->user_id === auth()->id();
 
         if (! $canView && ! $isOwner) {
             $this->toast()->error('Unauthorized', 'You cannot view this fund request.')->send();
@@ -34,11 +30,28 @@ class Show extends Component
             return;
         }
 
+        $this->fundRequestId = $id;
         $this->modal = true;
     }
 
-    public function render()
+    #[Computed]
+    public function fundRequest(): ?FundRequest
     {
-        return view('livewire.fund-requests.show');
+        return $this->fundRequestId
+            ? FundRequest::with([
+                'user',
+                'items.category.parent',
+                'reviewer',
+                'disburser',
+                'bankTransaction',
+            ])->find($this->fundRequestId)
+            : null;
+    }
+
+    public function render(): View
+    {
+        return view('livewire.fund-requests.show', [
+            'fundRequest' => $this->fundRequest,
+        ]);
     }
 }

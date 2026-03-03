@@ -371,7 +371,7 @@ class Reimbursement extends Model
     public function getCategoryLabelAttribute(): string
     {
         // Use FK category if set by finance, fallback to user input
-        if ($this->category) {
+        if ($this->relationLoaded('category') && $this->category) {
             return $this->category->label;
         }
 

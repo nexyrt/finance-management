@@ -4,6 +4,8 @@ namespace App\Livewire\FundRequests;
 
 use App\Livewire\Traits\Alert;
 use App\Models\FundRequest;
+use Illuminate\Contracts\View\View;
+use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
 use Livewire\Component;
 
@@ -11,7 +13,7 @@ class Review extends Component
 {
     use Alert;
     public bool $modal = false;
-    public ?FundRequest $fundRequest = null;
+    public ?int $fundRequestId = null;
     public string $reviewNotes = '';
 
     protected function rules(): array
@@ -24,10 +26,10 @@ class Review extends Component
     #[On('review::fund-request')]
     public function openModal(int $id): void
     {
-        $this->fundRequest = FundRequest::with(['user', 'items.category'])->findOrFail($id);
+        $fundRequest = FundRequest::findOrFail($id);
 
         // Check if can review
-        if (! $this->fundRequest->canReview()) {
+        if (! $fundRequest->canReview()) {
             $this->toast()->error(__('common.error'), __('pages.cannot_review_fund_request'))->send();
 
             return;
@@ -40,22 +42,33 @@ class Review extends Component
             return;
         }
 
+        $this->fundRequestId = $id;
         $this->reset('reviewNotes');
         $this->modal = true;
+    }
+
+    #[Computed]
+    public function fundRequest(): ?FundRequest
+    {
+        return $this->fundRequestId
+            ? FundRequest::with(['user', 'items.category.parent'])->find($this->fundRequestId)
+            : null;
     }
 
     public function approve(): void
     {
         $this->validate();
 
-        if (! $this->fundRequest->canReview()) {
+        $fundRequest = $this->fundRequest;
+
+        if (! $fundRequest || ! $fundRequest->canReview()) {
             $this->toast()->error(__('common.error'), __('pages.cannot_review_fund_request'))->send();
             $this->modal = false;
 
             return;
         }
 
-        $this->fundRequest->approve(auth()->id(), $this->reviewNotes);
+        $fundRequest->approve(auth()->id(), $this->reviewNotes);
 
         $this->modal = false;
         $this->reset();
@@ -72,14 +85,16 @@ class Review extends Component
             'reviewNotes.required' => __('pages.review_notes_required'),
         ]);
 
-        if (! $this->fundRequest->canReview()) {
+        $fundRequest = $this->fundRequest;
+
+        if (! $fundRequest || ! $fundRequest->canReview()) {
             $this->toast()->error(__('common.error'), __('pages.cannot_review_fund_request'))->send();
             $this->modal = false;
 
             return;
         }
 
-        $this->fundRequest->reject(auth()->id(), $this->reviewNotes);
+        $fundRequest->reject(auth()->id(), $this->reviewNotes);
 
         $this->modal = false;
         $this->reset();
@@ -88,8 +103,10 @@ class Review extends Component
         $this->dispatch('fund-request-reviewed');
     }
 
-    public function render()
+    public function render(): View
     {
-        return view('livewire.fund-requests.review');
+        return view('livewire.fund-requests.review', [
+            'fundRequest' => $this->fundRequest,
+        ]);
     }
 }

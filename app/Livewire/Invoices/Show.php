@@ -3,6 +3,7 @@
 namespace App\Livewire\Invoices;
 
 use App\Models\Invoice;
+use Illuminate\Contracts\View\View;
 use Livewire\Component;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Computed;
@@ -12,27 +13,35 @@ class Show extends Component
 {
     use Interactions;
 
-    public ?Invoice $invoice = null;
+    public ?int $invoiceId = null;
     public bool $modal = false;
 
     #[On('show-invoice')]
     public function show(int $invoiceId): void
     {
-        $this->invoice = Invoice::with(['client', 'items.client', 'payments.bankAccount'])
-            ->find($invoiceId);
+        $invoice = Invoice::find($invoiceId);
 
-        if (!$this->invoice) {
+        if (!$invoice) {
             $this->toast()->error(__('common.error'), __('invoice.not_found'))->send();
             return;
         }
 
+        $this->invoiceId = $invoiceId;
         $this->modal = true;
     }
 
     public function resetData(): void
     {
-        $this->invoice = null;
+        $this->invoiceId = null;
         $this->modal = false;
+    }
+
+    #[Computed]
+    public function invoice(): ?Invoice
+    {
+        return $this->invoiceId
+            ? Invoice::with(['client', 'items.client', 'payments.bankAccount'])->find($this->invoiceId)
+            : null;
     }
 
     #[Computed]
@@ -119,8 +128,10 @@ class Show extends Component
         ]);
     }
 
-    public function render()
+    public function render(): View
     {
-        return view('livewire.invoices.show');
+        return view('livewire.invoices.show', [
+            'invoice' => $this->invoice,
+        ]);
     }
 }

@@ -73,7 +73,7 @@ class CashFlowExportService
     {
 
         // Get bank transactions
-        $bankTransactionsQuery = BankTransaction::with(['category', 'bankAccount'])
+        $bankTransactionsQuery = BankTransaction::with(['category.parent', 'bankAccount'])
             ->whereBetween('transaction_date', [$startDate, $endDate])
             ->orderBy('transaction_date')
             ->orderBy('id');

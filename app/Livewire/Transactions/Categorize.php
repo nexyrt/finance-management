@@ -4,7 +4,7 @@ namespace App\Livewire\Transactions;
 
 use App\Models\BankTransaction;
 use App\Models\TransactionCategory;
-use Illuminate\Support\Collection;
+use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
 use Livewire\Component;
@@ -17,38 +17,30 @@ class Categorize extends Component
     public bool $modal = false;
     public bool $isBulk = false;
 
-    // Single transaction
-    public ?BankTransaction $transaction = null;
+    // Single transaction — store ID only
+    public ?int $transactionId = null;
 
-    // Bulk transactions
+    // Bulk transactions — store IDs only
     public array $transactionIds = [];
-    public Collection $transactions;
 
     // Form
     public ?int $category_id = null;
 
-    public function mount()
-    {
-        $this->transactions = collect([]);
-    }
-
     #[On('categorize-transaction')]
     public function openSingle(int $id): void
     {
-        $this->reset(['category_id', 'transactionIds']);
+        $this->reset(['category_id', 'transactionIds', 'transactionId']);
         $this->isBulk = false;
 
-        $this->transaction = BankTransaction::with(['bankAccount', 'category'])
-            ->findOrFail($id);
-
-        $this->category_id = $this->transaction->category_id;
+        $tx = BankTransaction::findOrFail($id);
+        $this->transactionId = $id;
+        $this->category_id = $tx->category_id;
         $this->modal = true;
     }
 
     #[On('bulk-categorize')]
     public function openBulk($ids): void
     {
-        // Handle both array and string (from Alpine x-data)
         if (is_string($ids)) {
             $ids = json_decode($ids, true) ?? [];
         }
@@ -60,21 +52,31 @@ class Categorize extends Component
             return;
         }
 
-        $this->reset(['category_id', 'transaction']);
+        $this->reset(['category_id', 'transactionId']);
         $this->isBulk = true;
         $this->transactionIds = $ids;
-
-        $this->transactions = BankTransaction::with(['bankAccount', 'category'])
-            ->whereIn('id', $ids)
-            ->get();
-
         $this->modal = true;
+    }
+
+    #[Computed]
+    public function transaction(): ?BankTransaction
+    {
+        return $this->transactionId
+            ? BankTransaction::with(['bankAccount', 'category'])->find($this->transactionId)
+            : null;
+    }
+
+    #[Computed]
+    public function transactions()
+    {
+        return $this->isBulk && !empty($this->transactionIds)
+            ? BankTransaction::with(['bankAccount', 'category'])->whereIn('id', $this->transactionIds)->get()
+            : collect([]);
     }
 
     #[Computed]
     public function categoriesOptions(): array
     {
-        // Determine transaction type
         $transactionType = $this->isBulk
             ? $this->transactions->first()?->transaction_type
             : $this->transaction?->transaction_type;
@@ -83,14 +85,12 @@ class Categorize extends Component
             return [];
         }
 
-        // Map transaction_type to category types
         $categoryTypes = match ($transactionType) {
             'credit' => ['income', 'adjustment', 'transfer'],
             'debit' => ['expense', 'adjustment', 'transfer'],
             default => []
         };
 
-        // Get parent categories
         $parents = TransactionCategory::whereNull('parent_id')
             ->whereIn('type', $categoryTypes)
             ->with('children')
@@ -101,14 +101,12 @@ class Categorize extends Component
         $options = [];
 
         foreach ($parents as $parent) {
-            // Add parent - disabled (hanya sebagai header)
             $options[] = [
                 'label' => $parent->label,
                 'value' => $parent->id,
                 'disabled' => true,
             ];
 
-            // Add children with indentation - enabled (bisa dipilih)
             foreach ($parent->children as $child) {
                 $options[] = [
                     'label' => '  ↳ ' . $child->label,
@@ -133,16 +131,14 @@ class Categorize extends Component
         $this->validate();
 
         try {
-            // Di method save() - bagian bulk update
             if ($this->isBulk) {
                 BankTransaction::whereIn('id', $this->transactionIds)
                     ->update(['category_id' => $this->category_id]);
 
                 $count = count($this->transactionIds);
 
-                // Dispatch event agar parent clear selection
                 $this->dispatch('transaction-categorized');
-                $this->dispatch('clear-selection'); // Tambahkan ini
+                $this->dispatch('clear-selection');
 
                 $this->reset();
                 $this->modal = false;
@@ -151,8 +147,8 @@ class Categorize extends Component
                     ->success('Berhasil!', "{$count} transaksi berhasil dikategorikan")
                     ->send();
             } else {
-                // Single update
-                $this->transaction->update(['category_id' => $this->category_id]);
+                BankTransaction::where('id', $this->transactionId)
+                    ->update(['category_id' => $this->category_id]);
 
                 $this->dispatch('transaction-categorized');
                 $this->reset();
@@ -169,8 +165,11 @@ class Categorize extends Component
         }
     }
 
-    public function render()
+    public function render(): View
     {
-        return view('livewire.transactions.categorize');
+        return view('livewire.transactions.categorize', [
+            'transaction' => $this->transaction,
+            'transactions' => $this->transactions,
+        ]);
     }
 }
