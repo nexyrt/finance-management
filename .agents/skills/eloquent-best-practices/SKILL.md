@@ -10,13 +10,13 @@ description: Best practices for Laravel Eloquent ORM including query optimizatio
 ### Always Eager Load Relationships
 
 ```php
-// ❌ N+1 Query Problem
+// BAD: N+1 Query Problem
 $posts = Post::all();
 foreach ($posts as $post) {
     echo $post->user->name; // N additional queries
 }
 
-// ✅ Eager Loading
+// GOOD: Eager Loading
 $posts = Post::with('user')->get();
 foreach ($posts as $post) {
     echo $post->user->name; // No additional queries
@@ -26,20 +26,20 @@ foreach ($posts as $post) {
 ### Select Only Needed Columns
 
 ```php
-// ❌ Fetches all columns
+// BAD: Fetches all columns
 $users = User::all();
 
-// ✅ Only needed columns
+// GOOD: Only needed columns
 $users = User::select(['id', 'name', 'email'])->get();
 
-// ✅ With relationships
+// GOOD: With relationships
 $posts = Post::with(['user:id,name'])->select(['id', 'title', 'user_id'])->get();
 ```
 
 ### Use Query Scopes
 
 ```php
-// ✅ Define reusable query logic
+// GOOD: Define reusable query logic
 class Post extends Model
 {
     public function scopePublished($query)
@@ -83,12 +83,12 @@ class Post extends Model
 ### Use withCount for Counts
 
 ```php
-// ❌ Triggers additional queries
+// BAD: Triggers additional queries
 foreach ($posts as $post) {
     echo $post->comments()->count();
 }
 
-// ✅ Load counts efficiently
+// GOOD: Load counts efficiently
 $posts = Post::withCount('comments')->get();
 foreach ($posts as $post) {
     echo $post->comments_count;
@@ -100,13 +100,13 @@ foreach ($posts as $post) {
 ```php
 class Post extends Model
 {
-    // ✅ Whitelist fillable attributes
+    // GOOD: Whitelist fillable attributes
     protected $fillable = ['title', 'content', 'status'];
     
     // Or blacklist guarded attributes
     protected $guarded = ['id', 'user_id'];
     
-    // ❌ Never do this
+    // BAD: Never do this
     // protected $guarded = [];
 }
 ```
@@ -128,14 +128,14 @@ class Post extends Model
 ## Chunking for Large Datasets
 
 ```php
-// ✅ Process in chunks to save memory
+// GOOD: Process in chunks to save memory
 Post::chunk(200, function ($posts) {
     foreach ($posts as $post) {
         // Process each post
     }
 });
 
-// ✅ Or use lazy collections
+// GOOD: Or use lazy collections
 Post::lazy()->each(function ($post) {
     // Process one at a time
 });
@@ -144,16 +144,16 @@ Post::lazy()->each(function ($post) {
 ## Database-Level Operations
 
 ```php
-// ❌ Slow - loads into memory first
+// BAD: Slow - loads into memory first
 $posts = Post::where('status', 'draft')->get();
 foreach ($posts as $post) {
     $post->update(['status' => 'archived']);
 }
 
-// ✅ Fast - single query
+// GOOD: Fast - single query
 Post::where('status', 'draft')->update(['status' => 'archived']);
 
-// ✅ Increment/decrement
+// GOOD: Increment/decrement
 Post::where('id', $id)->increment('views');
 ```
 
@@ -180,12 +180,12 @@ class Post extends Model
 ### Don't Query in Loops
 
 ```php
-// ❌ Bad
+// BAD: Bad
 foreach ($userIds as $id) {
     $user = User::find($id);
 }
 
-// ✅ Good
+// GOOD: Good
 $users = User::whereIn('id', $userIds)->get();
 ```
 
