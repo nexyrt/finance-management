@@ -263,8 +263,7 @@
 
                     {{-- Charts Section (QuickActionsOverview) --}}
                     <livewire:accounts.quick-actions-overview
-                        :selectedAccountId="$selectedAccountId"
-                        :key="'qao-' . $selectedAccountId" />
+                        :selectedAccountId="$selectedAccountId" />
 
                     {{-- Custom Tabs: Transactions | Payments --}}
                     <div x-data="{ activeTab: $persist('transactions').as('ba_active_tab') }">
@@ -309,8 +308,7 @@
                             x-transition:enter-start="opacity-0 translate-y-1"
                             x-transition:enter-end="opacity-100 translate-y-0">
                             <livewire:accounts.transaction-list
-                                :selectedAccountId="$selectedAccountId"
-                                :key="'txn-list-' . $selectedAccountId" />
+                                :selectedAccountId="$selectedAccountId" />
                         </div>
 
                         <div x-show="activeTab === 'payments'"
@@ -318,8 +316,7 @@
                             x-transition:enter-start="opacity-0 translate-y-1"
                             x-transition:enter-end="opacity-100 translate-y-0">
                             <livewire:accounts.payment-list
-                                :selectedAccountId="$selectedAccountId"
-                                :key="'pmt-list-' . $selectedAccountId" />
+                                :selectedAccountId="$selectedAccountId" />
                         </div>
                     </div>
 
@@ -760,3 +757,204 @@
     <livewire:transactions.inline-category-create />
     <livewire:payments.delete @payment-deleted="refreshData" />
 </div>
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+(function() {
+    function registerBankAccountCharts() {
+        if (typeof Alpine === 'undefined') return;
+
+        // Always re-register on each call (handles SPA navigated)
+        Alpine.data('bankAccountCharts', (chartType, initialData) => ({
+            chart: null,
+            data: initialData,
+
+            isDark() { return document.documentElement.classList.contains('dark'); },
+            textColor() { return this.isDark() ? '#9ca3af' : '#6b7280'; },
+            gridColor() { return this.isDark() ? '#374151' : '#f3f4f6'; },
+
+            formatRp(value) {
+                if (Math.abs(value) >= 1000000000) return 'Rp ' + (value / 1000000000).toFixed(1) + 'B';
+                if (Math.abs(value) >= 1000000) return 'Rp ' + (value / 1000000).toFixed(0) + 'Jt';
+                if (Math.abs(value) >= 1000) return 'Rp ' + (value / 1000).toFixed(0) + 'K';
+                return 'Rp ' + new Intl.NumberFormat('id-ID').format(value);
+            },
+
+            render() {
+                if (typeof Chart === 'undefined') return;
+                if (chartType === 'incomeExpense') this.renderBarChart();
+                if (chartType === 'categoryBreakdown') this.renderDonutChart();
+            },
+
+            init() {
+                const self = this;
+
+                // Chart.js is loaded via script tag above, just render
+                this.$nextTick(() => self.render());
+
+                // Listen for data updates from Livewire
+                Livewire.on('account-charts-updated', (payload) => {
+                    const newData = payload[0];
+                    if (chartType === 'incomeExpense' && newData.incomeExpense) {
+                        self.data = newData.incomeExpense;
+                        self.renderBarChart();
+                    }
+                    if (chartType === 'categoryBreakdown' && newData.categoryBreakdown) {
+                        self.data = newData.categoryBreakdown;
+                        self.renderDonutChart();
+                    }
+                });
+
+                // Listen for PDF download
+                Livewire.on('download-pdf', (event) => {
+                    window.open(event.url, '_blank');
+                });
+
+                // Dark mode observer — re-render chart on theme change
+                this._themeObserver = new MutationObserver(() => {
+                    if (self.chart) {
+                        setTimeout(() => self.render(), 50);
+                    }
+                });
+                this._themeObserver.observe(document.documentElement, {
+                    attributes: true,
+                    attributeFilter: ['class']
+                });
+            },
+
+            destroyChart() {
+                if (this.chart) {
+                    this.chart.destroy();
+                    this.chart = null;
+                }
+            },
+
+            renderBarChart() {
+                this.destroyChart();
+                if (!this.data || this.data.length === 0 || !this.$refs.canvas) return;
+
+                const isDark = this.isDark();
+
+                this.chart = new Chart(this.$refs.canvas, {
+                    type: 'bar',
+                    data: {
+                        labels: this.data.map(item => item.month),
+                        datasets: [
+                            {
+                                label: 'Pemasukan',
+                                data: this.data.map(item => item.income),
+                                backgroundColor: 'rgba(34, 197, 94, 0.8)',
+                                borderColor: 'rgba(34, 197, 94, 1)',
+                                borderWidth: 1,
+                                borderRadius: 6,
+                            },
+                            {
+                                label: 'Pengeluaran',
+                                data: this.data.map(item => item.expense),
+                                backgroundColor: 'rgba(239, 68, 68, 0.8)',
+                                borderColor: 'rgba(239, 68, 68, 1)',
+                                borderWidth: 1,
+                                borderRadius: 6,
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: { mode: 'index', intersect: false },
+                        plugins: {
+                            tooltip: {
+                                backgroundColor: isDark ? '#1f2937' : '#ffffff',
+                                titleColor: isDark ? '#f3f4f6' : '#111827',
+                                bodyColor: isDark ? '#d1d5db' : '#374151',
+                                borderColor: isDark ? '#374151' : '#e5e7eb',
+                                borderWidth: 1,
+                                cornerRadius: 8,
+                                callbacks: {
+                                    label: (ctx) => ctx.dataset.label + ': Rp ' + new Intl.NumberFormat('id-ID').format(ctx.parsed.y)
+                                }
+                            },
+                            legend: { display: false }
+                        },
+                        scales: {
+                            x: {
+                                grid: { color: this.gridColor(), drawBorder: false },
+                                ticks: { color: this.textColor(), font: { size: 10 } }
+                            },
+                            y: {
+                                grid: { color: this.gridColor(), drawBorder: false },
+                                ticks: {
+                                    color: this.textColor(),
+                                    font: { size: 10 },
+                                    callback: (value) => this.formatRp(value)
+                                }
+                            }
+                        }
+                    }
+                });
+            },
+
+            renderDonutChart() {
+                this.destroyChart();
+                if (!this.data || this.data.length === 0 || !this.$refs.canvas) return;
+
+                const isDark = this.isDark();
+                const colors = ['#8b5cf6', '#06b6d4', '#f59e0b', '#ef4444', '#10b981', '#6366f1'];
+
+                this.chart = new Chart(this.$refs.canvas, {
+                    type: 'doughnut',
+                    data: {
+                        labels: this.data.map(item => item.name),
+                        datasets: [{
+                            data: this.data.map(item => item.total),
+                            backgroundColor: colors.slice(0, this.data.length),
+                            borderColor: isDark ? '#27272a' : '#ffffff',
+                            borderWidth: 2,
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '65%',
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                backgroundColor: isDark ? '#1f2937' : '#ffffff',
+                                titleColor: isDark ? '#f3f4f6' : '#111827',
+                                bodyColor: isDark ? '#d1d5db' : '#374151',
+                                borderColor: isDark ? '#374151' : '#e5e7eb',
+                                borderWidth: 1,
+                                cornerRadius: 8,
+                                callbacks: {
+                                    label: (ctx) => {
+                                        const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
+                                        const pct = total > 0 ? Math.round((ctx.parsed / total) * 100) : 0;
+                                        return ctx.label + ': Rp ' + new Intl.NumberFormat('id-ID').format(ctx.parsed) + ' (' + pct + '%)';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            },
+
+            destroy() {
+                this.destroyChart();
+                if (this._themeObserver) {
+                    this._themeObserver.disconnect();
+                }
+            }
+        }));
+    }
+
+    // Register immediately since Alpine is already loaded at this point
+    registerBankAccountCharts();
+
+    // Re-register after Livewire SPA navigation (wire:navigate)
+    document.addEventListener('livewire:navigated', () => {
+        registerBankAccountCharts();
+    });
+})();
+</script>
+@endpush

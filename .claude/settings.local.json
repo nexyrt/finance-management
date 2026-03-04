@@ -64,7 +64,12 @@
       "mcp__laravel-boost__get-absolute-url",
       "mcp__laravel-boost__database-query",
       "Bash(netstat -ano)",
-      "Bash(ss -tlnp)"
+      "Bash(ss -tlnp)",
+      "mcp__laravel-boost__browser-logs",
+      "Bash(./vendor/bin/pint --dirty --format agent)",
+      "mcp__laravel-boost__tinker",
+      "Bash(sort -t: -k3)",
+      "Bash(uniq -f2)"
     ]
   }
 }

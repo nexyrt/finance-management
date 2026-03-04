@@ -1,6 +1,6 @@
 <div class="space-y-6">
-    {{-- Filter Section --}}
-    <div class="space-y-4">
+    {{-- Filter Section — wire:key forces full re-create on account switch (prevents TallStackUI Alpine morph errors) --}}
+    <div class="space-y-4" wire:key="trx-filters-{{ $selectedAccountId }}">
         <div class="flex flex-col gap-4">
             {{-- Main Filters Grid --}}
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -140,6 +140,7 @@
 
     {{-- Bulk Actions Bar --}}
     <div x-data="{ show: @entangle('selected').live }" x-show="show.length > 0" x-transition
+        wire:key="trx-bulk-{{ $selectedAccountId }}"
         class="fixed bottom-4 sm:bottom-6 left-4 right-4 sm:left-1/2 sm:right-auto sm:transform sm:-translate-x-1/2 z-50">
         <div class="bg-white dark:bg-dark-800 rounded-xl shadow-lg border border-secondary-200 dark:border-dark-600 px-4 sm:px-6 py-4 sm:min-w-96">
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-6">

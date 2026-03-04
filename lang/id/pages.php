@@ -487,6 +487,8 @@ return [
     'income_vs_expense' => 'Pemasukan vs Pengeluaran',
     'category_breakdown' => 'Kategori Pengeluaran',
     'this_month_expenses' => 'Pengeluaran bulan ini',
+    'expenses_period' => 'Pengeluaran :period',
+    'stats_period' => 'Periode: :period',
     'no_category_data' => 'Belum ada data kategori',
     'trending_up' => 'Naik',
     'trending_down' => 'Turun',

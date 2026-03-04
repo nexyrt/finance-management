@@ -171,8 +171,9 @@ def test_mini_stats(page):
 
 def get_tab_buttons(page):
     """Get tab buttons using Alpine x-on:click selectors."""
-    trx_tab = page.locator("button[x-on\\:click*='transactions'], button[\\@click*='transactions']")
-    pmt_tab = page.locator("button[x-on\\:click*='payments'], button[\\@click*='payments']")
+    # Use activeTab selectors to match main page tabs (not guide modal tabs which use 'tab')
+    trx_tab = page.locator("button[\\@click=\"activeTab = 'transactions'\"]")
+    pmt_tab = page.locator("button[\\@click=\"activeTab = 'payments'\"]")
     return trx_tab, pmt_tab
 
 def test_custom_tabs(page):
