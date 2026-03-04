@@ -279,7 +279,7 @@
                         :title="__('invoice.send_invoice')" />
                 @endif
 
-                @if ($row->status === 'sent')
+                @if ($row->status === 'sent' && in_array($row->id, $this->rollbackableIds))
                     <x-button.circle icon="arrow-uturn-left" color="orange" size="sm"
                         wire:click="rollbackTodraft({{ $row->id }})"
                         loading="rollbackTodraft({{ $row->id }})"

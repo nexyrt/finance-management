@@ -171,11 +171,22 @@ return [
     'deletion_success' => '发票删除成功',
 
     // Delete confirmation
-    'delete_confirm_title' => '删除发票？',
+    'delete_confirm_title' => '删除发票',
     'confirm_delete' => '是的，删除发票',
     'delete_permanent_note' => '将被永久删除。',
     'delete_confirm_message' => '给 :client_name 的发票，金额 Rp :total_amount，包含 :items_count 项',
     'delete_confirm_with_payments' => '和 :payments_count 笔付款（Rp :total_paid）',
+    'delete_action_title' => '选择操作',
+    'delete_action_subtitle' => '选择处理发票 :number 的方式',
+    'cancel_invoice_label' => '取消发票',
+    'cancel_invoice_desc' => '发票标记为已取消。数据仍保留，可查看历史记录。',
+    'permanent_delete_label' => '永久删除',
+    'permanent_delete_desc' => '发票及其所有项目和付款将从系统中永久删除。',
+    'cancel_invoice_success' => '发票 :number 已成功取消',
+    'cancel_invoice_error' => '取消发票失败',
+    'cancel_confirm_btn' => '是的，取消发票',
+    'delete_confirm_btn' => '是的，永久删除',
+    'already_cancelled' => '发票已处于已取消状态',
 
     // Send & Print
     'only_draft_can_send' => '只能发送草稿发票',

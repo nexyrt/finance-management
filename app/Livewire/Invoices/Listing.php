@@ -259,6 +259,38 @@ class Listing extends Component
     }
 
     // -------------------------------------------------------------------------
+    // Rollback eligibility (one query — max sequence per year-month)
+    // -------------------------------------------------------------------------
+
+    #[Computed]
+    public function rollbackableIds(): array
+    {
+        // Step 1: max sequence per year-month across all invoices with a number
+        $maxSeqPerMonth = DB::table('invoices')
+            ->whereNotNull('invoice_number')
+            ->where('invoice_number', 'LIKE', '%/INV/%')
+            ->selectRaw("
+                YEAR(issue_date) as yr,
+                MONTH(issue_date) as mo,
+                MAX(CAST(SUBSTRING_INDEX(invoice_number, '/INV/', 1) AS UNSIGNED)) as max_seq
+            ")
+            ->groupBy(DB::raw('YEAR(issue_date)'), DB::raw('MONTH(issue_date)'));
+
+        // Step 2: find sent invoices whose sequence equals that max
+        return DB::table('invoices')
+            ->where('invoices.status', 'sent')
+            ->whereNotNull('invoices.invoice_number')
+            ->where('invoices.invoice_number', 'LIKE', '%/INV/%')
+            ->joinSub($maxSeqPerMonth, 'mx', function ($join) {
+                $join->whereRaw('YEAR(invoices.issue_date) = mx.yr')
+                    ->whereRaw('MONTH(invoices.issue_date) = mx.mo')
+                    ->whereRaw("CAST(SUBSTRING_INDEX(invoices.invoice_number, '/INV/', 1) AS UNSIGNED) = mx.max_seq");
+            })
+            ->pluck('invoices.id')
+            ->all();
+    }
+
+    // -------------------------------------------------------------------------
     // Actions
     // -------------------------------------------------------------------------
 
@@ -559,7 +591,7 @@ class Listing extends Component
         ];
     }
 
-    public function render()
+    public function render(): \Illuminate\Contracts\View\View
     {
         return view('livewire.invoices.listing');
     }

@@ -2,11 +2,13 @@
 
 namespace App\Livewire\Invoices;
 
+use App\Models\AppNotification;
 use App\Models\Invoice;
-use Livewire\Component;
-use Livewire\Attributes\On;
-use TallStackUi\Traits\Interactions;
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Livewire\Attributes\On;
+use Livewire\Component;
+use TallStackUi\Traits\Interactions;
 
 class Delete extends Component
 {
@@ -14,11 +16,13 @@ class Delete extends Component
 
     public ?Invoice $invoice = null;
 
-    public function render(): string
+    public bool $modal = false;
+
+    public string $action = 'cancel'; // 'cancel' | 'permanent'
+
+    public function render(): \Illuminate\Contracts\View\View
     {
-        return <<<'HTML'
-        <div></div>
-        HTML;
+        return view('livewire.invoices.delete');
     }
 
     #[On('delete-invoice')]
@@ -26,100 +30,107 @@ class Delete extends Component
     {
         $this->invoice = Invoice::with(['client', 'items', 'payments'])->find($invoiceId);
 
-        if (!$this->invoice) {
+        if (! $this->invoice) {
             $this->toast()->error(__('common.error'), __('invoice.not_found'))->send();
+
             return;
         }
 
-        // Build confirmation message
-        $title = __('invoice.delete_confirm_title') . ' ' . $this->invoice->invoice_number . '?';
-        $description = $this->buildConfirmationMessage();
-
-        $this->dialog()
-            ->question($title, $description)
-            ->confirm(__('invoice.confirm_delete'), 'delete', __('invoice.delete_success'))
-            ->cancel(__('common.cancel'))
-            ->send();
+        $this->action = 'cancel';
+        $this->modal = true;
     }
 
-    public function delete(): void
+    public function cancel(): void
     {
-        if (!$this->invoice) {
+        if (! $this->invoice) {
             $this->toast()->error(__('common.error'), __('invoice.not_found'))->send();
+
+            return;
+        }
+
+        if ($this->invoice->status === 'cancelled') {
+            $this->toast()->warning(__('common.warning'), __('invoice.already_cancelled'))->send();
+            $this->modal = false;
+
             return;
         }
 
         try {
-            // Capture data before deletion
             $invoiceNumber = $this->invoice->invoice_number;
-            $clientName    = $this->invoice->client->name;
-            $deletedBy     = auth()->user()->name;
 
-            DB::transaction(function () {
-                // Delete payments first
-                if ($this->invoice->payments->count() > 0) {
-                    $this->invoice->payments()->delete();
-                }
+            $this->invoice->update(['status' => 'cancelled']);
 
-                // Delete invoice items
-                $this->invoice->items()->delete();
-
-                // Delete the invoice
-                $this->invoice->delete();
-            });
-
-            // Notify admins & finance managers about deletion
-            $recipients = \App\Models\User::role(['admin', 'finance manager'])->pluck('id')->toArray();
-            \App\Models\AppNotification::notifyMany(
+            $recipients = User::role(['admin', 'finance manager'])->pluck('id')->toArray();
+            AppNotification::notifyMany(
                 $recipients,
-                'invoice_deleted',
-                'Invoice Dihapus',
-                'Invoice ' . $invoiceNumber . ' (' . $clientName . ') telah dihapus oleh ' . $deletedBy,
+                'invoice_cancelled',
+                'Invoice Dibatalkan',
+                'Invoice '.$invoiceNumber.' ('.$this->invoice->client->name.') telah dibatalkan oleh '.auth()->user()->name,
                 ['url' => route('invoices.index')]
             );
 
-            // Success notification
             $this->toast()
-                ->success(__('common.success'), __('invoice.deletion_success'))
+                ->success(__('common.success'), __('invoice.cancel_invoice_success', ['number' => $invoiceNumber]))
                 ->send();
 
-            // Dispatch refresh events
             $this->dispatch('invoice-updated');
             $this->dispatch('invoice-deleted');
 
         } catch (\Exception $e) {
             $this->toast()
-                ->error(__('common.error'), __('invoice.delete_error') . ': ' . $e->getMessage())
+                ->error(__('common.error'), __('invoice.cancel_invoice_error').': '.$e->getMessage())
                 ->send();
         }
 
-        // Reset
+        $this->modal = false;
         $this->invoice = null;
     }
 
-    private function buildConfirmationMessage(): string
+    public function delete(): void
     {
-        $clientName = $this->invoice->client->name;
-        $totalAmount = number_format($this->invoice->total_amount, 0, ',', '.');
-        $itemsCount = $this->invoice->items->count();
-        $paymentsCount = $this->invoice->payments->count();
+        if (! $this->invoice) {
+            $this->toast()->error(__('common.error'), __('invoice.not_found'))->send();
 
-        $message = __('invoice.delete_confirm_message', [
-            'client_name' => $clientName,
-            'total_amount' => $totalAmount,
-            'items_count' => $itemsCount
-        ]);
-
-        if ($paymentsCount > 0) {
-            $totalPaid = number_format($this->invoice->amount_paid, 0, ',', '.');
-            $message .= ' ' . __('invoice.delete_confirm_with_payments', [
-                'payments_count' => $paymentsCount,
-                'total_paid' => $totalPaid
-            ]);
+            return;
         }
 
-        $message .= ' ' . __('invoice.delete_permanent_note');
+        try {
+            $invoiceNumber = $this->invoice->invoice_number;
+            $clientName = $this->invoice->client->name;
+            $deletedBy = auth()->user()->name;
 
-        return $message;
+            DB::transaction(function () {
+                if ($this->invoice->payments->count() > 0) {
+                    $this->invoice->payments()->delete();
+                }
+
+                $this->invoice->items()->delete();
+                $this->invoice->delete();
+            });
+
+            $recipients = User::role(['admin', 'finance manager'])->pluck('id')->toArray();
+            AppNotification::notifyMany(
+                $recipients,
+                'invoice_deleted',
+                'Invoice Dihapus',
+                'Invoice '.$invoiceNumber.' ('.$clientName.') telah dihapus oleh '.$deletedBy,
+                ['url' => route('invoices.index')]
+            );
+
+            $this->toast()
+                ->success(__('common.success'), __('invoice.deletion_success'))
+                ->send();
+
+            $this->dispatch('invoice-updated');
+            $this->dispatch('invoice-deleted');
+
+        } catch (\Exception $e) {
+            $this->toast()
+                ->error(__('common.error'), __('invoice.delete_error').': '.$e->getMessage())
+                ->send();
+        }
+
+        $this->modal = false;
+        $this->invoice = null;
     }
 }

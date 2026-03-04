@@ -171,11 +171,22 @@ return [
     'deletion_success' => 'Invoice berhasil dihapus',
 
     // Delete confirmation
-    'delete_confirm_title' => 'Hapus Invoice?',
+    'delete_confirm_title' => 'Hapus Invoice',
     'confirm_delete' => 'Ya, Hapus Invoice',
     'delete_permanent_note' => 'akan dihapus permanen.',
     'delete_confirm_message' => 'Invoice untuk :client_name senilai Rp :total_amount dengan :items_count item',
     'delete_confirm_with_payments' => 'dan :payments_count pembayaran (Rp :total_paid)',
+    'delete_action_title' => 'Pilih Tindakan',
+    'delete_action_subtitle' => 'Pilih cara menangani invoice :number',
+    'cancel_invoice_label' => 'Batalkan Invoice',
+    'cancel_invoice_desc' => 'Invoice ditandai sebagai cancelled. Data tetap tersimpan dan dapat dilihat riwayatnya.',
+    'permanent_delete_label' => 'Hapus Permanen',
+    'permanent_delete_desc' => 'Invoice beserta semua item dan pembayaran akan dihapus dari sistem secara permanen.',
+    'cancel_invoice_success' => 'Invoice :number berhasil dibatalkan',
+    'cancel_invoice_error' => 'Gagal membatalkan invoice',
+    'cancel_confirm_btn' => 'Ya, Batalkan Invoice',
+    'delete_confirm_btn' => 'Ya, Hapus Permanen',
+    'already_cancelled' => 'Invoice sudah berstatus cancelled',
 
     // Send & Print
     'only_draft_can_send' => 'Hanya invoice draft yang bisa dikirim',
