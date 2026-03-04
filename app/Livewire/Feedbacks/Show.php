@@ -14,7 +14,10 @@ class Show extends Component
     use Interactions;
 
     public bool $modal = false;
+
     public ?int $feedbackId = null;
+
+    private ?Feedback $loadedFeedback = null;
 
     public function render(): View
     {
@@ -26,17 +29,20 @@ class Show extends Component
     {
         $feedback = Feedback::with(['user', 'responder'])->find($id);
 
-        if (!$feedback) {
+        if (! $feedback) {
             $this->toast()->error(__('common.error'), __('feedback.not_found'))->send();
+
             return;
         }
 
         // Check permission - user can only view their own or admin can view all
-        if ($feedback->user_id !== auth()->id() && !auth()->user()->can('manage feedbacks')) {
+        if ($feedback->user_id !== auth()->id() && ! auth()->user()->can('manage feedbacks')) {
             $this->toast()->error(__('common.error'), __('feedback.no_view_permission'))->send();
+
             return;
         }
 
+        $this->loadedFeedback = $feedback;
         $this->feedbackId = $id;
         $this->modal = true;
     }
@@ -44,9 +50,11 @@ class Show extends Component
     #[Computed]
     public function feedback(): ?Feedback
     {
-        return $this->feedbackId
-            ? Feedback::with(['user', 'responder'])->find($this->feedbackId)
-            : null;
+        if (! $this->feedbackId) {
+            return null;
+        }
+
+        return $this->loadedFeedback ??= Feedback::with(['user', 'responder'])->find($this->feedbackId);
     }
 
     public function close(): void

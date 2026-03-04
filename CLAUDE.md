@@ -158,6 +158,69 @@ Di dalam modal  → plain div + border + horizontal layout (no <x-card>, no hove
 
 ---
 
+### Tab Navigation
+
+**❌ DILARANG:** Jangan gunakan `<x-tab>` dan `<x-tab.items>` dari TallStackUI.
+
+**✅ GUNAKAN:** Custom tab Alpine.js — **pill/segment style** seperti di halaman Reimbursements.
+
+**Reference:** `resources/views/livewire/reimbursements/index.blade.php`
+
+```blade
+<div x-data="{ activeTab: $persist('tab1').as('page-name-tab') }">
+
+    {{-- Tab Bar (pill/segment style) --}}
+    <div class="inline-flex items-center gap-1 p-1 bg-zinc-100 dark:bg-dark-700 rounded-xl border border-zinc-200 dark:border-dark-600">
+        <button
+            @click="activeTab = 'tab1'"
+            class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200"
+            :class="activeTab === 'tab1'
+                ? 'bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 shadow-sm border border-zinc-200 dark:border-dark-600'
+                : 'text-dark-500 dark:text-dark-400 hover:text-dark-800 dark:hover:text-dark-200 hover:bg-zinc-50 dark:hover:bg-dark-600'">
+            <x-icon name="icon-name" class="w-4 h-4 flex-shrink-0" />
+            <span>Tab Label</span>
+        </button>
+
+        <button
+            @click="activeTab = 'tab2'"
+            class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200"
+            :class="activeTab === 'tab2'
+                ? 'bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 shadow-sm border border-zinc-200 dark:border-dark-600'
+                : 'text-dark-500 dark:text-dark-400 hover:text-dark-800 dark:hover:text-dark-200 hover:bg-zinc-50 dark:hover:bg-dark-600'">
+            <x-icon name="icon-name" class="w-4 h-4 flex-shrink-0" />
+            <span>Tab Label</span>
+        </button>
+    </div>
+
+    {{-- Tab Content (dengan transition) --}}
+    <div class="mt-4">
+        <div x-show="activeTab === 'tab1'"
+             x-transition:enter="transition ease-out duration-150"
+             x-transition:enter-start="opacity-0 translate-y-1"
+             x-transition:enter-end="opacity-100 translate-y-0">
+            {{-- Content --}}
+        </div>
+        <div x-show="activeTab === 'tab2'"
+             x-transition:enter="transition ease-out duration-150"
+             x-transition:enter-start="opacity-0 translate-y-1"
+             x-transition:enter-end="opacity-100 translate-y-0">
+            {{-- Content --}}
+        </div>
+    </div>
+</div>
+```
+
+**Dengan badge count:**
+```blade
+<button @click="activeTab = 'tab2'" ...>
+    <x-icon name="users" class="w-4 h-4 flex-shrink-0" />
+    <span>Tab Label</span>
+    <span class="ml-1 px-1.5 py-0.5 text-xs font-bold bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 rounded-full">{{ $count }}</span>
+</button>
+```
+
+---
+
 ### Filter + Table Layout
 
 **Reference:** `resources/views/livewire/transactions/listing.blade.php`

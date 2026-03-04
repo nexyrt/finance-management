@@ -7,20 +7,27 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Lazy;
 use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithPagination;
 use TallStackUi\Traits\Interactions;
 
+#[Lazy]
 class AllFeedbacks extends Component
 {
     use Interactions, WithPagination;
 
     public ?string $search = null;
+
     public ?string $statusFilter = null;
+
     public ?string $typeFilter = null;
+
     public ?string $priorityFilter = null;
+
     public int $quantity = 10;
+
     public array $sort = ['column' => 'created_at', 'direction' => 'desc'];
 
     public array $headers = [];
@@ -47,6 +54,11 @@ class AllFeedbacks extends Component
         $this->resetPage();
     }
 
+    public function placeholder(): View
+    {
+        return view('livewire.placeholders.feedbacks-skeleton');
+    }
+
     public function render(): View
     {
         return view('livewire.feedbacks.all-feedbacks');
@@ -57,15 +69,17 @@ class AllFeedbacks extends Component
     {
         return Feedback::query()
             ->with('user')
-            ->when($this->search, fn(Builder $q) => $q->where(function ($query) {
-                $query->where('title', 'like', "%{$this->search}%")
-                    ->orWhere('description', 'like', "%{$this->search}%")
-                    ->orWhereHas('user', fn($u) => $u->where('name', 'like', "%{$this->search}%"));
+            ->join('users', 'feedbacks.user_id', '=', 'users.id')
+            ->select('feedbacks.*')
+            ->when($this->search, fn (Builder $q) => $q->where(function ($query) {
+                $query->where('feedbacks.title', 'like', "%{$this->search}%")
+                    ->orWhere('feedbacks.description', 'like', "%{$this->search}%")
+                    ->orWhere('users.name', 'like', "%{$this->search}%");
             }))
-            ->when($this->statusFilter, fn(Builder $q) => $q->byStatus($this->statusFilter))
-            ->when($this->typeFilter, fn(Builder $q) => $q->byType($this->typeFilter))
-            ->when($this->priorityFilter, fn(Builder $q) => $q->byPriority($this->priorityFilter))
-            ->orderBy($this->sort['column'], $this->sort['direction'])
+            ->when($this->statusFilter, fn (Builder $q) => $q->byStatus($this->statusFilter))
+            ->when($this->typeFilter, fn (Builder $q) => $q->byType($this->typeFilter))
+            ->when($this->priorityFilter, fn (Builder $q) => $q->byPriority($this->priorityFilter))
+            ->orderBy('feedbacks.'.$this->sort['column'], $this->sort['direction'])
             ->paginate($this->quantity)
             ->withQueryString();
     }
@@ -109,8 +123,9 @@ class AllFeedbacks extends Component
     {
         $feedback = Feedback::find($id);
 
-        if (!$feedback) {
+        if (! $feedback) {
             $this->toast()->error(__('common.error'), __('feedback.not_found'))->send();
+
             return;
         }
 

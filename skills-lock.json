@@ -20,6 +20,11 @@
       "source": "anthropics/skills",
       "sourceType": "github",
       "computedHash": "5a6a18c0137cfbabec058e86fc1c8f6919d846a7b2a34ee978cc8ced866ee2e5"
+    },
+    "writing-skills": {
+      "source": "obra/superpowers",
+      "sourceType": "github",
+      "computedHash": "90371e81ed49a9d9a5eb5a36f62e75586939253f85096e8d50fd1f6b8bacf2a8"
     }
   }
 }

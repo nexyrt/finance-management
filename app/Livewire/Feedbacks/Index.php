@@ -36,22 +36,24 @@ class Index extends Component
             ? Feedback::query()
             : Feedback::forUser(auth()->id());
 
-        $total = (clone $query)->count();
-        $open = (clone $query)->byStatus('open')->count();
-        $inProgress = (clone $query)->byStatus('in_progress')->count();
-        $resolved = (clone $query)->byStatus('resolved')->count();
-        $bugs = (clone $query)->byType('bug')->count();
-        $features = (clone $query)->byType('feature')->count();
-        $feedbacks = (clone $query)->byType('feedback')->count();
+        $result = $query->selectRaw("
+            COUNT(*) as total,
+            SUM(CASE WHEN status = 'open' THEN 1 ELSE 0 END) as open,
+            SUM(CASE WHEN status = 'in_progress' THEN 1 ELSE 0 END) as in_progress,
+            SUM(CASE WHEN status = 'resolved' THEN 1 ELSE 0 END) as resolved,
+            SUM(CASE WHEN type = 'bug' THEN 1 ELSE 0 END) as bugs,
+            SUM(CASE WHEN type = 'feature' THEN 1 ELSE 0 END) as features,
+            SUM(CASE WHEN type = 'feedback' THEN 1 ELSE 0 END) as feedbacks
+        ")->first();
 
         return [
-            'total' => $total,
-            'open' => $open,
-            'in_progress' => $inProgress,
-            'resolved' => $resolved,
-            'bugs' => $bugs,
-            'features' => $features,
-            'feedbacks' => $feedbacks,
+            'total' => (int) $result->total,
+            'open' => (int) $result->open,
+            'in_progress' => (int) $result->in_progress,
+            'resolved' => (int) $result->resolved,
+            'bugs' => (int) $result->bugs,
+            'features' => (int) $result->features,
+            'feedbacks' => (int) $result->feedbacks,
         ];
     }
 }

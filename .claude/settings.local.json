@@ -69,7 +69,8 @@
       "Bash(./vendor/bin/pint --dirty --format agent)",
       "mcp__laravel-boost__tinker",
       "Bash(sort -t: -k3)",
-      "Bash(uniq -f2)"
+      "Bash(uniq -f2)",
+      "Bash(./vendor/bin/pint app/Livewire/Feedbacks/ --dirty --format agent)"
     ]
   }
 }

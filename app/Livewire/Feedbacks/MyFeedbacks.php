@@ -7,19 +7,25 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Lazy;
 use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithPagination;
 use TallStackUi\Traits\Interactions;
 
+#[Lazy]
 class MyFeedbacks extends Component
 {
     use Interactions, WithPagination;
 
     public ?string $search = null;
+
     public ?string $statusFilter = null;
+
     public ?string $typeFilter = null;
+
     public int $quantity = 10;
+
     public array $sort = ['column' => 'created_at', 'direction' => 'desc'];
 
     public array $headers = [];
@@ -45,6 +51,11 @@ class MyFeedbacks extends Component
         $this->resetPage();
     }
 
+    public function placeholder(): View
+    {
+        return view('livewire.placeholders.feedbacks-skeleton');
+    }
+
     public function render(): View
     {
         return view('livewire.feedbacks.my-feedbacks');
@@ -55,12 +66,12 @@ class MyFeedbacks extends Component
     {
         return Feedback::query()
             ->forUser(auth()->id())
-            ->when($this->search, fn(Builder $q) => $q->where(function ($query) {
+            ->when($this->search, fn (Builder $q) => $q->where(function ($query) {
                 $query->where('title', 'like', "%{$this->search}%")
                     ->orWhere('description', 'like', "%{$this->search}%");
             }))
-            ->when($this->statusFilter, fn(Builder $q) => $q->byStatus($this->statusFilter))
-            ->when($this->typeFilter, fn(Builder $q) => $q->byType($this->typeFilter))
+            ->when($this->statusFilter, fn (Builder $q) => $q->byStatus($this->statusFilter))
+            ->when($this->typeFilter, fn (Builder $q) => $q->byType($this->typeFilter))
             ->orderBy($this->sort['column'], $this->sort['direction'])
             ->paginate($this->quantity)
             ->withQueryString();
@@ -75,7 +86,7 @@ class MyFeedbacks extends Component
     #[Computed]
     public function hasFilters(): bool
     {
-        return !empty($this->search) || !is_null($this->statusFilter) || !is_null($this->typeFilter);
+        return ! empty($this->search) || ! is_null($this->statusFilter) || ! is_null($this->typeFilter);
     }
 
     public function updatedSearch(): void

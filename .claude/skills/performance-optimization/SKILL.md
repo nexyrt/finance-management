@@ -1,6 +1,6 @@
 ---
 name: performance-optimization
-description: Optimize Livewire component performance by auditing queries, eliminating N+1, reducing query count, and moving computation to SQL. Use this skill when the user asks to optimize, improve performance, or fix slow pages -- including keywords like "optimasi", "lambat", "slow", "performa", "query optimization".
+description: Use when asked to optimize, improve performance, or fix slow pages; or when auditing translation/localization (hardcoded strings, missing lang keys, $headers pattern). Keywords: optimasi, lambat, slow, performa, query optimization, translation, translasi, hardcode, lang, localization.
 ---
 
 # Performance Optimization Protocol
@@ -386,3 +386,85 @@ Model::preventLazyLoading(!app()->isProduction());
 ```
 
 Ini membantu mendeteksi N+1 di development -- lazy load akan throw exception alih-alih diam-diam query.
+
+---
+
+## Translation & Localization Protocol
+
+Translasi adalah bagian dari optimasi kualitas kode — hardcoded string menyebabkan UI tidak konsisten dan menyulitkan maintenance multi-bahasa.
+
+### Kapan Diaudit
+
+Setiap kali membuat atau memodifikasi file PHP/Blade, audit translasi **sebelum** menyelesaikan task.
+
+### Struktur File Lang
+
+```
+lang/
+├── id/   (UTAMA) — common.php, pages.php, invoice.php, feedback.php
+├── en/   (partial)
+└── zh/   (sync dengan id/ — salin nilai sama, terjemahan Mandarin diupdate tim terpisah)
+```
+
+### Prosedur Audit
+
+**Skenario A — satu file:**
+
+1. Baca blade target + PHP component pasangannya
+2. Identifikasi hardcoded text di KEDUANYA:
+   - Blade: UI labels, placeholders, pesan kosong
+   - PHP: `$headers`, pesan toast/dialog, Excel headings
+3. Baca `lang/id/common.php` + `lang/id/pages.php`
+4. Buat audit tabel: `Teks | Lokasi | Status | Key | File`
+5. Tambah missing keys ke `lang/id/` + langsung ke `lang/zh/` (nilai sama)
+6. Update blade + PHP component
+7. Verifikasi tidak ada hardcoded text tersisa
+
+**Skenario B — seluruh folder:** List semua file dulu, lalu jalankan Skenario A untuk tiap pasangan.
+
+**Pola pasangan file:**
+```
+resources/views/livewire/cash-flow/expenses.blade.php
+↕
+app/Livewire/CashFlow/Expenses.php
+```
+
+### Aturan
+
+**❌ JANGAN hardcode:** judul page, label, placeholder, header kolom, teks tombol, badge status, pesan empty/error/sukses, tooltip.
+
+**✅ BOLEH tidak translate:** brand names, kode format (`INV/01/KSN/02.26`), nilai variabel dinamis (`{{ $invoice->number }}`).
+
+**Key naming:** `common.php` untuk reusable; `pages.php` dengan prefix module (`fund_request_title`, `fund_request_status_draft`).
+
+### `$headers` — Pola Wajib
+
+`__()` tidak bisa dipanggil di property initializer. Pindahkan ke `mount()`:
+
+```php
+// ❌ SALAH — error saat boot
+public array $headers = [['label' => __('pages.col_date')]];
+
+// ✅ BENAR
+public array $headers = [];
+
+public function mount(): void
+{
+    $this->headers = [['index' => 'date', 'label' => __('pages.col_date')]];
+}
+```
+
+### Dynamic Translation (Data dari DB)
+
+| Sumber | Metode | Contoh |
+|--------|--------|--------|
+| UI string hardcoded | `__('file.key')` | `__('common.save')` |
+| Enum/status diketahui | `__('pages.status_' . $model->status)` | — |
+| Data dari DB (user-generated) | `translate_text($text)` | `translate_text($row->name)` |
+| Nama kategori transaksi | `translate_category($name)` | `translate_category($row->label)` |
+
+`translate_text()` dan `translate_category()` ada di `app/helpers.php` + `app/Services/TranslationService.php`. Menggunakan `stichoza/google-translate-php`, cache 6 bulan, fallback ke teks asli jika gagal.
+
+Jika terjemahan tidak muncul di local: `php artisan cache:clear`.
+
+**❌ JANGAN:** `translate_text('Simpan')` — gunakan `__('common.save')` untuk UI strings statis.
