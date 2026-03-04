@@ -159,7 +159,11 @@
 
         @interact('column_invoice_number', $row)
             <div>
-                <div class="font-mono font-semibold text-sm text-dark-700 dark:text-dark-200">{{ $row->invoice_number }}</div>
+                @if($row->invoice_number)
+                    <div class="font-mono font-semibold text-sm text-dark-700 dark:text-dark-200">{{ $row->invoice_number }}</div>
+                @else
+                    <div class="text-sm text-dark-400 dark:text-dark-500 italic">{{ __('invoice.draft_no_number') }}</div>
+                @endif
                 <div class="text-xs text-dark-400 dark:text-dark-500 mt-0.5">{{ $row->issue_date->translatedFormat('d/m/Y') }}</div>
             </div>
         @endinteract
@@ -270,8 +274,8 @@
 
                 @if ($row->status === 'draft')
                     <x-button.circle icon="paper-airplane" color="cyan" size="sm"
-                        wire:click="sendInvoice({{ $row->id }})"
-                        loading="sendInvoice({{ $row->id }})"
+                        wire:click="prepareSendInvoice({{ $row->id }})"
+                        loading="prepareSendInvoice({{ $row->id }})"
                         :title="__('invoice.send_invoice')" />
                 @endif
 
@@ -507,5 +511,39 @@
         });
     </script>
     @endscript
+
+{{-- Send Invoice Modal --}}
+<x-modal wire:model="sendModal" size="md" center persistent>
+    <x-slot:title>
+        <div class="flex items-center gap-4 my-3">
+            <div class="h-12 w-12 bg-cyan-50 dark:bg-cyan-900/20 rounded-xl flex items-center justify-center">
+                <x-icon name="paper-airplane" class="w-6 h-6 text-cyan-600 dark:text-cyan-400" />
+            </div>
+            <div>
+                <h3 class="text-xl font-bold text-dark-900 dark:text-dark-50">{{ __('invoice.send_invoice_title') }}</h3>
+                <p class="text-sm text-dark-600 dark:text-dark-400">{{ __('invoice.send_invoice_subtitle') }}</p>
+            </div>
+        </div>
+    </x-slot:title>
+
+    <div class="space-y-4">
+        <x-input wire:model="pendingInvoiceNumber"
+            :label="__('invoice.invoice_number') . ' *'"
+            :hint="__('invoice.number_auto_generated_hint')" />
+    </div>
+
+    <x-slot:footer>
+        <div class="flex flex-col sm:flex-row justify-end gap-3">
+            <x-button wire:click="$set('sendModal', false)" color="zinc"
+                class="w-full sm:w-auto order-2 sm:order-1">
+                {{ __('common.cancel') }}
+            </x-button>
+            <x-button wire:click="confirmSendInvoice" color="primary" icon="paper-airplane"
+                loading="confirmSendInvoice" class="w-full sm:w-auto order-1 sm:order-2">
+                {{ __('invoice.send_invoice') }}
+            </x-button>
+        </div>
+    </x-slot:footer>
+</x-modal>
 
 </div>

@@ -3,9 +3,9 @@
 namespace App\Livewire\Invoices;
 
 use App\Models\Client;
-use App\Models\Service;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
+use App\Models\Service;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
@@ -14,7 +14,7 @@ use TallStackUi\Traits\Interactions;
 
 class Create extends Component
 {
-    use WithFileUploads, Interactions;
+    use Interactions, WithFileUploads;
 
     // Invoice data
     public $invoice = [
@@ -25,15 +25,17 @@ class Create extends Component
     ];
 
     public $faktur;
+
     public $fakturName;
 
     // Items untuk save
     public $items = [];
+
     public $discount = [
         'type' => 'fixed',
         'value' => 0,
         'reason' => '',
-        'amount' => 0
+        'amount' => 0,
     ];
 
     public function save()
@@ -111,22 +113,15 @@ class Create extends Component
 
             $totalAmount = max(0, $subtotal - $discountAmount);
 
-            // Generate invoice number if empty or not locked
-            $invoiceNumber = $this->invoice['invoice_number'];
-            if (empty($invoiceNumber)) {
-                $invoiceNumber = $this->generateInvoiceNumber();
-            }
-
             $fakturPath = null;
             if ($this->faktur) {
                 $customName = $this->fakturName ? $this->fakturName : $this->faktur->getClientOriginalName();
                 $extension = $this->faktur->getClientOriginalExtension();
-                $fileName = pathinfo($customName, PATHINFO_FILENAME) . '.' . $extension;
+                $fileName = pathinfo($customName, PATHINFO_FILENAME).'.'.$extension;
                 $fakturPath = $this->faktur->storeAs('invoices/fakturs', $fileName, 'public');
             }
 
             $invoice = Invoice::create([
-                'invoice_number' => $invoiceNumber,
                 'billed_to_id' => $this->invoice['client_id'],
                 'subtotal' => $subtotal,
                 'discount_amount' => $discountAmount,
@@ -163,7 +158,7 @@ class Create extends Component
                 $recipients,
                 'invoice_created',
                 'Invoice Baru Dibuat',
-                'Invoice ' . $invoice->invoice_number . ' untuk ' . $invoice->client->name . ' telah dibuat oleh ' . auth()->user()->name,
+                'Invoice draft untuk '.$invoice->client->name.' telah dibuat oleh '.auth()->user()->name,
                 ['invoice_id' => $invoice->id, 'url' => route('invoices.index')]
             );
 
@@ -199,122 +194,53 @@ class Create extends Component
 
             // Add specific error details
             if (strpos($e->getMessage(), 'SQLSTATE') !== false) {
-                $errorMessage .= ' ' . __('common.database_error') . ': ' . $e->getMessage();
+                $errorMessage .= ' '.__('common.database_error').': '.$e->getMessage();
             } elseif (strpos($e->getMessage(), 'column') !== false || strpos($e->getMessage(), 'Column') !== false) {
-                $errorMessage .= ' ' . __('common.missing_required_field') . ': ' . $e->getMessage();
+                $errorMessage .= ' '.__('common.missing_required_field').': '.$e->getMessage();
             } elseif (strpos($e->getMessage(), 'Undefined') !== false) {
-                $errorMessage .= ' ' . __('common.data_issue') . ': ' . $e->getMessage();
+                $errorMessage .= ' '.__('common.data_issue').': '.$e->getMessage();
             } else {
-                $errorMessage .= ' ' . $e->getMessage();
+                $errorMessage .= ' '.$e->getMessage();
             }
 
             // Always show file and line in production for debugging
-            $errorMessage .= "\n\n" . __('common.error_location') . ': ' . basename($e->getFile()) . ':' . $e->getLine();
+            $errorMessage .= "\n\n".__('common.error_location').': '.basename($e->getFile()).':'.$e->getLine();
 
             $this->toast()->error($errorMessage)->send();
         }
     }
 
     #[Computed]
-    public function maxInvoiceSequence()
+    public function maxInvoiceSequence(): int
     {
-        return $this->getMaxSequenceFromDb(now());
+        return Invoice::getMaxSequenceFromDb(now());
     }
 
-    private function getCompanyInitials(): string
+    #[Computed]
+    public function companyInitials(): string
     {
         $company = \App\Models\CompanyProfile::first();
-        if (!$company || !$company->name) {
+        if (! $company || ! $company->name) {
             return 'SPI';
         }
 
-        return $this->extractInitials($company->name) ?: 'SPI';
-    }
-
-    private function getClientInitials($clientId): string
-    {
-        $client = Client::find($clientId);
-        if (!$client) {
-            return 'XXX';
-        }
-
-        $name = $client->type === 'company' && $client->company_name
-            ? $client->company_name
-            : $client->name;
-
-        return $this->extractInitials($name) ?: 'XXX';
-    }
-
-    private function extractInitials(string $name): string
-    {
-        $skipWords = ['pt', 'pt.', 'cv', 'cv.', 'ud', 'ud.', 'tb', 'tb.', 'pd', 'pd.', 'firma', 'yayasan', 'koperasi', 'perum', 'persero'];
-
-        $words = preg_split('/\s+/', trim($name));
-        $initials = '';
-        foreach ($words as $word) {
-            if (!empty($word) && !in_array(strtolower(rtrim($word, '.')), $skipWords) && !in_array(strtolower($word), $skipWords)) {
-                $initials .= strtoupper($word[0]);
-            }
-        }
-
-        return $initials;
-    }
-
-    private function getRomanMonth($month): string
-    {
-        $romans = [
-            1 => 'I', 2 => 'II', 3 => 'III', 4 => 'IV',
-            5 => 'V', 6 => 'VI', 7 => 'VII', 8 => 'VIII',
-            9 => 'IX', 10 => 'X', 11 => 'XI', 12 => 'XII'
-        ];
-
-        return $romans[$month] ?? 'I';
-    }
-
-    public function generateInvoiceNumber(): string
-    {
-        $date = now();
-
-        // Query langsung (bukan computed) agar selalu fresh
-        $maxSequence = $this->getMaxSequenceFromDb($date);
-        $sequence = $maxSequence + 1;
-
-        $companyInitials = $this->getCompanyInitials();
-        $clientInitials = $this->getClientInitials($this->invoice['client_id']);
-        $romanMonth = $this->getRomanMonth($date->month);
-        $year = $date->year;
-
-        // Format: 001/INV/SPI-SAB/I/2026
-        return sprintf(
-            '%03d/INV/%s-%s/%s/%d',
-            $sequence,
-            $companyInitials,
-            $clientInitials,
-            $romanMonth,
-            $year
-        );
-    }
-
-    private function getMaxSequenceFromDb($date): int
-    {
-        return (int) Invoice::whereYear('issue_date', $date->year)
-            ->whereMonth('issue_date', $date->month)
-            ->where('invoice_number', 'LIKE', '%/INV/%')
-            ->selectRaw("MAX(CAST(SUBSTRING_INDEX(invoice_number, '/INV/', 1) AS UNSIGNED)) as max_seq")
-            ->value('max_seq') ?? 0;
+        return Invoice::extractCompanyInitials($company->name) ?: 'SPI';
     }
 
     private function parseAmount($value): int
     {
-        if (empty($value))
+        if (empty($value)) {
             return 0;
+        }
+
         return (int) preg_replace('/[^0-9]/', '', $value);
     }
 
     private function parseQuantity($value): float
     {
-        if (empty($value))
+        if (empty($value)) {
             return 0;
+        }
 
         // Convert Indonesian format (2.828,93) to standard float (2828.93)
         // Remove thousand separators (dots)
@@ -335,12 +261,6 @@ class Create extends Component
     }
 
     #[Computed]
-    public function companyInitials()
-    {
-        return $this->getCompanyInitials();
-    }
-
-    #[Computed]
     public function services()
     {
         return Service::orderBy('name')
@@ -351,7 +271,7 @@ class Create extends Component
                     'name' => $service->name,
                     'price' => $service->price,
                     'type' => $service->type,
-                    'formatted_price' => 'Rp ' . number_format($service->price, 0, ',', '.')
+                    'formatted_price' => 'Rp '.number_format($service->price, 0, ',', '.'),
                 ];
             })
             ->toArray();

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -90,12 +91,110 @@ class Invoice extends Model
         }
 
         $realizedProfit = $totalPaid - $totalCogs;
+
         return $this->gross_profit - $realizedProfit;
     }
 
     public function getPaidProfitAttribute(): int
     {
         return $this->gross_profit - $this->outstanding_profit;
+    }
+
+    // Invoice number generation
+    public static function generateInvoiceNumber(\DateTimeInterface $issueDate, int $clientId): string
+    {
+        $maxSequence = static::getMaxSequenceFromDb($issueDate);
+        $sequence = $maxSequence + 1;
+
+        $companyInitials = static::getCompanyInitials();
+        $clientInitials = static::getClientInitials($clientId);
+        $romanMonth = static::getRomanMonth($issueDate->month);
+        $year = $issueDate->year;
+
+        return sprintf(
+            '%03d/INV/%s-%s/%s/%d',
+            $sequence,
+            $companyInitials,
+            $clientInitials,
+            $romanMonth,
+            $year
+        );
+    }
+
+    public static function getMaxSequenceFromDb(\DateTimeInterface $date): int
+    {
+        return (int) static::whereYear('issue_date', $date->format('Y'))
+            ->whereMonth('issue_date', $date->format('m'))
+            ->where('invoice_number', 'LIKE', '%/INV/%')
+            ->selectRaw("MAX(CAST(SUBSTRING_INDEX(invoice_number, '/INV/', 1) AS UNSIGNED)) as max_seq")
+            ->value('max_seq') ?? 0;
+    }
+
+    public static function isInvoiceLatestInMonth(self $invoice): bool
+    {
+        if (! $invoice->invoice_number || ! str_contains($invoice->invoice_number, '/INV/')) {
+            return false;
+        }
+
+        $maxSeq = static::getMaxSequenceFromDb(Carbon::parse($invoice->issue_date));
+        $invoiceSeq = (int) explode('/INV/', $invoice->invoice_number)[0];
+
+        return $invoiceSeq === (int) $maxSeq;
+    }
+
+    private static function getCompanyInitials(): string
+    {
+        $company = CompanyProfile::first();
+        if (! $company || ! $company->name) {
+            return 'SPI';
+        }
+
+        return static::extractInitials($company->name) ?: 'SPI';
+    }
+
+    private static function getClientInitials(int $clientId): string
+    {
+        $client = Client::find($clientId);
+        if (! $client) {
+            return 'XXX';
+        }
+
+        $name = $client->type === 'company' && $client->company_name
+            ? $client->company_name
+            : $client->name;
+
+        return static::extractInitials($name) ?: 'XXX';
+    }
+
+    public static function extractCompanyInitials(string $name): string
+    {
+        return static::extractInitials($name);
+    }
+
+    private static function extractInitials(string $name): string
+    {
+        $skipWords = ['pt', 'pt.', 'cv', 'cv.', 'ud', 'ud.', 'tb', 'tb.', 'pd', 'pd.', 'firma', 'yayasan', 'koperasi', 'perum', 'persero'];
+
+        $words = preg_split('/\s+/', trim($name));
+        $initials = '';
+        foreach ($words as $word) {
+            if (! empty($word) && ! in_array(strtolower(rtrim($word, '.')), $skipWords) && ! in_array(strtolower($word), $skipWords)) {
+                $initials .= strtoupper($word[0]);
+            }
+        }
+
+        return $initials;
+    }
+
+    private static function getRomanMonth(int $month): string
+    {
+        $romans = [
+            1 => 'I', 2 => 'II', 3 => 'III', 4 => 'IV',
+            5 => 'V', 6 => 'VI', 7 => 'VII', 8 => 'VIII',
+            9 => 'IX', 10 => 'X', 11 => 'XI', 12 => 'XII',
+        ];
+
+        return $romans[$month] ?? 'I';
     }
 
     // Update invoice status based on payments

@@ -70,7 +70,12 @@
       "mcp__laravel-boost__tinker",
       "Bash(sort -t: -k3)",
       "Bash(uniq -f2)",
-      "Bash(./vendor/bin/pint app/Livewire/Feedbacks/ --dirty --format agent)"
+      "Bash(./vendor/bin/pint app/Livewire/Feedbacks/ --dirty --format agent)",
+      "Bash(./vendor/bin/pint app/Models/Invoice.php app/Livewire/Invoices/Create.php app/Livewire/Invoices/Listing.php app/Livewire/Invoices/Show.php --format agent)",
+      "Bash(./vendor/bin/pint app/Models/Invoice.php app/Livewire/Invoices/Create.php --format agent)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8000)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:80)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8080)"
     ]
   }
 }
