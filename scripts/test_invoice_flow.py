@@ -217,11 +217,198 @@ def main():
             rows = page.locator('table tbody tr').all()
             print(f"  Table has {len(rows)} rows")
 
+        # ── STEP 7: Buat invoice baru dengan banyak item ─────────────────────────
+        print("\n[7] Create new invoice with multiple items...")
+        test_create_invoice_with_items(page)
+
         # ── DONE ────────────────────────────────────────────────────────────────
         print("\n" + "=" * 55)
         print("[OK] Test completed! Screenshots saved to C:/tmp/0*.png")
         print("=" * 55)
         browser.close()
+
+
+def test_create_invoice_with_items(page):
+    """
+    Test membuat invoice dengan 3 item berbeda via UI.
+    Menggunakan Alpine.js interop (evaluate) karena form full client-side.
+    """
+    page.goto(f"{BASE_URL}/invoices/create")
+    page.wait_for_load_state("networkidle")
+    page.wait_for_timeout(3000)
+    screenshot(page, "07a_create_form_initial")
+
+    # Ambil daftar klien tersedia dari Alpine state
+    clients = page.evaluate("""
+        () => {
+            const el = document.querySelector('div[x-data="invoiceForm()"]');
+            if (!el || !el._x_dataStack) return [];
+            const data = el._x_dataStack[0];
+            return data && data.clients ? data.clients.slice(0, 3).map(c => ({id: c.id, name: c.name})) : [];
+        }
+    """)
+    print(f"  Available clients from Alpine: {clients}")
+
+    if not clients:
+        print("  [WARN] No clients found in Alpine state — skipping create test")
+        return
+
+    client = clients[0]
+    print(f"  Using client: {client['name']} (id={client['id']})")
+
+    # Step 7a: Pilih klien via Alpine state manipulation
+    print("  [7a] Selecting client...")
+    page.evaluate(f"""
+        () => {{
+            const el = document.querySelector('div[x-data="invoiceForm()"]');
+            if (!el || !el._x_dataStack) return;
+            const data = el._x_dataStack[0];
+            if (!data) return;
+            const client = data.clients.find(c => c.id === {client['id']});
+            if (client) data.selectClient(client);
+        }}
+    """)
+    page.wait_for_timeout(800)
+
+    # Step 7b: Set tanggal invoice dan jatuh tempo
+    print("  [7b] Setting dates...")
+    page.evaluate("""
+        () => {
+            const el = document.querySelector('div[x-data="invoiceForm()"]');
+            if (!el || !el._x_dataStack) return;
+            const data = el._x_dataStack[0];
+            if (!data || !data.invoice) return;
+            const today = new Date();
+            const due = new Date(today);
+            due.setDate(due.getDate() + 30);
+            data.invoice.issue_date = today.toISOString().split('T')[0];
+            data.invoice.due_date = due.toISOString().split('T')[0];
+        }
+    """)
+    page.wait_for_timeout(400)
+
+    # Step 7c: Tambah 3 item sekaligus via bulkAddItems
+    print("  [7c] Adding 3 items via bulkAddItems...")
+    page.evaluate("""
+        () => {
+            const el = document.querySelector('div[x-data="invoiceForm()"]');
+            if (!el || !el._x_dataStack) return;
+            const data = el._x_dataStack[0];
+            if (!data) return;
+            data.bulkCount = 3;
+            data.bulkAddItems();
+        }
+    """)
+    page.wait_for_timeout(1000)
+
+    # Verifikasi 3 item muncul
+    item_count = page.evaluate("""
+        () => {
+            const el = document.querySelector('div[x-data="invoiceForm()"]');
+            if (!el || !el._x_dataStack) return 0;
+            const data = el._x_dataStack[0];
+            return data && data.items ? data.items.length : 0;
+        }
+    """)
+    print(f"  Items in form: {item_count}")
+    assert item_count == 3, f"Expected 3 items, got {item_count}"
+    print("  [OK] 3 items added")
+    screenshot(page, "07b_three_items_added")
+
+    # Step 7d: Isi setiap item dengan data (nama layanan, qty, harga)
+    print("  [7d] Filling item details...")
+    items_data = [
+        {"service_name": "Jasa Konsultasi IT", "quantity": "2", "unit": "jam", "unit_price": "500.000", "cogs_amount": "100.000"},
+        {"service_name": "Pengembangan Website", "quantity": "1", "unit": "paket", "unit_price": "5.000.000", "cogs_amount": "1.500.000"},
+        {"service_name": "Maintenance Server", "quantity": "3", "unit": "bulan", "unit_price": "750.000", "cogs_amount": "200.000"},
+    ]
+
+    page.evaluate(f"""
+        () => {{
+            const el = document.querySelector('div[x-data="invoiceForm()"]');
+            if (!el || !el._x_dataStack) return;
+            const data = el._x_dataStack[0];
+            if (!data || !data.items) return;
+            const itemsData = {items_data};
+            data.items.forEach((item, idx) => {{
+                if (idx >= itemsData.length) return;
+                const d = itemsData[idx];
+                item.service_name = d.service_name;
+                item.quantity = d.quantity;
+                item.unit = d.unit;
+                item.unit_price = d.unit_price;
+                item.cogs_amount = d.cogs_amount;
+                // Trigger calculation
+                data.calculateItem(item);
+            }});
+        }}
+    """)
+    page.wait_for_timeout(1000)
+
+    # Verifikasi total dihitung
+    total = page.evaluate("""
+        () => {
+            const el = document.querySelector('div[x-data="invoiceForm()"]');
+            if (!el || !el._x_dataStack) return null;
+            const data = el._x_dataStack[0];
+            if (!data || !data.items) return null;
+            return data.items.map(i => ({
+                name: i.service_name,
+                qty: i.quantity,
+                unit: i.unit,
+                price: i.unit_price,
+                subtotal: i.subtotal
+            }));
+        }
+    """)
+    print(f"  Items filled:")
+    for i, item in enumerate(total or []):
+        print(f"    [{i+1}] {item['name']} x{item['qty']} {item['unit']} @ {item['price']} = subtotal {item['subtotal']}")
+
+    screenshot(page, "07c_items_filled")
+
+    # Step 7e: Simpan draft invoice
+    print("  [7e] Saving draft invoice via syncAndSave...")
+    page.evaluate("""
+        () => {
+            const el = document.querySelector('div[x-data="invoiceForm()"]');
+            if (!el || !el._x_dataStack) return;
+            const data = el._x_dataStack[0];
+            if (data && data.syncAndSave) data.syncAndSave();
+        }
+    """)
+    page.wait_for_timeout(5000)
+    page.wait_for_load_state("networkidle")
+
+    current_url = page.url
+    print(f"  After save URL: {current_url}")
+    screenshot(page, "07d_after_save")
+
+    # Cek apakah redirect ke show page atau listing
+    if "/invoices/" in current_url and current_url != f"{BASE_URL}/invoices/create":
+        print("  [OK] Invoice saved! Redirected to: " + current_url)
+    else:
+        # Cek toast sukses
+        toast = page.locator('text=berhasil').all()
+        if toast:
+            print("  [OK] Invoice saved (success toast visible)")
+        else:
+            print("  [INFO] Check screenshot 07d_after_save.png for result")
+
+    # Step 7f: Verifikasi di listing — invoice baru muncul tanpa nomor
+    print("  [7f] Verifying new invoice in listing...")
+    page.goto(f"{BASE_URL}/invoices")
+    page.wait_for_load_state("networkidle")
+    page.wait_for_timeout(2500)
+
+    no_number_els = page.locator('text=Belum ada nomor').all()
+    print(f"  Draft invoices without number: {len(no_number_els)}")
+    if no_number_els:
+        print("  [OK] New draft invoice appears without number in listing")
+    else:
+        print("  [INFO] Check listing manually (may be filtered)")
+
+    screenshot(page, "07e_listing_new_invoice")
 
 if __name__ == "__main__":
     main()

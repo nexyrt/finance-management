@@ -513,7 +513,7 @@
     @endscript
 
 {{-- Send Invoice Modal --}}
-<x-modal wire:model="sendModal" size="md" center persistent>
+<x-modal wire="sendModal" size="md" center persistent>
     <x-slot:title>
         <div class="flex items-center gap-4 my-3">
             <div class="h-12 w-12 bg-cyan-50 dark:bg-cyan-900/20 rounded-xl flex items-center justify-center">
