@@ -16,7 +16,7 @@ class AppServiceProvider extends ServiceProvider
         Model::preventLazyLoading(!app()->isProduction());
 
         // TallStackUI Component Personalization - Professional Blue Theme
-        TallStackUi::personalize()
+        TallStackUi::customize()
             ->modal()
             ->block('wrapper.first', 'fixed inset-0 bg-black/30 transform transition-opacity')
             ->and()

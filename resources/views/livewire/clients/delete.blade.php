@@ -84,7 +84,7 @@
                 <x-button wire:click="$toggle('clientDeleteModal')" color="secondary" outline class="w-full sm:w-auto order-2 sm:order-1">
                     {{ __('common.cancel') }}
                 </x-button>
-                <x-button wire:click="confirm" x-on:click="$modalClose('client-delete-modal')" color="red" icon="trash" loading="confirm"
+                <x-button wire:click="confirm" x-on:click="$tsui.close.modal('client-delete-modal')" color="red" icon="trash" loading="confirm"
                     class="w-full sm:w-auto order-1 sm:order-2">
                     {{ __('pages.delete_client') }}
                 </x-button>

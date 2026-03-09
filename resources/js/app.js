@@ -1,3 +1,9 @@
+import Anchor from '@alpinejs/anchor';
+
+document.addEventListener('alpine:init', () => {
+    Alpine.plugin(Anchor);
+});
+
 import ApexCharts from 'apexcharts'
 window.ApexCharts = ApexCharts;
 

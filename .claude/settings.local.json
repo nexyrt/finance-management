@@ -81,7 +81,9 @@
       "Bash(claude mcp get tallstackui)",
       "mcp__tallstackui__list-components-tool",
       "mcp__tallstackui__get-component-tool",
-      "Bash(./vendor/bin/pint app/Livewire/Invoices/Delete.php --format agent)"
+      "Bash(./vendor/bin/pint app/Livewire/Invoices/Delete.php --format agent)",
+      "mcp__tallstackui__search-documentation-tool",
+      "Bash(node -e \"const pkg = require\\(''d:/Laravel/finance-management/package.json''\\); console.log\\(''tailwindcss:'', pkg.dependencies?.tailwindcss || pkg.devDependencies?.tailwindcss\\)\")"
     ]
   },
   "enableAllProjectMcpServers": true,
