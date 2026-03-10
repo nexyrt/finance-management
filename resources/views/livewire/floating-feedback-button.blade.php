@@ -1,6 +1,6 @@
 <div x-data="{ collapsed: false }"
      class="fixed bottom-6 z-50 transition-all duration-300 ease-in-out"
-     :class="collapsed ? 'right-[-3.5rem]' : 'right-6'">
+     :class="collapsed ? '-right-14' : 'right-6'">
 
     <div class="relative flex items-center">
         {{-- Close button (visible when expanded) --}}

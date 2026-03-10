@@ -17,7 +17,7 @@
                             class="mt-3 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
                             <div class="flex items-start gap-2">
                                 <x-icon name="exclamation-circle"
-                                    class="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+                                    class="w-5 h-5 text-red-600 dark:text-red-400 shrink-0 mt-0.5" />
                                 <div>
                                     <div class="text-sm font-semibold text-red-900 dark:text-red-200">{{ __('common.rejected') }}
                                     </div>

@@ -5,7 +5,7 @@
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div class="space-y-1">
             <h1
-                class="text-4xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-indigo-800 dark:from-white dark:via-blue-200 dark:to-indigo-200 bg-clip-text text-transparent">
+                class="text-4xl font-bold bg-linear-to-r from-gray-900 via-blue-800 to-indigo-800 dark:from-white dark:via-blue-200 dark:to-indigo-200 bg-clip-text text-transparent">
                 {{ __('common.services') }}
             </h1>
             <p class="text-gray-600 dark:text-zinc-400 text-lg">
@@ -31,7 +31,7 @@
         <x-card class="hover:shadow-lg transition-shadow">
             <div class="flex items-center gap-4">
                 <div
-                    class="h-12 w-12 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                    class="h-12 w-12 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center shrink-0">
                     <x-icon name="squares-2x2" class="w-6 h-6 text-blue-600 dark:text-blue-400" />
                 </div>
                 <div>
@@ -47,7 +47,7 @@
         <x-card class="hover:shadow-lg transition-shadow">
             <div class="flex items-center gap-4">
                 <div
-                    class="h-12 w-12 bg-green-50 dark:bg-green-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                    class="h-12 w-12 bg-green-50 dark:bg-green-900/20 rounded-xl flex items-center justify-center shrink-0">
                     <x-icon name="banknotes" class="w-6 h-6 text-green-600 dark:text-green-400" />
                 </div>
                 <div>
@@ -66,7 +66,7 @@
         <x-card class="hover:shadow-lg transition-shadow">
             <div class="flex items-center gap-4">
                 <div
-                    class="h-12 w-12 bg-purple-50 dark:bg-purple-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                    class="h-12 w-12 bg-purple-50 dark:bg-purple-900/20 rounded-xl flex items-center justify-center shrink-0">
                     <x-icon name="star" class="w-6 h-6 text-purple-600 dark:text-purple-400" />
                 </div>
                 <div>
@@ -85,7 +85,7 @@
         <x-card class="hover:shadow-lg transition-shadow">
             <div class="flex items-center gap-4">
                 <div
-                    class="h-12 w-12 bg-orange-50 dark:bg-orange-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                    class="h-12 w-12 bg-orange-50 dark:bg-orange-900/20 rounded-xl flex items-center justify-center shrink-0">
                     <x-icon name="rectangle-group" class="w-6 h-6 text-orange-600 dark:text-orange-400" />
                 </div>
                 <div>
@@ -234,27 +234,27 @@
             {{-- Workflow Steps Timeline --}}
             <div class="relative">
                 {{-- Connecting line --}}
-                <div class="absolute left-6 top-10 bottom-10 w-0.5 bg-gradient-to-b from-blue-300 via-purple-300 to-green-300 dark:from-blue-700 dark:via-purple-700 dark:to-green-700 hidden sm:block"></div>
+                <div class="absolute left-6 top-10 bottom-10 w-0.5 bg-linear-to-b from-blue-300 via-purple-300 to-green-300 dark:from-blue-700 dark:via-purple-700 dark:to-green-700 hidden sm:block"></div>
 
                 <div class="space-y-4">
                     {{-- Step 1 --}}
                     <div class="flex gap-4">
-                        <div class="flex-shrink-0 w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center shadow-lg shadow-blue-200 dark:shadow-blue-900/40 z-10">
+                        <div class="shrink-0 w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center shadow-lg shadow-blue-200 dark:shadow-blue-900/40 z-10">
                             <span class="text-white font-bold text-sm">1</span>
                         </div>
                         <div class="flex-1 bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-900/40 rounded-xl p-4">
                             <div class="flex items-start gap-3">
-                                <x-icon name="plus-circle" class="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+                                <x-icon name="plus-circle" class="w-5 h-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
                                 <div class="flex-1">
                                     <h4 class="font-semibold text-blue-900 dark:text-blue-200 mb-1">{{ __('pages.service_guide_step1_title') }}</h4>
                                     <p class="text-sm text-blue-700 dark:text-blue-300 mb-3">{{ __('pages.service_guide_step1_desc') }}</p>
                                     <div class="grid grid-cols-2 gap-2">
                                         <div class="flex items-start gap-2 text-xs text-blue-600 dark:text-blue-400">
-                                            <x-icon name="check-circle" class="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+                                            <x-icon name="check-circle" class="w-3.5 h-3.5 shrink-0 mt-0.5" />
                                             <span>{{ __('pages.service_guide_step1_tip1') }}</span>
                                         </div>
                                         <div class="flex items-start gap-2 text-xs text-blue-600 dark:text-blue-400">
-                                            <x-icon name="check-circle" class="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+                                            <x-icon name="check-circle" class="w-3.5 h-3.5 shrink-0 mt-0.5" />
                                             <span>{{ __('pages.service_guide_step1_tip2') }}</span>
                                         </div>
                                     </div>
@@ -265,22 +265,22 @@
 
                     {{-- Step 2 --}}
                     <div class="flex gap-4">
-                        <div class="flex-shrink-0 w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center shadow-lg shadow-purple-200 dark:shadow-purple-900/40 z-10">
+                        <div class="shrink-0 w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center shadow-lg shadow-purple-200 dark:shadow-purple-900/40 z-10">
                             <span class="text-white font-bold text-sm">2</span>
                         </div>
                         <div class="flex-1 bg-purple-50 dark:bg-purple-900/10 border border-purple-200 dark:border-purple-900/40 rounded-xl p-4">
                             <div class="flex items-start gap-3">
-                                <x-icon name="document-text" class="w-5 h-5 text-purple-600 dark:text-purple-400 flex-shrink-0 mt-0.5" />
+                                <x-icon name="document-text" class="w-5 h-5 text-purple-600 dark:text-purple-400 shrink-0 mt-0.5" />
                                 <div class="flex-1">
                                     <h4 class="font-semibold text-purple-900 dark:text-purple-200 mb-1">{{ __('pages.service_guide_step2_title') }}</h4>
                                     <p class="text-sm text-purple-700 dark:text-purple-300 mb-3">{{ __('pages.service_guide_step2_desc') }}</p>
                                     <div class="grid grid-cols-2 gap-2">
                                         <div class="flex items-start gap-2 text-xs text-purple-600 dark:text-purple-400">
-                                            <x-icon name="check-circle" class="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+                                            <x-icon name="check-circle" class="w-3.5 h-3.5 shrink-0 mt-0.5" />
                                             <span>{{ __('pages.service_guide_step2_tip1') }}</span>
                                         </div>
                                         <div class="flex items-start gap-2 text-xs text-purple-600 dark:text-purple-400">
-                                            <x-icon name="check-circle" class="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+                                            <x-icon name="check-circle" class="w-3.5 h-3.5 shrink-0 mt-0.5" />
                                             <span>{{ __('pages.service_guide_step2_tip2') }}</span>
                                         </div>
                                     </div>
@@ -291,12 +291,12 @@
 
                     {{-- Step 3 --}}
                     <div class="flex gap-4">
-                        <div class="flex-shrink-0 w-12 h-12 bg-emerald-600 rounded-full flex items-center justify-center shadow-lg shadow-emerald-200 dark:shadow-emerald-900/40 z-10">
+                        <div class="shrink-0 w-12 h-12 bg-emerald-600 rounded-full flex items-center justify-center shadow-lg shadow-emerald-200 dark:shadow-emerald-900/40 z-10">
                             <span class="text-white font-bold text-sm">3</span>
                         </div>
                         <div class="flex-1 bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-200 dark:border-emerald-900/40 rounded-xl p-4">
                             <div class="flex items-start gap-3">
-                                <x-icon name="pencil-square" class="w-5 h-5 text-emerald-600 dark:text-emerald-400 flex-shrink-0 mt-0.5" />
+                                <x-icon name="pencil-square" class="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
                                 <div class="flex-1">
                                     <h4 class="font-semibold text-emerald-900 dark:text-emerald-200 mb-1">{{ __('pages.service_guide_step3_title') }}</h4>
                                     <p class="text-sm text-emerald-700 dark:text-emerald-300">{{ __('pages.service_guide_step3_desc') }}</p>
@@ -312,7 +312,7 @@
                 <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-3">{{ __('pages.service_guide_categories_title') }}</h4>
                 <div class="grid grid-cols-2 gap-3">
                     <div class="flex items-start gap-3 p-3 bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-900/40 rounded-xl">
-                        <div class="h-8 w-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <div class="h-8 w-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center shrink-0">
                             <x-icon name="document-check" class="w-4 h-4 text-blue-600 dark:text-blue-400" />
                         </div>
                         <div>
@@ -321,7 +321,7 @@
                         </div>
                     </div>
                     <div class="flex items-start gap-3 p-3 bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-900/40 rounded-xl">
-                        <div class="h-8 w-8 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <div class="h-8 w-8 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center shrink-0">
                             <x-icon name="calculator" class="w-4 h-4 text-green-600 dark:text-green-400" />
                         </div>
                         <div>
@@ -330,7 +330,7 @@
                         </div>
                     </div>
                     <div class="flex items-start gap-3 p-3 bg-purple-50 dark:bg-purple-900/10 border border-purple-200 dark:border-purple-900/40 rounded-xl">
-                        <div class="h-8 w-8 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <div class="h-8 w-8 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center shrink-0">
                             <x-icon name="megaphone" class="w-4 h-4 text-purple-600 dark:text-purple-400" />
                         </div>
                         <div>
@@ -339,7 +339,7 @@
                         </div>
                     </div>
                     <div class="flex items-start gap-3 p-3 bg-orange-50 dark:bg-orange-900/10 border border-orange-200 dark:border-orange-900/40 rounded-xl">
-                        <div class="h-8 w-8 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <div class="h-8 w-8 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center shrink-0">
                             <x-icon name="computer-desktop" class="w-4 h-4 text-orange-600 dark:text-orange-400" />
                         </div>
                         <div>
@@ -353,20 +353,20 @@
             {{-- Tips --}}
             <div class="p-4 bg-gray-50 dark:bg-dark-700 rounded-xl border border-gray-200 dark:border-dark-600">
                 <div class="flex items-start gap-3">
-                    <x-icon name="light-bulb" class="w-5 h-5 text-yellow-500 dark:text-yellow-400 flex-shrink-0 mt-0.5" />
+                    <x-icon name="light-bulb" class="w-5 h-5 text-yellow-500 dark:text-yellow-400 shrink-0 mt-0.5" />
                     <div class="flex-1">
                         <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-2">{{ __('pages.service_guide_tips_title') }}</h4>
                         <ul class="space-y-1.5 text-xs text-dark-500 dark:text-dark-400">
                             <li class="flex items-start gap-2">
-                                <x-icon name="check-circle" class="w-3.5 h-3.5 flex-shrink-0 mt-0.5 text-green-500" />
+                                <x-icon name="check-circle" class="w-3.5 h-3.5 shrink-0 mt-0.5 text-green-500" />
                                 <span>{{ __('pages.service_guide_tip1') }}</span>
                             </li>
                             <li class="flex items-start gap-2">
-                                <x-icon name="check-circle" class="w-3.5 h-3.5 flex-shrink-0 mt-0.5 text-green-500" />
+                                <x-icon name="check-circle" class="w-3.5 h-3.5 shrink-0 mt-0.5 text-green-500" />
                                 <span>{{ __('pages.service_guide_tip2') }}</span>
                             </li>
                             <li class="flex items-start gap-2">
-                                <x-icon name="check-circle" class="w-3.5 h-3.5 flex-shrink-0 mt-0.5 text-green-500" />
+                                <x-icon name="check-circle" class="w-3.5 h-3.5 shrink-0 mt-0.5 text-green-500" />
                                 <span>{{ __('pages.service_guide_tip3') }}</span>
                             </li>
                         </ul>

@@ -16,7 +16,7 @@ class AppServiceProvider extends ServiceProvider
         Model::preventLazyLoading(!app()->isProduction());
 
         // TallStackUI Component Personalization - Professional Blue Theme
-        TallStackUi::customize()
+        TallStackUi::personalize()
             ->modal()
             ->block('wrapper.first', 'fixed inset-0 bg-black/30 transform transition-opacity')
             ->and()
@@ -33,7 +33,7 @@ class AppServiceProvider extends ServiceProvider
             ->and()
             ->floating()
             ->block('wrapper')
-            ->replace('z-40', 'z-[55]')
+            ->replace('z-40', 'z-55')
             ->and()
             ->dropdown()
             ->block('floating.class')
@@ -41,7 +41,7 @@ class AppServiceProvider extends ServiceProvider
             ->and()
             ->dropdown()
             ->block('floating.default')
-            ->replace('z-40', 'z-[9999]');
+            ->replace('z-40', 'z-9999');
 
         // Set locale from session or user preference with fallback
         $availableLocales = config('app.available_locales', ['id', 'zh']);

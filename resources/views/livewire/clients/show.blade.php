@@ -7,7 +7,7 @@
             <div class="flex items-center justify-between pb-6 border-b border-secondary-200 dark:border-dark-600">
                 <div class="flex items-center gap-4">
                     <!-- Avatar -->
-                    <div class="h-16 w-16 flex-shrink-0">
+                    <div class="h-16 w-16 shrink-0">
                         @if ($client->logo)
                             <img class="h-16 w-16 rounded-xl object-cover" src="{{ $client->logo }}" alt="{{ $client->name }}">
                         @else
@@ -31,7 +31,7 @@
 
                 <!-- Quick Stats -->
                 <div class="flex items-center gap-4 border border-secondary-200 dark:border-dark-600 rounded-xl p-4">
-                    <div class="h-12 w-12 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <div class="h-12 w-12 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center shrink-0">
                         <x-icon name="document-duplicate" class="w-6 h-6 text-blue-600 dark:text-blue-400" />
                     </div>
                     <div>
@@ -171,7 +171,7 @@
                         <!-- Financial Summary -->
                         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                             <div class="flex items-center gap-4 p-4 border border-secondary-200 dark:border-dark-600 rounded-xl">
-                                <div class="h-12 w-12 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                                <div class="h-12 w-12 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center shrink-0">
                                     <x-icon name="document-duplicate" class="w-6 h-6 text-blue-600 dark:text-blue-400" />
                                 </div>
                                 <div>
@@ -180,7 +180,7 @@
                                 </div>
                             </div>
                             <div class="flex items-center gap-4 p-4 border border-secondary-200 dark:border-dark-600 rounded-xl">
-                                <div class="h-12 w-12 bg-green-50 dark:bg-green-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                                <div class="h-12 w-12 bg-green-50 dark:bg-green-900/20 rounded-xl flex items-center justify-center shrink-0">
                                     <x-icon name="banknotes" class="w-6 h-6 text-green-600 dark:text-green-400" />
                                 </div>
                                 <div>
@@ -191,7 +191,7 @@
                                 </div>
                             </div>
                             <div class="flex items-center gap-4 p-4 border border-secondary-200 dark:border-dark-600 rounded-xl">
-                                <div class="h-12 w-12 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                                <div class="h-12 w-12 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl flex items-center justify-center shrink-0">
                                     <x-icon name="check-circle" class="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
                                 </div>
                                 <div>
@@ -202,7 +202,7 @@
                                 </div>
                             </div>
                             <div class="flex items-center gap-4 p-4 border border-secondary-200 dark:border-dark-600 rounded-xl">
-                                <div class="h-12 w-12 bg-red-50 dark:bg-red-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                                <div class="h-12 w-12 bg-red-50 dark:bg-red-900/20 rounded-xl flex items-center justify-center shrink-0">
                                     <x-icon name="exclamation-circle" class="w-6 h-6 text-red-600 dark:text-red-400" />
                                 </div>
                                 <div>

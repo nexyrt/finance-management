@@ -132,7 +132,7 @@ x-on:file-upload-reset.window="clearFiles()">
         <div x-show="files.length > 0" class="p-3 space-y-2" x-on:click.stop>
             <template x-for="(file, index) in files" :key="index">
                 <div class="flex items-center gap-3 p-2 bg-secondary-50 dark:bg-dark-700 rounded-lg">
-                    <div class="h-9 w-9 rounded-lg overflow-hidden flex-shrink-0 flex items-center justify-center bg-white dark:bg-dark-800 border border-secondary-200 dark:border-dark-600">
+                    <div class="h-9 w-9 rounded-lg overflow-hidden shrink-0 flex items-center justify-center bg-white dark:bg-dark-800 border border-secondary-200 dark:border-dark-600">
                         <template x-if="file.preview">
                             <img :src="file.preview" class="h-full w-full object-cover" />
                         </template>
@@ -146,7 +146,7 @@ x-on:file-upload-reset.window="clearFiles()">
                     </div>
                     <button type="button"
                         x-on:click.stop="remove(index)"
-                        class="flex-shrink-0 h-7 w-7 flex items-center justify-center rounded-lg text-dark-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+                        class="shrink-0 h-7 w-7 flex items-center justify-center rounded-lg text-dark-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
                         <x-icon name="x-mark" class="w-4 h-4" />
                     </button>
                 </div>

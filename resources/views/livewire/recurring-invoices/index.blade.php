@@ -12,7 +12,7 @@
     <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
         <div class="space-y-1">
             <h1
-                class="text-4xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-indigo-800 dark:from-white dark:via-blue-200 dark:to-indigo-200 bg-clip-text text-transparent">
+                class="text-4xl font-bold bg-linear-to-r from-gray-900 via-blue-800 to-indigo-800 dark:from-white dark:via-blue-200 dark:to-indigo-200 bg-clip-text text-transparent">
                 {{ __('pages.recurring_invoices') }}
             </h1>
             <p class="text-dark-600 dark:text-dark-400 text-lg">
@@ -21,7 +21,7 @@
         </div>
 
         {{-- Stats + Guide button --}}
-        <div class="flex items-center gap-3 flex-shrink-0">
+        <div class="flex items-center gap-3 shrink-0">
             {{-- Guide toggle --}}
             <button
                 @click="showGuide = !showGuide; localStorage.setItem('ri_guide_dismissed', showGuide ? '0' : '1')"
@@ -85,7 +85,7 @@
             <!-- Step 1: Buat Template -->
             <div class="p-6 space-y-3">
                 <div class="flex items-center gap-3">
-                    <div class="h-8 w-8 rounded-full bg-blue-600 text-white text-sm font-bold flex items-center justify-center flex-shrink-0">1</div>
+                    <div class="h-8 w-8 rounded-full bg-blue-600 text-white text-sm font-bold flex items-center justify-center shrink-0">1</div>
                     <h4 class="font-semibold text-dark-900 dark:text-dark-50">{{ __('pages.ri_step1_title') }}</h4>
                 </div>
                 <p class="text-sm text-dark-600 dark:text-dark-400">
@@ -93,15 +93,15 @@
                 </p>
                 <div class="space-y-1.5 text-xs text-dark-500 dark:text-dark-400">
                     <div class="flex items-start gap-2">
-                        <x-icon name="check-circle" class="w-3.5 h-3.5 text-green-500 mt-0.5 flex-shrink-0" />
+                        <x-icon name="check-circle" class="w-3.5 h-3.5 text-green-500 mt-0.5 shrink-0" />
                         <span>{!! __('pages.ri_step1_start_date_hint', ['label' => '<span class="font-medium">Start Date</span>']) !!}</span>
                     </div>
                     <div class="flex items-start gap-2">
-                        <x-icon name="check-circle" class="w-3.5 h-3.5 text-green-500 mt-0.5 flex-shrink-0" />
+                        <x-icon name="check-circle" class="w-3.5 h-3.5 text-green-500 mt-0.5 shrink-0" />
                         <span>{!! __('pages.ri_step1_end_date_hint', ['label' => '<span class="font-medium">End Date</span>']) !!}</span>
                     </div>
                     <div class="flex items-start gap-2">
-                        <x-icon name="check-circle" class="w-3.5 h-3.5 text-green-500 mt-0.5 flex-shrink-0" />
+                        <x-icon name="check-circle" class="w-3.5 h-3.5 text-green-500 mt-0.5 shrink-0" />
                         <span>{!! __('pages.ri_step1_frequency_hint', ['label' => '<span class="font-medium">Frequency</span>']) !!}</span>
                     </div>
                 </div>
@@ -115,7 +115,7 @@
             <!-- Step 2: Generate Invoice -->
             <div class="p-6 space-y-3">
                 <div class="flex items-center gap-3">
-                    <div class="h-8 w-8 rounded-full bg-blue-600 text-white text-sm font-bold flex items-center justify-center flex-shrink-0">2</div>
+                    <div class="h-8 w-8 rounded-full bg-blue-600 text-white text-sm font-bold flex items-center justify-center shrink-0">2</div>
                     <h4 class="font-semibold text-dark-900 dark:text-dark-50">{{ __('pages.ri_step2_title') }}</h4>
                 </div>
                 <p class="text-sm text-dark-600 dark:text-dark-400">
@@ -123,15 +123,15 @@
                 </p>
                 <div class="space-y-1.5 text-xs text-dark-500 dark:text-dark-400">
                     <div class="flex items-start gap-2">
-                        <x-icon name="check-circle" class="w-3.5 h-3.5 text-green-500 mt-0.5 flex-shrink-0" />
+                        <x-icon name="check-circle" class="w-3.5 h-3.5 text-green-500 mt-0.5 shrink-0" />
                         <span>{!! __('pages.ri_step2_issue_date_hint', ['label' => '<span class="font-medium">Issue Date</span>']) !!}</span>
                     </div>
                     <div class="flex items-start gap-2">
-                        <x-icon name="check-circle" class="w-3.5 h-3.5 text-green-500 mt-0.5 flex-shrink-0" />
+                        <x-icon name="check-circle" class="w-3.5 h-3.5 text-green-500 mt-0.5 shrink-0" />
                         <span>{!! __('pages.ri_step2_due_date_hint', ['label' => '<span class="font-medium">Due Date</span>']) !!}</span>
                     </div>
                     <div class="flex items-start gap-2">
-                        <x-icon name="information-circle" class="w-3.5 h-3.5 text-amber-500 mt-0.5 flex-shrink-0" />
+                        <x-icon name="information-circle" class="w-3.5 h-3.5 text-amber-500 mt-0.5 shrink-0" />
                         <span>{{ __('pages.ri_step2_warning') }}</span>
                     </div>
                 </div>
@@ -145,7 +145,7 @@
             <!-- Step 3: Publish -->
             <div class="p-6 space-y-3">
                 <div class="flex items-center gap-3">
-                    <div class="h-8 w-8 rounded-full bg-blue-600 text-white text-sm font-bold flex items-center justify-center flex-shrink-0">3</div>
+                    <div class="h-8 w-8 rounded-full bg-blue-600 text-white text-sm font-bold flex items-center justify-center shrink-0">3</div>
                     <h4 class="font-semibold text-dark-900 dark:text-dark-50">{{ __('pages.ri_step3_title') }}</h4>
                 </div>
                 <p class="text-sm text-dark-600 dark:text-dark-400">
@@ -153,15 +153,15 @@
                 </p>
                 <div class="space-y-1.5 text-xs text-dark-500 dark:text-dark-400">
                     <div class="flex items-start gap-2">
-                        <x-icon name="check-circle" class="w-3.5 h-3.5 text-green-500 mt-0.5 flex-shrink-0" />
+                        <x-icon name="check-circle" class="w-3.5 h-3.5 text-green-500 mt-0.5 shrink-0" />
                         <span>{{ __('pages.ri_step3_hint1') }}</span>
                     </div>
                     <div class="flex items-start gap-2">
-                        <x-icon name="check-circle" class="w-3.5 h-3.5 text-green-500 mt-0.5 flex-shrink-0" />
+                        <x-icon name="check-circle" class="w-3.5 h-3.5 text-green-500 mt-0.5 shrink-0" />
                         <span>{{ __('pages.ri_step3_hint2') }}</span>
                     </div>
                     <div class="flex items-start gap-2">
-                        <x-icon name="information-circle" class="w-3.5 h-3.5 text-amber-500 mt-0.5 flex-shrink-0" />
+                        <x-icon name="information-circle" class="w-3.5 h-3.5 text-amber-500 mt-0.5 shrink-0" />
                         <span>{{ __('pages.ri_step3_warning') }}</span>
                     </div>
                 </div>
@@ -176,7 +176,7 @@
         <!-- Konsep Periode -->
         <div class="border-t border-blue-100 dark:border-blue-900/30 px-6 py-5 bg-amber-50/50 dark:bg-amber-900/10">
             <div class="flex items-start gap-3">
-                <div class="h-7 w-7 bg-amber-100 dark:bg-amber-900/40 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                <div class="h-7 w-7 bg-amber-100 dark:bg-amber-900/40 rounded-lg flex items-center justify-center shrink-0 mt-0.5">
                     <x-icon name="light-bulb" class="w-4 h-4 text-amber-600 dark:text-amber-400" />
                 </div>
                 <div class="flex-1 min-w-0">
@@ -197,15 +197,15 @@
                             </div>
                             <div class="text-xs text-dark-600 dark:text-dark-400 space-y-0.5 pt-1 border-t border-amber-100 dark:border-amber-900/30">
                                 <div class="flex items-center gap-1.5">
-                                    <span class="w-1.5 h-1.5 rounded-full bg-green-500 flex-shrink-0"></span>
+                                    <span class="w-1.5 h-1.5 rounded-full bg-green-500 shrink-0"></span>
                                     <span>Siklus 1: 19 Feb → <span class="font-medium">19 Mar</span> ✓ (≤ 10 Des)</span>
                                 </div>
                                 <div class="flex items-center gap-1.5">
-                                    <span class="w-1.5 h-1.5 rounded-full bg-green-500 flex-shrink-0"></span>
+                                    <span class="w-1.5 h-1.5 rounded-full bg-green-500 shrink-0"></span>
                                     <span>Siklus 2–9: Apr s.d. <span class="font-medium">Nov</span> ✓</span>
                                 </div>
                                 <div class="flex items-center gap-1.5">
-                                    <span class="w-1.5 h-1.5 rounded-full bg-red-400 flex-shrink-0"></span>
+                                    <span class="w-1.5 h-1.5 rounded-full bg-red-400 shrink-0"></span>
                                     <span>Siklus 10: <span class="font-medium">19 Des</span> ✗ (> 10 Des)</span>
                                 </div>
                                 <div class="pt-1 font-medium text-dark-700 dark:text-dark-200">→ 9 invoice (Mar–Nov)</div>
@@ -223,19 +223,19 @@
                             </div>
                             <div class="text-xs text-dark-600 dark:text-dark-400 space-y-0.5 pt-1 border-t border-amber-100 dark:border-amber-900/30">
                                 <div class="flex items-center gap-1.5">
-                                    <span class="w-1.5 h-1.5 rounded-full bg-green-500 flex-shrink-0"></span>
+                                    <span class="w-1.5 h-1.5 rounded-full bg-green-500 shrink-0"></span>
                                     <span>Siklus 1: Jan → <span class="font-medium">Apr</span> ✓</span>
                                 </div>
                                 <div class="flex items-center gap-1.5">
-                                    <span class="w-1.5 h-1.5 rounded-full bg-green-500 flex-shrink-0"></span>
+                                    <span class="w-1.5 h-1.5 rounded-full bg-green-500 shrink-0"></span>
                                     <span>Siklus 2: Apr → <span class="font-medium">Jul</span> ✓</span>
                                 </div>
                                 <div class="flex items-center gap-1.5">
-                                    <span class="w-1.5 h-1.5 rounded-full bg-green-500 flex-shrink-0"></span>
+                                    <span class="w-1.5 h-1.5 rounded-full bg-green-500 shrink-0"></span>
                                     <span>Siklus 3: Jul → <span class="font-medium">Okt</span> ✓</span>
                                 </div>
                                 <div class="flex items-center gap-1.5">
-                                    <span class="w-1.5 h-1.5 rounded-full bg-red-400 flex-shrink-0"></span>
+                                    <span class="w-1.5 h-1.5 rounded-full bg-red-400 shrink-0"></span>
                                     <span>Siklus 4: Okt → <span class="font-medium">Jan 2027</span> ✗</span>
                                 </div>
                                 <div class="pt-1 font-medium text-dark-700 dark:text-dark-200">→ 3 invoice (Apr, Jul, Okt)</div>
@@ -249,19 +249,19 @@
                             </div>
                             <div class="text-xs text-dark-600 dark:text-dark-400 space-y-1.5">
                                 <div class="flex items-start gap-1.5">
-                                    <x-icon name="check-circle" class="w-3.5 h-3.5 text-green-500 mt-0.5 flex-shrink-0" />
+                                    <x-icon name="check-circle" class="w-3.5 h-3.5 text-green-500 mt-0.5 shrink-0" />
                                     <span>{{ __('pages.ri_rule1') }}</span>
                                 </div>
                                 <div class="flex items-start gap-1.5">
-                                    <x-icon name="check-circle" class="w-3.5 h-3.5 text-green-500 mt-0.5 flex-shrink-0" />
+                                    <x-icon name="check-circle" class="w-3.5 h-3.5 text-green-500 mt-0.5 shrink-0" />
                                     <span>{{ __('pages.ri_rule2') }}</span>
                                 </div>
                                 <div class="flex items-start gap-1.5">
-                                    <x-icon name="check-circle" class="w-3.5 h-3.5 text-green-500 mt-0.5 flex-shrink-0" />
+                                    <x-icon name="check-circle" class="w-3.5 h-3.5 text-green-500 mt-0.5 shrink-0" />
                                     <span>{{ __('pages.ri_rule3') }}</span>
                                 </div>
                                 <div class="flex items-start gap-1.5">
-                                    <x-icon name="information-circle" class="w-3.5 h-3.5 text-amber-500 mt-0.5 flex-shrink-0" />
+                                    <x-icon name="information-circle" class="w-3.5 h-3.5 text-amber-500 mt-0.5 shrink-0" />
                                     <span>{{ __('pages.ri_rule4') }}</span>
                                 </div>
                             </div>
@@ -289,7 +289,7 @@
                     ? 'bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 shadow-sm border border-zinc-200 dark:border-dark-600'
                     : 'text-dark-500 dark:text-dark-400 hover:text-dark-800 dark:hover:text-dark-200 hover:bg-zinc-50 dark:hover:bg-dark-600'"
             >
-                <x-icon name="document-text" class="w-4 h-4 flex-shrink-0" />
+                <x-icon name="document-text" class="w-4 h-4 shrink-0" />
                 <span>{{ __('pages.templates') }}</span>
                 <span
                     class="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full text-[10px] font-bold transition-colors"
@@ -307,7 +307,7 @@
                     ? 'bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 shadow-sm border border-zinc-200 dark:border-dark-600'
                     : 'text-dark-500 dark:text-dark-400 hover:text-dark-800 dark:hover:text-dark-200 hover:bg-zinc-50 dark:hover:bg-dark-600'"
             >
-                <x-icon name="calendar" class="w-4 h-4 flex-shrink-0" />
+                <x-icon name="calendar" class="w-4 h-4 shrink-0" />
                 <span>{{ __('pages.monthly') }}</span>
             </button>
 
@@ -319,21 +319,21 @@
                     ? 'bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 shadow-sm border border-zinc-200 dark:border-dark-600'
                     : 'text-dark-500 dark:text-dark-400 hover:text-dark-800 dark:hover:text-dark-200 hover:bg-zinc-50 dark:hover:bg-dark-600'"
             >
-                <x-icon name="chart-bar" class="w-4 h-4 flex-shrink-0" />
+                <x-icon name="chart-bar" class="w-4 h-4 shrink-0" />
                 <span>{{ __('pages.analytics') }}</span>
             </button>
         </div>
 
         {{-- Divider line + context subtitle --}}
         <div class="hidden sm:flex items-center gap-3 flex-1 min-w-0">
-            <div class="h-px flex-1 bg-gradient-to-r from-zinc-200 dark:from-dark-600 to-transparent"></div>
-            <p x-show="activeTab === 'templates'" x-transition.opacity class="text-xs text-dark-400 dark:text-dark-500 flex-shrink-0">
+            <div class="h-px flex-1 bg-linear-to-r from-zinc-200 dark:from-dark-600 to-transparent"></div>
+            <p x-show="activeTab === 'templates'" x-transition.opacity class="text-xs text-dark-400 dark:text-dark-500 shrink-0">
                 {{ __('pages.ri_guide_subtitle') }}
             </p>
-            <p x-show="activeTab === 'monthly'" x-transition.opacity class="text-xs text-dark-400 dark:text-dark-500 flex-shrink-0">
+            <p x-show="activeTab === 'monthly'" x-transition.opacity class="text-xs text-dark-400 dark:text-dark-500 shrink-0">
                 {{ __('pages.ri_step2_tab_hint') }}
             </p>
-            <p x-show="activeTab === 'analytics'" x-transition.opacity class="text-xs text-dark-400 dark:text-dark-500 flex-shrink-0">
+            <p x-show="activeTab === 'analytics'" x-transition.opacity class="text-xs text-dark-400 dark:text-dark-500 shrink-0">
                 {{ __('pages.ri_last_updated', ['datetime' => now()->format('d M Y')]) }}
             </p>
         </div>

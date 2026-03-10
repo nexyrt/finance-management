@@ -83,7 +83,15 @@
       "mcp__tallstackui__get-component-tool",
       "Bash(./vendor/bin/pint app/Livewire/Invoices/Delete.php --format agent)",
       "mcp__tallstackui__search-documentation-tool",
-      "Bash(node -e \"const pkg = require\\(''d:/Laravel/finance-management/package.json''\\); console.log\\(''tailwindcss:'', pkg.dependencies?.tailwindcss || pkg.devDependencies?.tailwindcss\\)\")"
+      "Bash(node -e \"const pkg = require\\(''d:/Laravel/finance-management/package.json''\\); console.log\\(''tailwindcss:'', pkg.dependencies?.tailwindcss || pkg.devDependencies?.tailwindcss\\)\")",
+      "Bash(composer show tallstackui/tallstackui)",
+      "mcp__laravel-boost__last-error",
+      "mcp__context7__resolve-library-id",
+      "mcp__context7__query-docs",
+      "WebFetch(domain:context7.com)",
+      "Bash(./vendor/bin/pint app/Livewire/Dashboard.php --format agent)",
+      "mcp__laravel-boost__database-schema",
+      "mcp__laravel-boost__read-log-entries"
     ]
   },
   "enableAllProjectMcpServers": true,

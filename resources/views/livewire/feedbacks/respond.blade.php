@@ -3,7 +3,7 @@
         @if ($this->feedback)
             <x-slot:title>
                 <div class="flex items-center gap-4 my-3">
-                    <div class="h-12 w-12 bg-green-50 dark:bg-green-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <div class="h-12 w-12 bg-green-50 dark:bg-green-900/20 rounded-xl flex items-center justify-center shrink-0">
                         <x-icon name="chat-bubble-left-ellipsis" class="w-6 h-6 text-green-600 dark:text-green-400" />
                     </div>
                     <div>
@@ -18,7 +18,7 @@
                 {{-- Feedback Summary --}}
                 <div class="p-4 bg-gray-50 dark:bg-dark-700 rounded-xl border border-secondary-200 dark:border-dark-600">
                     <div class="flex items-start gap-3">
-                        <div class="h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0
+                        <div class="h-10 w-10 rounded-xl flex items-center justify-center shrink-0
                             {{ $this->feedback->type === 'bug' ? 'bg-red-50 dark:bg-red-900/20' : '' }}
                             {{ $this->feedback->type === 'feature' ? 'bg-purple-50 dark:bg-purple-900/20' : '' }}
                             {{ $this->feedback->type === 'feedback' ? 'bg-green-50 dark:bg-green-900/20' : '' }}">
@@ -77,7 +77,7 @@
                 {{-- Info --}}
                 <div class="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-secondary-200 dark:border-dark-600">
                     <div class="flex items-start gap-2">
-                        <x-icon name="information-circle" class="w-4 h-4 text-blue-500 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+                        <x-icon name="information-circle" class="w-4 h-4 text-blue-500 dark:text-blue-400 shrink-0 mt-0.5" />
                         <p class="text-xs text-blue-800 dark:text-blue-200">
                             {{ __('feedback.respond_info') }}
                         </p>

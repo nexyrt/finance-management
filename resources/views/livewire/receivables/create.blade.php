@@ -25,7 +25,7 @@
                     {{-- Step 1: Jenis Piutang --}}
                     <div class="p-6">
                         <div class="flex items-start gap-4 mb-5">
-                            <div class="flex-shrink-0 w-7 h-7 rounded-full bg-emerald-600 flex items-center justify-center">
+                            <div class="shrink-0 w-7 h-7 rounded-full bg-emerald-600 flex items-center justify-center">
                                 <span class="text-xs font-bold text-white">1</span>
                             </div>
                             <div>
@@ -94,7 +94,7 @@
                     {{-- Step 2: Detail Pinjaman --}}
                     <div class="p-6">
                         <div class="flex items-start gap-4 mb-5">
-                            <div class="flex-shrink-0 w-7 h-7 rounded-full bg-emerald-600 flex items-center justify-center">
+                            <div class="shrink-0 w-7 h-7 rounded-full bg-emerald-600 flex items-center justify-center">
                                 <span class="text-xs font-bold text-white">2</span>
                             </div>
                             <div>
@@ -144,7 +144,7 @@
                     {{-- Step 3: Informasi Tambahan --}}
                     <div class="p-6">
                         <div class="flex items-start gap-4 mb-5">
-                            <div class="flex-shrink-0 w-7 h-7 rounded-full bg-emerald-600 flex items-center justify-center">
+                            <div class="shrink-0 w-7 h-7 rounded-full bg-emerald-600 flex items-center justify-center">
                                 <span class="text-xs font-bold text-white">3</span>
                             </div>
                             <div>
@@ -235,7 +235,7 @@
                             <p class="text-xs font-semibold text-dark-500 dark:text-dark-400 uppercase tracking-wider">{{ __('pages.rcv_timeline_title') }}</p>
 
                             <div class="flex items-start gap-3">
-                                <div class="flex-shrink-0 mt-0.5">
+                                <div class="shrink-0 mt-0.5">
                                     <div class="w-2 h-2 rounded-full bg-emerald-500"></div>
                                 </div>
                                 <div>
@@ -249,7 +249,7 @@
                             <div class="ml-1 w-px h-4 bg-secondary-200 dark:bg-dark-600 mx-0.5"></div>
 
                             <div class="flex items-start gap-3">
-                                <div class="flex-shrink-0 mt-0.5">
+                                <div class="shrink-0 mt-0.5">
                                     <div class="w-2 h-2 rounded-full {{ $dueDate && $dueDate->isPast() ? 'bg-red-500' : 'bg-secondary-300 dark:bg-dark-500' }}"></div>
                                 </div>
                                 <div>
@@ -263,7 +263,7 @@
                             <div class="ml-1 w-px h-4 bg-secondary-200 dark:bg-dark-600 mx-0.5"></div>
 
                             <div class="flex items-start gap-3">
-                                <div class="flex-shrink-0 mt-0.5">
+                                <div class="shrink-0 mt-0.5">
                                     <div class="w-2 h-2 rounded-full bg-secondary-300 dark:bg-dark-500"></div>
                                 </div>
                                 <div>

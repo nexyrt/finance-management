@@ -3,12 +3,12 @@
         <div class="space-y-6">
             <!-- Header Info -->
             <div
-                class="bg-gradient-to-r from-primary-50 to-blue-50 dark:from-primary-900/20 dark:to-blue-900/20 rounded-lg p-4 border border-primary-200 dark:border-primary-700">
+                class="bg-linear-to-r from-primary-50 to-blue-50 dark:from-primary-900/20 dark:to-blue-900/20 rounded-lg p-4 border border-primary-200 dark:border-primary-700">
                 <div class="flex flex-col md:flex-row md:justify-between md:items-start gap-4">
                     <div class="space-y-2">
                         <div class="flex items-center gap-3">
                             <div
-                                class="w-12 h-12 rounded-xl bg-gradient-to-br from-primary-500 to-blue-600 flex items-center justify-center">
+                                class="w-12 h-12 rounded-xl bg-linear-to-br from-primary-500 to-blue-600 flex items-center justify-center">
                                 <span class="text-white font-bold text-lg">
                                     {{ strtoupper(substr($invoice->client->name, 0, 2)) }}
                                 </span>

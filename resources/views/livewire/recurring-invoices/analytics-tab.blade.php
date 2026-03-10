@@ -62,7 +62,7 @@
                 <p class="text-xl font-bold tabular-nums {{ $isPositive ? 'text-green-600 dark:text-green-400' : 'text-red-500 dark:text-red-400' }}">
                     {{ $isPositive ? '+' : '' }}{{ number_format($growth, 1) }}%
                 </p>
-                <span class="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 {{ $isPositive ? 'bg-green-50 dark:bg-green-900/20' : 'bg-red-50 dark:bg-red-900/20' }}">
+                <span class="w-5 h-5 rounded-full flex items-center justify-center shrink-0 {{ $isPositive ? 'bg-green-50 dark:bg-green-900/20' : 'bg-red-50 dark:bg-red-900/20' }}">
                     <x-icon name="{{ $isPositive ? 'arrow-trending-up' : 'arrow-trending-down' }}"
                         class="w-3 h-3 {{ $isPositive ? 'text-green-600 dark:text-green-400' : 'text-red-500 dark:text-red-400' }}" />
                 </span>
@@ -144,7 +144,7 @@
                 <div>
                     <div class="flex items-center justify-between mb-1.5">
                         <div class="flex items-center gap-1.5">
-                            <span class="w-2 h-2 rounded-full bg-green-500 flex-shrink-0"></span>
+                            <span class="w-2 h-2 rounded-full bg-green-500 shrink-0"></span>
                             <span class="text-xs font-medium text-dark-700 dark:text-dark-300">{{ __('pages.ri_published_label') }}</span>
                         </div>
                         <span class="text-xs font-semibold text-dark-900 dark:text-dark-50 tabular-nums">
@@ -165,7 +165,7 @@
                 <div>
                     <div class="flex items-center justify-between mb-1.5">
                         <div class="flex items-center gap-1.5">
-                            <span class="w-2 h-2 rounded-full bg-amber-400 flex-shrink-0"></span>
+                            <span class="w-2 h-2 rounded-full bg-amber-400 shrink-0"></span>
                             <span class="text-xs font-medium text-dark-700 dark:text-dark-300">{{ __('pages.ri_draft_label') }}</span>
                         </div>
                         <span class="text-xs font-semibold text-dark-900 dark:text-dark-50 tabular-nums">
@@ -219,7 +219,7 @@
 
                     {{-- Rank + Template name + bar --}}
                     <div class="col-span-12 md:col-span-5 flex items-center gap-3 min-w-0">
-                        <span class="w-5 h-5 flex-shrink-0 inline-flex items-center justify-center rounded text-[10px] font-bold
+                        <span class="w-5 h-5 shrink-0 inline-flex items-center justify-center rounded text-[10px] font-bold
                             {{ $index === 0 ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400' : 'bg-dark-100 dark:bg-dark-700 text-dark-500 dark:text-dark-400' }}">
                             {{ $index + 1 }}
                         </span>
@@ -227,7 +227,7 @@
                             <p class="text-xs font-semibold text-dark-900 dark:text-dark-50 truncate leading-tight">{{ $tmpl['name'] }}</p>
                             <p class="text-[10px] text-dark-400 dark:text-dark-500 truncate mt-0.5">{{ $tmpl['client'] }}</p>
                             <div class="mt-1.5 h-0.5 w-full bg-dark-100 dark:bg-dark-700 rounded-full overflow-hidden">
-                                <div class="h-full rounded-full bg-gradient-to-r from-primary-500 to-blue-400 transition-all duration-700"
+                                <div class="h-full rounded-full bg-linear-to-r from-primary-500 to-blue-400 transition-all duration-700"
                                     style="width: {{ number_format($barWidth, 1) }}%"></div>
                             </div>
                         </div>

@@ -3,7 +3,7 @@
         <div class="space-y-6">
             <!-- Template Header -->
             <div
-                class="bg-gradient-to-r from-primary-50 to-blue-50 dark:from-primary-900/20 dark:to-blue-900/20 rounded-lg p-4 border border-primary-200 dark:border-primary-700">
+                class="bg-linear-to-r from-primary-50 to-blue-50 dark:from-primary-900/20 dark:to-blue-900/20 rounded-lg p-4 border border-primary-200 dark:border-primary-700">
                 <div class="flex justify-between items-start">
                     <div>
                         <h3 class="text-lg font-semibold text-dark-900 dark:text-dark-50">{{ $template->template_name }}

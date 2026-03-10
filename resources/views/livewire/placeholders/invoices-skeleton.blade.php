@@ -11,14 +11,14 @@
         ] as $card)
             <div class="bg-white dark:bg-dark-800 border border-gray-200 dark:border-dark-600 rounded-xl p-5 overflow-hidden relative">
                 <div class="flex items-center gap-4">
-                    <div class="h-12 w-12 bg-gray-200 dark:bg-dark-700 rounded-xl flex-shrink-0"></div>
+                    <div class="h-12 w-12 bg-gray-200 dark:bg-dark-700 rounded-xl shrink-0"></div>
                     <div class="flex-1 space-y-2">
                         <div class="h-2.5 bg-gray-200 dark:bg-dark-700 rounded w-20"></div>
                         <div class="h-5 bg-gray-200 dark:bg-dark-700 rounded w-32"></div>
                         <div class="h-2.5 bg-gray-100 dark:bg-dark-700 rounded w-24"></div>
                     </div>
                 </div>
-                <div class="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r {{ $card['from'] }} {{ $card['to'] }} opacity-40"></div>
+                <div class="absolute bottom-0 left-0 right-0 h-0.5 bg-linear-to-r {{ $card['from'] }} {{ $card['to'] }} opacity-40"></div>
             </div>
         @endforeach
     </div>
@@ -64,13 +64,13 @@
         @foreach (range(1, 8) as $row)
             <div class="px-4 py-3.5 border-b border-gray-100 dark:border-dark-700 flex gap-4 items-center
                 {{ $row % 2 === 0 ? 'bg-gray-50/50 dark:bg-dark-800/30' : '' }}">
-                <div class="w-4 h-4 bg-gray-200 dark:bg-dark-700 rounded flex-shrink-0"></div>
+                <div class="w-4 h-4 bg-gray-200 dark:bg-dark-700 rounded shrink-0"></div>
                 <div class="flex-1 space-y-1.5" style="max-width:14%">
                     <div class="h-3 bg-gray-200 dark:bg-dark-700 rounded w-full"></div>
                     <div class="h-2.5 bg-gray-100 dark:bg-dark-700 rounded w-2/3"></div>
                 </div>
                 <div class="flex items-center gap-2 flex-1" style="max-width:22%">
-                    <div class="w-8 h-8 bg-gray-200 dark:bg-dark-700 rounded-lg flex-shrink-0"></div>
+                    <div class="w-8 h-8 bg-gray-200 dark:bg-dark-700 rounded-lg shrink-0"></div>
                     <div class="space-y-1.5 flex-1">
                         <div class="h-3 bg-gray-200 dark:bg-dark-700 rounded w-3/4"></div>
                         <div class="h-2.5 bg-gray-100 dark:bg-dark-700 rounded w-1/2"></div>
@@ -89,10 +89,10 @@
                     <div class="h-1 bg-gray-200 dark:bg-dark-700 rounded-full w-full"></div>
                     <div class="h-2.5 bg-gray-100 dark:bg-dark-700 rounded w-1/2 ml-auto"></div>
                 </div>
-                <div class="flex-shrink-0" style="width:80px">
+                <div class="shrink-0" style="width:80px">
                     <div class="h-5 bg-gray-200 dark:bg-dark-700 rounded-full w-full"></div>
                 </div>
-                <div class="flex gap-1.5 flex-shrink-0">
+                <div class="flex gap-1.5 shrink-0">
                     @foreach (range(1, 4) as $btn)
                         <div class="w-7 h-7 bg-gray-200 dark:bg-dark-700 rounded-lg"></div>
                     @endforeach

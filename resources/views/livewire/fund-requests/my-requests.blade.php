@@ -93,7 +93,7 @@
 
         @interact('column_title', $row)
             <div class="flex items-start gap-3">
-                <div class="h-10 w-10 bg-blue-50 dark:bg-blue-900/20 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                <div class="h-10 w-10 bg-blue-50 dark:bg-blue-900/20 rounded-lg flex items-center justify-center shrink-0 mt-0.5">
                     <x-icon name="document-text" class="w-5 h-5 text-blue-600 dark:text-blue-400" />
                 </div>
                 <div class="flex flex-col">
@@ -159,11 +159,11 @@
             @endphp
             <div class="flex items-center gap-2">
                 @if ($isOverdue)
-                    <div class="h-8 w-8 bg-red-50 dark:bg-red-900/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <div class="h-8 w-8 bg-red-50 dark:bg-red-900/20 rounded-lg flex items-center justify-center shrink-0">
                         <x-icon name="calendar" class="w-4 h-4 text-red-600 dark:text-red-400" />
                     </div>
                 @else
-                    <div class="h-8 w-8 bg-purple-50 dark:bg-purple-900/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <div class="h-8 w-8 bg-purple-50 dark:bg-purple-900/20 rounded-lg flex items-center justify-center shrink-0">
                         <x-icon name="calendar" class="w-4 h-4 text-purple-600 dark:text-purple-400" />
                     </div>
                 @endif
@@ -230,7 +230,7 @@
                 <x-button wire:click="$dispatch('show::fund-request', { id: {{ $row->id }} })"
                           color="zinc"
                           size="sm"
-                          class="!px-2.5 !py-2"
+                          class="px-2.5! py-2!"
                           title="{{ __('pages.view_details_tooltip') }}">
                     <x-icon name="eye" class="w-4 h-4" />
                 </x-button>
@@ -240,7 +240,7 @@
                     <x-button wire:click="$dispatch('edit::fund-request', { id: {{ $row->id }} })"
                               color="blue"
                               size="sm"
-                              class="!px-2.5 !py-2"
+                              class="px-2.5! py-2!"
                               title="{{ __('pages.edit_request_tooltip') }}">
                         <x-icon name="pencil-square" class="w-4 h-4" />
                     </x-button>
@@ -251,7 +251,7 @@
                     <x-button wire:click="submitRequest({{ $row->id }})"
                               color="green"
                               size="sm"
-                              class="!px-2.5 !py-2"
+                              class="px-2.5! py-2!"
                               title="{{ __('pages.submit_for_approval_tooltip') }}">
                         <x-icon name="paper-airplane" class="w-4 h-4" />
                     </x-button>
@@ -262,7 +262,7 @@
                     <x-button wire:click="$dispatch('delete::fund-request', { id: {{ $row->id }} })"
                               color="red"
                               size="sm"
-                              class="!px-2.5 !py-2"
+                              class="px-2.5! py-2!"
                               title="{{ __('pages.delete_request_tooltip') }}">
                         <x-icon name="trash" class="w-4 h-4" />
                     </x-button>

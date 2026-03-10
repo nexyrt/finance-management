@@ -3,7 +3,7 @@
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div class="space-y-1">
             <h1
-                class="text-4xl font-bold bg-gradient-to-r from-dark-900 via-primary-800 to-primary-800 dark:from-white dark:via-primary-200 dark:to-primary-200 bg-clip-text text-transparent">
+                class="text-4xl font-bold bg-linear-to-r from-dark-900 via-primary-800 to-primary-800 dark:from-white dark:via-primary-200 dark:to-primary-200 bg-clip-text text-transparent">
                 {{ __('pages.permission_management') }}
             </h1>
             <p class="text-dark-600 dark:text-dark-400 text-lg">
@@ -73,7 +73,7 @@
                 class="bg-white dark:bg-dark-800 rounded-xl shadow-sm border border-dark-200 dark:border-dark-600 lg:sticky lg:top-6">
                 {{-- Sidebar Header --}}
                 <div
-                    class="bg-gradient-to-r from-primary-50 to-primary-100 dark:from-primary-900/20 dark:to-primary-800/20 px-4 py-4 border-b border-dark-200 dark:border-dark-600 rounded-t-xl">
+                    class="bg-linear-to-r from-primary-50 to-primary-100 dark:from-primary-900/20 dark:to-primary-800/20 px-4 py-4 border-b border-dark-200 dark:border-dark-600 rounded-t-xl">
                     <h3 class="font-semibold text-dark-900 dark:text-dark-50 flex items-center gap-2">
                         <x-icon name="user-group" class="w-5 h-5" />
                         {{ __('pages.roles') }}
@@ -88,9 +88,9 @@
                             <button type="button" wire:click="selectRole({{ $role->id }})"
                                 class="w-full text-left px-4 py-3 rounded-lg transition-colors cursor-pointer {{ $selectedRoleId === $role->id ? 'bg-primary-50 dark:bg-primary-900/20 border border-primary-300 dark:border-primary-600' : 'hover:bg-gray-50 dark:hover:bg-dark-700 border border-transparent' }}">
                                 <div class="flex items-center gap-3">
-                                    <div class="flex-shrink-0">
+                                    <div class="shrink-0">
                                         <div
-                                            class="h-10 w-10 bg-gradient-to-br from-primary-400 to-primary-600 rounded-xl flex items-center justify-center shadow-lg">
+                                            class="h-10 w-10 bg-linear-to-br from-primary-400 to-primary-600 rounded-xl flex items-center justify-center shadow-lg">
                                             <x-icon :name="$role->icon ?? 'shield-check'" class="w-5 h-5 text-white" />
                                         </div>
                                     </div>
@@ -100,7 +100,7 @@
                                             {{ ucfirst($role->name) }}
                                             @if ($selectedRoleId === $role->id)
                                                 <x-icon name="chevron-right"
-                                                    class="w-4 h-4 text-primary-600 dark:text-primary-400 flex-shrink-0" />
+                                                    class="w-4 h-4 text-primary-600 dark:text-primary-400 shrink-0" />
                                             @endif
                                         </div>
                                         <div class="text-xs text-dark-500 dark:text-dark-400">
@@ -142,12 +142,12 @@
                     :style="`height: ${panelHeight}px`">
                     {{-- Panel Header (Fixed) --}}
                     <div
-                        class="flex-shrink-0 bg-gradient-to-r from-primary-50 to-primary-100 dark:from-primary-900/20 dark:to-primary-800/20 px-6 py-4 border-b border-dark-200 dark:border-dark-600">
+                        class="shrink-0 bg-linear-to-r from-primary-50 to-primary-100 dark:from-primary-900/20 dark:to-primary-800/20 px-6 py-4 border-b border-dark-200 dark:border-dark-600">
                         <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                             {{-- Title --}}
                             <div class="flex items-center gap-3">
                                 <div
-                                    class="h-12 w-12 bg-gradient-to-br from-primary-400 to-primary-600 rounded-xl flex items-center justify-center shadow-lg">
+                                    class="h-12 w-12 bg-linear-to-br from-primary-400 to-primary-600 rounded-xl flex items-center justify-center shadow-lg">
                                     <x-icon :name="$this->selectedRole->icon ?? 'shield-check'" class="w-6 h-6 text-white" />
                                 </div>
                                 <div>

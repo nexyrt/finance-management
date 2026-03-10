@@ -3,7 +3,7 @@
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div class="space-y-1">
             <h1
-                class="text-4xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-indigo-800 dark:from-white dark:via-blue-200 dark:to-indigo-200 bg-clip-text text-transparent">
+                class="text-4xl font-bold bg-linear-to-r from-gray-900 via-blue-800 to-indigo-800 dark:from-white dark:via-blue-200 dark:to-indigo-200 bg-clip-text text-transparent">
                 {{ __('pages.user_management') }}
             </h1>
             <p class="text-gray-600 dark:text-zinc-400 text-lg">
@@ -19,7 +19,7 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         <x-card class="hover:shadow-lg transition-shadow">
             <div class="flex items-center gap-4">
-                <div class="h-12 w-12 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                <div class="h-12 w-12 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center shrink-0">
                     <x-icon name="users" class="w-6 h-6 text-blue-600 dark:text-blue-400" />
                 </div>
                 <div>
@@ -31,7 +31,7 @@
 
         <x-card class="hover:shadow-lg transition-shadow">
             <div class="flex items-center gap-4">
-                <div class="h-12 w-12 bg-green-50 dark:bg-green-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                <div class="h-12 w-12 bg-green-50 dark:bg-green-900/20 rounded-xl flex items-center justify-center shrink-0">
                     <x-icon name="check-circle" class="w-6 h-6 text-green-600 dark:text-green-400" />
                 </div>
                 <div>
@@ -43,7 +43,7 @@
 
         <x-card class="hover:shadow-lg transition-shadow">
             <div class="flex items-center gap-4">
-                <div class="h-12 w-12 bg-red-50 dark:bg-red-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                <div class="h-12 w-12 bg-red-50 dark:bg-red-900/20 rounded-xl flex items-center justify-center shrink-0">
                     <x-icon name="shield-exclamation" class="w-6 h-6 text-red-600 dark:text-red-400" />
                 </div>
                 <div>
@@ -55,7 +55,7 @@
 
         <x-card class="hover:shadow-lg transition-shadow">
             <div class="flex items-center gap-4">
-                <div class="h-12 w-12 bg-purple-50 dark:bg-purple-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                <div class="h-12 w-12 bg-purple-50 dark:bg-purple-900/20 rounded-xl flex items-center justify-center shrink-0">
                     <x-icon name="briefcase" class="w-6 h-6 text-purple-600 dark:text-purple-400" />
                 </div>
                 <div>
@@ -89,7 +89,7 @@
         @interact('column_name', $row)
             <div class="flex items-center space-x-3">
                 <div
-                    class="w-10 h-10 bg-gradient-to-r from-primary-500 to-primary-600 rounded-full flex items-center justify-center">
+                    class="w-10 h-10 bg-linear-to-r from-primary-500 to-primary-600 rounded-full flex items-center justify-center">
                     <span class="text-white font-semibold text-sm">
                         {{ $row->initials() }}
                     </span>

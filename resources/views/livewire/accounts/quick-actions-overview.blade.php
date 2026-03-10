@@ -10,7 +10,7 @@
         <div class="grid grid-cols-3 gap-3">
             {{-- Income --}}
             <div class="flex items-center gap-3 p-3 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-100 dark:border-green-900/30">
-                <div class="h-8 w-8 bg-green-100 dark:bg-green-900/40 rounded-lg flex items-center justify-center flex-shrink-0">
+                <div class="h-8 w-8 bg-green-100 dark:bg-green-900/40 rounded-lg flex items-center justify-center shrink-0">
                     <x-icon name="arrow-trending-up" class="w-4 h-4 text-green-600 dark:text-green-400" />
                 </div>
                 <div class="min-w-0">
@@ -23,7 +23,7 @@
 
             {{-- Expense --}}
             <div class="flex items-center gap-3 p-3 bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-100 dark:border-red-900/30">
-                <div class="h-8 w-8 bg-red-100 dark:bg-red-900/40 rounded-lg flex items-center justify-center flex-shrink-0">
+                <div class="h-8 w-8 bg-red-100 dark:bg-red-900/40 rounded-lg flex items-center justify-center shrink-0">
                     <x-icon name="arrow-trending-down" class="w-4 h-4 text-red-600 dark:text-red-400" />
                 </div>
                 <div class="min-w-0">
@@ -37,7 +37,7 @@
             {{-- Net --}}
             @php $net = $this->accountStats['net_cashflow']; @endphp
             <div class="flex items-center gap-3 p-3 {{ $net >= 0 ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-100 dark:border-blue-900/30' : 'bg-orange-50 dark:bg-orange-900/20 border-orange-100 dark:border-orange-900/30' }} rounded-xl border">
-                <div class="h-8 w-8 {{ $net >= 0 ? 'bg-blue-100 dark:bg-blue-900/40' : 'bg-orange-100 dark:bg-orange-900/40' }} rounded-lg flex items-center justify-center flex-shrink-0">
+                <div class="h-8 w-8 {{ $net >= 0 ? 'bg-blue-100 dark:bg-blue-900/40' : 'bg-orange-100 dark:bg-orange-900/40' }} rounded-lg flex items-center justify-center shrink-0">
                     <x-icon name="{{ $net >= 0 ? 'plus-circle' : 'minus-circle' }}" class="w-4 h-4 {{ $net >= 0 ? 'text-blue-600 dark:text-blue-400' : 'text-orange-600 dark:text-orange-400' }}" />
                 </div>
                 <div class="min-w-0">
@@ -57,7 +57,7 @@
             <div class="lg:col-span-3 bg-white dark:bg-dark-800 rounded-xl border border-secondary-200 dark:border-dark-600 p-4 lg:p-5">
                 <div class="flex items-center justify-between mb-4">
                     <div class="flex items-center gap-3">
-                        <div class="h-9 w-9 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                        <div class="h-9 w-9 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center shrink-0">
                             <x-icon name="chart-bar" class="w-5 h-5 text-blue-600 dark:text-blue-400" />
                         </div>
                         <div>
@@ -86,7 +86,7 @@
             {{-- Category Breakdown Donut --}}
             <div class="lg:col-span-2 bg-white dark:bg-dark-800 rounded-xl border border-secondary-200 dark:border-dark-600 p-4 lg:p-5">
                 <div class="flex items-center gap-3 mb-4">
-                    <div class="h-9 w-9 bg-purple-50 dark:bg-purple-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <div class="h-9 w-9 bg-purple-50 dark:bg-purple-900/20 rounded-xl flex items-center justify-center shrink-0">
                         <x-icon name="chart-pie" class="w-5 h-5 text-purple-600 dark:text-purple-400" />
                     </div>
                     <div>
@@ -111,10 +111,10 @@
                         @foreach ($this->categoryBreakdown as $i => $cat)
                             <div class="flex items-center justify-between text-xs">
                                 <div class="flex items-center gap-2 min-w-0">
-                                    <div class="w-2 h-2 rounded-full flex-shrink-0" style="background-color: {{ $colors[$i] ?? '#9ca3af' }}"></div>
+                                    <div class="w-2 h-2 rounded-full shrink-0" style="background-color: {{ $colors[$i] ?? '#9ca3af' }}"></div>
                                     <span class="text-dark-600 dark:text-dark-400 truncate">{{ $cat['name'] }}</span>
                                 </div>
-                                <div class="flex items-center gap-2 flex-shrink-0">
+                                <div class="flex items-center gap-2 shrink-0">
                                     <span class="font-medium text-dark-900 dark:text-dark-50">
                                         Rp {{ number_format($cat['total'], 0, ',', '.') }}
                                     </span>

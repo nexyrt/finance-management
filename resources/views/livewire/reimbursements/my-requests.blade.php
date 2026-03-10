@@ -5,7 +5,7 @@
         {{-- Total Submitted --}}
         <x-card class="hover:shadow-lg transition-shadow">
             <div class="flex items-center gap-4">
-                <div class="h-12 w-12 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                <div class="h-12 w-12 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center shrink-0">
                     <x-icon name="document-text" class="w-6 h-6 text-blue-600 dark:text-blue-400" />
                 </div>
                 <div>
@@ -19,7 +19,7 @@
         {{-- Draft --}}
         <x-card class="hover:shadow-lg transition-shadow">
             <div class="flex items-center gap-4">
-                <div class="h-12 w-12 bg-gray-50 dark:bg-gray-800/50 rounded-xl flex items-center justify-center flex-shrink-0">
+                <div class="h-12 w-12 bg-gray-50 dark:bg-gray-800/50 rounded-xl flex items-center justify-center shrink-0">
                     <x-icon name="pencil-square" class="w-6 h-6 text-gray-500 dark:text-gray-400" />
                 </div>
                 <div>
@@ -33,7 +33,7 @@
         {{-- Pending / Approved --}}
         <x-card class="hover:shadow-lg transition-shadow">
             <div class="flex items-center gap-4">
-                <div class="h-12 w-12 bg-yellow-50 dark:bg-yellow-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                <div class="h-12 w-12 bg-yellow-50 dark:bg-yellow-900/20 rounded-xl flex items-center justify-center shrink-0">
                     <x-icon name="clock" class="w-6 h-6 text-yellow-600 dark:text-yellow-400" />
                 </div>
                 <div>
@@ -51,7 +51,7 @@
         {{-- Total Paid --}}
         <x-card class="hover:shadow-lg transition-shadow">
             <div class="flex items-center gap-4">
-                <div class="h-12 w-12 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                <div class="h-12 w-12 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl flex items-center justify-center shrink-0">
                     <x-icon name="banknotes" class="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
                 </div>
                 <div>
@@ -113,17 +113,17 @@
                 {{-- Thumbnail --}}
                 @if ($row->hasAttachment() && $row->isImageAttachment())
                     <button wire:click="previewAttachment({{ $row->id }})"
-                        class="group relative w-10 h-10 rounded-xl overflow-hidden border-2 border-primary-200 dark:border-primary-700 hover:border-primary-500 transition-all hover:shadow flex-shrink-0">
+                        class="group relative w-10 h-10 rounded-xl overflow-hidden border-2 border-primary-200 dark:border-primary-700 hover:border-primary-500 transition-all hover:shadow shrink-0">
                         <img src="{{ $row->attachment_url }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform" />
                         <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors"></div>
                     </button>
                 @elseif($row->hasAttachment())
                     <a href="{{ $row->attachment_url }}" target="_blank"
-                        class="w-10 h-10 bg-gradient-to-br from-red-400 to-red-600 rounded-xl flex items-center justify-center shadow flex-shrink-0">
+                        class="w-10 h-10 bg-linear-to-br from-red-400 to-red-600 rounded-xl flex items-center justify-center shadow shrink-0">
                         <x-icon name="document-text" class="w-5 h-5 text-white" />
                     </a>
                 @else
-                    <div class="w-10 h-10 bg-gradient-to-br from-zinc-300 to-zinc-500 dark:from-zinc-600 dark:to-zinc-800 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <div class="w-10 h-10 bg-linear-to-br from-zinc-300 to-zinc-500 dark:from-zinc-600 dark:to-zinc-800 rounded-xl flex items-center justify-center shrink-0">
                         <x-icon name="document" class="w-5 h-5 text-white" />
                     </div>
                 @endif

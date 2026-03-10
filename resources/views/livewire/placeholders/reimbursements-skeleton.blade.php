@@ -6,7 +6,7 @@
         @foreach (range(1, 4) as $i)
             <div class="bg-white dark:bg-dark-800 border border-gray-200 dark:border-dark-600 rounded-xl p-5">
                 <div class="flex items-center gap-4">
-                    <div class="h-12 w-12 bg-gray-200 dark:bg-dark-700 rounded-xl flex-shrink-0"></div>
+                    <div class="h-12 w-12 bg-gray-200 dark:bg-dark-700 rounded-xl shrink-0"></div>
                     <div class="flex-1 space-y-2">
                         <div class="h-3 bg-gray-200 dark:bg-dark-700 rounded w-3/4"></div>
                         <div class="h-6 bg-gray-200 dark:bg-dark-700 rounded w-1/2"></div>
@@ -54,40 +54,40 @@
         @foreach (range(1, 8) as $row)
             <div class="px-4 py-3.5 border-b border-gray-100 dark:border-dark-700 flex gap-4 items-center
                 {{ $row % 2 === 0 ? 'bg-gray-50/50 dark:bg-dark-800/30' : '' }}">
-                <div class="w-4 h-4 bg-gray-200 dark:bg-dark-700 rounded flex-shrink-0"></div>
+                <div class="w-4 h-4 bg-gray-200 dark:bg-dark-700 rounded shrink-0"></div>
                 {{-- Title --}}
                 <div class="flex-1 space-y-1.5" style="max-width:22%">
                     <div class="h-3 bg-gray-200 dark:bg-dark-700 rounded w-3/4"></div>
                     <div class="h-2.5 bg-gray-100 dark:bg-dark-700 rounded w-1/2"></div>
                 </div>
                 {{-- Requestor --}}
-                <div class="flex items-center gap-2 flex-shrink-0" style="width:15%">
-                    <div class="w-7 h-7 bg-gray-200 dark:bg-dark-700 rounded-full flex-shrink-0"></div>
+                <div class="flex items-center gap-2 shrink-0" style="width:15%">
+                    <div class="w-7 h-7 bg-gray-200 dark:bg-dark-700 rounded-full shrink-0"></div>
                     <div class="h-3 bg-gray-200 dark:bg-dark-700 rounded flex-1"></div>
                 </div>
                 {{-- Amount --}}
-                <div class="flex-shrink-0 space-y-1" style="width:12%">
+                <div class="shrink-0 space-y-1" style="width:12%">
                     <div class="h-3 bg-gray-200 dark:bg-dark-700 rounded w-full"></div>
                     <div class="h-2.5 bg-gray-100 dark:bg-dark-700 rounded w-2/3"></div>
                 </div>
                 {{-- Category --}}
-                <div class="flex-shrink-0" style="width:12%">
+                <div class="shrink-0" style="width:12%">
                     <div class="h-5 bg-gray-200 dark:bg-dark-700 rounded-full w-4/5"></div>
                 </div>
                 {{-- Date --}}
-                <div class="flex-shrink-0" style="width:10%">
+                <div class="shrink-0" style="width:10%">
                     <div class="h-3 bg-gray-200 dark:bg-dark-700 rounded w-full"></div>
                 </div>
                 {{-- Status --}}
-                <div class="flex-shrink-0" style="width:10%">
+                <div class="shrink-0" style="width:10%">
                     <div class="h-5 bg-gray-200 dark:bg-dark-700 rounded-full w-full"></div>
                 </div>
                 {{-- Payment Status --}}
-                <div class="flex-shrink-0" style="width:10%">
+                <div class="shrink-0" style="width:10%">
                     <div class="h-5 bg-gray-200 dark:bg-dark-700 rounded-full w-full"></div>
                 </div>
                 {{-- Actions --}}
-                <div class="flex gap-1.5 flex-shrink-0">
+                <div class="flex gap-1.5 shrink-0">
                     @foreach (range(1, 3) as $btn)
                         <div class="w-7 h-7 bg-gray-200 dark:bg-dark-700 rounded-lg"></div>
                     @endforeach

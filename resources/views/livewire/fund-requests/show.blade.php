@@ -23,7 +23,7 @@
             <x-slot:title>
                 <div class="flex items-start gap-4 my-3">
                     {{-- Icon (warna sesuai status) --}}
-                    <div class="h-12 w-12 {{ $sc['bg'] }} rounded-xl flex items-center justify-center flex-shrink-0">
+                    <div class="h-12 w-12 {{ $sc['bg'] }} rounded-xl flex items-center justify-center shrink-0">
                         <x-icon name="{{ $sc['icon'] }}" class="w-6 h-6 {{ $sc['text'] }}" />
                     </div>
                     <div class="flex-1 min-w-0">
@@ -47,7 +47,7 @@
                 {{-- ── Ringkasan Keuangan ── --}}
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div class="flex items-center gap-3 p-4 bg-primary-50 dark:bg-primary-900/20 rounded-xl border border-primary-200 dark:border-primary-800">
-                        <div class="h-10 w-10 bg-primary-100 dark:bg-primary-900/40 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <div class="h-10 w-10 bg-primary-100 dark:bg-primary-900/40 rounded-lg flex items-center justify-center shrink-0">
                             <x-icon name="currency-dollar" class="w-5 h-5 text-primary-600 dark:text-primary-400" />
                         </div>
                         <div>
@@ -59,7 +59,7 @@
                     </div>
 
                     <div class="flex items-center gap-3 p-4 bg-zinc-50 dark:bg-dark-700 rounded-xl border border-zinc-200 dark:border-dark-600">
-                        <div class="h-10 w-10 bg-zinc-100 dark:bg-dark-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <div class="h-10 w-10 bg-zinc-100 dark:bg-dark-600 rounded-lg flex items-center justify-center shrink-0">
                             <x-icon name="user" class="w-5 h-5 text-dark-500 dark:text-dark-400" />
                         </div>
                         <div>
@@ -69,7 +69,7 @@
                     </div>
 
                     <div class="flex items-center gap-3 p-4 bg-zinc-50 dark:bg-dark-700 rounded-xl border border-zinc-200 dark:border-dark-600">
-                        <div class="h-10 w-10 bg-zinc-100 dark:bg-dark-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <div class="h-10 w-10 bg-zinc-100 dark:bg-dark-600 rounded-lg flex items-center justify-center shrink-0">
                             <x-icon name="calendar" class="w-5 h-5 text-dark-500 dark:text-dark-400" />
                         </div>
                         <div>
@@ -84,7 +84,7 @@
                 {{-- ── Informasi Pengajuan ── --}}
                 <div class="space-y-3">
                     <div class="flex items-center gap-3">
-                        <div class="h-6 w-6 bg-blue-50 dark:bg-blue-900/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <div class="h-6 w-6 bg-blue-50 dark:bg-blue-900/20 rounded-lg flex items-center justify-center shrink-0">
                             <x-icon name="information-circle" class="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
                         </div>
                         <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50">{{ __('pages.fund_request_information') }}</h4>
@@ -113,7 +113,7 @@
                                 <p class="text-xs text-dark-500 dark:text-dark-400 mb-1">{{ __('pages.attachment') }}</p>
                                 <a href="{{ Storage::url($fundRequest->attachment_path) }}" target="_blank"
                                    class="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-zinc-200 dark:border-dark-600 bg-white dark:bg-dark-800 text-sm text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 hover:border-primary-300 dark:hover:border-primary-700 transition-colors">
-                                    <x-icon name="document" class="w-4 h-4 flex-shrink-0" />
+                                    <x-icon name="document" class="w-4 h-4 shrink-0" />
                                     <span>{{ $fundRequest->attachment_name }}</span>
                                     <x-icon name="arrow-top-right-on-square" class="w-3.5 h-3.5 ml-1 opacity-60" />
                                 </a>
@@ -125,7 +125,7 @@
                 {{-- ── Rincian Anggaran ── --}}
                 <div class="space-y-3">
                     <div class="flex items-center gap-3">
-                        <div class="h-6 w-6 bg-purple-50 dark:bg-purple-900/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <div class="h-6 w-6 bg-purple-50 dark:bg-purple-900/20 rounded-lg flex items-center justify-center shrink-0">
                             <x-icon name="list-bullet" class="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
                         </div>
                         <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50">{{ __('pages.request_items') }}</h4>
@@ -171,7 +171,7 @@
                                 @endforeach
                             </tbody>
                             <tfoot>
-                                <tr class="bg-gradient-to-r from-primary-50 to-blue-50 dark:from-primary-900/20 dark:to-blue-900/20 border-t border-primary-200 dark:border-primary-800">
+                                <tr class="bg-linear-to-r from-primary-50 to-blue-50 dark:from-primary-900/20 dark:to-blue-900/20 border-t border-primary-200 dark:border-primary-800">
                                     <td colspan="5" class="py-3 px-4 text-right text-sm font-semibold text-dark-700 dark:text-dark-300">{{ __('common.total') }}</td>
                                     <td class="py-3 px-4 text-right text-base font-bold text-primary-600 dark:text-primary-400">
                                         Rp {{ number_format($fundRequest->total_amount, 0, ',', '.') }}
@@ -186,7 +186,7 @@
                 @if ($fundRequest->reviewed_by || $fundRequest->disbursed_by)
                     <div class="space-y-3">
                         <div class="flex items-center gap-3">
-                            <div class="h-6 w-6 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <div class="h-6 w-6 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg flex items-center justify-center shrink-0">
                                 <x-icon name="arrow-path" class="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                             </div>
                             <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50">{{ __('pages.process_timeline') }}</h4>
@@ -197,7 +197,7 @@
                             {{-- Step: Pengajuan --}}
                             <div class="flex gap-4">
                                 <div class="flex flex-col items-center">
-                                    <div class="h-8 w-8 rounded-full bg-primary-100 dark:bg-primary-900/40 border-2 border-primary-400 dark:border-primary-600 flex items-center justify-center flex-shrink-0">
+                                    <div class="h-8 w-8 rounded-full bg-primary-100 dark:bg-primary-900/40 border-2 border-primary-400 dark:border-primary-600 flex items-center justify-center shrink-0">
                                         <x-icon name="document-plus" class="w-4 h-4 text-primary-600 dark:text-primary-400" />
                                     </div>
                                     @if ($fundRequest->reviewed_by)
@@ -221,7 +221,7 @@
                                             $reviewBg    = $fundRequest->status === 'rejected' ? 'bg-red-100 dark:bg-red-900/40 border-red-400 dark:border-red-600' : 'bg-green-100 dark:bg-green-900/40 border-green-400 dark:border-green-600';
                                             $reviewColor = $fundRequest->status === 'rejected' ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400';
                                         @endphp
-                                        <div class="h-8 w-8 rounded-full {{ $reviewBg }} border-2 flex items-center justify-center flex-shrink-0">
+                                        <div class="h-8 w-8 rounded-full {{ $reviewBg }} border-2 flex items-center justify-center shrink-0">
                                             <x-icon name="{{ $reviewIcon }}" class="w-4 h-4 {{ $reviewColor }}" />
                                         </div>
                                         @if ($fundRequest->disbursed_by)
@@ -248,7 +248,7 @@
                             @if ($fundRequest->disbursed_by)
                                 <div class="flex gap-4">
                                     <div class="flex flex-col items-center">
-                                        <div class="h-8 w-8 rounded-full bg-emerald-100 dark:bg-emerald-900/40 border-2 border-emerald-400 dark:border-emerald-600 flex items-center justify-center flex-shrink-0">
+                                        <div class="h-8 w-8 rounded-full bg-emerald-100 dark:bg-emerald-900/40 border-2 border-emerald-400 dark:border-emerald-600 flex items-center justify-center shrink-0">
                                             <x-icon name="banknotes" class="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                                         </div>
                                     </div>

@@ -6,7 +6,7 @@
         {{-- Total Revenue --}}
         <x-card class="hover:shadow-lg transition-all duration-200">
             <div class="flex items-center gap-4">
-                <div class="h-12 w-12 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                <div class="h-12 w-12 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center shrink-0">
                     <x-icon name="chart-bar" class="w-6 h-6 text-blue-600 dark:text-blue-400" />
                 </div>
                 <div class="min-w-0 flex-1">
@@ -31,7 +31,7 @@
         {{-- Total COGS --}}
         <x-card class="hover:shadow-lg transition-all duration-200">
             <div class="flex items-center gap-4">
-                <div class="h-12 w-12 bg-red-50 dark:bg-red-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                <div class="h-12 w-12 bg-red-50 dark:bg-red-900/20 rounded-xl flex items-center justify-center shrink-0">
                     <x-icon name="currency-dollar" class="w-6 h-6 text-red-600 dark:text-red-400" />
                 </div>
                 <div class="min-w-0 flex-1">
@@ -61,7 +61,7 @@
         {{-- Total Profit --}}
         <x-card class="hover:shadow-lg transition-all duration-200">
             <div class="flex items-center gap-4">
-                <div class="h-12 w-12 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                <div class="h-12 w-12 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl flex items-center justify-center shrink-0">
                     <x-icon name="arrow-trending-up" class="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
                 </div>
                 <div class="min-w-0 flex-1">
@@ -82,7 +82,7 @@
         {{-- Outstanding Profit --}}
         <x-card class="hover:shadow-lg transition-all duration-200">
             <div class="flex items-center gap-4">
-                <div class="h-12 w-12 bg-amber-50 dark:bg-amber-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                <div class="h-12 w-12 bg-amber-50 dark:bg-amber-900/20 rounded-xl flex items-center justify-center shrink-0">
                     <x-icon name="clock" class="w-6 h-6 text-amber-600 dark:text-amber-400" />
                 </div>
                 <div class="min-w-0 flex-1">
@@ -91,7 +91,7 @@
                         Rp {{ number_format($this->stats['outstanding_profit'], 0, ',', '.') }}
                     </p>
                     <div class="flex items-center gap-1 mt-1.5">
-                        <x-icon name="check-circle" class="w-3 h-3 text-emerald-500 dark:text-emerald-400 flex-shrink-0" />
+                        <x-icon name="check-circle" class="w-3 h-3 text-emerald-500 dark:text-emerald-400 shrink-0" />
                         <span class="text-xs text-dark-400 dark:text-dark-500">
                             Rp {{ number_format($this->stats['paid_this_month'] / 1000, 0) }}k {{ strtolower(__('pages.paid_this_month')) }}
                         </span>
@@ -170,7 +170,7 @@
 
         @interact('column_client_name', $row)
             <div class="flex items-center gap-2.5">
-                <div class="w-8 h-8 bg-zinc-100 dark:bg-dark-700 rounded-lg flex items-center justify-center flex-shrink-0">
+                <div class="w-8 h-8 bg-zinc-100 dark:bg-dark-700 rounded-lg flex items-center justify-center shrink-0">
                     <x-icon name="{{ $row->client_type === 'individual' ? 'user' : 'building-office' }}"
                         class="w-4 h-4 text-dark-500 dark:text-dark-400" />
                 </div>
@@ -254,7 +254,7 @@
             @if ($row->faktur)
                 <button wire:click="showInvoice({{ $row->id }})"
                     class="inline-flex items-center gap-1.5 text-xs font-medium text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 transition-colors">
-                    <x-icon name="paper-clip" class="w-3.5 h-3.5 flex-shrink-0" />
+                    <x-icon name="paper-clip" class="w-3.5 h-3.5 shrink-0" />
                     <span class="truncate max-w-[120px]" title="{{ basename($row->faktur) }}">{{ basename($row->faktur) }}</span>
                 </button>
             @else
@@ -315,10 +315,10 @@
          x-transition:leave-start="opacity-100 translate-y-0"
          x-transition:leave-end="opacity-0 translate-y-2"
          class="fixed bottom-4 sm:bottom-6 left-4 right-4 sm:left-1/2 sm:right-auto sm:transform sm:-translate-x-1/2 z-50">
-        <div class="bg-white dark:bg-dark-800 rounded-xl shadow-xl border border-zinc-200 dark:border-dark-600 px-4 sm:px-5 py-3.5 sm:min-w-[28rem]">
+        <div class="bg-white dark:bg-dark-800 rounded-xl shadow-xl border border-zinc-200 dark:border-dark-600 px-4 sm:px-5 py-3.5 sm:min-w-md">
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div class="flex items-center gap-3">
-                    <div class="h-8 w-8 bg-primary-50 dark:bg-primary-900/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <div class="h-8 w-8 bg-primary-50 dark:bg-primary-900/20 rounded-lg flex items-center justify-center shrink-0">
                         <x-icon name="check-circle" class="w-4 h-4 text-primary-600 dark:text-primary-400" />
                     </div>
                     <div>
@@ -344,7 +344,7 @@
     <x-modal wire="printModal" size="md" center persistent>
         <x-slot:title>
             <div class="flex items-center gap-3 my-3">
-                <div class="h-11 w-11 bg-zinc-100 dark:bg-dark-700 rounded-xl flex items-center justify-center flex-shrink-0">
+                <div class="h-11 w-11 bg-zinc-100 dark:bg-dark-700 rounded-xl flex items-center justify-center shrink-0">
                     <x-icon name="printer" class="w-5 h-5 text-dark-600 dark:text-dark-400" />
                 </div>
                 <div>
@@ -363,7 +363,7 @@
                         ? 'border-primary-500 bg-primary-50/60 dark:bg-primary-900/10'
                         : 'border-zinc-200 dark:border-dark-600 hover:border-zinc-300 dark:hover:border-dark-500' }}">
                 <div class="flex items-start gap-3">
-                    <div class="mt-0.5 w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0
+                    <div class="mt-0.5 w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0
                         {{ $printType === 'full' ? 'border-primary-500 bg-primary-500' : 'border-zinc-300 dark:border-dark-500' }}">
                         @if ($printType === 'full')
                             <div class="w-1.5 h-1.5 bg-white rounded-full"></div>
@@ -386,7 +386,7 @@
                         ? 'border-primary-500 bg-primary-50/60 dark:bg-primary-900/10'
                         : 'border-zinc-200 dark:border-dark-600 hover:border-zinc-300 dark:hover:border-dark-500' }}">
                 <div class="flex items-start gap-3">
-                    <div class="mt-0.5 w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0
+                    <div class="mt-0.5 w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0
                         {{ $printType === 'dp' ? 'border-primary-500 bg-primary-500' : 'border-zinc-300 dark:border-dark-500' }}">
                         @if ($printType === 'dp')
                             <div class="w-1.5 h-1.5 bg-white rounded-full"></div>
@@ -412,7 +412,7 @@
                             ? 'border-primary-500 bg-primary-50/60 dark:bg-primary-900/10'
                             : 'border-zinc-200 dark:border-dark-600 hover:border-zinc-300 dark:hover:border-dark-500' }}">
                     <div class="flex items-start gap-3">
-                        <div class="mt-0.5 w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0
+                        <div class="mt-0.5 w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0
                             {{ $printType === 'pelunasan' ? 'border-primary-500 bg-primary-500' : 'border-zinc-300 dark:border-dark-500' }}">
                             @if ($printType === 'pelunasan')
                                 <div class="w-1.5 h-1.5 bg-white rounded-full"></div>
@@ -451,7 +451,7 @@
                                     ? 'border-primary-500 bg-primary-50/50 dark:bg-primary-900/10'
                                     : 'border-zinc-200 dark:border-dark-600 hover:border-zinc-300 dark:hover:border-dark-500' }}">
                             <div class="flex items-start gap-2">
-                                <div class="mt-0.5 w-3.5 h-3.5 rounded-full border-2 flex items-center justify-center flex-shrink-0
+                                <div class="mt-0.5 w-3.5 h-3.5 rounded-full border-2 flex items-center justify-center shrink-0
                                     {{ $printTemplate === $tpl['value'] ? 'border-primary-500 bg-primary-500' : 'border-zinc-300 dark:border-dark-500' }}">
                                     @if ($printTemplate === $tpl['value'])
                                         <div class="w-1 h-1 bg-white rounded-full"></div>

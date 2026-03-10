@@ -121,7 +121,7 @@
                     class="bg-primary-50 dark:bg-primary-900/20 rounded-lg p-3 border border-primary-200 dark:border-primary-800">
                     <div class="flex items-start gap-2">
                         <x-icon name="information-circle"
-                            class="w-5 h-5 text-primary-600 dark:text-primary-400 flex-shrink-0 mt-0.5" />
+                            class="w-5 h-5 text-primary-600 dark:text-primary-400 shrink-0 mt-0.5" />
                         <div class="text-sm text-primary-700 dark:text-primary-300">
                             @if ($isBulk)
                                 {!! __('pages.categorize_info_bulk', ['count' => '<strong>' . count($transactionIds) . '</strong>']) !!}

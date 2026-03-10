@@ -55,7 +55,7 @@
                     {{-- Header: Avatar + Names + Status --}}
                     <div class="flex items-start justify-between gap-3 mb-4">
                         <div class="flex items-center gap-3 min-w-0">
-                            <div class="w-9 h-9 rounded-lg {{ $isActive ? 'bg-primary-50 dark:bg-primary-900/25 text-primary-600 dark:text-primary-400' : 'bg-dark-100 dark:bg-dark-700 text-dark-500 dark:text-dark-400' }} flex items-center justify-center flex-shrink-0 text-xs font-bold tracking-wide">
+                            <div class="w-9 h-9 rounded-lg {{ $isActive ? 'bg-primary-50 dark:bg-primary-900/25 text-primary-600 dark:text-primary-400' : 'bg-dark-100 dark:bg-dark-700 text-dark-500 dark:text-dark-400' }} flex items-center justify-center shrink-0 text-xs font-bold tracking-wide">
                                 {{ strtoupper(substr($template->client->name, 0, 2)) }}
                             </div>
                             <div class="min-w-0">
@@ -69,12 +69,12 @@
                         </div>
 
                         @if ($isActive)
-                            <span class="inline-flex items-center gap-1 pl-1.5 pr-2 py-0.5 rounded-full text-xs font-medium bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 ring-1 ring-green-200 dark:ring-green-800/40 flex-shrink-0 mt-0.5">
+                            <span class="inline-flex items-center gap-1 pl-1.5 pr-2 py-0.5 rounded-full text-xs font-medium bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 ring-1 ring-green-200 dark:ring-green-800/40 shrink-0 mt-0.5">
                                 <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
                                 {{ __('pages.ri_status_active') }}
                             </span>
                         @else
-                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-dark-100 dark:bg-dark-700 text-dark-500 dark:text-dark-400 ring-1 ring-dark-200 dark:ring-dark-600 flex-shrink-0 mt-0.5">
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-dark-100 dark:bg-dark-700 text-dark-500 dark:text-dark-400 ring-1 ring-dark-200 dark:ring-dark-600 shrink-0 mt-0.5">
                                 <x-icon name="archive-box" class="w-3 h-3" />
                                 {{ __('pages.ri_status_archived') }}
                             </span>
@@ -128,7 +128,7 @@
                             </span>
                         </div>
                         <div class="h-1 w-full bg-dark-100 dark:bg-dark-700 rounded-full overflow-hidden">
-                            <div class="h-full rounded-full transition-all duration-700 ease-out {{ $isComplete ? 'bg-green-500' : 'bg-gradient-to-r from-primary-500 to-blue-500' }}"
+                            <div class="h-full rounded-full transition-all duration-700 ease-out {{ $isComplete ? 'bg-green-500' : 'bg-linear-to-r from-primary-500 to-blue-500' }}"
                                 style="width: {{ $progress }}%"></div>
                         </div>
                     </div>
@@ -158,7 +158,7 @@
                             </button>
                         @endif
 
-                        <div class="flex-shrink-0">
+                        <div class="shrink-0">
                             <livewire:recurring-invoices.delete-template
                                 :template="$template"
                                 :key="'del-' . $template->id"

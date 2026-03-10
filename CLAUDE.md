@@ -70,7 +70,7 @@ public function refreshStats(): void { unset($this->stats); }
     {{-- Header Section (WAJIB SAMA DI SEMUA PAGE) --}}
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div class="space-y-1">
-            <h1 class="text-4xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-indigo-800 dark:from-white dark:via-blue-200 dark:to-indigo-200 bg-clip-text text-transparent">
+            <h1 class="text-4xl font-bold bg-linear-to-r from-gray-900 via-blue-800 to-indigo-800 dark:from-white dark:via-blue-200 dark:to-indigo-200 bg-clip-text text-transparent">
                 {{ __('pages.page_title') }}
             </h1>
             <p class="text-gray-600 dark:text-zinc-400 text-lg">
@@ -108,7 +108,7 @@ Gunakan layout horizontal untuk **SEMUA** stats cards. Vertical layout **DEPRECA
 <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
     <x-card class="hover:shadow-lg transition-shadow">
         <div class="flex items-center gap-4">
-            <div class="h-12 w-12 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+            <div class="h-12 w-12 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center shrink-0">
                 <x-icon name="users" class="w-6 h-6 text-blue-600 dark:text-blue-400" />
             </div>
             <div>
@@ -123,7 +123,7 @@ Gunakan layout horizontal untuk **SEMUA** stats cards. Vertical layout **DEPRECA
 **Aturan:**
 - Card: `<x-card class="hover:shadow-lg transition-shadow">`
 - Layout: `flex items-center gap-4`
-- Icon container: `h-12 w-12 rounded-xl flex-shrink-0`
+- Icon container: `h-12 w-12 rounded-xl shrink-0`
 - Icon bg: `bg-{color}-50 dark:bg-{color}-900/20` (SOFT, bukan -100)
 - Label: `text-sm text-dark-600 dark:text-dark-400`
 - Value: `text-2xl font-bold text-dark-900 dark:text-dark-50`
@@ -140,7 +140,7 @@ Gunakan layout horizontal untuk **SEMUA** stats cards. Vertical layout **DEPRECA
 **Stats card di dalam modal** (gunakan plain div, tanpa `<x-card>`):
 ```blade
 <div class="flex items-center gap-4 p-4 border border-secondary-200 dark:border-dark-600 rounded-xl">
-    <div class="h-12 w-12 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+    <div class="h-12 w-12 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center shrink-0">
         <x-icon name="document-duplicate" class="w-6 h-6 text-blue-600 dark:text-blue-400" />
     </div>
     <div>
@@ -177,7 +177,7 @@ Di dalam modal  → plain div + border + horizontal layout (no <x-card>, no hove
             :class="activeTab === 'tab1'
                 ? 'bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 shadow-sm border border-zinc-200 dark:border-dark-600'
                 : 'text-dark-500 dark:text-dark-400 hover:text-dark-800 dark:hover:text-dark-200 hover:bg-zinc-50 dark:hover:bg-dark-600'">
-            <x-icon name="icon-name" class="w-4 h-4 flex-shrink-0" />
+            <x-icon name="icon-name" class="w-4 h-4 shrink-0" />
             <span>Tab Label</span>
         </button>
 
@@ -187,7 +187,7 @@ Di dalam modal  → plain div + border + horizontal layout (no <x-card>, no hove
             :class="activeTab === 'tab2'
                 ? 'bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 shadow-sm border border-zinc-200 dark:border-dark-600'
                 : 'text-dark-500 dark:text-dark-400 hover:text-dark-800 dark:hover:text-dark-200 hover:bg-zinc-50 dark:hover:bg-dark-600'">
-            <x-icon name="icon-name" class="w-4 h-4 flex-shrink-0" />
+            <x-icon name="icon-name" class="w-4 h-4 shrink-0" />
             <span>Tab Label</span>
         </button>
     </div>
@@ -213,7 +213,7 @@ Di dalam modal  → plain div + border + horizontal layout (no <x-card>, no hove
 **Dengan badge count:**
 ```blade
 <button @click="activeTab = 'tab2'" ...>
-    <x-icon name="users" class="w-4 h-4 flex-shrink-0" />
+    <x-icon name="users" class="w-4 h-4 shrink-0" />
     <span>Tab Label</span>
     <span class="ml-1 px-1.5 py-0.5 text-xs font-bold bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 rounded-full">{{ $count }}</span>
 </button>

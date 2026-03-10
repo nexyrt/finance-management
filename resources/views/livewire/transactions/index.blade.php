@@ -3,7 +3,7 @@
     <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
         <div>
             <h1
-                class="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-gray-900 via-blue-600 to-blue-700 dark:from-white dark:via-blue-300 dark:to-blue-200 bg-clip-text text-transparent">
+                class="text-2xl sm:text-3xl lg:text-4xl font-bold bg-linear-to-r from-gray-900 via-blue-600 to-blue-700 dark:from-white dark:via-blue-300 dark:to-blue-200 bg-clip-text text-transparent">
                 {{ __('pages.all_transactions') }}
             </h1>
             <p class="text-gray-600 dark:text-gray-400 text-base sm:text-lg">

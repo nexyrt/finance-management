@@ -5,7 +5,7 @@
         {{-- Total Requests --}}
         <x-card class="hover:shadow-lg transition-shadow">
             <div class="flex items-center gap-4">
-                <div class="h-12 w-12 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                <div class="h-12 w-12 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center shrink-0">
                     <x-icon name="document-text" class="w-6 h-6 text-blue-600 dark:text-blue-400" />
                 </div>
                 <div>
@@ -19,7 +19,7 @@
         {{-- Pending Review --}}
         <x-card class="hover:shadow-lg transition-shadow">
             <div class="flex items-center gap-4">
-                <div class="h-12 w-12 bg-yellow-50 dark:bg-yellow-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                <div class="h-12 w-12 bg-yellow-50 dark:bg-yellow-900/20 rounded-xl flex items-center justify-center shrink-0">
                     <x-icon name="clock" class="w-6 h-6 text-yellow-600 dark:text-yellow-400" />
                 </div>
                 <div>
@@ -33,7 +33,7 @@
         {{-- Approved --}}
         <x-card class="hover:shadow-lg transition-shadow">
             <div class="flex items-center gap-4">
-                <div class="h-12 w-12 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                <div class="h-12 w-12 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl flex items-center justify-center shrink-0">
                     <x-icon name="check-badge" class="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
                 </div>
                 <div>
@@ -47,7 +47,7 @@
         {{-- Paid --}}
         <x-card class="hover:shadow-lg transition-shadow">
             <div class="flex items-center gap-4">
-                <div class="h-12 w-12 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                <div class="h-12 w-12 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl flex items-center justify-center shrink-0">
                     <x-icon name="banknotes" class="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
                 </div>
                 <div>
@@ -121,7 +121,7 @@
         {{-- User Column --}}
         @interact('column_user', $row)
             <div class="flex items-center gap-3">
-                <div class="w-9 h-9 bg-gradient-to-br from-primary-400 to-primary-600 rounded-xl flex items-center justify-center shadow flex-shrink-0">
+                <div class="w-9 h-9 bg-linear-to-br from-primary-400 to-primary-600 rounded-xl flex items-center justify-center shadow shrink-0">
                     <span class="text-white font-semibold text-xs">{{ $row->user->initials() }}</span>
                 </div>
                 <div class="min-w-0">

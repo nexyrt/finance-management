@@ -37,7 +37,7 @@
                         </div>
 
                         {{-- Amount Summary --}}
-                        <div class="md:col-span-2 p-4 bg-gradient-to-r from-primary-50 to-blue-50 dark:from-primary-900/20 dark:to-blue-900/20 border border-primary-200 dark:border-primary-800 rounded-lg">
+                        <div class="md:col-span-2 p-4 bg-linear-to-r from-primary-50 to-blue-50 dark:from-primary-900/20 dark:to-blue-900/20 border border-primary-200 dark:border-primary-800 rounded-lg">
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div>
                                     <label class="text-xs font-medium text-primary-700 dark:text-primary-300">{{ __('common.amount') }}</label>
@@ -94,7 +94,7 @@
                         <div>
                             <label class="text-xs font-medium text-dark-500 dark:text-dark-400">{{ __('pages.requester') }}</label>
                             <div class="flex items-center gap-2 mt-1">
-                                <div class="w-8 h-8 bg-gradient-to-br from-primary-400 to-primary-600 rounded-xl flex items-center justify-center">
+                                <div class="w-8 h-8 bg-linear-to-br from-primary-400 to-primary-600 rounded-xl flex items-center justify-center">
                                     <span class="text-white font-semibold text-xs">
                                         {{ strtoupper(substr($this->reimbursement->user->name, 0, 2)) }}
                                     </span>
@@ -172,7 +172,7 @@
                                 <div class="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
                                     <div class="flex items-start justify-between gap-4">
                                         <div class="flex items-start gap-3">
-                                            <div class="w-10 h-10 bg-green-100 dark:bg-green-900/40 rounded-lg flex items-center justify-center flex-shrink-0">
+                                            <div class="w-10 h-10 bg-green-100 dark:bg-green-900/40 rounded-lg flex items-center justify-center shrink-0">
                                                 <x-icon name="banknotes" class="w-5 h-5 text-green-600 dark:text-green-400" />
                                             </div>
                                             <div class="flex-1">
@@ -201,7 +201,7 @@
                                                 @endif
                                             </div>
                                         </div>
-                                        <x-icon name="check-circle" class="w-6 h-6 text-green-600 dark:text-green-400 flex-shrink-0" />
+                                        <x-icon name="check-circle" class="w-6 h-6 text-green-600 dark:text-green-400 shrink-0" />
                                     </div>
                                 </div>
                             @endforeach
@@ -222,7 +222,7 @@
                                 <div class="p-4 bg-{{ $this->reimbursement->isApproved() ? 'blue' : 'red' }}-50 dark:bg-{{ $this->reimbursement->isApproved() ? 'blue' : 'red' }}-900/20 border border-{{ $this->reimbursement->isApproved() ? 'blue' : 'red' }}-200 dark:border-{{ $this->reimbursement->isApproved() ? 'blue' : 'red' }}-800 rounded-lg">
                                     <div class="flex items-start gap-3">
                                         <x-icon name="{{ $this->reimbursement->isApproved() ? 'check-circle' : 'x-circle' }}"
-                                            class="w-5 h-5 text-{{ $this->reimbursement->isApproved() ? 'blue' : 'red' }}-600 dark:text-{{ $this->reimbursement->isApproved() ? 'blue' : 'red' }}-400 flex-shrink-0 mt-0.5" />
+                                            class="w-5 h-5 text-{{ $this->reimbursement->isApproved() ? 'blue' : 'red' }}-600 dark:text-{{ $this->reimbursement->isApproved() ? 'blue' : 'red' }}-400 shrink-0 mt-0.5" />
                                         <div class="flex-1">
                                             <div class="text-sm font-semibold text-{{ $this->reimbursement->isApproved() ? 'blue' : 'red' }}-900 dark:text-{{ $this->reimbursement->isApproved() ? 'blue' : 'red' }}-200">
                                                 {{ $this->reimbursement->isApproved() ? __('common.approved') : __('common.rejected') }} by {{ $this->reimbursement->reviewer->name }}

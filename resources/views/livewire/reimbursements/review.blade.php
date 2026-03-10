@@ -17,13 +17,13 @@
             <div class="space-y-6">
                 {{-- Request Summary --}}
                 <div
-                    class="p-6 bg-gradient-to-r from-primary-50 to-blue-50 dark:from-primary-900/20 dark:to-blue-900/20 border border-primary-200 dark:border-primary-800 rounded-xl">
+                    class="p-6 bg-linear-to-r from-primary-50 to-blue-50 dark:from-primary-900/20 dark:to-blue-900/20 border border-primary-200 dark:border-primary-800 rounded-xl">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="text-xs font-medium text-primary-700 dark:text-primary-300">{{ __('pages.reimb_requestor_label') }}</label>
                             <div class="flex items-center gap-2 mt-1">
                                 <div
-                                    class="w-8 h-8 bg-gradient-to-br from-primary-400 to-primary-600 rounded-lg flex items-center justify-center">
+                                    class="w-8 h-8 bg-linear-to-br from-primary-400 to-primary-600 rounded-lg flex items-center justify-center">
                                     <span class="text-white font-semibold text-xs">
                                         {{ strtoupper(substr($this->reimbursement->user->name, 0, 2)) }}
                                     </span>
@@ -86,7 +86,7 @@
                     class="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
                     <div class="flex items-start gap-3">
                         <x-icon name="exclamation-triangle"
-                            class="w-5 h-5 text-yellow-600 dark:text-yellow-400 flex-shrink-0 mt-0.5" />
+                            class="w-5 h-5 text-yellow-600 dark:text-yellow-400 shrink-0 mt-0.5" />
                         <div class="text-sm text-yellow-900 dark:text-yellow-200">
                             <div class="font-semibold mb-1">{{ __('pages.reimb_review_warning_title') }}</div>
                             <ul class="list-disc list-inside space-y-1 text-yellow-800 dark:text-yellow-300">

@@ -43,7 +43,7 @@
                 <div
                     class="flex items-center gap-4 p-4 bg-primary-50 dark:bg-primary-900/20 rounded-lg border border-primary-200 dark:border-primary-700">
                     <div
-                        class="h-16 w-16 bg-gradient-to-br from-primary-400 to-primary-600 rounded-xl flex items-center justify-center shadow-lg">
+                        class="h-16 w-16 bg-linear-to-br from-primary-400 to-primary-600 rounded-xl flex items-center justify-center shadow-lg">
                         <x-icon :name="$icon" class="w-8 h-8 text-white" />
                     </div>
                     <div>

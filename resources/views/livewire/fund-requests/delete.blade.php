@@ -54,7 +54,7 @@
                 </div>
 
                 <div class="flex items-start gap-3 p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
-                    <x-icon name="exclamation-triangle" class="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+                    <x-icon name="exclamation-triangle" class="w-5 h-5 text-red-600 dark:text-red-400 shrink-0 mt-0.5" />
                     <div class="text-sm text-red-800 dark:text-red-200">
                         <p class="font-semibold">{{ __('common.warning') }}:</p>
                         <p>{{ __('pages.delete_fund_request_warning') }}</p>

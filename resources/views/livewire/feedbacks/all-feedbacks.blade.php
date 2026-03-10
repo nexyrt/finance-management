@@ -45,7 +45,7 @@
 
         @interact('column_type', $row)
             <div class="flex items-center gap-2">
-                <div class="h-8 w-8 rounded-xl flex items-center justify-center flex-shrink-0
+                <div class="h-8 w-8 rounded-xl flex items-center justify-center shrink-0
                     {{ $row->type === 'bug' ? 'bg-red-50 dark:bg-red-900/20' : '' }}
                     {{ $row->type === 'feature' ? 'bg-purple-50 dark:bg-purple-900/20' : '' }}
                     {{ $row->type === 'feedback' ? 'bg-green-50 dark:bg-green-900/20' : '' }}">
@@ -73,7 +73,7 @@
 
         @interact('column_user', $row)
             <div class="flex items-center gap-3">
-                <div class="h-8 w-8 rounded-xl bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center flex-shrink-0">
+                <div class="h-8 w-8 rounded-xl bg-linear-to-br from-primary-400 to-primary-600 flex items-center justify-center shrink-0">
                     <span class="text-white font-semibold text-xs">{{ strtoupper(substr($row->user->name, 0, 2)) }}</span>
                 </div>
                 <div>

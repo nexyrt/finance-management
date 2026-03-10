@@ -3,7 +3,7 @@
         @if ($payment && $payment->attachment_path)
             {{-- Header with payment info --}}
             <div
-                class="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 -m-6 mb-6 p-4">
+                class="bg-linear-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 -m-6 mb-6 p-4">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">

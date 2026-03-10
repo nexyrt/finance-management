@@ -2,7 +2,7 @@
     <x-modal wire="modal" size="2xl" center persistent>
         <x-slot:title>
             <div class="flex items-center gap-4 my-3">
-                <div class="h-12 w-12 bg-primary-50 dark:bg-primary-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                <div class="h-12 w-12 bg-primary-50 dark:bg-primary-900/20 rounded-xl flex items-center justify-center shrink-0">
                     <x-icon name="chat-bubble-left-right" class="w-6 h-6 text-primary-600 dark:text-primary-400" />
                 </div>
                 <div>
@@ -80,7 +80,7 @@
                 {{-- Paste indicator --}}
                 <div x-show="isPasting" x-transition
                      class="flex items-center gap-2 p-3 bg-primary-50 dark:bg-primary-900/20 rounded-xl border border-secondary-200 dark:border-dark-600">
-                    <svg class="animate-spin h-4 w-4 text-primary-600 dark:text-primary-400 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <svg class="animate-spin h-4 w-4 text-primary-600 dark:text-primary-400 shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
@@ -98,7 +98,7 @@
             {{-- Tips --}}
             <div class="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-secondary-200 dark:border-dark-600">
                 <div class="flex items-start gap-3">
-                    <x-icon name="information-circle" class="w-5 h-5 text-blue-500 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+                    <x-icon name="information-circle" class="w-5 h-5 text-blue-500 dark:text-blue-400 shrink-0 mt-0.5" />
                     <div class="text-sm text-blue-900 dark:text-blue-200">
                         <p class="font-semibold mb-1">{{ __('feedback.tips_title') }}</p>
                         <ul class="list-disc list-inside space-y-1 text-xs text-blue-800 dark:text-blue-300">

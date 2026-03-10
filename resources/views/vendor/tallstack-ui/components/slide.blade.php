@@ -38,7 +38,7 @@
                         $configurations['bottom'] === false,
                     $configurations['size'] => $configurations['top'] || $configurations['bottom'],
                     'h-full' => !$configurations['top'] || !$configurations['bottom'],
-                    'w-[100dvw]' => $configurations['top'] || $configurations['bottom'],
+                    'w-dvw' => $configurations['top'] || $configurations['bottom'],
                 ])>
                 <div x-show="show"
                     x-transition:enter="transform transition ease-in-out duration-700"

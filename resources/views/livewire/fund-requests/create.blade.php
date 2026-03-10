@@ -3,7 +3,7 @@
         {{-- HEADER --}}
         <x-slot:title>
             <div class="flex items-center gap-4 my-3">
-                <div class="h-12 w-12 bg-green-50 dark:bg-green-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                <div class="h-12 w-12 bg-green-50 dark:bg-green-900/20 rounded-xl flex items-center justify-center shrink-0">
                     <x-icon name="document-plus" class="w-6 h-6 text-green-600 dark:text-green-400" />
                 </div>
                 <div class="flex-1 min-w-0">
@@ -11,7 +11,7 @@
                     <p class="text-sm text-dark-500 dark:text-dark-400">{{ __('pages.create_fund_request_description') }}</p>
                 </div>
                 {{-- Request Number Pill --}}
-                <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-primary-50 dark:bg-primary-900/20 rounded-lg border border-primary-200 dark:border-primary-800 flex-shrink-0">
+                <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-primary-50 dark:bg-primary-900/20 rounded-lg border border-primary-200 dark:border-primary-800 shrink-0">
                     <x-icon name="hashtag" class="w-3.5 h-3.5 text-primary-500 dark:text-primary-400" />
                     <span class="font-mono text-xs font-semibold text-primary-600 dark:text-primary-400">{{ $requestNumber }}</span>
                 </div>
@@ -24,7 +24,7 @@
             {{-- ── Informasi Dasar ── --}}
             <div class="space-y-4">
                 <div class="flex items-center gap-3">
-                    <div class="h-6 w-6 bg-blue-50 dark:bg-blue-900/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <div class="h-6 w-6 bg-blue-50 dark:bg-blue-900/20 rounded-lg flex items-center justify-center shrink-0">
                         <x-icon name="information-circle" class="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
                     </div>
                     <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50">{{ __('pages.basic_details_section') }}</h4>
@@ -68,7 +68,7 @@
             {{-- ── Prioritas ── --}}
             <div class="space-y-3">
                 <div class="flex items-center gap-3">
-                    <div class="h-6 w-6 bg-amber-50 dark:bg-amber-900/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <div class="h-6 w-6 bg-amber-50 dark:bg-amber-900/20 rounded-lg flex items-center justify-center shrink-0">
                         <x-icon name="flag" class="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
                     </div>
                     <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50">{{ __('pages.priority_label') }}</h4>
@@ -149,7 +149,7 @@
             {{-- ── Lampiran ── --}}
             <div class="space-y-3">
                 <div class="flex items-center gap-3">
-                    <div class="h-6 w-6 bg-purple-50 dark:bg-purple-900/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <div class="h-6 w-6 bg-purple-50 dark:bg-purple-900/20 rounded-lg flex items-center justify-center shrink-0">
                         <x-icon name="paper-clip" class="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
                     </div>
                     <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50">{{ __('pages.attachment') }}</h4>
@@ -167,7 +167,7 @@
             {{-- ── Rincian Anggaran ── --}}
             <div class="space-y-3">
                 <div class="flex items-center gap-3">
-                    <div class="h-6 w-6 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <div class="h-6 w-6 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg flex items-center justify-center shrink-0">
                         <x-icon name="list-bullet" class="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                     </div>
                     <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50">{{ __('pages.items_section') }}</h4>
@@ -246,7 +246,7 @@
                                     @endforeach
                                 </tbody>
                                 <tfoot>
-                                    <tr class="bg-gradient-to-r from-primary-50 to-blue-50 dark:from-primary-900/20 dark:to-blue-900/20 border-t border-primary-200 dark:border-primary-800">
+                                    <tr class="bg-linear-to-r from-primary-50 to-blue-50 dark:from-primary-900/20 dark:to-blue-900/20 border-t border-primary-200 dark:border-primary-800">
                                         <td colspan="5" class="py-3 px-3 text-right text-sm font-semibold text-dark-700 dark:text-dark-300">
                                             {{ __('pages.total_request_amount') }}
                                         </td>

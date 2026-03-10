@@ -3,7 +3,7 @@
     {{-- Header --}}
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div class="space-y-1">
-            <h1 class="text-4xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-indigo-800 dark:from-white dark:via-blue-200 dark:to-indigo-200 bg-clip-text text-transparent">
+            <h1 class="text-4xl font-bold bg-linear-to-r from-gray-900 via-blue-800 to-indigo-800 dark:from-white dark:via-blue-200 dark:to-indigo-200 bg-clip-text text-transparent">
                 {{ __('common.feedbacks') }}
             </h1>
             <p class="text-gray-600 dark:text-zinc-400 text-lg">
@@ -30,7 +30,7 @@
 
         <x-card class="hover:shadow-lg transition-shadow col-span-2 sm:col-span-2 xl:col-span-1">
             <div class="flex items-center gap-4">
-                <div class="h-12 w-12 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                <div class="h-12 w-12 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center shrink-0">
                     <x-icon name="inbox-stack" class="w-6 h-6 text-blue-600 dark:text-blue-400" />
                 </div>
                 <div>
@@ -42,7 +42,7 @@
 
         <x-card class="hover:shadow-lg transition-shadow">
             <div class="flex items-center gap-4">
-                <div class="h-12 w-12 bg-yellow-50 dark:bg-yellow-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                <div class="h-12 w-12 bg-yellow-50 dark:bg-yellow-900/20 rounded-xl flex items-center justify-center shrink-0">
                     <x-icon name="clock" class="w-6 h-6 text-yellow-600 dark:text-yellow-400" />
                 </div>
                 <div>
@@ -54,7 +54,7 @@
 
         <x-card class="hover:shadow-lg transition-shadow">
             <div class="flex items-center gap-4">
-                <div class="h-12 w-12 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                <div class="h-12 w-12 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center shrink-0">
                     <x-icon name="arrow-path" class="w-6 h-6 text-blue-600 dark:text-blue-400" />
                 </div>
                 <div>
@@ -66,7 +66,7 @@
 
         <x-card class="hover:shadow-lg transition-shadow">
             <div class="flex items-center gap-4">
-                <div class="h-12 w-12 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                <div class="h-12 w-12 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl flex items-center justify-center shrink-0">
                     <x-icon name="check-circle" class="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
                 </div>
                 <div>
@@ -78,7 +78,7 @@
 
         <x-card class="hover:shadow-lg transition-shadow">
             <div class="flex items-center gap-4">
-                <div class="h-12 w-12 bg-red-50 dark:bg-red-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                <div class="h-12 w-12 bg-red-50 dark:bg-red-900/20 rounded-xl flex items-center justify-center shrink-0">
                     <x-icon name="bug-ant" class="w-6 h-6 text-red-600 dark:text-red-400" />
                 </div>
                 <div>
@@ -90,7 +90,7 @@
 
         <x-card class="hover:shadow-lg transition-shadow">
             <div class="flex items-center gap-4">
-                <div class="h-12 w-12 bg-purple-50 dark:bg-purple-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                <div class="h-12 w-12 bg-purple-50 dark:bg-purple-900/20 rounded-xl flex items-center justify-center shrink-0">
                     <x-icon name="light-bulb" class="w-6 h-6 text-purple-600 dark:text-purple-400" />
                 </div>
                 <div>
@@ -102,7 +102,7 @@
 
         <x-card class="hover:shadow-lg transition-shadow">
             <div class="flex items-center gap-4">
-                <div class="h-12 w-12 bg-green-50 dark:bg-green-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                <div class="h-12 w-12 bg-green-50 dark:bg-green-900/20 rounded-xl flex items-center justify-center shrink-0">
                     <x-icon name="chat-bubble-left-right" class="w-6 h-6 text-green-600 dark:text-green-400" />
                 </div>
                 <div>
@@ -125,7 +125,7 @@
                 :class="activeTab === 'my_feedbacks'
                     ? 'bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 shadow-sm border border-zinc-200 dark:border-dark-600'
                     : 'text-dark-500 dark:text-dark-400 hover:text-dark-800 dark:hover:text-dark-200 hover:bg-zinc-50 dark:hover:bg-dark-600'">
-                <x-icon name="user" class="w-4 h-4 flex-shrink-0" />
+                <x-icon name="user" class="w-4 h-4 shrink-0" />
                 <span>{{ __('feedback.tab_my_feedbacks') }}</span>
             </button>
 
@@ -136,7 +136,7 @@
                     :class="activeTab === 'all_feedbacks'
                         ? 'bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 shadow-sm border border-zinc-200 dark:border-dark-600'
                         : 'text-dark-500 dark:text-dark-400 hover:text-dark-800 dark:hover:text-dark-200 hover:bg-zinc-50 dark:hover:bg-dark-600'">
-                    <x-icon name="users" class="w-4 h-4 flex-shrink-0" />
+                    <x-icon name="users" class="w-4 h-4 shrink-0" />
                     <span>{{ __('feedback.tab_all_feedbacks') }}</span>
                     @if ($this->stats['open'] > 0)
                         <span class="ml-1 px-1.5 py-0.5 text-xs font-bold bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 rounded-full">{{ $this->stats['open'] }}</span>

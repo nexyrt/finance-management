@@ -31,7 +31,7 @@
 
         @if ($slide)
             {{-- Header --}}
-            <div class="flex items-center justify-between px-5 py-4 border-b border-zinc-100 dark:border-white/8 flex-shrink-0">
+            <div class="flex items-center justify-between px-5 py-4 border-b border-zinc-100 dark:border-white/8 shrink-0">
                 <div class="flex items-center gap-3">
                     <div class="h-9 w-9 bg-primary-50 dark:bg-primary-500/10 rounded-xl flex items-center justify-center">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-primary-600 dark:text-primary-400">
@@ -67,14 +67,14 @@
                         class="w-full flex items-start gap-3 px-5 py-4 text-left transition-colors
                             {{ $notification->read_at ? 'bg-white dark:bg-transparent' : 'bg-primary-50/70 dark:bg-primary-500/5' }}
                             hover:bg-zinc-50 dark:hover:bg-white/3">
-                        <div class="flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center mt-0.5 {{ $notification->icon_bg_color }}">
+                        <div class="shrink-0 w-9 h-9 rounded-full flex items-center justify-center mt-0.5 {{ $notification->icon_bg_color }}">
                             <x-icon name="{{ $notification->icon }}" class="w-4 h-4 {{ $notification->icon_color }}" />
                         </div>
                         <div class="flex-1 min-w-0">
                             <div class="flex items-start justify-between gap-2">
                                 <p class="text-[13px] font-semibold text-zinc-900 dark:text-white leading-snug">{{ $notification->title }}</p>
                                 @if (!$notification->read_at)
-                                    <span class="flex-shrink-0 block w-1.5 h-1.5 bg-primary-500 rounded-full mt-1.5"></span>
+                                    <span class="shrink-0 block w-1.5 h-1.5 bg-primary-500 rounded-full mt-1.5"></span>
                                 @endif
                             </div>
                             <p class="text-[12px] text-zinc-500 dark:text-zinc-400 mt-0.5 line-clamp-2 leading-relaxed">{{ $notification->message }}</p>
@@ -96,7 +96,7 @@
 
             {{-- Load More --}}
             @if ($this->notifications->count() < $this->total)
-                <div class="px-5 py-3 border-t border-zinc-100 dark:border-white/8 flex-shrink-0">
+                <div class="px-5 py-3 border-t border-zinc-100 dark:border-white/8 shrink-0">
                     <button wire:click="loadMore"
                         class="w-full py-2 text-[12px] font-medium text-primary-600 dark:text-primary-400
                                hover:text-primary-700 dark:hover:text-primary-300

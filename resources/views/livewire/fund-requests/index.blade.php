@@ -2,7 +2,7 @@
     {{-- Header Section --}}
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div class="space-y-1">
-            <h1 class="text-4xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-indigo-800 dark:from-white dark:via-blue-200 dark:to-indigo-200 bg-clip-text text-transparent">
+            <h1 class="text-4xl font-bold bg-linear-to-r from-gray-900 via-blue-800 to-indigo-800 dark:from-white dark:via-blue-200 dark:to-indigo-200 bg-clip-text text-transparent">
                 {{ __('pages.fund_request_management') }}
             </h1>
             <p class="text-gray-600 dark:text-zinc-400 text-lg">
@@ -36,7 +36,7 @@
         {{-- Total Requested --}}
         <x-card class="hover:shadow-lg transition-shadow">
             <div class="flex items-center gap-4">
-                <div class="h-12 w-12 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                <div class="h-12 w-12 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center shrink-0">
                     <x-icon name="currency-dollar" class="w-6 h-6 text-blue-600 dark:text-blue-400" />
                 </div>
                 <div>
@@ -51,7 +51,7 @@
         {{-- Pending Amount --}}
         <x-card class="hover:shadow-lg transition-shadow">
             <div class="flex items-center gap-4">
-                <div class="h-12 w-12 bg-yellow-50 dark:bg-yellow-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                <div class="h-12 w-12 bg-yellow-50 dark:bg-yellow-900/20 rounded-xl flex items-center justify-center shrink-0">
                     <x-icon name="clock" class="w-6 h-6 text-yellow-600 dark:text-yellow-400" />
                 </div>
                 <div>
@@ -66,7 +66,7 @@
         {{-- Total Disbursed --}}
         <x-card class="hover:shadow-lg transition-shadow">
             <div class="flex items-center gap-4">
-                <div class="h-12 w-12 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                <div class="h-12 w-12 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl flex items-center justify-center shrink-0">
                     <x-icon name="check-circle" class="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
                 </div>
                 <div>
@@ -81,7 +81,7 @@
         {{-- Urgent Requests --}}
         <x-card class="hover:shadow-lg transition-shadow">
             <div class="flex items-center gap-4">
-                <div class="h-12 w-12 bg-red-50 dark:bg-red-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                <div class="h-12 w-12 bg-red-50 dark:bg-red-900/20 rounded-xl flex items-center justify-center shrink-0">
                     <x-icon name="exclamation-triangle" class="w-6 h-6 text-red-600 dark:text-red-400" />
                 </div>
                 <div>
@@ -108,13 +108,13 @@
                             : 'text-dark-500 dark:text-dark-400 hover:text-dark-800 dark:hover:text-dark-200 hover:bg-zinc-50 dark:hover:bg-dark-600'"
                         class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200"
                     >
-                        <x-icon name="user" class="w-4 h-4 flex-shrink-0" />
+                        <x-icon name="user" class="w-4 h-4 shrink-0" />
                         <span>{{ __('pages.my_fund_requests') }}</span>
                         <span
                             :class="activeTab === 'my_requests'
                                 ? 'bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300'
                                 : 'bg-zinc-200 dark:bg-dark-600 text-dark-500 dark:text-dark-400'"
-                            class="inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 rounded-full text-xs font-semibold transition-colors duration-200"
+                            class="inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full text-xs font-semibold transition-colors duration-200"
                         >{{ $this->stats['my_total'] }}</span>
                     </button>
 
@@ -127,20 +127,20 @@
                                 : 'text-dark-500 dark:text-dark-400 hover:text-dark-800 dark:hover:text-dark-200 hover:bg-zinc-50 dark:hover:bg-dark-600'"
                             class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200"
                         >
-                            <x-icon name="users" class="w-4 h-4 flex-shrink-0" />
+                            <x-icon name="users" class="w-4 h-4 shrink-0" />
                             <span>{{ __('pages.all_fund_requests') }}</span>
                             <span
                                 :class="activeTab === 'all_requests'
                                     ? 'bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300'
                                     : 'bg-zinc-200 dark:bg-dark-600 text-dark-500 dark:text-dark-400'"
-                                class="inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 rounded-full text-xs font-semibold transition-colors duration-200"
+                                class="inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full text-xs font-semibold transition-colors duration-200"
                             >{{ $this->stats['all_total'] }}</span>
                         </button>
                     @endcan
                 </div>
 
                 {{-- Divider gradient line --}}
-                <div class="w-48 h-px bg-gradient-to-r from-transparent via-zinc-300 dark:via-dark-600 to-transparent"></div>
+                <div class="w-48 h-px bg-linear-to-r from-transparent via-zinc-300 dark:via-dark-600 to-transparent"></div>
             </div>
         </div>
 
@@ -210,12 +210,12 @@
             {{-- Tab 1: Alur Pengajuan --}}
             <div x-show="tab === 'flow'" x-transition:enter="transition ease-out duration-150" x-transition:enter-start="opacity-0 translate-y-1" x-transition:enter-end="opacity-100 translate-y-0">
                 <div class="relative">
-                    <div class="absolute left-6 top-10 bottom-10 w-0.5 bg-gradient-to-b from-blue-300 via-purple-300 to-emerald-300 dark:from-blue-700 dark:via-purple-700 dark:to-emerald-700 hidden sm:block"></div>
+                    <div class="absolute left-6 top-10 bottom-10 w-0.5 bg-linear-to-b from-blue-300 via-purple-300 to-emerald-300 dark:from-blue-700 dark:via-purple-700 dark:to-emerald-700 hidden sm:block"></div>
                     <div class="space-y-4">
 
                         {{-- Step 1 --}}
                         <div class="flex gap-4">
-                            <div class="flex-shrink-0 w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center shadow-lg shadow-blue-200 dark:shadow-blue-900/40 z-10">
+                            <div class="shrink-0 w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center shadow-lg shadow-blue-200 dark:shadow-blue-900/40 z-10">
                                 <span class="text-white font-bold text-sm">1</span>
                             </div>
                             <div class="flex-1 bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-900/40 rounded-xl p-4">
@@ -237,7 +237,7 @@
 
                         {{-- Step 2 --}}
                         <div class="flex gap-4">
-                            <div class="flex-shrink-0 w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center shadow-lg shadow-purple-200 dark:shadow-purple-900/40 z-10">
+                            <div class="shrink-0 w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center shadow-lg shadow-purple-200 dark:shadow-purple-900/40 z-10">
                                 <span class="text-white font-bold text-sm">2</span>
                             </div>
                             <div class="flex-1 bg-purple-50 dark:bg-purple-900/10 border border-purple-200 dark:border-purple-900/40 rounded-xl p-4">
@@ -259,7 +259,7 @@
 
                         {{-- Step 3 --}}
                         <div class="flex gap-4">
-                            <div class="flex-shrink-0 w-12 h-12 bg-amber-500 rounded-full flex items-center justify-center shadow-lg shadow-amber-200 dark:shadow-amber-900/40 z-10">
+                            <div class="shrink-0 w-12 h-12 bg-amber-500 rounded-full flex items-center justify-center shadow-lg shadow-amber-200 dark:shadow-amber-900/40 z-10">
                                 <span class="text-white font-bold text-sm">3</span>
                             </div>
                             <div class="flex-1 bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-900/40 rounded-xl p-4">
@@ -277,7 +277,7 @@
 
                         {{-- Step 4 --}}
                         <div class="flex gap-4">
-                            <div class="flex-shrink-0 w-12 h-12 bg-indigo-600 rounded-full flex items-center justify-center shadow-lg shadow-indigo-200 dark:shadow-indigo-900/40 z-10">
+                            <div class="shrink-0 w-12 h-12 bg-indigo-600 rounded-full flex items-center justify-center shadow-lg shadow-indigo-200 dark:shadow-indigo-900/40 z-10">
                                 <span class="text-white font-bold text-sm">4</span>
                             </div>
                             <div class="flex-1 bg-indigo-50 dark:bg-indigo-900/10 border border-indigo-200 dark:border-indigo-900/40 rounded-xl p-4">
@@ -294,7 +294,7 @@
 
                         {{-- Step 5 --}}
                         <div class="flex gap-4">
-                            <div class="flex-shrink-0 w-12 h-12 bg-emerald-600 rounded-full flex items-center justify-center shadow-lg shadow-emerald-200 dark:shadow-emerald-900/40 z-10">
+                            <div class="shrink-0 w-12 h-12 bg-emerald-600 rounded-full flex items-center justify-center shadow-lg shadow-emerald-200 dark:shadow-emerald-900/40 z-10">
                                 <span class="text-white font-bold text-sm">5</span>
                             </div>
                             <div class="flex-1 bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-200 dark:border-emerald-900/40 rounded-xl p-4">

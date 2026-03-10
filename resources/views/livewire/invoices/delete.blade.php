@@ -64,7 +64,7 @@
                         ? 'border-yellow-400 bg-yellow-50 dark:bg-yellow-900/20 dark:border-yellow-500'
                         : 'border-zinc-200 dark:border-dark-600 bg-white dark:bg-dark-800 hover:border-yellow-300 dark:hover:border-yellow-600'">
                     <div class="flex items-start gap-3">
-                        <div class="h-9 w-9 rounded-lg flex items-center justify-center flex-shrink-0"
+                        <div class="h-9 w-9 rounded-lg flex items-center justify-center shrink-0"
                              x-bind:class="$wire.action === 'cancel' ? 'bg-yellow-100 dark:bg-yellow-900/40' : 'bg-zinc-100 dark:bg-dark-700'">
                             <x-icon name="x-circle" class="w-5 h-5"
                                     x-bind:class="$wire.action === 'cancel' ? 'text-yellow-600 dark:text-yellow-400' : 'text-dark-400'" />
@@ -90,7 +90,7 @@
                         ? 'border-red-400 bg-red-50 dark:bg-red-900/20 dark:border-red-500'
                         : 'border-zinc-200 dark:border-dark-600 bg-white dark:bg-dark-800 hover:border-red-300 dark:hover:border-red-600'">
                     <div class="flex items-start gap-3">
-                        <div class="h-9 w-9 rounded-lg flex items-center justify-center flex-shrink-0"
+                        <div class="h-9 w-9 rounded-lg flex items-center justify-center shrink-0"
                              x-bind:class="$wire.action === 'permanent' ? 'bg-red-100 dark:bg-red-900/40' : 'bg-zinc-100 dark:bg-dark-700'">
                             <x-icon name="trash" class="w-5 h-5"
                                     x-bind:class="$wire.action === 'permanent' ? 'text-red-600 dark:text-red-400' : 'text-dark-400'" />
@@ -114,7 +114,7 @@
                  x-transition:enter-start="opacity-0 translate-y-1"
                  x-transition:enter-end="opacity-100 translate-y-0"
                  class="mt-4 flex items-start gap-2 p-3 bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800 rounded-xl">
-                <x-icon name="exclamation-triangle" class="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
+                <x-icon name="exclamation-triangle" class="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
                 <p class="text-xs text-red-600 dark:text-red-400">
                     {{ __('invoice.delete_permanent_note') }}
                     @if ($invoice->payments->count() > 0)

@@ -43,7 +43,7 @@
             x-ref="dropdown"
             @mousedown.window="if (open && !$refs.dropdown.contains($event.target) && !$refs.bellBtn.contains($event.target)) open = false"
             :style="`top: ${dropdownTop}px; right: ${dropdownRight}px`"
-            class="fixed w-80 z-[9999]
+            class="fixed w-80 z-9999
                    bg-white dark:bg-[#1c1c1f]
                    border border-zinc-200 dark:border-white/10
                    rounded-xl shadow-xl shadow-black/10 dark:shadow-black/40
@@ -78,7 +78,7 @@
                             {{ $notification->read_at ? 'bg-white dark:bg-transparent' : 'bg-primary-50/70 dark:bg-primary-500/5' }}
                             hover:bg-zinc-50 dark:hover:bg-white/4
                             border-b border-zinc-100 dark:border-white/5 last:border-0">
-                        <div class="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center mt-0.5 {{ $notification->icon_bg_color }}">
+                        <div class="shrink-0 w-8 h-8 rounded-full flex items-center justify-center mt-0.5 {{ $notification->icon_bg_color }}">
                             <x-icon name="{{ $notification->icon }}" class="w-4 h-4 {{ $notification->icon_color }}" />
                         </div>
                         <div class="flex-1 min-w-0">
@@ -87,7 +87,7 @@
                             <p class="text-[10px] text-zinc-400 dark:text-zinc-500 mt-1">{{ $notification->created_at->diffForHumans() }}</p>
                         </div>
                         @if (!$notification->read_at)
-                            <div class="flex-shrink-0 mt-2">
+                            <div class="shrink-0 mt-2">
                                 <span class="block w-1.5 h-1.5 bg-primary-500 rounded-full"></span>
                             </div>
                         @endif

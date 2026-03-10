@@ -22,7 +22,7 @@
         "ngekoding/terbilang": "^1.0",
         "spatie/laravel-permission": "^6.21",
         "stichoza/google-translate-php": "^5.3",
-        "tallstackui/tallstackui": "^3.0.0"
+        "tallstackui/tallstackui": "^2.0"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",

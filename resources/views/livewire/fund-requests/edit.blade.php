@@ -18,7 +18,7 @@
             {{-- Request Number Badge --}}
             @if ($fundRequest && $fundRequest->request_number)
                 <div class="flex items-center gap-2 p-3 rounded-xl bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800">
-                    <x-icon name="hashtag" class="w-4 h-4 text-primary-600 dark:text-primary-400 flex-shrink-0" />
+                    <x-icon name="hashtag" class="w-4 h-4 text-primary-600 dark:text-primary-400 shrink-0" />
                     <span class="text-xs text-primary-700 dark:text-primary-300">{{ __('pages.request_number') }}:</span>
                     <span class="text-sm font-mono font-bold text-primary-700 dark:text-primary-300">{{ $fundRequest->request_number }}</span>
                 </div>

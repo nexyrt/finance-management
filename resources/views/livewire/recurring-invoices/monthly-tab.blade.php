@@ -137,7 +137,7 @@
             @interact('column_client', $row)
                 <div class="flex items-center gap-3">
                     <div
-                        class="w-10 h-10 bg-gradient-to-br from-primary-500 to-blue-600 rounded-full flex items-center justify-center">
+                        class="w-10 h-10 bg-linear-to-br from-primary-500 to-blue-600 rounded-full flex items-center justify-center">
                         <span class="text-white font-semibold text-sm">
                             {{ strtoupper(substr($row->client->name, 0, 2)) }}
                         </span>

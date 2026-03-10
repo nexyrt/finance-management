@@ -18,7 +18,7 @@
                 <div class="bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800 rounded-lg p-4">
                     <div class="flex items-start gap-3">
                         <x-icon name="exclamation-triangle"
-                            class="w-5 h-5 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />
+                            class="w-5 h-5 text-red-600 dark:text-red-400 mt-0.5 shrink-0" />
                         <div class="flex-1">
                             <p class="text-sm font-semibold text-red-900 dark:text-red-100 mb-1">
                                 {{ __('pages.delete_warning_title') }}
@@ -109,7 +109,7 @@
                     class="bg-yellow-50 dark:bg-yellow-900/10 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
                     <div class="flex items-start gap-3">
                         <x-icon name="information-circle"
-                            class="w-5 h-5 text-yellow-600 dark:text-yellow-400 mt-0.5 flex-shrink-0" />
+                            class="w-5 h-5 text-yellow-600 dark:text-yellow-400 mt-0.5 shrink-0" />
                         <div class="flex-1">
                             <p class="text-sm font-semibold text-yellow-900 dark:text-yellow-100 mb-2">
                                 {{ __('pages.status_change_warning') }}

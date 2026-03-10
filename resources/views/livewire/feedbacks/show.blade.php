@@ -22,7 +22,7 @@
             {{-- Modal Title --}}
             <x-slot:title>
                 <div class="flex items-center gap-4 my-3">
-                    <div class="h-12 w-12 {{ $typeBg }} rounded-xl flex items-center justify-center flex-shrink-0">
+                    <div class="h-12 w-12 {{ $typeBg }} rounded-xl flex items-center justify-center shrink-0">
                         <x-icon name="{{ $this->feedback->type_icon }}" class="w-6 h-6 {{ $typeIcon }}" />
                     </div>
                     <div class="flex-1 min-w-0">
@@ -52,7 +52,7 @@
                     <div class="bg-zinc-50 dark:bg-dark-700/40 border border-zinc-200 dark:border-dark-600 rounded-xl p-3">
                         <p class="text-xs uppercase tracking-widest text-dark-400 dark:text-dark-500 mb-1">{{ __('feedback.from') }}</p>
                         <div class="flex items-center gap-2">
-                            <div class="h-6 w-6 rounded-lg bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center flex-shrink-0">
+                            <div class="h-6 w-6 rounded-lg bg-linear-to-br from-primary-400 to-primary-600 flex items-center justify-center shrink-0">
                                 <span class="text-white font-semibold text-[9px]">{{ strtoupper(substr($this->feedback->user->name, 0, 2)) }}</span>
                             </div>
                             <p class="text-sm font-semibold text-dark-900 dark:text-dark-50 truncate">{{ $this->feedback->user->name }}</p>
@@ -71,7 +71,7 @@
                             <p class="text-xs uppercase tracking-widest text-dark-400 dark:text-dark-500 mb-1">{{ __('feedback.source_page') }}</p>
                             <a href="{{ $this->feedback->page_url }}" target="_blank"
                                 class="inline-flex items-center gap-1 text-sm font-semibold text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 transition-colors truncate">
-                                <x-icon name="link" class="w-3.5 h-3.5 flex-shrink-0" />
+                                <x-icon name="link" class="w-3.5 h-3.5 shrink-0" />
                                 <span class="truncate">{{ __('common.open') }}</span>
                             </a>
                         </div>
@@ -112,7 +112,7 @@
                             @else
                                 <a href="{{ $this->feedback->attachment_url }}" target="_blank"
                                     class="flex items-center gap-3 p-3 bg-zinc-50 dark:bg-dark-700/40 rounded-xl border border-zinc-200 dark:border-dark-600 hover:bg-zinc-100 dark:hover:bg-dark-700 transition-colors">
-                                    <div class="h-10 w-10 bg-red-50 dark:bg-red-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                                    <div class="h-10 w-10 bg-red-50 dark:bg-red-900/20 rounded-xl flex items-center justify-center shrink-0">
                                         <x-icon name="document" class="w-5 h-5 text-red-600 dark:text-red-400" />
                                     </div>
                                     <div class="flex-1 min-w-0">

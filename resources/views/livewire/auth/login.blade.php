@@ -47,7 +47,7 @@
         </div>
 
         <!-- Divider -->
-        <div class="h-px bg-gradient-to-r from-transparent via-slate-200 dark:via-dark-600 to-transparent"></div>
+        <div class="h-px bg-linear-to-r from-transparent via-slate-200 dark:via-dark-600 to-transparent"></div>
 
         <!-- Submit Button -->
         <x-button type="submit" color="primary" class="w-full" loading="login">

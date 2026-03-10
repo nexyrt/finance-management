@@ -63,7 +63,7 @@
         @if($accountId)
         <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-4">
             <div class="flex items-start gap-3">
-                <div class="h-6 w-6 bg-amber-100 dark:bg-amber-900/40 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                <div class="h-6 w-6 bg-amber-100 dark:bg-amber-900/40 rounded-lg flex items-center justify-center shrink-0 mt-0.5">
                     <x-icon name="exclamation-triangle" class="w-4 h-4 text-amber-600 dark:text-amber-400" />
                 </div>
                 <div>

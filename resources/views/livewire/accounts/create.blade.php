@@ -74,7 +74,7 @@
 
             <div class="bg-white dark:bg-dark-800 rounded-lg p-4 border border-zinc-200 dark:border-dark-600">
                 <div class="flex items-center gap-3 mb-2">
-                    <div class="h-8 w-8 bg-gradient-to-br from-primary-400 to-primary-600 rounded-lg flex items-center justify-center">
+                    <div class="h-8 w-8 bg-linear-to-br from-primary-400 to-primary-600 rounded-lg flex items-center justify-center">
                         <x-icon name="building-library" class="w-4 h-4 text-white" />
                     </div>
                     <div class="min-w-0 flex-1">

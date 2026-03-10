@@ -18,7 +18,7 @@
             {{-- ═══ MODAL TITLE ═══ --}}
             <x-slot:title>
                 <div class="flex items-center gap-4 my-3">
-                    <div class="h-12 w-12 rounded-xl flex-shrink-0 flex items-center justify-center {{ match($statusColor) {
+                    <div class="h-12 w-12 rounded-xl shrink-0 flex items-center justify-center {{ match($statusColor) {
                         'emerald' => 'bg-emerald-50 dark:bg-emerald-900/20',
                         'amber'   => 'bg-amber-50 dark:bg-amber-900/20',
                         'red'     => 'bg-red-50 dark:bg-red-900/20',
@@ -106,7 +106,7 @@
                         @foreach ($invoice->items as $item)
                             <div class="px-4 py-2.5 flex items-center justify-between gap-4 hover:bg-zinc-50 dark:hover:bg-dark-700/30 transition-colors">
                                 <div class="flex items-center gap-3 min-w-0 flex-1">
-                                    <div class="w-7 h-7 rounded-lg bg-zinc-100 dark:bg-dark-700 flex items-center justify-center flex-shrink-0">
+                                    <div class="w-7 h-7 rounded-lg bg-zinc-100 dark:bg-dark-700 flex items-center justify-center shrink-0">
                                         <x-icon name="{{ $item->client->type === 'individual' ? 'user' : 'building-office' }}" class="w-3.5 h-3.5 text-dark-400" />
                                     </div>
                                     <div class="min-w-0 flex-1">
@@ -127,7 +127,7 @@
                                         </p>
                                     </div>
                                 </div>
-                                <p class="text-sm font-bold text-dark-900 dark:text-dark-50 tabular-nums flex-shrink-0">
+                                <p class="text-sm font-bold text-dark-900 dark:text-dark-50 tabular-nums shrink-0">
                                     Rp {{ number_format($item->amount, 0, ',', '.') }}
                                 </p>
                             </div>
@@ -145,7 +145,7 @@
                                 @endif
                             </div>
                             {{-- Right: total --}}
-                            <div class="flex items-center gap-2 flex-shrink-0">
+                            <div class="flex items-center gap-2 shrink-0">
                                 <span class="text-sm font-semibold text-dark-900 dark:text-dark-50">{{ __('invoice.total_invoice') }}:</span>
                                 <span class="text-base font-bold text-dark-900 dark:text-dark-50 tabular-nums">Rp {{ number_format($invoice->total_amount, 0, ',', '.') }}</span>
                             </div>
@@ -234,7 +234,7 @@
                                     <div class="px-3 py-2.5 hover:bg-zinc-50 dark:hover:bg-dark-700/30 transition-colors">
                                         <div class="flex items-start justify-between gap-2">
                                             <div class="flex items-center gap-2 min-w-0">
-                                                <div class="w-6 h-6 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center flex-shrink-0">
+                                                <div class="w-6 h-6 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center shrink-0">
                                                     <x-icon name="banknotes" class="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
                                                 </div>
                                                 <div class="min-w-0">
@@ -247,7 +247,7 @@
                                                     </p>
                                                 </div>
                                             </div>
-                                            <div class="flex items-center gap-1 flex-shrink-0">
+                                            <div class="flex items-center gap-1 shrink-0">
                                                 @if ($payment->hasAttachment())
                                                     <x-button.circle wire:click="showPaymentAttachment({{ $payment->id }})"
                                                         loading="showPaymentAttachment({{ $payment->id }})"
@@ -279,22 +279,22 @@
                         </div>
                         <div class="px-4 py-3 space-y-2">
                             <div class="flex items-start justify-between gap-2">
-                                <span class="text-xs text-dark-400 dark:text-dark-500 flex-shrink-0">{{ __('common.name') }}</span>
+                                <span class="text-xs text-dark-400 dark:text-dark-500 shrink-0">{{ __('common.name') }}</span>
                                 <span class="text-xs font-medium text-dark-900 dark:text-dark-50 text-right">{{ $invoice->client->name }}</span>
                             </div>
                             <div class="flex items-start justify-between gap-2">
-                                <span class="text-xs text-dark-400 dark:text-dark-500 flex-shrink-0">{{ __('common.type') }}</span>
+                                <span class="text-xs text-dark-400 dark:text-dark-500 shrink-0">{{ __('common.type') }}</span>
                                 <span class="text-xs font-medium text-dark-900 dark:text-dark-50">{{ __('pages.' . $invoice->client->type) }}</span>
                             </div>
                             @if ($invoice->client->email)
                                 <div class="flex items-start justify-between gap-2">
-                                    <span class="text-xs text-dark-400 dark:text-dark-500 flex-shrink-0">{{ __('common.email') }}</span>
+                                    <span class="text-xs text-dark-400 dark:text-dark-500 shrink-0">{{ __('common.email') }}</span>
                                     <span class="text-xs font-medium text-dark-900 dark:text-dark-50 text-right break-all">{{ $invoice->client->email }}</span>
                                 </div>
                             @endif
                             @if ($invoice->client->NPWP)
                                 <div class="flex items-start justify-between gap-2">
-                                    <span class="text-xs text-dark-400 dark:text-dark-500 flex-shrink-0">NPWP</span>
+                                    <span class="text-xs text-dark-400 dark:text-dark-500 shrink-0">NPWP</span>
                                     <span class="text-xs font-medium font-mono text-dark-900 dark:text-dark-50">{{ $invoice->client->NPWP }}</span>
                                 </div>
                             @endif
@@ -310,7 +310,7 @@
                             <div class="space-y-0">
                                 <div class="flex gap-3 pb-3">
                                     <div class="flex flex-col items-center pt-0.5">
-                                        <div class="w-1.5 h-1.5 rounded-full bg-zinc-400 dark:bg-dark-500 flex-shrink-0"></div>
+                                        <div class="w-1.5 h-1.5 rounded-full bg-zinc-400 dark:bg-dark-500 shrink-0"></div>
                                         <div class="w-px flex-1 bg-zinc-200 dark:bg-dark-600 mt-1"></div>
                                     </div>
                                     <div>
@@ -322,7 +322,7 @@
                                 @if ($invoice->status !== 'draft')
                                     <div class="flex gap-3 pb-3">
                                         <div class="flex flex-col items-center pt-0.5">
-                                            <div class="w-1.5 h-1.5 rounded-full bg-blue-400 flex-shrink-0"></div>
+                                            <div class="w-1.5 h-1.5 rounded-full bg-blue-400 shrink-0"></div>
                                             <div class="w-px flex-1 bg-zinc-200 dark:bg-dark-600 mt-1"></div>
                                         </div>
                                         <div>
@@ -335,7 +335,7 @@
                                 @foreach ($invoice->payments as $payment)
                                     <div class="flex gap-3 pb-3">
                                         <div class="flex flex-col items-center pt-0.5">
-                                            <div class="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0"></div>
+                                            <div class="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0"></div>
                                             <div class="w-px flex-1 bg-zinc-200 dark:bg-dark-600 mt-1"></div>
                                         </div>
                                         <div>
@@ -393,7 +393,7 @@
                         <div class="p-4">
                             @php $isPdf = strtolower(pathinfo($invoice->faktur, PATHINFO_EXTENSION)) === 'pdf'; @endphp
                             @if ($isPdf)
-                                <div class="aspect-[8.5/11] border border-zinc-200 dark:border-dark-600 rounded-lg overflow-hidden">
+                                <div class="aspect-8.5/11 border border-zinc-200 dark:border-dark-600 rounded-lg overflow-hidden">
                                     <iframe src="{{ Storage::url($invoice->faktur) }}" class="w-full h-full"></iframe>
                                 </div>
                             @else
@@ -443,7 +443,7 @@
                                     <template x-for="template in templates" :key="template.value">
                                         <button @click="selectedTemplate = template.value; templateOpen = false; printInvoiceWithTemplate({{ $invoice->id }}, template.value)"
                                             class="w-full text-left px-3 py-2.5 rounded-lg hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors flex items-start gap-2.5">
-                                            <svg class="w-4 h-4 mt-0.5 text-primary-600 dark:text-primary-400 flex-shrink-0 transition-opacity"
+                                            <svg class="w-4 h-4 mt-0.5 text-primary-600 dark:text-primary-400 shrink-0 transition-opacity"
                                                  :class="selectedTemplate === template.value ? 'opacity-100' : 'opacity-0'"
                                                  fill="currentColor" viewBox="0 0 20 20">
                                                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>

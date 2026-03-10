@@ -9,7 +9,7 @@
                         class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
                         <div class="flex gap-3">
                             <x-icon name="exclamation-triangle"
-                                class="w-5 h-5 text-yellow-600 dark:text-yellow-400 flex-shrink-0" />
+                                class="w-5 h-5 text-yellow-600 dark:text-yellow-400 shrink-0" />
                             <div class="text-sm text-yellow-800 dark:text-yellow-200">
                                 <p class="font-medium">{{ __('pages.cat_type_cannot_change') }}</p>
                                 <p class="mt-1">{{ __('pages.cat_has_transactions_warning', ['count' => $transactionsCount]) }}</p>
@@ -50,7 +50,7 @@
                         class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
                         <div class="flex gap-3">
                             <x-icon name="information-circle"
-                                class="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+                                class="w-5 h-5 text-blue-600 dark:text-blue-400 shrink-0" />
                             <div class="text-sm text-blue-800 dark:text-blue-200">
                                 <p class="font-medium">{{ __('pages.cat_is_parent_info') }}</p>
                                 <p class="mt-1">{{ __('pages.cat_no_other_parents', ['type' => ucfirst($type)]) }}</p>

@@ -47,7 +47,7 @@
                 @if($client?->invoices?->count() > 0)
                     <div class="bg-red-50 dark:bg-red-900/20 rounded-xl p-4 border border-red-200/50 dark:border-red-700/50">
                         <div class="flex items-start gap-3">
-                            <div class="h-8 w-8 bg-red-500/20 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <div class="h-8 w-8 bg-red-500/20 rounded-lg flex items-center justify-center shrink-0 mt-0.5">
                                 <x-icon name="exclamation-triangle" class="w-4 h-4 text-red-600 dark:text-red-400" />
                             </div>
                             <div>

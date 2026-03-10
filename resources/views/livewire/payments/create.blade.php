@@ -3,7 +3,7 @@
         @if ($invoice)
             {{-- Invoice Info Header --}}
             <div
-                class="bg-gradient-to-r from-blue-50 to-primary-50 dark:from-blue-900/20 dark:to-primary-900/20 -m-4 mb-6 p-4 border-b border-blue-200 dark:border-blue-700">
+                class="bg-linear-to-r from-blue-50 to-primary-50 dark:from-blue-900/20 dark:to-primary-900/20 -m-4 mb-6 p-4 border-b border-blue-200 dark:border-blue-700">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 bg-blue-100 dark:bg-blue-800 rounded-xl flex items-center justify-center">

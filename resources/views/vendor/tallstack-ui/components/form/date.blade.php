@@ -57,7 +57,7 @@
     <x-dynamic-component :component="TallStackUi::prefix('floating')"
                          :floating="$personalize['floating.default']"
                          :class="$personalize['floating.class']"
-                         x-bind:class="{ 'h-[17rem]' : picker.year || picker.month }">
+                         x-bind:class="{ 'h-68' : picker.year || picker.month }">
         <div class="{{ $personalize['box.picker.button'] }}">
             <span>
                 <button type="button" x-text="calendar.months[month]" x-on:click="picker.month = true" class="{{ $personalize['label.month'] }}"></button>

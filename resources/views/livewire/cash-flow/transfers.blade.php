@@ -2,7 +2,7 @@
     {{-- Header Section --}}
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div class="space-y-1">
-            <h1 class="text-4xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-indigo-800 dark:from-white dark:via-blue-200 dark:to-indigo-200 bg-clip-text text-transparent">
+            <h1 class="text-4xl font-bold bg-linear-to-r from-gray-900 via-blue-800 to-indigo-800 dark:from-white dark:via-blue-200 dark:to-indigo-200 bg-clip-text text-transparent">
                 {{ __('pages.transfers_and_adjustments') }}
             </h1>
             <p class="text-gray-600 dark:text-zinc-400 text-lg">
@@ -50,7 +50,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
             <x-card class="hover:shadow-lg transition-shadow">
                 <div class="flex items-center gap-4">
-                    <div class="h-12 w-12 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <div class="h-12 w-12 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center shrink-0">
                         <x-icon name="arrow-path" class="w-6 h-6 text-blue-600 dark:text-blue-400" />
                     </div>
                     <div>
@@ -64,7 +64,7 @@
 
             <x-card class="hover:shadow-lg transition-shadow">
                 <div class="flex items-center gap-4">
-                    <div class="h-12 w-12 bg-orange-50 dark:bg-orange-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <div class="h-12 w-12 bg-orange-50 dark:bg-orange-900/20 rounded-xl flex items-center justify-center shrink-0">
                         <x-icon name="banknotes" class="w-6 h-6 text-orange-600 dark:text-orange-400" />
                     </div>
                     <div>
@@ -78,7 +78,7 @@
 
             <x-card class="hover:shadow-lg transition-shadow">
                 <div class="flex items-center gap-4">
-                    <div class="h-12 w-12 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <div class="h-12 w-12 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl flex items-center justify-center shrink-0">
                         <x-icon name="calendar" class="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
                     </div>
                     <div>
@@ -142,7 +142,7 @@
 
             @interact('column_transaction_date', $row)
                 <div class="flex items-center gap-3">
-                    <div class="flex-shrink-0 h-10 w-10 bg-gradient-to-br from-secondary-100 to-secondary-200 dark:from-dark-700 dark:to-dark-600 rounded-lg flex items-center justify-center">
+                    <div class="shrink-0 h-10 w-10 bg-linear-to-br from-secondary-100 to-secondary-200 dark:from-dark-700 dark:to-dark-600 rounded-lg flex items-center justify-center">
                         <x-icon name="calendar" class="w-5 h-5 text-secondary-600 dark:text-secondary-400" />
                     </div>
                     <div>
@@ -159,7 +159,7 @@
             @interact('column_from_account', $row)
                 @if ($row->from_account)
                     <div class="flex items-center gap-2">
-                        <div class="h-8 w-8 bg-gradient-to-br from-red-100 to-red-200 dark:from-red-900/30 dark:to-red-800/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <div class="h-8 w-8 bg-linear-to-br from-red-100 to-red-200 dark:from-red-900/30 dark:to-red-800/30 rounded-lg flex items-center justify-center shrink-0">
                             <x-icon name="arrow-up" class="w-4 h-4 text-red-600 dark:text-red-400" />
                         </div>
                         <div>
@@ -172,7 +172,7 @@
 
             @interact('column_to_account', $row)
                 <div class="flex items-center gap-2">
-                    <div class="h-8 w-8 bg-gradient-to-br from-green-100 to-green-200 dark:from-green-900/30 dark:to-green-800/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <div class="h-8 w-8 bg-linear-to-br from-green-100 to-green-200 dark:from-green-900/30 dark:to-green-800/30 rounded-lg flex items-center justify-center shrink-0">
                         <x-icon name="arrow-down" class="w-4 h-4 text-green-600 dark:text-green-400" />
                     </div>
                     <div>
@@ -264,7 +264,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
             <x-card class="hover:shadow-lg transition-shadow">
                 <div class="flex items-center gap-4">
-                    <div class="h-12 w-12 bg-red-50 dark:bg-red-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <div class="h-12 w-12 bg-red-50 dark:bg-red-900/20 rounded-xl flex items-center justify-center shrink-0">
                         <x-icon name="minus-circle" class="w-6 h-6 text-red-600 dark:text-red-400" />
                     </div>
                     <div>
@@ -278,7 +278,7 @@
 
             <x-card class="hover:shadow-lg transition-shadow">
                 <div class="flex items-center gap-4">
-                    <div class="h-12 w-12 bg-green-50 dark:bg-green-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <div class="h-12 w-12 bg-green-50 dark:bg-green-900/20 rounded-xl flex items-center justify-center shrink-0">
                         <x-icon name="plus-circle" class="w-6 h-6 text-green-600 dark:text-green-400" />
                     </div>
                     <div>
@@ -292,7 +292,7 @@
 
             <x-card class="hover:shadow-lg transition-shadow">
                 <div class="flex items-center gap-4">
-                    <div class="h-12 w-12 bg-amber-50 dark:bg-amber-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <div class="h-12 w-12 bg-amber-50 dark:bg-amber-900/20 rounded-xl flex items-center justify-center shrink-0">
                         <x-icon name="adjustments-horizontal" class="w-6 h-6 text-amber-600 dark:text-amber-400" />
                     </div>
                     <div>
@@ -347,7 +347,7 @@
 
             @interact('column_transaction_date', $row)
                 <div class="flex items-center gap-3">
-                    <div class="flex-shrink-0 h-10 w-10 bg-gradient-to-br from-secondary-100 to-secondary-200 dark:from-dark-700 dark:to-dark-600 rounded-lg flex items-center justify-center">
+                    <div class="shrink-0 h-10 w-10 bg-linear-to-br from-secondary-100 to-secondary-200 dark:from-dark-700 dark:to-dark-600 rounded-lg flex items-center justify-center">
                         <x-icon name="calendar" class="w-5 h-5 text-secondary-600 dark:text-secondary-400" />
                     </div>
                     <div>
@@ -391,7 +391,7 @@
             @interact('column_bank_account', $row)
                 @if ($row->bankAccount)
                     <div class="flex items-center gap-2">
-                        <div class="h-8 w-8 bg-gradient-to-br from-primary-100 to-primary-200 dark:from-primary-900/30 dark:to-primary-800/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <div class="h-8 w-8 bg-linear-to-br from-primary-100 to-primary-200 dark:from-primary-900/30 dark:to-primary-800/30 rounded-lg flex items-center justify-center shrink-0">
                             <x-icon name="building-library" class="w-4 h-4 text-primary-600 dark:text-primary-400" />
                         </div>
                         <div>
@@ -479,7 +479,7 @@
                         ? 'bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 shadow-sm border border-zinc-200 dark:border-dark-600'
                         : 'text-dark-500 dark:text-dark-400 hover:text-dark-800 dark:hover:text-dark-200'"
                 >
-                    <x-icon name="arrows-right-left" class="w-3.5 h-3.5 flex-shrink-0" />
+                    <x-icon name="arrows-right-left" class="w-3.5 h-3.5 shrink-0" />
                     <span>{{ __('pages.cf_transfer_guide_tab_transfer') }}</span>
                 </button>
                 <button
@@ -489,7 +489,7 @@
                         ? 'bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 shadow-sm border border-zinc-200 dark:border-dark-600'
                         : 'text-dark-500 dark:text-dark-400 hover:text-dark-800 dark:hover:text-dark-200'"
                 >
-                    <x-icon name="adjustments-horizontal" class="w-3.5 h-3.5 flex-shrink-0" />
+                    <x-icon name="adjustments-horizontal" class="w-3.5 h-3.5 shrink-0" />
                     <span>{{ __('pages.cf_transfer_guide_tab_adjustment') }}</span>
                 </button>
             </div>
@@ -497,26 +497,26 @@
             {{-- TAB 1: TRANSFER --}}
             <div x-show="tab === 'transfer'" x-transition:enter="transition ease-out duration-150" x-transition:enter-start="opacity-0 translate-y-1" x-transition:enter-end="opacity-100 translate-y-0">
                 <div class="relative">
-                    <div class="absolute left-6 top-10 bottom-10 w-0.5 bg-gradient-to-b from-blue-300 via-purple-300 to-emerald-300 dark:from-blue-700 dark:via-purple-700 dark:to-emerald-700 hidden sm:block"></div>
+                    <div class="absolute left-6 top-10 bottom-10 w-0.5 bg-linear-to-b from-blue-300 via-purple-300 to-emerald-300 dark:from-blue-700 dark:via-purple-700 dark:to-emerald-700 hidden sm:block"></div>
                     <div class="space-y-4">
                         {{-- Step 1 --}}
                         <div class="flex gap-4">
-                            <div class="flex-shrink-0 w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center shadow-lg shadow-blue-200 dark:shadow-blue-900/40 z-10">
+                            <div class="shrink-0 w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center shadow-lg shadow-blue-200 dark:shadow-blue-900/40 z-10">
                                 <span class="text-white font-bold text-sm">1</span>
                             </div>
                             <div class="flex-1 bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-900/40 rounded-xl p-4">
                                 <div class="flex items-start gap-3">
-                                    <x-icon name="plus-circle" class="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+                                    <x-icon name="plus-circle" class="w-5 h-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
                                     <div class="flex-1">
                                         <h4 class="font-semibold text-blue-900 dark:text-blue-200 mb-1">{{ __('pages.cf_transfer_guide_step1_title') }}</h4>
                                         <p class="text-sm text-blue-700 dark:text-blue-300 mb-2">{{ __('pages.cf_transfer_guide_step1_desc') }}</p>
                                         <div class="grid grid-cols-2 gap-2">
                                             <div class="flex items-start gap-2 text-xs text-blue-600 dark:text-blue-400">
-                                                <x-icon name="check-circle" class="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+                                                <x-icon name="check-circle" class="w-3.5 h-3.5 shrink-0 mt-0.5" />
                                                 <span>{{ __('pages.cf_transfer_guide_step1_tip1') }}</span>
                                             </div>
                                             <div class="flex items-start gap-2 text-xs text-blue-600 dark:text-blue-400">
-                                                <x-icon name="check-circle" class="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+                                                <x-icon name="check-circle" class="w-3.5 h-3.5 shrink-0 mt-0.5" />
                                                 <span>{{ __('pages.cf_transfer_guide_step1_tip2') }}</span>
                                             </div>
                                         </div>
@@ -527,22 +527,22 @@
 
                         {{-- Step 2 --}}
                         <div class="flex gap-4">
-                            <div class="flex-shrink-0 w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center shadow-lg shadow-purple-200 dark:shadow-purple-900/40 z-10">
+                            <div class="shrink-0 w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center shadow-lg shadow-purple-200 dark:shadow-purple-900/40 z-10">
                                 <span class="text-white font-bold text-sm">2</span>
                             </div>
                             <div class="flex-1 bg-purple-50 dark:bg-purple-900/10 border border-purple-200 dark:border-purple-900/40 rounded-xl p-4">
                                 <div class="flex items-start gap-3">
-                                    <x-icon name="bolt" class="w-5 h-5 text-purple-600 dark:text-purple-400 flex-shrink-0 mt-0.5" />
+                                    <x-icon name="bolt" class="w-5 h-5 text-purple-600 dark:text-purple-400 shrink-0 mt-0.5" />
                                     <div class="flex-1">
                                         <h4 class="font-semibold text-purple-900 dark:text-purple-200 mb-1">{{ __('pages.cf_transfer_guide_step2_title') }}</h4>
                                         <p class="text-sm text-purple-700 dark:text-purple-300 mb-2">{{ __('pages.cf_transfer_guide_step2_desc') }}</p>
                                         <div class="grid grid-cols-2 gap-2">
                                             <div class="flex items-start gap-2 text-xs text-purple-600 dark:text-purple-400">
-                                                <x-icon name="check-circle" class="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+                                                <x-icon name="check-circle" class="w-3.5 h-3.5 shrink-0 mt-0.5" />
                                                 <span>{{ __('pages.cf_transfer_guide_step2_tip1') }}</span>
                                             </div>
                                             <div class="flex items-start gap-2 text-xs text-purple-600 dark:text-purple-400">
-                                                <x-icon name="check-circle" class="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+                                                <x-icon name="check-circle" class="w-3.5 h-3.5 shrink-0 mt-0.5" />
                                                 <span>{{ __('pages.cf_transfer_guide_step2_tip2') }}</span>
                                             </div>
                                         </div>
@@ -553,12 +553,12 @@
 
                         {{-- Step 3 --}}
                         <div class="flex gap-4">
-                            <div class="flex-shrink-0 w-12 h-12 bg-emerald-600 rounded-full flex items-center justify-center shadow-lg shadow-emerald-200 dark:shadow-emerald-900/40 z-10">
+                            <div class="shrink-0 w-12 h-12 bg-emerald-600 rounded-full flex items-center justify-center shadow-lg shadow-emerald-200 dark:shadow-emerald-900/40 z-10">
                                 <span class="text-white font-bold text-sm">3</span>
                             </div>
                             <div class="flex-1 bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-200 dark:border-emerald-900/40 rounded-xl p-4">
                                 <div class="flex items-start gap-3">
-                                    <x-icon name="eye" class="w-5 h-5 text-emerald-600 dark:text-emerald-400 flex-shrink-0 mt-0.5" />
+                                    <x-icon name="eye" class="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
                                     <div class="flex-1">
                                         <h4 class="font-semibold text-emerald-900 dark:text-emerald-200 mb-1">{{ __('pages.cf_transfer_guide_step3_title') }}</h4>
                                         <p class="text-sm text-emerald-700 dark:text-emerald-300">{{ __('pages.cf_transfer_guide_step3_desc') }}</p>
@@ -576,7 +576,7 @@
                     {{-- What is Adjustment --}}
                     <div class="p-4 bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-900/40 rounded-xl">
                         <div class="flex items-start gap-3">
-                            <div class="h-9 w-9 bg-amber-100 dark:bg-amber-900/30 rounded-xl flex items-center justify-center flex-shrink-0">
+                            <div class="h-9 w-9 bg-amber-100 dark:bg-amber-900/30 rounded-xl flex items-center justify-center shrink-0">
                                 <x-icon name="adjustments-horizontal" class="w-4 h-4 text-amber-600 dark:text-amber-400" />
                             </div>
                             <div class="flex-1">
@@ -589,18 +589,18 @@
                     {{-- When to use --}}
                     <div class="p-4 bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-900/40 rounded-xl">
                         <div class="flex items-start gap-3">
-                            <div class="h-9 w-9 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center flex-shrink-0">
+                            <div class="h-9 w-9 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center shrink-0">
                                 <x-icon name="light-bulb" class="w-4 h-4 text-blue-600 dark:text-blue-400" />
                             </div>
                             <div class="flex-1">
                                 <h4 class="text-sm font-semibold text-blue-900 dark:text-blue-200 mb-2">{{ __('pages.cf_transfer_guide_adj_when_title') }}</h4>
                                 <div class="space-y-1.5">
                                     <div class="flex items-start gap-2 text-xs text-blue-600 dark:text-blue-400">
-                                        <x-icon name="check-circle" class="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+                                        <x-icon name="check-circle" class="w-3.5 h-3.5 shrink-0 mt-0.5" />
                                         <span>{{ __('pages.cf_transfer_guide_adj_when1') }}</span>
                                     </div>
                                     <div class="flex items-start gap-2 text-xs text-blue-600 dark:text-blue-400">
-                                        <x-icon name="check-circle" class="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+                                        <x-icon name="check-circle" class="w-3.5 h-3.5 shrink-0 mt-0.5" />
                                         <span>{{ __('pages.cf_transfer_guide_adj_when2') }}</span>
                                     </div>
                                 </div>
@@ -611,7 +611,7 @@
                     {{-- Debit/Credit signs --}}
                     <div class="p-4 bg-gray-50 dark:bg-dark-700 rounded-xl border border-gray-200 dark:border-dark-600">
                         <div class="flex items-start gap-3">
-                            <x-icon name="information-circle" class="w-5 h-5 text-gray-500 dark:text-gray-400 flex-shrink-0 mt-0.5" />
+                            <x-icon name="information-circle" class="w-5 h-5 text-gray-500 dark:text-gray-400 shrink-0 mt-0.5" />
                             <div class="flex-1">
                                 <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-2">{{ __('pages.cf_transfer_guide_adj_sign_title') }}</h4>
                                 <div class="grid grid-cols-2 gap-2">

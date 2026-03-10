@@ -4,7 +4,7 @@
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div class="space-y-1">
             <h1
-                class="text-4xl font-bold bg-gradient-to-r from-dark-900 via-primary-800 to-primary-800 dark:from-white dark:via-primary-200 dark:to-primary-200 bg-clip-text text-transparent">
+                class="text-4xl font-bold bg-linear-to-r from-dark-900 via-primary-800 to-primary-800 dark:from-white dark:via-primary-200 dark:to-primary-200 bg-clip-text text-transparent">
                 {{ __('pages.loan_management') }}
             </h1>
             <p class="text-dark-600 dark:text-dark-400 text-lg">
@@ -33,7 +33,7 @@
         @interact('column_loan_number', $row)
             <div class="flex items-center gap-3">
                 <div
-                    class="h-10 w-10 bg-gradient-to-br from-blue-400 to-blue-600 rounded-xl flex items-center justify-center shadow-sm">
+                    class="h-10 w-10 bg-linear-to-br from-blue-400 to-blue-600 rounded-xl flex items-center justify-center shadow-sm">
                     <x-icon name="banknotes" class="w-5 h-5 text-white" />
                 </div>
                 <div>
@@ -59,7 +59,7 @@
                                 {{ number_format($totalPrincipalPaid, 0, ',', '.') }}</span>
                         </div>
                         <div class="w-full bg-dark-200 dark:bg-dark-700 rounded-full h-1.5">
-                            <div class="bg-gradient-to-r from-green-500 to-green-600 h-1.5 rounded-full transition-all"
+                            <div class="bg-linear-to-r from-green-500 to-green-600 h-1.5 rounded-full transition-all"
                                 style="width: {{ min($percentage, 100) }}%">
                             </div>
                         </div>
@@ -101,7 +101,7 @@
                                 {{ number_format($totalInterestPaid, 0, ',', '.') }}</span>
                         </div>
                         <div class="w-full bg-dark-200 dark:bg-dark-700 rounded-full h-1.5">
-                            <div class="bg-gradient-to-r from-blue-500 to-blue-600 h-1.5 rounded-full transition-all"
+                            <div class="bg-linear-to-r from-blue-500 to-blue-600 h-1.5 rounded-full transition-all"
                                 style="width: {{ min($interestPercentage, 100) }}%">
                             </div>
                         </div>

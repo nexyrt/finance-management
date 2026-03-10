@@ -152,7 +152,7 @@
 
                             <h1 class="text-4xl xl:text-5xl font-bold text-white leading-[1.15] tracking-tight">
                                 Kendali Penuh<br>
-                                <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-400 to-sky-300">
+                                <span class="text-transparent bg-clip-text bg-linear-to-r from-blue-400 via-indigo-400 to-sky-300">
                                     Atas Keuangan
                                 </span><br>
                                 Bisnis Anda
@@ -190,13 +190,13 @@
                     {{-- Bottom: trust badge --}}
                     <div class="flex items-center gap-3">
                         <div class="flex -space-x-2">
-                            <div class="w-7 h-7 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 border-2 border-slate-900 flex items-center justify-center">
+                            <div class="w-7 h-7 rounded-full bg-linear-to-br from-blue-500 to-indigo-600 border-2 border-slate-900 flex items-center justify-center">
                                 <span class="text-white text-[9px] font-bold">A</span>
                             </div>
-                            <div class="w-7 h-7 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 border-2 border-slate-900 flex items-center justify-center">
+                            <div class="w-7 h-7 rounded-full bg-linear-to-br from-emerald-500 to-teal-600 border-2 border-slate-900 flex items-center justify-center">
                                 <span class="text-white text-[9px] font-bold">B</span>
                             </div>
-                            <div class="w-7 h-7 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 border-2 border-slate-900 flex items-center justify-center">
+                            <div class="w-7 h-7 rounded-full bg-linear-to-br from-violet-500 to-purple-600 border-2 border-slate-900 flex items-center justify-center">
                                 <span class="text-white text-[9px] font-bold">C</span>
                             </div>
                         </div>

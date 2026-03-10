@@ -104,8 +104,8 @@
         @interact('column_client_name', $row)
             <div class="flex items-center gap-3">
                 <div class="w-8 h-8 {{ $row->client_type === 'individual'
-                    ? 'bg-gradient-to-br from-primary-400 to-primary-600'
-                    : 'bg-gradient-to-br from-purple-400 to-purple-600' }} rounded-lg flex items-center justify-center flex-shrink-0">
+                    ? 'bg-linear-to-br from-primary-400 to-primary-600'
+                    : 'bg-linear-to-br from-purple-400 to-purple-600' }} rounded-lg flex items-center justify-center shrink-0">
                     <x-icon name="{{ $row->client_type === 'individual' ? 'user' : 'building-office' }}"
                         class="w-4 h-4 text-white" />
                 </div>

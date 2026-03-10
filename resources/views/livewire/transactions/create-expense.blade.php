@@ -50,7 +50,7 @@
                                 searchable
                             />
                         </div>
-                        <div class="flex-shrink-0">
+                        <div class="shrink-0">
                             <livewire:transactions-categories.create />
                         </div>
                     </div>

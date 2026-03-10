@@ -36,7 +36,7 @@
             @elseif($type)
                 <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
                     <div class="flex gap-3">
-                        <x-icon name="information-circle" class="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+                        <x-icon name="information-circle" class="w-5 h-5 text-blue-600 dark:text-blue-400 shrink-0" />
                         <div class="text-sm text-blue-800 dark:text-blue-200">
                             <p class="font-medium">{{ __('pages.cat_no_parent_title') }}</p>
                             <p class="mt-1">{{ __('pages.cat_no_parent_message', ['type' => ucfirst($type)]) }}</p>

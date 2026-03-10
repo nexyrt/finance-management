@@ -1,21 +1,85 @@
 ---
 name: performance-optimization
-description: Use when asked to optimize, improve performance, or fix slow pages; or when auditing translation/localization (hardcoded strings, missing lang keys, $headers pattern). Keywords: optimasi, lambat, slow, performa, query optimization, translation, translasi, hardcode, lang, localization.
+description: Use when asked to optimize, improve performance, or fix slow pages; or when auditing translation/localization (hardcoded strings, missing lang keys, $headers pattern); or when implementing charts in Livewire components. Keywords: optimasi, lambat, slow, performa, query optimization, translation, translasi, hardcode, lang, localization, chart, grafik, chartjs, alpine chart, dashboard.
 ---
 
-# Performance Optimization Protocol
+# Performance Optimization & Chart Protocol
 
-Panduan langkah-demi-langkah untuk mengoptimasi performa Livewire component di project ini.
+Panduan lengkap untuk optimasi performa Livewire, implementasi chart yang benar, dan audit kualitas kode di project ini.
 
 ## Kapan Skill Ini Digunakan
 
 - User meminta "optimasi halaman X" / "optimize page X"
-- User melaporkan halaman lambat
+- User melaporkan halaman lambat atau ada N+1 query
+- User ingin menambahkan chart/grafik di Livewire component
+- User melaporkan chart tidak muncul atau error
 - User meminta review performa query
+- User meminta audit translasi / hardcoded string
 
-## Prosedur Audit
+---
 
-### Step 1 -- Identifikasi File Target
+## BAGIAN A — Laravel Boost: Database Investigation Protocol
+
+**WAJIB dilakukan sebelum menulis atau mengubah query apapun.** Laravel Boost menyediakan tools yang jauh lebih akurat daripada asumsi dari kode saja.
+
+### A1. Gunakan `database-schema` Sebelum Query
+
+Sebelum menulis JOIN, filter, atau index, selalu cek struktur tabel terlebih dahulu:
+
+```
+Tool: mcp__laravel-boost__database-schema
+```
+
+Ini mencegah error seperti `Unknown column 'client_id'` karena nama kolom berbeda dari asumsi (contoh: `billed_to_id` bukan `client_id`).
+
+### A2. Gunakan `database-query` untuk Debug Data Aktual
+
+Untuk verifikasi apakah query menghasilkan data yang benar sebelum mengubah kode PHP:
+
+```
+Tool: mcp__laravel-boost__database-query
+Query: SELECT COUNT(*), transaction_type FROM bank_transactions GROUP BY transaction_type
+```
+
+### A3. Gunakan `tinker` untuk Test Eloquent Query
+
+Untuk test apakah eager loading atau computed property berjalan dengan benar:
+
+```
+Tool: mcp__laravel-boost__tinker
+Code: BankAccount::with(['payments','transactions'])->first()->balance
+```
+
+### A4. Gunakan `last-error` Saat Ada Error PHP
+
+Ketika ada error Laravel/PHP, selalu cek ini terlebih dahulu — jauh lebih informatif dari browser log:
+
+```
+Tool: mcp__laravel-boost__last-error
+```
+
+### A5. Auto-Check Logs Setelah Setiap Implementasi
+
+**Ini WAJIB dilakukan setelah selesai membuat/mengubah kode.** Jangan tunggu user melaporkan error — aktif cek sendiri.
+
+```
+# Cek browser errors (JS, Alpine, Livewire frontend)
+Tool: mcp__laravel-boost__browser-logs (entries: 15)
+
+# Cek Laravel backend errors
+Tool: mcp__laravel-boost__last-error
+
+# Cek application log entries
+Tool: mcp__laravel-boost__read-log-entries (entries: 10)
+```
+
+Jalankan ketiganya secara paralel. Jika ada error baru yang timestamp-nya setelah implementasi dimulai, perbaiki sebelum menyampaikan hasil ke user.
+
+---
+
+## BAGIAN B — Query Optimization
+
+### Step 1 — Identifikasi File Target
 
 Setiap page terdiri dari pasangan PHP + Blade:
 
@@ -26,172 +90,98 @@ resources/views/livewire/{module}/{component}.blade.php
 
 Baca **semua** PHP component di module tersebut. Fokus pada file PHP karena query ada di sana.
 
-### Step 2 -- Scan Pola Bermasalah
-
-Baca setiap file dan identifikasi masalah berikut:
+### Step 2 — Scan Pola Bermasalah
 
 #### 2a. Query Duplikasi
-
-Cek apakah filter/WHERE clause yang sama ditulis di banyak tempat:
 
 ```php
 // BAD: rows() dan totalX() punya WHERE clause identik
 #[Computed]
 public function rows() {
-    return Model::where('type', 'debit')
-        ->where('status', 'active')
-        ->when($this->search, ...)  // 20 baris filter
-        ->paginate();
+    return Model::where('type', 'debit')->when($this->search, ...)->paginate();
 }
-
 #[Computed]
 public function totalAmount() {
-    return Model::where('type', 'debit')
-        ->where('status', 'active')
-        ->when($this->search, ...)  // 20 baris filter SAMA
-        ->sum('amount');
+    return Model::where('type', 'debit')->when($this->search, ...)->sum('amount'); // DUPLIKAT
 }
 
 // GOOD: Extract ke shared method
 private function getFilteredQuery(): Builder {
-    return Model::where('type', 'debit')
-        ->where('status', 'active')
-        ->when($this->search, ...);
+    return Model::where('type', 'debit')->when($this->search, ...);
 }
-
-#[Computed]
-public function rows() {
-    return $this->getFilteredQuery()->paginate();
-}
-
-#[Computed]
-public function totalAmount() {
-    return (int) $this->getFilteredQuery()->sum('amount');
-}
+#[Computed] public function rows() { return $this->getFilteredQuery()->paginate(); }
+#[Computed] public function totalAmount() { return (int) $this->getFilteredQuery()->sum('amount'); }
 ```
 
-#### 2b. `whereHas` -> JOIN
+#### 2b. `whereHas` → JOIN
 
-`whereHas` menghasilkan correlated subquery (`WHERE EXISTS (SELECT ...)`). Untuk filter sederhana, JOIN lebih efisien:
+`whereHas` menghasilkan correlated subquery. Untuk filter sederhana, JOIN lebih efisien:
 
 ```php
-// BAD: whereHas = correlated subquery
-BankTransaction::where('transaction_type', 'debit')
-    ->whereHas('category', fn($q) => $q->where('type', 'expense'))
+// BAD
+BankTransaction::whereHas('category', fn($q) => $q->where('type', 'expense'))
 
-// GOOD: JOIN = single scan
+// GOOD
 BankTransaction::query()
     ->join('transaction_categories', 'bank_transactions.category_id', '=', 'transaction_categories.id')
     ->where('transaction_categories.type', 'expense')
-    ->select('bank_transactions.*')  // PENTING: hindari column ambiguity
+    ->select('bank_transactions.*') // PENTING: hindari column ambiguity
 ```
 
-**PENTING saat pakai JOIN:**
-- Selalu `->select('main_table.*')` untuk hindari column ambiguity
-- Prefix semua column di WHERE dengan table name: `bank_transactions.amount`, bukan `amount`
-- OrderBy juga perlu prefix: `->orderBy('bank_transactions.transaction_date', ...)`
+**Selalu prefix column dengan table name saat JOIN** — gunakan `database-schema` untuk konfirmasi nama kolom yang benar.
 
 #### 2c. N+1 di Loop
 
 ```php
 // BAD: Query per item
-foreach ($this->selected as $id) {
-    Model::find($id)?->delete();
-}
+foreach ($this->selected as $id) { Model::find($id)?->delete(); }
 
 // GOOD: Batch operation
 Model::whereIn('id', $this->selected)->delete();
 ```
 
-```php
-// BAD: Load semua model untuk cek satu field
-$items = Model::whereIn('id', $ids)->get();
-foreach ($items as $item) {
-    if ($item->attachment_path) { ... }
-}
-
-// GOOD: Hanya ambil field yang dibutuhkan
-$paths = Model::whereIn('id', $ids)
-    ->whereNotNull('attachment_path')
-    ->pluck('attachment_path');
-```
-
-#### 2d. PHP Collection Processing -> SQL Aggregation
+#### 2d. PHP Collection Processing → SQL Aggregation
 
 ```php
-// BAD: Load semua record, proses di PHP
+// BAD: Load semua record ke PHP
 $transactions = Transaction::with('category')->get();
-$grouped = [];
-foreach ($transactions as $t) {
-    $key = $t->category->label;
-    $grouped[$key] = ($grouped[$key] ?? 0) + $t->amount;
-}
+$grouped = collect($transactions)->groupBy('category.label')->map->sum('amount');
 
 // GOOD: GROUP BY di SQL
-DB::table('transactions')
-    ->join('categories', ...)
-    ->selectRaw('categories.label as category, SUM(transactions.amount) as total')
-    ->groupBy('categories.label')
-    ->get();
+DB::table('transactions')->join('categories', ...)
+    ->selectRaw('categories.label as category, SUM(amount) as total')
+    ->groupBy('categories.label')->get();
 ```
 
-#### 2e. Multiple Queries per Period -> Batch Query
-
-Jika ada method yang dipanggil per-bulan/per-period dalam loop:
+#### 2e. Multiple Queries per Period → Batch + CASE WHEN
 
 ```php
-// BAD: 5 queries x 12 months = 60 queries
+// BAD: Query per bulan × tipe = banyak query
 foreach ($months as $month) {
-    $income = $this->calculateIncome($month['start'], $month['end']);   // 4 queries
-    $expense = $this->calculateExpense($month['start'], $month['end']); // 1 query
+    $income = Transaction::whereBetween('date', ...)->where('type', 'credit')->sum('amount');
+    $expense = Transaction::whereBetween('date', ...)->where('type', 'debit')->sum('amount');
 }
 
-// GOOD: 4 batch queries total, distribute di PHP
-$allIncome = DB::table('transactions')
-    ->whereBetween('date', [$globalStart, $globalEnd])
-    ->select('date', 'amount')
-    ->get();
-
-// Lalu filter per period dari collection
-foreach ($months as $month) {
-    $income = $allIncome->whereBetween('date', [$month['start'], $month['end']])->sum('amount');
-}
+// GOOD: 1 query GROUP BY + CASE WHEN
+BankTransaction::select(
+    DB::raw('YEAR(transaction_date) as yr'),
+    DB::raw('MONTH(transaction_date) as mo'),
+    DB::raw("SUM(CASE WHEN transaction_type = 'credit' THEN amount ELSE 0 END) as income"),
+    DB::raw("SUM(CASE WHEN transaction_type = 'debit' THEN amount ELSE 0 END) as expenses"),
+)->whereBetween('transaction_date', [$start, $end])
+    ->groupBy('yr', 'mo')->orderBy('yr')->orderBy('mo')->get();
 ```
 
-#### 2f. UNION: In-Memory Pagination -> DB-Level Pagination
-
-```php
-// BAD: Load SEMUA records ke memory, sort & slice di PHP
-$query = $payments->union($transactions);
-$results = $query->get();                              // SEMUA data
-$results = $results->sortByDesc('date');               // PHP sort
-$items = $results->slice($offset, $limit)->values();   // PHP slice
-
-// GOOD: Wrap UNION dalam subquery, ORDER BY + LIMIT di DB
-$unionQuery = DB::query()
-    ->fromSub(function ($query) use ($payments, $transactions) {
-        $query->fromSub($payments, 'p')
-            ->unionAll(DB::query()->fromSub($transactions, 't'));
-    }, 'combined');
-
-$total = $unionQuery->count();
-$items = (clone $unionQuery)
-    ->orderBy($sortColumn, $sortDirection)
-    ->offset($offset)
-    ->limit($limit)
-    ->get();
-```
-
-#### 2g. Model Accessor Query Avoidance
+#### 2f. N+1 pada Accessor yang Query DB
 
 ```php
 // BAD: Accessor selalu query DB meskipun relation sudah eager loaded
-public function getAmountPaidAttribute(): int {
-    return $this->payments()->sum('amount');
+public function getBalanceAttribute(): int {
+    return $this->payments()->sum('amount'); // N+1 jika tidak eager loaded
 }
 
 // GOOD: Cek apakah relation sudah di-load
-public function getAmountPaidAttribute(): int {
+public function getBalanceAttribute(): int {
     if ($this->relationLoaded('payments')) {
         return $this->payments->sum('amount');
     }
@@ -199,109 +189,258 @@ public function getAmountPaidAttribute(): int {
 }
 ```
 
-#### 2h. Multiple Computed Properties -> Single Pass
+**Cara deteksi:** Cek apakah computed property memanggil accessor pada collection. Jika iya, pastikan `->with(['relation'])` ada di query.
+
+#### 2g. Multiple Computed Properties → Single Pass
 
 ```php
-// BAD: 4 computed properties, masing-masing iterasi items
+// BAD: 4 computed properties, masing-masing iterasi items sendiri
 #[Computed] public function netRevenue() { return $this->invoice->items->where(...)->sum('amount'); }
 #[Computed] public function totalCogs() { return $this->invoice->items->where(...)->sum('cogs_amount'); }
-#[Computed] public function taxDeposits() { return $this->invoice->items->where(...)->sum('amount'); }
-#[Computed] public function grossProfit() { return ...; }
 
 // GOOD: Satu computed property, single pass
 #[Computed]
 public function invoiceMetrics(): array {
     $items = $this->invoice->items;
     $regular = $items->where('is_tax_deposit', false);
-    $tax = $items->where('is_tax_deposit', true);
     return [
         'netRevenue' => $regular->sum('amount'),
         'totalCogs' => $regular->sum('cogs_amount'),
-        'taxDeposits' => $tax->sum('amount'),
-        'grossProfit' => $this->invoice->total_amount - $tax->sum('amount') - $regular->sum('cogs_amount'),
     ];
 }
-
-// Delegate individual properties
 #[Computed] public function netRevenue(): int { return $this->invoiceMetrics['netRevenue']; }
 ```
 
-#### 2i. Conditional SUM via CASE WHEN
-
-Jika perlu beberapa SUM dari tabel yang sama dengan kondisi berbeda:
-
-```php
-// BAD: 3 query terpisah ke tabel yang sama
-$income = Transaction::where('type', 'credit')->where('category', 'income')->sum('amount');
-$expense = Transaction::where('type', 'debit')->where('category', 'expense')->sum('amount');
-$transfer = Transaction::where('type', 'debit')->where('category', 'transfer')->sum('amount');
-
-// GOOD: 1 query dengan CASE WHEN
-Transaction::query()
-    ->join('categories', ...)
-    ->selectRaw("
-        SUM(CASE WHEN type = 'credit' AND categories.type = 'income' THEN amount ELSE 0 END) as income,
-        SUM(CASE WHEN type = 'debit' AND categories.type = 'expense' THEN amount ELSE 0 END) as expense,
-        SUM(CASE WHEN type = 'debit' AND categories.type = 'transfer' THEN amount ELSE 0 END) as transfer
-    ")->first();
-```
-
-### Step 3 -- Buat Daftar Temuan
-
-Setelah scan semua file, tampilkan temuan dalam format:
+### Step 3 — Buat Daftar Temuan
 
 | File | Issue | Severity | Pattern |
 |------|-------|----------|---------|
 | Expenses.php | `totalExpense()` duplikasi `rows()` | HIGH | 2a |
-| Expenses.php | `whereHas('category')` | MEDIUM | 2b |
-| Income.php | `executeBulkDelete` N+1 find per item | MEDIUM | 2c |
-| OverviewTab.php | `expenseByCategoryData` load all | HIGH | 2d |
 | OverviewTab.php | 60 queries untuk yearly trend | HIGH | 2e |
 
-### Step 4 -- Implementasi
+### Step 4 — Implementasi
 
 Terapkan fix berdasarkan severity (HIGH dulu, lalu MEDIUM). Untuk setiap fix:
+1. Gunakan `database-schema` untuk konfirmasi nama kolom
+2. Gunakan `database-query` atau `tinker` untuk verifikasi hasil query sebelum apply
+3. Terapkan pattern yang sesuai
+4. Jalankan `php artisan test` setelah selesai
 
-1. Baca file yang akan diubah
-2. Terapkan pattern yang sesuai dari Step 2
-3. Pastikan table prefix di semua column reference (hindari ambiguity)
-4. Verifikasi bahwa output/behavior tidak berubah
+### Step 5 — Verifikasi Wajib (Bagian A5)
 
-### Step 5 -- Verifikasi
+Setelah implementasi, jalankan auto-check logs seperti di Bagian A5.
 
-```bash
-php artisan test
+---
+
+## BAGIAN C — Chart di Livewire: Alpine.data() Pattern
+
+**Pattern resmi yang digunakan di project ini** (berdasarkan `accounts/index.blade.php`).
+
+### C1. Pattern yang BENAR: Alpine.data() Registry
+
+Gunakan `Alpine.data()` di dalam `@script` block — **bukan** `window.*` di `app.js`, **bukan** `x-init` dengan fungsi inline, **bukan** `@push('scripts')`.
+
+#### HTML Template
+
+```blade
+{{-- Setiap chart: wire:ignore + x-data dengan chartType dan data awal --}}
+<div class="h-[260px]" wire:ignore
+     x-data="dashboardCharts('cashFlow', @js($this->cashFlowChart))">
+    <canvas x-ref="canvas"></canvas>
+</div>
 ```
 
-Jika test gagal karena perubahan, fix. Jika gagal karena masalah environment (SQLite driver, dll), catat dan lanjut.
+Poin penting:
+- `wire:ignore` — wajib, mencegah Livewire merusak DOM chart
+- `x-data="namaComponent('chartType', @js($data))"` — nama komponen Alpine + tipe chart + data awal dari PHP
+- `x-ref="canvas"` — bukan `id=`, bukan `querySelector('canvas')`
 
-## Aturan
+#### @script Block Template
 
-- **JANGAN** ubah UI/blade kecuali untuk menambahkan skeleton placeholder
-- **JANGAN** tambah fitur baru
-- **JANGAN** refactor yang tidak berdampak performa (rename variabel, reformat, dll)
-- **JANGAN** ubah business logic -- output harus tetap sama
-- **Selalu** prefix column dengan table name saat pakai JOIN
-- **Selalu** gunakan `->select('main_table.*')` saat JOIN untuk hindari ambiguity
-- **Selalu** cek apakah `export()` method juga perlu update jika `getFilteredQuery()` diubah
+```blade
+@script
+<script>
+(function () {
+    function registerCharts() {
+        if (typeof Alpine === 'undefined') return;
 
-## Lazy Loading Component + Skeleton UI
+        Alpine.data('dashboardCharts', (chartType, initialData) => ({
+            chart: null,
+            data: initialData,
 
-Selain optimasi query, perceived performance bisa ditingkatkan dengan `#[Lazy]` attribute dari Livewire. Component tidak langsung dirender dengan data -- HTML placeholder (skeleton) ditampilkan terlebih dahulu, lalu data dimuat secara async setelah initial page load.
+            // Helper methods
+            isDark() { return document.documentElement.classList.contains('dark'); },
+            textColor() { return this.isDark() ? '#a1a1aa' : '#71717a'; },
+            gridColor() { return this.isDark() ? '#3f3f46' : '#f4f4f5'; },
+            tooltipTheme() {
+                return {
+                    backgroundColor: this.isDark() ? '#27272a' : '#ffffff',
+                    titleColor: this.isDark() ? '#fafafa' : '#09090b',
+                    bodyColor: this.isDark() ? '#d4d4d8' : '#52525b',
+                    borderColor: this.isDark() ? '#52525b' : '#e4e4e7',
+                    borderWidth: 1, padding: 10, cornerRadius: 8,
+                };
+            },
+            formatRp(v) {
+                if (v >= 1e9) return 'Rp ' + (v / 1e9).toFixed(1) + 'M';
+                if (v >= 1e6) return 'Rp ' + (v / 1e6).toFixed(0) + 'jt';
+                if (v >= 1e3) return 'Rp ' + (v / 1e3).toFixed(0) + 'rb';
+                return 'Rp ' + v;
+            },
+            formatFull(v) { return 'Rp ' + new Intl.NumberFormat('id-ID').format(v); },
+
+            // Router: chartType menentukan render method mana yang dipanggil
+            render() {
+                if (typeof Chart === 'undefined') return;
+                if (chartType === 'cashFlow') this.renderLineChart();
+                if (chartType === 'barChart') this.renderBarChart();
+                if (chartType === 'donut') this.renderDonutChart();
+            },
+
+            init() {
+                const self = this;
+                // Render setelah DOM siap
+                this.$nextTick(() => self.render());
+
+                // Update data saat Livewire dispatch event (misal: period berubah)
+                Livewire.on('dashboard-charts-updated', (payload) => {
+                    const d = payload[0];
+                    if (chartType === 'cashFlow' && d.cashFlow) {
+                        self.data = d.cashFlow;
+                        self.render();
+                    }
+                    // tambah chartType lain sesuai kebutuhan
+                });
+
+                // Re-render saat dark mode toggle
+                this._themeObserver = new MutationObserver(() => {
+                    if (self.chart) setTimeout(() => self.render(), 50);
+                });
+                this._themeObserver.observe(document.documentElement, {
+                    attributes: true, attributeFilter: ['class'],
+                });
+            },
+
+            destroyChart() {
+                if (this.chart) { this.chart.destroy(); this.chart = null; }
+            },
+
+            // Render methods — satu per tipe chart
+            renderLineChart() {
+                this.destroyChart();
+                if (!this.data || !this.data.length || !this.$refs.canvas) return;
+                const self = this;
+                this.chart = new Chart(this.$refs.canvas, {
+                    type: 'line',
+                    data: {
+                        labels: this.data.map(d => d.label),
+                        datasets: [{
+                            label: @js(__('pages.income')),
+                            data: this.data.map(d => d.income),
+                            borderColor: 'rgb(16, 185, 129)',
+                            backgroundColor: 'rgba(16, 185, 129, 0.07)',
+                            fill: true, tension: 0.4, borderWidth: 2,
+                        }],
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        interaction: { mode: 'index', intersect: false },
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: Object.assign({}, self.tooltipTheme(), {
+                                callbacks: { label: ctx => ' ' + ctx.dataset.label + ': ' + self.formatFull(ctx.parsed.y) },
+                            }),
+                        },
+                        scales: {
+                            y: { beginAtZero: true, ticks: { color: self.textColor(), font: { size: 11 }, callback: v => self.formatRp(v) }, grid: { color: self.gridColor(), drawBorder: false } },
+                            x: { ticks: { color: self.textColor(), font: { size: 11 } }, grid: { display: false } },
+                        },
+                    },
+                });
+            },
+
+            destroy() {
+                this.destroyChart();
+                if (this._themeObserver) this._themeObserver.disconnect();
+            },
+        }));
+    }
+
+    registerCharts();
+
+    // Re-register setelah SPA navigation (wire:navigate)
+    document.addEventListener('livewire:navigated', () => {
+        registerCharts();
+    });
+})();
+</script>
+@endscript
+```
+
+### C2. Update Data dari PHP (saat filter/period berubah)
+
+Di PHP component, dispatch event setelah computed property direset:
+
+```php
+public function updatedChartPeriod(): void
+{
+    unset($this->cashFlowChart);
+    unset($this->revenueVsExpensesChart);
+
+    // Dispatch ke Alpine — payload harus match dengan key yang dicek di Livewire.on()
+    $this->dispatch('dashboard-charts-updated',
+        cashFlow: $this->cashFlowChart,
+        revenueExpense: $this->revenueVsExpensesChart,
+    );
+}
+```
+
+### C3. Pola yang SALAH — Jangan Gunakan
+
+```blade
+{{-- ❌ SALAH: const di top-level @script = SyntaxError di Alpine's AsyncFunction --}}
+@script
+<script>
+const isDark = () => ...;
+window.initChart = (canvas, data) => { ... };
+</script>
+@endscript
+
+{{-- ❌ SALAH: window.* di app.js = timing issue, tidak ada akses ke @js() --}}
+{{-- (app.js tidak bisa pakai @js() untuk translate string) --}}
+
+{{-- ❌ SALAH: x-init dengan fungsi inline yang panjang --}}
+<div x-init="chart = new Chart(...banyak config...)" wire:ignore>
+
+{{-- ❌ SALAH: querySelector('canvas') alih-alih x-ref="canvas" --}}
+<div x-init="chart = initChart($el.querySelector('canvas'), data)">
+```
+
+### C4. Checklist Sebelum Implementasi Chart
+
+1. `wire:ignore` ada di div wrapper chart ✓
+2. `x-ref="canvas"` ada di `<canvas>` element ✓
+3. `Alpine.data()` diregistrasi di `@script`, bukan di `app.js` ✓
+4. `init()` method pakai `this.$nextTick()` sebelum render ✓
+5. `destroyChart()` dipanggil sebelum membuat chart baru ✓
+6. Dark mode observer terpasang di `init()` ✓
+7. `destroy()` method membersihkan observer ✓
+8. `document.addEventListener('livewire:navigated', ...)` untuk SPA navigation ✓
+
+---
+
+## BAGIAN D — Lazy Loading + Skeleton UI
 
 ### Kapan Digunakan
 
-- Full-page component atau child component yang melakukan query berat saat mount
-- Halaman dengan stats cards + filter + table (pattern umum di project ini)
-- Component yang memakan waktu render > 200ms
+- Component yang melakukan query berat saat mount
+- Halaman dengan stats cards + filter + table
+- Component dengan render time > 200ms
 
 ### Implementasi
 
-**Step 1: Tambah `#[Lazy]` attribute dan `placeholder()` method di PHP component**
-
 ```php
 use Livewire\Attributes\Lazy;
-use Illuminate\Contracts\View\View;
 
 #[Lazy]
 class Expenses extends Component
@@ -310,136 +449,37 @@ class Expenses extends Component
     {
         return view('livewire.placeholders.cashflow-skeleton');
     }
-
-    // ... rest of component
 }
 ```
 
-**Step 2: Buat skeleton blade yang match dengan layout component**
-
-Skeleton harus meniru struktur visual component (jumlah stats cards, jumlah kolom tabel, ada/tidaknya filter). Gunakan `animate-pulse` dengan warna gray/dark-700.
-
-```blade
-<div class="space-y-6 animate-pulse">
-    {{-- Stats Cards Skeleton --}}
-    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-        @foreach (range(1, 3) as $i)
-            <div class="bg-white dark:bg-dark-800 border border-gray-200 dark:border-dark-600 rounded-xl p-5">
-                <div class="flex items-center gap-4">
-                    <div class="h-12 w-12 bg-gray-200 dark:bg-dark-700 rounded-xl flex-shrink-0"></div>
-                    <div class="flex-1 space-y-2">
-                        <div class="h-3 bg-gray-200 dark:bg-dark-700 rounded w-2/3"></div>
-                        <div class="h-6 bg-gray-200 dark:bg-dark-700 rounded w-3/4"></div>
-                    </div>
-                </div>
-            </div>
-        @endforeach
-    </div>
-
-    {{-- Table Skeleton --}}
-    <div class="bg-white dark:bg-dark-800 border border-gray-200 dark:border-dark-600 rounded-xl overflow-hidden">
-        <div class="border-b border-gray-200 dark:border-dark-600 px-4 py-3 flex gap-4">
-            @foreach (range(1, 6) as $i)
-                <div class="h-3 bg-gray-200 dark:bg-dark-700 rounded flex-1"></div>
-            @endforeach
-        </div>
-        @foreach (range(1, 8) as $row)
-            <div class="px-4 py-4 border-b border-gray-100 dark:border-dark-700 flex gap-4 items-center">
-                @foreach (range(1, 6) as $col)
-                    <div class="h-3 bg-gray-200 dark:bg-dark-700 rounded flex-1"></div>
-                @endforeach
-            </div>
-        @endforeach
-    </div>
-</div>
-```
-
-### Skeleton yang Sudah Tersedia di Project
+### Skeleton yang Tersedia
 
 | File | Struktur | Digunakan Oleh |
 |------|----------|----------------|
-| `placeholders/table-skeleton.blade.php` | 4 stats + filter bar + table 5 kolom | Clients, Invoices Listing, Loans, Receivables |
-| `placeholders/listing-skeleton.blade.php` | Filter bar + table 6 kolom (tanpa stats) | Payments Listing |
+| `placeholders/table-skeleton.blade.php` | 4 stats + filter + table 5 kolom | Clients, Invoices |
 | `placeholders/stats-skeleton.blade.php` | 4 stats cards saja | Analytics tabs |
-| `placeholders/cashflow-skeleton.blade.php` | Header + 3 stats + 4 filter + table 6 kolom | CashFlow Expenses |
+| `placeholders/cashflow-skeleton.blade.php` | Header + 3 stats + 4 filter + table | CashFlow Expenses |
 
-Jika layout component tidak cocok dengan skeleton yang ada, buat file baru di `resources/views/livewire/placeholders/`.
-
-### Aturan Skeleton
-
-- Root element skeleton HARUS sama dengan root element component (biasanya `<div>`)
-- Gunakan `animate-pulse` di root element
-- Warna skeleton: `bg-gray-200 dark:bg-dark-700` untuk placeholder bars
-- Container: `bg-white dark:bg-dark-800 border border-gray-200 dark:border-dark-600 rounded-xl`
-- Jumlah stats cards, kolom tabel, dan filter fields harus match dengan component asli
-- Jangan tambahkan konten interaktif di skeleton -- murni visual placeholder
-
-## preventLazyLoading
-
-Jika belum ada di `AppServiceProvider`, tambahkan:
-
-```php
-use Illuminate\Database\Eloquent\Model;
-
-// Di boot()
-Model::preventLazyLoading(!app()->isProduction());
-```
-
-Ini membantu mendeteksi N+1 di development -- lazy load akan throw exception alih-alih diam-diam query.
+Buat file baru di `resources/views/livewire/placeholders/` jika tidak ada yang cocok.
 
 ---
 
-## Translation & Localization Protocol
-
-Translasi adalah bagian dari optimasi kualitas kode — hardcoded string menyebabkan UI tidak konsisten dan menyulitkan maintenance multi-bahasa.
+## BAGIAN E — Translation & Localization Protocol
 
 ### Kapan Diaudit
 
-Setiap kali membuat atau memodifikasi file PHP/Blade, audit translasi **sebelum** menyelesaikan task.
-
-### Struktur File Lang
-
-```
-lang/
-├── id/   (UTAMA) — common.php, pages.php, invoice.php, feedback.php
-├── en/   (partial)
-└── zh/   (sync dengan id/ — salin nilai sama, terjemahan Mandarin diupdate tim terpisah)
-```
+Setiap kali membuat atau memodifikasi file PHP/Blade.
 
 ### Prosedur Audit
 
-**Skenario A — satu file:**
-
 1. Baca blade target + PHP component pasangannya
-2. Identifikasi hardcoded text di KEDUANYA:
-   - Blade: UI labels, placeholders, pesan kosong
-   - PHP: `$headers`, pesan toast/dialog, Excel headings
+2. Identifikasi hardcoded text: UI labels, placeholders, `$headers`, pesan toast/dialog
 3. Baca `lang/id/common.php` + `lang/id/pages.php`
-4. Buat audit tabel: `Teks | Lokasi | Status | Key | File`
-5. Tambah missing keys ke `lang/id/` + langsung ke `lang/zh/` (nilai sama)
+4. Audit tabel: `Teks | Lokasi | Status | Key | File`
+5. Tambah missing keys ke `lang/id/` + `lang/zh/` (nilai sama)
 6. Update blade + PHP component
-7. Verifikasi tidak ada hardcoded text tersisa
-
-**Skenario B — seluruh folder:** List semua file dulu, lalu jalankan Skenario A untuk tiap pasangan.
-
-**Pola pasangan file:**
-```
-resources/views/livewire/cash-flow/expenses.blade.php
-↕
-app/Livewire/CashFlow/Expenses.php
-```
-
-### Aturan
-
-**❌ JANGAN hardcode:** judul page, label, placeholder, header kolom, teks tombol, badge status, pesan empty/error/sukses, tooltip.
-
-**✅ BOLEH tidak translate:** brand names, kode format (`INV/01/KSN/02.26`), nilai variabel dinamis (`{{ $invoice->number }}`).
-
-**Key naming:** `common.php` untuk reusable; `pages.php` dengan prefix module (`fund_request_title`, `fund_request_status_draft`).
 
 ### `$headers` — Pola Wajib
-
-`__()` tidak bisa dipanggil di property initializer. Pindahkan ke `mount()`:
 
 ```php
 // ❌ SALAH — error saat boot
@@ -447,24 +487,40 @@ public array $headers = [['label' => __('pages.col_date')]];
 
 // ✅ BENAR
 public array $headers = [];
-
 public function mount(): void
 {
     $this->headers = [['index' => 'date', 'label' => __('pages.col_date')]];
 }
 ```
 
-### Dynamic Translation (Data dari DB)
+### Dynamic Translation
 
-| Sumber | Metode | Contoh |
-|--------|--------|--------|
-| UI string hardcoded | `__('file.key')` | `__('common.save')` |
-| Enum/status diketahui | `__('pages.status_' . $model->status)` | — |
-| Data dari DB (user-generated) | `translate_text($text)` | `translate_text($row->name)` |
-| Nama kategori transaksi | `translate_category($name)` | `translate_category($row->label)` |
+| Sumber | Metode |
+|--------|--------|
+| UI string hardcoded | `__('file.key')` |
+| Data dari DB (user-generated) | `translate_text($text)` |
+| Nama kategori transaksi | `translate_category($name)` |
 
-`translate_text()` dan `translate_category()` ada di `app/helpers.php` + `app/Services/TranslationService.php`. Menggunakan `stichoza/google-translate-php`, cache 6 bulan, fallback ke teks asli jika gagal.
+---
 
-Jika terjemahan tidak muncul di local: `php artisan cache:clear`.
+## BAGIAN F — preventLazyLoading
 
-**❌ JANGAN:** `translate_text('Simpan')` — gunakan `__('common.save')` untuk UI strings statis.
+Pastikan ada di `AppServiceProvider::boot()`:
+
+```php
+Model::preventLazyLoading(!app()->isProduction());
+```
+
+Ini membantu deteksi N+1 — lazy load akan throw exception di development.
+
+---
+
+## Aturan Global
+
+- **JANGAN** ubah UI/blade kecuali untuk chart atau skeleton placeholder
+- **JANGAN** tambah fitur baru atau refactor di luar scope
+- **JANGAN** ubah business logic — output harus tetap sama
+- **SELALU** gunakan `database-schema` sebelum menulis JOIN atau migration
+- **SELALU** jalankan auto-check logs (Bagian A5) setelah selesai implementasi
+- **SELALU** prefix column dengan table name saat pakai JOIN
+- **SELALU** cek `export()` method jika `getFilteredQuery()` diubah

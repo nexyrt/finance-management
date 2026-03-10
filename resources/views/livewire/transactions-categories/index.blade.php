@@ -3,7 +3,7 @@
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div class="space-y-1">
             <h1
-                class="text-4xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-indigo-800 dark:from-white dark:via-blue-200 dark:to-indigo-200 bg-clip-text text-transparent">
+                class="text-4xl font-bold bg-linear-to-r from-gray-900 via-blue-800 to-indigo-800 dark:from-white dark:via-blue-200 dark:to-indigo-200 bg-clip-text text-transparent">
                 {{ __('pages.cat_page_title') }}
             </h1>
             <p class="text-gray-600 dark:text-zinc-400 text-lg">
@@ -210,19 +210,19 @@
             {{-- Section 1: Timeline 3 Langkah --}}
             <div class="relative">
                 {{-- Connecting gradient line --}}
-                <div class="absolute left-5 top-10 bottom-10 w-0.5 bg-gradient-to-b from-blue-400 via-purple-400 to-emerald-400 hidden sm:block"></div>
+                <div class="absolute left-5 top-10 bottom-10 w-0.5 bg-linear-to-b from-blue-400 via-purple-400 to-emerald-400 hidden sm:block"></div>
 
                 <div class="space-y-4">
                     {{-- Step 1 --}}
                     <div class="flex gap-4">
-                        <div class="flex-shrink-0 w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center z-10">
+                        <div class="shrink-0 w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center z-10">
                             <span class="text-sm font-bold text-blue-600 dark:text-blue-400">1</span>
                         </div>
                         <div class="flex-1 pb-4">
                             <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-1">{{ __('pages.cat_guide_step1_title') }}</h4>
                             <p class="text-sm text-dark-600 dark:text-dark-400 mb-2">{{ __('pages.cat_guide_step1_desc') }}</p>
                             <div class="flex items-start gap-2 bg-blue-50 dark:bg-blue-900/10 rounded-xl px-3 py-2">
-                                <x-icon name="light-bulb" class="w-4 h-4 text-blue-500 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+                                <x-icon name="light-bulb" class="w-4 h-4 text-blue-500 dark:text-blue-400 shrink-0 mt-0.5" />
                                 <p class="text-xs text-blue-700 dark:text-blue-300">{{ __('pages.cat_guide_step1_tip') }}</p>
                             </div>
                         </div>
@@ -230,14 +230,14 @@
 
                     {{-- Step 2 --}}
                     <div class="flex gap-4">
-                        <div class="flex-shrink-0 w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center z-10">
+                        <div class="shrink-0 w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center z-10">
                             <span class="text-sm font-bold text-purple-600 dark:text-purple-400">2</span>
                         </div>
                         <div class="flex-1 pb-4">
                             <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-1">{{ __('pages.cat_guide_step2_title') }}</h4>
                             <p class="text-sm text-dark-600 dark:text-dark-400 mb-2">{{ __('pages.cat_guide_step2_desc') }}</p>
                             <div class="flex items-start gap-2 bg-purple-50 dark:bg-purple-900/10 rounded-xl px-3 py-2">
-                                <x-icon name="light-bulb" class="w-4 h-4 text-purple-500 dark:text-purple-400 flex-shrink-0 mt-0.5" />
+                                <x-icon name="light-bulb" class="w-4 h-4 text-purple-500 dark:text-purple-400 shrink-0 mt-0.5" />
                                 <p class="text-xs text-purple-700 dark:text-purple-300">{{ __('pages.cat_guide_step2_tip') }}</p>
                             </div>
                         </div>
@@ -245,7 +245,7 @@
 
                     {{-- Step 3 --}}
                     <div class="flex gap-4">
-                        <div class="flex-shrink-0 w-10 h-10 bg-emerald-100 dark:bg-emerald-900/30 rounded-full flex items-center justify-center z-10">
+                        <div class="shrink-0 w-10 h-10 bg-emerald-100 dark:bg-emerald-900/30 rounded-full flex items-center justify-center z-10">
                             <span class="text-sm font-bold text-emerald-600 dark:text-emerald-400">3</span>
                         </div>
                         <div class="flex-1">
@@ -262,7 +262,7 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {{-- Pemasukan --}}
                     <div class="flex items-start gap-3 p-3 bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800/30 rounded-xl">
-                        <div class="h-8 w-8 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <div class="h-8 w-8 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center shrink-0">
                             <x-icon name="arrow-trending-up" class="w-4 h-4 text-green-600 dark:text-green-400" />
                         </div>
                         <div>
@@ -273,7 +273,7 @@
 
                     {{-- Pengeluaran --}}
                     <div class="flex items-start gap-3 p-3 bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800/30 rounded-xl">
-                        <div class="h-8 w-8 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <div class="h-8 w-8 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center shrink-0">
                             <x-icon name="arrow-trending-down" class="w-4 h-4 text-red-600 dark:text-red-400" />
                         </div>
                         <div>
@@ -284,7 +284,7 @@
 
                     {{-- Transfer --}}
                     <div class="flex items-start gap-3 p-3 bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800/30 rounded-xl">
-                        <div class="h-8 w-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <div class="h-8 w-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center shrink-0">
                             <x-icon name="arrows-right-left" class="w-4 h-4 text-blue-600 dark:text-blue-400" />
                         </div>
                         <div>
@@ -295,7 +295,7 @@
 
                     {{-- Penyesuaian --}}
                     <div class="flex items-start gap-3 p-3 bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800/30 rounded-xl">
-                        <div class="h-8 w-8 bg-amber-100 dark:bg-amber-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <div class="h-8 w-8 bg-amber-100 dark:bg-amber-900/30 rounded-lg flex items-center justify-center shrink-0">
                             <x-icon name="adjustments-horizontal" class="w-4 h-4 text-amber-600 dark:text-amber-400" />
                         </div>
                         <div>
@@ -314,19 +314,19 @@
                 </div>
                 <ul class="space-y-2">
                     <li class="flex items-start gap-2 text-sm text-dark-600 dark:text-dark-400">
-                        <span class="text-green-500 flex-shrink-0">✅</span>
+                        <span class="text-green-500 shrink-0">✅</span>
                         <span>{{ __('pages.cat_guide_rule1') }}</span>
                     </li>
                     <li class="flex items-start gap-2 text-sm text-dark-600 dark:text-dark-400">
-                        <span class="text-green-500 flex-shrink-0">✅</span>
+                        <span class="text-green-500 shrink-0">✅</span>
                         <span>{{ __('pages.cat_guide_rule2') }}</span>
                     </li>
                     <li class="flex items-start gap-2 text-sm text-dark-600 dark:text-dark-400">
-                        <span class="text-amber-500 flex-shrink-0">⚠</span>
+                        <span class="text-amber-500 shrink-0">⚠</span>
                         <span>{{ __('pages.cat_guide_rule3') }}</span>
                     </li>
                     <li class="flex items-start gap-2 text-sm text-dark-600 dark:text-dark-400">
-                        <span class="text-green-500 flex-shrink-0">✅</span>
+                        <span class="text-green-500 shrink-0">✅</span>
                         <span>{{ __('pages.cat_guide_rule4') }}</span>
                     </li>
                 </ul>

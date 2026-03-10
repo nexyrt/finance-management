@@ -1,9 +1,3 @@
-import Anchor from '@alpinejs/anchor';
-
-document.addEventListener('alpine:init', () => {
-    Alpine.plugin(Anchor);
-});
-
 import ApexCharts from 'apexcharts'
 window.ApexCharts = ApexCharts;
 
@@ -13,6 +7,7 @@ window.Quill = Quill;
 
 import Chart from 'chart.js/auto';
 window.Chart = Chart;
+
 
 // Import Day.js and locale support
 import dayjs from 'dayjs';

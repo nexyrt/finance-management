@@ -16,7 +16,7 @@
             <div class="space-y-6">
                 {{-- Payment Summary --}}
                 <div
-                    class="p-6 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border border-green-200 dark:border-green-800 rounded-xl">
+                    class="p-6 bg-linear-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border border-green-200 dark:border-green-800 rounded-xl">
                     <div class="text-center">
                         <div class="text-sm font-medium text-green-700 dark:text-green-300 mb-2">{{ __('pages.reimb_total_reimbursement') }}</div>
                         <div class="text-3xl font-bold text-green-600 dark:text-green-400 mb-2">
@@ -41,7 +41,7 @@
                         <div
                             class="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-dark-800 border border-green-200 dark:border-green-700 rounded-lg">
                             <div
-                                class="w-8 h-8 bg-gradient-to-br from-primary-400 to-primary-600 rounded-lg flex items-center justify-center">
+                                class="w-8 h-8 bg-linear-to-br from-primary-400 to-primary-600 rounded-lg flex items-center justify-center">
                                 <span class="text-white font-semibold text-xs">
                                     {{ strtoupper(substr($this->reimbursement->user->name, 0, 2)) }}
                                 </span>
@@ -163,7 +163,7 @@
                     class="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
                     <div class="flex items-start gap-3">
                         <x-icon name="exclamation-triangle"
-                            class="w-5 h-5 text-yellow-600 dark:text-yellow-400 flex-shrink-0 mt-0.5" />
+                            class="w-5 h-5 text-yellow-600 dark:text-yellow-400 shrink-0 mt-0.5" />
                         <div class="text-sm text-yellow-900 dark:text-yellow-200">
                             <div class="font-semibold mb-1">{{ __('pages.reimb_payment_warning_title') }}</div>
                             <ul class="list-disc list-inside space-y-1 text-yellow-800 dark:text-yellow-300">

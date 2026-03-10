@@ -2,7 +2,7 @@
     {{-- Header Section --}}
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div class="space-y-1">
-            <h1 class="text-4xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-indigo-800 dark:from-white dark:via-blue-200 dark:to-indigo-200 bg-clip-text text-transparent">
+            <h1 class="text-4xl font-bold bg-linear-to-r from-gray-900 via-blue-800 to-indigo-800 dark:from-white dark:via-blue-200 dark:to-indigo-200 bg-clip-text text-transparent">
                 {{ __('pages.income') }}
             </h1>
             <p class="text-gray-600 dark:text-zinc-400 text-lg">
@@ -31,7 +31,7 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
         <x-card class="hover:shadow-lg transition-shadow">
             <div class="flex items-center gap-4">
-                <div class="h-12 w-12 bg-green-50 dark:bg-green-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                <div class="h-12 w-12 bg-green-50 dark:bg-green-900/20 rounded-xl flex items-center justify-center shrink-0">
                     <x-icon name="arrow-trending-up" class="w-6 h-6 text-green-600 dark:text-green-400" />
                 </div>
                 <div>
@@ -45,7 +45,7 @@
 
         <x-card class="hover:shadow-lg transition-shadow">
             <div class="flex items-center gap-4">
-                <div class="h-12 w-12 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                <div class="h-12 w-12 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center shrink-0">
                     <x-icon name="document-text" class="w-6 h-6 text-blue-600 dark:text-blue-400" />
                 </div>
                 <div>
@@ -59,7 +59,7 @@
 
         <x-card class="hover:shadow-lg transition-shadow">
             <div class="flex items-center gap-4">
-                <div class="h-12 w-12 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                <div class="h-12 w-12 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl flex items-center justify-center shrink-0">
                     <x-icon name="calendar" class="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
                 </div>
                 <div>
@@ -121,7 +121,7 @@
 
         @interact('column_date', $row)
             <div class="flex items-center gap-3">
-                <div class="flex-shrink-0 h-10 w-10 bg-gradient-to-br from-secondary-100 to-secondary-200 dark:from-dark-700 dark:to-dark-600 rounded-lg flex items-center justify-center">
+                <div class="shrink-0 h-10 w-10 bg-linear-to-br from-secondary-100 to-secondary-200 dark:from-dark-700 dark:to-dark-600 rounded-lg flex items-center justify-center">
                     <x-icon name="calendar" class="w-5 h-5 text-secondary-600 dark:text-secondary-400" />
                 </div>
                 <div>
@@ -282,7 +282,7 @@
                     {{-- Step 1 --}}
                     <div class="flex gap-4">
                         <div class="flex flex-col items-center">
-                            <div class="h-9 w-9 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                            <div class="h-9 w-9 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center shrink-0">
                                 <span class="text-sm font-bold text-blue-600 dark:text-blue-400">1</span>
                             </div>
                             <div class="w-0.5 bg-secondary-200 dark:bg-dark-600 flex-1 mt-2"></div>
@@ -300,7 +300,7 @@
                     {{-- Step 2 --}}
                     <div class="flex gap-4">
                         <div class="flex flex-col items-center">
-                            <div class="h-9 w-9 bg-purple-50 dark:bg-purple-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                            <div class="h-9 w-9 bg-purple-50 dark:bg-purple-900/20 rounded-xl flex items-center justify-center shrink-0">
                                 <span class="text-sm font-bold text-purple-600 dark:text-purple-400">2</span>
                             </div>
                             <div class="w-0.5 bg-secondary-200 dark:bg-dark-600 flex-1 mt-2"></div>
@@ -314,7 +314,7 @@
                     {{-- Step 3 --}}
                     <div class="flex gap-4">
                         <div class="flex flex-col items-center">
-                            <div class="h-9 w-9 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                            <div class="h-9 w-9 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl flex items-center justify-center shrink-0">
                                 <span class="text-sm font-bold text-emerald-600 dark:text-emerald-400">3</span>
                             </div>
                         </div>
@@ -327,7 +327,7 @@
 
                 {{-- Info Card --}}
                 <div class="flex items-start gap-3 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl">
-                    <x-icon name="information-circle" class="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+                    <x-icon name="information-circle" class="w-5 h-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
                     <p class="text-sm text-blue-700 dark:text-blue-300">{{ __('pages.income_guide_formula') }}</p>
                 </div>
             </div>
@@ -337,7 +337,7 @@
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     {{-- Filter Card --}}
                     <div class="flex items-start gap-3 p-4 border border-secondary-200 dark:border-dark-600 rounded-xl">
-                        <div class="h-10 w-10 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                        <div class="h-10 w-10 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center shrink-0">
                             <x-icon name="funnel" class="w-5 h-5 text-blue-600 dark:text-blue-400" />
                         </div>
                         <div>
@@ -348,7 +348,7 @@
 
                     {{-- Excel Card --}}
                     <div class="flex items-start gap-3 p-4 border border-secondary-200 dark:border-dark-600 rounded-xl">
-                        <div class="h-10 w-10 bg-green-50 dark:bg-green-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                        <div class="h-10 w-10 bg-green-50 dark:bg-green-900/20 rounded-xl flex items-center justify-center shrink-0">
                             <x-icon name="table-cells" class="w-5 h-5 text-green-600 dark:text-green-400" />
                         </div>
                         <div>
@@ -359,7 +359,7 @@
 
                     {{-- PDF Card --}}
                     <div class="flex items-start gap-3 p-4 border border-secondary-200 dark:border-dark-600 rounded-xl">
-                        <div class="h-10 w-10 bg-red-50 dark:bg-red-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                        <div class="h-10 w-10 bg-red-50 dark:bg-red-900/20 rounded-xl flex items-center justify-center shrink-0">
                             <x-icon name="document-text" class="w-5 h-5 text-red-600 dark:text-red-400" />
                         </div>
                         <div>
@@ -372,11 +372,11 @@
                 {{-- Tips --}}
                 <div class="space-y-2">
                     <div class="flex items-start gap-2 text-sm text-dark-600 dark:text-dark-400">
-                        <x-icon name="light-bulb" class="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
+                        <x-icon name="light-bulb" class="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
                         <span>{{ __('pages.income_guide_tip1') }}</span>
                     </div>
                     <div class="flex items-start gap-2 text-sm text-dark-600 dark:text-dark-400">
-                        <x-icon name="light-bulb" class="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
+                        <x-icon name="light-bulb" class="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
                         <span>{{ __('pages.income_guide_tip2') }}</span>
                     </div>
                 </div>
