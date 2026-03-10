@@ -532,7 +532,11 @@ class Listing extends Component
         return Invoice::query()
             ->join('clients', 'invoices.billed_to_id', '=', 'clients.id')
             ->select('invoices.id')
-            ->when($this->statusFilter, fn ($q) => $q->where('invoices.status', $this->statusFilter))
+            ->when(
+                $this->statusFilter,
+                fn ($q) => $q->where('invoices.status', $this->statusFilter),
+                fn ($q) => $q->whereNotIn('invoices.status', ['draft', 'cancelled'])
+            )
             ->when($this->clientFilter, fn ($q) => $q->where('invoices.billed_to_id', $this->clientFilter))
             ->when($this->search, function ($q) {
                 $q->where(function ($query) {
