@@ -4,7 +4,7 @@
     @if($client)
         <div class="space-y-6">
             <!-- Client Header -->
-            <div class="flex items-center justify-between pb-6 border-b border-secondary-200 dark:border-dark-600">
+            <div class="flex items-center justify-between pb-6 border-b border-secondary-200 dark:border-white/10">
                 <div class="flex items-center gap-4">
                     <!-- Avatar -->
                     <div class="h-16 w-16 shrink-0">
@@ -30,7 +30,7 @@
                 </div>
 
                 <!-- Quick Stats -->
-                <div class="flex items-center gap-4 border border-secondary-200 dark:border-dark-600 rounded-xl p-4">
+                <div class="flex items-center gap-4 border border-secondary-200 dark:border-white/10 rounded-xl p-4">
                     <div class="h-12 w-12 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center shrink-0">
                         <x-icon name="document-duplicate" class="w-6 h-6 text-blue-600 dark:text-blue-400" />
                     </div>
@@ -56,8 +56,8 @@
                         <!-- Basic & Contact Information in Two Columns -->
                         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                             <!-- Basic Information -->
-                            <div class="border border-secondary-200 dark:border-dark-600 rounded-xl p-6">
-                                <div class="border-b border-secondary-200 dark:border-dark-600 pb-4 mb-4">
+                            <div class="border border-secondary-200 dark:border-white/10 rounded-xl p-6">
+                                <div class="border-b border-secondary-200 dark:border-white/10 pb-4 mb-4">
                                     <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50">
                                         {{ __('pages.basic_info') }}
                                     </h4>
@@ -105,8 +105,8 @@
                             </div>
 
                             <!-- Contact Information -->
-                            <div class="border border-secondary-200 dark:border-dark-600 rounded-xl p-6">
-                                <div class="border-b border-secondary-200 dark:border-dark-600 pb-4 mb-4">
+                            <div class="border border-secondary-200 dark:border-white/10 rounded-xl p-6">
+                                <div class="border-b border-secondary-200 dark:border-white/10 pb-4 mb-4">
                                     <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50">
                                         {{ __('pages.contact_info') }}
                                     </h4>
@@ -170,7 +170,7 @@
                     <div class="space-y-6">
                         <!-- Financial Summary -->
                         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                            <div class="flex items-center gap-4 p-4 border border-secondary-200 dark:border-dark-600 rounded-xl">
+                            <div class="flex items-center gap-4 p-4 border border-secondary-200 dark:border-white/10 rounded-xl">
                                 <div class="h-12 w-12 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center shrink-0">
                                     <x-icon name="document-duplicate" class="w-6 h-6 text-blue-600 dark:text-blue-400" />
                                 </div>
@@ -179,7 +179,7 @@
                                     <div class="text-2xl font-bold text-dark-900 dark:text-dark-50">{{ $this->getTotalInvoices() }}</div>
                                 </div>
                             </div>
-                            <div class="flex items-center gap-4 p-4 border border-secondary-200 dark:border-dark-600 rounded-xl">
+                            <div class="flex items-center gap-4 p-4 border border-secondary-200 dark:border-white/10 rounded-xl">
                                 <div class="h-12 w-12 bg-green-50 dark:bg-green-900/20 rounded-xl flex items-center justify-center shrink-0">
                                     <x-icon name="banknotes" class="w-6 h-6 text-green-600 dark:text-green-400" />
                                 </div>
@@ -190,7 +190,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="flex items-center gap-4 p-4 border border-secondary-200 dark:border-dark-600 rounded-xl">
+                            <div class="flex items-center gap-4 p-4 border border-secondary-200 dark:border-white/10 rounded-xl">
                                 <div class="h-12 w-12 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl flex items-center justify-center shrink-0">
                                     <x-icon name="check-circle" class="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
                                 </div>
@@ -201,7 +201,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="flex items-center gap-4 p-4 border border-secondary-200 dark:border-dark-600 rounded-xl">
+                            <div class="flex items-center gap-4 p-4 border border-secondary-200 dark:border-white/10 rounded-xl">
                                 <div class="h-12 w-12 bg-red-50 dark:bg-red-900/20 rounded-xl flex items-center justify-center shrink-0">
                                     <x-icon name="exclamation-circle" class="w-6 h-6 text-red-600 dark:text-red-400" />
                                 </div>
@@ -216,7 +216,7 @@
 
                         <!-- Recent Invoices -->
                         <div>
-                            <div class="border-b border-secondary-200 dark:border-dark-600 pb-4 mb-4">
+                            <div class="border-b border-secondary-200 dark:border-white/10 pb-4 mb-4">
                                 <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50">
                                     {{ __('pages.recent_invoices') }}
                                 </h4>
@@ -224,7 +224,7 @@
                             @if ($client->invoices->count() > 0)
                                 <div class="space-y-3">
                                     @foreach ($client->invoices->take(5) as $invoice)
-                                        <div class="flex items-center justify-between p-4 border border-secondary-200 dark:border-dark-600 rounded-xl">
+                                        <div class="flex items-center justify-between p-4 border border-secondary-200 dark:border-white/10 rounded-xl">
                                             <div class="flex items-center gap-3">
                                                 <div class="h-10 w-10 bg-blue-50 dark:bg-blue-900/20 rounded-lg flex items-center justify-center">
                                                     <x-icon name="document-text" class="w-5 h-5 text-blue-600 dark:text-blue-400" />

@@ -162,7 +162,7 @@
                     @endphp
                     @if ($paidAmount > 0)
                         <div class="mt-1.5">
-                            <div class="w-full bg-gray-100 dark:bg-dark-700 rounded-full h-1.5 mb-1">
+                            <div class="w-full bg-gray-100 dark:bg-[#27272a] rounded-full h-1.5 mb-1">
                                 <div class="{{ $paymentPercentage >= 100 ? 'bg-emerald-500' : 'bg-amber-500' }} h-1.5 rounded-full transition-all"
                                     style="width: {{ min($paymentPercentage, 100) }}%"></div>
                             </div>
@@ -233,7 +233,7 @@
     {{-- Bulk Actions --}}
     <div x-data="{ show: @entangle('selected').live }" x-show="show.length > 0" x-transition
         class="fixed bottom-4 sm:bottom-6 left-4 right-4 sm:left-1/2 sm:right-auto sm:transform sm:-translate-x-1/2 z-50">
-        <div class="bg-white dark:bg-dark-800 rounded-xl shadow-2xl border border-dark-200 dark:border-dark-600 px-6 py-4">
+        <div class="bg-white dark:bg-[#1e1e1e] rounded-xl shadow-2xl border border-dark-200 dark:border-white/10 px-6 py-4">
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div class="flex items-center gap-3">
                     <div class="h-10 w-10 bg-primary-600 rounded-xl flex items-center justify-center shadow">

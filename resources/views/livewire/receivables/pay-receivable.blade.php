@@ -15,7 +15,7 @@
         @if ($receivable)
             <form id="pay-receivable" wire:submit="save" class="space-y-6">
                 {{-- Receivable Summary --}}
-                <div class="bg-secondary-50 dark:bg-dark-700 rounded-lg p-4">
+                <div class="bg-secondary-50 dark:bg-[#27272a] rounded-lg p-4">
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <div class="text-xs text-dark-500 dark:text-dark-400">{{ __('pages.rcv_remaining_principal') }}</div>
@@ -42,7 +42,7 @@
 
                 {{-- Payment Details --}}
                 <div class="space-y-4">
-                    <div class="border-b border-secondary-200 dark:border-dark-600 pb-4">
+                    <div class="border-b border-secondary-200 dark:border-white/10 pb-4">
                         <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-1">{{ __('pages.rcv_payment_section') }}</h4>
                         <p class="text-xs text-dark-500 dark:text-dark-400">{{ __('pages.rcv_payment_section_desc') }}</p>
                     </div>
@@ -75,11 +75,11 @@
                             </div>
                         @endif
 
-                        <x-currency-input wire:model="principal_paid"
+                        <x-form.currency-input wire:model="principal_paid"
                             label="{{ __('pages.rcv_principal_paid_label') }}"
                             hint="{{ __('pages.rcv_principal_paid_hint') }}" />
 
-                        <x-currency-input wire:model="interest_paid"
+                        <x-form.currency-input wire:model="interest_paid"
                             label="{{ __('pages.rcv_interest_paid_label') }}"
                             hint="{{ __('pages.rcv_interest_paid_hint') }}" />
 

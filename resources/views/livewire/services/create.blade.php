@@ -29,7 +29,7 @@
                 :options="$this->categoryOptions"
                 placeholder="{{ __('pages.select_category') }}" required />
 
-            <x-currency-input wire:model="price" label="{{ __('pages.service_price') }}"
+            <x-form.currency-input wire:model="price" label="{{ __('pages.service_price') }}"
                 hint="{{ __('pages.service_price_hint') }}" placeholder="0" prefix="Rp" required />
         </form>
 

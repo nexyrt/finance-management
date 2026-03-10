@@ -33,9 +33,9 @@
         <div class="lg:col-span-2 space-y-6">
 
             {{-- Section 1: Template Details --}}
-            <div class="bg-white dark:bg-dark-800 rounded-xl border border-dark-200 dark:border-dark-600 overflow-hidden">
+            <div class="bg-white dark:bg-[#1e1e1e] rounded-xl border border-dark-200 dark:border-white/10 overflow-hidden">
                 {{-- Section Header --}}
-                <div class="px-6 py-4 border-b border-dark-100 dark:border-dark-700 flex items-center gap-3">
+                <div class="px-6 py-4 border-b border-dark-100 dark:border-white/8 flex items-center gap-3">
                     <div class="w-8 h-8 bg-primary-50 dark:bg-primary-900/20 rounded-lg flex items-center justify-center shrink-0">
                         <svg class="w-4 h-4 text-primary-600 dark:text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"/>
@@ -54,7 +54,7 @@
                             {{ __('pages.ri_template_name_label') }} <span class="text-red-500">*</span>
                         </label>
                         <input type="text" x-model="template.template_name"
-                            class="w-full px-3 py-2.5 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+                            class="w-full px-3 py-2.5 text-sm border border-dark-200 dark:border-white/10 rounded-lg bg-white dark:bg-[#1e1e1e] text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
                             placeholder="{{ __('pages.ri_template_name_placeholder') }}">
                     </div>
 
@@ -64,7 +64,7 @@
                         <div class="space-y-1.5">
                             <label class="block text-xs font-semibold text-dark-700 dark:text-dark-300 uppercase tracking-wide">{{ __('pages.ri_frequency_label') }}</label>
                             <select x-model="template.frequency"
-                                class="w-full px-3 py-2.5 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2020%2020%22%3E%3Cpath%20stroke%3D%22%236b7280%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%221.5%22%20d%3D%22m6%208%204%204%204-4%22%2F%3E%3C%2Fsvg%3E')] bg-size-[1.25rem] bg-position-[right_0.5rem_center] bg-no-repeat pr-10">
+                                class="w-full px-3 py-2.5 text-sm border border-dark-200 dark:border-white/10 rounded-lg bg-white dark:bg-[#1e1e1e] text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2020%2020%22%3E%3Cpath%20stroke%3D%22%236b7280%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%221.5%22%20d%3D%22m6%208%204%204%204-4%22%2F%3E%3C%2Fsvg%3E')] bg-size-[1.25rem] bg-position-[right_0.5rem_center] bg-no-repeat pr-10">
                                 <template x-for="freq in frequencyOptions" :key="freq.value">
                                     <option :value="freq.value" x-text="freq.label"></option>
                                 </template>
@@ -84,14 +84,14 @@
                                         const el = document.getElementById('tmpl-client-dd');
                                         if (el) { el.style.left = rect.left + 'px'; el.style.width = rect.width + 'px'; el.style.top = (rect.bottom + 4) + 'px'; setTimeout(() => { const ddH = el.offsetHeight; const spaceBelow = window.innerHeight - rect.bottom; const spaceAbove = rect.top; el.style.top = (spaceBelow >= ddH || spaceBelow >= spaceAbove ? rect.bottom + 4 : rect.top - ddH - 4) + 'px'; }, 0); }
                                         selectOpen = !selectOpen;"
-                                    class="w-full px-3 py-2.5 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-400 dark:text-dark-500 cursor-pointer hover:border-primary-400 dark:hover:border-primary-500 transition-colors flex items-center gap-2">
+                                    class="w-full px-3 py-2.5 text-sm border border-dark-200 dark:border-white/10 rounded-lg bg-white dark:bg-[#1e1e1e] text-dark-400 dark:text-dark-500 cursor-pointer hover:border-primary-400 dark:hover:border-primary-500 transition-colors flex items-center gap-2">
                                     <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
                                     </svg>
                                     {{ __('pages.ri_select_client_placeholder') }}
                                 </div>
                                 <div x-show="template.client_id"
-                                    class="w-full px-3 py-2.5 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 flex items-center gap-2">
+                                    class="w-full px-3 py-2.5 text-sm border border-dark-200 dark:border-white/10 rounded-lg bg-white dark:bg-[#1e1e1e] flex items-center gap-2">
                                     <div class="w-6 h-6 rounded-full bg-linear-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white text-xs font-bold shrink-0"
                                         x-text="template.client_name ? template.client_name.charAt(0).toUpperCase() : ''"></div>
                                     <span class="flex-1 text-dark-900 dark:text-dark-50 font-medium truncate" x-text="template.client_name"></span>
@@ -109,16 +109,16 @@
                                         x-transition:enter-end="opacity-100 scale-100"
                                         id="tmpl-client-dd"
                                         @click.away="selectOpen = false"
-                                        class="fixed z-9999 bg-white dark:bg-dark-800 border border-dark-200 dark:border-dark-700 rounded-xl shadow-xl overflow-hidden">
-                                        <div class="p-2 border-b border-dark-100 dark:border-dark-700">
+                                        class="fixed z-9999 bg-white dark:bg-[#1e1e1e] border border-dark-200 dark:border-white/8 rounded-xl shadow-xl overflow-hidden">
+                                        <div class="p-2 border-b border-dark-100 dark:border-white/8">
                                             <input type="text" x-model="selectSearch" @click.stop
                                                 placeholder="{{ __('pages.ri_search_clients_placeholder') }}"
-                                                class="w-full px-3 py-2 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 placeholder-dark-400 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                                                class="w-full px-3 py-2 text-sm border border-dark-200 dark:border-white/10 rounded-lg bg-white dark:bg-[#1e1e1e] text-dark-900 dark:text-dark-50 placeholder-dark-400 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
                                         </div>
                                         <div class="overflow-y-auto max-h-56">
                                             <template x-for="client in filteredClients" :key="client.id">
                                                 <div @click="selectClient(client)"
-                                                    class="px-3 py-2.5 hover:bg-primary-50 dark:hover:bg-primary-900/20 cursor-pointer flex items-center gap-3 border-b border-dark-50 dark:border-dark-700 last:border-0">
+                                                    class="px-3 py-2.5 hover:bg-primary-50 dark:hover:bg-primary-900/20 cursor-pointer flex items-center gap-3 border-b border-dark-50 dark:border-white/8 last:border-0">
                                                     <div class="w-8 h-8 rounded-full bg-linear-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white text-xs font-bold shrink-0"
                                                         x-text="client.name.charAt(0).toUpperCase()"></div>
                                                     <div class="min-w-0">
@@ -149,7 +149,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                                 </svg>
                                 <input type="date" x-model="template.start_date"
-                                    class="w-full pl-9 pr-3 py-2.5 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:cursor-pointer">
+                                    class="w-full pl-9 pr-3 py-2.5 text-sm border border-dark-200 dark:border-white/10 rounded-lg bg-white dark:bg-[#1e1e1e] text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:cursor-pointer">
                             </div>
                         </div>
 
@@ -163,7 +163,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                                 </svg>
                                 <input type="date" x-model="template.end_date"
-                                    class="w-full pl-9 pr-3 py-2.5 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:cursor-pointer">
+                                    class="w-full pl-9 pr-3 py-2.5 text-sm border border-dark-200 dark:border-white/10 rounded-lg bg-white dark:bg-[#1e1e1e] text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:cursor-pointer">
                             </div>
                         </div>
                     </div>

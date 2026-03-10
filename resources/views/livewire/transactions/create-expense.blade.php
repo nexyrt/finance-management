@@ -23,7 +23,7 @@
 
                 {{-- Left Column: Detail Transaksi --}}
                 <div class="space-y-4">
-                    <div class="border-b border-secondary-200 dark:border-dark-600 pb-4">
+                    <div class="border-b border-secondary-200 dark:border-white/10 pb-4">
                         <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-1">{{ __('pages.transaction_details_section') }}</h4>
                         <p class="text-xs text-dark-500 dark:text-dark-400">{{ __('pages.expense_details_desc') }}</p>
                     </div>
@@ -55,14 +55,14 @@
                         </div>
                     </div>
 
-                    <x-currency-input wire:model="amount" :label="__('pages.amount_label')" prefix="Rp" placeholder="0" />
+                    <x-form.currency-input wire:model="amount" :label="__('pages.amount_label')" prefix="Rp" placeholder="0" />
 
                     <x-date wire:model.live="transaction_date" :label="__('pages.transaction_date_label')" :placeholder="__('pages.select_range_placeholder')" helpers />
                 </div>
 
                 {{-- Right Column: Keterangan --}}
                 <div class="space-y-4">
-                    <div class="border-b border-secondary-200 dark:border-dark-600 pb-4">
+                    <div class="border-b border-secondary-200 dark:border-white/10 pb-4">
                         <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-1">{{ __('pages.description_section') }}</h4>
                         <p class="text-xs text-dark-500 dark:text-dark-400">{{ __('pages.transaction_details_desc2') }}</p>
                     </div>
@@ -71,7 +71,7 @@
 
                     <x-input wire:model="reference_number" :label="__('pages.reference_number_optional_label')" :placeholder="__('pages.reference_number_optional_placeholder')" />
 
-                    <x-file-upload wire:model="attachment" :label="__('pages.attachment_optional_label')" />
+                    <x-form.file-upload wire:model="attachment" :label="__('pages.attachment_optional_label')" />
                 </div>
             </div>
         </form>

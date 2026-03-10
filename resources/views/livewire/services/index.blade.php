@@ -16,7 +16,7 @@
             {{-- Workflow Guide Button --}}
             <button
                 wire:click="$toggle('guideModal')"
-                class="h-9 px-4 flex items-center gap-2 rounded-xl border border-zinc-200 dark:border-dark-600 bg-white dark:bg-dark-800 text-dark-500 dark:text-dark-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-300 dark:hover:border-indigo-700 text-sm font-medium transition-all"
+                class="h-9 px-4 flex items-center gap-2 rounded-xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-[#1e1e1e] text-dark-500 dark:text-dark-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-300 dark:hover:border-indigo-700 text-sm font-medium transition-all"
             >
                 <x-icon name="information-circle" class="w-4 h-4" />
                 {{ __('pages.client_guide_btn') }}
@@ -188,7 +188,7 @@
     <div x-data="{ show: @entangle('selected').live }" x-show="show.length > 0" x-transition
         class="fixed bottom-4 sm:bottom-6 left-4 right-4 sm:left-1/2 sm:right-auto sm:transform sm:-translate-x-1/2 z-50">
         <div
-            class="bg-white dark:bg-dark-800 rounded-xl shadow-lg border border-zinc-200 dark:border-dark-600 px-4 sm:px-6 py-4 sm:min-w-96">
+            class="bg-white dark:bg-[#1e1e1e] rounded-xl shadow-lg border border-zinc-200 dark:border-white/10 px-4 sm:px-6 py-4 sm:min-w-96">
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-6">
                 <div class="flex items-center gap-3">
                     <div class="h-10 w-10 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center">
@@ -308,7 +308,7 @@
             </div>
 
             {{-- Service Categories --}}
-            <div class="border-t border-secondary-200 dark:border-dark-600 pt-5">
+            <div class="border-t border-secondary-200 dark:border-white/10 pt-5">
                 <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-3">{{ __('pages.service_guide_categories_title') }}</h4>
                 <div class="grid grid-cols-2 gap-3">
                     <div class="flex items-start gap-3 p-3 bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-900/40 rounded-xl">
@@ -351,7 +351,7 @@
             </div>
 
             {{-- Tips --}}
-            <div class="p-4 bg-gray-50 dark:bg-dark-700 rounded-xl border border-gray-200 dark:border-dark-600">
+            <div class="p-4 bg-gray-50 dark:bg-[#27272a] rounded-xl border border-gray-200 dark:border-white/10">
                 <div class="flex items-start gap-3">
                     <x-icon name="light-bulb" class="w-5 h-5 text-yellow-500 dark:text-yellow-400 shrink-0 mt-0.5" />
                     <div class="flex-1">

@@ -20,7 +20,7 @@
 
         @if ($invoice)
             {{-- Invoice Info --}}
-            <div class="mb-5 p-4 bg-zinc-50 dark:bg-dark-700 rounded-xl border border-zinc-200 dark:border-dark-600">
+            <div class="mb-5 p-4 bg-zinc-50 dark:bg-[#27272a] rounded-xl border border-zinc-200 dark:border-white/10">
                 <div class="flex items-center justify-between gap-3 flex-wrap">
                     <div>
                         <p class="text-xs text-dark-500 dark:text-dark-400">{{ __('common.client') }}</p>
@@ -62,10 +62,10 @@
                     class="text-left p-4 rounded-xl border-2 transition-all duration-200"
                     x-bind:class="$wire.action === 'cancel'
                         ? 'border-yellow-400 bg-yellow-50 dark:bg-yellow-900/20 dark:border-yellow-500'
-                        : 'border-zinc-200 dark:border-dark-600 bg-white dark:bg-dark-800 hover:border-yellow-300 dark:hover:border-yellow-600'">
+                        : 'border-zinc-200 dark:border-white/10 bg-white dark:bg-[#1e1e1e] hover:border-yellow-300 dark:hover:border-yellow-600'">
                     <div class="flex items-start gap-3">
                         <div class="h-9 w-9 rounded-lg flex items-center justify-center shrink-0"
-                             x-bind:class="$wire.action === 'cancel' ? 'bg-yellow-100 dark:bg-yellow-900/40' : 'bg-zinc-100 dark:bg-dark-700'">
+                             x-bind:class="$wire.action === 'cancel' ? 'bg-yellow-100 dark:bg-yellow-900/40' : 'bg-zinc-100 dark:bg-[#27272a]'">
                             <x-icon name="x-circle" class="w-5 h-5"
                                     x-bind:class="$wire.action === 'cancel' ? 'text-yellow-600 dark:text-yellow-400' : 'text-dark-400'" />
                         </div>
@@ -88,10 +88,10 @@
                     class="text-left p-4 rounded-xl border-2 transition-all duration-200"
                     x-bind:class="$wire.action === 'permanent'
                         ? 'border-red-400 bg-red-50 dark:bg-red-900/20 dark:border-red-500'
-                        : 'border-zinc-200 dark:border-dark-600 bg-white dark:bg-dark-800 hover:border-red-300 dark:hover:border-red-600'">
+                        : 'border-zinc-200 dark:border-white/10 bg-white dark:bg-[#1e1e1e] hover:border-red-300 dark:hover:border-red-600'">
                     <div class="flex items-start gap-3">
                         <div class="h-9 w-9 rounded-lg flex items-center justify-center shrink-0"
-                             x-bind:class="$wire.action === 'permanent' ? 'bg-red-100 dark:bg-red-900/40' : 'bg-zinc-100 dark:bg-dark-700'">
+                             x-bind:class="$wire.action === 'permanent' ? 'bg-red-100 dark:bg-red-900/40' : 'bg-zinc-100 dark:bg-[#27272a]'">
                             <x-icon name="trash" class="w-5 h-5"
                                     x-bind:class="$wire.action === 'permanent' ? 'text-red-600 dark:text-red-400' : 'text-dark-400'" />
                         </div>

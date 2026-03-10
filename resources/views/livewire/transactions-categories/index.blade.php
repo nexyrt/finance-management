@@ -13,7 +13,7 @@
         <div class="flex items-center gap-2">
             <button
                 wire:click="$toggle('guideModal')"
-                class="h-9 px-4 flex items-center gap-2 rounded-xl border border-zinc-200 dark:border-dark-600 bg-white dark:bg-dark-800 text-dark-500 dark:text-dark-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-300 dark:hover:border-indigo-700 text-sm font-medium transition-all"
+                class="h-9 px-4 flex items-center gap-2 rounded-xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-[#1e1e1e] text-dark-500 dark:text-dark-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-300 dark:hover:border-indigo-700 text-sm font-medium transition-all"
             >
                 <x-icon name="information-circle" class="w-4 h-4" />
                 {{ __('pages.client_guide_btn') }}
@@ -24,7 +24,7 @@
 
     {{-- Stats Cards --}}
     <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6">
-        <div class="bg-white dark:bg-dark-800 border border-zinc-200 dark:border-dark-600 rounded-xl p-6">
+        <div class="bg-white dark:bg-[#1e1e1e] border border-zinc-200 dark:border-white/10 rounded-xl p-6">
             <div class="flex items-center gap-4">
                 <div class="h-12 w-12 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center">
                     <x-icon name="tag" class="w-6 h-6 text-blue-600 dark:text-blue-400" />
@@ -38,7 +38,7 @@
             </div>
         </div>
 
-        <div class="bg-white dark:bg-dark-800 border border-zinc-200 dark:border-dark-600 rounded-xl p-6">
+        <div class="bg-white dark:bg-[#1e1e1e] border border-zinc-200 dark:border-white/10 rounded-xl p-6">
             <div class="flex items-center gap-4">
                 <div class="h-12 w-12 bg-purple-50 dark:bg-purple-900/20 rounded-xl flex items-center justify-center">
                     <x-icon name="folder" class="w-6 h-6 text-purple-600 dark:text-purple-400" />
@@ -52,7 +52,7 @@
             </div>
         </div>
 
-        <div class="bg-white dark:bg-dark-800 border border-zinc-200 dark:border-dark-600 rounded-xl p-6">
+        <div class="bg-white dark:bg-[#1e1e1e] border border-zinc-200 dark:border-white/10 rounded-xl p-6">
             <div class="flex items-center gap-4">
                 <div class="h-12 w-12 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl flex items-center justify-center">
                     <x-icon name="squares-2x2" class="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
@@ -66,7 +66,7 @@
             </div>
         </div>
 
-        <div class="bg-white dark:bg-dark-800 border border-zinc-200 dark:border-dark-600 rounded-xl p-6">
+        <div class="bg-white dark:bg-[#1e1e1e] border border-zinc-200 dark:border-white/10 rounded-xl p-6">
             <div class="flex items-center gap-4">
                 <div class="h-12 w-12 bg-green-50 dark:bg-green-900/20 rounded-xl flex items-center justify-center">
                     <x-icon name="check-circle" class="w-6 h-6 text-green-600 dark:text-green-400" />
@@ -307,7 +307,7 @@
             </div>
 
             {{-- Section 3: Aturan & Tips --}}
-            <div class="bg-gray-50 dark:bg-dark-700 border border-gray-200 dark:border-dark-600 rounded-xl p-4">
+            <div class="bg-gray-50 dark:bg-[#27272a] border border-gray-200 dark:border-white/10 rounded-xl p-4">
                 <div class="flex items-center gap-2 mb-3">
                     <x-icon name="light-bulb" class="w-5 h-5 text-gray-600 dark:text-gray-400" />
                     <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50">{{ __('pages.cat_guide_rules_title') }}</h4>

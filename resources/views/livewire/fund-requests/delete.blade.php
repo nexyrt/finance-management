@@ -20,7 +20,7 @@
                     {{ __('pages.confirm_delete_fund_request', ['title' => $fundRequest->title]) }}
                 </p>
 
-                <div class="p-4 rounded-xl bg-secondary-50 dark:bg-dark-700 border border-secondary-200 dark:border-dark-600">
+                <div class="p-4 rounded-xl bg-secondary-50 dark:bg-[#27272a] border border-secondary-200 dark:border-white/10">
                     <div class="space-y-2">
                         <div>
                             <label class="text-xs text-dark-500 dark:text-dark-400">{{ __('pages.request_number') }}</label>

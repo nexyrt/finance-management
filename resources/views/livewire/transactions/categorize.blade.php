@@ -20,14 +20,14 @@
             @if ($isBulk)
                 {{-- Bulk Preview --}}
                 <div
-                    class="bg-secondary-50 dark:bg-dark-700 rounded-xl p-4 border border-secondary-200 dark:border-dark-600">
+                    class="bg-secondary-50 dark:bg-[#27272a] rounded-xl p-4 border border-secondary-200 dark:border-white/10">
                     <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-3">
                         {{ __('pages.preview_transactions_title', ['count' => count($transactionIds)]) }}
                     </h4>
                     <div class="space-y-2 max-h-48 overflow-y-auto">
                         @foreach ($transactions->take(5) as $trans)
                             <div
-                                class="flex items-start justify-between gap-4 py-2 border-b border-secondary-200 dark:border-dark-600 last:border-0">
+                                class="flex items-start justify-between gap-4 py-2 border-b border-secondary-200 dark:border-white/10 last:border-0">
                                 <div class="flex-1 min-w-0">
                                     <div class="text-sm font-medium text-dark-900 dark:text-dark-50 truncate">
                                         {{ $trans->description }}

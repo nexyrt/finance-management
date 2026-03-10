@@ -1,8 +1,8 @@
 <div>
-    <x-auth-header :title="__('Selamat Datang')" :description="__('Masuk ke akun Anda untuk melanjutkan')" />
+    <x-ui.auth-header :title="__('Selamat Datang')" :description="__('Masuk ke akun Anda untuk melanjutkan')" />
 
     <!-- Session Status -->
-    <x-auth-session-status class="mb-5" :status="session('status')" />
+    <x-ui.auth-session-status class="mb-5" :status="session('status')" />
 
     <form wire:submit="login" class="space-y-5">
         <!-- Email Address -->

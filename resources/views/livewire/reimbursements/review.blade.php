@@ -64,7 +64,7 @@
 
                 {{-- Review Form --}}
                 <div class="space-y-4">
-                    <div class="border-b border-secondary-200 dark:border-dark-600 pb-4">
+                    <div class="border-b border-secondary-200 dark:border-white/10 pb-4">
                         <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-1">{{ __('pages.reimb_review_details_section') }}</h4>
                         <p class="text-xs text-dark-500 dark:text-dark-400">{{ __('pages.reimb_review_details_desc') }}</p>
                     </div>

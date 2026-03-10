@@ -33,9 +33,9 @@
         <div class="lg:col-span-2 space-y-6">
 
             {{-- Section 1: Invoice Info --}}
-            <div class="bg-white dark:bg-dark-800 rounded-xl border border-dark-200 dark:border-dark-600 overflow-hidden">
+            <div class="bg-white dark:bg-[#1e1e1e] rounded-xl border border-dark-200 dark:border-white/10 overflow-hidden">
                 {{-- Section Header --}}
-                <div class="px-6 py-4 border-b border-dark-100 dark:border-dark-700 flex items-center gap-3">
+                <div class="px-6 py-4 border-b border-dark-100 dark:border-white/8 flex items-center gap-3">
                     <div class="h-8 w-8 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg flex items-center justify-center shrink-0">
                         <svg class="w-4 h-4 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
@@ -54,14 +54,14 @@
                         <div class="space-y-1.5">
                             <label class="block text-xs font-semibold text-dark-700 dark:text-dark-300 uppercase tracking-wide">{{ __('pages.ri_from_template_label') }}</label>
                             <input type="text" value="{{ $invoice->template->template_name }}" readonly
-                                class="w-full px-3 py-2.5 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-dark-50 dark:bg-dark-700 text-dark-500 dark:text-dark-400 cursor-not-allowed">
+                                class="w-full px-3 py-2.5 text-sm border border-dark-200 dark:border-white/10 rounded-lg bg-dark-50 dark:bg-[#27272a] text-dark-500 dark:text-dark-400 cursor-not-allowed">
                         </div>
 
                         {{-- Client (Readonly) --}}
                         <div class="space-y-1.5">
                             <label class="block text-xs font-semibold text-dark-700 dark:text-dark-300 uppercase tracking-wide">{{ __('pages.ri_billed_to_readonly_label') }}</label>
                             <input type="text" value="{{ $invoice->client->name }}" readonly
-                                class="w-full px-3 py-2.5 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-dark-50 dark:bg-dark-700 text-dark-500 dark:text-dark-400 cursor-not-allowed">
+                                class="w-full px-3 py-2.5 text-sm border border-dark-200 dark:border-white/10 rounded-lg bg-dark-50 dark:bg-[#27272a] text-dark-500 dark:text-dark-400 cursor-not-allowed">
                         </div>
                     </div>
 
@@ -76,7 +76,7 @@
                                     </svg>
                                 </div>
                                 <input type="date" x-model="invoiceData.scheduled_date"
-                                    class="w-full pl-9 pr-3 py-2.5 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:cursor-pointer">
+                                    class="w-full pl-9 pr-3 py-2.5 text-sm border border-dark-200 dark:border-white/10 rounded-lg bg-white dark:bg-[#1e1e1e] text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:cursor-pointer">
                             </div>
                         </div>
                     </div>

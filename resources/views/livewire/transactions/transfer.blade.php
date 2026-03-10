@@ -101,7 +101,7 @@
                         </div>
                     </div>
 
-                    <x-currency-input wire:model.live="amount" placeholder="0">
+                    <x-form.currency-input wire:model.live="amount" placeholder="0">
                         <x-slot:label>
                             <div class="flex items-center gap-2">
                                 <span>{{ __('pages.transfer_amount_label') }}</span>
@@ -110,7 +110,7 @@
                         </x-slot:label>
                     </x-currency-input>
 
-                    <x-currency-input wire:model.live="admin_fee" placeholder="0">
+                    <x-form.currency-input wire:model.live="admin_fee" placeholder="0">
                         <x-slot:label>
                             <div class="flex items-center gap-2">
                                 <span>{{ __('pages.admin_fee_label') }}</span>

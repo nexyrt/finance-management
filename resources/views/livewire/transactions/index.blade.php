@@ -22,7 +22,7 @@
 
     {{-- Stats Cards (Synced with Listing filters) --}}
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="bg-white dark:bg-dark-800 border border-zinc-200 dark:border-dark-600 rounded-xl p-6">
+        <div class="bg-white dark:bg-[#1e1e1e] border border-zinc-200 dark:border-white/10 rounded-xl p-6">
             <div class="flex items-center gap-4">
                 <div class="h-12 w-12 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center">
                     <x-icon name="arrow-down" class="w-6 h-6 text-green-600 dark:text-green-400" />
@@ -36,7 +36,7 @@
             </div>
         </div>
 
-        <div class="bg-white dark:bg-dark-800 border border-zinc-200 dark:border-dark-600 rounded-xl p-6">
+        <div class="bg-white dark:bg-[#1e1e1e] border border-zinc-200 dark:border-white/10 rounded-xl p-6">
             <div class="flex items-center gap-4">
                 <div class="h-12 w-12 bg-red-100 dark:bg-red-900/30 rounded-xl flex items-center justify-center">
                     <x-icon name="arrow-up" class="w-6 h-6 text-red-600 dark:text-red-400" />
@@ -50,7 +50,7 @@
             </div>
         </div>
 
-        <div class="bg-white dark:bg-dark-800 border border-zinc-200 dark:border-dark-600 rounded-xl p-6">
+        <div class="bg-white dark:bg-[#1e1e1e] border border-zinc-200 dark:border-white/10 rounded-xl p-6">
             <div class="flex items-center gap-4">
                 <div class="h-12 w-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
                     <x-icon name="clipboard-document-list" class="w-6 h-6 text-blue-600 dark:text-blue-400" />

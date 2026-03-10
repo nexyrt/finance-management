@@ -23,7 +23,7 @@
                                 <input type="radio" wire:model.live="transaction_type" value="credit"
                                     class="sr-only peer">
                                 <div
-                                    class="p-4 rounded-lg border-2 border-secondary-200 dark:border-dark-600 cursor-pointer transition-all peer-checked:border-green-600 peer-checked:bg-green-50 dark:peer-checked:bg-green-900/20">
+                                    class="p-4 rounded-lg border-2 border-secondary-200 dark:border-white/10 cursor-pointer transition-all peer-checked:border-green-600 peer-checked:bg-green-50 dark:peer-checked:bg-green-900/20">
                                     <div class="flex items-center gap-3">
                                         <div
                                             class="h-10 w-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
@@ -44,7 +44,7 @@
                                 <input type="radio" wire:model.live="transaction_type" value="debit"
                                     class="sr-only peer">
                                 <div
-                                    class="p-4 rounded-lg border-2 border-secondary-200 dark:border-dark-600 cursor-pointer transition-all peer-checked:border-red-600 peer-checked:bg-red-50 dark:peer-checked:bg-red-900/20">
+                                    class="p-4 rounded-lg border-2 border-secondary-200 dark:border-white/10 cursor-pointer transition-all peer-checked:border-red-600 peer-checked:bg-red-50 dark:peer-checked:bg-red-900/20">
                                     <div class="flex items-center gap-3">
                                         <div
                                             class="h-10 w-10 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center">
@@ -87,7 +87,7 @@
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {{-- Left Column --}}
                 <div class="space-y-4">
-                    <div class="border-b border-secondary-200 dark:border-dark-600 pb-4">
+                    <div class="border-b border-secondary-200 dark:border-white/10 pb-4">
                         <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-1">{{ __('pages.transaction_details_section') }}</h4>
                         <p class="text-xs text-dark-500 dark:text-dark-400">{{ __('pages.transaction_details_desc') }}</p>
                     </div>
@@ -117,7 +117,7 @@
                             :placeholder="__('pages.transaction_category_placeholder')" searchable />
                     </div>
 
-                    <x-currency-input wire:model="amount" :label="__('pages.amount_label')" prefix="Rp"
+                    <x-form.currency-input wire:model="amount" :label="__('pages.amount_label')" prefix="Rp"
                         placeholder="0" :hint="__('pages.amount_hint')" />
 
                     <x-date wire:model.live="transaction_date" helpers :label="__('pages.transaction_date_label')">
@@ -129,7 +129,7 @@
 
                 {{-- Right Column --}}
                 <div class="space-y-4">
-                    <div class="border-b border-secondary-200 dark:border-dark-600 pb-4">
+                    <div class="border-b border-secondary-200 dark:border-white/10 pb-4">
                         <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-1">{{ __('pages.description_section') }}</h4>
                         <p class="text-xs text-dark-500 dark:text-dark-400">{{ __('pages.description_section_desc') }}</p>
                     </div>

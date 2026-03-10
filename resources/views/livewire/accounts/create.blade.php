@@ -16,7 +16,7 @@
     <form wire:submit.prevent="save" class="space-y-6">
         {{-- Basic Information --}}
         <div class="space-y-4">
-            <div class="border-b border-zinc-200 dark:border-dark-600 pb-4">
+            <div class="border-b border-zinc-200 dark:border-white/10 pb-4">
                 <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-1">{{ __('pages.basic_information') }}</h4>
                 <p class="text-xs text-dark-500 dark:text-dark-400">{{ __('pages.client_basic_details') }}</p>
             </div>
@@ -48,12 +48,12 @@
 
         {{-- Financial Information --}}
         <div class="space-y-4">
-            <div class="border-b border-zinc-200 dark:border-dark-600 pb-4">
+            <div class="border-b border-zinc-200 dark:border-white/10 pb-4">
                 <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-1">{{ __('pages.financial') }}</h4>
                 <p class="text-xs text-dark-500 dark:text-dark-400">{{ __('pages.initial_balance') }}</p>
             </div>
 
-            <x-currency-input wire:model.live="initial_balance"
+            <x-form.currency-input wire:model.live="initial_balance"
                               :label="__('pages.initial_balance')"
                               placeholder="0"
                               :hint="__('pages.initial_balance')" />
@@ -61,7 +61,7 @@
 
         {{-- Preview Section --}}
         @if($account_name || $bank_name || $account_number)
-        <div class="bg-zinc-50 dark:bg-dark-700 rounded-xl p-4 border border-zinc-200 dark:border-dark-600">
+        <div class="bg-zinc-50 dark:bg-[#27272a] rounded-xl p-4 border border-zinc-200 dark:border-white/10">
             <div class="flex items-center gap-3 mb-3">
                 <div class="h-8 w-8 bg-blue-50 dark:bg-blue-900/20 rounded-lg flex items-center justify-center">
                     <x-icon name="eye" class="w-4 h-4 text-blue-600 dark:text-blue-400" />
@@ -72,7 +72,7 @@
                 </div>
             </div>
 
-            <div class="bg-white dark:bg-dark-800 rounded-lg p-4 border border-zinc-200 dark:border-dark-600">
+            <div class="bg-white dark:bg-[#1e1e1e] rounded-lg p-4 border border-zinc-200 dark:border-white/10">
                 <div class="flex items-center gap-3 mb-2">
                     <div class="h-8 w-8 bg-linear-to-br from-primary-400 to-primary-600 rounded-lg flex items-center justify-center">
                         <x-icon name="building-library" class="w-4 h-4 text-white" />
@@ -87,7 +87,7 @@
                     </div>
                 </div>
                 @if($account_number)
-                <div class="bg-zinc-50 dark:bg-dark-700 rounded-lg px-3 py-2 mt-2">
+                <div class="bg-zinc-50 dark:bg-[#27272a] rounded-lg px-3 py-2 mt-2">
                     <p class="text-xs text-dark-500 dark:text-dark-400 mb-1">{{ __('pages.account_number') }}</p>
                     <p class="font-mono text-sm font-medium text-dark-900 dark:text-dark-50">
                         {{ $account_number }}
@@ -95,7 +95,7 @@
                 </div>
                 @endif
                 @if($initial_balance)
-                <div class="mt-3 pt-3 border-t border-zinc-200 dark:border-dark-600">
+                <div class="mt-3 pt-3 border-t border-zinc-200 dark:border-white/10">
                     <p class="text-xs text-dark-500 dark:text-dark-400 mb-1">{{ __('pages.initial_balance') }}</p>
                     <p class="text-lg font-bold text-green-600 dark:text-green-400">
                         Rp {{ number_format($initial_balance, 0, ',', '.') }}

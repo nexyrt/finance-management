@@ -31,7 +31,7 @@
                 {{-- Amount & Date --}}
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <x-currency-input wire:model.live="amount" :label="__('pages.payment_amount_label')" placeholder="0" />
+                        <x-form.currency-input wire:model.live="amount" :label="__('pages.payment_amount_label')" placeholder="0" />
                         @php
                             $otherPayments = $payment->invoice
                                 ->payments()
@@ -116,7 +116,7 @@
                     @endphp
 
                     <div
-                        class="bg-secondary-50 dark:bg-dark-800 rounded-xl p-4 border border-secondary-200 dark:border-dark-700">
+                        class="bg-secondary-50 dark:bg-[#1e1e1e] rounded-xl p-4 border border-secondary-200 dark:border-white/8">
                         <h4 class="font-medium text-secondary-900 dark:text-dark-50 mb-3 flex items-center gap-2">
                             <x-icon name="calculator" class="w-4 h-4" />
                             {{ __('pages.summary_after_edit') }}
@@ -137,7 +137,7 @@
                                 <span class="font-medium text-blue-600">Rp
                                     {{ number_format($amountInteger, 0, ',', '.') }}</span>
                             </div>
-                            <hr class="border-secondary-300 dark:border-dark-600">
+                            <hr class="border-secondary-300 dark:border-white/10">
                             <div class="flex justify-between font-bold">
                                 <span class="text-secondary-900 dark:text-dark-50">{{ __('pages.remaining_after_edit') }}</span>
                                 <span class="{{ $remainingAfter <= 0 ? 'text-green-600' : 'text-red-600' }}">

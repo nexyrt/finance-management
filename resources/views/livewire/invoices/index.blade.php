@@ -15,7 +15,7 @@
             {{-- Workflow Guide Button --}}
             <button
                 wire:click="$toggle('guideModal')"
-                class="h-9 px-4 flex items-center gap-2 rounded-xl border border-zinc-200 dark:border-dark-600 bg-white dark:bg-dark-800 text-dark-500 dark:text-dark-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-300 dark:hover:border-indigo-700 text-sm font-medium transition-all"
+                class="h-9 px-4 flex items-center gap-2 rounded-xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-[#1e1e1e] text-dark-500 dark:text-dark-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-300 dark:hover:border-indigo-700 text-sm font-medium transition-all"
             >
                 <x-icon name="information-circle" class="w-4 h-4" />
                 {{ __('pages.client_guide_btn') }}
@@ -51,12 +51,12 @@
         <div x-data="{ tab: 'workflow' }" class="space-y-5">
 
             {{-- Tab Navigation --}}
-            <div class="flex flex-wrap gap-1 p-1 bg-zinc-100 dark:bg-dark-700 rounded-xl border border-zinc-200 dark:border-dark-600">
+            <div class="flex flex-wrap gap-1 p-1 bg-zinc-100 dark:bg-[#27272a] rounded-xl border border-zinc-200 dark:border-white/10">
                 <button
                     @click="tab = 'workflow'"
                     class="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 flex-1 justify-center"
                     :class="tab === 'workflow'
-                        ? 'bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 shadow-sm border border-zinc-200 dark:border-dark-600'
+                        ? 'bg-white dark:bg-[#1e1e1e] text-dark-900 dark:text-dark-50 shadow-sm border border-zinc-200 dark:border-white/10'
                         : 'text-dark-500 dark:text-dark-400 hover:text-dark-800 dark:hover:text-dark-200'"
                 >
                     <x-icon name="arrow-path" class="w-3.5 h-3.5 shrink-0" />
@@ -66,7 +66,7 @@
                     @click="tab = 'status'"
                     class="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 flex-1 justify-center"
                     :class="tab === 'status'
-                        ? 'bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 shadow-sm border border-zinc-200 dark:border-dark-600'
+                        ? 'bg-white dark:bg-[#1e1e1e] text-dark-900 dark:text-dark-50 shadow-sm border border-zinc-200 dark:border-white/10'
                         : 'text-dark-500 dark:text-dark-400 hover:text-dark-800 dark:hover:text-dark-200'"
                 >
                     <x-icon name="tag" class="w-3.5 h-3.5 shrink-0" />
@@ -76,7 +76,7 @@
                     @click="tab = 'features'"
                     class="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 flex-1 justify-center"
                     :class="tab === 'features'
-                        ? 'bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 shadow-sm border border-zinc-200 dark:border-dark-600'
+                        ? 'bg-white dark:bg-[#1e1e1e] text-dark-900 dark:text-dark-50 shadow-sm border border-zinc-200 dark:border-white/10'
                         : 'text-dark-500 dark:text-dark-400 hover:text-dark-800 dark:hover:text-dark-200'"
                 >
                     <x-icon name="sparkles" class="w-3.5 h-3.5 shrink-0" />
@@ -86,7 +86,7 @@
                     @click="tab = 'export'"
                     class="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 flex-1 justify-center"
                     :class="tab === 'export'
-                        ? 'bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 shadow-sm border border-zinc-200 dark:border-dark-600'
+                        ? 'bg-white dark:bg-[#1e1e1e] text-dark-900 dark:text-dark-50 shadow-sm border border-zinc-200 dark:border-white/10'
                         : 'text-dark-500 dark:text-dark-400 hover:text-dark-800 dark:hover:text-dark-200'"
                 >
                     <x-icon name="printer" class="w-3.5 h-3.5 shrink-0" />
@@ -209,13 +209,13 @@
                     </div>
 
                     {{-- Number Format Info --}}
-                    <div class="p-4 bg-gray-50 dark:bg-dark-700 rounded-xl border border-gray-200 dark:border-dark-600">
+                    <div class="p-4 bg-gray-50 dark:bg-[#27272a] rounded-xl border border-gray-200 dark:border-white/10">
                         <div class="flex items-start gap-3">
                             <x-icon name="hashtag" class="w-5 h-5 text-gray-500 dark:text-gray-400 shrink-0 mt-0.5" />
                             <div>
                                 <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-1">{{ __('pages.invoice_guide_number_title') }}</h4>
                                 <p class="text-xs text-dark-500 dark:text-dark-400 mb-2">{{ __('pages.invoice_guide_number_desc') }}</p>
-                                <code class="text-xs bg-gray-200 dark:bg-dark-600 text-dark-700 dark:text-dark-200 px-2 py-1 rounded-lg font-mono">001/INV/SPI-KLN/I/2026</code>
+                                <code class="text-xs bg-gray-200 dark:bg-[#161618] text-dark-700 dark:text-dark-200 px-2 py-1 rounded-lg font-mono">001/INV/SPI-KLN/I/2026</code>
                             </div>
                         </div>
                     </div>
@@ -231,7 +231,7 @@
                     <div>
                         <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-3">{{ __('pages.invoice_guide_status_flow_title') }}</h4>
                         <div class="flex flex-wrap items-center gap-2">
-                            <div class="flex items-center gap-2 px-3 py-2 bg-gray-100 dark:bg-dark-700 rounded-xl border border-gray-200 dark:border-dark-600">
+                            <div class="flex items-center gap-2 px-3 py-2 bg-gray-100 dark:bg-[#27272a] rounded-xl border border-gray-200 dark:border-white/10">
                                 <div class="w-2.5 h-2.5 rounded-full bg-gray-400"></div>
                                 <span class="text-xs font-medium text-dark-700 dark:text-dark-300">Draft</span>
                             </div>
@@ -285,22 +285,22 @@
                     </div>
 
                     {{-- Pembayaran --}}
-                    <div class="border-t border-secondary-200 dark:border-dark-600 pt-4">
+                    <div class="border-t border-secondary-200 dark:border-white/10 pt-4">
                         <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-3">{{ __('pages.invoice_guide_payment_title') }}</h4>
                         <div class="space-y-2">
-                            <div class="flex items-start gap-3 p-3 bg-gray-50 dark:bg-dark-700 rounded-xl">
+                            <div class="flex items-start gap-3 p-3 bg-gray-50 dark:bg-[#27272a] rounded-xl">
                                 <div class="h-7 w-7 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center shrink-0">
                                     <span class="text-xs font-bold text-blue-600 dark:text-blue-400">1</span>
                                 </div>
                                 <p class="text-xs text-dark-600 dark:text-dark-400">{{ __('pages.invoice_guide_payment_step1') }}</p>
                             </div>
-                            <div class="flex items-start gap-3 p-3 bg-gray-50 dark:bg-dark-700 rounded-xl">
+                            <div class="flex items-start gap-3 p-3 bg-gray-50 dark:bg-[#27272a] rounded-xl">
                                 <div class="h-7 w-7 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center shrink-0">
                                     <span class="text-xs font-bold text-blue-600 dark:text-blue-400">2</span>
                                 </div>
                                 <p class="text-xs text-dark-600 dark:text-dark-400">{{ __('pages.invoice_guide_payment_step2') }}</p>
                             </div>
-                            <div class="flex items-start gap-3 p-3 bg-gray-50 dark:bg-dark-700 rounded-xl">
+                            <div class="flex items-start gap-3 p-3 bg-gray-50 dark:bg-[#27272a] rounded-xl">
                                 <div class="h-7 w-7 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center shrink-0">
                                     <span class="text-xs font-bold text-blue-600 dark:text-blue-400">3</span>
                                 </div>
@@ -392,7 +392,7 @@
                     </div>
 
                     {{-- Outstanding Profit --}}
-                    <div class="p-4 bg-gray-50 dark:bg-dark-700 rounded-xl border border-gray-200 dark:border-dark-600">
+                    <div class="p-4 bg-gray-50 dark:bg-[#27272a] rounded-xl border border-gray-200 dark:border-white/10">
                         <div class="flex items-start gap-3">
                             <x-icon name="light-bulb" class="w-5 h-5 text-yellow-500 dark:text-yellow-400 shrink-0 mt-0.5" />
                             <div>
@@ -467,7 +467,7 @@
                     </div>
 
                     {{-- Tips --}}
-                    <div class="p-4 bg-gray-50 dark:bg-dark-700 rounded-xl border border-gray-200 dark:border-dark-600">
+                    <div class="p-4 bg-gray-50 dark:bg-[#27272a] rounded-xl border border-gray-200 dark:border-white/10">
                         <div class="flex items-start gap-3">
                             <x-icon name="light-bulb" class="w-5 h-5 text-yellow-500 dark:text-yellow-400 shrink-0 mt-0.5" />
                             <div class="flex-1">

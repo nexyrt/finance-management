@@ -460,7 +460,7 @@ return [
 
     // Bank Accounts - Index Page
     'manage_all_bank_accounts' => 'Kelola semua rekening bank Anda',
-    'accounts' => 'rekening',
+    'accounts' => 'Rekening',
     'select_account_to_view' => 'Pilih rekening untuk melihat detail',
     'no_account_selected_message' => 'Pilih rekening dari sidebar untuk melihat transaksi dan pembayaran',
 

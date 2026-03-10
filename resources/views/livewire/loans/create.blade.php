@@ -19,7 +19,7 @@
 
         <form id="loan-create" wire:submit="save" class="space-y-6">
             <div class="space-y-4">
-                <div class="border-b border-secondary-200 dark:border-dark-600 pb-4">
+                <div class="border-b border-secondary-200 dark:border-white/10 pb-4">
                     <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-1">Informasi Pinjaman</h4>
                     <p class="text-xs text-dark-500 dark:text-dark-400">Detail dasar pinjaman</p>
                 </div>
@@ -30,7 +30,7 @@
                     <x-input wire:model="lender_name" label="Nama Pemberi Pinjaman *"
                         placeholder="Bank BCA, Bank Mandiri, dll" />
 
-                    <x-currency-input wire:model="principal_amount" label="Jumlah Pokok *" placeholder="0" />
+                    <x-form.currency-input wire:model="principal_amount" label="Jumlah Pokok *" placeholder="0" />
 
                     <x-select.native wire:model.live="interest_type" label="Tipe Bunga *" :options="[
                         ['label' => 'Jumlah Tetap', 'value' => 'fixed'],
@@ -38,7 +38,7 @@
                     ]" />
 
                     @if ($interest_type === 'fixed')
-                        <x-currency-input wire:model="interest_amount" label="Jumlah Bunga (opsional)" placeholder="0" />
+                        <x-form.currency-input wire:model="interest_amount" label="Jumlah Bunga (opsional)" placeholder="0" />
                     @else
                         <x-input wire:model="interest_rate" type="number" step="0.01"
                             label="Rate Bunga (% per tahun, opsional)" placeholder="0" suffix="%" />
@@ -56,7 +56,7 @@
             </div>
 
             <div class="space-y-4">
-                <div class="border-b border-secondary-200 dark:border-dark-600 pb-4">
+                <div class="border-b border-secondary-200 dark:border-white/10 pb-4">
                     <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-1">Detail Tambahan</h4>
                     <p class="text-xs text-dark-500 dark:text-dark-400">Rekening bank dan kontrak</p>
                 </div>

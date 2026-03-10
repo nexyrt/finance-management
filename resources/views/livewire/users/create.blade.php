@@ -20,7 +20,7 @@
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {{-- Left Column: Personal Info --}}
                 <div class="space-y-4">
-                    <div class="border-b border-secondary-200 dark:border-dark-600 pb-4">
+                    <div class="border-b border-secondary-200 dark:border-white/10 pb-4">
                         <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-1">{{ __('pages.basic_info') }}</h4>
                         <p class="text-xs text-dark-500 dark:text-dark-400">{{ __('pages.user_full_name') }}</p>
                     </div>
@@ -31,7 +31,7 @@
 
                 {{-- Right Column: Role, Status & Password --}}
                 <div class="space-y-4">
-                    <div class="border-b border-secondary-200 dark:border-dark-600 pb-4">
+                    <div class="border-b border-secondary-200 dark:border-white/10 pb-4">
                         <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-1">{{ __('pages.user_col_role') }} & {{ __('common.settings') }}</h4>
                         <p class="text-xs text-dark-500 dark:text-dark-400">{{ __('pages.assign_role') }}</p>
                     </div>

@@ -402,6 +402,19 @@
                     </div>
                 @endcanany
 
+                @if(app()->isLocal())
+                    <div class="px-2 pt-2">
+                        <a href="{{ route('test') }}" wire:navigate @click="closeSidebar()"
+                            class="nav-item {{ request()->routeIs('test') ? 'nav-active' : '' }}"
+                            :title="sidebarCollapsed ? 'Testing' : undefined">
+                            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.075m.75-.075a48.108 48.108 0 013 0m-3 0v5.714M5 14.5a2.25 2.25 0 00-.659 1.591v3.318A2.25 2.25 0 006.591 21.5h10.818a2.25 2.25 0 002.25-2.091V16.09A2.25 2.25 0 0019 14.5m-14 0h14M9.75 3.104A48.108 48.108 0 0112 3c.999 0 1.992.05 2.99.147" />
+                            </svg>
+                            <span class="nav-label">Testing</span>
+                        </a>
+                    </div>
+                @endif
+
             </nav>
 
             {{-- User profile --}}
@@ -432,7 +445,7 @@
                         x-transition:leave="transition ease-in duration-75"
                         x-transition:leave-start="opacity-100 translate-y-0"
                         x-transition:leave-end="opacity-0 translate-y-1"
-                        class="absolute bottom-full left-0 right-0 mb-1 bg-white dark:bg-dark-700 border border-gray-100 dark:border-white/8 rounded-xl shadow-xl shadow-black/10 dark:shadow-black/30 overflow-hidden"
+                        class="absolute bottom-full left-0 right-0 mb-1 bg-white dark:bg-[#27272a] border border-gray-100 dark:border-white/8 rounded-xl shadow-xl shadow-black/10 dark:shadow-black/30 overflow-hidden"
                         :class="sidebarCollapsed ? 'left-auto right-0 w-48' : ''">
 
                         {{-- User info header --}}
@@ -476,7 +489,7 @@
 
             {{-- Collapse toggle (desktop only) --}}
             <button @click="toggleCollapse()"
-                class="hidden lg:flex absolute top-17 -right-3 w-6 h-6 rounded-full bg-white dark:bg-dark-700 border border-gray-200 dark:border-white/10 shadow-sm items-center justify-center hover:bg-gray-50 dark:hover:bg-dark-800 transition-colors text-gray-400 dark:text-zinc-500 hover:text-gray-700 dark:hover:text-zinc-200"
+                class="hidden lg:flex absolute top-17 -right-3 w-6 h-6 rounded-full bg-white dark:bg-[#27272a] border border-gray-200 dark:border-white/10 shadow-sm items-center justify-center hover:bg-gray-50 dark:hover:bg-dark-800 transition-colors text-gray-400 dark:text-zinc-500 hover:text-gray-700 dark:hover:text-zinc-200"
                 :title="sidebarCollapsed ? '{{ __('common.expand_sidebar') }}' : '{{ __('common.collapse_sidebar') }}'">
                 <svg class="w-3 h-3 transition-transform duration-300" :class="{ 'rotate-180': sidebarCollapsed }" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M15 18l-6-6 6-6"/>

@@ -23,7 +23,7 @@
     <form wire:submit="save" class="space-y-6">
         <!-- Basic Information -->
         <div class="space-y-4">
-            <div class="border-b border-secondary-200 dark:border-dark-600 pb-4">
+            <div class="border-b border-secondary-200 dark:border-white/10 pb-4">
                 <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-1">{{ __('pages.basic_information') }}</h4>
                 <p class="text-xs text-dark-500 dark:text-dark-400">{{ __('pages.client_basic_details') }}</p>
             </div>
@@ -49,7 +49,7 @@
 
         <!-- Tax Information -->
         <div class="space-y-4">
-            <div class="border-b border-secondary-200 dark:border-dark-600 pb-4">
+            <div class="border-b border-secondary-200 dark:border-white/10 pb-4">
                 <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-1">{{ __('pages.tax_information') }}</h4>
                 <p class="text-xs text-dark-500 dark:text-dark-400">{{ __('pages.tax_compliance_details') }}</p>
             </div>
@@ -68,7 +68,7 @@
 
         <!-- Contact Information -->
         <div class="space-y-4">
-            <div class="border-b border-secondary-200 dark:border-dark-600 pb-4">
+            <div class="border-b border-secondary-200 dark:border-white/10 pb-4">
                 <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-1">{{ __('pages.contact_information') }}</h4>
                 <p class="text-xs text-dark-500 dark:text-dark-400">{{ __('pages.contact_person_details') }}</p>
             </div>

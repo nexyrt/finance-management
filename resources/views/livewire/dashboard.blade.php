@@ -132,13 +132,13 @@
                     </div>
                 </div>
                 {{-- Period Toggle --}}
-                <div class="flex items-center rounded-lg border border-gray-200 dark:border-dark-600 text-xs overflow-hidden">
+                <div class="flex items-center rounded-lg border border-gray-200 dark:border-white/10 text-xs overflow-hidden">
                     <button wire:click="$set('chartPeriod', 'this_month')"
                         class="px-3 py-1.5 transition-colors {{ $chartPeriod === 'this_month' ? 'bg-primary-600 text-white' : 'text-dark-600 dark:text-dark-400 hover:bg-gray-100 dark:hover:bg-dark-700' }}">
                         {{ __('pages.this_month') }}
                     </button>
                     <button wire:click="$set('chartPeriod', '6_months')"
-                        class="px-3 py-1.5 border-x border-gray-200 dark:border-dark-600 transition-colors {{ $chartPeriod === '6_months' ? 'bg-primary-600 text-white' : 'text-dark-600 dark:text-dark-400 hover:bg-gray-100 dark:hover:bg-dark-700' }}">
+                        class="px-3 py-1.5 border-x border-gray-200 dark:border-white/10 transition-colors {{ $chartPeriod === '6_months' ? 'bg-primary-600 text-white' : 'text-dark-600 dark:text-dark-400 hover:bg-gray-100 dark:hover:bg-dark-700' }}">
                         6 {{ __('pages.six_months') }}
                     </button>
                     <button wire:click="$set('chartPeriod', '12_months')"
@@ -255,7 +255,7 @@
             </div>
             <div class="space-y-2">
                 @forelse ($this->bankAccounts as $account)
-                    <div class="flex items-center justify-between p-3 rounded-xl bg-gray-50 dark:bg-dark-700 hover:bg-gray-100 dark:hover:bg-dark-600 transition-colors">
+                    <div class="flex items-center justify-between p-3 rounded-xl bg-gray-50 dark:bg-[#27272a] hover:bg-gray-100 dark:hover:bg-dark-600 transition-colors">
                         <div class="flex items-center gap-2.5 min-w-0">
                             <div class="h-8 w-8 rounded-lg bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center flex-shrink-0">
                                 <x-icon name="credit-card" class="h-4 w-4 text-blue-600 dark:text-blue-400" />
@@ -308,10 +308,10 @@
                             ? 'bg-red-50 border-red-100 dark:bg-red-900/10 dark:border-red-900/30'
                             : ($isWarning
                                 ? 'bg-amber-50 border-amber-100 dark:bg-amber-900/10 dark:border-amber-900/30'
-                                : 'bg-gray-50 border-transparent dark:bg-dark-700') }}">
+                                : 'bg-gray-50 border-transparent dark:bg-[#27272a]') }}">
                         <div class="flex items-center gap-2.5 min-w-0">
                             <div class="h-8 w-8 rounded-lg flex items-center justify-center flex-shrink-0
-                                {{ $isOverdue ? 'bg-red-100 dark:bg-red-900/20' : ($isWarning ? 'bg-amber-100 dark:bg-amber-900/20' : 'bg-gray-200 dark:bg-dark-600') }}">
+                                {{ $isOverdue ? 'bg-red-100 dark:bg-red-900/20' : ($isWarning ? 'bg-amber-100 dark:bg-amber-900/20' : 'bg-gray-200 dark:bg-[#161618]') }}">
                                 @if ($isOverdue)
                                     <x-icon name="exclamation-triangle" class="h-4 w-4 text-red-600 dark:text-red-400" />
                                 @elseif ($isWarning)
@@ -360,7 +360,7 @@
             </div>
             <div class="space-y-2">
                 @forelse ($this->recentTransactions as $transaction)
-                    <div class="flex items-center justify-between p-3 rounded-xl bg-gray-50 dark:bg-dark-700 hover:bg-gray-100 dark:hover:bg-dark-600 transition-colors">
+                    <div class="flex items-center justify-between p-3 rounded-xl bg-gray-50 dark:bg-[#27272a] hover:bg-gray-100 dark:hover:bg-dark-600 transition-colors">
                         <div class="flex items-center gap-2.5 min-w-0">
                             <div class="h-8 w-8 rounded-lg flex items-center justify-center flex-shrink-0
                                 {{ $transaction['type'] === 'income' ? 'bg-emerald-50 dark:bg-emerald-900/20' : 'bg-red-50 dark:bg-red-900/20' }}">

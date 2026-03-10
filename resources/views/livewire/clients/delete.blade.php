@@ -16,7 +16,7 @@
         @if($client)
             <div class="space-y-6">
                 {{-- Client Info --}}
-                <div class="border border-secondary-200 dark:border-dark-600 rounded-xl p-4">
+                <div class="border border-secondary-200 dark:border-white/10 rounded-xl p-4">
                     <div class="flex items-center gap-4">
                         <div class="relative">
                             @if($client->logo)

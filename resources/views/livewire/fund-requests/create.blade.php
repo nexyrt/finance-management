@@ -28,7 +28,7 @@
                         <x-icon name="information-circle" class="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
                     </div>
                     <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50">{{ __('pages.basic_details_section') }}</h4>
-                    <div class="flex-1 h-px bg-zinc-200 dark:bg-dark-600"></div>
+                    <div class="flex-1 h-px bg-zinc-200 dark:bg-[#161618]"></div>
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -72,15 +72,15 @@
                         <x-icon name="flag" class="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
                     </div>
                     <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50">{{ __('pages.priority_label') }}</h4>
-                    <div class="flex-1 h-px bg-zinc-200 dark:bg-dark-600"></div>
+                    <div class="flex-1 h-px bg-zinc-200 dark:bg-[#161618]"></div>
                 </div>
 
                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
                     {{-- Low --}}
                     <label class="relative flex flex-col items-center gap-2 p-3 rounded-xl border-2 cursor-pointer transition-all duration-150
-                        {{ $priority === 'low' ? 'border-green-500 bg-green-50 dark:bg-green-900/20 shadow-sm' : 'border-zinc-200 dark:border-dark-600 hover:border-green-300 dark:hover:border-green-700 hover:bg-green-50/50 dark:hover:bg-green-900/10' }}">
+                        {{ $priority === 'low' ? 'border-green-500 bg-green-50 dark:bg-green-900/20 shadow-sm' : 'border-zinc-200 dark:border-white/10 hover:border-green-300 dark:hover:border-green-700 hover:bg-green-50/50 dark:hover:bg-green-900/10' }}">
                         <input type="radio" wire:model.live="priority" value="low" class="sr-only">
-                        <div class="h-8 w-8 rounded-lg {{ $priority === 'low' ? 'bg-green-100 dark:bg-green-900/40' : 'bg-zinc-100 dark:bg-dark-700' }} flex items-center justify-center transition-colors">
+                        <div class="h-8 w-8 rounded-lg {{ $priority === 'low' ? 'bg-green-100 dark:bg-green-900/40' : 'bg-zinc-100 dark:bg-[#27272a]' }} flex items-center justify-center transition-colors">
                             <x-icon name="arrow-down-circle" class="w-4 h-4 {{ $priority === 'low' ? 'text-green-600 dark:text-green-400' : 'text-dark-400 dark:text-dark-500' }}" />
                         </div>
                         <span class="text-xs font-semibold {{ $priority === 'low' ? 'text-green-700 dark:text-green-300' : 'text-dark-600 dark:text-dark-400' }}">
@@ -95,9 +95,9 @@
 
                     {{-- Medium --}}
                     <label class="relative flex flex-col items-center gap-2 p-3 rounded-xl border-2 cursor-pointer transition-all duration-150
-                        {{ $priority === 'medium' ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 shadow-sm' : 'border-zinc-200 dark:border-dark-600 hover:border-blue-300 dark:hover:border-blue-700 hover:bg-blue-50/50 dark:hover:bg-blue-900/10' }}">
+                        {{ $priority === 'medium' ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 shadow-sm' : 'border-zinc-200 dark:border-white/10 hover:border-blue-300 dark:hover:border-blue-700 hover:bg-blue-50/50 dark:hover:bg-blue-900/10' }}">
                         <input type="radio" wire:model.live="priority" value="medium" class="sr-only">
-                        <div class="h-8 w-8 rounded-lg {{ $priority === 'medium' ? 'bg-blue-100 dark:bg-blue-900/40' : 'bg-zinc-100 dark:bg-dark-700' }} flex items-center justify-center transition-colors">
+                        <div class="h-8 w-8 rounded-lg {{ $priority === 'medium' ? 'bg-blue-100 dark:bg-blue-900/40' : 'bg-zinc-100 dark:bg-[#27272a]' }} flex items-center justify-center transition-colors">
                             <x-icon name="minus-circle" class="w-4 h-4 {{ $priority === 'medium' ? 'text-blue-600 dark:text-blue-400' : 'text-dark-400 dark:text-dark-500' }}" />
                         </div>
                         <span class="text-xs font-semibold {{ $priority === 'medium' ? 'text-blue-700 dark:text-blue-300' : 'text-dark-600 dark:text-dark-400' }}">
@@ -112,9 +112,9 @@
 
                     {{-- High --}}
                     <label class="relative flex flex-col items-center gap-2 p-3 rounded-xl border-2 cursor-pointer transition-all duration-150
-                        {{ $priority === 'high' ? 'border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20 shadow-sm' : 'border-zinc-200 dark:border-dark-600 hover:border-yellow-300 dark:hover:border-yellow-700 hover:bg-yellow-50/50 dark:hover:bg-yellow-900/10' }}">
+                        {{ $priority === 'high' ? 'border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20 shadow-sm' : 'border-zinc-200 dark:border-white/10 hover:border-yellow-300 dark:hover:border-yellow-700 hover:bg-yellow-50/50 dark:hover:bg-yellow-900/10' }}">
                         <input type="radio" wire:model.live="priority" value="high" class="sr-only">
-                        <div class="h-8 w-8 rounded-lg {{ $priority === 'high' ? 'bg-yellow-100 dark:bg-yellow-900/40' : 'bg-zinc-100 dark:bg-dark-700' }} flex items-center justify-center transition-colors">
+                        <div class="h-8 w-8 rounded-lg {{ $priority === 'high' ? 'bg-yellow-100 dark:bg-yellow-900/40' : 'bg-zinc-100 dark:bg-[#27272a]' }} flex items-center justify-center transition-colors">
                             <x-icon name="arrow-up-circle" class="w-4 h-4 {{ $priority === 'high' ? 'text-yellow-600 dark:text-yellow-400' : 'text-dark-400 dark:text-dark-500' }}" />
                         </div>
                         <span class="text-xs font-semibold {{ $priority === 'high' ? 'text-yellow-700 dark:text-yellow-300' : 'text-dark-600 dark:text-dark-400' }}">
@@ -129,9 +129,9 @@
 
                     {{-- Urgent --}}
                     <label class="relative flex flex-col items-center gap-2 p-3 rounded-xl border-2 cursor-pointer transition-all duration-150
-                        {{ $priority === 'urgent' ? 'border-red-500 bg-red-50 dark:bg-red-900/20 shadow-sm' : 'border-zinc-200 dark:border-dark-600 hover:border-red-300 dark:hover:border-red-700 hover:bg-red-50/50 dark:hover:bg-red-900/10' }}">
+                        {{ $priority === 'urgent' ? 'border-red-500 bg-red-50 dark:bg-red-900/20 shadow-sm' : 'border-zinc-200 dark:border-white/10 hover:border-red-300 dark:hover:border-red-700 hover:bg-red-50/50 dark:hover:bg-red-900/10' }}">
                         <input type="radio" wire:model.live="priority" value="urgent" class="sr-only">
-                        <div class="h-8 w-8 rounded-lg {{ $priority === 'urgent' ? 'bg-red-100 dark:bg-red-900/40' : 'bg-zinc-100 dark:bg-dark-700' }} flex items-center justify-center transition-colors">
+                        <div class="h-8 w-8 rounded-lg {{ $priority === 'urgent' ? 'bg-red-100 dark:bg-red-900/40' : 'bg-zinc-100 dark:bg-[#27272a]' }} flex items-center justify-center transition-colors">
                             <x-icon name="exclamation-circle" class="w-4 h-4 {{ $priority === 'urgent' ? 'text-red-600 dark:text-red-400' : 'text-dark-400 dark:text-dark-500' }}" />
                         </div>
                         <span class="text-xs font-semibold {{ $priority === 'urgent' ? 'text-red-700 dark:text-red-300' : 'text-dark-600 dark:text-dark-400' }}">
@@ -154,7 +154,7 @@
                     </div>
                     <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50">{{ __('pages.attachment') }}</h4>
                     <span class="text-xs text-dark-400 dark:text-dark-500">({{ __('common.optional') }})</span>
-                    <div class="flex-1 h-px bg-zinc-200 dark:bg-dark-600"></div>
+                    <div class="flex-1 h-px bg-zinc-200 dark:bg-[#161618]"></div>
                 </div>
 
                 <x-upload wire:model="attachment"
@@ -171,7 +171,7 @@
                         <x-icon name="list-bullet" class="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                     </div>
                     <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50">{{ __('pages.items_section') }}</h4>
-                    <div class="flex-1 h-px bg-zinc-200 dark:bg-dark-600"></div>
+                    <div class="flex-1 h-px bg-zinc-200 dark:bg-[#161618]"></div>
                     <x-button wire:click="addItem" color="primary" size="sm" type="button">
                         <x-slot:left>
                             <x-icon name="plus" class="w-3.5 h-3.5" />
@@ -181,11 +181,11 @@
                 </div>
 
                 @if (count($items) > 0)
-                    <div class="rounded-xl border border-zinc-200 dark:border-dark-600 overflow-hidden">
+                    <div class="rounded-xl border border-zinc-200 dark:border-white/10 overflow-hidden">
                         <div class="overflow-x-auto">
                             <table class="w-full text-sm">
                                 <thead>
-                                    <tr class="bg-zinc-50 dark:bg-dark-700 border-b border-zinc-200 dark:border-dark-600">
+                                    <tr class="bg-zinc-50 dark:bg-[#27272a] border-b border-zinc-200 dark:border-white/10">
                                         <th class="text-left py-2.5 px-3 text-xs font-semibold text-dark-500 dark:text-dark-400 uppercase tracking-wide w-8">#</th>
                                         <th class="text-left py-2.5 px-3 text-xs font-semibold text-dark-500 dark:text-dark-400 uppercase tracking-wide" style="min-width:240px">{{ __('pages.item_description_label') }}</th>
                                         <th class="text-left py-2.5 px-3 text-xs font-semibold text-dark-500 dark:text-dark-400 uppercase tracking-wide" style="min-width:200px">{{ __('pages.category_label') }}</th>
@@ -197,7 +197,7 @@
                                 </thead>
                                 <tbody class="divide-y divide-zinc-100 dark:divide-dark-700">
                                     @foreach ($items as $index => $item)
-                                        <tr class="bg-white dark:bg-dark-800 hover:bg-zinc-50/70 dark:hover:bg-dark-700/50 transition-colors group">
+                                        <tr class="bg-white dark:bg-[#1e1e1e] hover:bg-zinc-50/70 dark:hover:bg-dark-700/50 transition-colors group">
                                             <td class="py-2.5 px-3 text-xs text-dark-400 dark:text-dark-500 font-medium">{{ $index + 1 }}</td>
                                             <td class="py-2.5 px-3" style="min-width:240px">
                                                 <div class="space-y-1.5">
@@ -223,7 +223,7 @@
                                                          class="h-8 text-sm text-center" />
                                             </td>
                                             <td class="py-2.5 px-3" style="min-width:150px">
-                                                <x-currency-input wire:model.blur="items.{{ $index }}.unit_price"
+                                                <x-form.currency-input wire:model.blur="items.{{ $index }}.unit_price"
                                                                   placeholder="0"
                                                                   class="h-8 text-sm" />
                                             </td>
@@ -260,8 +260,8 @@
                         </div>
                     </div>
                 @else
-                    <div class="flex flex-col items-center justify-center py-10 rounded-xl border-2 border-dashed border-zinc-300 dark:border-dark-600 bg-zinc-50/50 dark:bg-dark-700/30">
-                        <div class="h-12 w-12 bg-zinc-100 dark:bg-dark-700 rounded-xl flex items-center justify-center mb-3">
+                    <div class="flex flex-col items-center justify-center py-10 rounded-xl border-2 border-dashed border-zinc-300 dark:border-white/10 bg-zinc-50/50 dark:bg-[#27272a]/30">
+                        <div class="h-12 w-12 bg-zinc-100 dark:bg-[#27272a] rounded-xl flex items-center justify-center mb-3">
                             <x-icon name="document-text" class="w-6 h-6 text-dark-400 dark:text-dark-500" />
                         </div>
                         <p class="text-sm text-dark-500 dark:text-dark-400 mb-3">{{ __('pages.no_items_yet') }}</p>

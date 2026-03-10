@@ -18,7 +18,7 @@
             <div class="space-y-6">
                 {{-- Request Information --}}
                 <div class="space-y-4">
-                    <div class="border-b border-secondary-200 dark:border-dark-600 pb-4">
+                    <div class="border-b border-secondary-200 dark:border-white/10 pb-4">
                         <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-1">{{ __('pages.fund_request_information') }}</h4>
                     </div>
 
@@ -64,14 +64,14 @@
 
                 {{-- Budget Items --}}
                 <div class="space-y-4">
-                    <div class="border-b border-secondary-200 dark:border-dark-600 pb-4">
+                    <div class="border-b border-secondary-200 dark:border-white/10 pb-4">
                         <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-1">{{ __('pages.request_items') }}</h4>
                     </div>
 
                     <div class="overflow-x-auto">
                         <table class="w-full text-sm">
                             <thead>
-                                <tr class="border-b border-secondary-200 dark:border-dark-600">
+                                <tr class="border-b border-secondary-200 dark:border-white/10">
                                     <th class="text-left pb-2 px-2 text-dark-700 dark:text-dark-300 font-semibold">{{ __('pages.item_description') }}</th>
                                     <th class="text-left pb-2 px-2 text-dark-700 dark:text-dark-300 font-semibold">{{ __('pages.category') }}</th>
                                     <th class="text-right pb-2 px-2 text-dark-700 dark:text-dark-300 font-semibold">{{ __('pages.quantity') }}</th>
@@ -81,7 +81,7 @@
                             </thead>
                             <tbody>
                                 @foreach ($fundRequest->items as $item)
-                                    <tr class="border-b border-secondary-100 dark:border-dark-700">
+                                    <tr class="border-b border-secondary-100 dark:border-white/8">
                                         <td class="py-2 px-2">
                                             <div class="flex flex-col">
                                                 <span class="font-medium text-dark-900 dark:text-dark-50">{{ $item->description }}</span>
@@ -100,7 +100,7 @@
                                         </td>
                                     </tr>
                                 @endforeach
-                                <tr class="bg-secondary-50 dark:bg-dark-700 font-bold">
+                                <tr class="bg-secondary-50 dark:bg-[#27272a] font-bold">
                                     <td colspan="4" class="py-3 px-2 text-right text-dark-900 dark:text-dark-50">{{ __('common.total') }}:</td>
                                     <td class="py-3 px-2 text-right text-lg text-primary-600 dark:text-primary-400">
                                         Rp {{ number_format($fundRequest->total_amount, 0, ',', '.') }}
@@ -113,7 +113,7 @@
 
                 {{-- Review Notes --}}
                 <div class="space-y-4">
-                    <div class="border-b border-secondary-200 dark:border-dark-600 pb-4">
+                    <div class="border-b border-secondary-200 dark:border-white/10 pb-4">
                         <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-1">{{ __('pages.review_notes_label') }}</h4>
                         <p class="text-xs text-dark-500 dark:text-dark-400">{{ __('pages.review_notes_hint') }}</p>
                     </div>

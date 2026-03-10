@@ -30,7 +30,7 @@
 
             {{-- Content --}}
             <div class="flex-1 max-w-lg">
-                <div class="border-b border-secondary-200 dark:border-dark-600 pb-4 mb-5">
+                <div class="border-b border-secondary-200 dark:border-white/10 pb-4 mb-5">
                     <h2 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-1">{{ __('common.company_profile') }}</h2>
                     <p class="text-xs text-dark-500 dark:text-dark-400">{{ __('pages.settings_company_description') }}</p>
                 </div>
@@ -44,14 +44,14 @@
                         <x-input wire:model="phone" :label="__('common.phone')" required />
                     </div>
 
-                    <hr class="border-gray-200 dark:border-dark-600" />
+                    <hr class="border-gray-200 dark:border-white/10" />
 
                     <div class="grid grid-cols-2 gap-4">
                         <x-input wire:model="finance_manager_name" :label="__('pages.finance_manager')" required />
                         <x-input wire:model="finance_manager_position" :label="__('pages.position')" required />
                     </div>
 
-                    <hr class="border-gray-200 dark:border-dark-600" />
+                    <hr class="border-gray-200 dark:border-white/10" />
 
                     <x-checkbox wire:model.boolean="is_pkp" :label="__('pages.pkp_label')" />
 
@@ -62,7 +62,7 @@
                         </div>
                     @endif
 
-                    <hr class="border-gray-200 dark:border-dark-600" />
+                    <hr class="border-gray-200 dark:border-white/10" />
 
                     {{-- Logo --}}
                     <div class="space-y-2">
@@ -80,7 +80,7 @@
                                 </div>
                             </div>
                         @endif
-                        <x-file-upload wire:model="logo" :label="$currentLogo ? __('pages.replace_logo') : __('pages.logo')" accept="image/jpeg,image/jpg,image/png" />
+                        <x-form.file-upload wire:model="logo" :label="$currentLogo ? __('pages.replace_logo') : __('pages.logo')" accept="image/jpeg,image/jpg,image/png" />
                     </div>
 
                     {{-- Letter Head --}}
@@ -99,7 +99,7 @@
                                 </div>
                             </div>
                         @endif
-                        <x-file-upload wire:model="letterHead" :label="$currentLetterHead ? __('pages.replace_letter_head') : __('pages.letter_head')" accept="image/jpeg,image/jpg,image/png" />
+                        <x-form.file-upload wire:model="letterHead" :label="$currentLetterHead ? __('pages.replace_letter_head') : __('pages.letter_head')" accept="image/jpeg,image/jpg,image/png" />
                     </div>
 
                     {{-- Signature --}}
@@ -118,7 +118,7 @@
                                 </div>
                             </div>
                         @endif
-                        <x-file-upload wire:model="signature" :label="$currentSignature ? __('pages.replace_signature') : __('pages.signature')" accept="image/jpeg,image/jpg,image/png" />
+                        <x-form.file-upload wire:model="signature" :label="$currentSignature ? __('pages.replace_signature') : __('pages.signature')" accept="image/jpeg,image/jpg,image/png" />
                     </div>
 
                     {{-- Stamp --}}
@@ -137,7 +137,7 @@
                                 </div>
                             </div>
                         @endif
-                        <x-file-upload wire:model="stamp" :label="$currentStamp ? __('pages.replace_stamp') : __('pages.stamp')" accept="image/jpeg,image/jpg,image/png" />
+                        <x-form.file-upload wire:model="stamp" :label="$currentStamp ? __('pages.replace_stamp') : __('pages.stamp')" accept="image/jpeg,image/jpg,image/png" />
                     </div>
 
                     {{-- Favicon info --}}
@@ -154,7 +154,7 @@
                                     <p class="text-xs text-primary-700 dark:text-primary-300 mb-2">
                                         {{ __('pages.generate_favicons_hint') }}
                                     </p>
-                                    <code class="block px-3 py-2 bg-white dark:bg-dark-800 rounded-lg text-xs font-mono text-primary-600 dark:text-primary-400 border border-primary-200 dark:border-primary-700">
+                                    <code class="block px-3 py-2 bg-white dark:bg-[#1e1e1e] rounded-lg text-xs font-mono text-primary-600 dark:text-primary-400 border border-primary-200 dark:border-primary-700">
                                         php artisan favicon:generate
                                     </code>
                                 </div>
@@ -165,9 +165,9 @@
                     <div class="flex items-center gap-3 pt-2">
                         <x-button color="primary" type="submit">{{ __('common.save') }}</x-button>
                         <span class="text-xs text-dark-400 dark:text-dark-500">
-                            <kbd class="px-1.5 py-0.5 text-[10px] font-mono bg-dark-100 dark:bg-dark-700 border border-dark-200 dark:border-dark-600 rounded">Ctrl</kbd>
+                            <kbd class="px-1.5 py-0.5 text-[10px] font-mono bg-dark-100 dark:bg-[#27272a] border border-dark-200 dark:border-white/10 rounded">Ctrl</kbd>
                             +
-                            <kbd class="px-1.5 py-0.5 text-[10px] font-mono bg-dark-100 dark:bg-dark-700 border border-dark-200 dark:border-dark-600 rounded">Enter</kbd>
+                            <kbd class="px-1.5 py-0.5 text-[10px] font-mono bg-dark-100 dark:bg-[#27272a] border border-dark-200 dark:border-white/10 rounded">Enter</kbd>
                         </span>
                     </div>
                 </form>

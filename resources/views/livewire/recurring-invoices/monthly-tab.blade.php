@@ -25,7 +25,7 @@
 
     <!-- Stats Cards -->
     <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6">
-        <div class="bg-white dark:bg-dark-800 border border-zinc-200 dark:border-dark-600 rounded-xl p-6">
+        <div class="bg-white dark:bg-[#1e1e1e] border border-zinc-200 dark:border-white/10 rounded-xl p-6">
             <div class="flex items-center gap-4">
                 <div class="h-12 w-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
                     <x-icon name="document-text" class="w-6 h-6 text-blue-600 dark:text-blue-400" />
@@ -39,7 +39,7 @@
             </div>
         </div>
 
-        <div class="bg-white dark:bg-dark-800 border border-zinc-200 dark:border-dark-600 rounded-xl p-6">
+        <div class="bg-white dark:bg-[#1e1e1e] border border-zinc-200 dark:border-white/10 rounded-xl p-6">
             <div class="flex items-center gap-4">
                 <div class="h-12 w-12 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center">
                     <x-icon name="check-circle" class="w-6 h-6 text-green-600 dark:text-green-400" />
@@ -53,7 +53,7 @@
             </div>
         </div>
 
-        <div class="bg-white dark:bg-dark-800 border border-zinc-200 dark:border-dark-600 rounded-xl p-6">
+        <div class="bg-white dark:bg-[#1e1e1e] border border-zinc-200 dark:border-white/10 rounded-xl p-6">
             <div class="flex items-center gap-4">
                 <div class="h-12 w-12 bg-amber-100 dark:bg-amber-900/30 rounded-xl flex items-center justify-center">
                     <x-icon name="clock" class="w-6 h-6 text-amber-600 dark:text-amber-400" />
@@ -70,7 +70,7 @@
             </div>
         </div>
 
-        <div class="bg-white dark:bg-dark-800 border border-zinc-200 dark:border-dark-600 rounded-xl p-6">
+        <div class="bg-white dark:bg-[#1e1e1e] border border-zinc-200 dark:border-white/10 rounded-xl p-6">
             <div class="flex items-center gap-4">
                 <div class="h-12 w-12 bg-purple-100 dark:bg-purple-900/30 rounded-xl flex items-center justify-center">
                     <x-icon name="currency-dollar" class="w-6 h-6 text-purple-600 dark:text-purple-400" />
@@ -92,7 +92,7 @@
     <div x-data="{ selected: @entangle('selected').live }" x-show="selected.length > 0" x-transition
         class="fixed bottom-4 sm:bottom-6 left-4 right-4 sm:left-1/2 sm:right-auto sm:transform sm:-translate-x-1/2 z-50">
         <div
-            class="bg-white dark:bg-dark-800 rounded-xl shadow-lg border border-gray-200 dark:border-dark-600 px-4 sm:px-6 py-4 sm:min-w-96">
+            class="bg-white dark:bg-[#1e1e1e] rounded-xl shadow-lg border border-gray-200 dark:border-white/10 px-4 sm:px-6 py-4 sm:min-w-96">
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-6">
                 <div class="flex items-center gap-3">
                     <div

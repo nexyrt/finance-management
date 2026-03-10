@@ -140,7 +140,7 @@
                 @if ($row->amount_paid > 0)
                     @php $pct = min(($row->amount_paid / $row->amount) * 100, 100); @endphp
                     <div class="mt-1.5 space-y-1">
-                        <div class="w-full bg-gray-100 dark:bg-dark-700 rounded-full h-1.5">
+                        <div class="w-full bg-gray-100 dark:bg-[#27272a] rounded-full h-1.5">
                             <div class="{{ $row->isFullyPaid() ? 'bg-emerald-500' : 'bg-amber-500' }} h-1.5 rounded-full transition-all"
                                 style="width: {{ $pct }}%"></div>
                         </div>

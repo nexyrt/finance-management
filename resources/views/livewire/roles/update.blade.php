@@ -20,7 +20,7 @@
         <form id="role-update" wire:submit="save" class="space-y-6">
             {{-- Section: Basic Information --}}
             <div class="space-y-4">
-                <div class="border-b border-secondary-200 dark:border-dark-600 pb-4">
+                <div class="border-b border-secondary-200 dark:border-white/10 pb-4">
                     <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-1">Basic Information</h4>
                     <p class="text-xs text-dark-500 dark:text-dark-400">Role name and identifier</p>
                 </div>
@@ -31,7 +31,7 @@
 
             {{-- Section: Icon Selection --}}
             <div class="space-y-4">
-                <div class="border-b border-secondary-200 dark:border-dark-600 pb-4">
+                <div class="border-b border-secondary-200 dark:border-white/10 pb-4">
                     <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-1">Icon Selection</h4>
                     <p class="text-xs text-dark-500 dark:text-dark-400">Choose an icon to represent this role</p>
                 </div>
@@ -50,11 +50,11 @@
                 </div>
 
                 {{-- Icon Grid --}}
-                <div class="max-h-96 overflow-y-auto rounded-lg border border-dark-200 dark:border-dark-600 p-4">
+                <div class="max-h-96 overflow-y-auto rounded-lg border border-dark-200 dark:border-white/10 p-4">
                     <div class="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 gap-2">
                         @foreach ($availableIcons as $iconName)
                             <button type="button" wire:click="selectIcon('{{ $iconName }}')"
-                                class="group relative aspect-square p-3 rounded-lg border transition-all {{ $icon === $iconName ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/30' : 'border-gray-200 dark:border-dark-600 hover:border-primary-400 dark:hover:border-primary-500 hover:bg-gray-50 dark:hover:bg-dark-700' }}"
+                                class="group relative aspect-square p-3 rounded-lg border transition-all {{ $icon === $iconName ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/30' : 'border-gray-200 dark:border-white/10 hover:border-primary-400 dark:hover:border-primary-500 hover:bg-gray-50 dark:hover:bg-dark-700' }}"
                                 title="{{ $iconName }}">
                                 <x-icon :name="$iconName"
                                     class="w-full h-full transition-colors {{ $icon === $iconName ? 'text-primary-600 dark:text-primary-400' : 'text-dark-600 dark:text-dark-400 group-hover:text-primary-600 dark:group-hover:text-primary-400' }}" />

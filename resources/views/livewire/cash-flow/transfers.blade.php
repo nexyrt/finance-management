@@ -11,7 +11,7 @@
         </div>
         <button
             wire:click="$toggle('guideModal')"
-            class="h-9 px-4 flex items-center gap-2 rounded-xl border border-zinc-200 dark:border-dark-600 bg-white dark:bg-dark-800 text-dark-500 dark:text-dark-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-300 dark:hover:border-indigo-700 text-sm font-medium transition-all"
+            class="h-9 px-4 flex items-center gap-2 rounded-xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-[#1e1e1e] text-dark-500 dark:text-dark-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-300 dark:hover:border-indigo-700 text-sm font-medium transition-all"
         >
             <x-icon name="information-circle" class="w-4 h-4" />
             {{ __('pages.cf_transfer_guide_btn') }}
@@ -19,11 +19,11 @@
     </div>
 
     {{-- Section Switcher --}}
-    <div class="flex items-center gap-1 p-1 bg-secondary-100 dark:bg-dark-700 rounded-xl w-fit">
+    <div class="flex items-center gap-1 p-1 bg-secondary-100 dark:bg-[#27272a] rounded-xl w-fit">
         <button wire:click="switchSection('transfers')"
             class="px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200
                 {{ $section === 'transfers'
-                    ? 'bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 shadow-sm'
+                    ? 'bg-white dark:bg-[#1e1e1e] text-dark-900 dark:text-dark-50 shadow-sm'
                     : 'text-dark-500 dark:text-dark-400 hover:text-dark-700 dark:hover:text-dark-200' }}">
             <div class="flex items-center gap-2">
                 <x-icon name="arrow-path" class="w-4 h-4" />
@@ -33,7 +33,7 @@
         <button wire:click="switchSection('adjustments')"
             class="px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200
                 {{ $section === 'adjustments'
-                    ? 'bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 shadow-sm'
+                    ? 'bg-white dark:bg-[#1e1e1e] text-dark-900 dark:text-dark-50 shadow-sm'
                     : 'text-dark-500 dark:text-dark-400 hover:text-dark-700 dark:hover:text-dark-200' }}">
             <div class="flex items-center gap-2">
                 <x-icon name="adjustments-horizontal" class="w-4 h-4" />
@@ -233,7 +233,7 @@
         {{-- Transfer Bulk Actions --}}
         <div x-data="{ show: @entangle('selected').live }" x-show="show.length > 0" x-transition
             class="fixed bottom-4 sm:bottom-6 left-4 right-4 sm:left-1/2 sm:right-auto sm:transform sm:-translate-x-1/2 z-50">
-            <div class="bg-white dark:bg-dark-800 rounded-xl shadow-lg border border-secondary-200 dark:border-dark-600 px-4 sm:px-6 py-4 sm:min-w-96">
+            <div class="bg-white dark:bg-[#1e1e1e] rounded-xl shadow-lg border border-secondary-200 dark:border-white/10 px-4 sm:px-6 py-4 sm:min-w-96">
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-6">
                     <div class="flex items-center gap-3">
                         <div class="h-10 w-10 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center">
@@ -428,7 +428,7 @@
         {{-- Adjustment Bulk Actions --}}
         <div x-data="{ show: @entangle('adjSelected').live }" x-show="show.length > 0" x-transition
             class="fixed bottom-4 sm:bottom-6 left-4 right-4 sm:left-1/2 sm:right-auto sm:transform sm:-translate-x-1/2 z-50">
-            <div class="bg-white dark:bg-dark-800 rounded-xl shadow-lg border border-secondary-200 dark:border-dark-600 px-4 sm:px-6 py-4 sm:min-w-96">
+            <div class="bg-white dark:bg-[#1e1e1e] rounded-xl shadow-lg border border-secondary-200 dark:border-white/10 px-4 sm:px-6 py-4 sm:min-w-96">
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-6">
                     <div class="flex items-center gap-3">
                         <div class="h-10 w-10 bg-amber-50 dark:bg-amber-900/20 rounded-xl flex items-center justify-center">
@@ -471,12 +471,12 @@
 
         <div x-data="{ tab: 'transfer' }" class="space-y-5">
             {{-- Tab Navigation --}}
-            <div class="flex flex-wrap gap-1 p-1 bg-zinc-100 dark:bg-dark-700 rounded-xl border border-zinc-200 dark:border-dark-600">
+            <div class="flex flex-wrap gap-1 p-1 bg-zinc-100 dark:bg-[#27272a] rounded-xl border border-zinc-200 dark:border-white/10">
                 <button
                     @click="tab = 'transfer'"
                     class="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 flex-1 justify-center"
                     :class="tab === 'transfer'
-                        ? 'bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 shadow-sm border border-zinc-200 dark:border-dark-600'
+                        ? 'bg-white dark:bg-[#1e1e1e] text-dark-900 dark:text-dark-50 shadow-sm border border-zinc-200 dark:border-white/10'
                         : 'text-dark-500 dark:text-dark-400 hover:text-dark-800 dark:hover:text-dark-200'"
                 >
                     <x-icon name="arrows-right-left" class="w-3.5 h-3.5 shrink-0" />
@@ -486,7 +486,7 @@
                     @click="tab = 'adjustment'"
                     class="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 flex-1 justify-center"
                     :class="tab === 'adjustment'
-                        ? 'bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 shadow-sm border border-zinc-200 dark:border-dark-600'
+                        ? 'bg-white dark:bg-[#1e1e1e] text-dark-900 dark:text-dark-50 shadow-sm border border-zinc-200 dark:border-white/10'
                         : 'text-dark-500 dark:text-dark-400 hover:text-dark-800 dark:hover:text-dark-200'"
                 >
                     <x-icon name="adjustments-horizontal" class="w-3.5 h-3.5 shrink-0" />
@@ -609,7 +609,7 @@
                     </div>
 
                     {{-- Debit/Credit signs --}}
-                    <div class="p-4 bg-gray-50 dark:bg-dark-700 rounded-xl border border-gray-200 dark:border-dark-600">
+                    <div class="p-4 bg-gray-50 dark:bg-[#27272a] rounded-xl border border-gray-200 dark:border-white/10">
                         <div class="flex items-start gap-3">
                             <x-icon name="information-circle" class="w-5 h-5 text-gray-500 dark:text-gray-400 shrink-0 mt-0.5" />
                             <div class="flex-1">

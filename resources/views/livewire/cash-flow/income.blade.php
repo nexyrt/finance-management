@@ -12,7 +12,7 @@
         <div class="flex items-center gap-2 flex-wrap">
             <button
                 wire:click="$toggle('guideModal')"
-                class="h-9 px-4 flex items-center gap-2 rounded-xl border border-zinc-200 dark:border-dark-600 bg-white dark:bg-dark-800 text-dark-500 dark:text-dark-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-300 dark:hover:border-indigo-700 text-sm font-medium transition-all"
+                class="h-9 px-4 flex items-center gap-2 rounded-xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-[#1e1e1e] text-dark-500 dark:text-dark-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-300 dark:hover:border-indigo-700 text-sm font-medium transition-all"
             >
                 <x-icon name="information-circle" class="w-4 h-4" />
                 {{ __('pages.client_guide_btn') }}
@@ -216,7 +216,7 @@
     {{-- Bulk Actions Bar --}}
     <div x-data="{ show: @entangle('selected').live }" x-show="show.length > 0" x-transition
         class="fixed bottom-4 sm:bottom-6 left-4 right-4 sm:left-1/2 sm:right-auto sm:transform sm:-translate-x-1/2 z-50">
-        <div class="bg-white dark:bg-dark-800 rounded-xl shadow-lg border border-secondary-200 dark:border-dark-600 px-4 sm:px-6 py-4 sm:min-w-96">
+        <div class="bg-white dark:bg-[#1e1e1e] rounded-xl shadow-lg border border-secondary-200 dark:border-white/10 px-4 sm:px-6 py-4 sm:min-w-96">
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-6">
                 <div class="flex items-center gap-3">
                     <div class="h-10 w-10 bg-green-50 dark:bg-green-900/20 rounded-xl flex items-center justify-center">
@@ -262,14 +262,14 @@
 
         {{-- Tab Navigation --}}
         <div x-data="{ tab: 'flow' }" class="space-y-6">
-            <div class="flex gap-1 p-1 bg-secondary-100 dark:bg-dark-700 rounded-xl w-fit">
+            <div class="flex gap-1 p-1 bg-secondary-100 dark:bg-[#27272a] rounded-xl w-fit">
                 <button @click="tab = 'flow'"
-                    :class="tab === 'flow' ? 'bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 shadow-sm' : 'text-dark-500 dark:text-dark-400 hover:text-dark-700 dark:hover:text-dark-200'"
+                    :class="tab === 'flow' ? 'bg-white dark:bg-[#1e1e1e] text-dark-900 dark:text-dark-50 shadow-sm' : 'text-dark-500 dark:text-dark-400 hover:text-dark-700 dark:hover:text-dark-200'"
                     class="px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200">
                     {{ __('pages.income_guide_tab_flow') }}
                 </button>
                 <button @click="tab = 'export'"
-                    :class="tab === 'export' ? 'bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 shadow-sm' : 'text-dark-500 dark:text-dark-400 hover:text-dark-700 dark:hover:text-dark-200'"
+                    :class="tab === 'export' ? 'bg-white dark:bg-[#1e1e1e] text-dark-900 dark:text-dark-50 shadow-sm' : 'text-dark-500 dark:text-dark-400 hover:text-dark-700 dark:hover:text-dark-200'"
                     class="px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200">
                     {{ __('pages.income_guide_tab_export') }}
                 </button>
@@ -285,7 +285,7 @@
                             <div class="h-9 w-9 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center shrink-0">
                                 <span class="text-sm font-bold text-blue-600 dark:text-blue-400">1</span>
                             </div>
-                            <div class="w-0.5 bg-secondary-200 dark:bg-dark-600 flex-1 mt-2"></div>
+                            <div class="w-0.5 bg-secondary-200 dark:bg-[#161618] flex-1 mt-2"></div>
                         </div>
                         <div class="pb-4 flex-1">
                             <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-1">{{ __('pages.income_guide_step1_title') }}</h4>
@@ -303,7 +303,7 @@
                             <div class="h-9 w-9 bg-purple-50 dark:bg-purple-900/20 rounded-xl flex items-center justify-center shrink-0">
                                 <span class="text-sm font-bold text-purple-600 dark:text-purple-400">2</span>
                             </div>
-                            <div class="w-0.5 bg-secondary-200 dark:bg-dark-600 flex-1 mt-2"></div>
+                            <div class="w-0.5 bg-secondary-200 dark:bg-[#161618] flex-1 mt-2"></div>
                         </div>
                         <div class="pb-4 flex-1">
                             <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-1">{{ __('pages.income_guide_step2_title') }}</h4>
@@ -336,7 +336,7 @@
             <div x-show="tab === 'export'" class="space-y-4">
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     {{-- Filter Card --}}
-                    <div class="flex items-start gap-3 p-4 border border-secondary-200 dark:border-dark-600 rounded-xl">
+                    <div class="flex items-start gap-3 p-4 border border-secondary-200 dark:border-white/10 rounded-xl">
                         <div class="h-10 w-10 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center shrink-0">
                             <x-icon name="funnel" class="w-5 h-5 text-blue-600 dark:text-blue-400" />
                         </div>
@@ -347,7 +347,7 @@
                     </div>
 
                     {{-- Excel Card --}}
-                    <div class="flex items-start gap-3 p-4 border border-secondary-200 dark:border-dark-600 rounded-xl">
+                    <div class="flex items-start gap-3 p-4 border border-secondary-200 dark:border-white/10 rounded-xl">
                         <div class="h-10 w-10 bg-green-50 dark:bg-green-900/20 rounded-xl flex items-center justify-center shrink-0">
                             <x-icon name="table-cells" class="w-5 h-5 text-green-600 dark:text-green-400" />
                         </div>
@@ -358,7 +358,7 @@
                     </div>
 
                     {{-- PDF Card --}}
-                    <div class="flex items-start gap-3 p-4 border border-secondary-200 dark:border-dark-600 rounded-xl">
+                    <div class="flex items-start gap-3 p-4 border border-secondary-200 dark:border-white/10 rounded-xl">
                         <div class="h-10 w-10 bg-red-50 dark:bg-red-900/20 rounded-xl flex items-center justify-center shrink-0">
                             <x-icon name="document-text" class="w-5 h-5 text-red-600 dark:text-red-400" />
                         </div>

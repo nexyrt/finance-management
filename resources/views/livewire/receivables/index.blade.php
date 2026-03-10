@@ -13,7 +13,7 @@
             {{-- Workflow Guide Button --}}
             <button
                 wire:click="$toggle('guideModal')"
-                class="h-9 px-4 flex items-center gap-2 rounded-xl border border-zinc-200 dark:border-dark-600 bg-white dark:bg-dark-800 text-dark-500 dark:text-dark-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-300 dark:hover:border-indigo-700 text-sm font-medium transition-all"
+                class="h-9 px-4 flex items-center gap-2 rounded-xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-[#1e1e1e] text-dark-500 dark:text-dark-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-300 dark:hover:border-indigo-700 text-sm font-medium transition-all"
             >
                 <x-icon name="information-circle" class="w-4 h-4" />
                 {{ __('pages.client_guide_btn') }}
@@ -138,7 +138,7 @@
 
         @interact('column_debtor', $row)
             <div class="flex items-center gap-2">
-                <div class="w-8 h-8 bg-secondary-100 dark:bg-dark-700 rounded-lg flex items-center justify-center shrink-0">
+                <div class="w-8 h-8 bg-secondary-100 dark:bg-[#27272a] rounded-lg flex items-center justify-center shrink-0">
                     <x-icon name="{{ $row->type === 'employee_loan' ? 'user' : 'building-office' }}"
                         class="w-4 h-4 text-dark-500 dark:text-dark-400" />
                 </div>
@@ -161,7 +161,7 @@
                 </div>
                 @if ($totalPrincipalPaid > 0)
                     <div class="mt-1.5">
-                        <div class="w-full bg-dark-200 dark:bg-dark-700 rounded-full h-1.5">
+                        <div class="w-full bg-dark-200 dark:bg-[#27272a] rounded-full h-1.5">
                             <div class="bg-green-500 h-1.5 rounded-full transition-all"
                                 style="width: {{ min($percentage, 100) }}%"></div>
                         </div>
@@ -207,7 +207,7 @@
 
         @interact('column_installment_months', $row)
             <div>
-                <div class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-secondary-100 dark:bg-dark-700 rounded-lg">
+                <div class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-secondary-100 dark:bg-[#27272a] rounded-lg">
                     <x-icon name="calendar" class="w-3.5 h-3.5 text-dark-500 dark:text-dark-400" />
                     <span class="font-semibold text-dark-900 dark:text-dark-50 text-sm">{{ $row->installment_months ?? '-' }}</span>
                     <span class="text-xs text-dark-500 dark:text-dark-400">{{ __('pages.rcv_months') }}</span>
@@ -311,12 +311,12 @@
         <div x-data="{ tab: 'workflow' }" class="space-y-5">
 
             {{-- Tab Navigation --}}
-            <div class="flex gap-1 p-1 bg-zinc-100 dark:bg-dark-700 rounded-xl border border-zinc-200 dark:border-dark-600">
+            <div class="flex gap-1 p-1 bg-zinc-100 dark:bg-[#27272a] rounded-xl border border-zinc-200 dark:border-white/10">
                 <button
                     @click="tab = 'workflow'"
                     class="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 flex-1 justify-center"
                     :class="tab === 'workflow'
-                        ? 'bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 shadow-sm border border-zinc-200 dark:border-dark-600'
+                        ? 'bg-white dark:bg-[#1e1e1e] text-dark-900 dark:text-dark-50 shadow-sm border border-zinc-200 dark:border-white/10'
                         : 'text-dark-500 dark:text-dark-400 hover:text-dark-800 dark:hover:text-dark-200'"
                 >
                     <x-icon name="arrow-path" class="w-3.5 h-3.5 shrink-0" />
@@ -326,7 +326,7 @@
                     @click="tab = 'status'"
                     class="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 flex-1 justify-center"
                     :class="tab === 'status'
-                        ? 'bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 shadow-sm border border-zinc-200 dark:border-dark-600'
+                        ? 'bg-white dark:bg-[#1e1e1e] text-dark-900 dark:text-dark-50 shadow-sm border border-zinc-200 dark:border-white/10'
                         : 'text-dark-500 dark:text-dark-400 hover:text-dark-800 dark:hover:text-dark-200'"
                 >
                     <x-icon name="tag" class="w-3.5 h-3.5 shrink-0" />
@@ -499,7 +499,7 @@
                 </div>
 
                 {{-- Role Access --}}
-                <div class="p-4 bg-zinc-50 dark:bg-dark-700 border border-zinc-200 dark:border-dark-600 rounded-xl">
+                <div class="p-4 bg-zinc-50 dark:bg-[#27272a] border border-zinc-200 dark:border-white/10 rounded-xl">
                     <h4 class="text-xs font-semibold text-dark-900 dark:text-dark-50 mb-2">{{ __('pages.rcv_guide_role_title') }}</h4>
                     <div class="space-y-1.5 text-xs text-dark-600 dark:text-dark-400">
                         <div class="flex items-center gap-2">

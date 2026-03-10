@@ -1,8 +1,8 @@
 <div>
-    <x-auth-header :title="__('Create an account')" :description="__('Enter your details below to create your account')" />
+    <x-ui.auth-header :title="__('Create an account')" :description="__('Enter your details below to create your account')" />
 
     <!-- Session Status -->
-    <x-auth-session-status class="text-center mb-4" :status="session('status')" />
+    <x-ui.auth-session-status class="text-center mb-4" :status="session('status')" />
 
     <form wire:submit="register" class="space-y-4">
         <!-- Name -->

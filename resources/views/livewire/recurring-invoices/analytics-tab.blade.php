@@ -10,18 +10,18 @@
                     select="label:label|value:value" />
             </div>
             {{-- Period toggle --}}
-            <div class="inline-flex items-center bg-dark-100 dark:bg-dark-700 rounded-lg p-0.5">
+            <div class="inline-flex items-center bg-dark-100 dark:bg-[#27272a] rounded-lg p-0.5">
                 <button wire:click="$set('period', 'monthly')"
                     class="px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-150
                         {{ $period === 'monthly'
-                            ? 'bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 shadow-sm'
+                            ? 'bg-white dark:bg-[#1e1e1e] text-dark-900 dark:text-dark-50 shadow-sm'
                             : 'text-dark-500 dark:text-dark-400 hover:text-dark-700 dark:hover:text-dark-200' }}">
                     {{ __('pages.ri_period_monthly') }}
                 </button>
                 <button wire:click="$set('period', 'quarterly')"
                     class="px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-150
                         {{ $period === 'quarterly'
-                            ? 'bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 shadow-sm'
+                            ? 'bg-white dark:bg-[#1e1e1e] text-dark-900 dark:text-dark-50 shadow-sm'
                             : 'text-dark-500 dark:text-dark-400 hover:text-dark-700 dark:hover:text-dark-200' }}">
                     {{ __('pages.ri_period_quarterly') }}
                 </button>
@@ -41,7 +41,7 @@
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
 
         {{-- Current Year Revenue --}}
-        <div class="bg-white dark:bg-dark-800 rounded-xl border border-dark-200 dark:border-dark-600 px-5 py-4">
+        <div class="bg-white dark:bg-[#1e1e1e] rounded-xl border border-dark-200 dark:border-white/10 px-5 py-4">
             <p class="text-[11px] font-medium text-dark-400 dark:text-dark-500 uppercase tracking-wider mb-1.5">
                 {{ __('pages.ri_year_revenue_label', ['year' => $selectedYear]) }}
             </p>
@@ -54,7 +54,7 @@
         </div>
 
         {{-- YoY Growth --}}
-        <div class="bg-white dark:bg-dark-800 rounded-xl border border-dark-200 dark:border-dark-600 px-5 py-4">
+        <div class="bg-white dark:bg-[#1e1e1e] rounded-xl border border-dark-200 dark:border-white/10 px-5 py-4">
             <p class="text-[11px] font-medium text-dark-400 dark:text-dark-500 uppercase tracking-wider mb-1.5">
                 {{ __('pages.ri_yoy_growth_label') }}
             </p>
@@ -73,7 +73,7 @@
         </div>
 
         {{-- This Month --}}
-        <div class="bg-white dark:bg-dark-800 rounded-xl border border-dark-200 dark:border-dark-600 px-5 py-4">
+        <div class="bg-white dark:bg-[#1e1e1e] rounded-xl border border-dark-200 dark:border-white/10 px-5 py-4">
             <p class="text-[11px] font-medium text-dark-400 dark:text-dark-500 uppercase tracking-wider mb-1.5">
                 {{ __('pages.ri_this_month_label') }}
             </p>
@@ -86,7 +86,7 @@
         </div>
 
         {{-- Monthly Average --}}
-        <div class="bg-white dark:bg-dark-800 rounded-xl border border-dark-200 dark:border-dark-600 px-5 py-4">
+        <div class="bg-white dark:bg-[#1e1e1e] rounded-xl border border-dark-200 dark:border-white/10 px-5 py-4">
             <p class="text-[11px] font-medium text-dark-400 dark:text-dark-500 uppercase tracking-wider mb-1.5">
                 {{ __('pages.ri_avg_monthly_label') }}
             </p>
@@ -104,7 +104,7 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
 
         {{-- Revenue Chart (2/3) --}}
-        <div class="lg:col-span-2 bg-white dark:bg-dark-800 rounded-xl border border-dark-200 dark:border-dark-600 p-5">
+        <div class="lg:col-span-2 bg-white dark:bg-[#1e1e1e] rounded-xl border border-dark-200 dark:border-white/10 p-5">
             <div class="flex items-center justify-between mb-4">
                 <div>
                     <h3 class="text-sm font-semibold text-dark-900 dark:text-dark-50">
@@ -120,13 +120,13 @@
 
         {{-- Status Breakdown (1/3) --}}
         @php $breakdown = $this->statusBreakdown; @endphp
-        <div class="bg-white dark:bg-dark-800 rounded-xl border border-dark-200 dark:border-dark-600 p-5 flex flex-col">
+        <div class="bg-white dark:bg-[#1e1e1e] rounded-xl border border-dark-200 dark:border-white/10 p-5 flex flex-col">
             <h3 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-4">
                 {{ __('pages.ri_status_breakdown_title') }}
             </h3>
 
             {{-- Total --}}
-            <div class="mb-4 pb-4 border-b border-dark-100 dark:border-dark-700">
+            <div class="mb-4 pb-4 border-b border-dark-100 dark:border-white/8">
                 <p class="text-[11px] font-medium text-dark-400 dark:text-dark-500 uppercase tracking-wider mb-1">
                     {{ __('pages.ri_total_label') }}
                 </p>
@@ -152,7 +152,7 @@
                             <span class="text-dark-400 font-normal text-[11px]">({{ number_format($breakdown['published']['percentage'], 0) }}%)</span>
                         </span>
                     </div>
-                    <div class="h-1.5 w-full bg-dark-100 dark:bg-dark-700 rounded-full overflow-hidden">
+                    <div class="h-1.5 w-full bg-dark-100 dark:bg-[#27272a] rounded-full overflow-hidden">
                         <div class="h-full bg-green-500 rounded-full transition-all duration-700"
                             style="width: {{ number_format($breakdown['published']['percentage'], 1) }}%"></div>
                     </div>
@@ -173,7 +173,7 @@
                             <span class="text-dark-400 font-normal text-[11px]">({{ number_format($breakdown['draft']['percentage'], 0) }}%)</span>
                         </span>
                     </div>
-                    <div class="h-1.5 w-full bg-dark-100 dark:bg-dark-700 rounded-full overflow-hidden">
+                    <div class="h-1.5 w-full bg-dark-100 dark:bg-[#27272a] rounded-full overflow-hidden">
                         <div class="h-full bg-amber-400 rounded-full transition-all duration-700"
                             style="width: {{ number_format($breakdown['draft']['percentage'], 1) }}%"></div>
                     </div>
@@ -188,10 +188,10 @@
     {{-- Template Performance Table --}}
     @php $templateStats = $this->templateStats; @endphp
     @if (count($templateStats) > 0)
-        <div class="bg-white dark:bg-dark-800 rounded-xl border border-dark-200 dark:border-dark-600 overflow-hidden">
+        <div class="bg-white dark:bg-[#1e1e1e] rounded-xl border border-dark-200 dark:border-white/10 overflow-hidden">
 
             {{-- Header --}}
-            <div class="flex items-center justify-between px-5 py-4 border-b border-dark-100 dark:border-dark-700">
+            <div class="flex items-center justify-between px-5 py-4 border-b border-dark-100 dark:border-white/8">
                 <div>
                     <h3 class="text-sm font-semibold text-dark-900 dark:text-dark-50">{{ __('pages.ri_top_templates_title') }}</h3>
                     <p class="text-xs text-dark-400 dark:text-dark-500 mt-0.5">{{ $selectedYear }}</p>
@@ -200,7 +200,7 @@
             </div>
 
             {{-- Column headers --}}
-            <div class="hidden md:grid grid-cols-12 gap-3 px-5 py-2 bg-dark-50 dark:bg-dark-700/40 border-b border-dark-100 dark:border-dark-700">
+            <div class="hidden md:grid grid-cols-12 gap-3 px-5 py-2 bg-dark-50 dark:bg-[#27272a]/40 border-b border-dark-100 dark:border-white/8">
                 <div class="col-span-5 text-[10px] font-semibold text-dark-400 uppercase tracking-wider">{{ __('pages.ri_template_col') }}</div>
                 <div class="col-span-3 text-[10px] font-semibold text-dark-400 uppercase tracking-wider text-right">{{ __('pages.ri_revenue_col') }}</div>
                 <div class="col-span-2 text-[10px] font-semibold text-dark-400 uppercase tracking-wider text-center">{{ __('pages.ri_invoice_count_col') }}</div>
@@ -215,18 +215,18 @@
                     $barWidth = $maxRevenue > 0 ? ($tmpl['revenue'] / $maxRevenue) * 100 : 0;
                     $rate     = $tmpl['success_rate'];
                 @endphp
-                <div class="grid grid-cols-12 gap-3 px-5 py-3 items-center border-b border-dark-50 dark:border-dark-700/40 last:border-0 hover:bg-dark-50/60 dark:hover:bg-dark-700/20 transition-colors duration-100">
+                <div class="grid grid-cols-12 gap-3 px-5 py-3 items-center border-b border-dark-50 dark:border-white/8/40 last:border-0 hover:bg-dark-50/60 dark:hover:bg-dark-700/20 transition-colors duration-100">
 
                     {{-- Rank + Template name + bar --}}
                     <div class="col-span-12 md:col-span-5 flex items-center gap-3 min-w-0">
                         <span class="w-5 h-5 shrink-0 inline-flex items-center justify-center rounded text-[10px] font-bold
-                            {{ $index === 0 ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400' : 'bg-dark-100 dark:bg-dark-700 text-dark-500 dark:text-dark-400' }}">
+                            {{ $index === 0 ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400' : 'bg-dark-100 dark:bg-[#27272a] text-dark-500 dark:text-dark-400' }}">
                             {{ $index + 1 }}
                         </span>
                         <div class="min-w-0 flex-1">
                             <p class="text-xs font-semibold text-dark-900 dark:text-dark-50 truncate leading-tight">{{ $tmpl['name'] }}</p>
                             <p class="text-[10px] text-dark-400 dark:text-dark-500 truncate mt-0.5">{{ $tmpl['client'] }}</p>
-                            <div class="mt-1.5 h-0.5 w-full bg-dark-100 dark:bg-dark-700 rounded-full overflow-hidden">
+                            <div class="mt-1.5 h-0.5 w-full bg-dark-100 dark:bg-[#27272a] rounded-full overflow-hidden">
                                 <div class="h-full rounded-full bg-linear-to-r from-primary-500 to-blue-400 transition-all duration-700"
                                     style="width: {{ number_format($barWidth, 1) }}%"></div>
                             </div>
@@ -254,7 +254,7 @@
                     {{-- Success rate --}}
                     <div class="col-span-3 md:col-span-1 text-center">
                         <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold tabular-nums
-                            {{ $rate >= 80 ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400' : ($rate >= 50 ? 'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400' : 'bg-dark-100 dark:bg-dark-700 text-dark-500') }}">
+                            {{ $rate >= 80 ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400' : ($rate >= 50 ? 'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400' : 'bg-dark-100 dark:bg-[#27272a] text-dark-500') }}">
                             {{ $rate }}%
                         </span>
                     </div>
@@ -270,7 +270,7 @@
             @endforeach
         </div>
     @else
-        <div class="bg-white dark:bg-dark-800 rounded-xl border border-dark-200 dark:border-dark-600 p-10 text-center">
+        <div class="bg-white dark:bg-[#1e1e1e] rounded-xl border border-dark-200 dark:border-white/10 p-10 text-center">
             <x-icon name="chart-bar" class="w-8 h-8 mx-auto mb-3 text-dark-300 dark:text-dark-600" />
             <p class="text-sm font-medium text-dark-900 dark:text-dark-50">{{ __('pages.ri_no_template_data') }}</p>
             <p class="text-xs text-dark-400 mt-1">{{ $selectedYear }}</p>

@@ -70,11 +70,11 @@
                 <h4 class="font-semibold text-dark-900 dark:text-dark-50">{{ __('pages.ri_invoice_items_title') }}</h4>
 
                 <div
-                    class="bg-white dark:bg-dark-800 rounded-lg border border-zinc-200 dark:border-dark-600 overflow-hidden">
+                    class="bg-white dark:bg-[#1e1e1e] rounded-lg border border-zinc-200 dark:border-white/10 overflow-hidden">
                     <!-- Desktop Table -->
                     <div class="hidden md:block">
                         <div
-                            class="bg-zinc-50 dark:bg-dark-700 px-4 py-3 border-b border-zinc-200 dark:border-dark-600">
+                            class="bg-zinc-50 dark:bg-[#27272a] px-4 py-3 border-b border-zinc-200 dark:border-white/10">
                             <div class="grid grid-cols-12 gap-4 text-sm font-semibold text-dark-900 dark:text-dark-50">
                                 <div class="col-span-1">{{ __('pages.ri_col_hash') }}</div>
                                 <div class="col-span-2">{{ __('pages.ri_col_client') }}</div>
@@ -177,25 +177,25 @@
             </div>
 
             <!-- Financial Summary -->
-            <div class="bg-zinc-50 dark:bg-dark-800 rounded-lg p-4 space-y-3">
+            <div class="bg-zinc-50 dark:bg-[#1e1e1e] rounded-lg p-4 space-y-3">
                 <h4 class="font-semibold text-dark-900 dark:text-dark-50">{{ __('pages.ri_financial_summary_title') }}</h4>
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div class="text-center p-3 bg-white dark:bg-dark-700 rounded-lg">
+                    <div class="text-center p-3 bg-white dark:bg-[#27272a] rounded-lg">
                         <div class="text-sm text-dark-600 dark:text-dark-400">{{ __('pages.ri_subtotal_stat') }}</div>
                         <div class="font-bold text-lg text-dark-900 dark:text-dark-100">
                             Rp {{ number_format($this->subtotal, 0, ',', '.') }}
                         </div>
                     </div>
 
-                    <div class="text-center p-3 bg-white dark:bg-dark-700 rounded-lg">
+                    <div class="text-center p-3 bg-white dark:bg-[#27272a] rounded-lg">
                         <div class="text-sm text-dark-600 dark:text-dark-400">{{ __('pages.ri_total_cogs_stat') }}</div>
                         <div class="font-bold text-lg text-red-600 dark:text-red-400">
                             Rp {{ number_format($this->totalCogs, 0, ',', '.') }}
                         </div>
                     </div>
 
-                    <div class="text-center p-3 bg-white dark:bg-dark-700 rounded-lg">
+                    <div class="text-center p-3 bg-white dark:bg-[#27272a] rounded-lg">
                         <div class="text-sm text-dark-600 dark:text-dark-400">{{ __('pages.ri_gross_profit_stat') }}</div>
                         <div class="font-bold text-lg text-green-600 dark:text-green-400">
                             Rp {{ number_format($this->grossProfit, 0, ',', '.') }}

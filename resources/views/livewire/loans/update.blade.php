@@ -15,7 +15,7 @@
 
         <form id="loan-update" wire:submit="save" class="space-y-6">
             <div class="space-y-4">
-                <div class="border-b border-secondary-200 dark:border-dark-600 pb-4">
+                <div class="border-b border-secondary-200 dark:border-white/10 pb-4">
                     <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-1">Informasi Pinjaman</h4>
                     <p class="text-xs text-dark-500 dark:text-dark-400">Detail dasar pinjaman</p>
                 </div>
@@ -54,13 +54,13 @@
             </div>
 
             <div class="space-y-4">
-                <div class="border-b border-secondary-200 dark:border-dark-600 pb-4">
+                <div class="border-b border-secondary-200 dark:border-white/10 pb-4">
                     <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-1">Dokumen Kontrak</h4>
                     <p class="text-xs text-dark-500 dark:text-dark-400">Upload dokumen perjanjian pinjaman</p>
                 </div>
 
                 @if ($currentAttachment)
-                    <div class="flex items-center gap-2 p-3 bg-secondary-50 dark:bg-dark-700 rounded-lg">
+                    <div class="flex items-center gap-2 p-3 bg-secondary-50 dark:bg-[#27272a] rounded-lg">
                         <x-icon name="paper-clip" class="w-5 h-5 text-dark-500" />
                         <span class="text-sm text-dark-900 dark:text-dark-50 flex-1">Dokumen saat ini terlampir</span>
                         <a href="{{ \Storage::url($currentAttachment) }}" target="_blank"

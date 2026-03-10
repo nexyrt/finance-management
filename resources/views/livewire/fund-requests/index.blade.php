@@ -14,7 +14,7 @@
             {{-- Guide Button --}}
             <button
                 wire:click="$toggle('guideModal')"
-                class="h-9 px-4 flex items-center gap-2 rounded-xl border border-zinc-200 dark:border-dark-600 bg-white dark:bg-dark-800 text-dark-500 dark:text-dark-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-300 dark:hover:border-indigo-700 text-sm font-medium transition-all"
+                class="h-9 px-4 flex items-center gap-2 rounded-xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-[#1e1e1e] text-dark-500 dark:text-dark-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-300 dark:hover:border-indigo-700 text-sm font-medium transition-all"
             >
                 <x-icon name="information-circle" class="w-4 h-4" />
                 {{ __('pages.fund_guide_btn') }}
@@ -99,12 +99,12 @@
         {{-- Centered Tab Bar --}}
         <div class="flex justify-center mb-6">
             <div class="flex flex-col items-center gap-3">
-                <div class="inline-flex items-center gap-1 p-1 bg-zinc-100 dark:bg-dark-700 rounded-xl border border-zinc-200 dark:border-dark-600">
+                <div class="inline-flex items-center gap-1 p-1 bg-zinc-100 dark:bg-[#27272a] rounded-xl border border-zinc-200 dark:border-white/10">
                     {{-- My Requests Tab --}}
                     <button
                         @click="activeTab = 'my_requests'"
                         :class="activeTab === 'my_requests'
-                            ? 'bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 shadow-sm border border-zinc-200 dark:border-dark-600'
+                            ? 'bg-white dark:bg-[#1e1e1e] text-dark-900 dark:text-dark-50 shadow-sm border border-zinc-200 dark:border-white/10'
                             : 'text-dark-500 dark:text-dark-400 hover:text-dark-800 dark:hover:text-dark-200 hover:bg-zinc-50 dark:hover:bg-dark-600'"
                         class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200"
                     >
@@ -113,7 +113,7 @@
                         <span
                             :class="activeTab === 'my_requests'
                                 ? 'bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300'
-                                : 'bg-zinc-200 dark:bg-dark-600 text-dark-500 dark:text-dark-400'"
+                                : 'bg-zinc-200 dark:bg-[#161618] text-dark-500 dark:text-dark-400'"
                             class="inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full text-xs font-semibold transition-colors duration-200"
                         >{{ $this->stats['my_total'] }}</span>
                     </button>
@@ -123,7 +123,7 @@
                         <button
                             @click="activeTab = 'all_requests'"
                             :class="activeTab === 'all_requests'
-                                ? 'bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 shadow-sm border border-zinc-200 dark:border-dark-600'
+                                ? 'bg-white dark:bg-[#1e1e1e] text-dark-900 dark:text-dark-50 shadow-sm border border-zinc-200 dark:border-white/10'
                                 : 'text-dark-500 dark:text-dark-400 hover:text-dark-800 dark:hover:text-dark-200 hover:bg-zinc-50 dark:hover:bg-dark-600'"
                             class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200"
                         >
@@ -132,7 +132,7 @@
                             <span
                                 :class="activeTab === 'all_requests'
                                     ? 'bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300'
-                                    : 'bg-zinc-200 dark:bg-dark-600 text-dark-500 dark:text-dark-400'"
+                                    : 'bg-zinc-200 dark:bg-[#161618] text-dark-500 dark:text-dark-400'"
                                 class="inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full text-xs font-semibold transition-colors duration-200"
                             >{{ $this->stats['all_total'] }}</span>
                         </button>
@@ -196,12 +196,12 @@
 
         {{-- Tab Navigation --}}
         <div x-data="{ tab: 'flow' }" class="space-y-5">
-            <div class="flex gap-1 p-1 bg-zinc-100 dark:bg-dark-700 rounded-xl border border-zinc-200 dark:border-dark-600">
-                <button @click="tab = 'flow'" class="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 flex-1 justify-center" :class="tab === 'flow' ? 'bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 shadow-sm border border-zinc-200 dark:border-dark-600' : 'text-dark-500 dark:text-dark-400 hover:text-dark-800 dark:hover:text-dark-200'">
+            <div class="flex gap-1 p-1 bg-zinc-100 dark:bg-[#27272a] rounded-xl border border-zinc-200 dark:border-white/10">
+                <button @click="tab = 'flow'" class="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 flex-1 justify-center" :class="tab === 'flow' ? 'bg-white dark:bg-[#1e1e1e] text-dark-900 dark:text-dark-50 shadow-sm border border-zinc-200 dark:border-white/10' : 'text-dark-500 dark:text-dark-400 hover:text-dark-800 dark:hover:text-dark-200'">
                     <x-icon name="arrow-right-circle" class="w-3.5 h-3.5" />
                     {{ __('pages.fund_guide_tab_flow') }}
                 </button>
-                <button @click="tab = 'status'" class="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 flex-1 justify-center" :class="tab === 'status' ? 'bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 shadow-sm border border-zinc-200 dark:border-dark-600' : 'text-dark-500 dark:text-dark-400 hover:text-dark-800 dark:hover:text-dark-200'">
+                <button @click="tab = 'status'" class="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 flex-1 justify-center" :class="tab === 'status' ? 'bg-white dark:bg-[#1e1e1e] text-dark-900 dark:text-dark-50 shadow-sm border border-zinc-200 dark:border-white/10' : 'text-dark-500 dark:text-dark-400 hover:text-dark-800 dark:hover:text-dark-200'">
                     <x-icon name="tag" class="w-3.5 h-3.5" />
                     {{ __('pages.fund_guide_tab_status') }}
                 </button>
@@ -318,23 +318,23 @@
                     <div>
                         <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-3">{{ __('pages.fund_guide_status_title') }}</h4>
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                            <div class="flex items-center gap-2 p-3 bg-zinc-50 dark:bg-dark-700 border border-zinc-200 dark:border-dark-600 rounded-xl">
+                            <div class="flex items-center gap-2 p-3 bg-zinc-50 dark:bg-[#27272a] border border-zinc-200 dark:border-white/10 rounded-xl">
                                 <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-zinc-200 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-300">Draft</span>
                                 <span class="text-xs text-dark-500 dark:text-dark-400">{{ __('pages.fund_guide_status_draft') }}</span>
                             </div>
-                            <div class="flex items-center gap-2 p-3 bg-zinc-50 dark:bg-dark-700 border border-zinc-200 dark:border-dark-600 rounded-xl">
+                            <div class="flex items-center gap-2 p-3 bg-zinc-50 dark:bg-[#27272a] border border-zinc-200 dark:border-white/10 rounded-xl">
                                 <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300">Pending</span>
                                 <span class="text-xs text-dark-500 dark:text-dark-400">{{ __('pages.fund_guide_status_pending') }}</span>
                             </div>
-                            <div class="flex items-center gap-2 p-3 bg-zinc-50 dark:bg-dark-700 border border-zinc-200 dark:border-dark-600 rounded-xl">
+                            <div class="flex items-center gap-2 p-3 bg-zinc-50 dark:bg-[#27272a] border border-zinc-200 dark:border-white/10 rounded-xl">
                                 <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300">Approved</span>
                                 <span class="text-xs text-dark-500 dark:text-dark-400">{{ __('pages.fund_guide_status_approved') }}</span>
                             </div>
-                            <div class="flex items-center gap-2 p-3 bg-zinc-50 dark:bg-dark-700 border border-zinc-200 dark:border-dark-600 rounded-xl">
+                            <div class="flex items-center gap-2 p-3 bg-zinc-50 dark:bg-[#27272a] border border-zinc-200 dark:border-white/10 rounded-xl">
                                 <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300">Rejected</span>
                                 <span class="text-xs text-dark-500 dark:text-dark-400">{{ __('pages.fund_guide_status_rejected') }}</span>
                             </div>
-                            <div class="flex items-center gap-2 p-3 bg-zinc-50 dark:bg-dark-700 border border-zinc-200 dark:border-dark-600 rounded-xl">
+                            <div class="flex items-center gap-2 p-3 bg-zinc-50 dark:bg-[#27272a] border border-zinc-200 dark:border-white/10 rounded-xl">
                                 <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300">Disbursed</span>
                                 <span class="text-xs text-dark-500 dark:text-dark-400">{{ __('pages.fund_guide_status_disbursed') }}</span>
                             </div>
@@ -373,7 +373,7 @@
                     </div>
 
                     {{-- Number Format --}}
-                    <div class="p-3 bg-zinc-50 dark:bg-dark-700 border border-zinc-200 dark:border-dark-600 rounded-xl">
+                    <div class="p-3 bg-zinc-50 dark:bg-[#27272a] border border-zinc-200 dark:border-white/10 rounded-xl">
                         <h4 class="text-xs font-semibold text-dark-900 dark:text-dark-50 mb-1">{{ __('pages.fund_guide_number_title') }}</h4>
                         <code class="text-xs text-indigo-600 dark:text-indigo-400 font-mono">001/KSN/I/2026</code>
                         <p class="text-xs text-dark-500 dark:text-dark-400 mt-1">{{ __('pages.fund_guide_number_desc') }}</p>

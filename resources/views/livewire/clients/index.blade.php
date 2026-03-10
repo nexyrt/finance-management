@@ -17,7 +17,7 @@
             {{-- Workflow Guide Button --}}
             <button
                 wire:click="$toggle('guideModal')"
-                class="h-9 px-4 flex items-center gap-2 rounded-xl border border-zinc-200 dark:border-dark-600 bg-white dark:bg-dark-800 text-dark-500 dark:text-dark-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-300 dark:hover:border-indigo-700 text-sm font-medium transition-all"
+                class="h-9 px-4 flex items-center gap-2 rounded-xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-[#1e1e1e] text-dark-500 dark:text-dark-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-300 dark:hover:border-indigo-700 text-sm font-medium transition-all"
             >
                 <x-icon name="information-circle" class="w-4 h-4" />
                 {{ __('pages.client_guide_btn') }}
@@ -122,7 +122,7 @@
             </div>
 
             {{-- Tipe Klien --}}
-            <div class="border-t border-secondary-200 dark:border-dark-600 pt-5">
+            <div class="border-t border-secondary-200 dark:border-white/10 pt-5">
                 <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-3">Tipe Klien</h4>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div class="flex items-start gap-3 p-3 rounded-xl bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-900/40">

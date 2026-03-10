@@ -33,12 +33,12 @@
             {{-- Description (Rich Text Editor) --}}
             <div x-data="feedbackEditorUpdate" wire:ignore>
                 <label class="block text-sm font-medium text-dark-700 dark:text-dark-300 mb-1">{{ __('common.description') }} *</label>
-                <div x-ref="editor" class="bg-white dark:bg-dark-800 rounded-b-lg" style="min-height: 150px;"></div>
+                <div x-ref="editor" class="bg-white dark:bg-[#1e1e1e] rounded-b-lg" style="min-height: 150px;"></div>
             </div>
 
             {{-- Existing Attachment --}}
             @if ($existingAttachment && !$removeAttachment)
-                <div class="p-3 bg-gray-50 dark:bg-dark-700 rounded-lg">
+                <div class="p-3 bg-gray-50 dark:bg-[#27272a] rounded-lg">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-2">
                             <x-icon name="paper-clip" class="w-4 h-4 text-dark-500" />
@@ -53,7 +53,7 @@
 
             {{-- New Attachment --}}
             <div class="space-y-2" x-data="clipboardPaste">
-                <div class="border-b border-secondary-200 dark:border-dark-600 pb-2">
+                <div class="border-b border-secondary-200 dark:border-white/10 pb-2">
                     <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50">
                         {{ $existingAttachment && !$removeAttachment ? __('feedback.replace_attachment') : __('common.attachment') }}
                     </h4>

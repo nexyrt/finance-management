@@ -17,7 +17,7 @@
         <div class="flex items-center gap-3 flex-wrap">
             {{-- Guide Button --}}
             <button wire:click="$toggle('guideModal')"
-                class="h-9 px-4 flex items-center gap-2 rounded-xl border border-zinc-200 dark:border-dark-600 bg-white dark:bg-dark-800 text-dark-500 dark:text-dark-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-300 dark:hover:border-indigo-700 text-sm font-medium transition-all">
+                class="h-9 px-4 flex items-center gap-2 rounded-xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-[#1e1e1e] text-dark-500 dark:text-dark-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-300 dark:hover:border-indigo-700 text-sm font-medium transition-all">
                 <x-icon name="information-circle" class="w-4 h-4" />
                 {{ __('pages.client_guide_btn') }}
             </button>
@@ -44,7 +44,7 @@
                                 class="shrink-0 w-52 p-3 rounded-xl border-2 transition-all text-left
                                     {{ $selectedAccountId == $account['id']
                                         ? 'border-primary-400 dark:border-primary-600 bg-primary-50 dark:bg-primary-900/20'
-                                        : 'border-secondary-200 dark:border-dark-600 bg-white dark:bg-dark-800 hover:border-primary-300 dark:hover:border-primary-700' }}">
+                                        : 'border-secondary-200 dark:border-white/10 bg-white dark:bg-[#1e1e1e] hover:border-primary-300 dark:hover:border-primary-700' }}">
                                 <div class="flex items-center gap-2.5 mb-2">
                                     <div class="h-8 w-8 bg-linear-to-br from-primary-400 to-primary-600 rounded-lg flex items-center justify-center shrink-0">
                                         <x-icon name="building-library" class="w-4 h-4 text-white" />
@@ -62,7 +62,7 @@
 
                         {{-- Add New (mobile) --}}
                         <button wire:click="createAccount"
-                            class="shrink-0 w-32 p-3 rounded-xl border-2 border-dashed border-zinc-300 dark:border-dark-600 hover:border-primary-400 dark:hover:border-primary-500 flex flex-col items-center justify-center gap-2 transition-colors">
+                            class="shrink-0 w-32 p-3 rounded-xl border-2 border-dashed border-zinc-300 dark:border-white/10 hover:border-primary-400 dark:hover:border-primary-500 flex flex-col items-center justify-center gap-2 transition-colors">
                             <x-icon name="plus" class="w-5 h-5 text-dark-400 dark:text-dark-500" />
                             <span class="text-xs text-dark-500 dark:text-dark-400">{{ __('pages.add_new_account') }}</span>
                         </button>
@@ -71,15 +71,15 @@
 
                 {{-- Mobile: Summary stats compact --}}
                 <div class="grid grid-cols-3 gap-2 mt-3">
-                    <div class="bg-white dark:bg-dark-800 rounded-xl border border-secondary-200 dark:border-dark-600 p-3 text-center">
+                    <div class="bg-white dark:bg-[#1e1e1e] rounded-xl border border-secondary-200 dark:border-white/10 p-3 text-center">
                         <p class="text-xs text-dark-500 dark:text-dark-400">{{ __('pages.total_balance') }}</p>
                         <p class="text-sm font-bold text-dark-900 dark:text-dark-50">Rp {{ number_format($this->totalBalance, 0, ',', '.') }}</p>
                     </div>
-                    <div class="bg-white dark:bg-dark-800 rounded-xl border border-secondary-200 dark:border-dark-600 p-3 text-center">
+                    <div class="bg-white dark:bg-[#1e1e1e] rounded-xl border border-secondary-200 dark:border-white/10 p-3 text-center">
                         <p class="text-xs text-dark-500 dark:text-dark-400">{{ __('pages.income') }}</p>
                         <p class="text-sm font-bold text-green-600 dark:text-green-400">Rp {{ number_format($this->monthlySummary['income'], 0, ',', '.') }}</p>
                     </div>
-                    <div class="bg-white dark:bg-dark-800 rounded-xl border border-secondary-200 dark:border-dark-600 p-3 text-center">
+                    <div class="bg-white dark:bg-[#1e1e1e] rounded-xl border border-secondary-200 dark:border-white/10 p-3 text-center">
                         <p class="text-xs text-dark-500 dark:text-dark-400">{{ __('pages.expense') }}</p>
                         <p class="text-sm font-bold text-red-600 dark:text-red-400">Rp {{ number_format($this->monthlySummary['expense'], 0, ',', '.') }}</p>
                     </div>
@@ -97,8 +97,8 @@
                 <div class="lg:sticky lg:top-6 space-y-4">
 
                     {{-- Account List Card --}}
-                    <div class="bg-white dark:bg-dark-800 rounded-xl border border-secondary-200 dark:border-dark-600 overflow-hidden">
-                        <div class="px-4 py-3 border-b border-secondary-200 dark:border-dark-600">
+                    <div class="bg-white dark:bg-[#1e1e1e] rounded-xl border border-secondary-200 dark:border-white/10 overflow-hidden">
+                        <div class="px-4 py-3 border-b border-secondary-200 dark:border-white/10">
                             <div class="flex items-center justify-between">
                                 <h3 class="text-sm font-semibold text-dark-900 dark:text-dark-50 flex items-center gap-2">
                                     <x-icon name="building-library" class="w-4 h-4 text-primary-600 dark:text-primary-400" />
@@ -147,7 +147,7 @@
 
                             {{-- Add New Account --}}
                             <button wire:click="createAccount"
-                                class="w-full flex items-center justify-center gap-2 px-3 py-3 rounded-xl border-2 border-dashed border-zinc-300 dark:border-dark-600 hover:border-primary-400 dark:hover:border-primary-500 text-dark-400 dark:text-dark-500 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">
+                                class="w-full flex items-center justify-center gap-2 px-3 py-3 rounded-xl border-2 border-dashed border-zinc-300 dark:border-white/10 hover:border-primary-400 dark:hover:border-primary-500 text-dark-400 dark:text-dark-500 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">
                                 <x-icon name="plus" class="w-4 h-4" />
                                 <span class="text-xs font-medium">{{ __('pages.add_new_account') }}</span>
                             </button>
@@ -155,7 +155,7 @@
                     </div>
 
                     {{-- Monthly Summary Stats --}}
-                    <div class="bg-white dark:bg-dark-800 rounded-xl border border-secondary-200 dark:border-dark-600 p-4 space-y-3">
+                    <div class="bg-white dark:bg-[#1e1e1e] rounded-xl border border-secondary-200 dark:border-white/10 p-4 space-y-3">
                         <h4 class="text-xs font-semibold text-dark-500 dark:text-dark-400 uppercase tracking-wider">
                             {{ __('pages.monthly_summary') }}
                         </h4>
@@ -168,7 +168,7 @@
                             </span>
                         </div>
 
-                        <div class="h-px bg-secondary-200 dark:bg-dark-600"></div>
+                        <div class="h-px bg-secondary-200 dark:bg-[#161618]"></div>
 
                         {{-- Monthly Income --}}
                         <div class="flex items-center justify-between">
@@ -194,7 +194,7 @@
 
                         {{-- Net --}}
                         @php $netTotal = $this->monthlySummary['income'] - $this->monthlySummary['expense']; @endphp
-                        <div class="h-px bg-secondary-200 dark:bg-dark-600"></div>
+                        <div class="h-px bg-secondary-200 dark:bg-[#161618]"></div>
                         <div class="flex items-center justify-between">
                             <span class="text-xs font-medium text-dark-600 dark:text-dark-400">{{ __('pages.net_flow') }}</span>
                             <span class="text-sm font-bold {{ $netTotal >= 0 ? 'text-blue-600 dark:text-blue-400' : 'text-orange-600 dark:text-orange-400' }}">
@@ -269,11 +269,11 @@
                     <div x-data="{ activeTab: $persist('transactions').as('ba_active_tab') }">
                         {{-- Tab Bar --}}
                         <div class="flex items-center gap-4 mb-4">
-                            <div class="inline-flex items-center gap-1 p-1 bg-zinc-100 dark:bg-dark-700 rounded-xl border border-zinc-200 dark:border-dark-600">
+                            <div class="inline-flex items-center gap-1 p-1 bg-zinc-100 dark:bg-[#27272a] rounded-xl border border-zinc-200 dark:border-white/10">
                                 <button @click="activeTab = 'transactions'"
                                     class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200"
                                     :class="activeTab === 'transactions'
-                                        ? 'bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 shadow-sm border border-zinc-200 dark:border-dark-600'
+                                        ? 'bg-white dark:bg-[#1e1e1e] text-dark-900 dark:text-dark-50 shadow-sm border border-zinc-200 dark:border-white/10'
                                         : 'text-dark-500 dark:text-dark-400 hover:text-dark-800 dark:hover:text-dark-200 hover:bg-zinc-50 dark:hover:bg-dark-600'">
                                     <x-icon name="arrows-right-left" class="w-4 h-4 shrink-0" />
                                     <span>{{ __('common.transactions') }}</span>
@@ -281,7 +281,7 @@
                                 <button @click="activeTab = 'payments'"
                                     class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200"
                                     :class="activeTab === 'payments'
-                                        ? 'bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 shadow-sm border border-zinc-200 dark:border-dark-600'
+                                        ? 'bg-white dark:bg-[#1e1e1e] text-dark-900 dark:text-dark-50 shadow-sm border border-zinc-200 dark:border-white/10'
                                         : 'text-dark-500 dark:text-dark-400 hover:text-dark-800 dark:hover:text-dark-200 hover:bg-zinc-50 dark:hover:bg-dark-600'">
                                     <x-icon name="banknotes" class="w-4 h-4 shrink-0" />
                                     <span>{{ __('common.payments') }}</span>
@@ -322,9 +322,9 @@
 
                 @elseif ($this->accountsData->count() > 0)
                     {{-- No Account Selected --}}
-                    <div class="bg-white dark:bg-dark-800 border border-secondary-200 dark:border-dark-600 rounded-xl flex items-center justify-center min-h-[400px]">
+                    <div class="bg-white dark:bg-[#1e1e1e] border border-secondary-200 dark:border-white/10 rounded-xl flex items-center justify-center min-h-[400px]">
                         <div class="text-center p-8">
-                            <div class="h-16 w-16 bg-gray-100 dark:bg-dark-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <div class="h-16 w-16 bg-gray-100 dark:bg-[#27272a] rounded-full flex items-center justify-center mx-auto mb-4">
                                 <x-icon name="cursor-arrow-rays" class="w-8 h-8 text-gray-400 dark:text-dark-500" />
                             </div>
                             <h3 class="text-lg font-semibold text-dark-900 dark:text-dark-50 mb-2">
@@ -338,7 +338,7 @@
 
                 @else
                     {{-- Empty State: No Accounts --}}
-                    <div class="bg-white dark:bg-dark-800 border border-secondary-200 dark:border-dark-600 rounded-xl p-12 text-center">
+                    <div class="bg-white dark:bg-[#1e1e1e] border border-secondary-200 dark:border-white/10 rounded-xl p-12 text-center">
                         <x-icon name="building-library" class="w-16 h-16 text-zinc-300 dark:text-zinc-600 mx-auto mb-4" />
                         <h3 class="text-xl font-semibold text-dark-900 dark:text-dark-50 mb-2">{{ __('pages.no_accounts_yet') }}</h3>
                         <p class="text-dark-600 dark:text-dark-400 mb-6">{{ __('pages.no_account_selected_message') }}</p>
@@ -356,22 +356,22 @@
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 animate-pulse">
             {{-- Sidebar Skeleton --}}
             <div class="hidden lg:block lg:col-span-3 space-y-4">
-                <div class="bg-white dark:bg-dark-800 border border-secondary-200 dark:border-dark-600 rounded-xl p-4 space-y-3">
+                <div class="bg-white dark:bg-[#1e1e1e] border border-secondary-200 dark:border-white/10 rounded-xl p-4 space-y-3">
                     @foreach (range(1, 3) as $i)
                         <div class="flex items-center gap-3">
-                            <div class="h-9 w-9 bg-gray-200 dark:bg-dark-700 rounded-xl shrink-0"></div>
+                            <div class="h-9 w-9 bg-gray-200 dark:bg-[#27272a] rounded-xl shrink-0"></div>
                             <div class="flex-1 space-y-1.5">
-                                <div class="h-3 bg-gray-200 dark:bg-dark-700 rounded w-24"></div>
-                                <div class="h-3 bg-gray-200 dark:bg-dark-700 rounded w-16"></div>
+                                <div class="h-3 bg-gray-200 dark:bg-[#27272a] rounded w-24"></div>
+                                <div class="h-3 bg-gray-200 dark:bg-[#27272a] rounded w-16"></div>
                             </div>
                         </div>
                     @endforeach
                 </div>
-                <div class="bg-white dark:bg-dark-800 border border-secondary-200 dark:border-dark-600 rounded-xl p-4 space-y-3">
-                    <div class="h-3 bg-gray-200 dark:bg-dark-700 rounded w-28"></div>
-                    <div class="h-5 bg-gray-200 dark:bg-dark-700 rounded w-36"></div>
-                    <div class="h-4 bg-gray-200 dark:bg-dark-700 rounded w-32"></div>
-                    <div class="h-4 bg-gray-200 dark:bg-dark-700 rounded w-32"></div>
+                <div class="bg-white dark:bg-[#1e1e1e] border border-secondary-200 dark:border-white/10 rounded-xl p-4 space-y-3">
+                    <div class="h-3 bg-gray-200 dark:bg-[#27272a] rounded w-28"></div>
+                    <div class="h-5 bg-gray-200 dark:bg-[#27272a] rounded w-36"></div>
+                    <div class="h-4 bg-gray-200 dark:bg-[#27272a] rounded w-32"></div>
+                    <div class="h-4 bg-gray-200 dark:bg-[#27272a] rounded w-32"></div>
                 </div>
             </div>
 
@@ -379,36 +379,36 @@
             <div class="lg:col-span-9 space-y-6">
                 {{-- Header skeleton --}}
                 <div class="flex items-center gap-3">
-                    <div class="h-12 w-12 bg-gray-200 dark:bg-dark-700 rounded-xl"></div>
+                    <div class="h-12 w-12 bg-gray-200 dark:bg-[#27272a] rounded-xl"></div>
                     <div class="space-y-2">
-                        <div class="h-5 bg-gray-200 dark:bg-dark-700 rounded w-40"></div>
-                        <div class="h-3 bg-gray-200 dark:bg-dark-700 rounded w-56"></div>
+                        <div class="h-5 bg-gray-200 dark:bg-[#27272a] rounded w-40"></div>
+                        <div class="h-3 bg-gray-200 dark:bg-[#27272a] rounded w-56"></div>
                     </div>
                 </div>
 
                 {{-- Stats skeleton --}}
                 <div class="grid grid-cols-3 gap-3">
                     @foreach (range(1, 3) as $i)
-                        <div class="h-16 bg-gray-200 dark:bg-dark-700 rounded-xl"></div>
+                        <div class="h-16 bg-gray-200 dark:bg-[#27272a] rounded-xl"></div>
                     @endforeach
                 </div>
 
                 {{-- Chart skeleton --}}
                 <div class="grid grid-cols-1 lg:grid-cols-5 gap-4">
-                    <div class="lg:col-span-3 bg-white dark:bg-dark-800 border border-secondary-200 dark:border-dark-600 rounded-xl p-5">
-                        <div class="h-4 bg-gray-200 dark:bg-dark-700 rounded w-36 mb-4"></div>
-                        <div class="h-[260px] bg-gray-100 dark:bg-dark-700 rounded-xl"></div>
+                    <div class="lg:col-span-3 bg-white dark:bg-[#1e1e1e] border border-secondary-200 dark:border-white/10 rounded-xl p-5">
+                        <div class="h-4 bg-gray-200 dark:bg-[#27272a] rounded w-36 mb-4"></div>
+                        <div class="h-[260px] bg-gray-100 dark:bg-[#27272a] rounded-xl"></div>
                     </div>
-                    <div class="lg:col-span-2 bg-white dark:bg-dark-800 border border-secondary-200 dark:border-dark-600 rounded-xl p-5">
-                        <div class="h-4 bg-gray-200 dark:bg-dark-700 rounded w-28 mb-4"></div>
-                        <div class="h-[160px] bg-gray-100 dark:bg-dark-700 rounded-xl"></div>
+                    <div class="lg:col-span-2 bg-white dark:bg-[#1e1e1e] border border-secondary-200 dark:border-white/10 rounded-xl p-5">
+                        <div class="h-4 bg-gray-200 dark:bg-[#27272a] rounded w-28 mb-4"></div>
+                        <div class="h-[160px] bg-gray-100 dark:bg-[#27272a] rounded-xl"></div>
                     </div>
                 </div>
 
                 {{-- Table skeleton --}}
-                <div class="bg-white dark:bg-dark-800 border border-secondary-200 dark:border-dark-600 rounded-xl p-4 space-y-3">
+                <div class="bg-white dark:bg-[#1e1e1e] border border-secondary-200 dark:border-white/10 rounded-xl p-4 space-y-3">
                     @foreach (range(1, 5) as $i)
-                        <div class="h-10 bg-gray-100 dark:bg-dark-700 rounded-lg"></div>
+                        <div class="h-10 bg-gray-100 dark:bg-[#27272a] rounded-lg"></div>
                     @endforeach
                 </div>
             </div>
@@ -434,12 +434,12 @@
         <div x-data="{ tab: 'accounts' }" class="space-y-5">
 
             {{-- Tab Navigation --}}
-            <div class="flex gap-1 p-1 bg-zinc-100 dark:bg-dark-700 rounded-xl border border-zinc-200 dark:border-dark-600">
+            <div class="flex gap-1 p-1 bg-zinc-100 dark:bg-[#27272a] rounded-xl border border-zinc-200 dark:border-white/10">
                 <button
                     @click="tab = 'accounts'"
                     class="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 flex-1 justify-center"
                     :class="tab === 'accounts'
-                        ? 'bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 shadow-sm border border-zinc-200 dark:border-dark-600'
+                        ? 'bg-white dark:bg-[#1e1e1e] text-dark-900 dark:text-dark-50 shadow-sm border border-zinc-200 dark:border-white/10'
                         : 'text-dark-500 dark:text-dark-400 hover:text-dark-800 dark:hover:text-dark-200'"
                 >
                     <x-icon name="building-library" class="w-3.5 h-3.5 shrink-0" />
@@ -449,7 +449,7 @@
                     @click="tab = 'transactions'"
                     class="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 flex-1 justify-center"
                     :class="tab === 'transactions'
-                        ? 'bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 shadow-sm border border-zinc-200 dark:border-dark-600'
+                        ? 'bg-white dark:bg-[#1e1e1e] text-dark-900 dark:text-dark-50 shadow-sm border border-zinc-200 dark:border-white/10'
                         : 'text-dark-500 dark:text-dark-400 hover:text-dark-800 dark:hover:text-dark-200'"
                 >
                     <x-icon name="arrows-right-left" class="w-3.5 h-3.5 shrink-0" />
@@ -459,7 +459,7 @@
                     @click="tab = 'analytics'"
                     class="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 flex-1 justify-center"
                     :class="tab === 'analytics'
-                        ? 'bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 shadow-sm border border-zinc-200 dark:border-dark-600'
+                        ? 'bg-white dark:bg-[#1e1e1e] text-dark-900 dark:text-dark-50 shadow-sm border border-zinc-200 dark:border-white/10'
                         : 'text-dark-500 dark:text-dark-400 hover:text-dark-800 dark:hover:text-dark-200'"
                 >
                     <x-icon name="chart-bar" class="w-3.5 h-3.5 shrink-0" />
@@ -549,7 +549,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="p-4 bg-gray-50 dark:bg-dark-700 rounded-xl border border-gray-200 dark:border-dark-600">
+                    <div class="p-4 bg-gray-50 dark:bg-[#27272a] rounded-xl border border-gray-200 dark:border-white/10">
                         <div class="flex items-start gap-3">
                             <x-icon name="light-bulb" class="w-5 h-5 text-yellow-500 dark:text-yellow-400 shrink-0 mt-0.5" />
                             <div class="flex-1">
@@ -649,7 +649,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="p-4 bg-gray-50 dark:bg-dark-700 rounded-xl border border-gray-200 dark:border-dark-600">
+                    <div class="p-4 bg-gray-50 dark:bg-[#27272a] rounded-xl border border-gray-200 dark:border-white/10">
                         <div class="flex items-start gap-3">
                             <x-icon name="tag" class="w-5 h-5 text-gray-500 dark:text-gray-400 shrink-0 mt-0.5" />
                             <div>
@@ -723,7 +723,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="p-4 bg-gray-50 dark:bg-dark-700 rounded-xl border border-gray-200 dark:border-dark-600">
+                    <div class="p-4 bg-gray-50 dark:bg-[#27272a] rounded-xl border border-gray-200 dark:border-white/10">
                         <div class="flex items-start gap-3">
                             <x-icon name="document-arrow-down" class="w-5 h-5 text-gray-500 dark:text-gray-400 shrink-0 mt-0.5" />
                             <div>

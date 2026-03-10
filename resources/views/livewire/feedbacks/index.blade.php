@@ -118,12 +118,12 @@
     <div x-data="{ activeTab: $persist('my_feedbacks').as('feedbacks_active_tab') }">
 
         {{-- Tab Bar (pill/segment style) --}}
-        <div class="inline-flex items-center gap-1 p-1 bg-zinc-100 dark:bg-dark-700 rounded-xl border border-zinc-200 dark:border-dark-600">
+        <div class="inline-flex items-center gap-1 p-1 bg-zinc-100 dark:bg-[#27272a] rounded-xl border border-zinc-200 dark:border-white/10">
             <button
                 @click="activeTab = 'my_feedbacks'"
                 class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200"
                 :class="activeTab === 'my_feedbacks'
-                    ? 'bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 shadow-sm border border-zinc-200 dark:border-dark-600'
+                    ? 'bg-white dark:bg-[#1e1e1e] text-dark-900 dark:text-dark-50 shadow-sm border border-zinc-200 dark:border-white/10'
                     : 'text-dark-500 dark:text-dark-400 hover:text-dark-800 dark:hover:text-dark-200 hover:bg-zinc-50 dark:hover:bg-dark-600'">
                 <x-icon name="user" class="w-4 h-4 shrink-0" />
                 <span>{{ __('feedback.tab_my_feedbacks') }}</span>
@@ -134,7 +134,7 @@
                     @click="activeTab = 'all_feedbacks'"
                     class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200"
                     :class="activeTab === 'all_feedbacks'
-                        ? 'bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 shadow-sm border border-zinc-200 dark:border-dark-600'
+                        ? 'bg-white dark:bg-[#1e1e1e] text-dark-900 dark:text-dark-50 shadow-sm border border-zinc-200 dark:border-white/10'
                         : 'text-dark-500 dark:text-dark-400 hover:text-dark-800 dark:hover:text-dark-200 hover:bg-zinc-50 dark:hover:bg-dark-600'">
                     <x-icon name="users" class="w-4 h-4 shrink-0" />
                     <span>{{ __('feedback.tab_all_feedbacks') }}</span>

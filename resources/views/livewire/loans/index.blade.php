@@ -58,7 +58,7 @@
                             <span class="text-dark-500 dark:text-dark-400">Rp
                                 {{ number_format($totalPrincipalPaid, 0, ',', '.') }}</span>
                         </div>
-                        <div class="w-full bg-dark-200 dark:bg-dark-700 rounded-full h-1.5">
+                        <div class="w-full bg-dark-200 dark:bg-[#27272a] rounded-full h-1.5">
                             <div class="bg-linear-to-r from-green-500 to-green-600 h-1.5 rounded-full transition-all"
                                 style="width: {{ min($percentage, 100) }}%">
                             </div>
@@ -100,7 +100,7 @@
                             <span class="text-dark-500 dark:text-dark-400">Rp
                                 {{ number_format($totalInterestPaid, 0, ',', '.') }}</span>
                         </div>
-                        <div class="w-full bg-dark-200 dark:bg-dark-700 rounded-full h-1.5">
+                        <div class="w-full bg-dark-200 dark:bg-[#27272a] rounded-full h-1.5">
                             <div class="bg-linear-to-r from-blue-500 to-blue-600 h-1.5 rounded-full transition-all"
                                 style="width: {{ min($interestPercentage, 100) }}%">
                             </div>
@@ -119,7 +119,7 @@
 
         @interact('column_term_months', $row)
             <div class="text-center">
-                <div class="inline-flex items-center gap-2 px-3 py-1 bg-secondary-100 dark:bg-dark-700 rounded-lg">
+                <div class="inline-flex items-center gap-2 px-3 py-1 bg-secondary-100 dark:bg-[#27272a] rounded-lg">
                     <x-icon name="calendar" class="w-4 h-4 text-dark-500 dark:text-dark-400" />
                     <span class="font-semibold text-dark-900 dark:text-dark-50">{{ $row->term_months }}</span>
                     <span class="text-xs text-dark-500 dark:text-dark-400">bulan</span>

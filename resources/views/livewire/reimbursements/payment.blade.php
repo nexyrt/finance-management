@@ -39,7 +39,7 @@
                         @endif
 
                         <div
-                            class="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-dark-800 border border-green-200 dark:border-green-700 rounded-lg">
+                            class="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-[#1e1e1e] border border-green-200 dark:border-green-700 rounded-lg">
                             <div
                                 class="w-8 h-8 bg-linear-to-br from-primary-400 to-primary-600 rounded-lg flex items-center justify-center">
                                 <span class="text-white font-semibold text-xs">
@@ -69,7 +69,7 @@
                         <div class="space-y-2 max-h-40 overflow-y-auto">
                             @foreach ($this->reimbursement->payments as $payment)
                                 <div
-                                    class="flex items-center justify-between p-2 bg-white dark:bg-dark-800 rounded-lg text-sm">
+                                    class="flex items-center justify-between p-2 bg-white dark:bg-[#1e1e1e] rounded-lg text-sm">
                                     <div class="flex items-center gap-2">
                                         <x-icon name="check-circle"
                                             class="w-4 h-4 text-green-600 dark:text-green-400" />
@@ -89,7 +89,7 @@
                 @endif
 
                 {{-- Details --}}
-                <div class="p-4 bg-gray-50 dark:bg-dark-700 border border-gray-200 dark:border-dark-600 rounded-lg">
+                <div class="p-4 bg-gray-50 dark:bg-[#27272a] border border-gray-200 dark:border-white/10 rounded-lg">
                     <div class="grid grid-cols-2 gap-4 text-sm">
                         <div>
                             <span class="text-gray-600 dark:text-gray-400">{{ __('pages.reimb_category_detail_label') }}</span>
@@ -108,7 +108,7 @@
 
                 {{-- Form --}}
                 <div class="space-y-4">
-                    <div class="border-b border-secondary-200 dark:border-dark-600 pb-4">
+                    <div class="border-b border-secondary-200 dark:border-white/10 pb-4">
                         <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-1">{{ __('pages.reimb_payment_info_section') }}</h4>
                         <p class="text-xs text-dark-500 dark:text-dark-400">{{ __('pages.reimb_payment_info_desc') }}</p>
                     </div>
@@ -181,7 +181,7 @@
 
                 {{-- Loading State --}}
                 <div wire:loading wire:target="processPayment"
-                    class="text-center py-4 border-t border-dark-200 dark:border-dark-600">
+                    class="text-center py-4 border-t border-dark-200 dark:border-white/10">
                     <div class="flex items-center justify-center gap-3">
                         <x-icon name="arrow-path" class="w-5 h-5 animate-spin text-primary-600 dark:text-primary-400" />
                         <span class="text-sm font-medium text-dark-900 dark:text-dark-50">{{ __('pages.reimb_processing') }}</span>

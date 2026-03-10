@@ -171,7 +171,7 @@
 
         @interact('column_client_name', $row)
             <div class="flex items-center gap-2.5">
-                <div class="w-8 h-8 bg-zinc-100 dark:bg-dark-700 rounded-lg flex items-center justify-center shrink-0">
+                <div class="w-8 h-8 bg-zinc-100 dark:bg-[#27272a] rounded-lg flex items-center justify-center shrink-0">
                     <x-icon name="{{ $row->client_type === 'individual' ? 'user' : 'building-office' }}"
                         class="w-4 h-4 text-dark-500 dark:text-dark-400" />
                 </div>
@@ -222,7 +222,7 @@
                 @if ($row->amount_paid > 0)
                     @php $pct = min(($row->amount_paid / $row->total_amount) * 100, 100); @endphp
                     <div class="mt-1.5 space-y-0.5">
-                        <div class="w-full bg-zinc-100 dark:bg-dark-700 rounded-full h-1">
+                        <div class="w-full bg-zinc-100 dark:bg-[#27272a] rounded-full h-1">
                             <div class="bg-green-500 h-1 rounded-full transition-all" style="width: {{ $pct }}%"></div>
                         </div>
                         <div class="text-xs text-green-600 dark:text-green-400">{{ number_format($pct, 0) }}% {{ __('invoice.paid') }}</div>
@@ -316,7 +316,7 @@
          x-transition:leave-start="opacity-100 translate-y-0"
          x-transition:leave-end="opacity-0 translate-y-2"
          class="fixed bottom-4 sm:bottom-6 left-4 right-4 sm:left-1/2 sm:right-auto sm:transform sm:-translate-x-1/2 z-50">
-        <div class="bg-white dark:bg-dark-800 rounded-xl shadow-xl border border-zinc-200 dark:border-dark-600 px-4 sm:px-5 py-3.5 sm:min-w-md">
+        <div class="bg-white dark:bg-[#1e1e1e] rounded-xl shadow-xl border border-zinc-200 dark:border-white/10 px-4 sm:px-5 py-3.5 sm:min-w-md">
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div class="flex items-center gap-3">
                     <div class="h-8 w-8 bg-primary-50 dark:bg-primary-900/20 rounded-lg flex items-center justify-center shrink-0">
@@ -345,7 +345,7 @@
     <x-modal wire="printModal" size="md" center persistent>
         <x-slot:title>
             <div class="flex items-center gap-3 my-3">
-                <div class="h-11 w-11 bg-zinc-100 dark:bg-dark-700 rounded-xl flex items-center justify-center shrink-0">
+                <div class="h-11 w-11 bg-zinc-100 dark:bg-[#27272a] rounded-xl flex items-center justify-center shrink-0">
                     <x-icon name="printer" class="w-5 h-5 text-dark-600 dark:text-dark-400" />
                 </div>
                 <div>
@@ -362,7 +362,7 @@
                 class="group p-4 border-2 rounded-xl cursor-pointer transition-all
                     {{ $printType === 'full'
                         ? 'border-primary-500 bg-primary-50/60 dark:bg-primary-900/10'
-                        : 'border-zinc-200 dark:border-dark-600 hover:border-zinc-300 dark:hover:border-dark-500' }}">
+                        : 'border-zinc-200 dark:border-white/10 hover:border-zinc-300 dark:hover:border-dark-500' }}">
                 <div class="flex items-start gap-3">
                     <div class="mt-0.5 w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0
                         {{ $printType === 'full' ? 'border-primary-500 bg-primary-500' : 'border-zinc-300 dark:border-dark-500' }}">
@@ -385,7 +385,7 @@
                 class="group p-4 border-2 rounded-xl cursor-pointer transition-all
                     {{ $printType === 'dp'
                         ? 'border-primary-500 bg-primary-50/60 dark:bg-primary-900/10'
-                        : 'border-zinc-200 dark:border-dark-600 hover:border-zinc-300 dark:hover:border-dark-500' }}">
+                        : 'border-zinc-200 dark:border-white/10 hover:border-zinc-300 dark:hover:border-dark-500' }}">
                 <div class="flex items-start gap-3">
                     <div class="mt-0.5 w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0
                         {{ $printType === 'dp' ? 'border-primary-500 bg-primary-500' : 'border-zinc-300 dark:border-dark-500' }}">
@@ -398,7 +398,7 @@
                         <div class="text-xs text-dark-500 dark:text-dark-400 mt-0.5">{{ __('pages.print_dp_invoice') }}</div>
                         @if ($printType === 'dp')
                             <div class="mt-3">
-                                <x-currency-input wire:model="dpAmount" :label="__('pages.dp_amount') . ' *'" placeholder="0" prefix="Rp" />
+                                <x-form.currency-input wire:model="dpAmount" :label="__('pages.dp_amount') . ' *'" placeholder="0" prefix="Rp" />
                             </div>
                         @endif
                     </div>
@@ -411,7 +411,7 @@
                     class="group p-4 border-2 rounded-xl cursor-pointer transition-all
                         {{ $printType === 'pelunasan'
                             ? 'border-primary-500 bg-primary-50/60 dark:bg-primary-900/10'
-                            : 'border-zinc-200 dark:border-dark-600 hover:border-zinc-300 dark:hover:border-dark-500' }}">
+                            : 'border-zinc-200 dark:border-white/10 hover:border-zinc-300 dark:hover:border-dark-500' }}">
                     <div class="flex items-start gap-3">
                         <div class="mt-0.5 w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0
                             {{ $printType === 'pelunasan' ? 'border-primary-500 bg-primary-500' : 'border-zinc-300 dark:border-dark-500' }}">
@@ -435,7 +435,7 @@
             @endif
 
             {{-- Template Selection --}}
-            <div class="pt-3 border-t border-zinc-100 dark:border-dark-600">
+            <div class="pt-3 border-t border-zinc-100 dark:border-white/10">
                 <p class="text-xs font-semibold text-dark-500 dark:text-dark-400 uppercase tracking-wider mb-3">
                     {{ __('pages.select_template') }}
                 </p>
@@ -450,7 +450,7 @@
                             class="p-3 border-2 rounded-xl cursor-pointer transition-all
                                 {{ $printTemplate === $tpl['value']
                                     ? 'border-primary-500 bg-primary-50/50 dark:bg-primary-900/10'
-                                    : 'border-zinc-200 dark:border-dark-600 hover:border-zinc-300 dark:hover:border-dark-500' }}">
+                                    : 'border-zinc-200 dark:border-white/10 hover:border-zinc-300 dark:hover:border-dark-500' }}">
                             <div class="flex items-start gap-2">
                                 <div class="mt-0.5 w-3.5 h-3.5 rounded-full border-2 flex items-center justify-center shrink-0
                                     {{ $printTemplate === $tpl['value'] ? 'border-primary-500 bg-primary-500' : 'border-zinc-300 dark:border-dark-500' }}">

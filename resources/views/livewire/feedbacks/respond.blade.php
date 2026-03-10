@@ -16,7 +16,7 @@
             <div class="space-y-6">
 
                 {{-- Feedback Summary --}}
-                <div class="p-4 bg-gray-50 dark:bg-dark-700 rounded-xl border border-secondary-200 dark:border-dark-600">
+                <div class="p-4 bg-gray-50 dark:bg-[#27272a] rounded-xl border border-secondary-200 dark:border-white/10">
                     <div class="flex items-start gap-3">
                         <div class="h-10 w-10 rounded-xl flex items-center justify-center shrink-0
                             {{ $this->feedback->type === 'bug' ? 'bg-red-50 dark:bg-red-900/20' : '' }}
@@ -42,7 +42,7 @@
                         </div>
                     </div>
 
-                    <div class="mt-3 p-3 bg-white dark:bg-dark-800 rounded-xl border border-secondary-200 dark:border-dark-600">
+                    <div class="mt-3 p-3 bg-white dark:bg-[#1e1e1e] rounded-xl border border-secondary-200 dark:border-white/10">
                         <div class="rich-text text-sm text-dark-700 dark:text-dark-300 leading-relaxed">
                             {!! $this->feedback->safe_description !!}
                         </div>
@@ -70,12 +70,12 @@
                         <label class="block text-sm font-medium text-dark-700 dark:text-dark-300 mb-1">
                             {{ __('feedback.response') }} *
                         </label>
-                        <div x-ref="editor" class="bg-white dark:bg-dark-800 rounded-b-lg" style="min-height: 150px;"></div>
+                        <div x-ref="editor" class="bg-white dark:bg-[#1e1e1e] rounded-b-lg" style="min-height: 150px;"></div>
                     </div>
                 </div>
 
                 {{-- Info --}}
-                <div class="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-secondary-200 dark:border-dark-600">
+                <div class="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-secondary-200 dark:border-white/10">
                     <div class="flex items-start gap-2">
                         <x-icon name="information-circle" class="w-4 h-4 text-blue-500 dark:text-blue-400 shrink-0 mt-0.5" />
                         <p class="text-xs text-blue-800 dark:text-blue-200">

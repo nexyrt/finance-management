@@ -23,7 +23,7 @@
                         'amber'   => 'bg-amber-50 dark:bg-amber-900/20',
                         'red'     => 'bg-red-50 dark:bg-red-900/20',
                         'blue'    => 'bg-blue-50 dark:bg-blue-900/20',
-                        default   => 'bg-zinc-100 dark:bg-dark-700',
+                        default   => 'bg-zinc-100 dark:bg-[#27272a]',
                     } }}">
                         <x-icon name="{{ $invoice->client->type === 'individual' ? 'user' : 'building-office' }}"
                             class="w-6 h-6 {{ match($statusColor) {
@@ -72,12 +72,12 @@
                 {{-- ROW 1: Date meta + Payment status bar (side by side) --}}
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     {{-- Issue date --}}
-                    <div class="bg-zinc-50 dark:bg-dark-700/40 border border-zinc-200 dark:border-dark-600 rounded-xl p-3">
+                    <div class="bg-zinc-50 dark:bg-[#27272a]/40 border border-zinc-200 dark:border-white/10 rounded-xl p-3">
                         <p class="text-xs uppercase tracking-widest text-dark-400 dark:text-dark-500 mb-1">{{ __('invoice.invoice_date') }}</p>
                         <p class="text-sm font-semibold text-dark-900 dark:text-dark-50">{{ $invoice->issue_date->translatedFormat('d M Y') }}</p>
                     </div>
                     {{-- Due date --}}
-                    <div class="border {{ $invoice->due_date->isPast() && $invoice->status !== 'paid' ? 'border-red-200 dark:border-red-800/50 bg-red-50 dark:bg-red-900/10' : 'bg-zinc-50 dark:bg-dark-700/40 border-zinc-200 dark:border-dark-600' }} rounded-xl p-3">
+                    <div class="border {{ $invoice->due_date->isPast() && $invoice->status !== 'paid' ? 'border-red-200 dark:border-red-800/50 bg-red-50 dark:bg-red-900/10' : 'bg-zinc-50 dark:bg-[#27272a]/40 border-zinc-200 dark:border-white/10' }} rounded-xl p-3">
                         <p class="text-xs uppercase tracking-widest {{ $invoice->due_date->isPast() && $invoice->status !== 'paid' ? 'text-red-400 dark:text-red-500' : 'text-dark-400 dark:text-dark-500' }} mb-1">{{ __('invoice.due_date') }}</p>
                         <p class="text-sm font-semibold {{ $invoice->due_date->isPast() && $invoice->status !== 'paid' ? 'text-red-600 dark:text-red-400' : 'text-dark-900 dark:text-dark-50' }}">
                             {{ $invoice->due_date->translatedFormat('d M Y') }}
@@ -93,8 +93,8 @@
                 </div>
 
                 {{-- ROW 2: Invoice Items (full width) --}}
-                <div class="border border-zinc-200 dark:border-dark-600 rounded-xl overflow-hidden">
-                    <div class="flex items-center justify-between px-4 py-2.5 border-b border-zinc-200 dark:border-dark-600 bg-zinc-50 dark:bg-dark-700/40">
+                <div class="border border-zinc-200 dark:border-white/10 rounded-xl overflow-hidden">
+                    <div class="flex items-center justify-between px-4 py-2.5 border-b border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-[#27272a]/40">
                         <h4 class="text-xs uppercase tracking-widest text-dark-500 dark:text-dark-400 font-semibold">
                             {{ __('pages.invoice_items') }}
                         </h4>
@@ -106,7 +106,7 @@
                         @foreach ($invoice->items as $item)
                             <div class="px-4 py-2.5 flex items-center justify-between gap-4 hover:bg-zinc-50 dark:hover:bg-dark-700/30 transition-colors">
                                 <div class="flex items-center gap-3 min-w-0 flex-1">
-                                    <div class="w-7 h-7 rounded-lg bg-zinc-100 dark:bg-dark-700 flex items-center justify-center shrink-0">
+                                    <div class="w-7 h-7 rounded-lg bg-zinc-100 dark:bg-[#27272a] flex items-center justify-center shrink-0">
                                         <x-icon name="{{ $item->client->type === 'individual' ? 'user' : 'building-office' }}" class="w-3.5 h-3.5 text-dark-400" />
                                     </div>
                                     <div class="min-w-0 flex-1">
@@ -135,7 +135,7 @@
                     </div>
 
                     {{-- Totals footer --}}
-                    <div class="px-4 py-3 border-t border-zinc-200 dark:border-dark-600 bg-zinc-50 dark:bg-dark-700/40">
+                    <div class="px-4 py-3 border-t border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-[#27272a]/40">
                         <div class="flex items-center justify-between gap-6">
                             {{-- Left: subtotal + discount --}}
                             <div class="flex items-center gap-6 text-sm text-dark-500 dark:text-dark-400">
@@ -157,8 +157,8 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
                     {{-- Payment Status --}}
-                    <div class="border border-zinc-200 dark:border-dark-600 rounded-xl overflow-hidden">
-                        <div class="h-1.5 bg-zinc-100 dark:bg-dark-700">
+                    <div class="border border-zinc-200 dark:border-white/10 rounded-xl overflow-hidden">
+                        <div class="h-1.5 bg-zinc-100 dark:bg-[#27272a]">
                             <div class="h-1.5 {{ $invoice->status === 'paid' ? 'bg-emerald-500' : 'bg-amber-500' }} transition-all duration-700"
                                 style="width: {{ $pctPaid }}%"></div>
                         </div>
@@ -194,8 +194,8 @@
                     </div>
 
                     {{-- Financial Breakdown --}}
-                    <div class="border border-zinc-200 dark:border-dark-600 rounded-xl overflow-hidden">
-                        <div class="px-4 py-2.5 border-b border-zinc-200 dark:border-dark-600 bg-zinc-50 dark:bg-dark-700/40">
+                    <div class="border border-zinc-200 dark:border-white/10 rounded-xl overflow-hidden">
+                        <div class="px-4 py-2.5 border-b border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-[#27272a]/40">
                             <h4 class="text-xs uppercase tracking-widest text-dark-500 dark:text-dark-400 font-semibold">{{ __('pages.financial_breakdown') }}</h4>
                         </div>
                         <div class="px-4 py-3 space-y-2.5">
@@ -211,7 +211,7 @@
                                 <span class="text-dark-500 dark:text-dark-400">{{ __('pages.total_cogs_label') }}</span>
                                 <span class="font-medium text-dark-900 dark:text-dark-50 tabular-nums">Rp {{ number_format($this->totalCogs, 0, ',', '.') }}</span>
                             </div>
-                            <div class="flex justify-between pt-2 border-t border-zinc-200 dark:border-dark-600">
+                            <div class="flex justify-between pt-2 border-t border-zinc-200 dark:border-white/10">
                                 <span class="text-sm font-semibold text-dark-900 dark:text-dark-50">{{ __('pages.gross_profit') }}</span>
                                 <span class="text-sm font-bold text-emerald-600 dark:text-emerald-400 tabular-nums">Rp {{ number_format($this->grossProfit, 0, ',', '.') }}</span>
                             </div>
@@ -223,8 +223,8 @@
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
 
                     {{-- Payment History --}}
-                    <div class="border border-zinc-200 dark:border-dark-600 rounded-xl overflow-hidden">
-                        <div class="flex items-center justify-between px-4 py-2.5 border-b border-zinc-200 dark:border-dark-600 bg-zinc-50 dark:bg-dark-700/40">
+                    <div class="border border-zinc-200 dark:border-white/10 rounded-xl overflow-hidden">
+                        <div class="flex items-center justify-between px-4 py-2.5 border-b border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-[#27272a]/40">
                             <h4 class="text-xs uppercase tracking-widest text-dark-500 dark:text-dark-400 font-semibold">{{ __('pages.payments_tab') }}</h4>
                             <span class="text-xs text-dark-400 dark:text-dark-500">{{ $invoice->payments->count() }}</span>
                         </div>
@@ -264,7 +264,7 @@
                             </div>
                         @else
                             <div class="px-4 py-6 text-center">
-                                <div class="w-8 h-8 rounded-xl bg-zinc-100 dark:bg-dark-700 flex items-center justify-center mx-auto mb-2">
+                                <div class="w-8 h-8 rounded-xl bg-zinc-100 dark:bg-[#27272a] flex items-center justify-center mx-auto mb-2">
                                     <x-icon name="credit-card" class="w-4 h-4 text-dark-400 dark:text-dark-500" />
                                 </div>
                                 <p class="text-xs text-dark-400 dark:text-dark-500">{{ __('pages.no_payments_yet') }}</p>
@@ -273,8 +273,8 @@
                     </div>
 
                     {{-- Client Info --}}
-                    <div class="border border-zinc-200 dark:border-dark-600 rounded-xl overflow-hidden">
-                        <div class="px-4 py-2.5 border-b border-zinc-200 dark:border-dark-600 bg-zinc-50 dark:bg-dark-700/40">
+                    <div class="border border-zinc-200 dark:border-white/10 rounded-xl overflow-hidden">
+                        <div class="px-4 py-2.5 border-b border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-[#27272a]/40">
                             <h4 class="text-xs uppercase tracking-widest text-dark-500 dark:text-dark-400 font-semibold">{{ __('pages.client_information') }}</h4>
                         </div>
                         <div class="px-4 py-3 space-y-2">
@@ -302,8 +302,8 @@
                     </div>
 
                     {{-- Timeline --}}
-                    <div class="border border-zinc-200 dark:border-dark-600 rounded-xl overflow-hidden">
-                        <div class="px-4 py-2.5 border-b border-zinc-200 dark:border-dark-600 bg-zinc-50 dark:bg-dark-700/40">
+                    <div class="border border-zinc-200 dark:border-white/10 rounded-xl overflow-hidden">
+                        <div class="px-4 py-2.5 border-b border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-[#27272a]/40">
                             <h4 class="text-xs uppercase tracking-widest text-dark-500 dark:text-dark-400 font-semibold">{{ __('pages.timeline') }}</h4>
                         </div>
                         <div class="px-4 py-3">
@@ -311,7 +311,7 @@
                                 <div class="flex gap-3 pb-3">
                                     <div class="flex flex-col items-center pt-0.5">
                                         <div class="w-1.5 h-1.5 rounded-full bg-zinc-400 dark:bg-dark-500 shrink-0"></div>
-                                        <div class="w-px flex-1 bg-zinc-200 dark:bg-dark-600 mt-1"></div>
+                                        <div class="w-px flex-1 bg-zinc-200 dark:bg-[#161618] mt-1"></div>
                                     </div>
                                     <div>
                                         <p class="text-xs font-medium text-dark-900 dark:text-dark-50">{{ __('pages.invoice_created') }}</p>
@@ -323,7 +323,7 @@
                                     <div class="flex gap-3 pb-3">
                                         <div class="flex flex-col items-center pt-0.5">
                                             <div class="w-1.5 h-1.5 rounded-full bg-blue-400 shrink-0"></div>
-                                            <div class="w-px flex-1 bg-zinc-200 dark:bg-dark-600 mt-1"></div>
+                                            <div class="w-px flex-1 bg-zinc-200 dark:bg-[#161618] mt-1"></div>
                                         </div>
                                         <div>
                                             <p class="text-xs font-medium text-dark-900 dark:text-dark-50">{{ __('pages.invoice_sent') }}</p>
@@ -336,7 +336,7 @@
                                     <div class="flex gap-3 pb-3">
                                         <div class="flex flex-col items-center pt-0.5">
                                             <div class="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0"></div>
-                                            <div class="w-px flex-1 bg-zinc-200 dark:bg-dark-600 mt-1"></div>
+                                            <div class="w-px flex-1 bg-zinc-200 dark:bg-[#161618] mt-1"></div>
                                         </div>
                                         <div>
                                             <p class="text-xs font-medium text-dark-900 dark:text-dark-50">{{ __('pages.payment_received') }}</p>
@@ -378,8 +378,8 @@
 
                 {{-- ROW 5: Faktur Attachment (only if exists) --}}
                 @if ($invoice->faktur)
-                    <div class="border border-zinc-200 dark:border-dark-600 rounded-xl overflow-hidden">
-                        <div class="flex items-center justify-between px-4 py-2.5 border-b border-zinc-200 dark:border-dark-600 bg-zinc-50 dark:bg-dark-700/40">
+                    <div class="border border-zinc-200 dark:border-white/10 rounded-xl overflow-hidden">
+                        <div class="flex items-center justify-between px-4 py-2.5 border-b border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-[#27272a]/40">
                             <h4 class="text-xs uppercase tracking-widest text-dark-500 dark:text-dark-400 font-semibold flex items-center gap-2">
                                 <x-icon name="paper-clip" class="w-3.5 h-3.5" />
                                 {{ __('invoice.faktur') }}
@@ -393,11 +393,11 @@
                         <div class="p-4">
                             @php $isPdf = strtolower(pathinfo($invoice->faktur, PATHINFO_EXTENSION)) === 'pdf'; @endphp
                             @if ($isPdf)
-                                <div class="aspect-8.5/11 border border-zinc-200 dark:border-dark-600 rounded-lg overflow-hidden">
+                                <div class="aspect-8.5/11 border border-zinc-200 dark:border-white/10 rounded-lg overflow-hidden">
                                     <iframe src="{{ Storage::url($invoice->faktur) }}" class="w-full h-full"></iframe>
                                 </div>
                             @else
-                                <img src="{{ Storage::url($invoice->faktur) }}" alt="Faktur" class="w-full h-auto rounded-lg border border-zinc-200 dark:border-dark-600">
+                                <img src="{{ Storage::url($invoice->faktur) }}" alt="Faktur" class="w-full h-auto rounded-lg border border-zinc-200 dark:border-white/10">
                             @endif
                             <p class="text-xs text-dark-400 dark:text-dark-500 mt-2">{{ basename($invoice->faktur) }}</p>
                         </div>
@@ -435,8 +435,8 @@
                                  x-transition:leave="transition ease-in duration-100"
                                  x-transition:leave-start="opacity-100 scale-100 translate-y-0"
                                  x-transition:leave-end="opacity-0 scale-95 -translate-y-1"
-                                 class="absolute left-0 mt-2 w-72 bg-white dark:bg-dark-800 rounded-xl shadow-xl border border-zinc-200 dark:border-dark-600 z-50 overflow-hidden">
-                                <div class="px-3.5 py-2 border-b border-zinc-100 dark:border-dark-700">
+                                 class="absolute left-0 mt-2 w-72 bg-white dark:bg-[#1e1e1e] rounded-xl shadow-xl border border-zinc-200 dark:border-white/10 z-50 overflow-hidden">
+                                <div class="px-3.5 py-2 border-b border-zinc-100 dark:border-white/8">
                                     <p class="text-xs uppercase tracking-widest text-dark-400 dark:text-dark-500">{{ __('pages.select_invoice_template') }}</p>
                                 </div>
                                 <div class="p-1.5">

@@ -32,7 +32,7 @@
 
                 {{-- Payment Details --}}
                 <div class="space-y-4">
-                    <div class="border-b border-secondary-200 dark:border-dark-600 pb-3">
+                    <div class="border-b border-secondary-200 dark:border-white/10 pb-3">
                         <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-3">{{ __('pages.payment_details') }}</h4>
 
                         <div class="space-y-2">
@@ -133,7 +133,7 @@
                 </div>
 
                 {{-- Confirmation Text --}}
-                <div class="bg-dark-50 dark:bg-dark-800 rounded-lg p-4">
+                <div class="bg-dark-50 dark:bg-[#1e1e1e] rounded-lg p-4">
                     <p class="text-sm text-dark-700 dark:text-dark-300 text-center font-medium">
                         {{ __('pages.confirm_delete_payment') }}
                     </p>

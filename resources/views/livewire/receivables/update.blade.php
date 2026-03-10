@@ -15,7 +15,7 @@
         <form id="receivable-update" wire:submit="save" class="space-y-6">
             {{-- Section: Jenis Piutang --}}
             <div class="space-y-4">
-                <div class="border-b border-secondary-200 dark:border-dark-600 pb-4">
+                <div class="border-b border-secondary-200 dark:border-white/10 pb-4">
                     <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-1">{{ __('pages.rcv_section_type') }}</h4>
                     <p class="text-xs text-dark-500 dark:text-dark-400">{{ __('pages.rcv_section_type_desc') }}</p>
                 </div>
@@ -40,13 +40,13 @@
 
             {{-- Section: Detail Pinjaman --}}
             <div class="space-y-4">
-                <div class="border-b border-secondary-200 dark:border-dark-600 pb-4">
+                <div class="border-b border-secondary-200 dark:border-white/10 pb-4">
                     <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-1">{{ __('pages.rcv_section_detail') }}</h4>
                     <p class="text-xs text-dark-500 dark:text-dark-400">{{ __('pages.rcv_section_detail_desc') }}</p>
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                    <x-currency-input wire:model="principal_amount" placeholder="0">
+                    <x-form.currency-input wire:model="principal_amount" placeholder="0">
                         <x-slot:label>
                             <div class="flex items-center gap-2">
                                 <span>{{ __('pages.rcv_principal_label') }}</span>
@@ -63,7 +63,7 @@
                     ]" />
 
                     @if ($interest_type === 'fixed')
-                        <x-currency-input wire:model="interest_amount"
+                        <x-form.currency-input wire:model="interest_amount"
                             label="{{ __('pages.rcv_interest_amount_label') }}"
                             placeholder="0" hint="{{ __('pages.rcv_interest_amount_hint') }}" />
                     @else
@@ -81,7 +81,7 @@
 
             {{-- Section: Informasi Tambahan --}}
             <div class="space-y-4">
-                <div class="border-b border-secondary-200 dark:border-dark-600 pb-4">
+                <div class="border-b border-secondary-200 dark:border-white/10 pb-4">
                     <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-1">{{ __('pages.rcv_section_info') }}</h4>
                     <p class="text-xs text-dark-500 dark:text-dark-400">{{ __('pages.rcv_section_info_desc') }}</p>
                 </div>
@@ -101,7 +101,7 @@
                         placeholder="{{ __('pages.rcv_notes_placeholder') }}" rows="3" />
 
                     @if ($currentAttachment)
-                        <div class="flex items-center gap-2 p-3 bg-secondary-50 dark:bg-dark-700 rounded-lg">
+                        <div class="flex items-center gap-2 p-3 bg-secondary-50 dark:bg-[#27272a] rounded-lg">
                             <x-icon name="paper-clip" class="w-5 h-5 text-dark-500 dark:text-dark-400" />
                             <span class="text-sm flex-1 text-dark-900 dark:text-dark-50">{{ __('pages.rcv_contract_existing') }}</span>
                             <x-button.circle icon="x-mark" color="red" size="sm" wire:click="removeAttachment"

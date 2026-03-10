@@ -3,7 +3,7 @@
     {{-- First-time Empty State --}}
     @if ($this->totalCount === 0)
         <div class="text-center py-16">
-            <div class="h-16 w-16 bg-gray-100 dark:bg-dark-700 rounded-xl flex items-center justify-center mx-auto mb-4">
+            <div class="h-16 w-16 bg-gray-100 dark:bg-[#27272a] rounded-xl flex items-center justify-center mx-auto mb-4">
                 <x-icon name="chat-bubble-left-right" class="w-8 h-8 text-dark-400 dark:text-dark-500" />
             </div>
             <h3 class="text-xl font-semibold text-dark-900 dark:text-dark-50 mb-2">{{ __('feedback.no_feedback_yet') }}</h3>

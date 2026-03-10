@@ -26,7 +26,7 @@
 
             {{-- Request Header Section --}}
             <div class="space-y-4">
-                <div class="border-b border-secondary-200 dark:border-dark-600 pb-4">
+                <div class="border-b border-secondary-200 dark:border-white/10 pb-4">
                     <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-1">{{ __('pages.basic_details_section') }}</h4>
                     <p class="text-xs text-dark-500 dark:text-dark-400">{{ __('pages.basic_details_description') }}</p>
                 </div>
@@ -47,7 +47,7 @@
                         <label class="block text-sm font-medium text-dark-700 dark:text-dark-300 mb-2">{{ __('pages.priority_label') }}</label>
                         <div class="grid grid-cols-2 gap-2">
                             <label class="flex items-center p-3 border rounded-xl cursor-pointer transition-colors
-                                {{ $priority === 'low' ? 'border-green-500 bg-green-50 dark:bg-green-900/20' : 'border-secondary-200 dark:border-dark-600' }}">
+                                {{ $priority === 'low' ? 'border-green-500 bg-green-50 dark:bg-green-900/20' : 'border-secondary-200 dark:border-white/10' }}">
                                 <input type="radio" wire:model.live="priority" value="low" class="sr-only">
                                 <div class="flex items-center gap-2">
                                     <x-icon name="arrow-down" class="w-4 h-4 text-green-600 dark:text-green-400" />
@@ -56,7 +56,7 @@
                             </label>
 
                             <label class="flex items-center p-3 border rounded-xl cursor-pointer transition-colors
-                                {{ $priority === 'medium' ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-secondary-200 dark:border-dark-600' }}">
+                                {{ $priority === 'medium' ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-secondary-200 dark:border-white/10' }}">
                                 <input type="radio" wire:model.live="priority" value="medium" class="sr-only">
                                 <div class="flex items-center gap-2">
                                     <x-icon name="minus" class="w-4 h-4 text-blue-600 dark:text-blue-400" />
@@ -65,7 +65,7 @@
                             </label>
 
                             <label class="flex items-center p-3 border rounded-xl cursor-pointer transition-colors
-                                {{ $priority === 'high' ? 'border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20' : 'border-secondary-200 dark:border-dark-600' }}">
+                                {{ $priority === 'high' ? 'border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20' : 'border-secondary-200 dark:border-white/10' }}">
                                 <input type="radio" wire:model.live="priority" value="high" class="sr-only">
                                 <div class="flex items-center gap-2">
                                     <x-icon name="arrow-up" class="w-4 h-4 text-yellow-600 dark:text-yellow-400" />
@@ -74,7 +74,7 @@
                             </label>
 
                             <label class="flex items-center p-3 border rounded-xl cursor-pointer transition-colors
-                                {{ $priority === 'urgent' ? 'border-red-500 bg-red-50 dark:bg-red-900/20' : 'border-secondary-200 dark:border-dark-600' }}">
+                                {{ $priority === 'urgent' ? 'border-red-500 bg-red-50 dark:bg-red-900/20' : 'border-secondary-200 dark:border-white/10' }}">
                                 <input type="radio" wire:model.live="priority" value="urgent" class="sr-only">
                                 <div class="flex items-center gap-2">
                                     <x-icon name="exclamation-triangle" class="w-4 h-4 text-red-600 dark:text-red-400" />
@@ -93,7 +93,7 @@
                     <div class="lg:col-span-2">
                         @if ($fundRequest && $fundRequest->attachment_path && !$removeAttachment)
                             <label class="block text-sm font-medium text-dark-700 dark:text-dark-300 mb-2">{{ __('pages.supporting_document') }}</label>
-                            <div class="flex items-center justify-between p-3 rounded-xl border border-secondary-200 dark:border-dark-600">
+                            <div class="flex items-center justify-between p-3 rounded-xl border border-secondary-200 dark:border-white/10">
                                 <div class="flex items-center gap-2">
                                     <x-icon name="document" class="w-4 h-4 text-dark-500" />
                                     <span class="text-sm text-dark-700 dark:text-dark-300">{{ $fundRequest->attachment_name }}</span>
@@ -115,7 +115,7 @@
 
             {{-- Items Section --}}
             <div class="space-y-4">
-                <div class="border-b border-secondary-200 dark:border-dark-600 pb-4">
+                <div class="border-b border-secondary-200 dark:border-white/10 pb-4">
                     <div class="flex items-center justify-between">
                         <div>
                             <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-1">{{ __('pages.items_section') }}</h4>
@@ -135,7 +135,7 @@
                     <div class="overflow-x-auto">
                         <table class="w-full text-sm">
                             <thead>
-                                <tr class="border-b border-secondary-200 dark:border-dark-600">
+                                <tr class="border-b border-secondary-200 dark:border-white/10">
                                     <th class="text-left pb-2 px-2 text-dark-700 dark:text-dark-300 font-semibold" style="min-width: 40px;">#</th>
                                     <th class="text-left pb-2 px-2 text-dark-700 dark:text-dark-300 font-semibold" style="min-width: 250px;">{{ __('pages.item_description_label') }}</th>
                                     <th class="text-left pb-2 px-2 text-dark-700 dark:text-dark-300 font-semibold" style="min-width: 220px;">{{ __('pages.category_label') }}</th>
@@ -147,7 +147,7 @@
                             </thead>
                             <tbody>
                                 @foreach ($items as $index => $item)
-                                    <tr class="border-b border-secondary-100 dark:border-dark-700">
+                                    <tr class="border-b border-secondary-100 dark:border-white/8">
                                         <td class="py-3 px-2 text-dark-600 dark:text-dark-400" style="min-width: 40px;">{{ $index + 1 }}</td>
                                         <td class="py-3 px-2" style="min-width: 250px;">
                                             <x-input wire:model.blur="items.{{ $index }}.description"
@@ -169,7 +169,7 @@
                                                      class="h-8" />
                                         </td>
                                         <td class="py-3 px-2" style="min-width: 160px;">
-                                            <x-currency-input wire:model.blur="items.{{ $index }}.unit_price"
+                                            <x-form.currency-input wire:model.blur="items.{{ $index }}.unit_price"
                                                             placeholder="0"
                                                             class="h-8" />
                                         </td>
@@ -201,7 +201,7 @@
                                 @endforeach
 
                                 {{-- Total Row --}}
-                                <tr class="bg-secondary-50 dark:bg-dark-700">
+                                <tr class="bg-secondary-50 dark:bg-[#27272a]">
                                     <td colspan="5" class="py-3 px-2 text-right font-bold text-dark-900 dark:text-dark-50">
                                         {{ __('pages.total_request_amount') }}:
                                     </td>

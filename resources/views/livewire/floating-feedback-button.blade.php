@@ -6,7 +6,7 @@
         {{-- Close button (visible when expanded) --}}
         <button x-show="!collapsed"
                 @click.stop="collapsed = true"
-                class="absolute -top-2 -left-2 w-5 h-5 bg-white dark:bg-dark-700 border border-zinc-200 dark:border-dark-600 rounded-full flex items-center justify-center shadow-sm hover:bg-zinc-100 dark:hover:bg-dark-600 transition-colors z-10">
+                class="absolute -top-2 -left-2 w-5 h-5 bg-white dark:bg-[#27272a] border border-zinc-200 dark:border-white/10 rounded-full flex items-center justify-center shadow-sm hover:bg-zinc-100 dark:hover:bg-dark-600 transition-colors z-10">
             <x-icon name="x-mark" class="w-3 h-3 text-dark-500 dark:text-dark-400" />
         </button>
 

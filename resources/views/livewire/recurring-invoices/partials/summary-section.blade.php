@@ -1,5 +1,5 @@
 {{-- Invoice Summary Card --}}
-<div class="bg-white dark:bg-dark-800 rounded-xl border border-dark-200 dark:border-dark-600 overflow-hidden">
+<div class="bg-white dark:bg-[#1e1e1e] rounded-xl border border-dark-200 dark:border-white/10 overflow-hidden">
 
     {{-- Rows: label + value --}}
     <div class="divide-y divide-dark-100 dark:divide-dark-700">
@@ -46,7 +46,7 @@
     {{-- Discount inputs (collapsible section) --}}
     <div x-data="{ open: false }">
         <button @click="open = !open" type="button"
-            class="w-full flex items-center justify-between px-4 py-3 border-t border-dark-100 dark:border-dark-700 text-xs text-dark-500 dark:text-dark-400 hover:text-dark-700 dark:hover:text-dark-200 hover:bg-dark-50 dark:hover:bg-dark-700/40 transition-colors">
+            class="w-full flex items-center justify-between px-4 py-3 border-t border-dark-100 dark:border-white/8 text-xs text-dark-500 dark:text-dark-400 hover:text-dark-700 dark:hover:text-dark-200 hover:bg-dark-50 dark:hover:bg-dark-700/40 transition-colors">
             <span class="font-medium">{{ __('pages.ri_discount_label_summary') }}</span>
             <div class="flex items-center gap-1.5">
                 <span x-show="discountAmount > 0" class="text-[10px] font-semibold text-red-500" x-text="'− ' + formatCurrency(discountAmount)"></span>
@@ -62,10 +62,10 @@
             x-transition:leave="transition ease-in duration-100"
             x-transition:leave-start="opacity-100"
             x-transition:leave-end="opacity-0"
-            class="border-t border-dark-100 dark:border-dark-700 px-4 pb-4 pt-3 space-y-2">
+            class="border-t border-dark-100 dark:border-white/8 px-4 pb-4 pt-3 space-y-2">
             <div class="flex gap-2">
                 <select x-model="discount.type"
-                    class="flex-1 px-2.5 py-1.5 text-xs border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                    class="flex-1 px-2.5 py-1.5 text-xs border border-dark-200 dark:border-white/10 rounded-lg bg-white dark:bg-[#1e1e1e] text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
                     <option value="fixed">{{ __('pages.ri_discount_fixed_option') }}</option>
                     <option value="percentage">%</option>
                 </select>
@@ -73,20 +73,20 @@
                     @input="discount.value = formatInput($event.target.value)"
                     x-show="discount.type === 'fixed'"
                     placeholder="0"
-                    class="flex-1 px-2.5 py-1.5 text-xs border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-right">
+                    class="flex-1 px-2.5 py-1.5 text-xs border border-dark-200 dark:border-white/10 rounded-lg bg-white dark:bg-[#1e1e1e] text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-right">
                 <input type="number" x-model="discount.value"
                     x-show="discount.type === 'percentage'"
                     placeholder="0" min="0" max="100"
-                    class="flex-1 px-2.5 py-1.5 text-xs border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-right">
+                    class="flex-1 px-2.5 py-1.5 text-xs border border-dark-200 dark:border-white/10 rounded-lg bg-white dark:bg-[#1e1e1e] text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-right">
             </div>
             <input type="text" x-model="discount.reason"
                 placeholder="{{ __('pages.ri_reason_optional_placeholder') }}"
-                class="w-full px-2.5 py-1.5 text-xs border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                class="w-full px-2.5 py-1.5 text-xs border border-dark-200 dark:border-white/10 rounded-lg bg-white dark:bg-[#1e1e1e] text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
         </div>
     </div>
 
     {{-- Save Button --}}
-    <div class="p-4 border-t border-dark-100 dark:border-dark-700">
+    <div class="p-4 border-t border-dark-100 dark:border-white/8">
         <button @click="syncAndSave()" type="button"
             :disabled="saving || items.length === 0"
             :class="saving || items.length === 0

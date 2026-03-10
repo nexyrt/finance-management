@@ -54,7 +54,7 @@
     @if ($selectedAccountId)
         <div class="grid grid-cols-1 lg:grid-cols-5 gap-4">
             {{-- Income vs Expense Bar Chart --}}
-            <div class="lg:col-span-3 bg-white dark:bg-dark-800 rounded-xl border border-secondary-200 dark:border-dark-600 p-4 lg:p-5">
+            <div class="lg:col-span-3 bg-white dark:bg-[#1e1e1e] rounded-xl border border-secondary-200 dark:border-white/10 p-4 lg:p-5">
                 <div class="flex items-center justify-between mb-4">
                     <div class="flex items-center gap-3">
                         <div class="h-9 w-9 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center shrink-0">
@@ -84,7 +84,7 @@
             </div>
 
             {{-- Category Breakdown Donut --}}
-            <div class="lg:col-span-2 bg-white dark:bg-dark-800 rounded-xl border border-secondary-200 dark:border-dark-600 p-4 lg:p-5">
+            <div class="lg:col-span-2 bg-white dark:bg-[#1e1e1e] rounded-xl border border-secondary-200 dark:border-white/10 p-4 lg:p-5">
                 <div class="flex items-center gap-3 mb-4">
                     <div class="h-9 w-9 bg-purple-50 dark:bg-purple-900/20 rounded-xl flex items-center justify-center shrink-0">
                         <x-icon name="chart-pie" class="w-5 h-5 text-purple-600 dark:text-purple-400" />
@@ -128,7 +128,7 @@
                 @else
                     <div class="h-[200px] flex items-center justify-center">
                         <div class="text-center">
-                            <div class="w-12 h-12 bg-gray-100 dark:bg-dark-700 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <div class="w-12 h-12 bg-gray-100 dark:bg-[#27272a] rounded-full flex items-center justify-center mx-auto mb-3">
                                 <x-icon name="chart-pie" class="w-6 h-6 text-gray-400 dark:text-dark-500" />
                             </div>
                             <p class="text-sm text-dark-500 dark:text-dark-400">{{ __('pages.no_category_data') }}</p>
@@ -139,10 +139,10 @@
         </div>
     @else
         {{-- No Account Selected --}}
-        <div class="bg-white dark:bg-dark-800 rounded-xl border border-secondary-200 dark:border-dark-600 p-8">
+        <div class="bg-white dark:bg-[#1e1e1e] rounded-xl border border-secondary-200 dark:border-white/10 p-8">
             <div class="flex items-center justify-center min-h-[200px]">
                 <div class="text-center">
-                    <div class="w-14 h-14 bg-gray-100 dark:bg-dark-700 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <div class="w-14 h-14 bg-gray-100 dark:bg-[#27272a] rounded-full flex items-center justify-center mx-auto mb-3">
                         <x-icon name="chart-bar" class="w-7 h-7 text-gray-400 dark:text-dark-500" />
                     </div>
                     <h3 class="font-medium text-dark-900 dark:text-dark-50 mb-1">{{ __('pages.no_account_selected') }}</h3>

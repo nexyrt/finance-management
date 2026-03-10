@@ -16,7 +16,7 @@
     <form wire:submit.prevent="save" class="space-y-6">
         {{-- Basic Information --}}
         <div class="space-y-4">
-            <div class="border-b border-zinc-200 dark:border-dark-600 pb-4">
+            <div class="border-b border-zinc-200 dark:border-white/10 pb-4">
                 <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-1">{{ __('pages.basic_information') }}</h4>
                 <p class="text-xs text-dark-500 dark:text-dark-400">{{ __('pages.account_basic_details') }}</p>
             </div>
@@ -48,12 +48,12 @@
 
         {{-- Financial Information --}}
         <div class="space-y-4">
-            <div class="border-b border-zinc-200 dark:border-dark-600 pb-4">
+            <div class="border-b border-zinc-200 dark:border-white/10 pb-4">
                 <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-1">{{ __('pages.financial') }}</h4>
                 <p class="text-xs text-dark-500 dark:text-dark-400">{{ __('pages.initial_balance_section_desc') }}</p>
             </div>
 
-            <x-currency-input wire:model.live="initial_balance"
+            <x-form.currency-input wire:model.live="initial_balance"
                               :label="__('pages.initial_balance')"
                               :placeholder="__('pages.enter_initial_balance')"
                               :hint="__('pages.initial_balance_hint')" />

@@ -1,11 +1,11 @@
 <div>
-    <x-auth-header
+    <x-ui.auth-header
         :title="__('Confirm password')"
         :description="__('This is a secure area of the application. Please confirm your password before continuing.')"
     />
 
     <!-- Session Status -->
-    <x-auth-session-status class="text-center mb-4" :status="session('status')" />
+    <x-ui.auth-session-status class="text-center mb-4" :status="session('status')" />
 
     <form wire:submit="confirmPassword" class="space-y-4">
         <!-- Password -->

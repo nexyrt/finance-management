@@ -16,7 +16,7 @@
 
         <form id="pay-loan" wire:submit="save" class="space-y-6">
             @if ($loan)
-                <div class="bg-secondary-50 dark:bg-dark-700 rounded-lg p-4">
+                <div class="bg-secondary-50 dark:bg-[#27272a] rounded-lg p-4">
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <div class="text-xs text-dark-500 dark:text-dark-400">Sisa Pokok</div>
@@ -47,10 +47,10 @@
 
                     <x-date wire:model="payment_date" label="Tanggal Bayar *" />
 
-                    <x-currency-input wire:model="principal_paid" label="Pembayaran Pokok"
+                    <x-form.currency-input wire:model="principal_paid" label="Pembayaran Pokok"
                         hint="Kosongkan jika hanya bayar bunga" placeholder="0" />
 
-                    <x-currency-input wire:model="interest_paid" label="Pembayaran Bunga"
+                    <x-form.currency-input wire:model="interest_paid" label="Pembayaran Bunga"
                         hint="Kosongkan jika hanya bayar pokok" placeholder="0" />
 
                     <x-input wire:model="reference_number" label="No. Referensi"

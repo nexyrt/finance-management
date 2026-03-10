@@ -9,7 +9,7 @@
             </div>
             <input type="text" wire:model.live.debounce.300ms="search"
                 placeholder="{{ __('pages.ri_search_templates_placeholder') }}"
-                class="w-full pl-9 pr-3 py-2 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400 placeholder-dark-400 dark:placeholder-dark-500 transition-all" />
+                class="w-full pl-9 pr-3 py-2 text-sm border border-dark-200 dark:border-white/10 rounded-lg bg-white dark:bg-[#1e1e1e] text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400 placeholder-dark-400 dark:placeholder-dark-500 transition-all" />
         </div>
 
         {{-- Status Filter --}}
@@ -45,17 +45,17 @@
                 $isComplete = $total > 0 && $published === $total;
             @endphp
 
-            <div class="group relative flex flex-col bg-white dark:bg-dark-800 rounded-xl border border-dark-200 dark:border-dark-600 overflow-hidden hover:border-primary-300 dark:hover:border-primary-700/60 hover:shadow-sm transition-all duration-200">
+            <div class="group relative flex flex-col bg-white dark:bg-[#1e1e1e] rounded-xl border border-dark-200 dark:border-white/10 overflow-hidden hover:border-primary-300 dark:hover:border-primary-700/60 hover:shadow-sm transition-all duration-200">
 
                 {{-- Left edge accent line --}}
-                <div class="absolute inset-y-0 left-0 w-[3px] {{ $isActive ? ($isComplete ? 'bg-green-500' : 'bg-primary-500') : 'bg-dark-300 dark:bg-dark-600' }}"></div>
+                <div class="absolute inset-y-0 left-0 w-[3px] {{ $isActive ? ($isComplete ? 'bg-green-500' : 'bg-primary-500') : 'bg-dark-300 dark:bg-[#161618]' }}"></div>
 
                 <div class="flex flex-col flex-1 pl-6 pr-5 pt-5 pb-4">
 
                     {{-- Header: Avatar + Names + Status --}}
                     <div class="flex items-start justify-between gap-3 mb-4">
                         <div class="flex items-center gap-3 min-w-0">
-                            <div class="w-9 h-9 rounded-lg {{ $isActive ? 'bg-primary-50 dark:bg-primary-900/25 text-primary-600 dark:text-primary-400' : 'bg-dark-100 dark:bg-dark-700 text-dark-500 dark:text-dark-400' }} flex items-center justify-center shrink-0 text-xs font-bold tracking-wide">
+                            <div class="w-9 h-9 rounded-lg {{ $isActive ? 'bg-primary-50 dark:bg-primary-900/25 text-primary-600 dark:text-primary-400' : 'bg-dark-100 dark:bg-[#27272a] text-dark-500 dark:text-dark-400' }} flex items-center justify-center shrink-0 text-xs font-bold tracking-wide">
                                 {{ strtoupper(substr($template->client->name, 0, 2)) }}
                             </div>
                             <div class="min-w-0">
@@ -74,7 +74,7 @@
                                 {{ __('pages.ri_status_active') }}
                             </span>
                         @else
-                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-dark-100 dark:bg-dark-700 text-dark-500 dark:text-dark-400 ring-1 ring-dark-200 dark:ring-dark-600 shrink-0 mt-0.5">
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-dark-100 dark:bg-[#27272a] text-dark-500 dark:text-dark-400 ring-1 ring-dark-200 dark:ring-dark-600 shrink-0 mt-0.5">
                                 <x-icon name="archive-box" class="w-3 h-3" />
                                 {{ __('pages.ri_status_archived') }}
                             </span>
@@ -82,7 +82,7 @@
                     </div>
 
                     {{-- Amount + Frequency --}}
-                    <div class="flex items-end justify-between mb-4 pb-4 border-b border-dark-100 dark:border-dark-700">
+                    <div class="flex items-end justify-between mb-4 pb-4 border-b border-dark-100 dark:border-white/8">
                         <div>
                             <p class="text-[11px] font-medium text-dark-400 dark:text-dark-500 uppercase tracking-wider mb-1">
                                 {{ __('pages.ri_total_amount_label') }}
@@ -104,15 +104,15 @@
 
                     {{-- Stats row: Published / Draft / Period --}}
                     <div class="grid grid-cols-3 gap-2 mb-3">
-                        <div class="rounded-lg bg-dark-50 dark:bg-dark-700/50 px-2 py-2.5 text-center">
+                        <div class="rounded-lg bg-dark-50 dark:bg-[#27272a]/50 px-2 py-2.5 text-center">
                             <p class="text-sm font-bold text-green-600 dark:text-green-400 tabular-nums">{{ $published }}</p>
                             <p class="text-[10px] text-dark-500 dark:text-dark-400 mt-0.5 leading-none">{{ __('pages.ri_published_label') }}</p>
                         </div>
-                        <div class="rounded-lg bg-dark-50 dark:bg-dark-700/50 px-2 py-2.5 text-center">
+                        <div class="rounded-lg bg-dark-50 dark:bg-[#27272a]/50 px-2 py-2.5 text-center">
                             <p class="text-sm font-bold text-amber-600 dark:text-amber-400 tabular-nums">{{ $draft }}</p>
                             <p class="text-[10px] text-dark-500 dark:text-dark-400 mt-0.5 leading-none">{{ __('pages.ri_draft_label') }}</p>
                         </div>
-                        <div class="rounded-lg bg-dark-50 dark:bg-dark-700/50 px-2 py-2.5 text-center">
+                        <div class="rounded-lg bg-dark-50 dark:bg-[#27272a]/50 px-2 py-2.5 text-center">
                             <p class="text-[10px] font-semibold text-dark-700 dark:text-dark-300 leading-tight">{{ $template->start_date->format('M \'y') }}</p>
                             <p class="text-[10px] text-dark-400 leading-none my-0.5">—</p>
                             <p class="text-[10px] font-semibold text-dark-700 dark:text-dark-300 leading-tight">{{ $template->end_date->format('M \'y') }}</p>
@@ -127,7 +127,7 @@
                                 {{ $published }}/{{ $total }}
                             </span>
                         </div>
-                        <div class="h-1 w-full bg-dark-100 dark:bg-dark-700 rounded-full overflow-hidden">
+                        <div class="h-1 w-full bg-dark-100 dark:bg-[#27272a] rounded-full overflow-hidden">
                             <div class="h-full rounded-full transition-all duration-700 ease-out {{ $isComplete ? 'bg-green-500' : 'bg-linear-to-r from-primary-500 to-blue-500' }}"
                                 style="width: {{ $progress }}%"></div>
                         </div>
@@ -138,7 +138,7 @@
                         {{-- View --}}
                         <button wire:click="viewTemplate({{ $template->id }})"
                             wire:loading.attr="disabled" wire:target="viewTemplate({{ $template->id }})"
-                            class="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-dark-50 dark:bg-dark-700/50 text-dark-600 dark:text-dark-400 hover:bg-dark-100 dark:hover:bg-dark-700 hover:text-dark-900 dark:hover:text-dark-100 border border-dark-200 dark:border-dark-600 transition-all duration-150">
+                            class="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-dark-50 dark:bg-[#27272a]/50 text-dark-600 dark:text-dark-400 hover:bg-dark-100 dark:hover:bg-dark-700 hover:text-dark-900 dark:hover:text-dark-100 border border-dark-200 dark:border-white/10 transition-all duration-150">
                             <x-icon name="eye" class="w-3.5 h-3.5" />
                             {{ __('common.view') }}
                         </button>
@@ -171,8 +171,8 @@
         @empty
             {{-- Empty State --}}
             <div class="col-span-full">
-                <div class="bg-white dark:bg-dark-800 rounded-xl border-2 border-dashed border-dark-200 dark:border-dark-600 p-16 text-center">
-                    <div class="w-12 h-12 mx-auto mb-4 bg-dark-50 dark:bg-dark-700 rounded-xl flex items-center justify-center">
+                <div class="bg-white dark:bg-[#1e1e1e] rounded-xl border-2 border-dashed border-dark-200 dark:border-white/10 p-16 text-center">
+                    <div class="w-12 h-12 mx-auto mb-4 bg-dark-50 dark:bg-[#27272a] rounded-xl flex items-center justify-center">
                         <x-icon name="document-duplicate" class="w-6 h-6 text-dark-400" />
                     </div>
                     <h3 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-1.5">

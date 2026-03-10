@@ -40,13 +40,13 @@
                                 class="relative flex flex-col items-start gap-2 p-4 rounded-xl border-2 transition-all text-left
                                     {{ $type === 'employee_loan'
                                         ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/10'
-                                        : 'border-secondary-200 dark:border-dark-600 hover:border-secondary-300 dark:hover:border-dark-500 bg-white dark:bg-dark-800' }}">
+                                        : 'border-secondary-200 dark:border-white/10 hover:border-secondary-300 dark:hover:border-dark-500 bg-white dark:bg-[#1e1e1e]' }}">
                                 @if ($type === 'employee_loan')
                                     <div class="absolute top-3 right-3 w-4 h-4 rounded-full bg-emerald-500 flex items-center justify-center">
                                         <x-icon name="check" class="w-2.5 h-2.5 text-white" />
                                     </div>
                                 @endif
-                                <div class="w-9 h-9 rounded-lg {{ $type === 'employee_loan' ? 'bg-emerald-100 dark:bg-emerald-900/30' : 'bg-secondary-100 dark:bg-dark-700' }} flex items-center justify-center">
+                                <div class="w-9 h-9 rounded-lg {{ $type === 'employee_loan' ? 'bg-emerald-100 dark:bg-emerald-900/30' : 'bg-secondary-100 dark:bg-[#27272a]' }} flex items-center justify-center">
                                     <x-icon name="user" class="w-5 h-5 {{ $type === 'employee_loan' ? 'text-emerald-600 dark:text-emerald-400' : 'text-dark-500 dark:text-dark-400' }}" />
                                 </div>
                                 <div>
@@ -61,13 +61,13 @@
                                 class="relative flex flex-col items-start gap-2 p-4 rounded-xl border-2 transition-all text-left
                                     {{ $type === 'company_loan'
                                         ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/10'
-                                        : 'border-secondary-200 dark:border-dark-600 hover:border-secondary-300 dark:hover:border-dark-500 bg-white dark:bg-dark-800' }}">
+                                        : 'border-secondary-200 dark:border-white/10 hover:border-secondary-300 dark:hover:border-dark-500 bg-white dark:bg-[#1e1e1e]' }}">
                                 @if ($type === 'company_loan')
                                     <div class="absolute top-3 right-3 w-4 h-4 rounded-full bg-emerald-500 flex items-center justify-center">
                                         <x-icon name="check" class="w-2.5 h-2.5 text-white" />
                                     </div>
                                 @endif
-                                <div class="w-9 h-9 rounded-lg {{ $type === 'company_loan' ? 'bg-emerald-100 dark:bg-emerald-900/30' : 'bg-secondary-100 dark:bg-dark-700' }} flex items-center justify-center">
+                                <div class="w-9 h-9 rounded-lg {{ $type === 'company_loan' ? 'bg-emerald-100 dark:bg-emerald-900/30' : 'bg-secondary-100 dark:bg-[#27272a]' }} flex items-center justify-center">
                                     <x-icon name="building-office" class="w-5 h-5 {{ $type === 'company_loan' ? 'text-emerald-600 dark:text-emerald-400' : 'text-dark-500 dark:text-dark-400' }}" />
                                 </div>
                                 <div>
@@ -104,7 +104,7 @@
                         </div>
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <x-currency-input wire:model.live="principal_amount" placeholder="0">
+                            <x-form.currency-input wire:model.live="principal_amount" placeholder="0">
                                 <x-slot:label>
                                     <div class="flex items-center gap-2">
                                         <span>{{ __('pages.rcv_principal_label') }}</span>
@@ -123,7 +123,7 @@
                             ]" />
 
                             @if ($interest_type === 'fixed')
-                                <x-currency-input wire:model.live="interest_amount"
+                                <x-form.currency-input wire:model.live="interest_amount"
                                     label="{{ __('pages.rcv_interest_amount_label') }}"
                                     placeholder="0"
                                     hint="{{ __('pages.rcv_interest_amount_hint') }}" />
@@ -178,7 +178,7 @@
                 </div>
 
                 {{-- RIGHT: Live Summary Panel (1/3) --}}
-                <div class="lg:border-l border-secondary-100 dark:border-dark-600/50 bg-secondary-50/50 dark:bg-dark-700/30">
+                <div class="lg:border-l border-secondary-100 dark:border-white/10/50 bg-secondary-50/50 dark:bg-[#27272a]/30">
                     <div class="p-6 sticky top-0">
                         <p class="text-xs font-semibold text-dark-500 dark:text-dark-400 uppercase tracking-wider mb-4">
                             {{ __('pages.rcv_summary_title') }}
@@ -222,7 +222,7 @@
                                 </span>
                             </div>
 
-                            <div class="border-t border-secondary-200 dark:border-dark-600 pt-3 flex items-center justify-between">
+                            <div class="border-t border-secondary-200 dark:border-white/10 pt-3 flex items-center justify-between">
                                 <span class="text-xs text-dark-500 dark:text-dark-400">{{ __('pages.rcv_monthly_installment') }}</span>
                                 <span class="text-base font-bold text-dark-900 dark:text-dark-50 tabular-nums">
                                     Rp {{ number_format($cicilan, 0, ',', '.') }}/{{ __('pages.rcv_month_abbr') }}
@@ -246,7 +246,7 @@
                                 </div>
                             </div>
 
-                            <div class="ml-1 w-px h-4 bg-secondary-200 dark:bg-dark-600 mx-0.5"></div>
+                            <div class="ml-1 w-px h-4 bg-secondary-200 dark:bg-[#161618] mx-0.5"></div>
 
                             <div class="flex items-start gap-3">
                                 <div class="shrink-0 mt-0.5">
@@ -260,7 +260,7 @@
                                 </div>
                             </div>
 
-                            <div class="ml-1 w-px h-4 bg-secondary-200 dark:bg-dark-600 mx-0.5"></div>
+                            <div class="ml-1 w-px h-4 bg-secondary-200 dark:bg-[#161618] mx-0.5"></div>
 
                             <div class="flex items-start gap-3">
                                 <div class="shrink-0 mt-0.5">
@@ -274,7 +274,7 @@
                         </div>
 
                         {{-- Type badge --}}
-                        <div class="mt-6 pt-5 border-t border-secondary-200 dark:border-dark-600">
+                        <div class="mt-6 pt-5 border-t border-secondary-200 dark:border-white/10">
                             <div class="flex items-center gap-2">
                                 <x-icon name="{{ $type === 'employee_loan' ? 'user' : 'building-office' }}"
                                     class="w-4 h-4 text-dark-500 dark:text-dark-400" />

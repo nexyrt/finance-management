@@ -18,7 +18,7 @@
             <form id="disburse-form" wire:submit="disburse" class="space-y-6">
                 {{-- Request Summary --}}
                 <div class="space-y-4">
-                    <div class="border-b border-secondary-200 dark:border-dark-600 pb-4">
+                    <div class="border-b border-secondary-200 dark:border-white/10 pb-4">
                         <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-1">{{ __('pages.request_summary') }}</h4>
                     </div>
 
@@ -46,7 +46,7 @@
 
                 {{-- Budget Items Preview --}}
                 <div class="space-y-4">
-                    <div class="border-b border-secondary-200 dark:border-dark-600 pb-4">
+                    <div class="border-b border-secondary-200 dark:border-white/10 pb-4">
                         <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-1">{{ __('pages.items_to_disburse') }}</h4>
                         <p class="text-xs text-dark-500 dark:text-dark-400">
                             {{ __('pages.items_to_disburse_hint') }}
@@ -55,8 +55,8 @@
 
                     <div class="max-h-64 overflow-y-auto">
                         <table class="w-full text-sm">
-                            <thead class="sticky top-0 bg-white dark:bg-dark-800">
-                                <tr class="border-b border-secondary-200 dark:border-dark-600">
+                            <thead class="sticky top-0 bg-white dark:bg-[#1e1e1e]">
+                                <tr class="border-b border-secondary-200 dark:border-white/10">
                                     <th class="text-left pb-2 px-2 text-dark-700 dark:text-dark-300 font-semibold">{{ __('pages.item_description') }}</th>
                                     <th class="text-left pb-2 px-2 text-dark-700 dark:text-dark-300 font-semibold">{{ __('pages.category') }}</th>
                                     <th class="text-right pb-2 px-2 text-dark-700 dark:text-dark-300 font-semibold">{{ __('common.amount') }}</th>
@@ -64,7 +64,7 @@
                             </thead>
                             <tbody>
                                 @foreach ($fundRequest->items as $item)
-                                    <tr class="border-b border-secondary-100 dark:border-dark-700">
+                                    <tr class="border-b border-secondary-100 dark:border-white/8">
                                         <td class="py-2 px-2 text-dark-900 dark:text-dark-50">{{ $item->description }}</td>
                                         <td class="py-2 px-2 text-dark-700 dark:text-dark-300 text-xs">{{ $item->category->full_path }}</td>
                                         <td class="py-2 px-2 text-right font-semibold text-dark-900 dark:text-dark-50">
@@ -72,7 +72,7 @@
                                         </td>
                                     </tr>
                                 @endforeach
-                                <tr class="bg-secondary-50 dark:bg-dark-700 font-bold">
+                                <tr class="bg-secondary-50 dark:bg-[#27272a] font-bold">
                                     <td colspan="2" class="py-3 px-2 text-right text-dark-900 dark:text-dark-50">{{ __('common.total') }}:</td>
                                     <td class="py-3 px-2 text-right text-lg text-green-600 dark:text-green-400">
                                         Rp {{ number_format($fundRequest->total_amount, 0, ',', '.') }}
@@ -85,7 +85,7 @@
 
                 {{-- Disbursement Details --}}
                 <div class="space-y-4">
-                    <div class="border-b border-secondary-200 dark:border-dark-600 pb-4">
+                    <div class="border-b border-secondary-200 dark:border-white/10 pb-4">
                         <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-1">{{ __('pages.disbursement_details') }}</h4>
                         <p class="text-xs text-dark-500 dark:text-dark-400">
                             {{ __('pages.disbursement_details_description') }}

@@ -142,7 +142,7 @@
     <div x-data="{ show: @entangle('selected').live }" x-show="show.length > 0" x-transition
         wire:key="trx-bulk-{{ $selectedAccountId }}"
         class="fixed bottom-4 sm:bottom-6 left-4 right-4 sm:left-1/2 sm:right-auto sm:transform sm:-translate-x-1/2 z-50">
-        <div class="bg-white dark:bg-dark-800 rounded-xl shadow-lg border border-secondary-200 dark:border-dark-600 px-4 sm:px-6 py-4 sm:min-w-96">
+        <div class="bg-white dark:bg-[#1e1e1e] rounded-xl shadow-lg border border-secondary-200 dark:border-white/10 px-4 sm:px-6 py-4 sm:min-w-96">
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-6">
                 <div class="flex items-center gap-3">
                     <div class="h-10 w-10 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center">

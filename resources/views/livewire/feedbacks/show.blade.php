@@ -49,7 +49,7 @@
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
 
                     {{-- Reporter --}}
-                    <div class="bg-zinc-50 dark:bg-dark-700/40 border border-zinc-200 dark:border-dark-600 rounded-xl p-3">
+                    <div class="bg-zinc-50 dark:bg-[#27272a]/40 border border-zinc-200 dark:border-white/10 rounded-xl p-3">
                         <p class="text-xs uppercase tracking-widest text-dark-400 dark:text-dark-500 mb-1">{{ __('feedback.from') }}</p>
                         <div class="flex items-center gap-2">
                             <div class="h-6 w-6 rounded-lg bg-linear-to-br from-primary-400 to-primary-600 flex items-center justify-center shrink-0">
@@ -60,14 +60,14 @@
                     </div>
 
                     {{-- Submitted date --}}
-                    <div class="bg-zinc-50 dark:bg-dark-700/40 border border-zinc-200 dark:border-dark-600 rounded-xl p-3">
+                    <div class="bg-zinc-50 dark:bg-[#27272a]/40 border border-zinc-200 dark:border-white/10 rounded-xl p-3">
                         <p class="text-xs uppercase tracking-widest text-dark-400 dark:text-dark-500 mb-1">{{ __('common.date') }}</p>
                         <p class="text-sm font-semibold text-dark-900 dark:text-dark-50">{{ $this->feedback->created_at->format('d M Y, H:i') }}</p>
                     </div>
 
                     {{-- Source page --}}
                     @if ($this->feedback->page_url)
-                        <div class="bg-zinc-50 dark:bg-dark-700/40 border border-zinc-200 dark:border-dark-600 rounded-xl p-3">
+                        <div class="bg-zinc-50 dark:bg-[#27272a]/40 border border-zinc-200 dark:border-white/10 rounded-xl p-3">
                             <p class="text-xs uppercase tracking-widest text-dark-400 dark:text-dark-500 mb-1">{{ __('feedback.source_page') }}</p>
                             <a href="{{ $this->feedback->page_url }}" target="_blank"
                                 class="inline-flex items-center gap-1 text-sm font-semibold text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 transition-colors truncate">
@@ -76,7 +76,7 @@
                             </a>
                         </div>
                     @else
-                        <div class="bg-zinc-50 dark:bg-dark-700/40 border border-zinc-200 dark:border-dark-600 rounded-xl p-3">
+                        <div class="bg-zinc-50 dark:bg-[#27272a]/40 border border-zinc-200 dark:border-white/10 rounded-xl p-3">
                             <p class="text-xs uppercase tracking-widest text-dark-400 dark:text-dark-500 mb-1">{{ __('feedback.source_page') }}</p>
                             <p class="text-sm text-dark-400 dark:text-dark-500">—</p>
                         </div>
@@ -85,8 +85,8 @@
                 </div>
 
                 {{-- Row 2: Description --}}
-                <div class="border border-zinc-200 dark:border-dark-600 rounded-xl overflow-hidden">
-                    <div class="px-4 py-2.5 border-b border-zinc-200 dark:border-dark-600 bg-zinc-50 dark:bg-dark-700/40">
+                <div class="border border-zinc-200 dark:border-white/10 rounded-xl overflow-hidden">
+                    <div class="px-4 py-2.5 border-b border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-[#27272a]/40">
                         <h4 class="text-xs uppercase tracking-widest text-dark-500 dark:text-dark-400 font-semibold">{{ __('common.description') }}</h4>
                     </div>
                     <div class="px-4 py-3">
@@ -98,8 +98,8 @@
 
                 {{-- Row 3: Attachment (if exists) --}}
                 @if ($this->feedback->hasAttachment())
-                    <div class="border border-zinc-200 dark:border-dark-600 rounded-xl overflow-hidden">
-                        <div class="flex items-center justify-between px-4 py-2.5 border-b border-zinc-200 dark:border-dark-600 bg-zinc-50 dark:bg-dark-700/40">
+                    <div class="border border-zinc-200 dark:border-white/10 rounded-xl overflow-hidden">
+                        <div class="flex items-center justify-between px-4 py-2.5 border-b border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-[#27272a]/40">
                             <h4 class="text-xs uppercase tracking-widest text-dark-500 dark:text-dark-400 font-semibold flex items-center gap-2">
                                 <x-icon name="paper-clip" class="w-3.5 h-3.5" />
                                 {{ __('feedback.attachment_label') }}
@@ -108,10 +108,10 @@
                         <div class="p-4">
                             @if ($this->feedback->isImageAttachment())
                                 <img src="{{ $this->feedback->attachment_url }}" alt="Attachment"
-                                    class="max-w-full max-h-80 object-contain mx-auto block rounded-xl border border-zinc-200 dark:border-dark-600" />
+                                    class="max-w-full max-h-80 object-contain mx-auto block rounded-xl border border-zinc-200 dark:border-white/10" />
                             @else
                                 <a href="{{ $this->feedback->attachment_url }}" target="_blank"
-                                    class="flex items-center gap-3 p-3 bg-zinc-50 dark:bg-dark-700/40 rounded-xl border border-zinc-200 dark:border-dark-600 hover:bg-zinc-100 dark:hover:bg-dark-700 transition-colors">
+                                    class="flex items-center gap-3 p-3 bg-zinc-50 dark:bg-[#27272a]/40 rounded-xl border border-zinc-200 dark:border-white/10 hover:bg-zinc-100 dark:hover:bg-dark-700 transition-colors">
                                     <div class="h-10 w-10 bg-red-50 dark:bg-red-900/20 rounded-xl flex items-center justify-center shrink-0">
                                         <x-icon name="document" class="w-5 h-5 text-red-600 dark:text-red-400" />
                                     </div>

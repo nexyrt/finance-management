@@ -12,7 +12,7 @@
         <x-floating x-show="show"
             x-anchor="$refs.button"
             @click.outside="show = false"
-            class="w-48 bg-white dark:bg-dark-800 rounded-xl shadow-2xl border border-gray-200 dark:border-dark-700"
+            class="w-48 bg-white dark:bg-[#1e1e1e] rounded-xl shadow-2xl border border-gray-200 dark:border-white/8"
             style="z-index: 9999;"
             x-transition:enter="transition ease-out duration-200"
             x-transition:enter-start="opacity-0 scale-95"
@@ -22,7 +22,7 @@
             x-transition:leave-end="opacity-0 scale-95">
 
             {{-- Header --}}
-            <div class="px-4 py-3 border-b border-gray-200 dark:border-dark-700">
+            <div class="px-4 py-3 border-b border-gray-200 dark:border-white/8">
                 <h3 class="text-sm font-semibold text-dark-900 dark:text-white">{{ __('common.language') }}</h3>
             </div>
 

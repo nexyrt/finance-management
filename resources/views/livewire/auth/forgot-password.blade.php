@@ -1,8 +1,8 @@
 <div>
-    <x-auth-header :title="__('Forgot password')" :description="__('Enter your email to receive a password reset link')" />
+    <x-ui.auth-header :title="__('Forgot password')" :description="__('Enter your email to receive a password reset link')" />
 
     <!-- Session Status -->
-    <x-auth-session-status class="text-center mb-4" :status="session('status')" />
+    <x-ui.auth-session-status class="text-center mb-4" :status="session('status')" />
 
     <form wire:submit="sendPasswordResetLink" class="space-y-4">
         <!-- Email Address -->

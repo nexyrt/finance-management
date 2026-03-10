@@ -33,9 +33,9 @@
         <div class="lg:col-span-2 space-y-6">
 
             {{-- Section 1: Invoice Details --}}
-            <div class="bg-white dark:bg-dark-800 rounded-xl border border-dark-200 dark:border-dark-600 overflow-hidden">
+            <div class="bg-white dark:bg-[#1e1e1e] rounded-xl border border-dark-200 dark:border-white/10 overflow-hidden">
                 {{-- Section Header --}}
-                <div class="px-6 py-4 border-b border-dark-100 dark:border-dark-700 flex items-center gap-3">
+                <div class="px-6 py-4 border-b border-dark-100 dark:border-white/8 flex items-center gap-3">
                     <div class="h-8 w-8 bg-primary-50 dark:bg-primary-900/20 rounded-lg flex items-center justify-center shrink-0">
                         <svg class="w-4 h-4 text-primary-600 dark:text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
@@ -55,14 +55,14 @@
                         </label>
                         <div x-data="{ open: false, search: '' }" class="relative">
                             <div x-show="!invoiceData.template_id" @click="open = !open"
-                                class="w-full px-3 py-2.5 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-500 dark:text-dark-400 cursor-pointer hover:border-primary-400 transition flex items-center justify-between">
+                                class="w-full px-3 py-2.5 text-sm border border-dark-200 dark:border-white/10 rounded-lg bg-white dark:bg-[#1e1e1e] text-dark-500 dark:text-dark-400 cursor-pointer hover:border-primary-400 transition flex items-center justify-between">
                                 <span>{{ __('pages.ri_template_select_placeholder') }}</span>
                                 <svg class="w-4 h-4 text-dark-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                                 </svg>
                             </div>
                             <div x-show="invoiceData.template_id"
-                                class="w-full px-3 py-2.5 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 flex items-center justify-between">
+                                class="w-full px-3 py-2.5 text-sm border border-dark-200 dark:border-white/10 rounded-lg bg-white dark:bg-[#1e1e1e] flex items-center justify-between">
                                 <div>
                                     <span class="text-dark-900 dark:text-dark-50 font-medium" x-text="invoiceData.template_label"></span>
                                     <span class="ml-2 text-xs text-dark-400 dark:text-dark-500" x-text="'(' + (invoiceData.template_frequency || '') + ')'"></span>
@@ -75,7 +75,7 @@
                             </div>
                             <template x-teleport="body">
                                 <div x-show="open" x-transition id="monthly-tmpl-dd"
-                                    class="fixed z-9999 bg-white dark:bg-dark-800 border border-dark-200 dark:border-dark-700 rounded-lg shadow-xl max-h-80 overflow-hidden"
+                                    class="fixed z-9999 bg-white dark:bg-[#1e1e1e] border border-dark-200 dark:border-white/8 rounded-lg shadow-xl max-h-80 overflow-hidden"
                                     style="display:none;"
                                     x-effect="
                                         if (open) {
@@ -87,14 +87,14 @@
                                             dd.style.width = rect.width + 'px';
                                         }
                                     ">
-                                    <div class="p-2 border-b border-dark-200 dark:border-dark-700">
+                                    <div class="p-2 border-b border-dark-200 dark:border-white/8">
                                         <input type="text" x-model="search" @click.stop placeholder="{{ __('pages.ri_search_templates_placeholder') }}"
-                                            class="w-full px-3 py-2 border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 placeholder-dark-400 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm">
+                                            class="w-full px-3 py-2 border border-dark-200 dark:border-white/10 rounded-lg bg-white dark:bg-[#1e1e1e] text-dark-900 dark:text-dark-50 placeholder-dark-400 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm">
                                     </div>
                                     <div class="overflow-y-auto max-h-64">
                                         <template x-for="tmpl in filteredTemplates(search)" :key="tmpl.id">
                                             <div @click="selectTemplate(tmpl); open = false; search = ''"
-                                                class="px-4 py-3 hover:bg-primary-50 dark:hover:bg-primary-900/20 cursor-pointer transition border-b border-dark-100 dark:border-dark-700 last:border-0">
+                                                class="px-4 py-3 hover:bg-primary-50 dark:hover:bg-primary-900/20 cursor-pointer transition border-b border-dark-100 dark:border-white/8 last:border-0">
                                                 <div class="font-medium text-dark-900 dark:text-dark-50 text-sm" x-text="tmpl.label"></div>
                                                 <div class="text-xs text-dark-500 dark:text-dark-400 mt-0.5" x-text="tmpl.frequency"></div>
                                             </div>
@@ -124,7 +124,7 @@
                                     </svg>
                                 </div>
                                 <input type="date" wire:model="invoiceData.scheduled_date"
-                                    class="w-full pl-9 pr-3 py-2.5 text-sm border border-dark-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:cursor-pointer">
+                                    class="w-full pl-9 pr-3 py-2.5 text-sm border border-dark-200 dark:border-white/10 rounded-lg bg-white dark:bg-[#1e1e1e] text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:cursor-pointer">
                             </div>
                             @error('invoiceData.scheduled_date')
                                 <p class="mt-1 text-xs text-red-500">{{ $message }}</p>

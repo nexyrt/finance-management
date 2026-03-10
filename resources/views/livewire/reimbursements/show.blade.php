@@ -24,7 +24,7 @@
             <div class="space-y-6">
                 {{-- Basic Information --}}
                 <div class="space-y-4">
-                    <div class="border-b border-secondary-200 dark:border-dark-600 pb-3">
+                    <div class="border-b border-secondary-200 dark:border-white/10 pb-3">
                         <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50">{{ __('pages.reimb_expense_info_section') }}</h4>
                     </div>
 
@@ -124,7 +124,7 @@
                 {{-- Attachment --}}
                 @if ($this->reimbursement->hasAttachment())
                     <div class="space-y-4">
-                        <div class="border-b border-secondary-200 dark:border-dark-600 pb-3">
+                        <div class="border-b border-secondary-200 dark:border-white/10 pb-3">
                             <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50">{{ __('common.attachment') }}</h4>
                         </div>
 
@@ -160,7 +160,7 @@
                 {{-- Payment History --}}
                 @if($this->reimbursement->payments->count() > 0)
                     <div class="space-y-4">
-                        <div class="border-b border-secondary-200 dark:border-dark-600 pb-3">
+                        <div class="border-b border-secondary-200 dark:border-white/10 pb-3">
                             <div class="flex items-center justify-between">
                                 <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50">{{ __('pages.reimb_payment_history_section') }}</h4>
                                 <x-badge text="{{ __('pages.reimb_payments_count', ['count' => $this->reimbursement->payments->count()]) }}" color="blue" />
@@ -212,7 +212,7 @@
                 {{-- Workflow History --}}
                 @if ($this->reimbursement->status !== 'draft')
                     <div class="space-y-4">
-                        <div class="border-b border-secondary-200 dark:border-dark-600 pb-3">
+                        <div class="border-b border-secondary-200 dark:border-white/10 pb-3">
                             <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50">{{ __('pages.reimb_workflow_history_section') }}</h4>
                         </div>
 

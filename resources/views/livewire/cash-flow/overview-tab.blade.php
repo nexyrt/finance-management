@@ -7,7 +7,7 @@
 }" x-init="$watch('currentPeriod', () => $wire.$refresh())">
     {{-- Summary Cards --}}
     <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6">
-        <div class="bg-white dark:bg-dark-800 border border-zinc-200 dark:border-dark-600 rounded-xl p-6">
+        <div class="bg-white dark:bg-[#1e1e1e] border border-zinc-200 dark:border-white/10 rounded-xl p-6">
             <div class="flex items-center gap-4">
                 <div class="h-12 w-12 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center">
                     <x-icon name="arrow-trending-up" class="w-6 h-6 text-green-600 dark:text-green-400" />
@@ -21,7 +21,7 @@
             </div>
         </div>
 
-        <div class="bg-white dark:bg-dark-800 border border-zinc-200 dark:border-dark-600 rounded-xl p-6">
+        <div class="bg-white dark:bg-[#1e1e1e] border border-zinc-200 dark:border-white/10 rounded-xl p-6">
             <div class="flex items-center gap-4">
                 <div class="h-12 w-12 bg-red-100 dark:bg-red-900/30 rounded-xl flex items-center justify-center">
                     <x-icon name="arrow-trending-down" class="w-6 h-6 text-red-600 dark:text-red-400" />
@@ -35,7 +35,7 @@
             </div>
         </div>
 
-        <div class="bg-white dark:bg-dark-800 border border-zinc-200 dark:border-dark-600 rounded-xl p-6">
+        <div class="bg-white dark:bg-[#1e1e1e] border border-zinc-200 dark:border-white/10 rounded-xl p-6">
             <div class="flex items-center gap-4">
                 <div class="h-12 w-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
                     <x-icon name="chart-bar" class="w-6 h-6 text-blue-600 dark:text-blue-400" />
@@ -50,7 +50,7 @@
             </div>
         </div>
 
-        <div class="bg-white dark:bg-dark-800 border border-zinc-200 dark:border-dark-600 rounded-xl p-6">
+        <div class="bg-white dark:bg-[#1e1e1e] border border-zinc-200 dark:border-white/10 rounded-xl p-6">
             <div class="flex items-center gap-4">
                 <div class="h-12 w-12 bg-purple-100 dark:bg-purple-900/30 rounded-xl flex items-center justify-center">
                     <x-icon name="arrow-path" class="w-6 h-6 text-purple-600 dark:text-purple-400" />
@@ -67,7 +67,7 @@
 
     {{-- Period Filter --}}
     <div class="flex justify-center">
-        <div class="inline-flex gap-2 p-1 bg-zinc-100 dark:bg-dark-700 rounded-lg">
+        <div class="inline-flex gap-2 p-1 bg-zinc-100 dark:bg-[#27272a] rounded-lg">
             <button wire:click="$set('period', 'this_month')"
                 class="px-4 py-2 text-sm font-medium rounded-md transition-colors {{ $period === 'this_month' ? 'bg-blue-600 text-white shadow-sm' : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-dark-600' }}">
                 This Month
@@ -86,7 +86,7 @@
     {{-- Charts Container --}}
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6" wire:key="charts-container-{{ $period }}">
         {{-- Monthly Trend --}}
-        <div class="bg-white dark:bg-dark-800 border border-zinc-200 dark:border-dark-600 rounded-xl p-6">
+        <div class="bg-white dark:bg-[#1e1e1e] border border-zinc-200 dark:border-white/10 rounded-xl p-6">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-6">
                 Income vs Expense Trend
                 <span class="text-sm font-normal text-gray-500 dark:text-gray-400">
@@ -104,7 +104,7 @@
         </div>
 
         {{-- Expense by Category --}}
-        <div class="bg-white dark:bg-dark-800 border border-zinc-200 dark:border-dark-600 rounded-xl p-6">
+        <div class="bg-white dark:bg-[#1e1e1e] border border-zinc-200 dark:border-white/10 rounded-xl p-6">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-6">Expenses by Category</h3>
             <div class="h-80" wire:ignore>
                 <canvas id="categoryChart-{{ $period }}"></canvas>
@@ -113,7 +113,7 @@
     </div>
 
     {{-- Top 5 Expenses --}}
-    <div class="bg-white dark:bg-dark-800 border border-zinc-200 dark:border-dark-600 rounded-xl p-6">
+    <div class="bg-white dark:bg-[#1e1e1e] border border-zinc-200 dark:border-white/10 rounded-xl p-6">
         <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-6">Top 5 Expense Categories</h3>
         <div class="space-y-4">
             @forelse ($this->top5Expenses as $index => $expense)
@@ -137,7 +137,7 @@
                                 Rp {{ number_format($expense['total'], 0, ',', '.') }}
                             </span>
                         </div>
-                        <div class="w-full bg-gray-200 dark:bg-dark-600 rounded-full h-2">
+                        <div class="w-full bg-gray-200 dark:bg-[#161618] rounded-full h-2">
                             <div class="h-2 rounded-full {{ match ($index) {
                                 0 => 'bg-linear-to-r from-red-500 to-red-600',
                                 1 => 'bg-linear-to-r from-orange-500 to-orange-600',

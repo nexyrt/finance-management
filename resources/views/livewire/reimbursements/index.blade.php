@@ -14,7 +14,7 @@
             {{-- Workflow Guide Button --}}
             <button
                 wire:click="$toggle('workflowGuideModal')"
-                class="h-9 px-4 flex items-center gap-2 rounded-xl border border-zinc-200 dark:border-dark-600 bg-white dark:bg-dark-800 text-dark-500 dark:text-dark-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-300 dark:hover:border-indigo-700 text-sm font-medium transition-all"
+                class="h-9 px-4 flex items-center gap-2 rounded-xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-[#1e1e1e] text-dark-500 dark:text-dark-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-300 dark:hover:border-indigo-700 text-sm font-medium transition-all"
             >
                 <x-icon name="information-circle" class="w-4 h-4" />
                 {{ __('pages.workflow_guide') }}
@@ -30,13 +30,13 @@
     <div x-data="{ activeTab: $persist('my_requests').as('reimb_active_tab') }">
 
         {{-- Tab Bar --}}
-        <div class="inline-flex items-center gap-1 p-1 bg-zinc-100 dark:bg-dark-700 rounded-xl border border-zinc-200 dark:border-dark-600">
+        <div class="inline-flex items-center gap-1 p-1 bg-zinc-100 dark:bg-[#27272a] rounded-xl border border-zinc-200 dark:border-white/10">
             {{-- My Requests --}}
             <button
                 @click="activeTab = 'my_requests'"
                 class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200"
                 :class="activeTab === 'my_requests'
-                    ? 'bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 shadow-sm border border-zinc-200 dark:border-dark-600'
+                    ? 'bg-white dark:bg-[#1e1e1e] text-dark-900 dark:text-dark-50 shadow-sm border border-zinc-200 dark:border-white/10'
                     : 'text-dark-500 dark:text-dark-400 hover:text-dark-800 dark:hover:text-dark-200 hover:bg-zinc-50 dark:hover:bg-dark-600'"
             >
                 <x-icon name="user" class="w-4 h-4 shrink-0" />
@@ -49,7 +49,7 @@
                     @click="activeTab = 'all_requests'"
                     class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200"
                     :class="activeTab === 'all_requests'
-                        ? 'bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 shadow-sm border border-zinc-200 dark:border-dark-600'
+                        ? 'bg-white dark:bg-[#1e1e1e] text-dark-900 dark:text-dark-50 shadow-sm border border-zinc-200 dark:border-white/10'
                         : 'text-dark-500 dark:text-dark-400 hover:text-dark-800 dark:hover:text-dark-200 hover:bg-zinc-50 dark:hover:bg-dark-600'"
                 >
                     <x-icon name="users" class="w-4 h-4 shrink-0" />
@@ -176,7 +176,7 @@
             </div>
 
             {{-- Status Legend --}}
-            <div class="border-t border-secondary-200 dark:border-dark-600 pt-5">
+            <div class="border-t border-secondary-200 dark:border-white/10 pt-5">
                 <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-3">{{ __('pages.reimb_status_legend_title') }}</h4>
                 <div class="grid grid-cols-2 sm:grid-cols-5 gap-2">
                     @foreach ([
@@ -186,7 +186,7 @@
                         ['label' => 'Rejected', 'color' => 'red', 'desc' => __('pages.reimb_status_needs_revision')],
                         ['label' => 'Paid', 'color' => 'green', 'desc' => __('pages.reimb_status_completed')],
                     ] as $status)
-                        <div class="flex flex-col gap-1 p-2 rounded-lg bg-gray-50 dark:bg-dark-700">
+                        <div class="flex flex-col gap-1 p-2 rounded-lg bg-gray-50 dark:bg-[#27272a]">
                             <x-badge :text="$status['label']" :color="$status['color']" />
                             <span class="text-xs text-dark-500 dark:text-dark-400">{{ $status['desc'] }}</span>
                         </div>
@@ -195,7 +195,7 @@
             </div>
 
             {{-- Role Access --}}
-            <div class="p-4 bg-gray-50 dark:bg-dark-700 rounded-xl border border-gray-200 dark:border-dark-600">
+            <div class="p-4 bg-gray-50 dark:bg-[#27272a] rounded-xl border border-gray-200 dark:border-white/10">
                 <div class="flex items-start gap-3">
                     <x-icon name="shield-check" class="w-5 h-5 text-gray-500 dark:text-gray-400 shrink-0 mt-0.5" />
                     <div class="flex-1">

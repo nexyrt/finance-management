@@ -30,7 +30,7 @@
 
             {{-- Content --}}
             <div class="flex-1 max-w-lg">
-                <div class="border-b border-secondary-200 dark:border-dark-600 pb-4 mb-5">
+                <div class="border-b border-secondary-200 dark:border-white/10 pb-4 mb-5">
                     <h2 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-1">{{ __('pages.settings_password_title') }}</h2>
                     <p class="text-xs text-dark-500 dark:text-dark-400">{{ __('pages.settings_password_description') }}</p>
                 </div>
@@ -44,7 +44,7 @@
                         <x-button type="submit" color="primary" loading="updatePassword">
                             {{ __('common.save') }}
                         </x-button>
-                        <x-action-message on="password-updated">{{ __('common.saved_successfully') }}</x-action-message>
+                        <x-ui.action-message on="password-updated">{{ __('common.saved_successfully') }}</x-action-message>
                     </div>
                 </form>
             </div>

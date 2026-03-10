@@ -29,7 +29,7 @@
 
             <!-- Stats Cards -->
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                <div class="bg-white dark:bg-dark-800 rounded-lg p-4 border border-zinc-200 dark:border-dark-600">
+                <div class="bg-white dark:bg-[#1e1e1e] rounded-lg p-4 border border-zinc-200 dark:border-white/10">
                     <div class="flex items-center gap-2">
                         <x-icon name="document-text" class="w-5 h-5 text-blue-600 dark:text-blue-400" />
                         <div>
@@ -40,7 +40,7 @@
                     </div>
                 </div>
 
-                <div class="bg-white dark:bg-dark-800 rounded-lg p-4 border border-zinc-200 dark:border-dark-600">
+                <div class="bg-white dark:bg-[#1e1e1e] rounded-lg p-4 border border-zinc-200 dark:border-white/10">
                     <div class="flex items-center gap-2">
                         <x-icon name="check-circle" class="w-5 h-5 text-green-600 dark:text-green-400" />
                         <div>
@@ -51,7 +51,7 @@
                     </div>
                 </div>
 
-                <div class="bg-white dark:bg-dark-800 rounded-lg p-4 border border-zinc-200 dark:border-dark-600">
+                <div class="bg-white dark:bg-[#1e1e1e] rounded-lg p-4 border border-zinc-200 dark:border-white/10">
                     <div class="flex items-center gap-2">
                         <x-icon name="clock" class="w-5 h-5 text-amber-600 dark:text-amber-400" />
                         <div>
@@ -62,7 +62,7 @@
                     </div>
                 </div>
 
-                <div class="bg-white dark:bg-dark-800 rounded-lg p-4 border border-zinc-200 dark:border-dark-600">
+                <div class="bg-white dark:bg-[#1e1e1e] rounded-lg p-4 border border-zinc-200 dark:border-white/10">
                     <div class="flex items-center gap-2">
                         <x-icon name="currency-dollar" class="w-5 h-5 text-primary-600 dark:text-primary-400" />
                         <div>
@@ -76,13 +76,13 @@
             </div>
 
             <!-- Template Items -->
-            <div class="bg-white dark:bg-dark-800 rounded-lg border border-zinc-200 dark:border-dark-600">
-                <div class="p-4 border-b border-zinc-200 dark:border-dark-600">
+            <div class="bg-white dark:bg-[#1e1e1e] rounded-lg border border-zinc-200 dark:border-white/10">
+                <div class="p-4 border-b border-zinc-200 dark:border-white/10">
                     <h4 class="font-medium text-dark-900 dark:text-dark-50">{{ __('pages.ri_template_items_title') }}</h4>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full">
-                        <thead class="bg-zinc-50 dark:bg-dark-700">
+                        <thead class="bg-zinc-50 dark:bg-[#27272a]">
                             <tr>
                                 <th
                                     class="px-4 py-2 text-left text-xs font-medium text-dark-600 dark:text-dark-400 uppercase">
@@ -137,7 +137,7 @@
                                 </tr>
                             @endforeach
                         </tbody>
-                        <tfoot class="bg-zinc-50 dark:bg-dark-700">
+                        <tfoot class="bg-zinc-50 dark:bg-[#27272a]">
                             <tr>
                                 <td colspan="4"
                                     class="px-4 py-3 text-right text-sm font-medium text-dark-900 dark:text-dark-50">
@@ -199,15 +199,15 @@
 
             <!-- Next Scheduled Invoices -->
             @if ($this->nextScheduledInvoices->count() > 0)
-                <div class="bg-white dark:bg-dark-800 rounded-lg border border-zinc-200 dark:border-dark-600">
-                    <div class="p-4 border-b border-zinc-200 dark:border-dark-600">
+                <div class="bg-white dark:bg-[#1e1e1e] rounded-lg border border-zinc-200 dark:border-white/10">
+                    <div class="p-4 border-b border-zinc-200 dark:border-white/10">
                         <h4 class="font-medium text-dark-900 dark:text-dark-50">{{ __('pages.ri_upcoming_invoices_title') }}</h4>
                     </div>
                     <div class="p-4">
                         <div class="space-y-3">
                             @foreach ($this->nextScheduledInvoices as $invoice)
                                 <div
-                                    class="flex justify-between items-center p-3 bg-zinc-50 dark:bg-dark-700 rounded-lg">
+                                    class="flex justify-between items-center p-3 bg-zinc-50 dark:bg-[#27272a] rounded-lg">
                                     <div>
                                         <div class="text-sm font-medium text-dark-900 dark:text-dark-50">
                                             {{ $invoice->scheduled_date->format('d M Y') }}

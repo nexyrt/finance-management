@@ -15,7 +15,7 @@
         @if ($receivable)
             <div class="space-y-6">
                 {{-- Receivable Info --}}
-                <div class="bg-secondary-50 dark:bg-dark-700 rounded-lg p-4 space-y-3">
+                <div class="bg-secondary-50 dark:bg-[#27272a] rounded-lg p-4 space-y-3">
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <div class="text-xs text-dark-500 dark:text-dark-400">{{ __('pages.rcv_borrower_label') }}</div>
@@ -62,7 +62,7 @@
                 <div class="flex gap-4">
                     <label class="flex-1 relative">
                         <input type="radio" wire:model.live="action" value="approve" class="peer sr-only" />
-                        <div class="p-4 border-2 rounded-lg cursor-pointer transition-all border-dark-200 dark:border-dark-600 peer-checked:border-green-500 peer-checked:bg-green-50 dark:peer-checked:bg-green-900/20">
+                        <div class="p-4 border-2 rounded-lg cursor-pointer transition-all border-dark-200 dark:border-white/10 peer-checked:border-green-500 peer-checked:bg-green-50 dark:peer-checked:bg-green-900/20">
                             <div class="flex items-center gap-3">
                                 <x-icon name="check-circle" class="w-6 h-6 text-green-600" />
                                 <div>
@@ -75,7 +75,7 @@
 
                     <label class="flex-1 relative">
                         <input type="radio" wire:model.live="action" value="reject" class="peer sr-only" />
-                        <div class="p-4 border-2 rounded-lg cursor-pointer transition-all border-dark-200 dark:border-dark-600 peer-checked:border-red-500 peer-checked:bg-red-50 dark:peer-checked:bg-red-900/20">
+                        <div class="p-4 border-2 rounded-lg cursor-pointer transition-all border-dark-200 dark:border-white/10 peer-checked:border-red-500 peer-checked:bg-red-50 dark:peer-checked:bg-red-900/20">
                             <div class="flex items-center gap-3">
                                 <x-icon name="x-circle" class="w-6 h-6 text-red-600" />
                                 <div>

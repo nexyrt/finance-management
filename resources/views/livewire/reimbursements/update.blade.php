@@ -36,7 +36,7 @@
         <form id="reimbursement-update" wire:submit="save" class="space-y-6">
             {{-- Section: Basic Information --}}
             <div class="space-y-4">
-                <div class="border-b border-secondary-200 dark:border-dark-600 pb-4">
+                <div class="border-b border-secondary-200 dark:border-white/10 pb-4">
                     <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-1">{{ __('pages.reimb_expense_details_section') }}</h4>
                     <p class="text-xs text-dark-500 dark:text-dark-400">{{ __('pages.reimb_edit_desc') }}</p>
                 </div>
@@ -46,7 +46,7 @@
                         <x-input wire:model="title" :label="__('common.title') . ' *'" placeholder="e.g., Taxi to client meeting" />
                     </div>
 
-                    <x-currency-input wire:model="amount" :label="__('common.amount') . ' *'" prefix="Rp" placeholder="0" />
+                    <x-form.currency-input wire:model="amount" :label="__('common.amount') . ' *'" prefix="Rp" placeholder="0" />
 
                     <x-date wire:model="expense_date" :label="__('pages.reimb_expense_date_label')" :placeholder="__('pages.reimb_expense_date_placeholder')" />
 
@@ -64,7 +64,7 @@
 
             {{-- Section: Attachment --}}
             <div class="space-y-4">
-                <div class="border-b border-secondary-200 dark:border-dark-600 pb-4">
+                <div class="border-b border-secondary-200 dark:border-white/10 pb-4">
                     <h4 class="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-1">{{ __('common.attachment') }}</h4>
                     <p class="text-xs text-dark-500 dark:text-dark-400">{{ __('pages.reimb_attachment_update_desc') }}</p>
                 </div>
