@@ -113,6 +113,7 @@
                 ['label' => __('common.paid'), 'value' => 'paid'],
                 ['label' => __('common.partially_paid'), 'value' => 'partially_paid'],
                 ['label' => __('common.overdue'), 'value' => 'overdue'],
+                ['label' => __('pages.cancelled'), 'value' => 'cancelled'],
             ]" :placeholder="__('pages.all') . ' ' . strtolower(__('common.status')) . '...'" />
             <x-select.styled wire:model.live="clientFilter" :label="__('common.clients')"
                 :request="route('api.clients')"
