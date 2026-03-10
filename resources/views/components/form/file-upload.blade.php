@@ -93,8 +93,8 @@ x-on:file-upload-reset.window="clearFiles()">
         @drop.prevent.stop="handleDrop($event)"
         :class="dragging
             ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/10'
-            : 'border-secondary-300 dark:border-dark-600 hover:border-primary-400 dark:hover:border-primary-600'"
-        class="relative border-2 border-dashed rounded-xl transition-colors bg-white dark:bg-dark-800 cursor-pointer"
+            : 'border-secondary-300 dark:border-white/10 hover:border-primary-400 dark:hover:border-primary-600'"
+        class="relative border-2 border-dashed rounded-xl transition-colors bg-white dark:bg-[#1e1e1e] cursor-pointer"
         @click="$refs.fileInput.click()">
 
         {{-- Hidden file input --}}
@@ -108,8 +108,8 @@ x-on:file-upload-reset.window="clearFiles()">
         />
 
         {{-- Upload progress overlay --}}
-        <div x-show="uploading" class="absolute inset-0 bg-white/80 dark:bg-dark-800/80 rounded-xl flex flex-col items-center justify-center gap-2 z-10">
-            <div class="w-3/4 bg-secondary-200 dark:bg-dark-600 rounded-full h-1.5">
+        <div x-show="uploading" class="absolute inset-0 bg-white/80 dark:bg-[#1e1e1e]/80 rounded-xl flex flex-col items-center justify-center gap-2 z-10">
+            <div class="w-3/4 bg-secondary-200 dark:bg-[#161618] rounded-full h-1.5">
                 <div class="bg-primary-600 h-1.5 rounded-full transition-all" :style="'width: ' + progress + '%'"></div>
             </div>
             <p class="text-xs text-dark-500 dark:text-dark-400" x-text="progress + '%'"></p>
@@ -117,7 +117,7 @@ x-on:file-upload-reset.window="clearFiles()">
 
         {{-- Empty state --}}
         <div x-show="files.length === 0" class="flex flex-col items-center gap-2 py-5 pointer-events-none">
-            <div class="h-10 w-10 bg-secondary-100 dark:bg-dark-700 rounded-xl flex items-center justify-center">
+            <div class="h-10 w-10 bg-secondary-100 dark:bg-[#27272a] rounded-xl flex items-center justify-center">
                 <x-icon name="arrow-up-tray" class="w-5 h-5 text-secondary-500 dark:text-dark-400" />
             </div>
             <div class="text-center">
@@ -131,8 +131,8 @@ x-on:file-upload-reset.window="clearFiles()">
         {{-- File list --}}
         <div x-show="files.length > 0" class="p-3 space-y-2" x-on:click.stop>
             <template x-for="(file, index) in files" :key="index">
-                <div class="flex items-center gap-3 p-2 bg-secondary-50 dark:bg-dark-700 rounded-lg">
-                    <div class="h-9 w-9 rounded-lg overflow-hidden shrink-0 flex items-center justify-center bg-white dark:bg-dark-800 border border-secondary-200 dark:border-dark-600">
+                <div class="flex items-center gap-3 p-2 bg-secondary-50 dark:bg-[#27272a] rounded-lg">
+                    <div class="h-9 w-9 rounded-lg overflow-hidden shrink-0 flex items-center justify-center bg-white dark:bg-[#1e1e1e] border border-secondary-200 dark:border-white/10">
                         <template x-if="file.preview">
                             <img :src="file.preview" class="h-full w-full object-cover" />
                         </template>

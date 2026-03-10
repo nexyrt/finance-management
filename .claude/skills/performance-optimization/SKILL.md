@@ -1,11 +1,11 @@
 ---
 name: performance-optimization
-description: Use when asked to optimize, improve performance, or fix slow pages; or when auditing translation/localization (hardcoded strings, missing lang keys, $headers pattern); or when implementing charts in Livewire components. Keywords: optimasi, lambat, slow, performa, query optimization, translation, translasi, hardcode, lang, localization, chart, grafik, chartjs, alpine chart, dashboard.
+description: Use when asked to optimize, improve performance, or fix slow pages; or when auditing translation/localization (hardcoded strings, missing lang keys, $headers pattern); or when implementing charts in Livewire components; or when writing any code that touches the database (queries, models, migrations). Keywords: optimasi, lambat, slow, performa, query optimization, translation, translasi, hardcode, lang, localization, chart, grafik, chartjs, alpine chart, dashboard, database, query, migration, schema, N+1, eager loading.
 ---
 
 # Performance Optimization & Chart Protocol
 
-Panduan lengkap untuk optimasi performa Livewire, implementasi chart yang benar, dan audit kualitas kode di project ini.
+Panduan lengkap untuk optimasi performa Livewire, implementasi chart yang benar, penggunaan Laravel Boost untuk database investigation, dan audit kualitas kode di project ini.
 
 ## Kapan Skill Ini Digunakan
 
@@ -15,16 +15,17 @@ Panduan lengkap untuk optimasi performa Livewire, implementasi chart yang benar,
 - User melaporkan chart tidak muncul atau error
 - User meminta review performa query
 - User meminta audit translasi / hardcoded string
+- **Setiap menulis query, migration, atau kode yang akses database** — gunakan Boost tools untuk verifikasi
 
 ---
 
 ## BAGIAN A — Laravel Boost: Database Investigation Protocol
 
-**WAJIB dilakukan sebelum menulis atau mengubah query apapun.** Laravel Boost menyediakan tools yang jauh lebih akurat daripada asumsi dari kode saja.
+**Gunakan Boost tools sebelum menulis atau mengubah query apapun.** Tools ini jauh lebih akurat daripada asumsi dari kode saja, dan menghemat waktu debugging.
 
-### A1. Gunakan `database-schema` Sebelum Query
+### A1. `database-schema` — Sebelum Query atau Migration
 
-Sebelum menulis JOIN, filter, atau index, selalu cek struktur tabel terlebih dahulu:
+Selalu cek struktur tabel sebelum menulis JOIN, filter, index, atau migration:
 
 ```
 Tool: mcp__laravel-boost__database-schema
@@ -32,16 +33,20 @@ Tool: mcp__laravel-boost__database-schema
 
 Ini mencegah error seperti `Unknown column 'client_id'` karena nama kolom berbeda dari asumsi (contoh: `billed_to_id` bukan `client_id`).
 
-### A2. Gunakan `database-query` untuk Debug Data Aktual
+**Kapan wajib:** Setiap kali akan JOIN tabel, tambah kolom, buat migration baru, atau tidak yakin nama kolom.
 
-Untuk verifikasi apakah query menghasilkan data yang benar sebelum mengubah kode PHP:
+### A2. `database-query` — Verifikasi Data Aktual
+
+Untuk memastikan query menghasilkan data yang benar sebelum mengubah kode PHP:
 
 ```
 Tool: mcp__laravel-boost__database-query
 Query: SELECT COUNT(*), transaction_type FROM bank_transactions GROUP BY transaction_type
 ```
 
-### A3. Gunakan `tinker` untuk Test Eloquent Query
+**Kapan wajib:** Sebelum membuat computed property baru yang mengagregasi data, untuk verify apakah data ada di DB.
+
+### A3. `tinker` — Test Eloquent Query
 
 Untuk test apakah eager loading atau computed property berjalan dengan benar:
 
@@ -50,9 +55,11 @@ Tool: mcp__laravel-boost__tinker
 Code: BankAccount::with(['payments','transactions'])->first()->balance
 ```
 
-### A4. Gunakan `last-error` Saat Ada Error PHP
+**Kapan wajib:** Saat membangun query Eloquent yang kompleks — test dulu sebelum apply ke komponen.
 
-Ketika ada error Laravel/PHP, selalu cek ini terlebih dahulu — jauh lebih informatif dari browser log:
+### A4. `last-error` — Saat Ada Error PHP/Laravel
+
+Ketika ada error Laravel/PHP, cek ini terlebih dahulu — jauh lebih informatif dari browser log:
 
 ```
 Tool: mcp__laravel-boost__last-error
@@ -60,20 +67,22 @@ Tool: mcp__laravel-boost__last-error
 
 ### A5. Auto-Check Logs Setelah Setiap Implementasi
 
-**Ini WAJIB dilakukan setelah selesai membuat/mengubah kode.** Jangan tunggu user melaporkan error — aktif cek sendiri.
+**Wajib dilakukan setelah selesai membuat/mengubah kode.** Jangan tunggu user melaporkan error — aktif cek sendiri agar user tidak perlu testing manual.
+
+Jalankan ketiganya secara paralel:
 
 ```
-# Cek browser errors (JS, Alpine, Livewire frontend)
-Tool: mcp__laravel-boost__browser-logs (entries: 15)
+Tool 1: mcp__laravel-boost__browser-logs (entries: 15)
+→ JS errors, Alpine errors, Livewire frontend errors
 
-# Cek Laravel backend errors
-Tool: mcp__laravel-boost__last-error
+Tool 2: mcp__laravel-boost__last-error
+→ PHP exceptions, Laravel errors, database errors
 
-# Cek application log entries
-Tool: mcp__laravel-boost__read-log-entries (entries: 10)
+Tool 3: mcp__laravel-boost__read-log-entries (entries: 10)
+→ Application log (warning, error level)
 ```
 
-Jalankan ketiganya secara paralel. Jika ada error baru yang timestamp-nya setelah implementasi dimulai, perbaiki sebelum menyampaikan hasil ke user.
+Jika ada error baru yang timestamp-nya setelah implementasi dimulai, perbaiki sebelum menyampaikan hasil ke user. Sampaikan ke user hanya jika ada error yang ditemukan (jika bersih, cukup konfirmasi singkat).
 
 ---
 
@@ -128,7 +137,7 @@ BankTransaction::query()
     ->select('bank_transactions.*') // PENTING: hindari column ambiguity
 ```
 
-**Selalu prefix column dengan table name saat JOIN** — gunakan `database-schema` untuk konfirmasi nama kolom yang benar.
+**Selalu prefix column dengan table name saat JOIN** — gunakan `database-schema` untuk konfirmasi nama kolom.
 
 #### 2c. N+1 di Loop
 
@@ -189,8 +198,6 @@ public function getBalanceAttribute(): int {
 }
 ```
 
-**Cara deteksi:** Cek apakah computed property memanggil accessor pada collection. Jika iya, pastikan `->with(['relation'])` ada di query.
-
 #### 2g. Multiple Computed Properties → Single Pass
 
 ```php
@@ -224,92 +231,112 @@ Terapkan fix berdasarkan severity (HIGH dulu, lalu MEDIUM). Untuk setiap fix:
 1. Gunakan `database-schema` untuk konfirmasi nama kolom
 2. Gunakan `database-query` atau `tinker` untuk verifikasi hasil query sebelum apply
 3. Terapkan pattern yang sesuai
-4. Jalankan `php artisan test` setelah selesai
-
-### Step 5 — Verifikasi Wajib (Bagian A5)
-
-Setelah implementasi, jalankan auto-check logs seperti di Bagian A5.
+4. Jalankan auto-check logs (Bagian A5) setelah selesai
 
 ---
 
-## BAGIAN C — Chart di Livewire: Alpine.data() Pattern
+## BAGIAN C — Chart di Livewire: `@push('scripts')` + Alpine.data() Pattern
 
-**Pattern resmi yang digunakan di project ini** (berdasarkan `accounts/index.blade.php`).
+**Pattern resmi yang digunakan di project ini** (berdasarkan `accounts/index.blade.php` dan `dashboard.blade.php`).
 
-### C1. Pattern yang BENAR: Alpine.data() Registry
+### C1. Dua Pattern yang Berbeda — Kapan Masing-masing
 
-Gunakan `Alpine.data()` di dalam `@script` block — **bukan** `window.*` di `app.js`, **bukan** `x-init` dengan fungsi inline, **bukan** `@push('scripts')`.
+| Situasi | Pattern | Alasan |
+|---------|---------|--------|
+| Chart dengan Chart.js | `@push('scripts')` | Butuh `<script src="cdn">` karena Chart.js tidak ada di package.json |
+| Alpine component (editor, dll) | `@script` | Livewire-managed script, Chart.js tidak dibutuhkan |
+
+**Chart.js di project ini diload via CDN di `@push('scripts')`, bukan via npm/Vite.**
+
+### C2. Pattern yang BENAR untuk Chart.js
 
 #### HTML Template
 
 ```blade
-{{-- Setiap chart: wire:ignore + x-data dengan chartType dan data awal --}}
+{{-- Chart wrapper: wire:ignore + x-data dengan chartType dan data awal --}}
 <div class="h-[260px]" wire:ignore
-     x-data="dashboardCharts('cashFlow', @js($this->cashFlowChart))">
+     x-data="bankAccountCharts('incomeExpense', @js($this->chartData))">
     <canvas x-ref="canvas"></canvas>
 </div>
 ```
 
 Poin penting:
-- `wire:ignore` — wajib, mencegah Livewire merusak DOM chart
-- `x-data="namaComponent('chartType', @js($data))"` — nama komponen Alpine + tipe chart + data awal dari PHP
+- `wire:ignore` — wajib, mencegah Livewire merusak DOM chart saat re-render
+- `x-data="namaKomponen('chartType', @js($data))"` — chartType sebagai router, data awal dari PHP
 - `x-ref="canvas"` — bukan `id=`, bukan `querySelector('canvas')`
+- Nama komponen Alpine (`bankAccountCharts`) harus unik per page/module
 
-#### @script Block Template
+#### `@push('scripts')` Block Template
 
 ```blade
-@script
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-(function () {
+(function() {
     function registerCharts() {
         if (typeof Alpine === 'undefined') return;
 
-        Alpine.data('dashboardCharts', (chartType, initialData) => ({
+        Alpine.data('bankAccountCharts', (chartType, initialData) => ({
             chart: null,
             data: initialData,
 
-            // Helper methods
+            // Helper: dark mode detection
             isDark() { return document.documentElement.classList.contains('dark'); },
-            textColor() { return this.isDark() ? '#a1a1aa' : '#71717a'; },
-            gridColor() { return this.isDark() ? '#3f3f46' : '#f4f4f5'; },
+            textColor() { return this.isDark() ? '#9ca3af' : '#6b7280'; },
+            gridColor() { return this.isDark() ? '#374151' : '#f3f4f6'; },
+
+            // Tooltip theme mengikuti dark mode project
             tooltipTheme() {
+                const dark = this.isDark();
                 return {
-                    backgroundColor: this.isDark() ? '#27272a' : '#ffffff',
-                    titleColor: this.isDark() ? '#fafafa' : '#09090b',
-                    bodyColor: this.isDark() ? '#d4d4d8' : '#52525b',
-                    borderColor: this.isDark() ? '#52525b' : '#e4e4e7',
-                    borderWidth: 1, padding: 10, cornerRadius: 8,
+                    backgroundColor: dark ? '#1f2937' : '#ffffff',
+                    titleColor: dark ? '#f3f4f6' : '#111827',
+                    bodyColor: dark ? '#d1d5db' : '#374151',
+                    borderColor: dark ? '#374151' : '#e5e7eb',
+                    borderWidth: 1,
+                    cornerRadius: 8,
                 };
             },
+
+            // Currency formatter (abbreviated untuk axis, full untuk tooltip)
             formatRp(v) {
-                if (v >= 1e9) return 'Rp ' + (v / 1e9).toFixed(1) + 'M';
-                if (v >= 1e6) return 'Rp ' + (v / 1e6).toFixed(0) + 'jt';
-                if (v >= 1e3) return 'Rp ' + (v / 1e3).toFixed(0) + 'rb';
-                return 'Rp ' + v;
+                const abs = Math.abs(v);
+                if (abs >= 1e9) return 'Rp ' + (v / 1e9).toFixed(1) + 'B';
+                if (abs >= 1e6) return 'Rp ' + (v / 1e6).toFixed(0) + 'Jt';
+                if (abs >= 1e3) return 'Rp ' + (v / 1e3).toFixed(0) + 'K';
+                return 'Rp ' + new Intl.NumberFormat('id-ID').format(v);
             },
-            formatFull(v) { return 'Rp ' + new Intl.NumberFormat('id-ID').format(v); },
+            formatFull(v) {
+                return 'Rp ' + new Intl.NumberFormat('id-ID').format(v);
+            },
 
             // Router: chartType menentukan render method mana yang dipanggil
             render() {
                 if (typeof Chart === 'undefined') return;
+                if (chartType === 'incomeExpense') this.renderBarChart();
+                if (chartType === 'categoryBreakdown') this.renderDonutChart();
                 if (chartType === 'cashFlow') this.renderLineChart();
-                if (chartType === 'barChart') this.renderBarChart();
-                if (chartType === 'donut') this.renderDonutChart();
+                // tambah chartType lain sesuai kebutuhan
             },
 
             init() {
                 const self = this;
+
                 // Render setelah DOM siap
                 this.$nextTick(() => self.render());
 
-                // Update data saat Livewire dispatch event (misal: period berubah)
-                Livewire.on('dashboard-charts-updated', (payload) => {
+                // Update data saat Livewire dispatch event (misal: account/period berubah)
+                Livewire.on('account-charts-updated', (payload) => {
                     const d = payload[0];
-                    if (chartType === 'cashFlow' && d.cashFlow) {
-                        self.data = d.cashFlow;
-                        self.render();
+                    if (chartType === 'incomeExpense' && d.incomeExpense) {
+                        self.data = d.incomeExpense;
+                        self.renderBarChart();
                     }
-                    // tambah chartType lain sesuai kebutuhan
+                    if (chartType === 'categoryBreakdown' && d.categoryBreakdown) {
+                        self.data = d.categoryBreakdown;
+                        self.renderDonutChart();
+                    }
+                    // Event name dan key harus match dengan dispatch() di PHP
                 });
 
                 // Re-render saat dark mode toggle
@@ -325,18 +352,95 @@ Poin penting:
                 if (this.chart) { this.chart.destroy(); this.chart = null; }
             },
 
-            // Render methods — satu per tipe chart
+            // Bar Chart (Income vs Expense)
+            renderBarChart() {
+                this.destroyChart();
+                if (!this.data || !this.data.length || !this.$refs.canvas) return;
+                this.chart = new Chart(this.$refs.canvas, {
+                    type: 'bar',
+                    data: {
+                        labels: this.data.map(d => d.month),
+                        datasets: [
+                            {
+                                label: 'Pemasukan',
+                                data: this.data.map(d => d.income),
+                                backgroundColor: 'rgba(34, 197, 94, 0.8)',
+                                borderColor: 'rgba(34, 197, 94, 1)',
+                                borderWidth: 1, borderRadius: 6,
+                            },
+                            {
+                                label: 'Pengeluaran',
+                                data: this.data.map(d => d.expense),
+                                backgroundColor: 'rgba(239, 68, 68, 0.8)',
+                                borderColor: 'rgba(239, 68, 68, 1)',
+                                borderWidth: 1, borderRadius: 6,
+                            }
+                        ],
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        interaction: { mode: 'index', intersect: false },
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: Object.assign({}, this.tooltipTheme(), {
+                                callbacks: {
+                                    label: ctx => ctx.dataset.label + ': ' + this.formatFull(ctx.parsed.y),
+                                },
+                            }),
+                        },
+                        scales: {
+                            x: { grid: { color: this.gridColor() }, ticks: { color: this.textColor(), font: { size: 10 } } },
+                            y: { grid: { color: this.gridColor() }, ticks: { color: this.textColor(), font: { size: 10 }, callback: v => this.formatRp(v) } },
+                        },
+                    },
+                });
+            },
+
+            // Donut/Pie Chart (Category Breakdown)
+            renderDonutChart() {
+                this.destroyChart();
+                if (!this.data || !this.data.length || !this.$refs.canvas) return;
+                const colors = ['#8b5cf6', '#06b6d4', '#f59e0b', '#ef4444', '#10b981', '#6366f1'];
+                this.chart = new Chart(this.$refs.canvas, {
+                    type: 'doughnut',
+                    data: {
+                        labels: this.data.map(d => d.name),
+                        datasets: [{
+                            data: this.data.map(d => d.total),
+                            backgroundColor: colors.slice(0, this.data.length),
+                            borderColor: this.isDark() ? '#27272a' : '#ffffff',
+                            borderWidth: 2,
+                        }],
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false, cutout: '65%',
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: Object.assign({}, this.tooltipTheme(), {
+                                callbacks: {
+                                    label: ctx => {
+                                        const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
+                                        const pct = total > 0 ? Math.round((ctx.parsed / total) * 100) : 0;
+                                        return ctx.label + ': ' + this.formatFull(ctx.parsed) + ' (' + pct + '%)';
+                                    },
+                                },
+                            }),
+                        },
+                    },
+                });
+            },
+
+            // Line Chart (Cash Flow trend)
             renderLineChart() {
                 this.destroyChart();
                 if (!this.data || !this.data.length || !this.$refs.canvas) return;
-                const self = this;
                 this.chart = new Chart(this.$refs.canvas, {
                     type: 'line',
                     data: {
                         labels: this.data.map(d => d.label),
                         datasets: [{
-                            label: @js(__('pages.income')),
-                            data: this.data.map(d => d.income),
+                            label: 'Cash Flow',
+                            data: this.data.map(d => d.amount),
                             borderColor: 'rgb(16, 185, 129)',
                             backgroundColor: 'rgba(16, 185, 129, 0.07)',
                             fill: true, tension: 0.4, borderWidth: 2,
@@ -344,16 +448,15 @@ Poin penting:
                     },
                     options: {
                         responsive: true, maintainAspectRatio: false,
-                        interaction: { mode: 'index', intersect: false },
                         plugins: {
                             legend: { display: false },
-                            tooltip: Object.assign({}, self.tooltipTheme(), {
-                                callbacks: { label: ctx => ' ' + ctx.dataset.label + ': ' + self.formatFull(ctx.parsed.y) },
+                            tooltip: Object.assign({}, this.tooltipTheme(), {
+                                callbacks: { label: ctx => this.formatFull(ctx.parsed.y) },
                             }),
                         },
                         scales: {
-                            y: { beginAtZero: true, ticks: { color: self.textColor(), font: { size: 11 }, callback: v => self.formatRp(v) }, grid: { color: self.gridColor(), drawBorder: false } },
-                            x: { ticks: { color: self.textColor(), font: { size: 11 } }, grid: { display: false } },
+                            x: { grid: { display: false }, ticks: { color: this.textColor(), font: { size: 11 } } },
+                            y: { beginAtZero: true, grid: { color: this.gridColor() }, ticks: { color: this.textColor(), font: { size: 11 }, callback: v => this.formatRp(v) } },
                         },
                     },
                 });
@@ -366,6 +469,7 @@ Poin penting:
         }));
     }
 
+    // Register immediately (Alpine sudah loaded saat @push('scripts') dieksekusi)
     registerCharts();
 
     // Re-register setelah SPA navigation (wire:navigate)
@@ -374,58 +478,102 @@ Poin penting:
     });
 })();
 </script>
-@endscript
+@endpush
 ```
 
-### C2. Update Data dari PHP (saat filter/period berubah)
+### C3. Update Data dari PHP (saat filter/period berubah)
 
 Di PHP component, dispatch event setelah computed property direset:
 
 ```php
-public function updatedChartPeriod(): void
+public function updatedSelectedAccountId(): void
 {
-    unset($this->cashFlowChart);
-    unset($this->revenueVsExpensesChart);
+    unset($this->chartData);
+    unset($this->categoryBreakdown);
 
-    // Dispatch ke Alpine — payload harus match dengan key yang dicek di Livewire.on()
-    $this->dispatch('dashboard-charts-updated',
-        cashFlow: $this->cashFlowChart,
-        revenueExpense: $this->revenueVsExpensesChart,
+    // Dispatch ke Alpine — key harus match dengan yang dicek di Livewire.on()
+    $this->dispatch('account-charts-updated',
+        incomeExpense: $this->chartData,
+        categoryBreakdown: $this->categoryBreakdown,
     );
 }
 ```
 
-### C3. Pola yang SALAH — Jangan Gunakan
+### C4. Wire:init untuk Defer Loading
+
+Saat halaman punya chart dan data berat, gunakan `wire:init` agar halaman render cepat dulu, baru load data:
 
 ```blade
-{{-- ❌ SALAH: const di top-level @script = SyntaxError di Alpine's AsyncFunction --}}
+{{-- Di blade: wire:init triggers loadData() setelah render pertama --}}
+<div wire:init="loadData" class="space-y-6">
+```
+
+```php
+// Di PHP: set flag `ready` agar chart hanya dirender setelah data tersedia
+public bool $ready = false;
+
+public function loadData(): void
+{
+    $this->ready = true;
+    // select akun pertama jika ada
+    if ($this->accounts->count() > 0) {
+        $this->selectedAccountId = $this->accounts->first()['id'];
+    }
+}
+```
+
+```blade
+{{-- Di blade: guard chart dengan @if($ready) --}}
+@if($ready)
+    <div wire:ignore x-data="bankAccountCharts('incomeExpense', @js($this->chartData))">
+        <canvas x-ref="canvas"></canvas>
+    </div>
+@endif
+```
+
+### C5. Pola yang SALAH — Jangan Gunakan
+
+```blade
+{{-- ❌ SALAH: @script block untuk Chart.js karena tidak bisa load <script src="cdn"> --}}
 @script
 <script>
-const isDark = () => ...;
-window.initChart = (canvas, data) => { ... };
+Alpine.data('myChart', () => ({ ... }));
 </script>
 @endscript
 
-{{-- ❌ SALAH: window.* di app.js = timing issue, tidak ada akses ke @js() --}}
-{{-- (app.js tidak bisa pakai @js() untuk translate string) --}}
+{{-- ❌ SALAH: const di top-level = SyntaxError di Alpine's AsyncFunction --}}
+@push('scripts')
+<script>
+const isDark = () => ...;         // Error!
+window.initChart = (canvas) => {};  // Timing issue + tidak bisa pakai @js()
+</script>
+@endpush
+
+{{-- ❌ SALAH: id= alih-alih x-ref= --}}
+<canvas id="myChart"></canvas>
+<script>new Chart(document.getElementById('myChart'), ...)</script>
 
 {{-- ❌ SALAH: x-init dengan fungsi inline yang panjang --}}
 <div x-init="chart = new Chart(...banyak config...)" wire:ignore>
 
-{{-- ❌ SALAH: querySelector('canvas') alih-alih x-ref="canvas" --}}
-<div x-init="chart = initChart($el.querySelector('canvas'), data)">
+{{-- ❌ SALAH: tidak ada wire:ignore —> chart hilang saat Livewire re-render --}}
+<div x-data="myChart()" class="h-[260px]">
+    <canvas x-ref="canvas"></canvas>
+</div>
 ```
 
-### C4. Checklist Sebelum Implementasi Chart
+### C6. Checklist Sebelum Implementasi Chart
 
 1. `wire:ignore` ada di div wrapper chart ✓
 2. `x-ref="canvas"` ada di `<canvas>` element ✓
-3. `Alpine.data()` diregistrasi di `@script`, bukan di `app.js` ✓
-4. `init()` method pakai `this.$nextTick()` sebelum render ✓
-5. `destroyChart()` dipanggil sebelum membuat chart baru ✓
-6. Dark mode observer terpasang di `init()` ✓
-7. `destroy()` method membersihkan observer ✓
-8. `document.addEventListener('livewire:navigated', ...)` untuk SPA navigation ✓
+3. `@push('scripts')` digunakan, bukan `@script` ✓
+4. Chart.js diload via CDN di `@push('scripts')`, bukan via npm ✓
+5. `init()` method pakai `this.$nextTick()` sebelum render ✓
+6. `destroyChart()` dipanggil sebelum membuat chart baru ✓
+7. Dark mode observer terpasang di `init()` ✓
+8. `destroy()` method membersihkan observer ✓
+9. `document.addEventListener('livewire:navigated', ...)` untuk SPA navigation ✓
+10. Nama Alpine.data unik per page (e.g. `bankAccountCharts`, `dashboardChart`) ✓
 
 ---
 
@@ -517,10 +665,11 @@ Ini membantu deteksi N+1 — lazy load akan throw exception di development.
 
 ## Aturan Global
 
-- **JANGAN** ubah UI/blade kecuali untuk chart atau skeleton placeholder
-- **JANGAN** tambah fitur baru atau refactor di luar scope
-- **JANGAN** ubah business logic — output harus tetap sama
-- **SELALU** gunakan `database-schema` sebelum menulis JOIN atau migration
-- **SELALU** jalankan auto-check logs (Bagian A5) setelah selesai implementasi
-- **SELALU** prefix column dengan table name saat pakai JOIN
-- **SELALU** cek `export()` method jika `getFilteredQuery()` diubah
+- Jangan ubah UI/blade kecuali untuk chart atau skeleton placeholder
+- Jangan tambah fitur baru atau refactor di luar scope
+- Jangan ubah business logic — output harus tetap sama
+- Gunakan `database-schema` sebelum menulis JOIN atau migration
+- Jalankan auto-check logs (Bagian A5) setelah selesai implementasi
+- Prefix column dengan table name saat pakai JOIN
+- Cek `export()` method jika `getFilteredQuery()` diubah
+- **Gunakan `tinker` atau `database-query` untuk verify data sebelum membuat computed property baru**
