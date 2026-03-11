@@ -91,7 +91,8 @@
       "WebFetch(domain:context7.com)",
       "Bash(./vendor/bin/pint app/Livewire/Dashboard.php --format agent)",
       "mcp__laravel-boost__database-schema",
-      "mcp__laravel-boost__read-log-entries"
+      "mcp__laravel-boost__read-log-entries",
+      "mcp__tallstackui__search-customization-tool"
     ]
   },
   "enableAllProjectMcpServers": true,

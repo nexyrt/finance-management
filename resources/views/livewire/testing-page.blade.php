@@ -9,20 +9,7 @@
         </div>
     </div>
 
-    {{-- Repeater --}}
-    <x-card>
-        <x-form.repeater
-            wire:model="items"
-            wire:call="save"
-            label="Tambah Layanan"
-            :fields="[
-                ['key' => 'name',  'label' => 'Nama Layanan', 'type' => 'text',     'span' => 5, 'placeholder' => 'Nama layanan'],
-                ['key' => 'price', 'label' => 'Harga',        'type' => 'currency', 'span' => 3],
-                ['key' => 'type',  'label' => 'Tipe',         'type' => 'select',   'span' => 3,
-                 'options' => ['Perizinan', 'Administrasi Perpajakan', 'Digital Marketing', 'Sistem Digital']],
-            ]">
-            Simpan Semua
-        </x-form.repeater>
-    </x-card>
+    {{-- Demo: x-form.select --}}
+    
 
 </div>

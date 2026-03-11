@@ -60,9 +60,9 @@
                                 <input type="text" x-model="invoice.invoice_number"
                                     :readonly="invoice.number_locked"
                                     :class="invoice.number_locked
-                                        ? 'bg-dark-50 dark:bg-[#27272a]/50 text-dark-500 dark:text-dark-400 cursor-not-allowed'
-                                        : 'bg-white dark:bg-[#1e1e1e] text-dark-900 dark:text-dark-50'"
-                                    class="w-full pl-3 pr-10 py-2.5 text-sm border border-dark-200 dark:border-white/10 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+                                        ? 'bg-gray-100 dark:bg-dark-700/50 text-dark-500 dark:text-dark-400 cursor-not-allowed ring-gray-200 dark:ring-dark-700'
+                                        : 'bg-white dark:bg-dark-700 text-gray-600 dark:text-dark-300'"
+                                    class="w-full pl-3 pr-10 py-1.5 text-sm ring-1 ring-gray-300 dark:ring-dark-600 rounded-md border-0 focus:ring-2 focus:ring-primary-600 focus:outline-hidden placeholder:text-gray-400 dark:placeholder:text-dark-400 transition-all"
                                     placeholder="{{ __('invoice.number_assigned_on_send') }}">
                                 <button @click="invoice.number_locked = !invoice.number_locked; if (invoice.number_locked && invoice.client_id) invoice.invoice_number = generateInvoiceNumber()"
                                     type="button"
@@ -84,13 +84,13 @@
                                 {{ __('invoice.bill_to') }} <span class="text-red-500">*</span>
                             </label>
                             <div class="relative" @click.away="selectOpen = false">
-                                <div x-show="!invoice.client_id"
+                                <button type="button"
                                     x-ref="clientTrigger"
                                     @click="
                                         const rect = $refs.clientTrigger.getBoundingClientRect();
                                         const el = document.getElementById('main-client-dd');
                                         if (el) { el.style.left = rect.left + 'px'; el.style.width = rect.width + 'px'; el.style.top = (rect.bottom + 4) + 'px'; setTimeout(() => { const ddH = el.offsetHeight; const spaceBelow = window.innerHeight - rect.bottom; const spaceAbove = rect.top; el.style.top = (spaceBelow >= ddH || spaceBelow >= spaceAbove ? rect.bottom + 4 : rect.top - ddH - 4) + 'px'; }, 0); }
-                                        selectOpen = !selectOpen;
+                                        if (!invoice.client_id) { selectOpen = !selectOpen; }
                                         const sh = (e) => {
                                             const dd = document.getElementById('main-client-dd');
                                             if (dd && dd.contains(e.target)) return;
@@ -98,24 +98,35 @@
                                             window.removeEventListener('scroll', sh, true);
                                         };
                                         if (selectOpen) window.addEventListener('scroll', sh, true);"
-                                    class="w-full px-3 py-2.5 text-sm border border-dark-200 dark:border-white/10 rounded-lg bg-white dark:bg-[#1e1e1e] text-dark-400 dark:text-dark-500 cursor-pointer hover:border-primary-400 dark:hover:border-primary-500 transition-colors flex items-center gap-2">
-                                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                    </svg>
-                                    {{ __('pages.select_client') }}
-                                </div>
-                                <div x-show="invoice.client_id"
-                                    class="w-full px-3 py-2.5 text-sm border border-dark-200 dark:border-white/10 rounded-lg bg-white dark:bg-[#1e1e1e] flex items-center gap-2">
-                                    <div class="w-6 h-6 rounded-full bg-linear-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white text-xs font-bold shrink-0"
-                                        x-text="invoice.client_name ? invoice.client_name.charAt(0).toUpperCase() : ''"></div>
-                                    <span class="flex-1 text-dark-900 dark:text-dark-50 font-medium truncate" x-text="invoice.client_name"></span>
-                                    <button @click="clearClient()" type="button"
-                                        class="shrink-0 text-dark-300 hover:text-red-500 dark:text-dark-500 dark:hover:text-red-400 transition-colors">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                    class="flex w-full cursor-pointer items-center gap-x-2 rounded-md border-0 bg-white py-1.5 px-3 text-sm ring-1 ring-gray-300 dark:bg-dark-700 dark:ring-dark-600 focus:ring-primary-600 focus:outline-hidden focus:ring-2 text-gray-600 dark:text-dark-300">
+                                    {{-- Placeholder state --}}
+                                    <div x-show="!invoice.client_id" class="relative inset-y-0 left-0 flex w-full items-center overflow-hidden rounded-lg">
+                                        <div class="flex items-center">
+                                            <span class="dark:text-dark-400 truncate leading-6 text-gray-400">{{ __('pages.select_client') }}</span>
+                                        </div>
+                                    </div>
+                                    {{-- Selected state --}}
+                                    <div x-show="invoice.client_id" class="relative inset-y-0 left-0 flex w-full items-center overflow-hidden rounded-lg">
+                                        <div class="flex items-center gap-2 w-full">
+                                            <div class="w-5 h-5 rounded-full bg-linear-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white text-[10px] font-bold shrink-0"
+                                                x-text="invoice.client_name ? invoice.client_name.charAt(0).toUpperCase() : ''"></div>
+                                            <span class="flex-1 dark:text-dark-300 truncate leading-6 text-gray-600" x-text="invoice.client_name"></span>
+                                        </div>
+                                    </div>
+                                    {{-- Buttons: clear + chevron --}}
+                                    <div class="mr-0 flex items-center gap-1.5 shrink-0">
+                                        <template x-if="invoice.client_id">
+                                            <button type="button" class="cursor-pointer" @click.stop="clearClient()">
+                                                <svg class="h-5 w-5 dark:text-dark-400 text-gray-500 hover:text-red-500 dark:hover:text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                                </svg>
+                                            </button>
+                                        </template>
+                                        <svg class="h-5 w-5 dark:text-dark-400 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4"/>
                                         </svg>
-                                    </button>
-                                </div>
+                                    </div>
+                                </button>
                                 {{-- Dropdown via teleport --}}
                                 <template x-teleport="body">
                                     <div x-show="selectOpen"
@@ -124,28 +135,38 @@
                                         x-transition:enter-end="opacity-100 scale-100"
                                         id="main-client-dd"
                                         @click.away="selectOpen = false"
-                                        class="fixed z-9999 bg-white dark:bg-[#1e1e1e] border border-dark-200 dark:border-white/8 rounded-xl shadow-xl overflow-hidden">
+                                        class="fixed z-9999 bg-white dark:bg-dark-900 shadow-lg ring-1 ring-black/5 dark:ring-white/10 rounded-xl overflow-hidden">
                                         <div class="p-2 border-b border-dark-100 dark:border-white/8">
                                             <input type="text" x-model="selectSearch" @click.stop
                                                 placeholder="{{ __('common.search') }} {{ strtolower(__('common.clients')) }}..."
-                                                class="w-full px-3 py-2 text-sm border border-dark-200 dark:border-white/10 rounded-lg bg-white dark:bg-[#1e1e1e] text-dark-900 dark:text-dark-50 placeholder-dark-400 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                                                class="w-full px-3 py-1.5 text-sm ring-1 ring-gray-300 dark:ring-dark-600 rounded-md bg-white dark:bg-dark-700 text-gray-600 dark:text-dark-300 placeholder:text-gray-400 dark:placeholder:text-dark-400 border-0 focus:ring-2 focus:ring-primary-600 focus:outline-hidden">
                                         </div>
-                                        <div class="overflow-y-auto max-h-56">
+                                        <ul class="soft-scrollbar max-h-56 overflow-auto py-1">
                                             <template x-for="client in filteredClients" :key="client.id">
-                                                <div @click="selectClient(client)"
-                                                    class="px-3 py-2.5 hover:bg-primary-50 dark:hover:bg-primary-900/20 cursor-pointer transition flex items-center gap-3 border-b border-dark-50 dark:border-white/8 last:border-0">
-                                                    <div class="w-8 h-8 rounded-full bg-linear-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white text-xs font-bold shrink-0"
-                                                        x-text="client.name.charAt(0).toUpperCase()"></div>
-                                                    <div class="min-w-0">
-                                                        <div class="text-sm font-medium text-dark-900 dark:text-dark-50 truncate" x-text="client.name"></div>
-                                                        <div class="text-xs text-dark-400 dark:text-dark-500 truncate" x-text="client.email || '-'"></div>
+                                                <li @click="selectClient(client)"
+                                                    :class="invoice.client_id === client.id ? 'font-semibold hover:bg-red-500 hover:text-white dark:hover:bg-red-500' : 'dark:text-dark-300 dark:hover:bg-dark-500 text-gray-700 hover:bg-gray-100'"
+                                                    class="relative select-none cursor-pointer px-2 py-2 focus:bg-gray-100 focus:outline-hidden">
+                                                    <div class="flex items-center justify-between">
+                                                        <div class="flex items-center gap-2 min-w-0">
+                                                            <div class="w-7 h-7 rounded-full bg-linear-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white text-xs font-bold shrink-0"
+                                                                x-text="client.name.charAt(0).toUpperCase()"></div>
+                                                            <div class="min-w-0">
+                                                                <div class="text-sm truncate" x-text="client.name"></div>
+                                                                <div class="text-xs opacity-70 truncate" x-text="client.email || '-'"></div>
+                                                            </div>
+                                                        </div>
+                                                        <svg x-show="invoice.client_id === client.id" class="h-5 w-5 shrink-0 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                                        </svg>
                                                     </div>
-                                                </div>
+                                                </li>
                                             </template>
-                                            <div x-show="filteredClients.length === 0" class="px-4 py-8 text-center">
-                                                <p class="text-sm text-dark-400 dark:text-dark-500">{{ __('pages.no_clients_found') }}</p>
-                                            </div>
-                                        </div>
+                                            <template x-if="filteredClients.length === 0">
+                                                <li class="m-2">
+                                                    <span class="dark:text-dark-300 block w-full pr-2 text-gray-600 text-sm">{{ __('pages.no_clients_found') }}</span>
+                                                </li>
+                                            </template>
+                                        </ul>
                                     </div>
                                 </template>
                             </div>
@@ -163,7 +184,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                                 </svg>
                                 <input type="date" x-model="invoice.issue_date"
-                                    class="w-full pl-9 pr-3 py-2.5 text-sm border border-dark-200 dark:border-white/10 rounded-lg bg-white dark:bg-[#1e1e1e] text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:cursor-pointer">
+                                    class="w-full pl-9 pr-3 py-1.5 text-sm ring-1 ring-gray-300 dark:ring-dark-600 rounded-md bg-white dark:bg-dark-700 text-gray-600 dark:text-dark-300 border-0 focus:ring-2 focus:ring-primary-600 focus:outline-hidden transition-all [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:cursor-pointer">
                             </div>
                         </div>
                         <div class="space-y-1.5">
@@ -175,7 +196,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                                 </svg>
                                 <input type="date" x-model="invoice.due_date"
-                                    class="w-full pl-9 pr-3 py-2.5 text-sm border border-dark-200 dark:border-white/10 rounded-lg bg-white dark:bg-[#1e1e1e] text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:cursor-pointer">
+                                    class="w-full pl-9 pr-3 py-1.5 text-sm ring-1 ring-gray-300 dark:ring-dark-600 rounded-md bg-white dark:bg-dark-700 text-gray-600 dark:text-dark-300 border-0 focus:ring-2 focus:ring-primary-600 focus:outline-hidden transition-all [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:cursor-pointer">
                             </div>
                         </div>
                     </div>
@@ -211,7 +232,7 @@
                                 </div>
                             @else
                                 <div class="flex items-center gap-4 pointer-events-none">
-                                    <div class="w-10 h-10 bg-dark-100 dark:bg-[#27272a] rounded-xl flex items-center justify-center shrink-0">
+                                    <div class="w-10 h-10 bg-dark-100 dark:bg-dark-700 rounded-xl flex items-center justify-center shrink-0">
                                         <svg class="w-5 h-5 text-dark-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
                                         </svg>
@@ -231,7 +252,7 @@
                                 <label class="block text-xs font-medium text-dark-600 dark:text-dark-400">{{ __('invoice.filename_optional') }}</label>
                                 <input type="text" wire:model="fakturName"
                                     placeholder="{{ __('invoice.filename_example') }}{{ $invoice['invoice_number'] ?? 'INV001' }}"
-                                    class="w-full px-3 py-2 text-sm border border-dark-200 dark:border-white/10 rounded-lg bg-white dark:bg-[#1e1e1e] text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                                    class="w-full px-3 py-1.5 text-sm ring-1 ring-gray-300 dark:ring-dark-600 rounded-md bg-white dark:bg-dark-700 text-gray-600 dark:text-dark-300 border-0 focus:ring-2 focus:ring-primary-600 focus:outline-hidden placeholder:text-gray-400 dark:placeholder:text-dark-400">
                                 <p class="text-xs text-dark-400 dark:text-dark-500">{{ __('invoice.filename_note') }}</p>
                             </div>
                         @endif
@@ -258,11 +279,11 @@
                     </div>
                     {{-- Add Item Control --}}
                     <div class="flex items-center gap-2">
-                        <div class="flex items-center border border-dark-200 dark:border-white/10 rounded-lg overflow-hidden">
+                        <div class="flex items-center ring-1 ring-gray-300 dark:ring-dark-600 rounded-md overflow-hidden bg-white dark:bg-dark-700">
                             <button @click="bulkCount = Math.max(1, bulkCount - 1)" type="button"
                                 class="px-2.5 py-2 text-dark-500 hover:text-dark-900 dark:hover:text-dark-50 hover:bg-dark-50 dark:hover:bg-dark-700 transition-colors text-sm font-medium">−</button>
                             <input type="number" x-model="bulkCount" min="1" max="50"
-                                class="w-12 py-2 text-sm text-center bg-white dark:bg-[#1e1e1e] border-x border-dark-200 dark:border-white/10 text-dark-900 dark:text-dark-50 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none">
+                                class="w-12 py-1.5 text-sm text-center bg-white dark:bg-dark-700 border-x border-gray-300 dark:border-dark-600 text-dark-900 dark:text-dark-300 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none">
                             <button @click="bulkCount = Math.min(50, bulkCount + 1)" type="button"
                                 class="px-2.5 py-2 text-dark-500 hover:text-dark-900 dark:hover:text-dark-50 hover:bg-dark-50 dark:hover:bg-dark-700 transition-colors text-sm font-medium">+</button>
                         </div>
@@ -278,7 +299,7 @@
 
                 {{-- Empty State --}}
                 <div x-show="items.length === 0" class="px-6 py-16 text-center">
-                    <div class="w-14 h-14 bg-dark-50 dark:bg-[#27272a] rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <div class="w-14 h-14 bg-dark-50 dark:bg-dark-700 rounded-2xl flex items-center justify-center mx-auto mb-4">
                         <svg class="w-7 h-7 text-dark-300 dark:text-dark-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                         </svg>
@@ -315,14 +336,13 @@
 
                                     {{-- Client --}}
                                     <div class="col-span-3" @click.away="itemSelectOpen[item.id] = false">
-                                        <div x-show="!item.client_id"
+                                        <button type="button"
                                             :id="`clientInput-${item.id}`"
                                             @click="
-                                                const trigger = $event.target;
-                                                const rect = trigger.getBoundingClientRect();
+                                                const rect = $event.currentTarget.getBoundingClientRect();
                                                 const el = document.getElementById('client-dd-' + item.id);
                                                 if (el) { el.style.left = rect.left + 'px'; el.style.top = (rect.bottom + 4) + 'px'; requestAnimationFrame(() => requestAnimationFrame(() => { const ddH = el.offsetHeight; const spaceBelow = window.innerHeight - rect.bottom; const spaceAbove = rect.top; el.style.top = (spaceBelow >= ddH || spaceBelow >= spaceAbove ? rect.bottom + 4 : rect.top - ddH - 4) + 'px'; })); }
-                                                itemSelectOpen[item.id] = true;
+                                                if (!item.client_id) itemSelectOpen[item.id] = true;
                                                 const sh = (e) => {
                                                     const dd = document.getElementById('client-dd-' + item.id);
                                                     if (dd && dd.contains(e.target)) return;
@@ -330,40 +350,60 @@
                                                     window.removeEventListener('scroll', sh, true);
                                                 };
                                                 window.addEventListener('scroll', sh, true);"
-                                            class="w-full px-2 py-1.5 text-xs border border-dark-200 dark:border-white/10 rounded-lg bg-white dark:bg-[#1e1e1e] text-dark-400 dark:text-dark-500 cursor-pointer hover:border-primary-400 transition-colors truncate">
-                                            {{ __('common.select') }}
-                                        </div>
-                                        <div x-show="item.client_id"
-                                            class="w-full px-2 py-1.5 text-xs border border-dark-200 dark:border-white/10 rounded-lg bg-white dark:bg-[#1e1e1e] flex items-center gap-1">
-                                            <span class="flex-1 text-dark-900 dark:text-dark-50 font-medium truncate" x-text="item.client_name"></span>
-                                            <button @click="clearItemClient(item)" type="button" class="shrink-0 text-dark-300 hover:text-red-500 transition-colors">
-                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
-                                            </button>
-                                        </div>
+                                            class="flex w-full cursor-pointer items-center gap-x-2 rounded-md border-0 bg-white py-1.5 px-2 text-sm ring-1 ring-gray-300 dark:bg-dark-700 dark:ring-dark-600 focus:ring-primary-600 focus:outline-hidden focus:ring-2">
+                                            <div class="relative inset-y-0 left-0 flex w-full items-center overflow-hidden rounded-lg">
+                                                <span x-show="!item.client_id" class="dark:text-dark-400 truncate leading-6 text-gray-400 text-xs">{{ __('common.select') }}</span>
+                                                <span x-show="item.client_id" class="dark:text-dark-300 truncate leading-6 text-gray-600 text-xs" x-text="item.client_name"></span>
+                                            </div>
+                                            <div class="flex items-center gap-1 shrink-0">
+                                                <template x-if="item.client_id">
+                                                    <button type="button" class="cursor-pointer" @click.stop="clearItemClient(item)">
+                                                        <svg class="h-4 w-4 dark:text-dark-400 text-gray-500 hover:text-red-500 dark:hover:text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                                        </svg>
+                                                    </button>
+                                                </template>
+                                                <svg class="h-4 w-4 dark:text-dark-400 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4"/>
+                                                </svg>
+                                            </div>
+                                        </button>
                                         <template x-teleport="body">
                                             <div x-show="itemSelectOpen[item.id]" x-transition:enter="transition ease-out duration-100" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
                                                 :id="`client-dd-${item.id}`"
                                                 @click.away="itemSelectOpen[item.id] = false"
-                                                class="fixed z-9999 bg-white dark:bg-[#1e1e1e] border border-dark-200 dark:border-white/8 rounded-xl shadow-xl overflow-hidden"
+                                                class="fixed z-9999 bg-white dark:bg-dark-700 shadow-lg ring-1 ring-black/5 dark:ring-white/10 rounded-xl overflow-hidden"
                                                 style="width: 240px;">
                                                 <div class="p-2 border-b border-dark-100 dark:border-white/8">
                                                     <input type="text" x-model="itemSelectSearch[item.id]" @click.stop
                                                         placeholder="{{ __('common.search') }}..."
-                                                        class="w-full px-2.5 py-1.5 text-xs border border-dark-200 dark:border-white/10 rounded-lg bg-white dark:bg-[#1e1e1e] text-dark-900 dark:text-dark-50 placeholder-dark-400 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                                                        class="w-full px-2.5 py-1.5 text-sm ring-1 ring-gray-300 dark:ring-dark-600 rounded-md bg-white dark:bg-dark-700 text-gray-600 dark:text-dark-300 border-0 focus:ring-2 focus:ring-primary-600 focus:outline-hidden placeholder:text-gray-400 dark:placeholder:text-dark-400">
                                                 </div>
-                                                <div class="overflow-y-auto max-h-48">
+                                                <ul class="soft-scrollbar max-h-48 overflow-auto py-1">
                                                     <template x-for="c in filteredItemClients(item.id)" :key="c.id">
-                                                        <div @click="selectItemClient(item, c)"
-                                                            class="px-3 py-2 hover:bg-primary-50 dark:hover:bg-primary-900/20 cursor-pointer flex items-center gap-2 border-b border-dark-50 dark:border-white/8 last:border-0">
-                                                            <div class="w-6 h-6 rounded-full bg-linear-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white text-[10px] font-bold shrink-0" x-text="c.name.charAt(0).toUpperCase()"></div>
-                                                            <div class="min-w-0">
-                                                                <div class="text-xs font-medium text-dark-900 dark:text-dark-50 truncate" x-text="c.name"></div>
-                                                                <div class="text-[10px] text-dark-400 truncate" x-text="c.email || '-'"></div>
+                                                        <li @click="selectItemClient(item, c)"
+                                                            :class="item.client_id === c.id ? 'font-semibold hover:bg-red-500 hover:text-white dark:hover:bg-red-500' : 'dark:text-dark-300 dark:hover:bg-dark-500 text-gray-700 hover:bg-gray-100'"
+                                                            class="relative select-none cursor-pointer px-2 py-2 focus:outline-hidden">
+                                                            <div class="flex items-center justify-between">
+                                                                <div class="flex items-center gap-2 min-w-0">
+                                                                    <div class="w-6 h-6 rounded-full bg-linear-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white text-[10px] font-bold shrink-0" x-text="c.name.charAt(0).toUpperCase()"></div>
+                                                                    <div class="min-w-0">
+                                                                        <div class="text-xs truncate" x-text="c.name"></div>
+                                                                        <div class="text-[10px] opacity-70 truncate" x-text="c.email || '-'"></div>
+                                                                    </div>
+                                                                </div>
+                                                                <svg x-show="item.client_id === c.id" class="h-4 w-4 shrink-0 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                                                </svg>
                                                             </div>
-                                                        </div>
+                                                        </li>
                                                     </template>
-                                                    <div x-show="filteredItemClients(item.id).length === 0" class="py-6 text-center text-xs text-dark-400">{{ __('pages.no_clients_found') }}</div>
-                                                </div>
+                                                    <template x-if="filteredItemClients(item.id).length === 0">
+                                                        <li class="m-2">
+                                                            <span class="dark:text-dark-300 block w-full pr-2 text-gray-600 text-xs">{{ __('pages.no_clients_found') }}</span>
+                                                        </li>
+                                                    </template>
+                                                </ul>
                                             </div>
                                         </template>
                                     </div>
@@ -371,8 +411,9 @@
                                     {{-- Service --}}
                                     <div class="col-span-5" @click.away="serviceSelectOpen[item.id] = false">
                                         <input type="text" x-model="item.service_name"
+                                            autocomplete="off"
                                             :id="`serviceInput-${item.id}`"
-                                            class="w-full px-2 py-1.5 text-xs border border-dark-200 dark:border-white/10 rounded-lg bg-white dark:bg-[#1e1e1e] text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                            class="w-full px-2 py-1.5 text-sm ring-1 ring-gray-300 dark:ring-dark-600 rounded-md bg-white dark:bg-dark-700 text-gray-600 dark:text-dark-300 border-0 focus:ring-2 focus:ring-primary-600 focus:outline-hidden placeholder:text-gray-400 dark:placeholder:text-dark-400"
                                             :placeholder="'{{ __('pages.type_service_name') }}...'"
                                             @click="
                                                 const rect = $event.target.getBoundingClientRect();
@@ -390,12 +431,12 @@
                                             <div x-show="serviceSelectOpen[item.id]" x-transition:enter="transition ease-out duration-100" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
                                                 :id="`service-dd-${item.id}`"
                                                 @click.away="serviceSelectOpen[item.id] = false"
-                                                class="fixed z-9999 bg-white dark:bg-[#1e1e1e] border border-dark-200 dark:border-white/8 rounded-xl shadow-xl overflow-hidden"
+                                                class="fixed z-9999 bg-white dark:bg-dark-700 shadow-lg ring-1 ring-black/5 dark:ring-white/10 rounded-xl overflow-hidden"
                                                 style="width: 280px;">
                                                 <div class="p-2 border-b border-dark-100 dark:border-white/8">
                                                     <input type="text" x-model="serviceSelectSearch[item.id]" @click.stop
                                                         placeholder="{{ __('common.search') }} {{ strtolower(__('common.services')) }}..."
-                                                        class="w-full px-2.5 py-1.5 text-xs border border-dark-200 dark:border-white/10 rounded-lg bg-white dark:bg-[#1e1e1e] text-dark-900 dark:text-dark-50 placeholder-dark-400 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                                                        class="w-full px-2.5 py-1.5 text-sm ring-1 ring-gray-300 dark:ring-dark-600 rounded-md bg-white dark:bg-dark-700 text-gray-600 dark:text-dark-300 border-0 focus:ring-2 focus:ring-primary-600 focus:outline-hidden placeholder:text-gray-400 dark:placeholder:text-dark-400">
                                                 </div>
                                                 <div class="overflow-y-auto max-h-48">
                                                     <template x-for="svc in filteredItemServices(item.id)" :key="svc.id">
@@ -417,24 +458,48 @@
                                     {{-- Qty --}}
                                     <div class="col-span-2">
                                         <input type="text" x-model="item.quantity" @input="calculateItem(item)"
-                                            class="w-full px-2 py-1.5 text-xs text-center border border-dark-200 dark:border-white/10 rounded-lg bg-white dark:bg-[#1e1e1e] text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                            class="w-full px-2 py-1.5 text-xs text-center ring-1 ring-gray-300 dark:ring-dark-600 rounded-md bg-white dark:bg-dark-700 text-gray-600 dark:text-dark-300 border-0 focus:ring-2 focus:ring-primary-600 focus:outline-hidden"
                                             placeholder="1">
                                     </div>
 
                                     {{-- Unit --}}
-                                    <div class="col-span-2">
-                                        <select x-model="item.unit"
-                                            class="w-full px-2 py-1.5 text-xs border border-dark-200 dark:border-white/10 rounded-lg bg-white dark:bg-[#1e1e1e] text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
-                                            <option value="pcs">pcs</option>
-                                            <option value="m³">m³</option>
-                                        </select>
+                                    <div class="col-span-2" @click.away="unitOpen[item.id] = false">
+                                        <button type="button"
+                                            @click="unitOpen[item.id] = !unitOpen[item.id]"
+                                            class="flex w-full cursor-pointer items-center gap-x-1 rounded-md border-0 bg-white py-1.5 px-2 text-sm ring-1 ring-gray-300 dark:bg-dark-700 dark:ring-dark-600 focus:ring-primary-600 focus:outline-hidden focus:ring-2">
+                                            <span class="flex-1 dark:text-dark-300 truncate leading-6 text-gray-600 text-xs text-left" x-text="item.unit || 'pcs'"></span>
+                                            <svg class="h-4 w-4 shrink-0 dark:text-dark-400 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4"/>
+                                            </svg>
+                                        </button>
+                                        <div x-show="unitOpen[item.id]"
+                                            x-transition:enter="transition ease-out duration-100"
+                                            x-transition:enter-start="opacity-0 scale-95"
+                                            x-transition:enter-end="opacity-100 scale-100"
+                                            class="absolute z-50 mt-1 bg-white dark:bg-dark-700 shadow-lg ring-1 ring-black/5 dark:ring-white/10 rounded-xl overflow-hidden"
+                                            style="min-width: 80px;">
+                                            <ul class="py-1">
+                                                <li @click="item.unit = 'pcs'; unitOpen[item.id] = false"
+                                                    :class="item.unit === 'pcs' ? 'font-semibold hover:bg-red-500 hover:text-white dark:hover:bg-red-500' : 'dark:text-dark-300 dark:hover:bg-dark-500 text-gray-700 hover:bg-gray-100'"
+                                                    class="relative select-none cursor-pointer px-2 py-2 text-xs focus:outline-hidden flex items-center justify-between">
+                                                    <span>pcs</span>
+                                                    <svg x-show="item.unit === 'pcs'" class="h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                                </li>
+                                                <li @click="item.unit = 'm³'; unitOpen[item.id] = false"
+                                                    :class="item.unit === 'm³' ? 'font-semibold hover:bg-red-500 hover:text-white dark:hover:bg-red-500' : 'dark:text-dark-300 dark:hover:bg-dark-500 text-gray-700 hover:bg-gray-100'"
+                                                    class="relative select-none cursor-pointer px-2 py-2 text-xs focus:outline-hidden flex items-center justify-between">
+                                                    <span>m³</span>
+                                                    <svg x-show="item.unit === 'm³'" class="h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                                </li>
+                                            </ul>
+                                        </div>
                                     </div>
 
                                     {{-- Unit Price --}}
                                     <div class="col-span-3">
                                         <input type="text" x-model="item.unit_price"
                                             @input="item.unit_price = formatInput($event.target.value); calculateItem(item)"
-                                            class="w-full px-2 py-1.5 text-xs text-right border border-dark-200 dark:border-white/10 rounded-lg bg-white dark:bg-[#1e1e1e] text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                            class="w-full px-2 py-1.5 text-xs text-right ring-1 ring-gray-300 dark:ring-dark-600 rounded-md bg-white dark:bg-dark-700 text-gray-600 dark:text-dark-300 border-0 focus:ring-2 focus:ring-primary-600 focus:outline-hidden"
                                             placeholder="0">
                                     </div>
 
@@ -448,7 +513,7 @@
                                     <div class="col-span-3">
                                         <input type="text" x-model="item.cogs_amount"
                                             @input="item.cogs_amount = formatInput($event.target.value); calculateItem(item)"
-                                            class="w-full px-2 py-1.5 text-xs text-right border border-dark-200 dark:border-white/10 rounded-lg bg-white dark:bg-[#1e1e1e] text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                            class="w-full px-2 py-1.5 text-xs text-right ring-1 ring-gray-300 dark:ring-dark-600 rounded-md bg-white dark:bg-dark-700 text-gray-600 dark:text-dark-300 border-0 focus:ring-2 focus:ring-primary-600 focus:outline-hidden"
                                             placeholder="0">
                                     </div>
 
@@ -481,7 +546,7 @@
                         <div class="p-4 space-y-3">
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center gap-2">
-                                    <span class="w-6 h-6 bg-dark-100 dark:bg-[#27272a] rounded-lg flex items-center justify-center text-xs font-bold text-dark-600 dark:text-dark-300" x-text="index + 1"></span>
+                                    <span class="w-6 h-6 bg-dark-100 dark:bg-dark-700 rounded-lg flex items-center justify-center text-xs font-bold text-dark-600 dark:text-dark-300" x-text="index + 1"></span>
                                     <label class="flex items-center gap-1.5 cursor-pointer">
                                         <input type="checkbox" x-model="item.is_tax_deposit"
                                             class="rounded border-dark-300 text-primary-600 focus:ring-2 focus:ring-primary-500">
@@ -500,34 +565,56 @@
                             <div class="space-y-1">
                                 <label class="text-[10px] font-bold text-dark-500 uppercase tracking-wide">{{ __('invoice.client') }}</label>
                                 <div class="relative">
-                                    <div x-show="!item.client_id" @click="itemSelectOpen[item.id] = !itemSelectOpen[item.id]"
-                                        class="w-full px-3 py-2 text-sm border border-dark-200 dark:border-white/10 rounded-lg bg-white dark:bg-[#1e1e1e] text-dark-400 cursor-pointer hover:border-primary-400 transition-colors">
-                                        {{ __('pages.select_client') }}
-                                    </div>
-                                    <div x-show="item.client_id"
-                                        class="w-full px-3 py-2 text-sm border border-dark-200 dark:border-white/10 rounded-lg bg-white dark:bg-[#1e1e1e] flex items-center gap-2">
-                                        <span class="flex-1 text-dark-900 dark:text-dark-50 font-medium truncate" x-text="item.client_name"></span>
-                                        <button @click="clearItemClient(item)" type="button" class="text-dark-300 hover:text-red-500">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                                        </button>
-                                    </div>
-                                    <div x-show="itemSelectOpen[item.id]" x-transition class="absolute z-50 mt-1 w-full bg-white dark:bg-[#1e1e1e] border border-dark-200 dark:border-white/8 rounded-xl shadow-lg overflow-hidden">
+                                    <button type="button"
+                                        @click="itemSelectOpen[item.id] = item.client_id ? itemSelectOpen[item.id] : !itemSelectOpen[item.id]"
+                                        class="flex w-full cursor-pointer items-center gap-x-2 rounded-md border-0 bg-white py-1.5 px-3 text-sm ring-1 ring-gray-300 dark:bg-dark-700 dark:ring-dark-600 focus:ring-primary-600 focus:outline-hidden focus:ring-2">
+                                        <div class="relative inset-y-0 left-0 flex w-full items-center overflow-hidden rounded-lg">
+                                            <span x-show="!item.client_id" class="dark:text-dark-400 truncate leading-6 text-gray-400">{{ __('pages.select_client') }}</span>
+                                            <span x-show="item.client_id" class="dark:text-dark-300 truncate leading-6 text-gray-600" x-text="item.client_name"></span>
+                                        </div>
+                                        <div class="flex items-center gap-1.5 shrink-0">
+                                            <template x-if="item.client_id">
+                                                <button type="button" class="cursor-pointer" @click.stop="clearItemClient(item)">
+                                                    <svg class="h-5 w-5 dark:text-dark-400 text-gray-500 hover:text-red-500 dark:hover:text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                                    </svg>
+                                                </button>
+                                            </template>
+                                            <svg class="h-5 w-5 dark:text-dark-400 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4"/>
+                                            </svg>
+                                        </div>
+                                    </button>
+                                    <div x-show="itemSelectOpen[item.id]" x-transition class="absolute z-50 mt-1 w-full bg-white dark:bg-dark-700 shadow-lg ring-1 ring-black/5 dark:ring-white/10 rounded-xl overflow-hidden">
                                         <div class="p-2 border-b border-dark-100 dark:border-white/8">
                                             <input type="text" x-model="itemSelectSearch[item.id]" @click.stop placeholder="{{ __('common.search') }}..."
-                                                class="w-full px-3 py-2 text-sm border border-dark-200 dark:border-white/10 rounded-lg bg-white dark:bg-[#1e1e1e] text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                                                class="w-full px-3 py-1.5 text-sm ring-1 ring-gray-300 dark:ring-dark-600 rounded-md bg-white dark:bg-dark-700 text-gray-600 dark:text-dark-300 border-0 focus:ring-2 focus:ring-primary-600 focus:outline-hidden placeholder:text-gray-400 dark:placeholder:text-dark-400">
                                         </div>
-                                        <div class="overflow-y-auto max-h-48">
+                                        <ul class="soft-scrollbar max-h-48 overflow-auto py-1">
                                             <template x-for="c in filteredItemClients(item.id)" :key="c.id">
-                                                <div @click="selectItemClient(item, c)" class="px-3 py-2.5 hover:bg-primary-50 dark:hover:bg-primary-900/20 cursor-pointer flex items-center gap-3 border-b border-dark-50 last:border-0">
-                                                    <div class="w-7 h-7 rounded-full bg-linear-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white text-xs font-bold shrink-0" x-text="c.name.charAt(0).toUpperCase()"></div>
-                                                    <div class="min-w-0">
-                                                        <div class="text-sm font-medium text-dark-900 dark:text-dark-50 truncate" x-text="c.name"></div>
-                                                        <div class="text-xs text-dark-400 truncate" x-text="c.email || '-'"></div>
+                                                <li @click="selectItemClient(item, c)"
+                                                    :class="item.client_id === c.id ? 'font-semibold hover:bg-red-500 hover:text-white dark:hover:bg-red-500' : 'dark:text-dark-300 dark:hover:bg-dark-500 text-gray-700 hover:bg-gray-100'"
+                                                    class="relative select-none cursor-pointer px-2 py-2 focus:outline-hidden">
+                                                    <div class="flex items-center justify-between">
+                                                        <div class="flex items-center gap-2 min-w-0">
+                                                            <div class="w-7 h-7 rounded-full bg-linear-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white text-xs font-bold shrink-0" x-text="c.name.charAt(0).toUpperCase()"></div>
+                                                            <div class="min-w-0">
+                                                                <div class="text-sm truncate" x-text="c.name"></div>
+                                                                <div class="text-xs opacity-70 truncate" x-text="c.email || '-'"></div>
+                                                            </div>
+                                                        </div>
+                                                        <svg x-show="item.client_id === c.id" class="h-5 w-5 shrink-0 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                                        </svg>
                                                     </div>
-                                                </div>
+                                                </li>
                                             </template>
-                                            <div x-show="filteredItemClients(item.id).length === 0" class="py-6 text-center text-sm text-dark-400">{{ __('pages.no_clients_found') }}</div>
-                                        </div>
+                                            <template x-if="filteredItemClients(item.id).length === 0">
+                                                <li class="m-2">
+                                                    <span class="dark:text-dark-300 block w-full pr-2 text-gray-600 text-sm">{{ __('pages.no_clients_found') }}</span>
+                                                </li>
+                                            </template>
+                                        </ul>
                                     </div>
                                 </div>
                             </div>
@@ -537,13 +624,14 @@
                                 <label class="text-[10px] font-bold text-dark-500 uppercase tracking-wide">{{ __('pages.service_name') }}</label>
                                 <div class="relative flex gap-2" @click.away="serviceSelectOpen[item.id] = false">
                                     <input type="text" x-model="item.service_name"
-                                        class="flex-1 px-3 py-2 text-sm border border-dark-200 dark:border-white/10 rounded-lg bg-white dark:bg-[#1e1e1e] text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                        autocomplete="off"
+                                        class="flex-1 px-3 py-1.5 text-sm ring-1 ring-gray-300 dark:ring-dark-600 rounded-md bg-white dark:bg-dark-700 text-gray-600 dark:text-dark-300 border-0 focus:ring-2 focus:ring-primary-600 focus:outline-hidden placeholder:text-gray-400 dark:placeholder:text-dark-400"
                                         :placeholder="'{{ __('pages.type_service_name') }}...'">
                                     <button @click="serviceSelectOpen[item.id] = !serviceSelectOpen[item.id]" type="button"
-                                        class="px-2.5 border border-dark-200 dark:border-white/10 rounded-lg bg-white dark:bg-[#1e1e1e] text-dark-500 hover:bg-dark-50 transition shrink-0">
+                                        class="px-2.5 ring-1 ring-gray-300 dark:ring-dark-600 rounded-md bg-white dark:bg-dark-700 text-dark-500 dark:text-dark-400 hover:bg-gray-50 dark:hover:bg-dark-700 transition shrink-0">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                                     </button>
-                                    <div x-show="serviceSelectOpen[item.id]" x-transition class="absolute z-50 top-full mt-1 left-0 w-full bg-white dark:bg-[#1e1e1e] border border-dark-200 dark:border-white/8 rounded-xl shadow-lg overflow-hidden">
+                                    <div x-show="serviceSelectOpen[item.id]" x-transition class="absolute z-50 top-full mt-1 left-0 w-full bg-white dark:bg-dark-700 shadow-lg ring-1 ring-black/5 dark:ring-white/10 rounded-xl overflow-hidden">
                                         <div class="overflow-y-auto max-h-48">
                                             <template x-for="svc in filteredItemServices(item.id)" :key="svc.id">
                                                 <div @click="selectService(item, svc)" class="px-3 py-2.5 hover:bg-primary-50 dark:hover:bg-primary-900/20 cursor-pointer border-b border-dark-50 last:border-0">
@@ -565,21 +653,47 @@
                                 <div class="space-y-1">
                                     <label class="text-[10px] font-bold text-dark-500 uppercase tracking-wide">{{ __('invoice.qty') }}</label>
                                     <input type="text" x-model="item.quantity" @input="calculateItem(item)"
-                                        class="w-full px-2 py-2 text-sm text-center border border-dark-200 dark:border-white/10 rounded-lg bg-white dark:bg-[#1e1e1e] text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                        class="w-full px-2 py-1.5 text-sm text-center ring-1 ring-gray-300 dark:ring-dark-600 rounded-md bg-white dark:bg-dark-700 text-gray-600 dark:text-dark-300 border-0 focus:ring-2 focus:ring-primary-600 focus:outline-hidden"
                                         placeholder="1">
                                 </div>
                                 <div class="space-y-1">
                                     <label class="text-[10px] font-bold text-dark-500 uppercase tracking-wide">{{ __('invoice.unit') }}</label>
-                                    <select x-model="item.unit" class="w-full px-2 py-2 text-sm border border-dark-200 dark:border-white/10 rounded-lg bg-white dark:bg-[#1e1e1e] text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
-                                        <option value="pcs">pcs</option>
-                                        <option value="m³">m³</option>
-                                    </select>
+                                    <div class="relative" @click.away="unitOpen[item.id] = false">
+                                        <button type="button"
+                                            @click="unitOpen[item.id] = !unitOpen[item.id]"
+                                            class="flex w-full cursor-pointer items-center gap-x-1 rounded-md border-0 bg-white py-1.5 px-2 text-sm ring-1 ring-gray-300 dark:bg-dark-700 dark:ring-dark-600 focus:ring-primary-600 focus:outline-hidden focus:ring-2">
+                                            <span class="flex-1 dark:text-dark-300 truncate leading-6 text-gray-600 text-left" x-text="item.unit || 'pcs'"></span>
+                                            <svg class="h-4 w-4 shrink-0 dark:text-dark-400 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4"/>
+                                            </svg>
+                                        </button>
+                                        <div x-show="unitOpen[item.id]"
+                                            x-transition:enter="transition ease-out duration-100"
+                                            x-transition:enter-start="opacity-0 scale-95"
+                                            x-transition:enter-end="opacity-100 scale-100"
+                                            class="absolute z-50 mt-1 w-full bg-white dark:bg-dark-700 shadow-lg ring-1 ring-black/5 dark:ring-white/10 rounded-xl overflow-hidden">
+                                            <ul class="py-1">
+                                                <li @click="item.unit = 'pcs'; unitOpen[item.id] = false"
+                                                    :class="item.unit === 'pcs' ? 'font-semibold hover:bg-red-500 hover:text-white dark:hover:bg-red-500' : 'dark:text-dark-300 dark:hover:bg-dark-500 text-gray-700 hover:bg-gray-100'"
+                                                    class="relative select-none cursor-pointer px-2 py-2 text-sm focus:outline-hidden flex items-center justify-between">
+                                                    <span>pcs</span>
+                                                    <svg x-show="item.unit === 'pcs'" class="h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                                </li>
+                                                <li @click="item.unit = 'm³'; unitOpen[item.id] = false"
+                                                    :class="item.unit === 'm³' ? 'font-semibold hover:bg-red-500 hover:text-white dark:hover:bg-red-500' : 'dark:text-dark-300 dark:hover:bg-dark-500 text-gray-700 hover:bg-gray-100'"
+                                                    class="relative select-none cursor-pointer px-2 py-2 text-sm focus:outline-hidden flex items-center justify-between">
+                                                    <span>m³</span>
+                                                    <svg x-show="item.unit === 'm³'" class="h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
                                 </div>
                                 <div class="space-y-1">
                                     <label class="text-[10px] font-bold text-dark-500 uppercase tracking-wide">{{ __('invoice.unit_price') }}</label>
                                     <input type="text" x-model="item.unit_price"
                                         @input="item.unit_price = formatInput($event.target.value); calculateItem(item)"
-                                        class="w-full px-2 py-2 text-sm text-right border border-dark-200 dark:border-white/10 rounded-lg bg-white dark:bg-[#1e1e1e] text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                        class="w-full px-2 py-1.5 text-sm text-right ring-1 ring-gray-300 dark:ring-dark-600 rounded-md bg-white dark:bg-dark-700 text-gray-600 dark:text-dark-300 border-0 focus:ring-2 focus:ring-primary-600 focus:outline-hidden"
                                         placeholder="0">
                                 </div>
                             </div>
@@ -595,7 +709,7 @@
                                     <label class="text-[10px] font-bold text-dark-500 uppercase tracking-wide">{{ __('pages.cogs') }}</label>
                                     <input type="text" x-model="item.cogs_amount"
                                         @input="item.cogs_amount = formatInput($event.target.value); calculateItem(item)"
-                                        class="w-full px-3 py-2 text-sm text-right border border-dark-200 dark:border-white/10 rounded-lg bg-white dark:bg-[#1e1e1e] text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                        class="w-full px-3 py-1.5 text-sm text-right ring-1 ring-gray-300 dark:ring-dark-600 rounded-md bg-white dark:bg-dark-700 text-gray-600 dark:text-dark-300 border-0 focus:ring-2 focus:ring-primary-600 focus:outline-hidden"
                                         placeholder="0">
                                 </div>
                             </div>
@@ -665,24 +779,50 @@
                     </button>
                     <div x-show="open" x-transition:enter="transition ease-out duration-150" x-transition:enter-start="opacity-0 -translate-y-1" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease-in duration-100" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="border-t border-dark-100 dark:divide-dark-700 px-4 pb-4 pt-3 space-y-2">
                         <div class="flex gap-2">
-                            <select x-model="discount.type"
-                                class="flex-1 px-2.5 py-1.5 text-xs border border-dark-200 dark:border-white/10 rounded-lg bg-white dark:bg-[#1e1e1e] text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
-                                <option value="fixed">{{ __('pages.fixed_amount') }}</option>
-                                <option value="percentage">%</option>
-                            </select>
+                            <div class="relative flex-1" @click.away="discountTypeOpen = false">
+                                <button type="button"
+                                    @click="discountTypeOpen = !discountTypeOpen"
+                                    class="flex w-full cursor-pointer items-center gap-x-2 rounded-md border-0 bg-white py-1.5 px-2.5 text-sm ring-1 ring-gray-300 dark:bg-dark-700 dark:ring-dark-600 focus:ring-primary-600 focus:outline-hidden focus:ring-2">
+                                    <span class="flex-1 dark:text-dark-300 truncate leading-6 text-gray-600 text-left text-sm"
+                                        x-text="discount.type === 'fixed' ? '{{ __('pages.fixed_amount') }}' : '%'"></span>
+                                    <svg class="h-5 w-5 shrink-0 dark:text-dark-400 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4"/>
+                                    </svg>
+                                </button>
+                                <div x-show="discountTypeOpen"
+                                    x-transition:enter="transition ease-out duration-100"
+                                    x-transition:enter-start="opacity-0 scale-95"
+                                    x-transition:enter-end="opacity-100 scale-100"
+                                    class="absolute z-50 mt-1 w-full bg-white dark:bg-dark-700 shadow-lg ring-1 ring-black/5 dark:ring-white/10 rounded-xl overflow-hidden">
+                                    <ul class="py-1">
+                                        <li @click="discount.type = 'fixed'; discountTypeOpen = false"
+                                            :class="discount.type === 'fixed' ? 'font-semibold hover:bg-red-500 hover:text-white dark:hover:bg-red-500' : 'dark:text-dark-300 dark:hover:bg-dark-500 text-gray-700 hover:bg-gray-100'"
+                                            class="relative select-none cursor-pointer px-2 py-2 text-sm focus:outline-hidden flex items-center justify-between">
+                                            <span>{{ __('pages.fixed_amount') }}</span>
+                                            <svg x-show="discount.type === 'fixed'" class="h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                        </li>
+                                        <li @click="discount.type = 'percentage'; discountTypeOpen = false"
+                                            :class="discount.type === 'percentage' ? 'font-semibold hover:bg-red-500 hover:text-white dark:hover:bg-red-500' : 'dark:text-dark-300 dark:hover:bg-dark-500 text-gray-700 hover:bg-gray-100'"
+                                            class="relative select-none cursor-pointer px-2 py-2 text-sm focus:outline-hidden flex items-center justify-between">
+                                            <span>%</span>
+                                            <svg x-show="discount.type === 'percentage'" class="h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
                             <input type="text" x-model="discount.value"
                                 @input="discount.value = formatInput($event.target.value)"
                                 x-show="discount.type === 'fixed'"
                                 placeholder="0"
-                                class="flex-1 px-2.5 py-1.5 text-xs border border-dark-200 dark:border-white/10 rounded-lg bg-white dark:bg-[#1e1e1e] text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-right">
+                                class="flex-1 px-2.5 py-1.5 text-sm ring-1 ring-gray-300 dark:ring-dark-600 rounded-md bg-white dark:bg-dark-700 text-gray-600 dark:text-dark-300 border-0 focus:ring-2 focus:ring-primary-600 focus:outline-hidden text-right">
                             <input type="number" x-model="discount.value"
                                 x-show="discount.type === 'percentage'"
                                 placeholder="0" min="0" max="100"
-                                class="flex-1 px-2.5 py-1.5 text-xs border border-dark-200 dark:border-white/10 rounded-lg bg-white dark:bg-[#1e1e1e] text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-right">
+                                class="flex-1 px-2.5 py-1.5 text-sm ring-1 ring-gray-300 dark:ring-dark-600 rounded-md bg-white dark:bg-dark-700 text-gray-600 dark:text-dark-300 border-0 focus:ring-2 focus:ring-primary-600 focus:outline-hidden text-right">
                         </div>
                         <input type="text" x-model="discount.reason"
                             placeholder="{{ __('pages.reason_optional') }}"
-                            class="w-full px-2.5 py-1.5 text-xs border border-dark-200 dark:border-white/10 rounded-lg bg-white dark:bg-[#1e1e1e] text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                            class="w-full px-2.5 py-1.5 text-sm ring-1 ring-gray-300 dark:ring-dark-600 rounded-md bg-white dark:bg-dark-700 text-gray-600 dark:text-dark-300 border-0 focus:ring-2 focus:ring-primary-600 focus:outline-hidden placeholder:text-gray-400 dark:placeholder:text-dark-400">
                     </div>
                 </div>
 
@@ -740,6 +880,8 @@
             itemSelectSearch: {},
             serviceSelectOpen: {},
             serviceSelectSearch: {},
+            unitOpen: {},
+            discountTypeOpen: false,
             saving: false,
             bulkCount: 1,
 
