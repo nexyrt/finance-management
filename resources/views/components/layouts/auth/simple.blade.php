@@ -134,7 +134,7 @@
                                 </defs>
                             </svg>
                             <div class="relative w-12 h-12 bg-blue-600/20 border border-blue-500/30 rounded-xl flex items-center justify-center backdrop-blur-sm">
-                                <x-app-logo-icon class="w-7 h-7 text-blue-400" />
+                                <x-ui.app-logo-icon class="w-7 h-7 text-blue-400" />
                             </div>
                         </div>
                         <span class="text-white font-semibold text-lg tracking-wide">
@@ -216,7 +216,7 @@
                 {{-- Mobile: show logo at top --}}
                 <div class="lg:hidden absolute top-6 left-6 flex items-center gap-2.5">
                     <div class="w-9 h-9 bg-primary-50 dark:bg-primary-900/20 rounded-lg flex items-center justify-center">
-                        <x-app-logo-icon class="w-5 h-5 text-primary-600 dark:text-primary-400" />
+                        <x-ui.app-logo-icon class="w-5 h-5 text-primary-600 dark:text-primary-400" />
                     </div>
                     <span class="text-sm font-semibold text-dark-900 dark:text-dark-50">{{ config('app.name', 'FinanceOS') }}</span>
                 </div>
