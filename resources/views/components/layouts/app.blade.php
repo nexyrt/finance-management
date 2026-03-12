@@ -20,9 +20,9 @@
         ::-webkit-scrollbar { width: 5px; height: 5px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 99px; }
-        .dark ::-webkit-scrollbar-thumb { background: #3f3f46; }
+        .dark ::-webkit-scrollbar-thumb { background: #52525b; }
         ::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
-        .dark ::-webkit-scrollbar-thumb:hover { background: #52525b; }
+        .dark ::-webkit-scrollbar-thumb:hover { background: #71717a; }
 
         /* ── Sidebar nav item ── */
         .nav-item {
@@ -106,7 +106,7 @@
     </style>
 </head>
 
-<body class="min-h-screen bg-gray-50 dark:bg-[#111113] text-gray-900 dark:text-gray-100 antialiased"
+<body class="min-h-screen bg-gray-50 dark:bg-dark-950 text-gray-900 dark:text-gray-100 antialiased"
     x-data="{
         sidebarOpen: false,
         sidebarCollapsed: localStorage.getItem('sidebar.collapsed') === 'true',
@@ -147,7 +147,7 @@
         ════════════════════════════════════ --}}
         <aside
             class="fixed lg:relative z-50 lg:z-auto h-full flex flex-col
-                   bg-white dark:bg-[#18181b]
+                   bg-white dark:bg-dark-900
                    border-r border-gray-100 dark:border-white/6
                    transition-all duration-300 ease-in-out shrink-0"
             :class="{
@@ -445,7 +445,7 @@
                         x-transition:leave="transition ease-in duration-75"
                         x-transition:leave-start="opacity-100 translate-y-0"
                         x-transition:leave-end="opacity-0 translate-y-1"
-                        class="absolute bottom-full left-0 right-0 mb-1 bg-white dark:bg-[#27272a] border border-gray-100 dark:border-white/8 rounded-xl shadow-xl shadow-black/10 dark:shadow-black/30 overflow-hidden"
+                        class="absolute bottom-full left-0 right-0 mb-1 bg-white dark:bg-dark-700 border border-gray-100 dark:border-white/8 rounded-xl shadow-xl shadow-black/10 dark:shadow-black/30 overflow-hidden"
                         :class="sidebarCollapsed ? 'left-auto right-0 w-48' : ''">
 
                         {{-- User info header --}}
@@ -489,7 +489,7 @@
 
             {{-- Collapse toggle (desktop only) --}}
             <button @click="toggleCollapse()"
-                class="hidden lg:flex absolute top-17 -right-3 w-6 h-6 rounded-full bg-white dark:bg-[#27272a] border border-gray-200 dark:border-white/10 shadow-sm items-center justify-center hover:bg-gray-50 dark:hover:bg-dark-800 transition-colors text-gray-400 dark:text-zinc-500 hover:text-gray-700 dark:hover:text-zinc-200"
+                class="hidden lg:flex absolute top-17 -right-3 w-6 h-6 rounded-full bg-white dark:bg-dark-700 border border-gray-200 dark:border-white/10 shadow-sm items-center justify-center hover:bg-gray-50 dark:hover:bg-dark-600 transition-colors text-gray-400 dark:text-zinc-500 hover:text-gray-700 dark:hover:text-zinc-200"
                 :title="sidebarCollapsed ? '{{ __('common.expand_sidebar') }}' : '{{ __('common.collapse_sidebar') }}'">
                 <svg class="w-3 h-3 transition-transform duration-300" :class="{ 'rotate-180': sidebarCollapsed }" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M15 18l-6-6 6-6"/>
@@ -504,7 +504,7 @@
 
             {{-- ── Header ── --}}
             <header class="h-14 shrink-0 flex items-center gap-3 px-4 md:px-6
-                           bg-white/80 dark:bg-[#18181b]/80 header-blur
+                           bg-white/80 dark:bg-dark-900/80 header-blur
                            border-b border-gray-100 dark:border-white/6">
 
                 {{-- Mobile hamburger --}}
@@ -604,7 +604,7 @@
             </header>
 
             {{-- ── Main content ── --}}
-            <main class="flex-1 overflow-y-auto bg-gray-50 dark:bg-[#111113]"
+            <main class="flex-1 overflow-y-auto bg-gray-50 dark:bg-dark-950"
                 :class="sidebarCollapsed ? '' : ''">
                 <div class="p-4 md:p-6 max-w-[1600px] mx-auto">
                     {{ $slot }}

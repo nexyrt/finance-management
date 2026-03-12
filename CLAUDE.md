@@ -414,13 +414,76 @@ Info             → bg-blue-50 dark:bg-blue-900/20       / text-blue-600 dark:t
 
 ### Dark Mode Color System
 
-| Variable | Hex | Usage |
-|----------|-----|-------|
-| `dark-700` | `#27272a` | Sidebar, active/selected states |
-| `dark-800` | `#3f3f46` | Body bg, cards, modals, table rows |
-| `dark-600` | (border) | Card borders, dividers |
+Palette zinc — didefinisikan di `app.css` sebagai `--color-dark-*`. **JANGAN hardcode hex** — selalu pakai Tailwind class `dark:bg-dark-{n}`, `dark:text-dark-{n}`, dll.
 
-Sidebar (`dark-700`) lebih gelap dari body (`dark-800`) untuk depth perception. Table zebra striping: `dark:bg-dark-800/50`.
+#### Hierarki Background (semakin gelap = semakin tinggi angka)
+
+| Variable | Hex | Dipakai untuk |
+|----------|-----|---------------|
+| `dark-950` | `#111113` | Body & main content background |
+| `dark-900` | `#18181b` | Sidebar & header background |
+| `dark-800` | `#1e1e1e` | Input field background (`<input>`, `<select>`, checkbox, textarea, range) |
+| `dark-700` | `#27272a` | Card, modal, slide panel, dropdown/floating panel, navbar |
+| `dark-600` | `#52525b` | Border utama, hover background item, disabled background |
+| `dark-500` | `#71717a` | Divider (`divide-*`, `border-t`) |
+| `dark-400` | `#a1a1aa` | Icon, placeholder text, muted text |
+| `dark-300` | `#d4d4d8` | Teks konten utama (body text) |
+| `dark-200` | `#e4e4e7` | Teks heading / prominent text |
+| `dark-100` | `#f4f4f5` | — |
+| `dark-50` | `#fafafa` | Teks terang (di atas bg gelap) |
+
+#### Konvensi Penggunaan di Custom Components
+
+Gunakan pola ini **konsisten** di semua form/component custom (non-TSUI) seperti di `create.blade.php`:
+
+```blade
+{{-- Input / Select trigger --}}
+dark:bg-dark-800 dark:text-dark-300 dark:ring-dark-600 dark:placeholder-dark-400
+
+{{-- Dropdown panel / floating container --}}
+dark:bg-dark-700 dark:ring-white/10
+
+{{-- Dropdown item (normal) --}}
+dark:text-dark-300 dark:hover:bg-dark-600
+
+{{-- Dropdown item (selected) --}}
+font-semibold
+
+{{-- Border / separator --}}
+dark:border-dark-600
+
+{{-- Icon di dalam input --}}
+dark:text-dark-400
+
+{{-- Disabled input --}}
+dark:bg-dark-600 dark:text-dark-500
+
+{{-- Label teks --}}
+dark:text-dark-300
+
+{{-- Hint / helper teks --}}
+dark:text-dark-400
+```
+
+#### Contoh Custom Select (imitasi TSUI styled)
+
+```blade
+{{-- Trigger button --}}
+<button class="flex w-full cursor-pointer items-center gap-x-2 rounded-md border-0
+               bg-white dark:bg-dark-800
+               py-1.5 px-3 text-sm
+               ring-1 ring-gray-300 dark:ring-dark-600
+               text-gray-700 dark:text-dark-300
+               focus:ring-primary-600 focus:outline-hidden focus:ring-2">
+
+{{-- Dropdown panel --}}
+<div class="bg-white dark:bg-dark-700 shadow-lg ring-1 ring-black/5 dark:ring-white/10 rounded-xl">
+
+{{-- Item list --}}
+<li :class="selected
+    ? 'font-semibold hover:bg-red-500 hover:text-white dark:hover:bg-red-500'
+    : 'text-gray-700 dark:text-dark-300 hover:bg-gray-100 dark:hover:bg-dark-600'">
+```
 
 ---
 

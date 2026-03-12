@@ -34,9 +34,9 @@
         <div class="xl:col-span-2 space-y-6">
 
             {{-- ── Section 1: Invoice Details ── --}}
-            <div class="bg-white dark:bg-[#1e1e1e] rounded-xl border border-dark-200 dark:border-white/10 overflow-hidden">
+            <div class="bg-white dark:bg-dark-700 rounded-xl border border-dark-200 dark:border-dark-600 overflow-hidden">
                 {{-- Section Header --}}
-                <div class="px-6 py-4 border-b border-dark-100 dark:border-white/8 flex items-center gap-3">
+                <div class="px-6 py-4 border-b border-dark-100 dark:border-dark-600 flex items-center gap-3">
                     <div class="w-8 h-8 bg-primary-50 dark:bg-primary-900/20 rounded-lg flex items-center justify-center shrink-0">
                         <svg class="w-4 h-4 text-primary-600 dark:text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
@@ -60,8 +60,8 @@
                                 <input type="text" x-model="invoice.invoice_number"
                                     :readonly="invoice.number_locked"
                                     :class="invoice.number_locked
-                                        ? 'bg-gray-100 dark:bg-dark-700/50 text-dark-500 dark:text-dark-400 cursor-not-allowed ring-gray-200 dark:ring-dark-700'
-                                        : 'bg-white dark:bg-dark-700 text-gray-600 dark:text-dark-300'"
+                                        ? 'bg-gray-100 dark:bg-dark-600 text-dark-500 dark:text-dark-400 cursor-not-allowed ring-gray-200 dark:ring-dark-600'
+                                        : 'bg-white dark:bg-dark-800 text-gray-600 dark:text-dark-300'"
                                     class="w-full pl-3 pr-10 py-1.5 text-sm ring-1 ring-gray-300 dark:ring-dark-600 rounded-md border-0 focus:ring-2 focus:ring-primary-600 focus:outline-hidden placeholder:text-gray-400 dark:placeholder:text-dark-400 transition-all"
                                     placeholder="{{ __('invoice.number_assigned_on_send') }}">
                                 <button @click="invoice.number_locked = !invoice.number_locked; if (invoice.number_locked && invoice.client_id) invoice.invoice_number = generateInvoiceNumber()"
@@ -98,7 +98,7 @@
                                             window.removeEventListener('scroll', sh, true);
                                         };
                                         if (selectOpen) window.addEventListener('scroll', sh, true);"
-                                    class="flex w-full cursor-pointer items-center gap-x-2 rounded-md border-0 bg-white py-1.5 px-3 text-sm ring-1 ring-gray-300 dark:bg-dark-700 dark:ring-dark-600 focus:ring-primary-600 focus:outline-hidden focus:ring-2 text-gray-600 dark:text-dark-300">
+                                    class="flex w-full cursor-pointer items-center gap-x-2 rounded-md border-0 bg-white py-1.5 px-3 text-sm ring-1 ring-gray-300 dark:bg-dark-800 dark:ring-dark-600 focus:ring-primary-600 focus:outline-hidden focus:ring-2 text-gray-600 dark:text-dark-300">
                                     {{-- Placeholder state --}}
                                     <div x-show="!invoice.client_id" class="relative inset-y-0 left-0 flex w-full items-center overflow-hidden rounded-lg">
                                         <div class="flex items-center">
@@ -135,16 +135,16 @@
                                         x-transition:enter-end="opacity-100 scale-100"
                                         id="main-client-dd"
                                         @click.away="selectOpen = false"
-                                        class="fixed z-9999 bg-white dark:bg-dark-900 shadow-lg ring-1 ring-black/5 dark:ring-white/10 rounded-xl overflow-hidden">
-                                        <div class="p-2 border-b border-dark-100 dark:border-white/8">
+                                        class="fixed z-9999 bg-white dark:bg-dark-700 shadow-lg ring-1 ring-black/5 dark:ring-dark-600 rounded-xl overflow-hidden">
+                                        <div class="p-2 border-b border-dark-100 dark:border-dark-600">
                                             <input type="text" x-model="selectSearch" @click.stop
                                                 placeholder="{{ __('common.search') }} {{ strtolower(__('common.clients')) }}..."
-                                                class="w-full px-3 py-1.5 text-sm ring-1 ring-gray-300 dark:ring-dark-600 rounded-md bg-white dark:bg-dark-700 text-gray-600 dark:text-dark-300 placeholder:text-gray-400 dark:placeholder:text-dark-400 border-0 focus:ring-2 focus:ring-primary-600 focus:outline-hidden">
+                                                class="w-full px-3 py-1.5 text-sm ring-1 ring-gray-300 dark:ring-dark-600 rounded-md bg-white dark:bg-dark-800 text-gray-600 dark:text-dark-300 placeholder:text-gray-400 dark:placeholder:text-dark-400 border-0 focus:ring-2 focus:ring-primary-600 focus:outline-hidden">
                                         </div>
                                         <ul class="soft-scrollbar max-h-56 overflow-auto py-1">
                                             <template x-for="client in filteredClients" :key="client.id">
                                                 <li @click="selectClient(client)"
-                                                    :class="invoice.client_id === client.id ? 'font-semibold hover:bg-red-500 hover:text-white dark:hover:bg-red-500' : 'dark:text-dark-300 dark:hover:bg-dark-500 text-gray-700 hover:bg-gray-100'"
+                                                    :class="invoice.client_id === client.id ? 'font-semibold hover:bg-red-500 hover:text-white dark:hover:bg-red-500' : 'dark:text-dark-300 dark:hover:bg-dark-600 text-gray-700 hover:bg-gray-100'"
                                                     class="relative select-none cursor-pointer px-2 py-2 focus:bg-gray-100 focus:outline-hidden">
                                                     <div class="flex items-center justify-between">
                                                         <div class="flex items-center gap-2 min-w-0">
@@ -184,7 +184,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                                 </svg>
                                 <input type="date" x-model="invoice.issue_date"
-                                    class="w-full pl-9 pr-3 py-1.5 text-sm ring-1 ring-gray-300 dark:ring-dark-600 rounded-md bg-white dark:bg-dark-700 text-gray-600 dark:text-dark-300 border-0 focus:ring-2 focus:ring-primary-600 focus:outline-hidden transition-all [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:cursor-pointer">
+                                    class="w-full pl-9 pr-3 py-1.5 text-sm ring-1 ring-gray-300 dark:ring-dark-600 rounded-md bg-white dark:bg-dark-800 text-gray-600 dark:text-dark-300 border-0 focus:ring-2 focus:ring-primary-600 focus:outline-hidden transition-all [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:cursor-pointer">
                             </div>
                         </div>
                         <div class="space-y-1.5">
@@ -196,7 +196,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                                 </svg>
                                 <input type="date" x-model="invoice.due_date"
-                                    class="w-full pl-9 pr-3 py-1.5 text-sm ring-1 ring-gray-300 dark:ring-dark-600 rounded-md bg-white dark:bg-dark-700 text-gray-600 dark:text-dark-300 border-0 focus:ring-2 focus:ring-primary-600 focus:outline-hidden transition-all [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:cursor-pointer">
+                                    class="w-full pl-9 pr-3 py-1.5 text-sm ring-1 ring-gray-300 dark:ring-dark-600 rounded-md bg-white dark:bg-dark-800 text-gray-600 dark:text-dark-300 border-0 focus:ring-2 focus:ring-primary-600 focus:outline-hidden transition-all [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:cursor-pointer">
                             </div>
                         </div>
                     </div>
@@ -210,7 +210,7 @@
                         <div @dragover.prevent="isDragging = true"
                              @dragleave.prevent="isDragging = false"
                              @drop.prevent="isDragging = false; $refs.fileInput.files = $event.dataTransfer.files; $refs.fileInput.dispatchEvent(new Event('change', { bubbles: true }))"
-                             :class="isDragging ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/10' : 'border-dark-200 dark:border-white/10 hover:border-dark-300 dark:hover:border-dark-500'"
+                             :class="isDragging ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/10' : 'border-dark-200 dark:border-dark-600 hover:border-dark-300 dark:hover:border-dark-500'"
                              class="relative border-2 border-dashed rounded-xl p-5 transition-all cursor-pointer">
                             <input type="file" wire:model="faktur" accept=".pdf,.jpg,.jpeg,.png"
                                 x-ref="fileInput" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
@@ -252,7 +252,7 @@
                                 <label class="block text-xs font-medium text-dark-600 dark:text-dark-400">{{ __('invoice.filename_optional') }}</label>
                                 <input type="text" wire:model="fakturName"
                                     placeholder="{{ __('invoice.filename_example') }}{{ $invoice['invoice_number'] ?? 'INV001' }}"
-                                    class="w-full px-3 py-1.5 text-sm ring-1 ring-gray-300 dark:ring-dark-600 rounded-md bg-white dark:bg-dark-700 text-gray-600 dark:text-dark-300 border-0 focus:ring-2 focus:ring-primary-600 focus:outline-hidden placeholder:text-gray-400 dark:placeholder:text-dark-400">
+                                    class="w-full px-3 py-1.5 text-sm ring-1 ring-gray-300 dark:ring-dark-600 rounded-md bg-white dark:bg-dark-800 text-gray-600 dark:text-dark-300 border-0 focus:ring-2 focus:ring-primary-600 focus:outline-hidden placeholder:text-gray-400 dark:placeholder:text-dark-400">
                                 <p class="text-xs text-dark-400 dark:text-dark-500">{{ __('invoice.filename_note') }}</p>
                             </div>
                         @endif
@@ -261,9 +261,9 @@
             </div>
 
             {{-- ── Section 2: Invoice Items ── --}}
-            <div class="bg-white dark:bg-[#1e1e1e] rounded-xl border border-dark-200 dark:border-white/10 overflow-hidden">
+            <div class="bg-white dark:bg-dark-700 rounded-xl border border-dark-200 dark:border-dark-600 overflow-hidden">
                 {{-- Section Header --}}
-                <div class="px-6 py-4 border-b border-dark-100 dark:border-white/8 flex items-center justify-between">
+                <div class="px-6 py-4 border-b border-dark-100 dark:border-dark-600 flex items-center justify-between">
                     <div class="flex items-center gap-3">
                         <div class="w-8 h-8 bg-blue-50 dark:bg-blue-900/20 rounded-lg flex items-center justify-center shrink-0">
                             <svg class="w-4 h-4 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -279,11 +279,11 @@
                     </div>
                     {{-- Add Item Control --}}
                     <div class="flex items-center gap-2">
-                        <div class="flex items-center ring-1 ring-gray-300 dark:ring-dark-600 rounded-md overflow-hidden bg-white dark:bg-dark-700">
+                        <div class="flex items-center ring-1 ring-gray-300 dark:ring-dark-600 rounded-md overflow-hidden bg-white dark:bg-dark-800">
                             <button @click="bulkCount = Math.max(1, bulkCount - 1)" type="button"
                                 class="px-2.5 py-2 text-dark-500 hover:text-dark-900 dark:hover:text-dark-50 hover:bg-dark-50 dark:hover:bg-dark-700 transition-colors text-sm font-medium">−</button>
                             <input type="number" x-model="bulkCount" min="1" max="50"
-                                class="w-12 py-1.5 text-sm text-center bg-white dark:bg-dark-700 border-x border-gray-300 dark:border-dark-600 text-dark-900 dark:text-dark-300 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none">
+                                class="w-12 py-1.5 text-sm text-center bg-white dark:bg-dark-800 border-x border-gray-300 dark:border-dark-600 text-dark-900 dark:text-dark-300 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none">
                             <button @click="bulkCount = Math.min(50, bulkCount + 1)" type="button"
                                 class="px-2.5 py-2 text-dark-500 hover:text-dark-900 dark:hover:text-dark-50 hover:bg-dark-50 dark:hover:bg-dark-700 transition-colors text-sm font-medium">+</button>
                         </div>
@@ -312,7 +312,7 @@
                 <div x-show="items.length > 0" class="hidden md:block overflow-x-auto">
                     <div class="min-w-[960px]">
                         {{-- Table Header --}}
-                        <div class="grid grid-cols-24 gap-2 px-6 py-2.5 bg-dark-50 dark:bg-dark-900/60 border-b border-dark-100 dark:border-white/8">
+                        <div class="grid grid-cols-24 gap-2 px-6 py-2.5 bg-dark-50 dark:bg-dark-900/60 border-b border-dark-100 dark:border-dark-600">
                             <div class="col-span-1 text-[10px] font-bold text-dark-500 dark:text-dark-400 uppercase tracking-wider text-center">#</div>
                             <div class="col-span-3 text-[10px] font-bold text-dark-500 dark:text-dark-400 uppercase tracking-wider">{{ __('invoice.client') }}</div>
                             <div class="col-span-5 text-[10px] font-bold text-dark-500 dark:text-dark-400 uppercase tracking-wider">{{ __('common.services') }}</div>
@@ -350,7 +350,7 @@
                                                     window.removeEventListener('scroll', sh, true);
                                                 };
                                                 window.addEventListener('scroll', sh, true);"
-                                            class="flex w-full cursor-pointer items-center gap-x-2 rounded-md border-0 bg-white py-1.5 px-2 text-sm ring-1 ring-gray-300 dark:bg-dark-700 dark:ring-dark-600 focus:ring-primary-600 focus:outline-hidden focus:ring-2">
+                                            class="flex w-full cursor-pointer items-center gap-x-2 rounded-md border-0 bg-white py-1.5 px-2 text-sm ring-1 ring-gray-300 dark:bg-dark-800 dark:ring-dark-600 focus:ring-primary-600 focus:outline-hidden focus:ring-2">
                                             <div class="relative inset-y-0 left-0 flex w-full items-center overflow-hidden rounded-lg">
                                                 <span x-show="!item.client_id" class="dark:text-dark-400 truncate leading-6 text-gray-400 text-xs">{{ __('common.select') }}</span>
                                                 <span x-show="item.client_id" class="dark:text-dark-300 truncate leading-6 text-gray-600 text-xs" x-text="item.client_name"></span>
@@ -372,17 +372,17 @@
                                             <div x-show="itemSelectOpen[item.id]" x-transition:enter="transition ease-out duration-100" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
                                                 :id="`client-dd-${item.id}`"
                                                 @click.away="itemSelectOpen[item.id] = false"
-                                                class="fixed z-9999 bg-white dark:bg-dark-700 shadow-lg ring-1 ring-black/5 dark:ring-white/10 rounded-xl overflow-hidden"
+                                                class="fixed z-9999 bg-white dark:bg-dark-700 shadow-lg ring-1 ring-black/5 dark:ring-dark-600 rounded-xl overflow-hidden"
                                                 style="width: 240px;">
-                                                <div class="p-2 border-b border-dark-100 dark:border-white/8">
+                                                <div class="p-2 border-b border-dark-100 dark:border-dark-600">
                                                     <input type="text" x-model="itemSelectSearch[item.id]" @click.stop
                                                         placeholder="{{ __('common.search') }}..."
-                                                        class="w-full px-2.5 py-1.5 text-sm ring-1 ring-gray-300 dark:ring-dark-600 rounded-md bg-white dark:bg-dark-700 text-gray-600 dark:text-dark-300 border-0 focus:ring-2 focus:ring-primary-600 focus:outline-hidden placeholder:text-gray-400 dark:placeholder:text-dark-400">
+                                                        class="w-full px-2.5 py-1.5 text-sm ring-1 ring-gray-300 dark:ring-dark-600 rounded-md bg-white dark:bg-dark-800 text-gray-600 dark:text-dark-300 border-0 focus:ring-2 focus:ring-primary-600 focus:outline-hidden placeholder:text-gray-400 dark:placeholder:text-dark-400">
                                                 </div>
                                                 <ul class="soft-scrollbar max-h-48 overflow-auto py-1">
                                                     <template x-for="c in filteredItemClients(item.id)" :key="c.id">
                                                         <li @click="selectItemClient(item, c)"
-                                                            :class="item.client_id === c.id ? 'font-semibold hover:bg-red-500 hover:text-white dark:hover:bg-red-500' : 'dark:text-dark-300 dark:hover:bg-dark-500 text-gray-700 hover:bg-gray-100'"
+                                                            :class="item.client_id === c.id ? 'font-semibold hover:bg-red-500 hover:text-white dark:hover:bg-red-500' : 'dark:text-dark-300 dark:hover:bg-dark-600 text-gray-700 hover:bg-gray-100'"
                                                             class="relative select-none cursor-pointer px-2 py-2 focus:outline-hidden">
                                                             <div class="flex items-center justify-between">
                                                                 <div class="flex items-center gap-2 min-w-0">
@@ -413,7 +413,7 @@
                                         <input type="text" x-model="item.service_name"
                                             autocomplete="off"
                                             :id="`serviceInput-${item.id}`"
-                                            class="w-full px-2 py-1.5 text-sm ring-1 ring-gray-300 dark:ring-dark-600 rounded-md bg-white dark:bg-dark-700 text-gray-600 dark:text-dark-300 border-0 focus:ring-2 focus:ring-primary-600 focus:outline-hidden placeholder:text-gray-400 dark:placeholder:text-dark-400"
+                                            class="w-full px-2 py-1.5 text-sm ring-1 ring-gray-300 dark:ring-dark-600 rounded-md bg-white dark:bg-dark-800 text-gray-600 dark:text-dark-300 border-0 focus:ring-2 focus:ring-primary-600 focus:outline-hidden placeholder:text-gray-400 dark:placeholder:text-dark-400"
                                             :placeholder="'{{ __('pages.type_service_name') }}...'"
                                             @click="
                                                 const rect = $event.target.getBoundingClientRect();
@@ -431,17 +431,17 @@
                                             <div x-show="serviceSelectOpen[item.id]" x-transition:enter="transition ease-out duration-100" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
                                                 :id="`service-dd-${item.id}`"
                                                 @click.away="serviceSelectOpen[item.id] = false"
-                                                class="fixed z-9999 bg-white dark:bg-dark-700 shadow-lg ring-1 ring-black/5 dark:ring-white/10 rounded-xl overflow-hidden"
+                                                class="fixed z-9999 bg-white dark:bg-dark-700 shadow-lg ring-1 ring-black/5 dark:ring-dark-600 rounded-xl overflow-hidden"
                                                 style="width: 280px;">
-                                                <div class="p-2 border-b border-dark-100 dark:border-white/8">
+                                                <div class="p-2 border-b border-dark-100 dark:border-dark-600">
                                                     <input type="text" x-model="serviceSelectSearch[item.id]" @click.stop
                                                         placeholder="{{ __('common.search') }} {{ strtolower(__('common.services')) }}..."
-                                                        class="w-full px-2.5 py-1.5 text-sm ring-1 ring-gray-300 dark:ring-dark-600 rounded-md bg-white dark:bg-dark-700 text-gray-600 dark:text-dark-300 border-0 focus:ring-2 focus:ring-primary-600 focus:outline-hidden placeholder:text-gray-400 dark:placeholder:text-dark-400">
+                                                        class="w-full px-2.5 py-1.5 text-sm ring-1 ring-gray-300 dark:ring-dark-600 rounded-md bg-white dark:bg-dark-800 text-gray-600 dark:text-dark-300 border-0 focus:ring-2 focus:ring-primary-600 focus:outline-hidden placeholder:text-gray-400 dark:placeholder:text-dark-400">
                                                 </div>
                                                 <div class="overflow-y-auto max-h-48">
                                                     <template x-for="svc in filteredItemServices(item.id)" :key="svc.id">
                                                         <div @click="selectService(item, svc)"
-                                                            class="px-3 py-2.5 hover:bg-primary-50 dark:hover:bg-primary-900/20 cursor-pointer border-b border-dark-50 dark:border-white/8 last:border-0">
+                                                            class="px-3 py-2.5 hover:bg-primary-50 dark:hover:bg-primary-900/20 cursor-pointer border-b border-dark-50 dark:border-dark-600 last:border-0">
                                                             <div class="text-xs font-semibold text-dark-900 dark:text-dark-50" x-text="svc.name"></div>
                                                             <div class="flex items-center justify-between mt-0.5">
                                                                 <span class="text-[10px] text-primary-600 dark:text-primary-400" x-text="svc.type"></span>
@@ -458,7 +458,7 @@
                                     {{-- Qty --}}
                                     <div class="col-span-2">
                                         <input type="text" x-model="item.quantity" @input="calculateItem(item)"
-                                            class="w-full px-2 py-1.5 text-xs text-center ring-1 ring-gray-300 dark:ring-dark-600 rounded-md bg-white dark:bg-dark-700 text-gray-600 dark:text-dark-300 border-0 focus:ring-2 focus:ring-primary-600 focus:outline-hidden"
+                                            class="w-full px-2 py-1.5 text-xs text-center ring-1 ring-gray-300 dark:ring-dark-600 rounded-md bg-white dark:bg-dark-800 text-gray-600 dark:text-dark-300 border-0 focus:ring-2 focus:ring-primary-600 focus:outline-hidden"
                                             placeholder="1">
                                     </div>
 
@@ -466,7 +466,7 @@
                                     <div class="col-span-2" @click.away="unitOpen[item.id] = false">
                                         <button type="button"
                                             @click="unitOpen[item.id] = !unitOpen[item.id]"
-                                            class="flex w-full cursor-pointer items-center gap-x-1 rounded-md border-0 bg-white py-1.5 px-2 text-sm ring-1 ring-gray-300 dark:bg-dark-700 dark:ring-dark-600 focus:ring-primary-600 focus:outline-hidden focus:ring-2">
+                                            class="flex w-full cursor-pointer items-center gap-x-1 rounded-md border-0 bg-white py-1.5 px-2 text-sm ring-1 ring-gray-300 dark:bg-dark-800 dark:ring-dark-600 focus:ring-primary-600 focus:outline-hidden focus:ring-2">
                                             <span class="flex-1 dark:text-dark-300 truncate leading-6 text-gray-600 text-xs text-left" x-text="item.unit || 'pcs'"></span>
                                             <svg class="h-4 w-4 shrink-0 dark:text-dark-400 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4"/>
@@ -476,17 +476,17 @@
                                             x-transition:enter="transition ease-out duration-100"
                                             x-transition:enter-start="opacity-0 scale-95"
                                             x-transition:enter-end="opacity-100 scale-100"
-                                            class="absolute z-50 mt-1 bg-white dark:bg-dark-700 shadow-lg ring-1 ring-black/5 dark:ring-white/10 rounded-xl overflow-hidden"
+                                            class="absolute z-50 mt-1 bg-white dark:bg-dark-700 shadow-lg ring-1 ring-black/5 dark:ring-dark-600 rounded-xl overflow-hidden"
                                             style="min-width: 80px;">
                                             <ul class="py-1">
                                                 <li @click="item.unit = 'pcs'; unitOpen[item.id] = false"
-                                                    :class="item.unit === 'pcs' ? 'font-semibold hover:bg-red-500 hover:text-white dark:hover:bg-red-500' : 'dark:text-dark-300 dark:hover:bg-dark-500 text-gray-700 hover:bg-gray-100'"
+                                                    :class="item.unit === 'pcs' ? 'font-semibold hover:bg-red-500 hover:text-white dark:hover:bg-red-500' : 'dark:text-dark-300 dark:hover:bg-dark-600 text-gray-700 hover:bg-gray-100'"
                                                     class="relative select-none cursor-pointer px-2 py-2 text-xs focus:outline-hidden flex items-center justify-between">
                                                     <span>pcs</span>
                                                     <svg x-show="item.unit === 'pcs'" class="h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                                                 </li>
                                                 <li @click="item.unit = 'm³'; unitOpen[item.id] = false"
-                                                    :class="item.unit === 'm³' ? 'font-semibold hover:bg-red-500 hover:text-white dark:hover:bg-red-500' : 'dark:text-dark-300 dark:hover:bg-dark-500 text-gray-700 hover:bg-gray-100'"
+                                                    :class="item.unit === 'm³' ? 'font-semibold hover:bg-red-500 hover:text-white dark:hover:bg-red-500' : 'dark:text-dark-300 dark:hover:bg-dark-600 text-gray-700 hover:bg-gray-100'"
                                                     class="relative select-none cursor-pointer px-2 py-2 text-xs focus:outline-hidden flex items-center justify-between">
                                                     <span>m³</span>
                                                     <svg x-show="item.unit === 'm³'" class="h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
@@ -499,7 +499,7 @@
                                     <div class="col-span-3">
                                         <input type="text" x-model="item.unit_price"
                                             @input="item.unit_price = formatInput($event.target.value); calculateItem(item)"
-                                            class="w-full px-2 py-1.5 text-xs text-right ring-1 ring-gray-300 dark:ring-dark-600 rounded-md bg-white dark:bg-dark-700 text-gray-600 dark:text-dark-300 border-0 focus:ring-2 focus:ring-primary-600 focus:outline-hidden"
+                                            class="w-full px-2 py-1.5 text-xs text-right ring-1 ring-gray-300 dark:ring-dark-600 rounded-md bg-white dark:bg-dark-800 text-gray-600 dark:text-dark-300 border-0 focus:ring-2 focus:ring-primary-600 focus:outline-hidden"
                                             placeholder="0">
                                     </div>
 
@@ -513,7 +513,7 @@
                                     <div class="col-span-3">
                                         <input type="text" x-model="item.cogs_amount"
                                             @input="item.cogs_amount = formatInput($event.target.value); calculateItem(item)"
-                                            class="w-full px-2 py-1.5 text-xs text-right ring-1 ring-gray-300 dark:ring-dark-600 rounded-md bg-white dark:bg-dark-700 text-gray-600 dark:text-dark-300 border-0 focus:ring-2 focus:ring-primary-600 focus:outline-hidden"
+                                            class="w-full px-2 py-1.5 text-xs text-right ring-1 ring-gray-300 dark:ring-dark-600 rounded-md bg-white dark:bg-dark-800 text-gray-600 dark:text-dark-300 border-0 focus:ring-2 focus:ring-primary-600 focus:outline-hidden"
                                             placeholder="0">
                                     </div>
 
@@ -521,14 +521,14 @@
                                     <div class="col-span-1 flex justify-center">
                                         <label class="cursor-pointer">
                                             <input type="checkbox" x-model="item.is_tax_deposit"
-                                                class="rounded border-dark-300 dark:border-white/10 text-primary-600 focus:ring-2 focus:ring-primary-500">
+                                                class="rounded border-dark-300 dark:border-dark-600 text-primary-600 focus:ring-2 focus:ring-primary-500">
                                         </label>
                                     </div>
 
                                     {{-- Delete --}}
                                     <div class="col-span-1 flex justify-center">
                                         <button @click="removeItem(index)" type="button"
-                                            class="p-1.5 text-dark-300 dark:text-dark-600 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all opacity-0 group-hover:opacity-100">
+                                            class="p-1.5 text-dark-300 dark:text-dark-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all opacity-0 group-hover:opacity-100">
                                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                                             </svg>
@@ -567,7 +567,7 @@
                                 <div class="relative">
                                     <button type="button"
                                         @click="itemSelectOpen[item.id] = item.client_id ? itemSelectOpen[item.id] : !itemSelectOpen[item.id]"
-                                        class="flex w-full cursor-pointer items-center gap-x-2 rounded-md border-0 bg-white py-1.5 px-3 text-sm ring-1 ring-gray-300 dark:bg-dark-700 dark:ring-dark-600 focus:ring-primary-600 focus:outline-hidden focus:ring-2">
+                                        class="flex w-full cursor-pointer items-center gap-x-2 rounded-md border-0 bg-white py-1.5 px-3 text-sm ring-1 ring-gray-300 dark:bg-dark-800 dark:ring-dark-600 focus:ring-primary-600 focus:outline-hidden focus:ring-2">
                                         <div class="relative inset-y-0 left-0 flex w-full items-center overflow-hidden rounded-lg">
                                             <span x-show="!item.client_id" class="dark:text-dark-400 truncate leading-6 text-gray-400">{{ __('pages.select_client') }}</span>
                                             <span x-show="item.client_id" class="dark:text-dark-300 truncate leading-6 text-gray-600" x-text="item.client_name"></span>
@@ -585,15 +585,15 @@
                                             </svg>
                                         </div>
                                     </button>
-                                    <div x-show="itemSelectOpen[item.id]" x-transition class="absolute z-50 mt-1 w-full bg-white dark:bg-dark-700 shadow-lg ring-1 ring-black/5 dark:ring-white/10 rounded-xl overflow-hidden">
-                                        <div class="p-2 border-b border-dark-100 dark:border-white/8">
+                                    <div x-show="itemSelectOpen[item.id]" x-transition class="absolute z-50 mt-1 w-full bg-white dark:bg-dark-700 shadow-lg ring-1 ring-black/5 dark:ring-dark-600 rounded-xl overflow-hidden">
+                                        <div class="p-2 border-b border-dark-100 dark:border-dark-600">
                                             <input type="text" x-model="itemSelectSearch[item.id]" @click.stop placeholder="{{ __('common.search') }}..."
-                                                class="w-full px-3 py-1.5 text-sm ring-1 ring-gray-300 dark:ring-dark-600 rounded-md bg-white dark:bg-dark-700 text-gray-600 dark:text-dark-300 border-0 focus:ring-2 focus:ring-primary-600 focus:outline-hidden placeholder:text-gray-400 dark:placeholder:text-dark-400">
+                                                class="w-full px-3 py-1.5 text-sm ring-1 ring-gray-300 dark:ring-dark-600 rounded-md bg-white dark:bg-dark-800 text-gray-600 dark:text-dark-300 border-0 focus:ring-2 focus:ring-primary-600 focus:outline-hidden placeholder:text-gray-400 dark:placeholder:text-dark-400">
                                         </div>
                                         <ul class="soft-scrollbar max-h-48 overflow-auto py-1">
                                             <template x-for="c in filteredItemClients(item.id)" :key="c.id">
                                                 <li @click="selectItemClient(item, c)"
-                                                    :class="item.client_id === c.id ? 'font-semibold hover:bg-red-500 hover:text-white dark:hover:bg-red-500' : 'dark:text-dark-300 dark:hover:bg-dark-500 text-gray-700 hover:bg-gray-100'"
+                                                    :class="item.client_id === c.id ? 'font-semibold hover:bg-red-500 hover:text-white dark:hover:bg-red-500' : 'dark:text-dark-300 dark:hover:bg-dark-600 text-gray-700 hover:bg-gray-100'"
                                                     class="relative select-none cursor-pointer px-2 py-2 focus:outline-hidden">
                                                     <div class="flex items-center justify-between">
                                                         <div class="flex items-center gap-2 min-w-0">
@@ -625,13 +625,13 @@
                                 <div class="relative flex gap-2" @click.away="serviceSelectOpen[item.id] = false">
                                     <input type="text" x-model="item.service_name"
                                         autocomplete="off"
-                                        class="flex-1 px-3 py-1.5 text-sm ring-1 ring-gray-300 dark:ring-dark-600 rounded-md bg-white dark:bg-dark-700 text-gray-600 dark:text-dark-300 border-0 focus:ring-2 focus:ring-primary-600 focus:outline-hidden placeholder:text-gray-400 dark:placeholder:text-dark-400"
+                                        class="flex-1 px-3 py-1.5 text-sm ring-1 ring-gray-300 dark:ring-dark-600 rounded-md bg-white dark:bg-dark-800 text-gray-600 dark:text-dark-300 border-0 focus:ring-2 focus:ring-primary-600 focus:outline-hidden placeholder:text-gray-400 dark:placeholder:text-dark-400"
                                         :placeholder="'{{ __('pages.type_service_name') }}...'">
                                     <button @click="serviceSelectOpen[item.id] = !serviceSelectOpen[item.id]" type="button"
-                                        class="px-2.5 ring-1 ring-gray-300 dark:ring-dark-600 rounded-md bg-white dark:bg-dark-700 text-dark-500 dark:text-dark-400 hover:bg-gray-50 dark:hover:bg-dark-700 transition shrink-0">
+                                        class="px-2.5 ring-1 ring-gray-300 dark:ring-dark-600 rounded-md bg-white dark:bg-dark-800 text-dark-500 dark:text-dark-400 hover:bg-gray-50 dark:hover:bg-dark-700 transition shrink-0">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                                     </button>
-                                    <div x-show="serviceSelectOpen[item.id]" x-transition class="absolute z-50 top-full mt-1 left-0 w-full bg-white dark:bg-dark-700 shadow-lg ring-1 ring-black/5 dark:ring-white/10 rounded-xl overflow-hidden">
+                                    <div x-show="serviceSelectOpen[item.id]" x-transition class="absolute z-50 top-full mt-1 left-0 w-full bg-white dark:bg-dark-700 shadow-lg ring-1 ring-black/5 dark:ring-dark-600 rounded-xl overflow-hidden">
                                         <div class="overflow-y-auto max-h-48">
                                             <template x-for="svc in filteredItemServices(item.id)" :key="svc.id">
                                                 <div @click="selectService(item, svc)" class="px-3 py-2.5 hover:bg-primary-50 dark:hover:bg-primary-900/20 cursor-pointer border-b border-dark-50 last:border-0">
@@ -653,7 +653,7 @@
                                 <div class="space-y-1">
                                     <label class="text-[10px] font-bold text-dark-500 uppercase tracking-wide">{{ __('invoice.qty') }}</label>
                                     <input type="text" x-model="item.quantity" @input="calculateItem(item)"
-                                        class="w-full px-2 py-1.5 text-sm text-center ring-1 ring-gray-300 dark:ring-dark-600 rounded-md bg-white dark:bg-dark-700 text-gray-600 dark:text-dark-300 border-0 focus:ring-2 focus:ring-primary-600 focus:outline-hidden"
+                                        class="w-full px-2 py-1.5 text-sm text-center ring-1 ring-gray-300 dark:ring-dark-600 rounded-md bg-white dark:bg-dark-800 text-gray-600 dark:text-dark-300 border-0 focus:ring-2 focus:ring-primary-600 focus:outline-hidden"
                                         placeholder="1">
                                 </div>
                                 <div class="space-y-1">
@@ -661,7 +661,7 @@
                                     <div class="relative" @click.away="unitOpen[item.id] = false">
                                         <button type="button"
                                             @click="unitOpen[item.id] = !unitOpen[item.id]"
-                                            class="flex w-full cursor-pointer items-center gap-x-1 rounded-md border-0 bg-white py-1.5 px-2 text-sm ring-1 ring-gray-300 dark:bg-dark-700 dark:ring-dark-600 focus:ring-primary-600 focus:outline-hidden focus:ring-2">
+                                            class="flex w-full cursor-pointer items-center gap-x-1 rounded-md border-0 bg-white py-1.5 px-2 text-sm ring-1 ring-gray-300 dark:bg-dark-800 dark:ring-dark-600 focus:ring-primary-600 focus:outline-hidden focus:ring-2">
                                             <span class="flex-1 dark:text-dark-300 truncate leading-6 text-gray-600 text-left" x-text="item.unit || 'pcs'"></span>
                                             <svg class="h-4 w-4 shrink-0 dark:text-dark-400 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4"/>
@@ -671,16 +671,16 @@
                                             x-transition:enter="transition ease-out duration-100"
                                             x-transition:enter-start="opacity-0 scale-95"
                                             x-transition:enter-end="opacity-100 scale-100"
-                                            class="absolute z-50 mt-1 w-full bg-white dark:bg-dark-700 shadow-lg ring-1 ring-black/5 dark:ring-white/10 rounded-xl overflow-hidden">
+                                            class="absolute z-50 mt-1 w-full bg-white dark:bg-dark-700 shadow-lg ring-1 ring-black/5 dark:ring-dark-600 rounded-xl overflow-hidden">
                                             <ul class="py-1">
                                                 <li @click="item.unit = 'pcs'; unitOpen[item.id] = false"
-                                                    :class="item.unit === 'pcs' ? 'font-semibold hover:bg-red-500 hover:text-white dark:hover:bg-red-500' : 'dark:text-dark-300 dark:hover:bg-dark-500 text-gray-700 hover:bg-gray-100'"
+                                                    :class="item.unit === 'pcs' ? 'font-semibold hover:bg-red-500 hover:text-white dark:hover:bg-red-500' : 'dark:text-dark-300 dark:hover:bg-dark-600 text-gray-700 hover:bg-gray-100'"
                                                     class="relative select-none cursor-pointer px-2 py-2 text-sm focus:outline-hidden flex items-center justify-between">
                                                     <span>pcs</span>
                                                     <svg x-show="item.unit === 'pcs'" class="h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                                                 </li>
                                                 <li @click="item.unit = 'm³'; unitOpen[item.id] = false"
-                                                    :class="item.unit === 'm³' ? 'font-semibold hover:bg-red-500 hover:text-white dark:hover:bg-red-500' : 'dark:text-dark-300 dark:hover:bg-dark-500 text-gray-700 hover:bg-gray-100'"
+                                                    :class="item.unit === 'm³' ? 'font-semibold hover:bg-red-500 hover:text-white dark:hover:bg-red-500' : 'dark:text-dark-300 dark:hover:bg-dark-600 text-gray-700 hover:bg-gray-100'"
                                                     class="relative select-none cursor-pointer px-2 py-2 text-sm focus:outline-hidden flex items-center justify-between">
                                                     <span>m³</span>
                                                     <svg x-show="item.unit === 'm³'" class="h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
@@ -693,7 +693,7 @@
                                     <label class="text-[10px] font-bold text-dark-500 uppercase tracking-wide">{{ __('invoice.unit_price') }}</label>
                                     <input type="text" x-model="item.unit_price"
                                         @input="item.unit_price = formatInput($event.target.value); calculateItem(item)"
-                                        class="w-full px-2 py-1.5 text-sm text-right ring-1 ring-gray-300 dark:ring-dark-600 rounded-md bg-white dark:bg-dark-700 text-gray-600 dark:text-dark-300 border-0 focus:ring-2 focus:ring-primary-600 focus:outline-hidden"
+                                        class="w-full px-2 py-1.5 text-sm text-right ring-1 ring-gray-300 dark:ring-dark-600 rounded-md bg-white dark:bg-dark-800 text-gray-600 dark:text-dark-300 border-0 focus:ring-2 focus:ring-primary-600 focus:outline-hidden"
                                         placeholder="0">
                                 </div>
                             </div>
@@ -709,7 +709,7 @@
                                     <label class="text-[10px] font-bold text-dark-500 uppercase tracking-wide">{{ __('pages.cogs') }}</label>
                                     <input type="text" x-model="item.cogs_amount"
                                         @input="item.cogs_amount = formatInput($event.target.value); calculateItem(item)"
-                                        class="w-full px-3 py-1.5 text-sm text-right ring-1 ring-gray-300 dark:ring-dark-600 rounded-md bg-white dark:bg-dark-700 text-gray-600 dark:text-dark-300 border-0 focus:ring-2 focus:ring-primary-600 focus:outline-hidden"
+                                        class="w-full px-3 py-1.5 text-sm text-right ring-1 ring-gray-300 dark:ring-dark-600 rounded-md bg-white dark:bg-dark-800 text-gray-600 dark:text-dark-300 border-0 focus:ring-2 focus:ring-primary-600 focus:outline-hidden"
                                         placeholder="0">
                                 </div>
                             </div>
@@ -721,7 +721,7 @@
 
         {{-- RIGHT COLUMN — Sticky Summary (1/3 width) --}}
         <div class="xl:col-span-1 xl:self-start xl:sticky xl:top-6">
-            <div class="bg-white dark:bg-[#1e1e1e] rounded-xl border border-dark-200 dark:border-white/10 overflow-hidden">
+            <div class="bg-white dark:bg-dark-700 rounded-xl border border-dark-200 dark:border-dark-600 overflow-hidden">
 
                 {{-- Rows: label + value --}}
                 <div class="divide-y divide-dark-100 dark:divide-dark-700">
@@ -768,7 +768,7 @@
                 {{-- Discount inputs (collapsible section) --}}
                 <div x-data="{ open: false }">
                     <button @click="open = !open" type="button"
-                        class="w-full flex items-center justify-between px-4 py-3 border-t border-dark-100 dark:border-white/8 text-xs text-dark-500 dark:text-dark-400 hover:text-dark-700 dark:hover:text-dark-200 hover:bg-dark-50 dark:hover:bg-dark-700/40 transition-colors">
+                        class="w-full flex items-center justify-between px-4 py-3 border-t border-dark-100 dark:border-dark-600 text-xs text-dark-500 dark:text-dark-400 hover:text-dark-700 dark:hover:text-dark-200 hover:bg-dark-50 dark:hover:bg-dark-700/40 transition-colors">
                         <span class="font-medium">{{ __('invoice.discount') }}</span>
                         <div class="flex items-center gap-1.5">
                             <span x-show="discountAmount > 0" class="text-[10px] font-semibold text-red-500" x-text="'− ' + formatCurrency(discountAmount)"></span>
@@ -782,7 +782,7 @@
                             <div class="relative flex-1" @click.away="discountTypeOpen = false">
                                 <button type="button"
                                     @click="discountTypeOpen = !discountTypeOpen"
-                                    class="flex w-full cursor-pointer items-center gap-x-2 rounded-md border-0 bg-white py-1.5 px-2.5 text-sm ring-1 ring-gray-300 dark:bg-dark-700 dark:ring-dark-600 focus:ring-primary-600 focus:outline-hidden focus:ring-2">
+                                    class="flex w-full cursor-pointer items-center gap-x-2 rounded-md border-0 bg-white py-1.5 px-2.5 text-sm ring-1 ring-gray-300 dark:bg-dark-800 dark:ring-dark-600 focus:ring-primary-600 focus:outline-hidden focus:ring-2">
                                     <span class="flex-1 dark:text-dark-300 truncate leading-6 text-gray-600 text-left text-sm"
                                         x-text="discount.type === 'fixed' ? '{{ __('pages.fixed_amount') }}' : '%'"></span>
                                     <svg class="h-5 w-5 shrink-0 dark:text-dark-400 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -793,16 +793,16 @@
                                     x-transition:enter="transition ease-out duration-100"
                                     x-transition:enter-start="opacity-0 scale-95"
                                     x-transition:enter-end="opacity-100 scale-100"
-                                    class="absolute z-50 mt-1 w-full bg-white dark:bg-dark-700 shadow-lg ring-1 ring-black/5 dark:ring-white/10 rounded-xl overflow-hidden">
+                                    class="absolute z-50 mt-1 w-full bg-white dark:bg-dark-700 shadow-lg ring-1 ring-black/5 dark:ring-dark-600 rounded-xl overflow-hidden">
                                     <ul class="py-1">
                                         <li @click="discount.type = 'fixed'; discountTypeOpen = false"
-                                            :class="discount.type === 'fixed' ? 'font-semibold hover:bg-red-500 hover:text-white dark:hover:bg-red-500' : 'dark:text-dark-300 dark:hover:bg-dark-500 text-gray-700 hover:bg-gray-100'"
+                                            :class="discount.type === 'fixed' ? 'font-semibold hover:bg-red-500 hover:text-white dark:hover:bg-red-500' : 'dark:text-dark-300 dark:hover:bg-dark-600 text-gray-700 hover:bg-gray-100'"
                                             class="relative select-none cursor-pointer px-2 py-2 text-sm focus:outline-hidden flex items-center justify-between">
                                             <span>{{ __('pages.fixed_amount') }}</span>
                                             <svg x-show="discount.type === 'fixed'" class="h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                                         </li>
                                         <li @click="discount.type = 'percentage'; discountTypeOpen = false"
-                                            :class="discount.type === 'percentage' ? 'font-semibold hover:bg-red-500 hover:text-white dark:hover:bg-red-500' : 'dark:text-dark-300 dark:hover:bg-dark-500 text-gray-700 hover:bg-gray-100'"
+                                            :class="discount.type === 'percentage' ? 'font-semibold hover:bg-red-500 hover:text-white dark:hover:bg-red-500' : 'dark:text-dark-300 dark:hover:bg-dark-600 text-gray-700 hover:bg-gray-100'"
                                             class="relative select-none cursor-pointer px-2 py-2 text-sm focus:outline-hidden flex items-center justify-between">
                                             <span>%</span>
                                             <svg x-show="discount.type === 'percentage'" class="h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
@@ -814,20 +814,20 @@
                                 @input="discount.value = formatInput($event.target.value)"
                                 x-show="discount.type === 'fixed'"
                                 placeholder="0"
-                                class="flex-1 px-2.5 py-1.5 text-sm ring-1 ring-gray-300 dark:ring-dark-600 rounded-md bg-white dark:bg-dark-700 text-gray-600 dark:text-dark-300 border-0 focus:ring-2 focus:ring-primary-600 focus:outline-hidden text-right">
+                                class="flex-1 px-2.5 py-1.5 text-sm ring-1 ring-gray-300 dark:ring-dark-600 rounded-md bg-white dark:bg-dark-800 text-gray-600 dark:text-dark-300 border-0 focus:ring-2 focus:ring-primary-600 focus:outline-hidden text-right">
                             <input type="number" x-model="discount.value"
                                 x-show="discount.type === 'percentage'"
                                 placeholder="0" min="0" max="100"
-                                class="flex-1 px-2.5 py-1.5 text-sm ring-1 ring-gray-300 dark:ring-dark-600 rounded-md bg-white dark:bg-dark-700 text-gray-600 dark:text-dark-300 border-0 focus:ring-2 focus:ring-primary-600 focus:outline-hidden text-right">
+                                class="flex-1 px-2.5 py-1.5 text-sm ring-1 ring-gray-300 dark:ring-dark-600 rounded-md bg-white dark:bg-dark-800 text-gray-600 dark:text-dark-300 border-0 focus:ring-2 focus:ring-primary-600 focus:outline-hidden text-right">
                         </div>
                         <input type="text" x-model="discount.reason"
                             placeholder="{{ __('pages.reason_optional') }}"
-                            class="w-full px-2.5 py-1.5 text-sm ring-1 ring-gray-300 dark:ring-dark-600 rounded-md bg-white dark:bg-dark-700 text-gray-600 dark:text-dark-300 border-0 focus:ring-2 focus:ring-primary-600 focus:outline-hidden placeholder:text-gray-400 dark:placeholder:text-dark-400">
+                            class="w-full px-2.5 py-1.5 text-sm ring-1 ring-gray-300 dark:ring-dark-600 rounded-md bg-white dark:bg-dark-800 text-gray-600 dark:text-dark-300 border-0 focus:ring-2 focus:ring-primary-600 focus:outline-hidden placeholder:text-gray-400 dark:placeholder:text-dark-400">
                     </div>
                 </div>
 
                 {{-- Save Button --}}
-                <div class="p-4 border-t border-dark-100 dark:border-white/8">
+                <div class="p-4 border-t border-dark-100 dark:border-dark-600">
                     <button @click="syncAndSave()" type="button"
                         :disabled="saving || items.length === 0"
                         :class="saving || items.length === 0

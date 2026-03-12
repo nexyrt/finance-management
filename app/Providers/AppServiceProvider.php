@@ -16,6 +16,7 @@ class AppServiceProvider extends ServiceProvider
         Model::preventLazyLoading(!app()->isProduction());
 
         // TallStackUI Component Personalization
+        // Note: dark mode colors are NOT overridden here — they follow --color-dark-* variables in app.css
         TallStackUi::personalize()
             // Modal
             ->modal()
@@ -25,81 +26,23 @@ class AppServiceProvider extends ServiceProvider
             ->block('wrapper.third')
             ->replace('p-4', 'p-4 pt-16 sm:pt-4')
             ->and()
-            ->modal()
-            ->block('wrapper.fourth')
-            ->replace('dark:bg-dark-700', 'dark:bg-[#1e1e1e]')
-            ->and()
-            ->modal()
-            ->block('footer')
-            ->replace('dark:bg-dark-700', 'dark:bg-[#1e1e1e]')
-            ->and()
             // Card
             ->card()
             ->block('wrapper.second')
             ->replace([
-                'shadow-md'        => 'border border-zinc-200 dark:border-white/8 shadow-sm hover:shadow-md transition-shadow duration-150',
-                'rounded-lg'       => 'rounded-xl',
-                'dark:bg-dark-700' => 'dark:bg-[#1e1e1e]',
+                'shadow-md'  => 'border border-zinc-200 dark:border-white/8 shadow-sm hover:shadow-md transition-shadow duration-150',
+                'rounded-lg' => 'rounded-xl',
             ])
-            ->and()
-            // Slide
-            ->slide()
-            ->block('wrapper.fifth')
-            ->replace('dark:bg-dark-700', 'dark:bg-[#1e1e1e]')
-            ->and()
-            ->slide()
-            ->block('footer')
-            ->replace('dark:bg-dark-700', 'dark:bg-[#1e1e1e]')
             ->and()
             // Table
             ->table()
             ->block('wrapper')
             ->replace('dark:ring-dark-600', 'dark:ring-white/8')
             ->and()
-            ->table()
-            ->block('table.tbody')
-            ->replace('dark:bg-dark-700', 'dark:bg-[#1e1e1e]')
-            ->and()
-            ->table()
-            ->block('table.thead.normal')
-            ->replace('dark:bg-dark-600', 'dark:bg-[#161618]')
-            ->and()
-            // Form inputs - background
-            ->form('input')
-            ->block('input.color.background')
-            ->replace('dark:bg-dark-800', 'dark:bg-[#27272a]')
-            ->and()
-            ->form('textarea')
-            ->block('input.color.background')
-            ->replace('dark:bg-dark-800', 'dark:bg-[#27272a]')
-            ->and()
-            ->select('styled')
-            ->block('input.wrapper.base')
-            ->replace([
-                'dark:bg-dark-800'          => 'dark:bg-[#27272a]',
-                'dark:ring-dark-600'        => 'dark:ring-white/10',
-                'dark:disabled:bg-dark-600' => 'dark:disabled:bg-[#1e1e1e]',
-            ])
-            ->and()
-            ->select('styled')
-            ->block('floating.default')
-            ->replace('dark:bg-dark-700', 'dark:bg-[#1e1e1e]')
-            ->and()
-            ->select('native')
-            ->block('input.color.background')
-            ->replace('dark:bg-dark-800', 'dark:bg-[#27272a]')
-            ->and()
-            ->form('date')
-            ->block('floating.default')
-            ->replace('dark:bg-dark-700', 'dark:bg-[#1e1e1e]')
-            ->and()
-            // Floating (dropdown, tooltip, etc)
+            // Floating — only z-index changes, no color overrides
             ->floating()
             ->block('wrapper')
-            ->replace([
-                'z-40'             => 'z-55',
-                'dark:bg-dark-700' => 'dark:bg-[#1e1e1e]',
-            ])
+            ->replace('z-40', 'z-55')
             ->and()
             ->dropdown()
             ->block('floating.class')
@@ -107,10 +50,7 @@ class AppServiceProvider extends ServiceProvider
             ->and()
             ->dropdown()
             ->block('floating.default')
-            ->replace([
-                'z-40'             => 'z-9999',
-                'dark:bg-dark-700' => 'dark:bg-[#1e1e1e]',
-            ]);
+            ->replace('z-40', 'z-9999');
 
         // Set locale from session or user preference with fallback
         $availableLocales = config('app.available_locales', ['id', 'zh']);

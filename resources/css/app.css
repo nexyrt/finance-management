@@ -48,19 +48,20 @@
     --color-secondary-900: #0f172a;
     --color-secondary-950: #020617;
 
-    /* DARK COLOR - Zinc for dark mode backgrounds */
-    --color-dark: #52525b;
+    /* DARK COLOR - Zinc palette (dark mode) */
+    /* Hierarchy: 950=body bg → 900=sidebar/header → 800=input field → 700=card/modal/panel → 600=border/hover/disabled → 500=divider → 400=icon/placeholder → 300=body text → 200=heading text */
+    --color-dark: #3f3f46;
     --color-dark-50: #fafafa;
     --color-dark-100: #f4f4f5;
-    --color-dark-200: #e4e4e7;
-    --color-dark-300: #d4d4d8;
-    --color-dark-400: #a1a1aa;
-    --color-dark-500: #71717a;
-    --color-dark-600: #52525b;  /* Added for border consistency */
-    --color-dark-700: #27272a;  /* Sidebar background (dark mode) */
-    --color-dark-800: #3f3f46;  /* Body/Card background (dark mode) */
-    --color-dark-900: #1a1a1a;  /* Added for deeper blacks */
-    --color-dark-950: #09090b;
+    --color-dark-200: #f4f4f5;  /* Heading/prominent text */
+    --color-dark-300: #e4e4e7;  /* Body text / content text */
+    --color-dark-400: #a1a1aa;  /* Icon, placeholder, muted text */
+    --color-dark-500: #71717a;  /* Divider */
+    --color-dark-600: #3f3f46;  /* Border, hover bg, disabled bg */
+    --color-dark-700: #1a1a1d;  /* Card, modal, dropdown panel */
+    --color-dark-800: #141414;  /* Input field background */
+    --color-dark-900: #0f0f11;  /* Sidebar, header background */
+    --color-dark-950: #09090a;  /* Body / main content background */
 
     /* =========================================================================
        Layout-Specific Variables
@@ -114,11 +115,11 @@ h1, h2, h3, h4, h5, h6,
 /* Thin scrollbar */
 * {
     scrollbar-width: thin;
-    scrollbar-color: #a1a1aa transparent;
+    scrollbar-color: var(--color-dark-400) transparent;
 }
 
 :where(.dark, .dark *) {
-    scrollbar-color: #52525b transparent;
+    scrollbar-color: var(--color-dark-600) transparent;
 }
 
 *::-webkit-scrollbar {
@@ -131,12 +132,12 @@ h1, h2, h3, h4, h5, h6,
 }
 
 *::-webkit-scrollbar-thumb {
-    background-color: #a1a1aa;
+    background-color: var(--color-dark-400);
     border-radius: 3px;
 }
 
 :where(.dark, .dark *)::-webkit-scrollbar-thumb {
-    background-color: #52525b;
+    background-color: var(--color-dark-600);
 }
 
 /* Quill Editor - Styling */
@@ -151,45 +152,45 @@ h1, h2, h3, h4, h5, h6,
 
 /* Quill Editor - Dark Mode */
 :where(.dark, .dark *) .ql-toolbar.ql-snow {
-    border-color: #52525b;
-    background: #27272a;
+    border-color: var(--color-dark-600);
+    background: var(--color-dark-700);
 }
 
 :where(.dark, .dark *) .ql-container.ql-snow {
-    border-color: #52525b;
+    border-color: var(--color-dark-600);
 }
 
 :where(.dark, .dark *) .ql-editor {
-    color: #fafafa;
+    color: var(--color-dark-50);
 }
 
 :where(.dark, .dark *) .ql-editor.ql-blank::before {
-    color: #71717a;
+    color: var(--color-dark-500);
 }
 
 :where(.dark, .dark *) .ql-snow .ql-stroke {
-    stroke: #a1a1aa;
+    stroke: var(--color-dark-400);
 }
 
 :where(.dark, .dark *) .ql-snow .ql-fill {
-    fill: #a1a1aa;
+    fill: var(--color-dark-400);
 }
 
 :where(.dark, .dark *) .ql-snow .ql-picker-label {
-    color: #a1a1aa;
+    color: var(--color-dark-400);
 }
 
 :where(.dark, .dark *) .ql-snow .ql-picker-options {
-    background: #27272a;
-    border-color: #52525b;
+    background: var(--color-dark-700);
+    border-color: var(--color-dark-600);
 }
 
 :where(.dark, .dark *) .ql-snow .ql-picker-item {
-    color: #a1a1aa;
+    color: var(--color-dark-400);
 }
 
 :where(.dark, .dark *) .ql-snow .ql-picker-item:hover {
-    color: #fafafa;
+    color: var(--color-dark-50);
 }
 
 :where(.dark, .dark *) .ql-snow button:hover .ql-stroke {
@@ -251,8 +252,8 @@ h1, h2, h3, h4, h5, h6,
 }
 
 :where(.dark, .dark *) .rich-text blockquote {
-    border-left-color: #52525b;
-    color: #a1a1aa;
+    border-left-color: var(--color-dark-600);
+    color: var(--color-dark-400);
 }
 
 .rich-text pre {
@@ -265,7 +266,7 @@ h1, h2, h3, h4, h5, h6,
 }
 
 :where(.dark, .dark *) .rich-text pre {
-    background: #27272a;
+    background: var(--color-dark-700);
 }
 
 .rich-text code {
@@ -276,7 +277,7 @@ h1, h2, h3, h4, h5, h6,
 }
 
 :where(.dark, .dark *) .rich-text code {
-    background: #27272a;
+    background: var(--color-dark-700);
 }
 
 /* Quill Editor - ul/ol di dalam editor area (saat mengetik) */
