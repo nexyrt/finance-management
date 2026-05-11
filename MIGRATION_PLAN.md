@@ -3,6 +3,7 @@
 > **Dokumen ini adalah panduan kerja untuk Claude Code.**
 > Dibuat: 2026-05-11 | Branch aktif: `feature/inertia-react-migration`
 > Update dokumen ini setiap kali fase selesai.
+> **Terakhir diupdate: 2026-05-11 — Fase 0 selesai**
 
 ---
 
@@ -46,7 +47,7 @@ git show main:path/to/file.php
 
 | Fase | Nama | Status |
 |------|------|--------|
-| 0 | Foundation Setup | ⬜ Belum Dimulai |
+| 0 | Foundation Setup | ✅ Selesai (2026-05-11) |
 | 1 | Design System (shadcn/ui) | ⬜ Belum Dimulai |
 | 2 | AppLayout.tsx | ⬜ Belum Dimulai |
 | 3 | Auth Pages | ⬜ Belum Dimulai |
@@ -67,83 +68,67 @@ git show main:path/to/file.php
 
 ---
 
-## Fase 0 — Foundation Setup
+## Fase 0 — Foundation Setup ✅ SELESAI
 
 **Tujuan:** Install semua dependency, konfigurasi Vite dual entry, setup middleware Inertia.
+
+**Commit:** `0b3555e` — feat(phase-0): setup Inertia.js + React foundation
+
+**Catatan:** `@tiptap/react` ditunda ke Fase 11 (conflict Tiptap v2 vs v3). shadcn/ui CLI init dilakukan di Fase 1.
 
 ### Checklist
 
 #### Server-side (Composer)
-- [ ] `composer require inertiajs/inertia-laravel`
-- [ ] Publish dan register `HandleInertiaRequests` middleware di `bootstrap/app.php`
-- [ ] Setup shared props di middleware: `auth.user`, `auth.permissions`, `locale`, `translations`, `flash`
-- [ ] Install Ziggy: `composer require tightenco/ziggy`
-- [ ] Buat root Blade template `resources/views/app.blade.php` (Inertia entry point)
+- [x] `composer require inertiajs/inertia-laravel` → v3.1.0
+- [x] Publish dan register `HandleInertiaRequests` middleware di `bootstrap/app.php`
+- [x] Setup shared props di middleware: `auth.user`, `auth.permissions`, `auth.roles`, `locale`, `flash`, `ziggy`
+- [x] Install Ziggy: `composer require tightenco/ziggy` → v2.6.2
+- [x] Buat root Blade template `resources/views/app.blade.php` (Inertia entry point)
 
-#### Client-side (NPM)
-```bash
-npm install react react-dom
-npm install -D @types/react @types/react-dom typescript @vitejs/plugin-react
-npm install @inertiajs/react
-npm install ziggy-js
-npm install -D @types/ziggy-js
-npm install i18next react-i18next
-npm install sonner
-npm install react-hook-form @hookform/resolvers zod
-npm install @tanstack/react-table
-npm install react-dropzone
-npm install cmdk
-npm install apexcharts react-apexcharts
-npm install chart.js react-chartjs-2
-npm install @tiptap/react @tiptap/pm @tiptap/starter-kit
-npm install class-variance-authority clsx tailwind-merge
-npm install lucide-react
-```
+#### Client-side (NPM) ✅
+- [x] React 18 + react-dom + @types/react + @types/react-dom
+- [x] TypeScript + @vitejs/plugin-react v4.3 (kompatibel Vite 6)
+- [x] @inertiajs/react + ziggy-js + @types/ziggy-js
+- [x] i18next + react-i18next
+- [x] sonner (toast)
+- [x] react-hook-form + @hookform/resolvers + zod
+- [x] @tanstack/react-table
+- [x] react-dropzone + cmdk + react-apexcharts
+- [x] class-variance-authority + clsx + tailwind-merge + lucide-react
+- [x] Semua Radix UI primitives (dialog, dropdown, select, tabs, tooltip, popover, checkbox, switch, avatar, separator, label, slot, scroll-area, collapsible, accordion)
+- [ ] `@tiptap/react` — ditunda ke Fase 11 (conflict v2 vs v3)
+- [ ] `shadcn/ui init` — dilakukan di Fase 1
 
-#### shadcn/ui prerequisites
-```bash
-npm install @radix-ui/react-dialog @radix-ui/react-dropdown-menu
-npm install @radix-ui/react-select @radix-ui/react-tabs
-npm install @radix-ui/react-tooltip @radix-ui/react-popover
-npm install @radix-ui/react-checkbox @radix-ui/react-switch
-npm install @radix-ui/react-avatar @radix-ui/react-badge
-npm install @radix-ui/react-separator @radix-ui/react-label
-npm install @radix-ui/react-slot @radix-ui/react-scroll-area
-npx shadcn@latest init
-```
-
-#### Vite Dual Entry
-File `vite.config.ts` → tambah entry point `resources/js/inertia.tsx` di samping `app.js` yang sudah ada.
-```ts
-// Livewire entry tetap ada: resources/js/app.js
-// Inertia entry baru: resources/js/inertia.tsx
+#### Vite Dual Entry ✅
+```js
+// vite.config.js — kedua entry aktif, npm run build sukses
 laravel({
     input: ['resources/css/app.css', 'resources/js/app.js', 'resources/js/inertia.tsx'],
     refresh: true,
 })
 ```
 
-#### TypeScript Config
-- [ ] Buat `tsconfig.json` dengan `"jsx": "react-jsx"`, path aliases `@/*`
-- [ ] Buat `resources/js/inertia.tsx` sebagai entry point React/Inertia
+#### TypeScript Config ✅
+- [x] `tsconfig.json` dengan `"jsx": "react-jsx"`, path alias `@/*` → `resources/js/*`
+- [x] `resources/js/inertia.tsx` entry point dengan `createInertiaApp`
 
-#### Struktur Folder React
+#### Struktur Folder React ✅
 ```
 resources/js/
 ├── app.js              ← Livewire entry (JANGAN DIUBAH sampai Fase 15)
-├── inertia.tsx         ← Inertia/React entry baru
+├── inertia.tsx         ← Inertia/React entry ✅
 ├── components/
-│   ├── ui/             ← shadcn/ui base components
-│   ├── layout/         ← AppLayout, Sidebar, Header, dll
-│   └── shared/         ← DataTable, CurrencyInput, StatusBadge, dll
-├── pages/              ← Inertia pages (satu file per route)
-│   ├── auth/
-│   ├── clients/
-│   ├── invoices/
-│   └── ...
-├── hooks/              ← Custom React hooks
-├── lib/                ← utils.ts, formatters.ts, ziggy.d.ts
-└── types/              ← TypeScript type definitions
+│   ├── ui/             ← shadcn/ui base components (diisi Fase 1)
+│   ├── layout/         ← AppLayout, Sidebar, dll (diisi Fase 2)
+│   └── shared/         ← DataTable, CurrencyInput, dll (diisi Fase 1)
+├── pages/
+│   ├── welcome.tsx     ← placeholder page ✅
+│   └── auth/           ← (diisi Fase 3)
+├── hooks/
+├── lib/
+│   └── utils.ts        ← cn(), formatCurrency(), parseCurrency() ✅
+└── types/
+    └── index.d.ts      ← SharedProps, User, Auth, Flash types ✅
 ```
 
 ---
