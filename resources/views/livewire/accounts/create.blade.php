@@ -105,8 +105,8 @@
             </div>
         </div>
         @endif
-    </form>
-
+    </form>0
+.
     <x-slot:footer>
         <div class="flex flex-col sm:flex-row justify-end gap-3">
             <x-button wire:click="closeModal" color="zinc" outline class="w-full sm:w-auto order-2 sm:order-1">
