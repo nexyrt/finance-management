@@ -3,7 +3,7 @@
 > **Dokumen ini adalah panduan kerja untuk Claude Code.**
 > Dibuat: 2026-05-11 | Branch aktif: `feature/inertia-react-migration`
 > Update dokumen ini setiap kali fase selesai.
-> **Terakhir diupdate: 2026-05-11 — Fase 0 selesai**
+> **Terakhir diupdate: 2026-05-11 — Fase 0 selesai, mulai Fase 1**
 
 ---
 
@@ -72,9 +72,11 @@ git show main:path/to/file.php
 
 **Tujuan:** Install semua dependency, konfigurasi Vite dual entry, setup middleware Inertia.
 
-**Commit:** `0b3555e` — feat(phase-0): setup Inertia.js + React foundation
+**Commits:**
+- `0b3555e` — feat(phase-0): setup Inertia.js + React foundation
+- `e6a94df` — refactor(phase-0): replace Ziggy with Wayfinder for type-safe routing
 
-**Catatan:** `@tiptap/react` ditunda ke Fase 11 (conflict Tiptap v2 vs v3). shadcn/ui CLI init dilakukan di Fase 1.
+**Catatan:** `@tiptap/react` ditunda ke Fase 11 (conflict Tiptap v2 vs v3). shadcn/ui CLI init dilakukan manual di Fase 1 (hindari overwrite app.css).
 
 ### Checklist
 
@@ -88,7 +90,8 @@ git show main:path/to/file.php
 #### Client-side (NPM) ✅
 - [x] React 18 + react-dom + @types/react + @types/react-dom
 - [x] TypeScript + @vitejs/plugin-react v4.3 (kompatibel Vite 6)
-- [x] @inertiajs/react + ziggy-js + @types/ziggy-js
+- [x] @inertiajs/react + Wayfinder (menggantikan Ziggy — type-safe, zero runtime overhead)
+- [x] laravel/wayfinder v0.1.18 (composer) + @laravel/vite-plugin-wayfinder (npm)
 - [x] i18next + react-i18next
 - [x] sonner (toast)
 - [x] react-hook-form + @hookform/resolvers + zod
