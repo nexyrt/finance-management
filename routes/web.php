@@ -28,7 +28,10 @@ use App\Livewire\Settings\Profile;
 use App\Livewire\TestingPage;
 use App\Livewire\TransactionsCategories\Index as TransactionsCategoriesIndex;
 use App\Livewire\Users\Index as UsersIndex;
+use App\Models\BankAccount;
+use App\Models\Client;
 use App\Models\Invoice;
+use App\Models\TransactionCategory;
 use App\Services\FundRequestExportService;
 use App\Services\InvoicePrintService;
 use Illuminate\Http\Request;
@@ -57,7 +60,7 @@ Route::get('/api/transaction-categories', function (Request $request) {
         default => ['income', 'expense', 'adjustment', 'transfer'],
     };
 
-    return \App\Models\TransactionCategory::whereNull('parent_id')
+    return TransactionCategory::whereNull('parent_id')
         ->whereIn('type', $categoryTypes)
         ->with('children')
         ->orderBy('type')
@@ -76,7 +79,7 @@ Route::get('/api/transaction-categories', function (Request $request) {
 })->name('api.transaction-categories');
 
 Route::get('/api/bank-accounts', function () {
-    return \App\Models\BankAccount::orderBy('bank_name')
+    return BankAccount::orderBy('bank_name')
         ->orderBy('account_name')
         ->get()
         ->map(fn ($account) => [
@@ -86,7 +89,7 @@ Route::get('/api/bank-accounts', function () {
 })->name('api.bank-accounts');
 
 Route::get('/api/clients', function () {
-    return \App\Models\Client::orderBy('name')
+    return Client::orderBy('name')
         ->get(['id', 'name'])
         ->map(fn ($client) => [
             'label' => $client->name,
@@ -329,5 +332,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/test', TestingPage::class)->name('test');
 
 });
+
+// Language switching (used by React AppLayout)
+Route::post('/language', function (Request $request) {
+    $locale = $request->input('locale');
+    $available = config('app.available_locales', ['id', 'en', 'zh']);
+    if (in_array($locale, $available)) {
+        session(['locale' => $locale]);
+        if (auth()->check()) {
+            auth()->user()->update(['locale' => $locale]);
+        }
+    }
+
+    return redirect()->back();
+})->middleware('web')->name('language.switch');
 
 require __DIR__.'/auth.php';

@@ -1,7 +1,22 @@
+import * as React from 'react';
+import { AppLayout } from '@/layouts/app-layout';
+import { PageHeader } from '@/components/shared/page-header';
+import { StatsCard } from '@/components/shared/stats-card';
+import { LayoutDashboard } from 'lucide-react';
+
 export default function Welcome() {
     return (
-        <div className="flex min-h-screen items-center justify-center">
-            <h1 className="text-2xl font-bold">Finance Management — React/Inertia</h1>
+        <div className="space-y-6">
+            <PageHeader
+                title="Finance Management"
+                description="React + Inertia migration in progress"
+            />
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+                <StatsCard label="Phase" value="1 ✅" icon={<LayoutDashboard />} color="blue" />
+                <StatsCard label="Status" value="Migrating" icon={<LayoutDashboard />} color="green" />
+            </div>
         </div>
     );
 }
+
+Welcome.layout = (page: React.ReactNode) => <AppLayout>{page}</AppLayout>;

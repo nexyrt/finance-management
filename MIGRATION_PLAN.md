@@ -3,7 +3,7 @@
 > **Dokumen ini adalah panduan kerja untuk Claude Code.**
 > Dibuat: 2026-05-11 | Branch aktif: `feature/inertia-react-migration`
 > Update dokumen ini setiap kali fase selesai.
-> **Terakhir diupdate: 2026-05-11 — Fase 1 selesai, mulai Fase 2**
+> **Terakhir diupdate: 2026-05-11 — Fase 2 selesai, mulai Fase 3**
 
 ---
 
@@ -49,7 +49,7 @@ git show main:path/to/file.php
 |------|------|--------|
 | 0 | Foundation Setup | ✅ Selesai (2026-05-11) |
 | 1 | Design System (shadcn/ui) | ✅ Selesai (2026-05-11) |
-| 2 | AppLayout.tsx | ⬜ Belum Dimulai |
+| 2 | AppLayout.tsx | ✅ Selesai (2026-05-11) |
 | 3 | Auth Pages | ⬜ Belum Dimulai |
 | 4 | Master Data | ⬜ Belum Dimulai |
 | 5 | Invoice & Payment | ⬜ Belum Dimulai |
@@ -201,21 +201,28 @@ resources/js/
 
 ---
 
-## Fase 2 — AppLayout.tsx
+## Fase 2 — AppLayout.tsx ✅ SELESAI
 
 **Tujuan:** Konversi layout utama 642-line Blade ke React.
 
 **File referensi:** `resources/views/components/layouts/app.blade.php`
 
+**Commit:** feat(phase-2): add AppLayout with sidebar, header, dark mode
+
 ### Checklist
-- [ ] Sidebar navigation dengan collapse support (Alpine.js → React state)
-- [ ] Dark mode toggle (localStorage persist, `class` strategy di `<html>`)
-- [ ] Breadcrumbs (dari Inertia shared props atau per-page prop)
-- [ ] Header dengan user dropdown
-- [ ] Notification bell → drawer (event-driven seperti sebelumnya)
-- [ ] Language switcher (id/en/zh)
-- [ ] Floating feedback button
-- [ ] Route active state detection via `usePage().url`
+- [x] `resources/js/layouts/app-layout.tsx` — wrapper dengan dark mode + sidebar state management
+- [x] `resources/js/layouts/sidebar.tsx` — sidebar collapsible + nav sections + permission-based visibility + user dropdown
+- [x] `resources/js/layouts/header.tsx` — breadcrumbs + dark mode toggle + language switcher + notification bell (stub)
+- [x] Dark mode init script di `resources/views/app.blade.php` (localStorage `theme` key, no FOUC)
+- [x] `POST /language` route untuk language switching (session + user preference)
+- [x] Route active state detection via `usePage().url`
+- [x] `welcome.tsx` diupdate sebagai contoh penggunaan `AppLayout`
+
+**Catatan:**
+- Notification bell: stub hanya icon, real implementation di Fase 11
+- Floating feedback button: stub, Fase 11
+- Dark mode key: `theme` (bukan `tallstackui.theme` dari versi lama)
+- Sidebar localStorage key: `sidebar.collapsed` (sama dengan versi lama)
 
 ---
 
