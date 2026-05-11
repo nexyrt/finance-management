@@ -36,6 +36,7 @@ interface NavItem {
     icon: React.ReactNode;
     permission?: string;
     matchPrefix?: string;
+    comingSoon?: boolean;
 }
 
 interface NavSection {
@@ -66,6 +67,7 @@ const NAV: NavSection[] = [
                 icon: <Users className="w-4 h-4 shrink-0" />,
                 permission: 'view clients',
                 matchPrefix: '/clients',
+                comingSoon: true,
             },
             {
                 label: 'Layanan',
@@ -73,6 +75,7 @@ const NAV: NavSection[] = [
                 icon: <Briefcase className="w-4 h-4 shrink-0" />,
                 permission: 'view services',
                 matchPrefix: '/services',
+                comingSoon: true,
             },
         ],
     },
@@ -86,6 +89,7 @@ const NAV: NavSection[] = [
                 icon: <FileText className="w-4 h-4 shrink-0" />,
                 permission: 'view invoices',
                 matchPrefix: '/invoices',
+                comingSoon: true,
             },
             {
                 label: 'Invoice Berulang',
@@ -93,6 +97,7 @@ const NAV: NavSection[] = [
                 icon: <RefreshCw className="w-4 h-4 shrink-0" />,
                 permission: 'view recurring-invoices',
                 matchPrefix: '/recurring-invoices',
+                comingSoon: true,
             },
             {
                 label: 'Rekening Bank',
@@ -100,6 +105,7 @@ const NAV: NavSection[] = [
                 icon: <Building2 className="w-4 h-4 shrink-0" />,
                 permission: 'view bank-accounts',
                 matchPrefix: '/bank-accounts',
+                comingSoon: true,
             },
         ],
     },
@@ -113,6 +119,7 @@ const NAV: NavSection[] = [
                 icon: <TrendingUp className="w-4 h-4 shrink-0" />,
                 permission: 'view cash-flow',
                 matchPrefix: '/cash-flow/income',
+                comingSoon: true,
             },
             {
                 label: 'Pengeluaran',
@@ -120,6 +127,7 @@ const NAV: NavSection[] = [
                 icon: <TrendingDown className="w-4 h-4 shrink-0" />,
                 permission: 'view cash-flow',
                 matchPrefix: '/cash-flow/expenses',
+                comingSoon: true,
             },
             {
                 label: 'Transfer & Penyesuaian',
@@ -127,6 +135,7 @@ const NAV: NavSection[] = [
                 icon: <ArrowLeftRight className="w-4 h-4 shrink-0" />,
                 permission: 'view cash-flow',
                 matchPrefix: '/cash-flow/transfers',
+                comingSoon: true,
             },
         ],
     },
@@ -140,6 +149,7 @@ const NAV: NavSection[] = [
                 icon: <FolderOpen className="w-4 h-4 shrink-0" />,
                 permission: 'view categories',
                 matchPrefix: '/transaction-categories',
+                comingSoon: true,
             },
             {
                 label: 'Permintaan Dana',
@@ -147,6 +157,7 @@ const NAV: NavSection[] = [
                 icon: <Receipt className="w-4 h-4 shrink-0" />,
                 permission: 'view fund requests',
                 matchPrefix: '/fund-requests',
+                comingSoon: true,
             },
             {
                 label: 'Reimbursement',
@@ -154,6 +165,7 @@ const NAV: NavSection[] = [
                 icon: <ArrowLeftRight className="w-4 h-4 shrink-0" />,
                 permission: 'view reimbursements',
                 matchPrefix: '/reimbursements',
+                comingSoon: true,
             },
         ],
     },
@@ -167,6 +179,7 @@ const NAV: NavSection[] = [
                 icon: <CreditCard className="w-4 h-4 shrink-0" />,
                 permission: 'view loans',
                 matchPrefix: '/loans',
+                comingSoon: true,
             },
             {
                 label: 'Piutang',
@@ -174,6 +187,7 @@ const NAV: NavSection[] = [
                 icon: <Wallet className="w-4 h-4 shrink-0" />,
                 permission: 'view receivables',
                 matchPrefix: '/receivables',
+                comingSoon: true,
             },
         ],
     },
@@ -187,6 +201,7 @@ const NAV: NavSection[] = [
                 icon: <MessageSquare className="w-4 h-4 shrink-0" />,
                 permission: 'view feedbacks',
                 matchPrefix: '/feedbacks',
+                comingSoon: true,
             },
             {
                 label: 'Izin & Peran',
@@ -194,6 +209,7 @@ const NAV: NavSection[] = [
                 icon: <Shield className="w-4 h-4 shrink-0" />,
                 permission: 'view permissions',
                 matchPrefix: '/permissions',
+                comingSoon: true,
             },
             {
                 label: 'Pengguna',
@@ -201,6 +217,7 @@ const NAV: NavSection[] = [
                 icon: <UserCog className="w-4 h-4 shrink-0" />,
                 permission: 'manage users',
                 matchPrefix: '/admin/users',
+                comingSoon: true,
             },
         ],
     },
@@ -217,9 +234,29 @@ function NavLink({
     currentUrl: string;
     onClick: () => void;
 }) {
-    const isActive = item.matchPrefix
-        ? currentUrl === item.matchPrefix || currentUrl.startsWith(item.matchPrefix + '/')
-        : currentUrl === item.href;
+    const isActive =
+        !item.comingSoon &&
+        (item.matchPrefix
+            ? currentUrl === item.matchPrefix || currentUrl.startsWith(item.matchPrefix + '/')
+            : currentUrl === item.href);
+
+    if (item.comingSoon) {
+        return (
+            <div
+                title={collapsed ? item.label : undefined}
+                className={cn(
+                    'flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[0.8125rem] font-medium',
+                    'text-gray-400 dark:text-dark-600 opacity-50 cursor-not-allowed select-none',
+                    collapsed && 'justify-center px-2',
+                )}
+            >
+                {item.icon}
+                {!collapsed && (
+                    <span className="flex-1 truncate">{item.label}</span>
+                )}
+            </div>
+        );
+    }
 
     return (
         <a
@@ -279,7 +316,7 @@ export function Sidebar({ open, collapsed, onClose, onToggleCollapse }: SidebarP
             className={cn(
                 'fixed lg:relative z-50 lg:z-auto h-full flex flex-col shrink-0',
                 'bg-white dark:bg-dark-900',
-                'border-r border-gray-100 dark:border-white/[0.06]',
+                'border-r border-gray-100 dark:border-white/6',
                 'transition-all duration-300 ease-in-out',
                 open ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
                 collapsed ? 'w-16' : 'w-56',
@@ -287,7 +324,7 @@ export function Sidebar({ open, collapsed, onClose, onToggleCollapse }: SidebarP
             data-sidebar-collapsed={collapsed}
         >
             {/* Brand */}
-            <div className="h-14 flex items-center gap-2.5 px-3 shrink-0 border-b border-gray-100 dark:border-white/[0.06]">
+            <div className="h-14 flex items-center gap-2.5 px-3 shrink-0 border-b border-gray-100 dark:border-white/6">
                 <div className="w-8 h-8 rounded-lg bg-primary-600 dark:bg-primary-500 flex items-center justify-center shrink-0 shadow-sm shadow-primary-600/30">
                     <img src="/images/kisantra.png" alt="Logo" className="w-5 h-5 object-contain" />
                 </div>
@@ -344,12 +381,12 @@ export function Sidebar({ open, collapsed, onClose, onToggleCollapse }: SidebarP
             {/* User profile */}
             <div
                 ref={userMenuRef}
-                className="shrink-0 border-t border-gray-100 dark:border-white/[0.06] p-2 relative"
+                className="shrink-0 border-t border-gray-100 dark:border-white/6 p-2 relative"
             >
                 <button
                     onClick={() => setUserMenuOpen((v) => !v)}
                     title={collapsed ? (user?.name ?? 'User') : undefined}
-                    className="flex items-center gap-2.5 w-full p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-white/[0.04] transition-colors text-left"
+                    className="flex items-center gap-2.5 w-full p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-white/4 transition-colors text-left"
                 >
                     <div className="w-7 h-7 rounded-full bg-primary-100 dark:bg-primary-900/40 flex items-center justify-center shrink-0 text-primary-700 dark:text-primary-300 text-xs font-bold">
                         {initials}
@@ -375,11 +412,11 @@ export function Sidebar({ open, collapsed, onClose, onToggleCollapse }: SidebarP
                     <div
                         className={cn(
                             'absolute bottom-full mb-1 bg-white dark:bg-dark-700',
-                            'border border-gray-100 dark:border-white/[0.08] rounded-xl shadow-xl shadow-black/10 dark:shadow-black/30 overflow-hidden z-10',
+                            'border border-gray-100 dark:border-white/8 rounded-xl shadow-xl shadow-black/10 dark:shadow-black/30 overflow-hidden z-10',
                             collapsed ? 'left-full ml-1 w-48' : 'left-0 right-0',
                         )}
                     >
-                        <div className="px-3 py-2.5 border-b border-gray-100 dark:border-white/[0.06]">
+                        <div className="px-3 py-2.5 border-b border-gray-100 dark:border-white/6">
                             <p className="text-xs font-semibold text-gray-900 dark:text-white">
                                 {user?.name ?? 'User'}
                             </p>
@@ -390,20 +427,20 @@ export function Sidebar({ open, collapsed, onClose, onToggleCollapse }: SidebarP
                         <div className="p-1">
                             <a
                                 href="/settings/profile"
-                                className="flex items-center gap-2 px-2.5 py-1.5 text-xs text-gray-700 dark:text-zinc-300 hover:bg-gray-50 dark:hover:bg-white/[0.06] rounded-lg transition-colors"
+                                className="flex items-center gap-2 px-2.5 py-1.5 text-xs text-gray-700 dark:text-zinc-300 hover:bg-gray-50 dark:hover:bg-white/6 rounded-lg transition-colors"
                             >
                                 <Users className="w-3.5 h-3.5 opacity-60" />
                                 Profil Saya
                             </a>
                             <a
                                 href="/settings/company"
-                                className="flex items-center gap-2 px-2.5 py-1.5 text-xs text-gray-700 dark:text-zinc-300 hover:bg-gray-50 dark:hover:bg-white/[0.06] rounded-lg transition-colors"
+                                className="flex items-center gap-2 px-2.5 py-1.5 text-xs text-gray-700 dark:text-zinc-300 hover:bg-gray-50 dark:hover:bg-white/6 rounded-lg transition-colors"
                             >
                                 <Building2 className="w-3.5 h-3.5 opacity-60" />
                                 Profil Perusahaan
                             </a>
                         </div>
-                        <div className="p-1 border-t border-gray-100 dark:border-white/[0.06]">
+                        <div className="p-1 border-t border-gray-100 dark:border-white/6">
                             <form method="POST" action="/logout">
                                 <input
                                     type="hidden"
@@ -443,7 +480,7 @@ export function Sidebar({ open, collapsed, onClose, onToggleCollapse }: SidebarP
             <button
                 onClick={onToggleCollapse}
                 title={collapsed ? 'Perluas sidebar' : 'Ciutkan sidebar'}
-                className="hidden lg:flex absolute top-[4.25rem] -right-3 w-6 h-6 rounded-full bg-white dark:bg-dark-700 border border-gray-200 dark:border-white/10 shadow-sm items-center justify-center hover:bg-gray-50 dark:hover:bg-dark-600 transition-colors text-gray-400 dark:text-zinc-500 hover:text-gray-700 dark:hover:text-zinc-200"
+                className="hidden lg:flex absolute top-17 -right-3 w-6 h-6 rounded-full bg-white dark:bg-dark-700 border border-gray-200 dark:border-white/10 shadow-sm items-center justify-center hover:bg-gray-50 dark:hover:bg-dark-600 transition-colors text-gray-400 dark:text-zinc-500 hover:text-gray-700 dark:hover:text-zinc-200"
             >
                 <ChevronLeft
                     className={cn(

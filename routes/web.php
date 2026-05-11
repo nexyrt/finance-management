@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\CashFlowExportController;
+use App\Http\Controllers\DashboardController;
 use App\Livewire\Accounts\Index as AccountsIndex;
 use App\Livewire\CashFlow\ExpensesPage as CashFlowExpenses;
 use App\Livewire\CashFlow\Income as CashFlowIncome;
@@ -48,7 +49,7 @@ Route::redirect('/', '/login')->name('home');
 // ============================================================================
 
 Route::get('/api/transaction-categories', function (Request $request) {
-    $type = $request->get('type');
+    $type = $request->input('type');
 
     $categoryTypes = match ($type) {
         'credit' => ['income', 'adjustment', 'transfer'],
@@ -102,7 +103,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // ------------------------------------------------------------------------
     // DASHBOARD
     // ------------------------------------------------------------------------
-    Route::get('/dashboard', Dashboard::class)->name('dashboard');
+    Route::get('/dashboard', DashboardController::class)->name('dashboard');
 
     // ------------------------------------------------------------------------
     // CLIENTS & SERVICES
