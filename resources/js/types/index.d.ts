@@ -1,5 +1,3 @@
-import { Config } from 'ziggy-js';
-
 export interface User {
     id: number;
     name: string;
@@ -24,6 +22,5 @@ export type SharedProps = {
     auth: Auth;
     locale: string;
     flash: Flash;
-    ziggy: Config & { location: string };
     [key: string]: unknown;
 };

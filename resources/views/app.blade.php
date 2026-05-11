@@ -12,7 +12,6 @@
         <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700|plus-jakarta-sans:600,700,800&display=swap" rel="stylesheet" />
 
         <!-- Scripts -->
-        @routes
         @viteReactRefresh
         @vite(['resources/css/app.css', 'resources/js/inertia.tsx'])
         @inertiaHead

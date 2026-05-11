@@ -1,14 +1,6 @@
 import { createInertiaApp } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createRoot } from 'react-dom/client';
-import { route } from 'ziggy-js';
-
-// Make route() available globally (for convenience, mirrors Laravel's route() helper)
-declare global {
-    // eslint-disable-next-line no-var
-    var route: typeof route;
-}
-window.route = route;
 
 const appName = document.querySelector<HTMLMetaElement>('meta[name="app-name"]')?.content
     ?? 'Finance Management';
