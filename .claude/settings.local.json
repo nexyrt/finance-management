@@ -92,7 +92,15 @@
       "Bash(./vendor/bin/pint app/Livewire/Dashboard.php --format agent)",
       "mcp__laravel-boost__database-schema",
       "mcp__laravel-boost__read-log-entries",
-      "mcp__tallstackui__search-customization-tool"
+      "mcp__tallstackui__search-customization-tool",
+      "mcp__laravel-boost__application-info",
+      "Bash(redis-cli ping:*)",
+      "Bash(winget --version)",
+      "Bash(choco --version)",
+      "Bash(scoop --version)",
+      "Bash(winget install:*)",
+      "Bash(net start:*)",
+      "Bash(\"C:\\\\Program Files\\\\Redis\\\\redis-cli.exe\" ping)"
     ]
   },
   "enableAllProjectMcpServers": true,

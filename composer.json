@@ -20,6 +20,7 @@
         "livewire/volt": "^1.7.0",
         "maatwebsite/excel": "^3.1",
         "ngekoding/terbilang": "^1.0",
+        "predis/predis": "^3.4",
         "spatie/laravel-permission": "^6.21",
         "stichoza/google-translate-php": "^5.3",
         "tallstackui/tallstackui": "^2.0"
@@ -67,7 +68,7 @@
         ],
         "dev": [
             "Composer\\Config::disableProcessTimeout",
-            "npx concurrently -c \"#93c5fd,#c4b5fd,#fdba74\" \"php artisan serve\" \"php artisan queue:listen --tries=1\" \"npm run dev\" --names='server,queue,vite'"
+            "npx concurrently -c \"#93c5fd,#c4b5fd,#fdba74\" \"php artisan serve --no-reload\" \"php artisan queue:listen --tries=1\" \"npm run dev\" --names='server,queue,vite'"
         ],
         "dev:network": [
             "Composer\\Config::disableProcessTimeout",
