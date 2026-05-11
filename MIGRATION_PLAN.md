@@ -3,7 +3,7 @@
 > **Dokumen ini adalah panduan kerja untuk Claude Code.**
 > Dibuat: 2026-05-11 | Branch aktif: `feature/inertia-react-migration`
 > Update dokumen ini setiap kali fase selesai.
-> **Terakhir diupdate: 2026-05-11 — Fase 0 selesai, mulai Fase 1**
+> **Terakhir diupdate: 2026-05-11 — Fase 1 selesai, mulai Fase 2**
 
 ---
 
@@ -20,7 +20,7 @@ Migrasi penuh dari **Laravel 12 + Livewire 3 + TallStackUI v2** ke **Laravel 12 
 
 ### Stack Setelah (migration branch)
 - Laravel 12, Inertia.js, React 18, TypeScript, shadcn/ui
-- Ziggy untuk `route()` helper di React
+- Wayfinder untuk type-safe route helpers (generated TypeScript at build time)
 - react-hook-form + zod untuk form validation
 - TanStack React Table untuk data tables
 - Sonner untuk toast notifications
@@ -48,7 +48,7 @@ git show main:path/to/file.php
 | Fase | Nama | Status |
 |------|------|--------|
 | 0 | Foundation Setup | ✅ Selesai (2026-05-11) |
-| 1 | Design System (shadcn/ui) | ⬜ Belum Dimulai |
+| 1 | Design System (shadcn/ui) | ✅ Selesai (2026-05-11) |
 | 2 | AppLayout.tsx | ⬜ Belum Dimulai |
 | 3 | Auth Pages | ⬜ Belum Dimulai |
 | 4 | Master Data | ⬜ Belum Dimulai |
@@ -83,8 +83,8 @@ git show main:path/to/file.php
 #### Server-side (Composer)
 - [x] `composer require inertiajs/inertia-laravel` → v3.1.0
 - [x] Publish dan register `HandleInertiaRequests` middleware di `bootstrap/app.php`
-- [x] Setup shared props di middleware: `auth.user`, `auth.permissions`, `auth.roles`, `locale`, `flash`, `ziggy`
-- [x] Install Ziggy: `composer require tightenco/ziggy` → v2.6.2
+- [x] Setup shared props di middleware: `auth.user`, `auth.permissions`, `auth.roles`, `locale`, `flash`
+- [x] Install Wayfinder: `composer require laravel/wayfinder` (menggantikan Ziggy)
 - [x] Buat root Blade template `resources/views/app.blade.php` (Inertia entry point)
 
 #### Client-side (NPM) ✅
@@ -100,7 +100,7 @@ git show main:path/to/file.php
 - [x] class-variance-authority + clsx + tailwind-merge + lucide-react
 - [x] Semua Radix UI primitives (dialog, dropdown, select, tabs, tooltip, popover, checkbox, switch, avatar, separator, label, slot, scroll-area, collapsible, accordion)
 - [ ] `@tiptap/react` — ditunda ke Fase 11 (conflict v2 vs v3)
-- [ ] `shadcn/ui init` — dilakukan di Fase 1
+- [x] `shadcn/ui init` — dilakukan manual (hindari overwrite app.css), `components.json` dibuat manual
 
 #### Vite Dual Entry ✅
 ```js
@@ -136,9 +136,11 @@ resources/js/
 
 ---
 
-## Fase 1 — Design System (shadcn/ui)
+## Fase 1 — Design System (shadcn/ui) ✅ SELESAI
 
 **Tujuan:** Setup semua komponen UI yang akan digunakan di seluruh project.
+
+**Commit:** feat(phase-1): add React design system components (shadcn/ui + custom shared)
 
 ### Pemetaan TallStackUI → React/shadcn
 
@@ -171,16 +173,31 @@ resources/js/
 | ApexCharts | react-apexcharts | |
 | Chart.js | react-chartjs-2 | |
 
-### Komponen Shared Wajib Dibuat
-- [ ] `CurrencyInput` — stores integer, display `Rp X.XXX`
-- [ ] `DataTable` — wrapper TanStack Table dengan filter, sort, pagination, bulk select
-- [ ] `StatusBadge` — badge dengan warna per status (draft/pending/approved/paid/rejected)
-- [ ] `ConfirmDialog` — replacement untuk TallStackUI confirm interaction
-- [ ] `PageHeader` — title + description + action button (sesuai design system)
-- [ ] `StatsCard` — horizontal card dengan icon (sesuai design system)
-- [ ] `FormSection` — 2-column grid dengan section header
-- [ ] `EmptyState` — tampilan saat data kosong
-- [ ] `Repeater` — add/remove rows dinamis (untuk invoice items dll)
+### Komponen UI Base (resources/js/components/ui/) ✅
+- [x] `button.tsx` — cva variants: primary, zinc, red, green, yellow, blue, outline, ghost, link
+- [x] `badge.tsx` — cva variants: default, secondary, blue, green, emerald, yellow, orange, red, purple, zinc, outline
+- [x] `card.tsx` — Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter
+- [x] `input.tsx` — label, hint, error, icon left/right
+- [x] `textarea.tsx` — label, hint, error
+- [x] `dialog.tsx` — size variants sm→full, DialogHeader/Footer/Title/Description
+- [x] `tabs.tsx` — custom pill/segment style (per design system, NOT Radix Tabs)
+- [x] `combobox.tsx` — cmdk + popover, searchable, clearable
+- [x] `date-picker.tsx` — react-day-picker + date-fns, id locale, clearable, min/max date
+- [x] `label.tsx`, `separator.tsx`, `skeleton.tsx`
+- [x] `checkbox.tsx`, `switch.tsx`, `avatar.tsx`
+- [x] `tooltip.tsx`, `popover.tsx`, `scroll-area.tsx`, `dropdown-menu.tsx`
+
+### Komponen Shared (resources/js/components/shared/) ✅
+- [x] `currency-input.tsx` — stores integer, display `Rp X.XXX`
+- [x] `data-table.tsx` — TanStack Table v8 wrapper, sortable, server-side pagination
+- [x] `confirm-dialog.tsx` — danger/warning variants dengan icon
+- [x] `page-header.tsx` — gradient title + description + action slot (sesuai design system)
+- [x] `stats-card.tsx` — horizontal layout dengan icon + inModal variant
+- [x] `form-section.tsx` — section header dengan border-bottom
+- [x] `empty-state.tsx` — icon + title + description + action
+- [x] `pagination.tsx` — page number buttons dengan ellipsis, first/last/prev/next
+
+**Catatan:** `Repeater` dan `StatusBadge` dibangun inline saat dibutuhkan per-module (Fase 4+).
 
 ---
 
