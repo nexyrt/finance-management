@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../wayfinder'
 /**
-* @see \App\Livewire\Auth\VerifyEmail::__invoke
- * @see app/Livewire/Auth/VerifyEmail.php:7
+* @see \App\Http\Controllers\Auth\EmailVerificationPromptController::__invoke
+ * @see app/Http/Controllers/Auth/EmailVerificationPromptController.php:13
  * @route '/verify-email'
  */
 export const notice = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -15,8 +15,8 @@ notice.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see \App\Livewire\Auth\VerifyEmail::__invoke
- * @see app/Livewire/Auth/VerifyEmail.php:7
+* @see \App\Http\Controllers\Auth\EmailVerificationPromptController::__invoke
+ * @see app/Http/Controllers/Auth/EmailVerificationPromptController.php:13
  * @route '/verify-email'
  */
 notice.url = (options?: RouteQueryOptions) => {
@@ -24,8 +24,8 @@ notice.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see \App\Livewire\Auth\VerifyEmail::__invoke
- * @see app/Livewire/Auth/VerifyEmail.php:7
+* @see \App\Http\Controllers\Auth\EmailVerificationPromptController::__invoke
+ * @see app/Http/Controllers/Auth/EmailVerificationPromptController.php:13
  * @route '/verify-email'
  */
 notice.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -33,8 +33,8 @@ notice.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     method: 'get',
 })
 /**
-* @see \App\Livewire\Auth\VerifyEmail::__invoke
- * @see app/Livewire/Auth/VerifyEmail.php:7
+* @see \App\Http\Controllers\Auth\EmailVerificationPromptController::__invoke
+ * @see app/Http/Controllers/Auth/EmailVerificationPromptController.php:13
  * @route '/verify-email'
  */
 notice.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -101,9 +101,44 @@ verify.head = (args: { id: string | number, hash: string | number } | [id: strin
     url: verify.url(args, options),
     method: 'head',
 })
+
+/**
+* @see \App\Http\Controllers\Auth\EmailVerificationNotificationController::send
+ * @see app/Http/Controllers/Auth/EmailVerificationNotificationController.php:11
+ * @route '/email/verification-notification'
+ */
+export const send = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: send.url(options),
+    method: 'post',
+})
+
+send.definition = {
+    methods: ["post"],
+    url: '/email/verification-notification',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\Auth\EmailVerificationNotificationController::send
+ * @see app/Http/Controllers/Auth/EmailVerificationNotificationController.php:11
+ * @route '/email/verification-notification'
+ */
+send.url = (options?: RouteQueryOptions) => {
+    return send.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Auth\EmailVerificationNotificationController::send
+ * @see app/Http/Controllers/Auth/EmailVerificationNotificationController.php:11
+ * @route '/email/verification-notification'
+ */
+send.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: send.url(options),
+    method: 'post',
+})
 const verification = {
     notice: Object.assign(notice, notice),
 verify: Object.assign(verify, verify),
+send: Object.assign(send, send),
 }
 
 export default verification

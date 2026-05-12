@@ -29,6 +29,9 @@ export default defineConfig(({ mode }) => {
         content: [
             './vendor/masmerise/livewire-toaster/resources/views/*.blade.php',
         ],
+        server: {
+            host: '127.0.0.1',
+        },
         build: {
             chunkSizeWarningLimit: 1500,
         },

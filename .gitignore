@@ -24,3 +24,6 @@ yarn-error.log
 public/run-migration.php
 composer.lock
 /resources/js/ziggy.js
+
+# Playwright MCP output (snapshots, screenshots, logs)
+/.playwright-mcp/

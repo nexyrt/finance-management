@@ -57,6 +57,9 @@ public function refreshStats(): void { unset($this->stats); }
 
 **CRITICAL: Semua page baru atau redesign HARUS mengikuti design system ini untuk konsistensi.**
 
+**Design System Reference:** `.claude/design-systems/archipelago.md`
+Sebelum membuat atau memodifikasi UI apapun, **baca file ini terlebih dahulu**. File tersebut mendokumentasikan token warna (primary + dark scale), tipografi, spacing, radius, layout patterns, interactive states, dan shadcn/ui mapping yang berlaku — hasil ekstraksi langsung dari production site dengan DevTools + visual analysis.
+
 **Core Philosophy:** Minimalist, Clean & Readable, Consistent, Functional-First.
 
 ---

@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../wayfinder'
 /**
-* @see \App\Livewire\Auth\ForgotPassword::__invoke
- * @see app/Livewire/Auth/ForgotPassword.php:7
+* @see \App\Http\Controllers\Auth\PasswordResetLinkController::request
+ * @see app/Http/Controllers/Auth/PasswordResetLinkController.php:14
  * @route '/forgot-password'
  */
 export const request = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -15,8 +15,8 @@ request.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see \App\Livewire\Auth\ForgotPassword::__invoke
- * @see app/Livewire/Auth/ForgotPassword.php:7
+* @see \App\Http\Controllers\Auth\PasswordResetLinkController::request
+ * @see app/Http/Controllers/Auth/PasswordResetLinkController.php:14
  * @route '/forgot-password'
  */
 request.url = (options?: RouteQueryOptions) => {
@@ -24,8 +24,8 @@ request.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see \App\Livewire\Auth\ForgotPassword::__invoke
- * @see app/Livewire/Auth/ForgotPassword.php:7
+* @see \App\Http\Controllers\Auth\PasswordResetLinkController::request
+ * @see app/Http/Controllers/Auth/PasswordResetLinkController.php:14
  * @route '/forgot-password'
  */
 request.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -33,8 +33,8 @@ request.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     method: 'get',
 })
 /**
-* @see \App\Livewire\Auth\ForgotPassword::__invoke
- * @see app/Livewire/Auth/ForgotPassword.php:7
+* @see \App\Http\Controllers\Auth\PasswordResetLinkController::request
+ * @see app/Http/Controllers/Auth/PasswordResetLinkController.php:14
  * @route '/forgot-password'
  */
 request.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -43,8 +43,42 @@ request.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see \App\Livewire\Auth\ResetPassword::__invoke
- * @see app/Livewire/Auth/ResetPassword.php:7
+* @see \App\Http\Controllers\Auth\PasswordResetLinkController::email
+ * @see app/Http/Controllers/Auth/PasswordResetLinkController.php:21
+ * @route '/forgot-password'
+ */
+export const email = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: email.url(options),
+    method: 'post',
+})
+
+email.definition = {
+    methods: ["post"],
+    url: '/forgot-password',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\Auth\PasswordResetLinkController::email
+ * @see app/Http/Controllers/Auth/PasswordResetLinkController.php:21
+ * @route '/forgot-password'
+ */
+email.url = (options?: RouteQueryOptions) => {
+    return email.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Auth\PasswordResetLinkController::email
+ * @see app/Http/Controllers/Auth/PasswordResetLinkController.php:21
+ * @route '/forgot-password'
+ */
+email.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: email.url(options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\Auth\NewPasswordController::reset
+ * @see app/Http/Controllers/Auth/NewPasswordController.php:18
  * @route '/reset-password/{token}'
  */
 export const reset = (args: { token: string | number } | [token: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -58,8 +92,8 @@ reset.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see \App\Livewire\Auth\ResetPassword::__invoke
- * @see app/Livewire/Auth/ResetPassword.php:7
+* @see \App\Http\Controllers\Auth\NewPasswordController::reset
+ * @see app/Http/Controllers/Auth/NewPasswordController.php:18
  * @route '/reset-password/{token}'
  */
 reset.url = (args: { token: string | number } | [token: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -86,8 +120,8 @@ reset.url = (args: { token: string | number } | [token: string | number ] | stri
 }
 
 /**
-* @see \App\Livewire\Auth\ResetPassword::__invoke
- * @see app/Livewire/Auth/ResetPassword.php:7
+* @see \App\Http\Controllers\Auth\NewPasswordController::reset
+ * @see app/Http/Controllers/Auth/NewPasswordController.php:18
  * @route '/reset-password/{token}'
  */
 reset.get = (args: { token: string | number } | [token: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -95,8 +129,8 @@ reset.get = (args: { token: string | number } | [token: string | number ] | stri
     method: 'get',
 })
 /**
-* @see \App\Livewire\Auth\ResetPassword::__invoke
- * @see app/Livewire/Auth/ResetPassword.php:7
+* @see \App\Http\Controllers\Auth\NewPasswordController::reset
+ * @see app/Http/Controllers/Auth/NewPasswordController.php:18
  * @route '/reset-password/{token}'
  */
 reset.head = (args: { token: string | number } | [token: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -105,8 +139,42 @@ reset.head = (args: { token: string | number } | [token: string | number ] | str
 })
 
 /**
-* @see \App\Livewire\Auth\ConfirmPassword::__invoke
- * @see app/Livewire/Auth/ConfirmPassword.php:7
+* @see \App\Http\Controllers\Auth\NewPasswordController::store
+ * @see app/Http/Controllers/Auth/NewPasswordController.php:26
+ * @route '/reset-password'
+ */
+export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: store.url(options),
+    method: 'post',
+})
+
+store.definition = {
+    methods: ["post"],
+    url: '/reset-password',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\Auth\NewPasswordController::store
+ * @see app/Http/Controllers/Auth/NewPasswordController.php:26
+ * @route '/reset-password'
+ */
+store.url = (options?: RouteQueryOptions) => {
+    return store.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Auth\NewPasswordController::store
+ * @see app/Http/Controllers/Auth/NewPasswordController.php:26
+ * @route '/reset-password'
+ */
+store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: store.url(options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\Auth\ConfirmablePasswordController::confirm
+ * @see app/Http/Controllers/Auth/ConfirmablePasswordController.php:15
  * @route '/confirm-password'
  */
 export const confirm = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -120,8 +188,8 @@ confirm.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see \App\Livewire\Auth\ConfirmPassword::__invoke
- * @see app/Livewire/Auth/ConfirmPassword.php:7
+* @see \App\Http\Controllers\Auth\ConfirmablePasswordController::confirm
+ * @see app/Http/Controllers/Auth/ConfirmablePasswordController.php:15
  * @route '/confirm-password'
  */
 confirm.url = (options?: RouteQueryOptions) => {
@@ -129,8 +197,8 @@ confirm.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see \App\Livewire\Auth\ConfirmPassword::__invoke
- * @see app/Livewire/Auth/ConfirmPassword.php:7
+* @see \App\Http\Controllers\Auth\ConfirmablePasswordController::confirm
+ * @see app/Http/Controllers/Auth/ConfirmablePasswordController.php:15
  * @route '/confirm-password'
  */
 confirm.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -138,8 +206,8 @@ confirm.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     method: 'get',
 })
 /**
-* @see \App\Livewire\Auth\ConfirmPassword::__invoke
- * @see app/Livewire/Auth/ConfirmPassword.php:7
+* @see \App\Http\Controllers\Auth\ConfirmablePasswordController::confirm
+ * @see app/Http/Controllers/Auth/ConfirmablePasswordController.php:15
  * @route '/confirm-password'
  */
 confirm.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -148,7 +216,9 @@ confirm.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 const password = {
     request: Object.assign(request, request),
+email: Object.assign(email, email),
 reset: Object.assign(reset, reset),
+store: Object.assign(store, store),
 confirm: Object.assign(confirm, confirm),
 }
 

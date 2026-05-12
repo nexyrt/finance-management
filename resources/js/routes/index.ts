@@ -88,8 +88,8 @@ home.options = (options?: RouteQueryOptions): RouteDefinition<'options'> => ({
 })
 
 /**
-* @see \App\Livewire\Dashboard::__invoke
- * @see app/Livewire/Dashboard.php:7
+* @see \App\Http\Controllers\DashboardController::__invoke
+ * @see app/Http/Controllers/DashboardController.php:18
  * @route '/dashboard'
  */
 export const dashboard = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -103,8 +103,8 @@ dashboard.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see \App\Livewire\Dashboard::__invoke
- * @see app/Livewire/Dashboard.php:7
+* @see \App\Http\Controllers\DashboardController::__invoke
+ * @see app/Http/Controllers/DashboardController.php:18
  * @route '/dashboard'
  */
 dashboard.url = (options?: RouteQueryOptions) => {
@@ -112,8 +112,8 @@ dashboard.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see \App\Livewire\Dashboard::__invoke
- * @see app/Livewire/Dashboard.php:7
+* @see \App\Http\Controllers\DashboardController::__invoke
+ * @see app/Http/Controllers/DashboardController.php:18
  * @route '/dashboard'
  */
 dashboard.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -121,8 +121,8 @@ dashboard.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     method: 'get',
 })
 /**
-* @see \App\Livewire\Dashboard::__invoke
- * @see app/Livewire/Dashboard.php:7
+* @see \App\Http\Controllers\DashboardController::__invoke
+ * @see app/Http/Controllers/DashboardController.php:18
  * @route '/dashboard'
  */
 dashboard.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -131,8 +131,8 @@ dashboard.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see \App\Livewire\Clients\Index::__invoke
- * @see app/Livewire/Clients/Index.php:7
+* @see \App\Http\Controllers\ClientController::clients
+ * @see app/Http/Controllers/ClientController.php:13
  * @route '/clients'
  */
 export const clients = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -146,8 +146,8 @@ clients.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see \App\Livewire\Clients\Index::__invoke
- * @see app/Livewire/Clients/Index.php:7
+* @see \App\Http\Controllers\ClientController::clients
+ * @see app/Http/Controllers/ClientController.php:13
  * @route '/clients'
  */
 clients.url = (options?: RouteQueryOptions) => {
@@ -155,8 +155,8 @@ clients.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see \App\Livewire\Clients\Index::__invoke
- * @see app/Livewire/Clients/Index.php:7
+* @see \App\Http\Controllers\ClientController::clients
+ * @see app/Http/Controllers/ClientController.php:13
  * @route '/clients'
  */
 clients.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -164,8 +164,8 @@ clients.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     method: 'get',
 })
 /**
-* @see \App\Livewire\Clients\Index::__invoke
- * @see app/Livewire/Clients/Index.php:7
+* @see \App\Http\Controllers\ClientController::clients
+ * @see app/Http/Controllers/ClientController.php:13
  * @route '/clients'
  */
 clients.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -174,8 +174,8 @@ clients.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see \App\Livewire\Services\Index::__invoke
- * @see app/Livewire/Services/Index.php:7
+* @see \App\Http\Controllers\ServiceController::services
+ * @see app/Http/Controllers/ServiceController.php:20
  * @route '/services'
  */
 export const services = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -189,8 +189,8 @@ services.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see \App\Livewire\Services\Index::__invoke
- * @see app/Livewire/Services/Index.php:7
+* @see \App\Http\Controllers\ServiceController::services
+ * @see app/Http/Controllers/ServiceController.php:20
  * @route '/services'
  */
 services.url = (options?: RouteQueryOptions) => {
@@ -198,8 +198,8 @@ services.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see \App\Livewire\Services\Index::__invoke
- * @see app/Livewire/Services/Index.php:7
+* @see \App\Http\Controllers\ServiceController::services
+ * @see app/Http/Controllers/ServiceController.php:20
  * @route '/services'
  */
 services.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -207,8 +207,8 @@ services.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     method: 'get',
 })
 /**
-* @see \App\Livewire\Services\Index::__invoke
- * @see app/Livewire/Services/Index.php:7
+* @see \App\Http\Controllers\ServiceController::services
+ * @see app/Http/Controllers/ServiceController.php:20
  * @route '/services'
  */
 services.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -260,8 +260,8 @@ test.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see \App\Livewire\Auth\Login::__invoke
- * @see app/Livewire/Auth/Login.php:7
+* @see \App\Http\Controllers\Auth\AuthenticatedSessionController::login
+ * @see app/Http/Controllers/Auth/AuthenticatedSessionController.php:18
  * @route '/login'
  */
 export const login = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -275,8 +275,8 @@ login.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see \App\Livewire\Auth\Login::__invoke
- * @see app/Livewire/Auth/Login.php:7
+* @see \App\Http\Controllers\Auth\AuthenticatedSessionController::login
+ * @see app/Http/Controllers/Auth/AuthenticatedSessionController.php:18
  * @route '/login'
  */
 login.url = (options?: RouteQueryOptions) => {
@@ -284,8 +284,8 @@ login.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see \App\Livewire\Auth\Login::__invoke
- * @see app/Livewire/Auth/Login.php:7
+* @see \App\Http\Controllers\Auth\AuthenticatedSessionController::login
+ * @see app/Http/Controllers/Auth/AuthenticatedSessionController.php:18
  * @route '/login'
  */
 login.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -293,8 +293,8 @@ login.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     method: 'get',
 })
 /**
-* @see \App\Livewire\Auth\Login::__invoke
- * @see app/Livewire/Auth/Login.php:7
+* @see \App\Http\Controllers\Auth\AuthenticatedSessionController::login
+ * @see app/Http/Controllers/Auth/AuthenticatedSessionController.php:18
  * @route '/login'
  */
 login.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -303,51 +303,8 @@ login.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see \App\Livewire\Auth\Register::__invoke
- * @see app/Livewire/Auth/Register.php:7
- * @route '/buat-akun'
- */
-export const register = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: register.url(options),
-    method: 'get',
-})
-
-register.definition = {
-    methods: ["get","head"],
-    url: '/buat-akun',
-} satisfies RouteDefinition<["get","head"]>
-
-/**
-* @see \App\Livewire\Auth\Register::__invoke
- * @see app/Livewire/Auth/Register.php:7
- * @route '/buat-akun'
- */
-register.url = (options?: RouteQueryOptions) => {
-    return register.definition.url + queryParams(options)
-}
-
-/**
-* @see \App\Livewire\Auth\Register::__invoke
- * @see app/Livewire/Auth/Register.php:7
- * @route '/buat-akun'
- */
-register.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: register.url(options),
-    method: 'get',
-})
-/**
-* @see \App\Livewire\Auth\Register::__invoke
- * @see app/Livewire/Auth/Register.php:7
- * @route '/buat-akun'
- */
-register.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
-    url: register.url(options),
-    method: 'head',
-})
-
-/**
-* @see \App\Livewire\Actions\Logout::__invoke
- * @see app/Livewire/Actions/Logout.php:13
+* @see \App\Http\Controllers\Auth\AuthenticatedSessionController::logout
+ * @see app/Http/Controllers/Auth/AuthenticatedSessionController.php:48
  * @route '/logout'
  */
 export const logout = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -361,8 +318,8 @@ logout.definition = {
 } satisfies RouteDefinition<["post"]>
 
 /**
-* @see \App\Livewire\Actions\Logout::__invoke
- * @see app/Livewire/Actions/Logout.php:13
+* @see \App\Http\Controllers\Auth\AuthenticatedSessionController::logout
+ * @see app/Http/Controllers/Auth/AuthenticatedSessionController.php:48
  * @route '/logout'
  */
 logout.url = (options?: RouteQueryOptions) => {
@@ -370,8 +327,8 @@ logout.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see \App\Livewire\Actions\Logout::__invoke
- * @see app/Livewire/Actions/Logout.php:13
+* @see \App\Http\Controllers\Auth\AuthenticatedSessionController::logout
+ * @see app/Http/Controllers/Auth/AuthenticatedSessionController.php:48
  * @route '/logout'
  */
 logout.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
