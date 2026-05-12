@@ -67,7 +67,6 @@ const NAV: NavSection[] = [
                 icon: <Users className="w-4 h-4 shrink-0" />,
                 permission: 'view clients',
                 matchPrefix: '/clients',
-                comingSoon: true,
             },
             {
                 label: 'Layanan',
@@ -75,7 +74,6 @@ const NAV: NavSection[] = [
                 icon: <Briefcase className="w-4 h-4 shrink-0" />,
                 permission: 'view services',
                 matchPrefix: '/services',
-                comingSoon: true,
             },
         ],
     },
@@ -89,7 +87,6 @@ const NAV: NavSection[] = [
                 icon: <FileText className="w-4 h-4 shrink-0" />,
                 permission: 'view invoices',
                 matchPrefix: '/invoices',
-                comingSoon: true,
             },
             {
                 label: 'Invoice Berulang',
@@ -149,7 +146,6 @@ const NAV: NavSection[] = [
                 icon: <FolderOpen className="w-4 h-4 shrink-0" />,
                 permission: 'view categories',
                 matchPrefix: '/transaction-categories',
-                comingSoon: true,
             },
             {
                 label: 'Permintaan Dana',
