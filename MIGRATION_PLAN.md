@@ -3,7 +3,7 @@
 > **Dokumen ini adalah panduan kerja untuk Claude Code.**
 > Dibuat: 2026-05-11 | Branch aktif: `feature/inertia-react-migration`
 > Update dokumen ini setiap kali fase selesai.
-> **Terakhir diupdate: 2026-05-11 — Fase 2 selesai, mulai Fase 3**
+> **Terakhir diupdate: 2026-05-12 — Fase 4 selesai, mulai Fase 5**
 
 ---
 
@@ -50,8 +50,8 @@ git show main:path/to/file.php
 | 0 | Foundation Setup | ✅ Selesai (2026-05-11) |
 | 1 | Design System (shadcn/ui) | ✅ Selesai (2026-05-11) |
 | 2 | AppLayout.tsx | ✅ Selesai (2026-05-11) |
-| 3 | Auth Pages | ⬜ Belum Dimulai |
-| 4 | Master Data | ⬜ Belum Dimulai |
+| 3 | Auth Pages | ✅ Selesai (2026-05-12) |
+| 4 | Master Data | ✅ Selesai (2026-05-12) |
 | 5 | Invoice & Payment | ⬜ Belum Dimulai |
 | 6 | Recurring Invoices | ⬜ Belum Dimulai |
 | 7 | Banking (Accounts + Cash Flow + Transactions) | ⬜ Belum Dimulai |
@@ -226,61 +226,71 @@ resources/js/
 
 ---
 
-## Fase 3 — Auth Pages
+## Fase 3 — Auth Pages ✅ SELESAI
 
 **Livewire source:** `app/Livewire/Auth/`
 **Blade source:** `resources/views/livewire/auth/`
 
 | Halaman | Status |
 |---------|--------|
-| Login | ⬜ |
-| Register | ⬜ |
-| ForgotPassword | ⬜ |
-| ResetPassword | ⬜ |
-| VerifyEmail | ⬜ |
-| ConfirmPassword | ⬜ |
+| Login | ✅ |
+| Register | N/A (tidak digunakan di production) |
+| ForgotPassword | ✅ |
+| ResetPassword | ✅ |
+| VerifyEmail | ✅ |
+| ConfirmPassword | ✅ |
 
-**Controller:** Laravel Breeze/Fortify sudah ada, tinggal ganti response dari Blade ke Inertia.
+**Controllers dibuat:**
+- `app/Http/Controllers/Auth/AuthenticatedSessionController.php` — login + logout
+- `app/Http/Controllers/Auth/PasswordResetLinkController.php` — forgot password
+- `app/Http/Controllers/Auth/NewPasswordController.php` — reset password
+- `app/Http/Controllers/Auth/EmailVerificationPromptController.php` — verify email
+- `app/Http/Controllers/Auth/EmailVerificationNotificationController.php` — resend verification
+- `app/Http/Controllers/Auth/ConfirmablePasswordController.php` — confirm password
+
+**Halaman React dibuat:**
+- `resources/js/pages/auth/login.tsx` — email + password + remember + show/hide toggle
+- `resources/js/pages/auth/forgot-password.tsx` — email → send reset link
+- `resources/js/pages/auth/reset-password.tsx` — token + email + password + confirm
+- `resources/js/pages/auth/verify-email.tsx` — resend button + logout button
+- `resources/js/pages/auth/confirm-password.tsx` — password confirm + security shield icon
+
+**Layout:**
+- `resources/js/layouts/auth-layout.tsx` — split-screen: dark navy hero (left) + white form (right)
+- `.layout` property pattern (sama dengan dashboard.tsx: `Login.layout = (page) => <AuthLayout>{page}</AuthLayout>`)
+
+**routes/auth.php** sepenuhnya dikonversi dari Livewire ke Inertia controller routes.
 
 ---
 
-## Fase 4 — Master Data
+## Fase 4 — Master Data ✅ SELESAI
 
-### Clients
-**Route:** `/clients`
-**Livewire source:** `app/Livewire/Clients/`
+### Clients ✅
+**Controller:** `app/Http/Controllers/ClientController.php`
+**Page:** `resources/js/pages/clients/index.tsx`
+- Stats: total, aktif, individu, perusahaan
+- Table: nama, tipe, kontak, status, invoice count, finansial (total + outstanding)
+- Create/Edit modal (2-column: info dasar + data pajak & kontak)
+- Delete confirm (cascade delete: invoice items + invoices)
+- Filter: search (nama/email/NPWP) + tipe + status
 
-| Component | Status |
-|-----------|--------|
-| Index (stats + tabs) | ⬜ |
-| Listing (table + filter) | ⬜ |
-| Create (modal form) | ⬜ |
-| Edit (modal form) | ⬜ |
-| Delete (confirm dialog) | ⬜ |
-| Show (detail view) | ⬜ |
-| Relationship tab | ⬜ |
+### Services ✅
+**Controller:** `app/Http/Controllers/ServiceController.php`
+**Page:** `resources/js/pages/services/index.tsx`
+- Stats: total, avg price, highest price
+- Table: nama, kategori (badge warna), harga, created_at
+- Create/Edit modal (nama + kategori + harga)
+- Delete confirm
+- Filter: search + kategori (Perizinan, Administrasi Perpajakan, Digital Marketing, Sistem Digital)
 
-### Services
-**Route:** `/services`
-**Livewire source:** `app/Livewire/Services/`
-
-| Component | Status |
-|-----------|--------|
-| Index | ⬜ |
-| Create | ⬜ |
-| Edit | ⬜ |
-| Delete | ⬜ |
-
-### Transaction Categories
-**Route:** `/transaction-categories`
-**Livewire source:** `app/Livewire/TransactionCategories/`
-
-| Component | Status |
-|-----------|--------|
-| Index (tree view) | ⬜ |
-| Create | ⬜ |
-| Update | ⬜ |
-| Delete | ⬜ |
+### Transaction Categories ✅
+**Controller:** `app/Http/Controllers/TransactionCategoryController.php`
+**Page:** `resources/js/pages/transaction-categories/index.tsx`
+- Stats: total, parent, sub, aktif digunakan
+- Table: tipe (badge), nama, parent, usage count
+- Create/Edit modal (tipe toggle + nama + parent dropdown—filtered by type)
+- Delete disabled jika ada transaksi atau sub-kategori
+- Guard di controller: cek children + transactions sebelum delete
 
 ---
 

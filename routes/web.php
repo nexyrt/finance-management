@@ -1,12 +1,14 @@
 <?php
 
 use App\Http\Controllers\CashFlowExportController;
+use App\Http\Controllers\ClientController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ServiceController;
+use App\Http\Controllers\TransactionCategoryController;
 use App\Livewire\Accounts\Index as AccountsIndex;
 use App\Livewire\CashFlow\ExpensesPage as CashFlowExpenses;
 use App\Livewire\CashFlow\Income as CashFlowIncome;
 use App\Livewire\CashFlow\Transfers as CashFlowTransfers;
-use App\Livewire\Clients\Index as ClientsIndex;
 use App\Livewire\Dashboard;
 use App\Livewire\Feedbacks\Index as FeedbacksIndex;
 use App\Livewire\FundRequests\Index as FundRequestsIndex;
@@ -22,12 +24,10 @@ use App\Livewire\RecurringInvoices\Index as RecurringInvoicesIndex;
 use App\Livewire\RecurringInvoices\Monthly\CreateInvoice as RecurringInvoicesMonthlyCreate;
 use App\Livewire\RecurringInvoices\Monthly\EditInvoice as RecurringInvoicesMonthlyEdit;
 use App\Livewire\Reimbursements\Index as ReimbursementIndex;
-use App\Livewire\Services\Index as ServicesIndex;
 use App\Livewire\Settings\CompanyProfileSettings;
 use App\Livewire\Settings\Password;
 use App\Livewire\Settings\Profile;
 use App\Livewire\TestingPage;
-use App\Livewire\TransactionsCategories\Index as TransactionsCategoriesIndex;
 use App\Livewire\Users\Index as UsersIndex;
 use App\Models\BankAccount;
 use App\Models\Client;
@@ -108,13 +108,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // ------------------------------------------------------------------------
     // CLIENTS & SERVICES
     // ------------------------------------------------------------------------
-    Route::get('/clients', ClientsIndex::class)
-        ->middleware('can:view clients')
-        ->name('clients');
+    Route::middleware('can:view clients')->group(function () {
+        Route::get('/clients', [ClientController::class, 'index'])->name('clients');
+        Route::post('/clients', [ClientController::class, 'store'])->middleware('can:create clients')->name('clients.store');
+        Route::put('/clients/{client}', [ClientController::class, 'update'])->middleware('can:edit clients')->name('clients.update');
+        Route::delete('/clients/{client}', [ClientController::class, 'destroy'])->middleware('can:delete clients')->name('clients.destroy');
+    });
 
-    Route::get('/services', ServicesIndex::class)
-        ->middleware('can:view services')
-        ->name('services');
+    Route::middleware('can:view services')->group(function () {
+        Route::get('/services', [ServiceController::class, 'index'])->name('services');
+        Route::post('/services', [ServiceController::class, 'store'])->middleware('can:create services')->name('services.store');
+        Route::put('/services/{service}', [ServiceController::class, 'update'])->middleware('can:edit services')->name('services.update');
+        Route::delete('/services/{service}', [ServiceController::class, 'destroy'])->middleware('can:delete services')->name('services.destroy');
+    });
 
     // ------------------------------------------------------------------------
     // FINANCE - INVOICES
@@ -220,9 +226,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // ------------------------------------------------------------------------
     // CATEGORIES
     // ------------------------------------------------------------------------
-    Route::get('/transaction-categories', TransactionsCategoriesIndex::class)
-        ->middleware('can:view categories')
-        ->name('transaction-categories.index');
+    Route::middleware('can:view categories')->group(function () {
+        Route::get('/transaction-categories', [TransactionCategoryController::class, 'index'])->name('transaction-categories.index');
+        Route::post('/transaction-categories', [TransactionCategoryController::class, 'store'])->middleware('can:create categories')->name('transaction-categories.store');
+        Route::put('/transaction-categories/{transactionCategory}', [TransactionCategoryController::class, 'update'])->middleware('can:edit categories')->name('transaction-categories.update');
+        Route::delete('/transaction-categories/{transactionCategory}', [TransactionCategoryController::class, 'destroy'])->middleware('can:delete categories')->name('transaction-categories.destroy');
+    });
 
     // ------------------------------------------------------------------------
     // REIMBURSEMENTS

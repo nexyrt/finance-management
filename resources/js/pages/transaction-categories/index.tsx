@@ -1,0 +1,411 @@
+import { Head, router, useForm, usePage } from '@inertiajs/react';
+import {
+    ChevronRight,
+    FolderOpen,
+    FolderTree,
+    GitBranch,
+    Layers,
+    Pencil,
+    Plus,
+    Search,
+    Trash2,
+    X,
+} from 'lucide-react';
+import * as React from 'react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+    Dialog,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { ConfirmDialog } from '@/components/shared/confirm-dialog';
+import { StatsCard } from '@/components/shared/stats-card';
+import { AppLayout } from '@/layouts/app-layout';
+import { cn } from '@/lib/utils';
+import type { SharedProps } from '@/types';
+
+/* ─────────────────────────────────── types ─── */
+
+interface Category {
+    id: number;
+    type: string;
+    label: string;
+    parent_id: number | null;
+    parent_label: string | null;
+    transactions_count: number;
+    children_count: number;
+}
+
+interface ParentOption {
+    id: number;
+    label: string;
+    type: string;
+}
+
+interface PaginatedCategories {
+    data: Category[];
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+    from: number;
+    to: number;
+}
+
+interface Stats {
+    total: number;
+    parents: number;
+    children: number;
+    with_transactions: number;
+}
+
+interface Filters {
+    search?: string;
+    type?: string;
+    per_page?: number;
+}
+
+interface Props extends SharedProps {
+    categories: PaginatedCategories;
+    stats: Stats;
+    parentOptions: ParentOption[];
+    filters: Filters;
+}
+
+/* ─────────────────────────────────── helpers ─── */
+
+const TYPE_CONFIG: Record<string, { label: string; color: 'green' | 'red' | 'blue' | 'purple' }> = {
+    income: { label: 'Pemasukan', color: 'green' },
+    expense: { label: 'Pengeluaran', color: 'red' },
+    adjustment: { label: 'Penyesuaian', color: 'blue' },
+    transfer: { label: 'Transfer', color: 'purple' },
+};
+
+/* ─────────────────────────────────── main page ─── */
+
+export default function TransactionCategoriesIndex() {
+    const { categories, stats, parentOptions, filters } = usePage<Props>().props;
+
+    const [search, setSearch] = React.useState(filters.search ?? '');
+    const [typeFilter, setTypeFilter] = React.useState(filters.type ?? '');
+
+    const [createOpen, setCreateOpen] = React.useState(false);
+    const [editTarget, setEditTarget] = React.useState<Category | null>(null);
+    const [deleteTarget, setDeleteTarget] = React.useState<Category | null>(null);
+
+    React.useEffect(() => {
+        const t = setTimeout(() => {
+            router.get('/transaction-categories', { search: search || undefined, type: typeFilter || undefined, per_page: filters.per_page }, { preserveState: true, replace: true });
+        }, 300);
+        return () => clearTimeout(t);
+    }, [search]);
+
+    function handleTypeFilter(val: string) {
+        setTypeFilter(val);
+        router.get('/transaction-categories', { search: search || undefined, type: val || undefined, per_page: filters.per_page }, { preserveState: true, replace: true });
+    }
+
+    /* ── Create form ── */
+    const createForm = useForm({ type: '', label: '', parent_id: '' });
+
+    function submitCreate(e: React.FormEvent) {
+        e.preventDefault();
+        createForm.post('/transaction-categories', {
+            onSuccess: () => { setCreateOpen(false); createForm.reset(); },
+        });
+    }
+
+    /* ── Edit form ── */
+    const editForm = useForm({ type: '', label: '', parent_id: '' });
+
+    function openEdit(cat: Category) {
+        editForm.setData({ type: cat.type, label: cat.label, parent_id: cat.parent_id ? String(cat.parent_id) : '' });
+        setEditTarget(cat);
+    }
+
+    function submitEdit(e: React.FormEvent) {
+        e.preventDefault();
+        if (!editTarget) return;
+        editForm.put(`/transaction-categories/${editTarget.id}`, {
+            onSuccess: () => setEditTarget(null),
+        });
+    }
+
+    /* ── Delete ── */
+    const deleteForm = useForm({});
+
+    function confirmDelete() {
+        if (!deleteTarget) return;
+        deleteForm.delete(`/transaction-categories/${deleteTarget.id}`, {
+            onSuccess: () => setDeleteTarget(null),
+        });
+    }
+
+    /* ── CategoryForm shared component ── */
+    function CategoryForm({ form, onCancel, title, submitLabel }: {
+        form: typeof createForm;
+        onCancel: () => void;
+        title: string;
+        submitLabel: string;
+    }) {
+        const availableParents = parentOptions.filter((p) => p.type === form.data.type);
+
+        return (
+            <>
+                <DialogHeader>
+                    <div className="flex items-center gap-4 py-2">
+                        <div className="h-12 w-12 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center shrink-0">
+                            <FolderTree className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                        </div>
+                        <div>
+                            <DialogTitle className="text-xl font-bold text-dark-900 dark:text-dark-50">{title}</DialogTitle>
+                            <p className="text-sm text-dark-500 dark:text-dark-400">Tipe, nama, dan parent kategori</p>
+                        </div>
+                    </div>
+                </DialogHeader>
+
+                <div className="px-6 py-4 space-y-4">
+                    <div className="space-y-1.5">
+                        <label className="block text-sm font-medium text-dark-900 dark:text-dark-300">Tipe *</label>
+                        <div className="grid grid-cols-2 gap-2">
+                            {Object.entries(TYPE_CONFIG).map(([val, cfg]) => (
+                                <button
+                                    key={val}
+                                    type="button"
+                                    onClick={() => { form.setData('type', val); form.setData('parent_id', ''); }}
+                                    className={cn(
+                                        'h-9 rounded-lg border text-sm font-medium transition-colors',
+                                        form.data.type === val
+                                            ? 'bg-primary-50 dark:bg-primary-900/20 border-primary-500 text-primary-700 dark:text-primary-300'
+                                            : 'border-secondary-300 dark:border-dark-600 text-dark-600 dark:text-dark-400 hover:bg-zinc-50 dark:hover:bg-dark-700',
+                                    )}
+                                >
+                                    {cfg.label}
+                                </button>
+                            ))}
+                        </div>
+                        {form.errors.type && <p className="text-xs text-red-600 dark:text-red-400">{form.errors.type}</p>}
+                    </div>
+
+                    <Input
+                        label="Nama Kategori *"
+                        value={form.data.label}
+                        onChange={(e) => form.setData('label', e.target.value)}
+                        error={form.errors.label}
+                        placeholder="Contoh: Gaji Karyawan"
+                    />
+
+                    {availableParents.length > 0 && (
+                        <div className="space-y-1.5">
+                            <label className="block text-sm font-medium text-dark-900 dark:text-dark-300">Parent Kategori (opsional)</label>
+                            <select
+                                value={form.data.parent_id}
+                                onChange={(e) => form.setData('parent_id', e.target.value)}
+                                className="flex h-9 w-full rounded-lg border border-secondary-300 dark:border-dark-600 bg-white dark:bg-dark-800 text-sm text-dark-900 dark:text-dark-300 focus:outline-none focus:ring-2 focus:ring-primary-500 px-3 transition-colors"
+                            >
+                                <option value="">Kategori Utama (tanpa parent)</option>
+                                {availableParents.map((p) => (
+                                    <option key={p.id} value={p.id}>{p.label}</option>
+                                ))}
+                            </select>
+                            {form.errors.parent_id && <p className="text-xs text-red-600 dark:text-red-400">{form.errors.parent_id}</p>}
+                        </div>
+                    )}
+                </div>
+
+                <DialogFooter>
+                    <Button variant="zinc" onClick={onCancel} disabled={form.processing} className="w-full sm:w-auto order-2 sm:order-1">
+                        Batal
+                    </Button>
+                    <Button type="submit" variant="primary" loading={form.processing} className="w-full sm:w-auto order-1 sm:order-2">
+                        {submitLabel}
+                    </Button>
+                </DialogFooter>
+            </>
+        );
+    }
+
+    return (
+        <>
+            <Head title="Kategori Transaksi" />
+
+            <div className="space-y-6">
+                {/* Header */}
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div className="space-y-1">
+                        <h1 className="text-4xl font-bold bg-linear-to-r from-gray-900 via-blue-800 to-indigo-800 dark:from-white dark:via-blue-200 dark:to-indigo-200 bg-clip-text text-transparent">
+                            Kategori Transaksi
+                        </h1>
+                        <p className="text-gray-600 dark:text-zinc-400 text-lg">
+                            Kelola kategori pemasukan, pengeluaran, dan transfer
+                        </p>
+                    </div>
+                    <Button variant="primary" size="sm" icon={<Plus className="h-4 w-4" />} onClick={() => setCreateOpen(true)}>
+                        Tambah Kategori
+                    </Button>
+                </div>
+
+                {/* Stats */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+                    <StatsCard label="Total Kategori" value={stats.total} icon={<Layers className="w-6 h-6" />} color="blue" />
+                    <StatsCard label="Kategori Utama" value={stats.parents} icon={<FolderOpen className="w-6 h-6" />} color="green" />
+                    <StatsCard label="Sub Kategori" value={stats.children} icon={<GitBranch className="w-6 h-6" />} color="purple" />
+                    <StatsCard label="Aktif Digunakan" value={stats.with_transactions} icon={<ChevronRight className="w-6 h-6" />} color="yellow" />
+                </div>
+
+                {/* Filters */}
+                <div className="flex flex-col sm:flex-row gap-3">
+                    <div className="relative flex-1 max-w-xs">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-dark-400" />
+                        <input
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            placeholder="Cari kategori..."
+                            className="flex h-9 w-full rounded-lg border border-secondary-300 dark:border-dark-600 bg-white dark:bg-dark-800 text-sm text-dark-900 dark:text-dark-300 placeholder:text-dark-400 focus:outline-none focus:ring-2 focus:ring-primary-500 pl-9 pr-3 py-1.5 transition-colors"
+                        />
+                        {search && (
+                            <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-dark-400 hover:text-dark-600">
+                                <X className="h-3.5 w-3.5" />
+                            </button>
+                        )}
+                    </div>
+
+                    <select
+                        value={typeFilter}
+                        onChange={(e) => handleTypeFilter(e.target.value)}
+                        className="h-9 rounded-lg border border-secondary-300 dark:border-dark-600 bg-white dark:bg-dark-800 text-sm text-dark-900 dark:text-dark-300 focus:outline-none focus:ring-2 focus:ring-primary-500 px-3 transition-colors"
+                    >
+                        <option value="">Semua Tipe</option>
+                        {Object.entries(TYPE_CONFIG).map(([val, cfg]) => (
+                            <option key={val} value={val}>{cfg.label}</option>
+                        ))}
+                    </select>
+
+                    <span className="text-sm text-dark-500 dark:text-dark-400 self-center">
+                        {categories.from ?? 0}–{categories.to ?? 0} dari {categories.total}
+                    </span>
+                </div>
+
+                {/* Table */}
+                <div className="rounded-xl border border-secondary-200 dark:border-dark-600 bg-white dark:bg-dark-700 overflow-hidden">
+                    <table className="w-full text-sm">
+                        <thead>
+                            <tr className="border-b border-secondary-200 dark:border-dark-600 bg-zinc-50 dark:bg-dark-800">
+                                <th className="px-4 py-3 text-left font-medium text-dark-600 dark:text-dark-400">Tipe</th>
+                                <th className="px-4 py-3 text-left font-medium text-dark-600 dark:text-dark-400">Nama</th>
+                                <th className="px-4 py-3 text-left font-medium text-dark-600 dark:text-dark-400">Parent</th>
+                                <th className="px-4 py-3 text-left font-medium text-dark-600 dark:text-dark-400">Digunakan</th>
+                                <th className="px-4 py-3 text-right font-medium text-dark-600 dark:text-dark-400">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-secondary-100 dark:divide-dark-600">
+                            {categories.data.length === 0 ? (
+                                <tr>
+                                    <td colSpan={5} className="px-4 py-12 text-center text-dark-400 dark:text-dark-500">
+                                        <FolderTree className="h-8 w-8 mx-auto mb-2 opacity-40" />
+                                        <p>Belum ada kategori</p>
+                                    </td>
+                                </tr>
+                            ) : (
+                                categories.data.map((cat) => {
+                                    const cfg = TYPE_CONFIG[cat.type];
+                                    return (
+                                        <tr key={cat.id} className="hover:bg-zinc-50 dark:hover:bg-dark-800 transition-colors">
+                                            <td className="px-4 py-3">
+                                                <Badge variant={cfg?.color ?? 'blue'}>{cfg?.label ?? cat.type}</Badge>
+                                            </td>
+                                            <td className="px-4 py-3 font-medium text-dark-900 dark:text-dark-50">
+                                                {cat.parent_label && (
+                                                    <span className="text-dark-400 dark:text-dark-500 font-normal mr-1">↳</span>
+                                                )}
+                                                {cat.label}
+                                                {cat.children_count > 0 && (
+                                                    <span className="ml-2 text-xs text-dark-400 dark:text-dark-500">({cat.children_count} sub)</span>
+                                                )}
+                                            </td>
+                                            <td className="px-4 py-3 text-dark-500 dark:text-dark-400">
+                                                {cat.parent_label ?? <span className="text-xs text-dark-300 dark:text-dark-600">—</span>}
+                                            </td>
+                                            <td className="px-4 py-3 text-dark-600 dark:text-dark-400">
+                                                {cat.transactions_count > 0 ? (
+                                                    <Badge variant="green">{cat.transactions_count} transaksi</Badge>
+                                                ) : (
+                                                    <span className="text-xs text-dark-300 dark:text-dark-600">Belum digunakan</span>
+                                                )}
+                                            </td>
+                                            <td className="px-4 py-3">
+                                                <div className="flex items-center justify-end gap-1">
+                                                    <Button variant="ghost" size="icon-sm" icon={<Pencil className="h-3.5 w-3.5" />} onClick={() => openEdit(cat)} />
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon-sm"
+                                                        icon={<Trash2 className="h-3.5 w-3.5 text-red-500" />}
+                                                        onClick={() => setDeleteTarget(cat)}
+                                                        disabled={cat.transactions_count > 0 || cat.children_count > 0}
+                                                    />
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    );
+                                })
+                            )}
+                        </tbody>
+                    </table>
+
+                    {categories.last_page > 1 && (
+                        <div className="flex items-center justify-between px-4 py-3 border-t border-secondary-200 dark:border-dark-600">
+                            <span className="text-sm text-dark-500 dark:text-dark-400">
+                                Halaman {categories.current_page} dari {categories.last_page}
+                            </span>
+                            <div className="flex gap-2">
+                                <Button variant="outline" size="sm" disabled={categories.current_page <= 1}
+                                    onClick={() => router.get('/transaction-categories', { ...filters, page: categories.current_page - 1 }, { preserveState: true })}>
+                                    Sebelumnya
+                                </Button>
+                                <Button variant="outline" size="sm" disabled={categories.current_page >= categories.last_page}
+                                    onClick={() => router.get('/transaction-categories', { ...filters, page: categories.current_page + 1 }, { preserveState: true })}>
+                                    Berikutnya
+                                </Button>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* Create modal */}
+            <Dialog open={createOpen} onOpenChange={(o) => { setCreateOpen(o); if (!o) createForm.reset(); }}>
+                <DialogContent size="md">
+                    <form onSubmit={submitCreate}>
+                        <CategoryForm form={createForm} onCancel={() => { setCreateOpen(false); createForm.reset(); }} title="Tambah Kategori" submitLabel="Simpan Kategori" />
+                    </form>
+                </DialogContent>
+            </Dialog>
+
+            {/* Edit modal */}
+            <Dialog open={!!editTarget} onOpenChange={(o) => { if (!o) setEditTarget(null); }}>
+                <DialogContent size="md">
+                    <form onSubmit={submitEdit}>
+                        <CategoryForm form={editForm} onCancel={() => setEditTarget(null)} title="Edit Kategori" submitLabel="Perbarui Kategori" />
+                    </form>
+                </DialogContent>
+            </Dialog>
+
+            {/* Delete confirm */}
+            <ConfirmDialog
+                open={!!deleteTarget}
+                onOpenChange={(o) => { if (!o) setDeleteTarget(null); }}
+                title="Hapus Kategori"
+                description={deleteTarget ? `Hapus kategori "${deleteTarget.label}"?` : ''}
+                confirmLabel="Hapus"
+                loading={deleteForm.processing}
+                onConfirm={confirmDelete}
+            />
+        </>
+    );
+}
+
+TransactionCategoriesIndex.layout = (page: React.ReactNode) => <AppLayout>{page}</AppLayout>;

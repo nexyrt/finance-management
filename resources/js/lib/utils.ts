@@ -5,8 +5,8 @@ export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
 }
 
-export function formatCurrency(value: number, locale = 'id-ID'): string {
-    return 'Rp ' + value.toLocaleString(locale);
+export function formatCurrency(value: number | string, locale = 'id-ID'): string {
+    return 'Rp ' + Number(value).toLocaleString(locale);
 }
 
 export function parseCurrency(value: string): number {

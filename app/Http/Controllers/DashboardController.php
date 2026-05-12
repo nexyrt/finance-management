@@ -4,8 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\BankAccount;
 use App\Models\BankTransaction;
+use App\Models\FundRequest;
 use App\Models\Invoice;
+use App\Models\InvoiceItem;
 use App\Models\Payment;
+use App\Models\Reimbursement;
 use Carbon\Carbon;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -18,12 +21,15 @@ class DashboardController extends Controller
         $end = Carbon::now()->endOfMonth();
 
         return Inertia::render('dashboard', [
+            'financialOverview' => $this->getFinancialOverview(),
             'stats' => $this->getStats($start, $end),
             'cashFlowChart' => $this->getCashFlowChart(),
             'expensesByCategory' => $this->getExpensesByCategory($start, $end),
             'bankAccounts' => $this->getBankAccounts(),
             'pendingInvoices' => $this->getPendingInvoices(),
             'recentTransactions' => $this->getRecentTransactions(),
+            'recentReimbursements' => $this->getRecentReimbursements(),
+            'recentFundRequests' => $this->getRecentFundRequests(),
         ]);
     }
 
@@ -144,6 +150,66 @@ class DashboardController extends Controller
                     'days_until_due' => Carbon::today()->diffInDays($invoice->due_date, false),
                 ];
             })
+            ->toArray();
+    }
+
+    private function getFinancialOverview(): array
+    {
+        $totalIncome = Payment::sum('amount');
+
+        $totalHpp = InvoiceItem::whereHas('invoice', fn ($q) => $q->whereIn('status', ['partially_paid', 'paid'])
+        )->sum('cogs_amount');
+
+        $pendingTotal = Invoice::whereIn('status', ['sent', 'partially_paid', 'overdue'])->sum('total_amount');
+        $pendingPaid = Payment::whereHas('invoice', fn ($q) => $q->whereIn('status', ['sent', 'partially_paid', 'overdue'])
+        )->sum('amount');
+
+        $ppBase = InvoiceItem::whereHas('invoice', fn ($q) => $q->whereIn('status', ['partially_paid', 'paid'])
+        )->where('is_tax_deposit', false)->sum('amount');
+
+        return [
+            'total_income' => $totalIncome,
+            'total_profit' => $totalIncome - $totalHpp,
+            'total_outstanding' => max(0, $pendingTotal - $pendingPaid),
+            'total_hpp' => $totalHpp,
+            'total_pp' => (int) round($ppBase * 0.005),
+            'total_balance' => BankAccount::all()->sum(fn ($a) => $a->balance),
+        ];
+    }
+
+    private function getRecentReimbursements(): array
+    {
+        return Reimbursement::with('user')
+            ->orderByDesc('created_at')
+            ->take(5)
+            ->get()
+            ->map(fn ($r) => [
+                'id' => $r->id,
+                'title' => $r->title,
+                'amount' => $r->amount,
+                'status' => $r->status,
+                'user' => $r->user?->name ?? '-',
+                'date' => $r->created_at->format('d M Y'),
+            ])
+            ->toArray();
+    }
+
+    private function getRecentFundRequests(): array
+    {
+        return FundRequest::with('user')
+            ->orderByDesc('created_at')
+            ->take(5)
+            ->get()
+            ->map(fn ($r) => [
+                'id' => $r->id,
+                'number' => $r->request_number,
+                'title' => $r->title,
+                'amount' => $r->total_amount,
+                'status' => $r->status,
+                'priority' => $r->priority,
+                'user' => $r->user?->name ?? '-',
+                'date' => $r->created_at->format('d M Y'),
+            ])
             ->toArray();
     }
 

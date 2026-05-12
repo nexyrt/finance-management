@@ -1,4 +1,4 @@
-import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../wayfinder'
+import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\TransactionCategoryController::index
  * @see app/Http/Controllers/TransactionCategoryController.php:13
@@ -191,11 +191,6 @@ destroy.delete = (args: { transactionCategory: number | { id: number } } | [tran
     url: destroy.url(args, options),
     method: 'delete',
 })
-const transactionCategories = {
-    index: Object.assign(index, index),
-store: Object.assign(store, store),
-update: Object.assign(update, update),
-destroy: Object.assign(destroy, destroy),
-}
+const TransactionCategoryController = { index, store, update, destroy }
 
-export default transactionCategories
+export default TransactionCategoryController

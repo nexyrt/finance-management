@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../wayfinder'
 import exportMethod from './export'
 /**
- * @see routes/web.php:210
+ * @see routes/web.php:217
  * @route '/cash-flow'
  */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -15,7 +15,7 @@ index.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
- * @see routes/web.php:210
+ * @see routes/web.php:217
  * @route '/cash-flow'
  */
 index.url = (options?: RouteQueryOptions) => {
@@ -23,7 +23,7 @@ index.url = (options?: RouteQueryOptions) => {
 }
 
 /**
- * @see routes/web.php:210
+ * @see routes/web.php:217
  * @route '/cash-flow'
  */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -31,7 +31,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     method: 'get',
 })
 /**
- * @see routes/web.php:210
+ * @see routes/web.php:217
  * @route '/cash-flow'
  */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
