@@ -3,6 +3,7 @@
 use App\Http\Controllers\CashFlowExportController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\TransactionCategoryController;
 use App\Livewire\Accounts\Index as AccountsIndex;
@@ -12,9 +13,6 @@ use App\Livewire\CashFlow\Transfers as CashFlowTransfers;
 use App\Livewire\Dashboard;
 use App\Livewire\Feedbacks\Index as FeedbacksIndex;
 use App\Livewire\FundRequests\Index as FundRequestsIndex;
-use App\Livewire\Invoices\Create as InvoicesCreate;
-use App\Livewire\Invoices\Edit as InvoicesEdit;
-use App\Livewire\Invoices\Index as InvoicesIndex;
 use App\Livewire\Loans\Index as LoansIndex;
 use App\Livewire\Permissions\Index as PermissionsIndex;
 use App\Livewire\Receivables\Index as ReceivablesIndex;
@@ -125,18 +123,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // ------------------------------------------------------------------------
     // FINANCE - INVOICES
     // ------------------------------------------------------------------------
-    Route::prefix('invoices')->name('invoices.')->group(function () {
-        Route::get('/', InvoicesIndex::class)
-            ->middleware('can:view invoices')
-            ->name('index');
-
-        Route::get('/create', InvoicesCreate::class)
-            ->middleware('can:create invoices')
-            ->name('create');
-
-        Route::get('/{invoice}/edit', InvoicesEdit::class)
-            ->middleware('can:edit invoices')
-            ->name('edit');
+    Route::prefix('invoices')->name('invoices.')->middleware('can:view invoices')->group(function () {
+        Route::get('/', [InvoiceController::class, 'index'])->name('index');
+        Route::get('/create', [InvoiceController::class, 'create'])->middleware('can:create invoices')->name('create');
+        Route::post('/', [InvoiceController::class, 'store'])->middleware('can:create invoices')->name('store');
+        Route::get('/{invoice}', [InvoiceController::class, 'show'])->name('show');
+        Route::get('/{invoice}/edit', [InvoiceController::class, 'edit'])->middleware('can:edit invoices')->name('edit');
+        Route::put('/{invoice}', [InvoiceController::class, 'update'])->middleware('can:edit invoices')->name('update');
+        Route::delete('/{invoice}', [InvoiceController::class, 'destroy'])->middleware('can:delete invoices')->name('destroy');
+        Route::post('/{invoice}/send', [InvoiceController::class, 'send'])->name('send');
+        Route::post('/{invoice}/rollback', [InvoiceController::class, 'rollback'])->name('rollback');
     });
 
     // Invoice PDF Operations
