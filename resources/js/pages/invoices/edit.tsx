@@ -22,6 +22,7 @@ interface ServiceOption {
 
 interface InvoiceData {
     id: number;
+    invoice_number: string;
     client_id: number;
     issue_date: string;
     due_date: string;
@@ -93,6 +94,7 @@ function EditInvoicePage({ invoice, clients, services }: Props) {
                     services={services}
                     nextSeq={0}
                     companyInitials=""
+                    existingInvoiceNumber={invoice.invoice_number}
                     initialData={initialData}
                     submitUrl={`/invoices/${invoice.id}`}
                     method="put"

@@ -1,6 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../../wayfinder'
 /**
- * @see routes/web.php:274
+ * @see routes/web.php:270
  * @route '/fund-requests/export/pdf/preview'
  */
 export const preview = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -14,7 +14,7 @@ preview.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
- * @see routes/web.php:274
+ * @see routes/web.php:270
  * @route '/fund-requests/export/pdf/preview'
  */
 preview.url = (options?: RouteQueryOptions) => {
@@ -22,7 +22,7 @@ preview.url = (options?: RouteQueryOptions) => {
 }
 
 /**
- * @see routes/web.php:274
+ * @see routes/web.php:270
  * @route '/fund-requests/export/pdf/preview'
  */
 preview.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -30,7 +30,7 @@ preview.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     method: 'get',
 })
 /**
- * @see routes/web.php:274
+ * @see routes/web.php:270
  * @route '/fund-requests/export/pdf/preview'
  */
 preview.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

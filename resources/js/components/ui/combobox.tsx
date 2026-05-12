@@ -1,5 +1,5 @@
 import { Command as CommandPrimitive } from 'cmdk';
-import { Check, ChevronsUpDown, Search, X } from 'lucide-react';
+import { Check, ChevronDown, Search, X } from 'lucide-react';
 import * as React from 'react';
 import { cn } from '@/lib/utils';
 import { Popover, PopoverContent, PopoverTrigger } from './popover';
@@ -70,20 +70,22 @@ export function Combobox({
                         type="button"
                         disabled={disabled}
                         className={cn(
-                            'flex h-9 w-full items-center justify-between rounded-lg border px-3 py-1.5 text-sm text-left transition-colors',
+                            'flex h-10 w-full items-center justify-between rounded-xl border px-3 text-sm text-left transition-all duration-150',
                             'bg-white dark:bg-dark-800',
                             error
-                                ? 'border-red-500 dark:border-red-500'
-                                : 'border-secondary-300 dark:border-dark-600',
-                            'focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-0',
-                            'disabled:cursor-not-allowed disabled:bg-secondary-50 dark:disabled:bg-dark-600 disabled:opacity-60',
+                                ? 'border-red-400 dark:border-red-500 ring-2 ring-red-500/10'
+                                : open
+                                  ? 'border-primary-500 ring-2 ring-primary-500/15 dark:border-primary-500'
+                                  : 'border-secondary-200 dark:border-dark-600 hover:border-secondary-300 dark:hover:border-dark-500',
+                            'focus-visible:outline-none',
+                            'disabled:cursor-not-allowed disabled:bg-secondary-50 dark:disabled:bg-dark-700 disabled:opacity-60',
                             selected
-                                ? 'text-dark-900 dark:text-dark-300'
-                                : 'text-dark-400 dark:text-dark-400',
+                                ? 'text-dark-900 dark:text-dark-50'
+                                : 'text-dark-400 dark:text-dark-500',
                         )}
                     >
                         <span className="truncate">{selected ? selected.label : placeholder}</span>
-                        <div className="flex items-center gap-1 shrink-0 ml-2">
+                        <div className="flex items-center gap-0.5 shrink-0 ml-2">
                             {clearable && selected && !disabled && (
                                 <span
                                     role="button"
@@ -98,29 +100,34 @@ export function Combobox({
                                             onChange(null);
                                         }
                                     }}
-                                    className="rounded p-0.5 hover:bg-zinc-100 dark:hover:bg-dark-600"
+                                    className="rounded-md p-1 text-dark-400 hover:text-dark-700 dark:hover:text-dark-200 transition-colors"
                                 >
-                                    <X className="h-3 w-3 text-dark-400" />
+                                    <X className="h-3 w-3" />
                                 </span>
                             )}
-                            <ChevronsUpDown className="h-3.5 w-3.5 text-dark-400 dark:text-dark-400" />
+                            <ChevronDown
+                                className={cn(
+                                    'h-4 w-4 text-dark-400 transition-transform duration-200',
+                                    open && 'rotate-180',
+                                )}
+                            />
                         </div>
                     </button>
                 </PopoverTrigger>
-                <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
+                <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 overflow-hidden" align="start">
                     <CommandPrimitive shouldFilter={false}>
-                        <div className="flex items-center border-b border-secondary-200 dark:border-dark-600 px-3">
-                            <Search className="h-4 w-4 shrink-0 text-dark-400 dark:text-dark-400 mr-2" />
+                        <div className="flex items-center px-3 border-b border-secondary-100 dark:border-dark-600">
+                            <Search className="h-3.5 w-3.5 shrink-0 text-dark-400 mr-2.5" />
                             <CommandPrimitive.Input
                                 value={search}
                                 onValueChange={setSearch}
                                 placeholder={searchPlaceholder}
-                                className="flex h-9 w-full bg-transparent py-2 text-sm text-dark-900 dark:text-dark-300 placeholder:text-dark-400 outline-none"
+                                className="flex h-9 w-full bg-transparent py-2 text-sm text-dark-900 dark:text-dark-300 placeholder:text-dark-400 outline-none focus:outline-none focus:ring-0 border-0"
                             />
                         </div>
-                        <CommandPrimitive.List className="max-h-60 overflow-y-auto p-1">
+                        <CommandPrimitive.List className="max-h-60 overflow-y-auto p-1.5">
                             {filtered.length === 0 && (
-                                <p className="py-6 text-center text-sm text-dark-500 dark:text-dark-400">
+                                <p className="py-8 text-center text-sm text-dark-400 dark:text-dark-500">
                                     {emptyText}
                                 </p>
                             )}
@@ -134,23 +141,24 @@ export function Combobox({
                                         setSearch('');
                                     }}
                                     className={cn(
-                                        'flex cursor-pointer items-center gap-2 rounded-lg px-2.5 py-2 text-sm',
-                                        'text-dark-700 dark:text-dark-300',
-                                        'hover:bg-zinc-100 dark:hover:bg-dark-600',
-                                        'aria-selected:bg-zinc-100 dark:aria-selected:bg-dark-600',
-                                        'outline-none',
+                                        'flex cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm outline-none transition-colors',
+                                        option.value === value
+                                            ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300'
+                                            : 'text-dark-700 dark:text-dark-300 hover:bg-zinc-50 dark:hover:bg-dark-600 aria-selected:bg-zinc-50 dark:aria-selected:bg-dark-600',
                                     )}
                                 >
-                                    <Check
+                                    <div
                                         className={cn(
-                                            'h-4 w-4 shrink-0 text-primary-600',
-                                            option.value === value ? 'opacity-100' : 'opacity-0',
+                                            'h-4 w-4 shrink-0 flex items-center justify-center',
+                                            option.value === value ? 'text-primary-600 dark:text-primary-400' : 'text-transparent',
                                         )}
-                                    />
-                                    <div>
-                                        <div>{option.label}</div>
+                                    >
+                                        <Check className="h-3.5 w-3.5" />
+                                    </div>
+                                    <div className="min-w-0">
+                                        <div className="truncate">{option.label}</div>
                                         {option.description && (
-                                            <div className="text-xs text-dark-500 dark:text-dark-400">
+                                            <div className="text-xs text-dark-400 dark:text-dark-500 truncate">
                                                 {option.description}
                                             </div>
                                         )}
@@ -161,8 +169,8 @@ export function Combobox({
                     </CommandPrimitive>
                 </PopoverContent>
             </Popover>
-            {error && <p className="mt-1 text-xs text-red-600 dark:text-red-400">{error}</p>}
-            {hint && !error && <p className="mt-1 text-xs text-dark-500 dark:text-dark-400">{hint}</p>}
+            {error && <p className="mt-1.5 text-xs text-red-600 dark:text-red-400">{error}</p>}
+            {hint && !error && <p className="mt-1.5 text-xs text-dark-500 dark:text-dark-400">{hint}</p>}
         </div>
     );
 }

@@ -15,6 +15,7 @@ import {
 import * as React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Combobox } from '@/components/ui/combobox';
 import {
     Dialog,
     DialogContent,
@@ -24,6 +25,9 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
+import { FormSection } from '@/components/shared/form-section';
+import { PageHeader } from '@/components/shared/page-header';
+import { Pagination } from '@/components/shared/pagination';
 import { StatsCard } from '@/components/shared/stats-card';
 import { AppLayout } from '@/layouts/app-layout';
 import { cn, formatCurrency } from '@/lib/utils';
@@ -137,11 +141,7 @@ function ClientForm({
             <div className="px-6 py-4">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     {/* Left column */}
-                    <div className="space-y-4">
-                        <div className="border-b border-secondary-200 dark:border-dark-600 pb-3">
-                            <h4 className="text-sm font-semibold text-dark-900 dark:text-dark-50">Informasi Dasar</h4>
-                        </div>
-
+                    <FormSection title="Informasi Dasar">
                         <Input
                             label="Nama Klien *"
                             value={data.name}
@@ -218,14 +218,10 @@ function ClientForm({
                             icon={<MapPin className="h-4 w-4" />}
                             placeholder="Alamat lengkap"
                         />
-                    </div>
+                    </FormSection>
 
                     {/* Right column */}
-                    <div className="space-y-4">
-                        <div className="border-b border-secondary-200 dark:border-dark-600 pb-3">
-                            <h4 className="text-sm font-semibold text-dark-900 dark:text-dark-50">Data Pajak & Kontak</h4>
-                        </div>
-
+                    <FormSection title="Data Pajak & Kontak">
                         <Input
                             label="NPWP"
                             value={data.NPWP}
@@ -274,7 +270,7 @@ function ClientForm({
                             icon={<Phone className="h-4 w-4" />}
                             placeholder="08xx-xxxx-xxxx"
                         />
-                    </div>
+                    </FormSection>
                 </div>
             </div>
 
@@ -311,9 +307,9 @@ export default function ClientsIndex() {
 
     function applyFilters(overrides: Partial<Filters> = {}) {
         router.get('/clients', {
-            search: overrides.search ?? search || undefined,
-            type: overrides.type ?? typeFilter || undefined,
-            status: overrides.status ?? statusFilter || undefined,
+            search: (overrides.search ?? search) || undefined,
+            type: (overrides.type ?? typeFilter) || undefined,
+            status: (overrides.status ?? statusFilter) || undefined,
             per_page: filters.per_page,
         }, { preserveState: true, replace: true });
     }
@@ -387,19 +383,15 @@ export default function ClientsIndex() {
 
             <div className="space-y-6">
                 {/* Header */}
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                    <div className="space-y-1">
-                        <h1 className="text-4xl font-bold bg-linear-to-r from-gray-900 via-blue-800 to-indigo-800 dark:from-white dark:via-blue-200 dark:to-indigo-200 bg-clip-text text-transparent">
-                            Klien
-                        </h1>
-                        <p className="text-gray-600 dark:text-zinc-400 text-lg">
-                            Kelola data klien dan informasi kontak
-                        </p>
-                    </div>
-                    <Button variant="primary" size="sm" icon={<Plus className="h-4 w-4" />} onClick={() => setCreateOpen(true)}>
-                        Tambah Klien
-                    </Button>
-                </div>
+                <PageHeader
+                    title="Klien"
+                    description="Kelola data klien dan informasi kontak"
+                    action={
+                        <Button variant="primary" size="sm" icon={<Plus className="h-4 w-4" />} onClick={() => setCreateOpen(true)}>
+                            Tambah Klien
+                        </Button>
+                    }
+                />
 
                 {/* Stats */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
@@ -413,39 +405,43 @@ export default function ClientsIndex() {
                 <div className="space-y-4">
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <div className="relative">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-dark-400" />
-                            <input
+                            <Input
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
                                 placeholder="Cari nama, email, NPWP..."
-                                className="flex h-9 w-full rounded-lg border border-secondary-300 dark:border-dark-600 bg-white dark:bg-dark-800 text-sm text-dark-900 dark:text-dark-300 placeholder:text-dark-400 focus:outline-none focus:ring-2 focus:ring-primary-500 pl-9 pr-3 py-1.5 transition-colors"
+                                icon={<Search className="h-4 w-4" />}
+                                className={search ? 'pr-8' : ''}
                             />
                             {search && (
-                                <button onClick={() => { setSearch(''); applyFilters({ search: '' }); }} className="absolute right-3 top-1/2 -translate-y-1/2 text-dark-400 hover:text-dark-600">
+                                <button
+                                    type="button"
+                                    onClick={() => { setSearch(''); applyFilters({ search: '' }); }}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-dark-400 hover:text-dark-600"
+                                >
                                     <X className="h-3.5 w-3.5" />
                                 </button>
                             )}
                         </div>
 
-                        <select
-                            value={typeFilter}
-                            onChange={(e) => handleTypeFilter(e.target.value)}
-                            className="flex h-9 w-full rounded-lg border border-secondary-300 dark:border-dark-600 bg-white dark:bg-dark-800 text-sm text-dark-900 dark:text-dark-300 focus:outline-none focus:ring-2 focus:ring-primary-500 px-3 transition-colors"
-                        >
-                            <option value="">Semua Tipe</option>
-                            <option value="individual">Individu</option>
-                            <option value="company">Perusahaan</option>
-                        </select>
+                        <Combobox
+                            options={[
+                                { value: 'individual', label: 'Individu' },
+                                { value: 'company', label: 'Perusahaan' },
+                            ]}
+                            value={typeFilter || null}
+                            onChange={(v) => handleTypeFilter(v ? String(v) : '')}
+                            placeholder="Semua Tipe"
+                        />
 
-                        <select
-                            value={statusFilter}
-                            onChange={(e) => handleStatusFilter(e.target.value)}
-                            className="flex h-9 w-full rounded-lg border border-secondary-300 dark:border-dark-600 bg-white dark:bg-dark-800 text-sm text-dark-900 dark:text-dark-300 focus:outline-none focus:ring-2 focus:ring-primary-500 px-3 transition-colors"
-                        >
-                            <option value="">Semua Status</option>
-                            <option value="Active">Aktif</option>
-                            <option value="Inactive">Tidak Aktif</option>
-                        </select>
+                        <Combobox
+                            options={[
+                                { value: 'Active', label: 'Aktif' },
+                                { value: 'Inactive', label: 'Tidak Aktif' },
+                            ]}
+                            value={statusFilter || null}
+                            onChange={(v) => handleStatusFilter(v ? String(v) : '')}
+                            placeholder="Semua Status"
+                        />
                     </div>
 
                     <div className="flex items-center gap-3">
@@ -532,23 +528,19 @@ export default function ClientsIndex() {
                     </div>
 
                     {/* Pagination */}
-                    {clients.last_page > 1 && (
-                        <div className="flex items-center justify-between px-4 py-3 border-t border-secondary-200 dark:border-dark-600">
-                            <span className="text-sm text-dark-500 dark:text-dark-400">
-                                Halaman {clients.current_page} dari {clients.last_page}
-                            </span>
-                            <div className="flex gap-2">
-                                <Button variant="outline" size="sm" disabled={clients.current_page <= 1}
-                                    onClick={() => router.get('/clients', { ...filters, page: clients.current_page - 1 }, { preserveState: true })}>
-                                    Sebelumnya
-                                </Button>
-                                <Button variant="outline" size="sm" disabled={clients.current_page >= clients.last_page}
-                                    onClick={() => router.get('/clients', { ...filters, page: clients.current_page + 1 }, { preserveState: true })}>
-                                    Berikutnya
-                                </Button>
-                            </div>
-                        </div>
-                    )}
+                    <div className="px-4 py-3 border-t border-secondary-200 dark:border-dark-600">
+                        <Pagination
+                            meta={{
+                                current_page: clients.current_page,
+                                last_page: clients.last_page,
+                                per_page: clients.per_page,
+                                total: clients.total,
+                                from: clients.from,
+                                to: clients.to,
+                            }}
+                            onPageChange={(page) => router.get('/clients', { ...filters, page }, { preserveState: true })}
+                        />
+                    </div>
                 </div>
             </div>
 

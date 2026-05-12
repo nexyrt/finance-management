@@ -307,6 +307,7 @@ class InvoiceController extends Controller
         return Inertia::render('invoices/edit', [
             'invoice' => [
                 'id' => $invoice->id,
+                'invoice_number' => $invoice->invoice_number,
                 'client_id' => $invoice->billed_to_id,
                 'issue_date' => $invoice->issue_date?->format('Y-m-d'),
                 'due_date' => $invoice->due_date?->format('Y-m-d'),

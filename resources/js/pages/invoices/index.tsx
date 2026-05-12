@@ -2,12 +2,8 @@ import { Head, router, useForm, usePage } from '@inertiajs/react';
 import {
     AlertCircle,
     ArrowUpDown,
-    Ban,
     CheckCircle2,
-    ChevronDown,
-    Clock,
     Download,
-    ExternalLink,
     Eye,
     FileText,
     Pencil,
@@ -22,6 +18,7 @@ import {
 import * as React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Combobox } from '@/components/ui/combobox';
 import {
     Dialog,
     DialogContent,
@@ -30,7 +27,10 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { Tabs } from '@/components/ui/tabs';
+import type { TabItem } from '@/components/ui/tabs';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
+import { EmptyState } from '@/components/shared/empty-state';
 import { PageHeader } from '@/components/shared/page-header';
 import { Pagination } from '@/components/shared/pagination';
 import { StatsCard } from '@/components/shared/stats-card';
@@ -142,43 +142,19 @@ interface Props extends SharedProps {
 
 /* ─────────────────────────────────── helpers ─── */
 
-const STATUS_CONFIG = {
-    draft: {
-        label: 'Draft',
-        bg: 'bg-zinc-100 dark:bg-zinc-800',
-        text: 'text-zinc-700 dark:text-zinc-300',
-    },
-    sent: {
-        label: 'Terkirim',
-        bg: 'bg-blue-100 dark:bg-blue-900/30',
-        text: 'text-blue-700 dark:text-blue-300',
-    },
-    partially_paid: {
-        label: 'Sebagian',
-        bg: 'bg-yellow-100 dark:bg-yellow-900/30',
-        text: 'text-yellow-700 dark:text-yellow-300',
-    },
-    paid: {
-        label: 'Lunas',
-        bg: 'bg-green-100 dark:bg-green-900/30',
-        text: 'text-green-700 dark:text-green-300',
-    },
-} as const;
+const STATUS_VARIANT: Record<string, 'zinc' | 'blue' | 'yellow' | 'green'> = {
+    draft: 'zinc',
+    sent: 'blue',
+    partially_paid: 'yellow',
+    paid: 'green',
+};
 
-function StatusBadge({ status }: { status: string }) {
-    const cfg = STATUS_CONFIG[status as keyof typeof STATUS_CONFIG] ?? STATUS_CONFIG.draft;
-    return (
-        <span
-            className={cn(
-                'inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold',
-                cfg.bg,
-                cfg.text,
-            )}
-        >
-            {cfg.label}
-        </span>
-    );
-}
+const STATUS_LABEL: Record<string, string> = {
+    draft: 'Draft',
+    sent: 'Terkirim',
+    partially_paid: 'Sebagian',
+    paid: 'Lunas',
+};
 
 /* ─────────────────────────────────── slide-over ─── */
 
@@ -302,7 +278,7 @@ function InvoiceDrawer({
                             </h2>
                             {detail && (
                                 <div className="flex items-center gap-2 mt-0.5">
-                                    <StatusBadge status={detail.status} />
+                                    <Badge variant={STATUS_VARIANT[detail.status] ?? 'zinc'}>{STATUS_LABEL[detail.status] ?? detail.status}</Badge>
                                     <span className="text-xs text-dark-500 dark:text-dark-400">
                                         {detail.client.name}
                                     </span>
@@ -698,12 +674,12 @@ function InvoicesPage({ invoices, stats, clients, rollbackableIds, filters }: Pr
         setDrawerOpen(true);
     };
 
-    const tabs = [
-        { key: '', label: 'Semua', count: null },
-        { key: 'draft', label: 'Draft', count: stats.draft_count },
-        { key: 'sent', label: 'Terkirim', count: stats.sent_count },
-        { key: 'partially_paid', label: 'Sebagian', count: stats.partially_paid_count },
-        { key: 'paid', label: 'Lunas', count: stats.paid_count },
+    const tabItems: TabItem[] = [
+        { value: '', label: 'Semua' },
+        { value: 'draft', label: 'Draft', badge: stats.draft_count },
+        { value: 'sent', label: 'Terkirim', badge: stats.sent_count },
+        { value: 'partially_paid', label: 'Sebagian', badge: stats.partially_paid_count },
+        { value: 'paid', label: 'Lunas', badge: stats.paid_count },
     ];
 
     return (
@@ -773,71 +749,35 @@ function InvoicesPage({ invoices, stats, clients, rollbackableIds, filters }: Pr
                 </div>
 
                 {/* Tabs */}
-                <div className="inline-flex items-center gap-1 p-1 bg-zinc-100 dark:bg-dark-700 rounded-xl border border-zinc-200 dark:border-dark-600">
-                    {tabs.map((tab) => {
-                        const active = currentFilters.status === tab.key;
-                        return (
-                            <button
-                                key={tab.key}
-                                onClick={() => navigate({ status: tab.key })}
-                                className={cn(
-                                    'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200',
-                                    active
-                                        ? 'bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 shadow-sm border border-zinc-200 dark:border-dark-600'
-                                        : 'text-dark-500 dark:text-dark-400 hover:text-dark-800 dark:hover:text-dark-200 hover:bg-zinc-50 dark:hover:bg-dark-600',
-                                )}
-                            >
-                                <span>{tab.label}</span>
-                                {tab.count !== null && (
-                                    <span className={cn(
-                                        'px-1.5 py-0.5 text-xs font-bold rounded-full',
-                                        active
-                                            ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
-                                            : 'bg-zinc-200 dark:bg-dark-600 text-dark-500 dark:text-dark-400',
-                                    )}>
-                                        {tab.count}
-                                    </span>
-                                )}
-                            </button>
-                        );
-                    })}
-                </div>
+                <Tabs
+                    items={tabItems}
+                    value={currentFilters.status}
+                    onChange={(v) => navigate({ status: v })}
+                />
 
                 {/* Filters */}
-                <div className="flex flex-col gap-3">
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                        <div>
-                            <label className="block text-xs font-medium text-dark-600 dark:text-dark-400 mb-1">Klien</label>
-                            <select
-                                value={currentFilters.client_id}
-                                onChange={(e) => navigate({ client_id: e.target.value || '' })}
-                                className="w-full h-9 rounded-lg border border-secondary-300 dark:border-dark-600 bg-white dark:bg-dark-800 text-sm text-dark-900 dark:text-dark-300 px-3 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                            >
-                                <option value="">Semua Klien</option>
-                                {clients.map((c) => (
-                                    <option key={c.value} value={c.value}>{c.label}</option>
-                                ))}
-                            </select>
-                        </div>
-                        <div>
-                            <label className="block text-xs font-medium text-dark-600 dark:text-dark-400 mb-1">Bulan</label>
-                            <input
-                                type="month"
-                                value={currentFilters.month}
-                                onChange={(e) => navigate({ month: e.target.value })}
-                                className="w-full h-9 rounded-lg border border-secondary-300 dark:border-dark-600 bg-white dark:bg-dark-800 text-sm text-dark-900 dark:text-dark-300 px-3 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                            />
-                        </div>
-                        <form onSubmit={handleSearchSubmit}>
-                            <label className="block text-xs font-medium text-dark-600 dark:text-dark-400 mb-1">Cari</label>
-                            <Input
-                                value={search}
-                                onChange={(e) => setSearch(e.target.value)}
-                                placeholder="No. invoice atau nama klien..."
-                                className="h-9"
-                            />
-                        </form>
-                    </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <Combobox
+                        options={clients}
+                        value={currentFilters.client_id || null}
+                        onChange={(v) => navigate({ client_id: v ?? '' })}
+                        placeholder="Semua Klien"
+                        label="Klien"
+                    />
+                    <Input
+                        type="month"
+                        label="Bulan"
+                        value={currentFilters.month}
+                        onChange={(e) => navigate({ month: e.target.value })}
+                    />
+                    <form onSubmit={handleSearchSubmit}>
+                        <Input
+                            label="Cari"
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            placeholder="No. invoice atau nama klien..."
+                        />
+                    </form>
                 </div>
 
                 {/* Table */}
@@ -881,9 +821,12 @@ function InvoicesPage({ invoices, stats, clients, rollbackableIds, filters }: Pr
                             <tbody>
                                 {invoices.data.length === 0 ? (
                                     <tr>
-                                        <td colSpan={7} className="px-4 py-12 text-center text-dark-500 dark:text-dark-400">
-                                            <FileText className="w-8 h-8 mx-auto mb-2 opacity-40" />
-                                            <p>Tidak ada invoice ditemukan</p>
+                                        <td colSpan={7}>
+                                            <EmptyState
+                                                icon={<FileText className="w-8 h-8" />}
+                                                title="Tidak ada invoice ditemukan"
+                                                description="Coba ubah filter atau buat invoice baru"
+                                            />
                                         </td>
                                     </tr>
                                 ) : (
@@ -931,7 +874,7 @@ function InvoicesPage({ invoices, stats, clients, rollbackableIds, filters }: Pr
                                                     )}
                                                 </td>
                                                 <td className="px-4 py-3">
-                                                    <StatusBadge status={inv.status} />
+                                                    <Badge variant={STATUS_VARIANT[inv.status] ?? 'zinc'}>{STATUS_LABEL[inv.status] ?? inv.status}</Badge>
                                                 </td>
                                                 <td className="px-4 py-3">
                                                     <div className="flex items-center justify-end gap-1">

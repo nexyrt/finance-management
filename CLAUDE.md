@@ -4,9 +4,11 @@ Panduan untuk Claude Code saat bekerja di repository ini.
 
 ## Project Overview
 
-**Finance Management System** - Laravel 12 + Livewire-first. Konteks bisnis Indonesia (NPWP/PKP, Terbilang, Rupiah).
+**Finance Management System** — Laravel 12. Sedang dalam migrasi penuh dari Livewire + TallStackUI ke **Inertia.js + React 18 + shadcn/ui** (branch `feature/inertia-react-migration`). Konteks bisnis Indonesia (NPWP/PKP, Terbilang, Rupiah).
 
 **Fitur:** Invoice & Pembayaran, Recurring Invoice, Reimbursement, Bank Account & Transaksi, Cash Flow, Loans & Receivables, Multi-role Permission, PDF Generation, Notifications, Feedback System, Multi-language (id/en/zh), Excel Export.
+
+**Status Migrasi:** Lihat `MIGRATION_PLAN.md` untuk fase & progress terkini.
 
 ## Common Commands
 
@@ -23,7 +25,11 @@ npm run build                          # Build for production
 
 ## Architecture
 
-### Livewire-First (121 components)
+### Dual Architecture (Masa Transisi)
+
+Project sedang migrasi. Dua arsitektur berjalan paralel:
+
+**Livewire/Blade (modul yang belum dimigrasikan):**
 
 | Pattern | Fungsi |
 |---------|--------|
@@ -34,7 +40,18 @@ npm run build                          # Build for production
 | `Delete.php` | Confirmation dialog |
 | `Show.php` | Detail view |
 
-### Key Patterns
+**Inertia + React 18 (migration target):**
+
+| Path | Isi |
+|------|-----|
+| `resources/js/pages/` | Halaman React (per module) |
+| `resources/js/components/ui/` | Komponen UI primitif (shadcn/ui + custom) |
+| `resources/js/components/shared/` | Komponen shared (PageHeader, DataTable, dll.) |
+| `resources/js/types/` | TypeScript types |
+| `resources/js/routes/` | Wayfinder generated type-safe routes |
+| `app/Http/Controllers/` | Inertia controllers (menggantikan Livewire) |
+
+### Key Patterns (Livewire)
 
 ```php
 // Computed Properties
@@ -64,7 +81,11 @@ Sebelum membuat atau memodifikasi UI apapun, **baca file ini terlebih dahulu**. 
 
 ---
 
-### Standard Page Template
+### Livewire/Blade UI Patterns
+
+> **Berlaku untuk modul yang belum dimigrasikan ke React.** Untuk React/Inertia pages, lihat section [React Component Catalog](#react-component-catalog-inertiaReact-pages) di bawah.
+
+#### Standard Page Template
 
 **Reference:** `resources/views/livewire/invoices/index.blade.php`
 
@@ -101,7 +122,7 @@ Sebelum membuat atau memodifikasi UI apapun, **baca file ini terlebih dahulu**. 
 
 ---
 
-### Stats Cards (Horizontal — STANDAR DEFAULT)
+#### Stats Cards (Horizontal — STANDAR DEFAULT)
 
 **Reference:** `resources/views/livewire/clients/index.blade.php`
 
@@ -161,7 +182,7 @@ Di dalam modal  → plain div + border + horizontal layout (no <x-card>, no hove
 
 ---
 
-### Tab Navigation
+#### Tab Navigation
 
 **❌ DILARANG:** Jangan gunakan `<x-tab>` dan `<x-tab.items>` dari TallStackUI.
 
@@ -224,7 +245,7 @@ Di dalam modal  → plain div + border + horizontal layout (no <x-card>, no hove
 
 ---
 
-### Filter + Table Layout
+#### Filter + Table Layout
 
 **Reference:** `resources/views/livewire/transactions/listing.blade.php`
 
@@ -300,13 +321,13 @@ Di dalam modal  → plain div + border + horizontal layout (no <x-card>, no hove
 
 ---
 
-### Modal Form Layout
+#### Modal Form Layout
 
 **Reference:** `resources/views/livewire/transactions/create.blade.php`
 
 **CRITICAL: Semua form dalam modal WAJIB menggunakan styling header & footer ini!**
 
-#### Modal Header (Icon + Title + Description)
+##### Modal Header (Icon + Title + Description)
 
 ```blade
 <x-modal title="..." wire="modal" size="xl" center persistent>
@@ -334,7 +355,7 @@ Danger/Delete    → bg-red-50 dark:bg-red-900/20         / text-red-600 dark:te
 Info             → bg-blue-50 dark:bg-blue-900/20       / text-blue-600 dark:text-blue-400
 ```
 
-#### Modal Footer (Responsive Button Layout)
+##### Modal Footer (Responsive Button Layout)
 
 ```blade
 <x-slot:footer>
@@ -363,7 +384,7 @@ Info             → bg-blue-50 dark:bg-blue-900/20       / text-blue-600 dark:t
 
 **Submit button color by action:** `primary` (create), `green` (approve), `blue` (edit/update), `red` (delete), `yellow` (warning)
 
-#### Form Content (2-Column Grid)
+##### Form Content (2-Column Grid)
 
 ```blade
 <form id="form-id" wire:submit="save" class="space-y-6">
@@ -389,7 +410,7 @@ Info             → bg-blue-50 dark:bg-blue-900/20       / text-blue-600 dark:t
 
 ---
 
-### Card & Border Radius
+#### Card & Border Radius
 
 **Standard: `rounded-xl` untuk semua containers.**
 
@@ -398,7 +419,7 @@ Info             → bg-blue-50 dark:bg-blue-900/20       / text-blue-600 dark:t
 
 ---
 
-### Color Scheme
+#### Color Scheme
 
 **Text colors:**
 - Primary: `text-dark-900 dark:text-dark-50`
@@ -415,11 +436,11 @@ Info             → bg-blue-50 dark:bg-blue-900/20       / text-blue-600 dark:t
 
 ---
 
-### Dark Mode Color System
+#### Dark Mode Color System
 
 Palette zinc — didefinisikan di `app.css` sebagai `--color-dark-*`. **JANGAN hardcode hex** — selalu pakai Tailwind class `dark:bg-dark-{n}`, `dark:text-dark-{n}`, dll.
 
-#### Hierarki Background (semakin gelap = semakin tinggi angka)
+**Hierarki Background (semakin gelap = semakin tinggi angka):**
 
 | Variable | Hex | Dipakai untuk |
 |----------|-----|---------------|
@@ -432,12 +453,9 @@ Palette zinc — didefinisikan di `app.css` sebagai `--color-dark-*`. **JANGAN h
 | `dark-400` | `#a1a1aa` | Icon, placeholder text, muted text |
 | `dark-300` | `#d4d4d8` | Teks konten utama (body text) |
 | `dark-200` | `#e4e4e7` | Teks heading / prominent text |
-| `dark-100` | `#f4f4f5` | — |
 | `dark-50` | `#fafafa` | Teks terang (di atas bg gelap) |
 
-#### Konvensi Penggunaan di Custom Components
-
-Gunakan pola ini **konsisten** di semua form/component custom (non-TSUI) seperti di `create.blade.php`:
+**Konvensi di custom components (non-TSUI):**
 
 ```blade
 {{-- Input / Select trigger --}}
@@ -448,9 +466,6 @@ dark:bg-dark-700 dark:ring-white/10
 
 {{-- Dropdown item (normal) --}}
 dark:text-dark-300 dark:hover:bg-dark-600
-
-{{-- Dropdown item (selected) --}}
-font-semibold
 
 {{-- Border / separator --}}
 dark:border-dark-600
@@ -463,34 +478,11 @@ dark:bg-dark-600 dark:text-dark-500
 
 {{-- Label teks --}}
 dark:text-dark-300
-
-{{-- Hint / helper teks --}}
-dark:text-dark-400
-```
-
-#### Contoh Custom Select (imitasi TSUI styled)
-
-```blade
-{{-- Trigger button --}}
-<button class="flex w-full cursor-pointer items-center gap-x-2 rounded-md border-0
-               bg-white dark:bg-dark-800
-               py-1.5 px-3 text-sm
-               ring-1 ring-gray-300 dark:ring-dark-600
-               text-gray-700 dark:text-dark-300
-               focus:ring-primary-600 focus:outline-hidden focus:ring-2">
-
-{{-- Dropdown panel --}}
-<div class="bg-white dark:bg-dark-700 shadow-lg ring-1 ring-black/5 dark:ring-white/10 rounded-xl">
-
-{{-- Item list --}}
-<li :class="selected
-    ? 'font-semibold hover:bg-red-500 hover:text-white dark:hover:bg-red-500'
-    : 'text-gray-700 dark:text-dark-300 hover:bg-gray-100 dark:hover:bg-dark-600'">
 ```
 
 ---
 
-### Typography
+#### Typography
 
 - **Headings (h1-h6)**: Plus Jakarta Sans (600, 700, 800)
 - **Body Text**: Inter (400, 500, 600, 700)
@@ -502,7 +494,7 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-heading); }
 
 ---
 
-### Spacing Rules
+#### Spacing Rules
 
 | Level | Value |
 |-------|-------|
@@ -513,6 +505,89 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-heading); }
 | Section title | `text-xl font-semibold` |
 | Label/Info | `text-sm` |
 | Small text | `text-xs` |
+
+---
+
+## React Component Catalog (Inertia+React Pages)
+
+**CRITICAL: Semua halaman React WAJIB menggunakan komponen yang ada sebelum menulis raw HTML/JSX. Jangan pernah menulis `<select>`, `<input type="date">`, `<input>` biasa, atau pola UI lainnya secara manual jika sudah ada komponen yang tersedia.**
+
+Semua komponen sudah dikustomisasi penuh sesuai Archipelago design system. Referensi token yang berlaku:
+- `primary-*` — aksen utama biru
+- `dark-50` hingga `dark-950` — dark mode zinc scale
+- `secondary-200` / `dark-600` — border/divider
+- `rounded-xl` — radius standar semua container
+
+### Komponen UI Primitif (`@/components/ui/`)
+
+| Komponen | Import | Menggantikan | Keterangan |
+|----------|--------|-------------|------------|
+| `Button` | `@/components/ui/button` | `<button>` manual | Variants: `primary`, `zinc`, `red`, `green`, `yellow`, `blue`, `outline`, `ghost`, `link`. Sizes: `sm`, `md`, `lg`, `xl`, `icon`. |
+| `Badge` | `@/components/ui/badge` | Status tag manual | Variants: `default`, `blue`, `green`, `emerald`, `yellow`, `orange`, `red`, `purple`, `zinc`, `outline`. |
+| `Input` | `@/components/ui/input` | `<input>` biasa | Props: `label`, `hint`, `error`, `icon`, `iconRight`. |
+| `Textarea` | `@/components/ui/textarea` | `<textarea>` biasa | Props: `label`, `hint`, `error`. |
+| `Checkbox` | `@/components/ui/checkbox` | `<input type="checkbox">` | `primary-600` checked state. |
+| `Switch` | `@/components/ui/switch` | Toggle HTML manual | `primary-600` on, `dark-600` off. |
+| `Label` | `@/components/ui/label` | `<label>` manual | `dark-900 dark:text-dark-300`. |
+| `Combobox` | `@/components/ui/combobox` | **`<select>` — WAJIB** | Searchable dropdown via `cmdk`. Props: `options`, `value`, `onChange`, `placeholder`, `searchPlaceholder`, `emptyText`. |
+| `DatePicker` | `@/components/ui/date-picker` | **`<input type="date">` — WAJIB** | Indonesian locale, `primary-600` selected, react-day-picker v10. Single: `value`, `onChange`. Range: tambah `mode="range"`, `value={from,to}`, `placeholderTo`. |
+| `Dialog` | `@/components/ui/dialog` | Modal HTML manual | Sizes: `sm`, `md`, `lg`, `xl`, `2xl`, `3xl`, `4xl`, `full`. Exports: `Dialog`, `DialogContent`, `DialogHeader`, `DialogTitle`, `DialogDescription`, `DialogFooter`. |
+| `Card` | `@/components/ui/card` | Div wrapper manual | `dark-700`, `rounded-xl`, `shadow-sm`. Exports: `Card`, `CardContent`, `CardHeader`, `CardTitle`, `CardDescription`, `CardFooter`. |
+| `Tabs` | `@/components/ui/tabs` | Tab custom HTML | Pill/segment style matching CLAUDE.md spec. Props: `items`, `value`, `onChange`. Export `TabsPanel` untuk content. |
+| `Popover` | `@/components/ui/popover` | Tooltip/flyout manual | `dark-700` bg, `rounded-xl`. Exports: `Popover`, `PopoverTrigger`, `PopoverContent`, `PopoverAnchor`. |
+| `DropdownMenu` | `@/components/ui/dropdown-menu` | Dropdown manual | `dark-700` panel, `dark-600` hover. Exports: `DropdownMenu`, `DropdownMenuTrigger`, `DropdownMenuContent`, `DropdownMenuItem`, `DropdownMenuSeparator`, dll. |
+| `Tooltip` | `@/components/ui/tooltip` | `title=` attribute | Exports: `Tooltip`, `TooltipContent`, `TooltipProvider`, `TooltipTrigger`. |
+| `Avatar` | `@/components/ui/avatar` | Initials div manual | `primary-100/900` fallback bg. Exports: `Avatar`, `AvatarImage`, `AvatarFallback`. |
+| `Skeleton` | `@/components/ui/skeleton` | Loading state manual | `dark-700` animate-pulse. |
+| `ScrollArea` | `@/components/ui/scroll-area` | `overflow-y-auto` manual | `dark-600` scrollbar thumb. Exports: `ScrollArea`, `ScrollBar`. |
+| `Separator` | `@/components/ui/separator` | `<hr>` / border manual | `secondary-200 dark:dark-600`. Horizontal dan vertical. |
+
+### Komponen Shared (`@/components/shared/`)
+
+| Komponen | Import | Keterangan |
+|----------|--------|------------|
+| `PageHeader` | `@/components/shared/page-header` | Header halaman dengan gradient title. Props: `title`, `description`, `action`. WAJIB di semua halaman utama. |
+| `StatsCard` | `@/components/shared/stats-card` | Stats card horizontal. Props: `title`, `value`, `icon`, `color` (`blue`\|`green`\|`purple`\|`red`\|`emerald`\|`yellow`\|`orange`\|`zinc`), `inModal` (boolean). |
+| `FormSection` | `@/components/shared/form-section` | Section header dalam form. Props: `title`, `description`. Gunakan sebagai pengganti div header manual dalam form. |
+| `DataTable` | `@/components/shared/data-table` | Tabel data dengan sorting. Props: `columns`, `data`, `loading`, `emptyState`. Berbasis `@tanstack/react-table`. |
+| `Pagination` | `@/components/shared/pagination` | Pagination navigasi. Props: `currentPage`, `lastPage`, `perPage`, `total`, `onPageChange`. |
+| `EmptyState` | `@/components/shared/empty-state` | State kosong. Props: `icon`, `title`, `description`, `action`. |
+| `ConfirmDialog` | `@/components/shared/confirm-dialog` | Dialog konfirmasi. Props: `open`, `onOpenChange`, `onConfirm`, `title`, `description`, `variant` (`danger`\|`warning`). |
+| `CurrencyInput` | `@/components/shared/currency-input` | **Input Rupiah — WAJIB untuk semua input mata uang.** Props: `value`, `onChange`, `label`, `hint`, `error`. Format integer, display `Rp 1.500.000`. |
+
+### Quick Decision: "Mana yang harus saya pakai?"
+
+```
+Input teks/angka biasa         → Input
+Input Rupiah/currency          → CurrencyInput  ← JANGAN input biasa
+Pilihan dari daftar (select)   → Combobox       ← JANGAN <select> HTML
+Pilihan tanggal (single)       → DatePicker     ← JANGAN <input type="date">
+Pilihan rentang tanggal        → DatePicker mode="range"
+Toggle on/off                  → Switch
+Yes/No checkbox                → Checkbox
+Label standalone               → Label
+Teks area panjang              → Textarea
+Tombol aksi                    → Button (pilih variant sesuai context)
+Status/kategori label          → Badge (pilih variant warna sesuai status)
+Header halaman                 → PageHeader
+Stats di halaman utama         → StatsCard
+Stats di dalam modal           → StatsCard dengan inModal={true}
+Section header form            → FormSection
+Tabel data                     → DataTable
+Konfirmasi hapus/aksi kritis   → ConfirmDialog
+State kosong (no data)         → EmptyState
+Navigasi halaman               → Pagination
+Tab navigasi                   → Tabs + TabsPanel
+Kartu container                → Card + CardContent
+Modal/dialog                   → Dialog + DialogContent dll.
+Dropdown menu                  → DropdownMenu dll.
+Tooltip                        → TooltipProvider + Tooltip + TooltipTrigger + TooltipContent
+Popover/flyout                 → Popover + PopoverTrigger + PopoverContent
+Avatar user                    → Avatar + AvatarFallback
+Scroll area custom             → ScrollArea
+Pemisah visual                 → Separator
+Loading skeleton               → Skeleton
+```
 
 ---
 
@@ -635,7 +710,9 @@ $pdf = (new InvoicePrintService())->generateSingleInvoicePdf($invoice, $dp, $pel
 
 **Backend:** Laravel 12, Livewire 3.6, Spatie Permission 6.21, DomPDF 3.1, Maatwebsite Excel 3.1, ngekoding/terbilang, PHP 8.2+
 
-**Frontend:** TallStackUI 2.0, Tailwind CSS 4.1, DaisyUI 5.0, Alpine.js 3.14, Chart.js 4.5, ApexCharts 5.3, Tiptap 2.26, Vite 6.0
+**Frontend — Migration Target (Inertia+React):** React 18, TypeScript, Inertia.js, shadcn/ui, Tailwind CSS 4.1, Wayfinder (type-safe routes), react-hook-form + zod, @tanstack/react-table, react-day-picker v10, cmdk, Sonner, i18next + react-i18next, react-apexcharts, react-chartjs-2, react-dropzone, Vite 6.0
+
+**Frontend — Existing (Livewire):** TallStackUI 2.0, Alpine.js 3.14, DaisyUI 5.0, Chart.js 4.5, ApexCharts 5.3, Tiptap 2.26
 
 ---
 
@@ -709,7 +786,7 @@ Props: `wire:model`, `label`, `hint`, `placeholder`, `prefix` (default `'Rp'`). 
 
 **CRITICAL: Sebelum implementasi ANY external component — baca dokumentasi resminya dulu (WebSearch + WebFetch). Jangan implement berdasarkan asumsi atau memory.**
 
-Berlaku untuk: TallStackUI components, Laravel packages, JavaScript libraries.
+Berlaku untuk: TallStackUI components, shadcn/ui components, Laravel packages, JavaScript libraries.
 
 ---
 
@@ -723,6 +800,7 @@ Berlaku untuk: TallStackUI components, Laravel packages, JavaScript libraries.
 | Balance incorrect | Balance is computed dynamically, NOT stored — cek transaction types |
 | Currency display | Parse: `preg_replace('/[^0-9]/', '', $input)`; Format: `'Rp ' . number_format($value, 0, ',', '.')` |
 | TallStackUI personalization | `php artisan config:clear && view:clear`, rebuild CSS, verify block name di vendor file |
+| Vite/React changes not visible | Run `npm run build` atau `composer run dev` |
 
 ---
 
@@ -730,6 +808,8 @@ Berlaku untuk: TallStackUI components, Laravel packages, JavaScript libraries.
 
 | File | Purpose |
 |------|---------|
+| `MIGRATION_PLAN.md` | Status migrasi Livewire → Inertia+React, fase & progress |
+| `.claude/design-systems/archipelago.md` | Design system tokens, typography, spacing, color palette |
 | `app/Services/InvoicePrintService.php` | PDF generation |
 | `app/Models/Invoice.php` | Status & profit calculations |
 | `app/Models/Reimbursement.php` | Workflow state machine |
@@ -738,9 +818,12 @@ Berlaku untuk: TallStackUI components, Laravel packages, JavaScript libraries.
 | `app/Providers/AppServiceProvider.php` | TallStackUI personalization |
 | `app/helpers.php` | translate_text(), translate_category() |
 | `database/seeders/MasterPermissionSeeder.php` | Permission structure |
-| `routes/web.php` | All route definitions (35 routes) |
+| `routes/web.php` | All route definitions |
 | `resources/views/pdf/kisantra-invoice.blade.php` | Main invoice template |
 | `resources/css/app.css` | Color variables, fonts, @source tracking |
+| `resources/js/components/ui/` | React UI primitives (shadcn/ui + custom) |
+| `resources/js/components/shared/` | React shared components (PageHeader, DataTable, dll.) |
+| `resources/js/pages/` | Inertia React pages (per module) |
 
 ===
 
@@ -861,7 +944,6 @@ This project has domain-specific skills available. You MUST activate the relevan
 - Always use explicit return type declarations for methods and functions.
 - Use appropriate PHP type hints for method parameters.
 
-<!-- Explicit Return Types and Method Params -->
 ```php
 protected function isAccessible(User $user, ?string $path = null): bool
 {

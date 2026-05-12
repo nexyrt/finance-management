@@ -1,4 +1,4 @@
-import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../wayfinder'
+import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\InvoiceController::index
  * @see app/Http/Controllers/InvoiceController.php:19
@@ -484,16 +484,6 @@ rollback.post = (args: { invoice: number | { id: number } } | [invoice: number |
     url: rollback.url(args, options),
     method: 'post',
 })
-const invoices = {
-    index: Object.assign(index, index),
-create: Object.assign(create, create),
-store: Object.assign(store, store),
-show: Object.assign(show, show),
-edit: Object.assign(edit, edit),
-update: Object.assign(update, update),
-destroy: Object.assign(destroy, destroy),
-send: Object.assign(send, send),
-rollback: Object.assign(rollback, rollback),
-}
+const InvoiceController = { index, create, store, show, edit, update, destroy, send, rollback }
 
-export default invoices
+export default InvoiceController

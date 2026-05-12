@@ -7,8 +7,12 @@ import {
     Trash2,
 } from 'lucide-react';
 import * as React from 'react';
+import { format } from 'date-fns';
 import { CurrencyInput } from '@/components/shared/currency-input';
+import { FormSection } from '@/components/shared/form-section';
 import { Button } from '@/components/ui/button';
+import { Combobox } from '@/components/ui/combobox';
+import { DatePicker } from '@/components/ui/date-picker';
 import { Input } from '@/components/ui/input';
 import { AppLayout } from '@/layouts/app-layout';
 import { cn, formatCurrency } from '@/lib/utils';
@@ -80,6 +84,7 @@ interface InvoiceFormProps {
     services: ServiceOption[];
     nextSeq: number;
     companyInitials: string;
+    existingInvoiceNumber?: string;
     initialData?: {
         client_id: number | null;
         issue_date: string;
@@ -100,6 +105,7 @@ export function InvoiceForm({
     services,
     nextSeq,
     companyInitials,
+    existingInvoiceNumber,
     initialData,
     submitUrl,
     method,
@@ -183,10 +189,10 @@ export function InvoiceForm({
                 <FileText className="w-5 h-5 text-primary-600 dark:text-primary-400 shrink-0" />
                 <div>
                     <p className="text-xs text-primary-600 dark:text-primary-400 font-medium">
-                        Preview Nomor Invoice (otomatis saat dikirim)
+                        {isEdit ? 'Nomor Invoice' : 'Preview Nomor Invoice (otomatis saat dikirim)'}
                     </p>
                     <p className="font-mono text-sm font-semibold text-primary-700 dark:text-primary-300">
-                        {invoicePreview}
+                        {isEdit ? (existingInvoiceNumber ?? '—') : invoicePreview}
                     </p>
                 </div>
             </div>
@@ -194,93 +200,36 @@ export function InvoiceForm({
             {/* Two-column: client info + dates */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Client */}
-                <div className="space-y-4">
-                    <div className="border-b border-secondary-200 dark:border-dark-600 pb-3">
-                        <h3 className="text-sm font-semibold text-dark-900 dark:text-dark-50">Informasi Klien</h3>
-                        <p className="text-xs text-dark-500 dark:text-dark-400 mt-0.5">Pilih klien yang akan ditagihkan</p>
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-dark-900 dark:text-dark-300 mb-1.5">
-                            Klien <span className="text-red-500">*</span>
-                        </label>
-                        <select
-                            value={data.client_id ?? ''}
-                            onChange={(e) => setData('client_id', e.target.value ? Number(e.target.value) : null)}
-                            className={cn(
-                                'w-full h-9 rounded-lg border text-sm px-3',
-                                'bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-300',
-                                'focus:outline-none focus:ring-2 focus:ring-primary-500',
-                                errors.client_id
-                                    ? 'border-red-500 dark:border-red-500'
-                                    : 'border-secondary-300 dark:border-dark-600',
-                            )}
-                        >
-                            <option value="">Pilih klien...</option>
-                            {clients.map((c) => (
-                                <option key={c.id} value={c.id}>{c.name}</option>
-                            ))}
-                        </select>
-                        {errors.client_id && (
-                            <p className="mt-1 text-xs text-red-600 dark:text-red-400">{errors.client_id}</p>
-                        )}
-                        {selectedClient?.email && (
-                            <p className="mt-1 text-xs text-dark-400 dark:text-dark-500">{selectedClient.email}</p>
-                        )}
-                    </div>
-                </div>
+                <FormSection title="Informasi Klien" description="Pilih klien yang akan ditagihkan">
+                    <Combobox
+                        options={clients.map((c) => ({ value: c.id, label: c.name }))}
+                        value={data.client_id}
+                        onChange={(v) => setData('client_id', v ? Number(v) : null)}
+                        placeholder="Pilih klien..."
+                        label="Klien *"
+                        hint={selectedClient?.email ?? undefined}
+                        error={errors.client_id}
+                    />
+                </FormSection>
 
                 {/* Dates */}
-                <div className="space-y-4">
-                    <div className="border-b border-secondary-200 dark:border-dark-600 pb-3">
-                        <h3 className="text-sm font-semibold text-dark-900 dark:text-dark-50">Tanggal Invoice</h3>
-                        <p className="text-xs text-dark-500 dark:text-dark-400 mt-0.5">Tanggal terbit dan jatuh tempo</p>
-                    </div>
+                <FormSection title="Tanggal Invoice" description="Tanggal terbit dan jatuh tempo">
                     <div className="grid grid-cols-2 gap-4">
-                        <div>
-                            <label className="block text-sm font-medium text-dark-900 dark:text-dark-300 mb-1.5">
-                                Tgl Invoice <span className="text-red-500">*</span>
-                            </label>
-                            <input
-                                type="date"
-                                value={data.issue_date}
-                                onChange={(e) => setData('issue_date', e.target.value)}
-                                className={cn(
-                                    'w-full h-9 rounded-lg border text-sm px-3',
-                                    'bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-300',
-                                    'focus:outline-none focus:ring-2 focus:ring-primary-500',
-                                    errors.issue_date
-                                        ? 'border-red-500 dark:border-red-500'
-                                        : 'border-secondary-300 dark:border-dark-600',
-                                )}
-                            />
-                            {errors.issue_date && (
-                                <p className="mt-1 text-xs text-red-600">{errors.issue_date}</p>
-                            )}
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-dark-900 dark:text-dark-300 mb-1.5">
-                                Jatuh Tempo <span className="text-red-500">*</span>
-                            </label>
-                            <input
-                                type="date"
-                                value={data.due_date}
-                                onChange={(e) => setData('due_date', e.target.value)}
-                                min={data.issue_date}
-                                className={cn(
-                                    'w-full h-9 rounded-lg border text-sm px-3',
-                                    'bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-300',
-                                    'focus:outline-none focus:ring-2 focus:ring-primary-500',
-                                    errors.due_date
-                                        ? 'border-red-500 dark:border-red-500'
-                                        : 'border-secondary-300 dark:border-dark-600',
-                                )}
-                            />
-                            {errors.due_date && (
-                                <p className="mt-1 text-xs text-red-600">{errors.due_date}</p>
-                            )}
-                        </div>
+                        <DatePicker
+                            label="Tgl Invoice *"
+                            value={data.issue_date ? new Date(data.issue_date + 'T00:00:00') : null}
+                            onChange={(d) => setData('issue_date', d ? format(d, 'yyyy-MM-dd') : '')}
+                            error={errors.issue_date}
+                        />
+                        <DatePicker
+                            label="Jatuh Tempo *"
+                            value={data.due_date ? new Date(data.due_date + 'T00:00:00') : null}
+                            onChange={(d) => setData('due_date', d ? format(d, 'yyyy-MM-dd') : '')}
+                            minDate={data.issue_date ? new Date(data.issue_date + 'T00:00:00') : undefined}
+                            error={errors.due_date}
+                        />
                     </div>
-                </div>
+                </FormSection>
             </div>
 
             {/* Invoice Items */}
@@ -330,16 +279,14 @@ export function InvoiceForm({
                                         placeholder="Nama layanan..."
                                         className="h-8 text-sm"
                                     />
-                                    <select
-                                        onChange={(e) => e.target.value && fillFromService(idx, Number(e.target.value))}
-                                        defaultValue=""
-                                        className="w-full h-7 rounded-md border border-secondary-300 dark:border-dark-600 bg-white dark:bg-dark-800 text-xs text-dark-600 dark:text-dark-400 px-2 focus:outline-none focus:ring-1 focus:ring-primary-500"
-                                    >
-                                        <option value="">↳ isi dari katalog...</option>
-                                        {services.map((s) => (
-                                            <option key={s.id} value={s.id}>{s.name}</option>
-                                        ))}
-                                    </select>
+                                    <Combobox
+                                        options={services.map((s) => ({ value: s.id, label: s.name }))}
+                                        value={null}
+                                        onChange={(v) => { if (v) fillFromService(idx, Number(v)); }}
+                                        placeholder="↳ isi dari katalog..."
+                                        clearable={false}
+                                        className="[&_button]:h-7 [&_button]:text-xs"
+                                    />
                                     {errors[`items.${idx}.service_name` as keyof typeof errors] && (
                                         <p className="text-xs text-red-600">
                                             {errors[`items.${idx}.service_name` as keyof typeof errors]}
