@@ -1,4 +1,5 @@
 import { Head, router, useForm, usePage } from '@inertiajs/react';
+import { toast } from 'sonner';
 import {
     BarChart3,
     DollarSign,
@@ -80,6 +81,75 @@ const TYPE_COLORS: Record<string, 'blue' | 'green' | 'purple' | 'yellow'> = {
     'Sistem Digital': 'yellow',
 };
 
+/* ─────────────────────────────────── service form ─── */
+
+interface ServiceFormProps {
+    form: {
+        data: { name: string; type: string; price: number };
+        errors: Partial<Record<'name' | 'type' | 'price', string>>;
+        processing: boolean;
+        setData(key: 'name' | 'type' | 'price', value: string | number): void;
+    };
+    types: string[];
+    onCancel: () => void;
+    title: string;
+    submitLabel: string;
+}
+
+function ServiceForm({ form, types, onCancel, title, submitLabel }: ServiceFormProps) {
+    return (
+        <>
+            <DialogHeader>
+                <div className="flex items-center gap-4 py-2">
+                    <div className="h-12 w-12 bg-green-50 dark:bg-green-900/20 rounded-xl flex items-center justify-center shrink-0">
+                        <Tag className="w-6 h-6 text-green-600 dark:text-green-400" />
+                    </div>
+                    <div>
+                        <DialogTitle className="text-xl font-bold text-dark-900 dark:text-dark-50">{title}</DialogTitle>
+                        <p className="text-sm text-dark-500 dark:text-dark-400">Nama, kategori, dan harga layanan</p>
+                    </div>
+                </div>
+            </DialogHeader>
+
+            <div className="px-6 py-4 space-y-4">
+                <Input
+                    label="Nama Layanan *"
+                    value={form.data.name}
+                    onChange={(e) => form.setData('name', e.target.value)}
+                    error={form.errors.name}
+                    placeholder="Contoh: Pembuatan NPWP Badan"
+                />
+
+                <Combobox
+                    label="Kategori *"
+                    options={types.map((t) => ({ value: t, label: t }))}
+                    value={form.data.type || null}
+                    onChange={(v) => form.setData('type', v != null ? String(v) : '')}
+                    placeholder="Pilih Kategori"
+                    clearable={false}
+                    error={form.errors.type}
+                />
+
+                <CurrencyInput
+                    label="Harga *"
+                    value={form.data.price}
+                    onChange={(v) => form.setData('price', v)}
+                    error={form.errors.price}
+                />
+            </div>
+
+            <DialogFooter>
+                <Button variant="zinc" onClick={onCancel} disabled={form.processing} className="w-full sm:w-auto order-2 sm:order-1">
+                    Batal
+                </Button>
+                <Button type="submit" variant="primary" loading={form.processing} className="w-full sm:w-auto order-1 sm:order-2">
+                    {submitLabel}
+                </Button>
+            </DialogFooter>
+        </>
+    );
+}
+
 /* ─────────────────────────────────── main page ─── */
 
 export default function ServicesIndex() {
@@ -110,7 +180,8 @@ export default function ServicesIndex() {
     function submitCreate(e: React.FormEvent) {
         e.preventDefault();
         createForm.post('/services', {
-            onSuccess: () => { setCreateOpen(false); createForm.reset(); },
+            onSuccess: () => { setCreateOpen(false); createForm.reset(); toast.success('Layanan berhasil ditambahkan.'); },
+            onError: () => toast.error('Gagal menyimpan layanan. Periksa kembali form Anda.'),
         });
     }
 
@@ -126,7 +197,8 @@ export default function ServicesIndex() {
         e.preventDefault();
         if (!editTarget) return;
         editForm.put(`/services/${editTarget.id}`, {
-            onSuccess: () => setEditTarget(null),
+            onSuccess: () => { setEditTarget(null); toast.success('Layanan berhasil diperbarui.'); },
+            onError: () => toast.error('Gagal memperbarui layanan. Periksa kembali form Anda.'),
         });
     }
 
@@ -136,70 +208,12 @@ export default function ServicesIndex() {
     function confirmDelete() {
         if (!deleteTarget) return;
         deleteForm.delete(`/services/${deleteTarget.id}`, {
-            onSuccess: () => setDeleteTarget(null),
+            onSuccess: () => { setDeleteTarget(null); toast.success('Layanan berhasil dihapus.'); },
+            onError: () => toast.error('Gagal menghapus layanan.'),
         });
     }
 
     const activeFilters = [search, typeFilter].filter(Boolean).length;
-
-    function ServiceForm({ form, onCancel, title, submitLabel }: {
-        form: typeof createForm;
-        onCancel: () => void;
-        title: string;
-        submitLabel: string;
-    }) {
-        return (
-            <>
-                <DialogHeader>
-                    <div className="flex items-center gap-4 py-2">
-                        <div className="h-12 w-12 bg-green-50 dark:bg-green-900/20 rounded-xl flex items-center justify-center shrink-0">
-                            <Tag className="w-6 h-6 text-green-600 dark:text-green-400" />
-                        </div>
-                        <div>
-                            <DialogTitle className="text-xl font-bold text-dark-900 dark:text-dark-50">{title}</DialogTitle>
-                            <p className="text-sm text-dark-500 dark:text-dark-400">Nama, kategori, dan harga layanan</p>
-                        </div>
-                    </div>
-                </DialogHeader>
-
-                <div className="px-6 py-4 space-y-4">
-                    <Input
-                        label="Nama Layanan *"
-                        value={form.data.name}
-                        onChange={(e) => form.setData('name', e.target.value)}
-                        error={form.errors.name}
-                        placeholder="Contoh: Pembuatan NPWP Badan"
-                    />
-
-                    <Combobox
-                        label="Kategori *"
-                        options={types.map((t) => ({ value: t, label: t }))}
-                        value={form.data.type || null}
-                        onChange={(v) => form.setData('type', v != null ? String(v) : '')}
-                        placeholder="Pilih Kategori"
-                        clearable={false}
-                        error={form.errors.type}
-                    />
-
-                    <CurrencyInput
-                        label="Harga *"
-                        value={form.data.price}
-                        onChange={(v) => form.setData('price', v)}
-                        error={form.errors.price}
-                    />
-                </div>
-
-                <DialogFooter>
-                    <Button variant="zinc" onClick={onCancel} disabled={form.processing} className="w-full sm:w-auto order-2 sm:order-1">
-                        Batal
-                    </Button>
-                    <Button type="submit" variant="primary" loading={form.processing} className="w-full sm:w-auto order-1 sm:order-2">
-                        {submitLabel}
-                    </Button>
-                </DialogFooter>
-            </>
-        );
-    }
 
     return (
         <>
@@ -327,7 +341,7 @@ export default function ServicesIndex() {
             <Dialog open={createOpen} onOpenChange={(o) => { setCreateOpen(o); if (!o) createForm.reset(); }}>
                 <DialogContent size="md">
                     <form onSubmit={submitCreate}>
-                        <ServiceForm form={createForm} onCancel={() => { setCreateOpen(false); createForm.reset(); }} title="Tambah Layanan" submitLabel="Simpan Layanan" />
+                        <ServiceForm form={createForm} types={types} onCancel={() => { setCreateOpen(false); createForm.reset(); }} title="Tambah Layanan" submitLabel="Simpan Layanan" />
                     </form>
                 </DialogContent>
             </Dialog>
@@ -336,7 +350,7 @@ export default function ServicesIndex() {
             <Dialog open={!!editTarget} onOpenChange={(o) => { if (!o) setEditTarget(null); }}>
                 <DialogContent size="md">
                     <form onSubmit={submitEdit}>
-                        <ServiceForm form={editForm} onCancel={() => setEditTarget(null)} title="Edit Layanan" submitLabel="Perbarui Layanan" />
+                        <ServiceForm form={editForm} types={types} onCancel={() => setEditTarget(null)} title="Edit Layanan" submitLabel="Perbarui Layanan" />
                     </form>
                 </DialogContent>
             </Dialog>

@@ -94,7 +94,6 @@ const NAV: NavSection[] = [
                 icon: <RefreshCw className="w-4 h-4 shrink-0" />,
                 permission: 'view recurring-invoices',
                 matchPrefix: '/recurring-invoices',
-                comingSoon: true,
             },
             {
                 label: 'Rekening Bank',

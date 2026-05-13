@@ -186,6 +186,7 @@ class InvoiceController extends Controller
             ],
             'items' => $invoice->items->map(fn ($item) => [
                 'id' => $item->id,
+                'client_id' => $item->client_id,
                 'service_name' => $item->service_name,
                 'quantity' => (float) $item->quantity,
                 'unit' => $item->unit,
@@ -241,6 +242,7 @@ class InvoiceController extends Controller
             'issue_date' => ['required', 'date'],
             'due_date' => ['required', 'date', 'after_or_equal:issue_date'],
             'items' => ['required', 'array', 'min:1'],
+            'items.*.client_id' => ['nullable', 'exists:clients,id'],
             'items.*.service_name' => ['required', 'string', 'max:255'],
             'items.*.quantity' => ['required', 'numeric', 'min:0.001'],
             'items.*.unit' => ['nullable', 'string', 'max:20'],
@@ -263,7 +265,7 @@ class InvoiceController extends Controller
                 $cogsAmount = (int) ($item['cogs_amount'] ?? 0);
 
                 $parsedItems[] = [
-                    'client_id' => $validated['client_id'],
+                    'client_id' => $item['client_id'] ?? $validated['client_id'],
                     'service_name' => $item['service_name'],
                     'quantity' => $quantity,
                     'unit' => $item['unit'] ?? 'pcs',
@@ -329,6 +331,7 @@ class InvoiceController extends Controller
                 'discount_value' => $invoice->discount_value ?? 0,
                 'discount_reason' => $invoice->discount_reason,
                 'items' => $invoice->items->map(fn ($item) => [
+                    'client_id' => $item->client_id,
                     'service_name' => $item->service_name,
                     'quantity' => (float) $item->quantity,
                     'unit' => $item->unit,
@@ -349,6 +352,7 @@ class InvoiceController extends Controller
             'issue_date' => ['required', 'date'],
             'due_date' => ['required', 'date', 'after_or_equal:issue_date'],
             'items' => ['required', 'array', 'min:1'],
+            'items.*.client_id' => ['nullable', 'exists:clients,id'],
             'items.*.service_name' => ['required', 'string', 'max:255'],
             'items.*.quantity' => ['required', 'numeric', 'min:0.001'],
             'items.*.unit' => ['nullable', 'string', 'max:20'],
@@ -372,7 +376,7 @@ class InvoiceController extends Controller
 
                 $parsedItems[] = [
                     'invoice_id' => $invoice->id,
-                    'client_id' => $validated['client_id'],
+                    'client_id' => $item['client_id'] ?? $validated['client_id'],
                     'service_name' => $item['service_name'],
                     'quantity' => $quantity,
                     'unit' => $item['unit'] ?? 'pcs',

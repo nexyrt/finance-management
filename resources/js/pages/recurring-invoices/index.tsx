@@ -415,238 +415,6 @@ function InvoiceSummary({ items, summary, onSummaryChange }: InvoiceSummaryProps
     );
 }
 
-// ─── Template Form Modal ─────────────────────────────────────────────────────
-
-interface TemplateFormState {
-    template_name: string;
-    client_id: number | null;
-    start_date: string;
-    end_date: string;
-    frequency: string;
-    items: ItemForm[];
-    discount_type: 'fixed' | 'percentage';
-    discount_value: number;
-    discount_reason: string;
-}
-
-const EMPTY_TEMPLATE_FORM: TemplateFormState = {
-    template_name: '',
-    client_id: null,
-    start_date: '',
-    end_date: '',
-    frequency: 'monthly',
-    items: [{ ...EMPTY_ITEM }],
-    discount_type: 'fixed',
-    discount_value: 0,
-    discount_reason: '',
-};
-
-interface TemplateFormModalProps {
-    open: boolean;
-    onClose: () => void;
-    onSuccess: (t: RecurringTemplate) => void;
-    editTarget?: RecurringTemplate | null;
-    clients: Client[];
-    services: Service[];
-}
-
-function TemplateFormModal({ open, onClose, onSuccess, editTarget, clients, services }: TemplateFormModalProps) {
-    const isEdit = !!editTarget;
-    const [form, setForm] = React.useState<TemplateFormState>(EMPTY_TEMPLATE_FORM);
-    const [errors, setErrors] = React.useState<Record<string, string>>({});
-    const [loading, setLoading] = React.useState(false);
-
-    React.useEffect(() => {
-        if (open) {
-            if (editTarget) {
-                const tmpl = editTarget.invoice_template;
-                setForm({
-                    template_name: editTarget.template_name,
-                    client_id: editTarget.client_id,
-                    start_date: editTarget.start_date,
-                    end_date: editTarget.end_date,
-                    frequency: editTarget.frequency,
-                    items: (tmpl.items ?? []).map((i) => ({
-                        client_id: i.client_id,
-                        service_name: i.service_name,
-                        quantity: i.quantity,
-                        unit_price: i.unit_price,
-                        cogs_amount: i.cogs_amount,
-                        is_tax_deposit: i.is_tax_deposit,
-                    })),
-                    discount_type: tmpl.discount_type ?? 'fixed',
-                    discount_value: tmpl.discount_value ?? 0,
-                    discount_reason: tmpl.discount_reason ?? '',
-                });
-            } else {
-                setForm(EMPTY_TEMPLATE_FORM);
-            }
-            setErrors({});
-        }
-    }, [open, editTarget]);
-
-    const handleSubmit = async () => {
-        setLoading(true);
-        setErrors({});
-
-        const url = isEdit
-            ? `/recurring-invoices/templates/${editTarget!.id}`
-            : '/recurring-invoices/templates';
-
-        const payload = {
-            template_name: form.template_name,
-            client_id: form.client_id,
-            start_date: form.start_date,
-            end_date: form.end_date,
-            frequency: form.frequency,
-            items: form.items.map((i) => ({ ...i, unit_price: i.unit_price, cogs_amount: i.cogs_amount })),
-            discount_type: form.discount_type,
-            discount_value: form.discount_value,
-            discount_reason: form.discount_reason,
-        };
-
-        try {
-            const res = await fetch(url, {
-                method: isEdit ? 'PUT' : 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': getCsrfToken(), Accept: 'application/json' },
-                body: JSON.stringify(payload),
-            });
-
-            const json = await res.json();
-
-            if (!res.ok) {
-                if (res.status === 422) setErrors(json.errors ?? {});
-                else toast.error(json.message ?? 'Terjadi kesalahan.');
-                return;
-            }
-
-            toast.success(json.message);
-            onSuccess(json.template);
-            onClose();
-        } catch {
-            toast.error('Terjadi kesalahan jaringan.');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const clientOptions = clients.map((c) => ({ value: String(c.id), label: c.display_name || c.name }));
-    const freqOptions = [
-        { value: 'monthly', label: 'Bulanan' },
-        { value: 'quarterly', label: 'Triwulanan (3 bulan)' },
-        { value: 'semi_annual', label: 'Semesteran (6 bulan)' },
-        { value: 'annual', label: 'Tahunan' },
-    ];
-
-    return (
-        <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-            <DialogContent size="4xl" className="max-h-[90vh] overflow-y-auto">
-                <DialogHeader>
-                    <div className="flex items-center gap-4 my-3">
-                        <div className="h-12 w-12 bg-primary-50 dark:bg-primary-900/20 rounded-xl flex items-center justify-center">
-                            <Repeat2 className="w-6 h-6 text-primary-600 dark:text-primary-400" />
-                        </div>
-                        <div>
-                            <DialogTitle>{isEdit ? 'Edit Template' : 'Buat Template Recurring'}</DialogTitle>
-                            <p className="text-sm text-dark-600 dark:text-dark-400 mt-0.5">
-                                {isEdit ? 'Perbarui detail template invoice recurring' : 'Buat template baru untuk invoice otomatis'}
-                            </p>
-                        </div>
-                    </div>
-                </DialogHeader>
-
-                <div className="px-6 pb-2 space-y-6">
-                    {/* Template Info */}
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                        <Input
-                            label="Nama Template *"
-                            value={form.template_name}
-                            onChange={(e) => setForm({ ...form, template_name: e.target.value })}
-                            placeholder="Contoh: Monthly Retainer"
-                            error={errors.template_name}
-                        />
-                        <Combobox
-                            label="Klien *"
-                            options={clientOptions}
-                            value={form.client_id ? String(form.client_id) : ''}
-                            onChange={(v) => setForm({ ...form, client_id: v ? parseInt(v) : null })}
-                            placeholder="Pilih klien"
-                            error={errors.client_id}
-                        />
-                        <DatePicker
-                            label="Tanggal Mulai *"
-                            value={form.start_date ? new Date(form.start_date) : undefined}
-                            onChange={(d) => setForm({ ...form, start_date: d ? d.toISOString().slice(0, 10) : '' })}
-                            error={errors.start_date}
-                        />
-                        <DatePicker
-                            label="Tanggal Berakhir *"
-                            value={form.end_date ? new Date(form.end_date) : undefined}
-                            onChange={(d) => setForm({ ...form, end_date: d ? d.toISOString().slice(0, 10) : '' })}
-                            error={errors.end_date}
-                        />
-                    </div>
-
-                    {/* Frequency */}
-                    <div>
-                        <Label className="mb-2 block">Frekuensi *</Label>
-                        <div className="flex flex-wrap gap-2">
-                            {freqOptions.map((f) => (
-                                <button
-                                    key={f.value}
-                                    type="button"
-                                    onClick={() => setForm({ ...form, frequency: f.value })}
-                                    className={`px-4 py-2 rounded-xl text-sm font-medium border transition-all ${
-                                        form.frequency === f.value
-                                            ? 'bg-primary-600 border-primary-600 text-white'
-                                            : 'border-secondary-200 dark:border-dark-600 text-dark-700 dark:text-dark-300 hover:border-primary-400'
-                                    }`}
-                                >
-                                    {f.label}
-                                </button>
-                            ))}
-                        </div>
-                        {errors.frequency && <p className="mt-1 text-xs text-red-600">{errors.frequency}</p>}
-                    </div>
-
-                    <Separator />
-
-                    {/* Items */}
-                    <div>
-                        <h4 className="text-sm font-semibold text-dark-900 dark:text-dark-50 mb-3">Item Invoice</h4>
-                        <ItemsRepeater
-                            items={form.items}
-                            onChange={(items) => setForm({ ...form, items })}
-                            clients={clients}
-                            services={services}
-                            defaultClientId={form.client_id}
-                            errors={errors}
-                        />
-                        {errors.items && <p className="mt-1 text-xs text-red-600">{errors.items}</p>}
-                    </div>
-
-                    {/* Summary */}
-                    <InvoiceSummary
-                        items={form.items}
-                        summary={{ discount_type: form.discount_type, discount_value: form.discount_value, discount_reason: form.discount_reason }}
-                        onSummaryChange={(s) => setForm({ ...form, ...s })}
-                    />
-                </div>
-
-                <DialogFooter>
-                    <Button variant="zinc" onClick={onClose} disabled={loading} className="w-full sm:w-auto order-2 sm:order-1">
-                        Batal
-                    </Button>
-                    <Button variant="primary" onClick={handleSubmit} disabled={loading} className="w-full sm:w-auto order-1 sm:order-2">
-                        {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                        {isEdit ? 'Simpan Perubahan' : 'Buat Template'}
-                    </Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
-    );
-}
-
 // ─── Monthly Invoice Form Modal ───────────────────────────────────────────────
 
 interface MonthlyFormState {
@@ -1131,8 +899,6 @@ export default function RecurringInvoicesIndex({
     const [templates, setTemplates] = React.useState(initTemplates);
     const [templateSearch, setTemplateSearch] = React.useState('');
     const [templateStatusFilter, setTemplateStatusFilter] = React.useState<'all' | 'active' | 'archived'>('active');
-    const [templateFormOpen, setTemplateFormOpen] = React.useState(false);
-    const [editTemplate, setEditTemplate] = React.useState<RecurringTemplate | null>(null);
     const [deleteTemplateTarget, setDeleteTemplateTarget] = React.useState<RecurringTemplate | null>(null);
     const [deleteTemplateLoading, setDeleteTemplateLoading] = React.useState(false);
 
@@ -1197,16 +963,6 @@ export default function RecurringInvoicesIndex({
     }, [templates, templateSearch, templateStatusFilter]);
 
     // ── Template CRUD handlers ──
-    const handleTemplateSuccess = (t: RecurringTemplate) => {
-        setTemplates((prev) => {
-            const idx = prev.findIndex((x) => x.id === t.id);
-            if (idx >= 0) {
-                const next = [...prev]; next[idx] = t; return next;
-            }
-            return [t, ...prev];
-        });
-    };
-
     const handleDeleteTemplate = async () => {
         if (!deleteTemplateTarget) return;
         setDeleteTemplateLoading(true);
@@ -1332,7 +1088,7 @@ export default function RecurringInvoicesIndex({
                     action={
                         <div className="flex items-center gap-2">
                             {activeTab === 'templates' && (
-                                <Button variant="primary" size="sm" onClick={() => { setEditTemplate(null); setTemplateFormOpen(true); }}>
+                                <Button variant="primary" size="sm" onClick={() => router.get('/recurring-invoices/templates/create')}>
                                     <Plus className="w-4 h-4 mr-1.5" /> Buat Template
                                 </Button>
                             )}
@@ -1417,7 +1173,7 @@ export default function RecurringInvoicesIndex({
                                 icon={<Repeat2 className="w-12 h-12" />}
                                 title="Belum ada template"
                                 description="Buat template recurring untuk generate invoice otomatis"
-                                action={<Button variant="primary" onClick={() => setTemplateFormOpen(true)}><Plus className="w-4 h-4 mr-1.5" /> Buat Template</Button>}
+                                action={<Button variant="primary" onClick={() => router.get('/recurring-invoices/templates/create')}><Plus className="w-4 h-4 mr-1.5" /> Buat Template</Button>}
                             />
                         ) : (
                             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -1438,7 +1194,7 @@ export default function RecurringInvoicesIndex({
                                                 </div>
                                                 <div className="flex items-center gap-1 shrink-0">
                                                     {t.status === 'active' && (
-                                                        <button onClick={() => { setEditTemplate(t); setTemplateFormOpen(true); }} className="p-1.5 rounded-lg hover:bg-secondary-100 dark:hover:bg-dark-600 text-dark-400 hover:text-dark-700 dark:hover:text-dark-200 transition-colors">
+                                                        <button onClick={() => router.get(`/recurring-invoices/templates/${t.id}/edit`)} className="p-1.5 rounded-lg hover:bg-secondary-100 dark:hover:bg-dark-600 text-dark-400 hover:text-dark-700 dark:hover:text-dark-200 transition-colors">
                                                             <Edit2 className="w-3.5 h-3.5" />
                                                         </button>
                                                     )}
@@ -1802,15 +1558,6 @@ export default function RecurringInvoicesIndex({
             </div>
 
             {/* ── Modals ── */}
-            <TemplateFormModal
-                open={templateFormOpen}
-                onClose={() => { setTemplateFormOpen(false); setEditTemplate(null); }}
-                onSuccess={handleTemplateSuccess}
-                editTarget={editTemplate}
-                clients={clients}
-                services={services}
-            />
-
             <ConfirmDialog
                 open={!!deleteTemplateTarget}
                 onOpenChange={(v) => !v && setDeleteTemplateTarget(null)}

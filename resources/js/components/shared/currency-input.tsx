@@ -64,7 +64,7 @@ export function CurrencyInput({
                 </label>
             )}
             <div className="relative flex">
-                <span className="inline-flex items-center rounded-l-lg border border-r-0 border-secondary-300 dark:border-dark-600 bg-secondary-50 dark:bg-dark-700 px-3 text-sm text-dark-600 dark:text-dark-400 select-none">
+                <span className="inline-flex items-center rounded-l-xl border border-r-0 border-secondary-200 dark:border-dark-600 bg-secondary-50 dark:bg-dark-700 px-3 text-sm text-dark-600 dark:text-dark-400 select-none">
                     {prefix}
                 </span>
                 <input
@@ -77,13 +77,13 @@ export function CurrencyInput({
                     placeholder={placeholder}
                     disabled={disabled}
                     className={cn(
-                        'flex-1 h-9 rounded-r-lg border text-sm transition-colors',
+                        'flex-1 h-10 rounded-r-xl border text-sm transition-colors',
                         'bg-white dark:bg-dark-800',
                         'text-dark-900 dark:text-dark-300',
                         'placeholder:text-dark-400 dark:placeholder:text-dark-400',
                         error
                             ? 'border-red-500 dark:border-red-500 focus:ring-red-500'
-                            : 'border-secondary-300 dark:border-dark-600 focus:ring-primary-500',
+                            : 'border-secondary-200 dark:border-dark-600 focus:ring-primary-500',
                         'focus:outline-none focus:ring-2 focus:ring-offset-0',
                         'disabled:cursor-not-allowed disabled:bg-secondary-50 dark:disabled:bg-dark-600 disabled:opacity-60',
                         'px-3 py-1.5',

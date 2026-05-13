@@ -30,6 +30,7 @@ interface InvoiceData {
     discount_value: number;
     discount_reason: string | null;
     items: Array<{
+        client_id: number | null;
         service_name: string;
         quantity: number;
         unit: string;

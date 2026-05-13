@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\RecurringInvoiceController::generate
- * @see app/Http/Controllers/RecurringInvoiceController.php:236
+ * @see app/Http/Controllers/RecurringInvoiceController.php:275
  * @route '/recurring-invoices/monthly/generate'
  */
 export const generate = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -16,7 +16,7 @@ generate.definition = {
 
 /**
 * @see \App\Http\Controllers\RecurringInvoiceController::generate
- * @see app/Http/Controllers/RecurringInvoiceController.php:236
+ * @see app/Http/Controllers/RecurringInvoiceController.php:275
  * @route '/recurring-invoices/monthly/generate'
  */
 generate.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ generate.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\RecurringInvoiceController::generate
- * @see app/Http/Controllers/RecurringInvoiceController.php:236
+ * @see app/Http/Controllers/RecurringInvoiceController.php:275
  * @route '/recurring-invoices/monthly/generate'
  */
 generate.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -35,7 +35,7 @@ generate.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\RecurringInvoiceController::store
- * @see app/Http/Controllers/RecurringInvoiceController.php:287
+ * @see app/Http/Controllers/RecurringInvoiceController.php:326
  * @route '/recurring-invoices/monthly'
  */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -50,7 +50,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\RecurringInvoiceController::store
- * @see app/Http/Controllers/RecurringInvoiceController.php:287
+ * @see app/Http/Controllers/RecurringInvoiceController.php:326
  * @route '/recurring-invoices/monthly'
  */
 store.url = (options?: RouteQueryOptions) => {
@@ -59,7 +59,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\RecurringInvoiceController::store
- * @see app/Http/Controllers/RecurringInvoiceController.php:287
+ * @see app/Http/Controllers/RecurringInvoiceController.php:326
  * @route '/recurring-invoices/monthly'
  */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -69,7 +69,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\RecurringInvoiceController::update
- * @see app/Http/Controllers/RecurringInvoiceController.php:348
+ * @see app/Http/Controllers/RecurringInvoiceController.php:387
  * @route '/recurring-invoices/monthly/{invoice}'
  */
 export const update = (args: { invoice: number | { id: number } } | [invoice: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -84,7 +84,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\RecurringInvoiceController::update
- * @see app/Http/Controllers/RecurringInvoiceController.php:348
+ * @see app/Http/Controllers/RecurringInvoiceController.php:387
  * @route '/recurring-invoices/monthly/{invoice}'
  */
 update.url = (args: { invoice: number | { id: number } } | [invoice: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -117,7 +117,7 @@ update.url = (args: { invoice: number | { id: number } } | [invoice: number | { 
 
 /**
 * @see \App\Http\Controllers\RecurringInvoiceController::update
- * @see app/Http/Controllers/RecurringInvoiceController.php:348
+ * @see app/Http/Controllers/RecurringInvoiceController.php:387
  * @route '/recurring-invoices/monthly/{invoice}'
  */
 update.put = (args: { invoice: number | { id: number } } | [invoice: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -127,7 +127,7 @@ update.put = (args: { invoice: number | { id: number } } | [invoice: number | { 
 
 /**
 * @see \App\Http\Controllers\RecurringInvoiceController::destroy
- * @see app/Http/Controllers/RecurringInvoiceController.php:395
+ * @see app/Http/Controllers/RecurringInvoiceController.php:434
  * @route '/recurring-invoices/monthly/{invoice}'
  */
 export const destroy = (args: { invoice: number | { id: number } } | [invoice: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -142,7 +142,7 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\RecurringInvoiceController::destroy
- * @see app/Http/Controllers/RecurringInvoiceController.php:395
+ * @see app/Http/Controllers/RecurringInvoiceController.php:434
  * @route '/recurring-invoices/monthly/{invoice}'
  */
 destroy.url = (args: { invoice: number | { id: number } } | [invoice: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -175,7 +175,7 @@ destroy.url = (args: { invoice: number | { id: number } } | [invoice: number | {
 
 /**
 * @see \App\Http\Controllers\RecurringInvoiceController::destroy
- * @see app/Http/Controllers/RecurringInvoiceController.php:395
+ * @see app/Http/Controllers/RecurringInvoiceController.php:434
  * @route '/recurring-invoices/monthly/{invoice}'
  */
 destroy.delete = (args: { invoice: number | { id: number } } | [invoice: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -185,7 +185,7 @@ destroy.delete = (args: { invoice: number | { id: number } } | [invoice: number 
 
 /**
 * @see \App\Http\Controllers\RecurringInvoiceController::publish
- * @see app/Http/Controllers/RecurringInvoiceController.php:406
+ * @see app/Http/Controllers/RecurringInvoiceController.php:445
  * @route '/recurring-invoices/monthly/{invoice}/publish'
  */
 export const publish = (args: { invoice: number | { id: number } } | [invoice: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -200,7 +200,7 @@ publish.definition = {
 
 /**
 * @see \App\Http\Controllers\RecurringInvoiceController::publish
- * @see app/Http/Controllers/RecurringInvoiceController.php:406
+ * @see app/Http/Controllers/RecurringInvoiceController.php:445
  * @route '/recurring-invoices/monthly/{invoice}/publish'
  */
 publish.url = (args: { invoice: number | { id: number } } | [invoice: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -233,7 +233,7 @@ publish.url = (args: { invoice: number | { id: number } } | [invoice: number | {
 
 /**
 * @see \App\Http\Controllers\RecurringInvoiceController::publish
- * @see app/Http/Controllers/RecurringInvoiceController.php:406
+ * @see app/Http/Controllers/RecurringInvoiceController.php:445
  * @route '/recurring-invoices/monthly/{invoice}/publish'
  */
 publish.post = (args: { invoice: number | { id: number } } | [invoice: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -243,7 +243,7 @@ publish.post = (args: { invoice: number | { id: number } } | [invoice: number | 
 
 /**
 * @see \App\Http\Controllers\RecurringInvoiceController::bulkDestroy
- * @see app/Http/Controllers/RecurringInvoiceController.php:435
+ * @see app/Http/Controllers/RecurringInvoiceController.php:474
  * @route '/recurring-invoices/monthly/bulk-destroy'
  */
 export const bulkDestroy = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -258,7 +258,7 @@ bulkDestroy.definition = {
 
 /**
 * @see \App\Http\Controllers\RecurringInvoiceController::bulkDestroy
- * @see app/Http/Controllers/RecurringInvoiceController.php:435
+ * @see app/Http/Controllers/RecurringInvoiceController.php:474
  * @route '/recurring-invoices/monthly/bulk-destroy'
  */
 bulkDestroy.url = (options?: RouteQueryOptions) => {
@@ -267,7 +267,7 @@ bulkDestroy.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\RecurringInvoiceController::bulkDestroy
- * @see app/Http/Controllers/RecurringInvoiceController.php:435
+ * @see app/Http/Controllers/RecurringInvoiceController.php:474
  * @route '/recurring-invoices/monthly/bulk-destroy'
  */
 bulkDestroy.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -277,7 +277,7 @@ bulkDestroy.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\RecurringInvoiceController::bulkPublish
- * @see app/Http/Controllers/RecurringInvoiceController.php:449
+ * @see app/Http/Controllers/RecurringInvoiceController.php:488
  * @route '/recurring-invoices/monthly/bulk-publish'
  */
 export const bulkPublish = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -292,7 +292,7 @@ bulkPublish.definition = {
 
 /**
 * @see \App\Http\Controllers\RecurringInvoiceController::bulkPublish
- * @see app/Http/Controllers/RecurringInvoiceController.php:449
+ * @see app/Http/Controllers/RecurringInvoiceController.php:488
  * @route '/recurring-invoices/monthly/bulk-publish'
  */
 bulkPublish.url = (options?: RouteQueryOptions) => {
@@ -301,7 +301,7 @@ bulkPublish.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\RecurringInvoiceController::bulkPublish
- * @see app/Http/Controllers/RecurringInvoiceController.php:449
+ * @see app/Http/Controllers/RecurringInvoiceController.php:488
  * @route '/recurring-invoices/monthly/bulk-publish'
  */
 bulkPublish.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({

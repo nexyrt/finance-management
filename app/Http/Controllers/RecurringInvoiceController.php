@@ -26,13 +26,13 @@ class RecurringInvoiceController extends Controller
         $tab = $request->input('tab', 'templates');
 
         // ── Templates ────────────────────────────────────────────────────────
-        $templates = RecurringTemplate::with(['client:id,name,type,company_name', 'recurringInvoices'])
+        $templates = RecurringTemplate::with(['client:id,name,type', 'recurringInvoices'])
             ->orderBy('created_at', 'desc')
             ->get()
             ->map(fn ($t) => $this->formatTemplate($t));
 
         // ── Monthly invoices ──────────────────────────────────────────────────
-        $monthlyQuery = RecurringInvoice::with(['client:id,name,type,company_name', 'template:id,template_name,frequency', 'publishedInvoice:id,invoice_number'])
+        $monthlyQuery = RecurringInvoice::with(['client:id,name,type', 'template:id,template_name,frequency', 'publishedInvoice:id,invoice_number'])
             ->whereYear('scheduled_date', $year)
             ->whereMonth('scheduled_date', $month);
 
@@ -59,11 +59,11 @@ class RecurringInvoiceController extends Controller
         // ── Form data ─────────────────────────────────────────────────────────
         $clients = Client::where('status', 'active')
             ->orderBy('name')
-            ->get(['id', 'name', 'type', 'company_name', 'email'])
+            ->get(['id', 'name', 'type', 'email'])
             ->map(fn ($c) => [
                 'id' => $c->id,
                 'name' => $c->name,
-                'display_name' => $c->type === 'company' && $c->company_name ? $c->company_name : $c->name,
+                'display_name' => $c->name,
                 'email' => $c->email,
             ]);
 
@@ -77,7 +77,7 @@ class RecurringInvoiceController extends Controller
             ]);
 
         $activeTemplatesForSelect = RecurringTemplate::where('status', 'active')
-            ->with('client:id,name,type,company_name')
+            ->with('client:id,name,type')
             ->orderBy('template_name')
             ->get()
             ->map(fn ($t) => [
@@ -107,9 +107,28 @@ class RecurringInvoiceController extends Controller
         ]);
     }
 
+    // ── Template Pages ────────────────────────────────────────────────────────
+
+    public function createTemplate(): Response
+    {
+        return Inertia::render('recurring-invoices/create-template', [
+            'clients' => $this->getClientOptions(),
+            'services' => $this->getServiceOptions(),
+        ]);
+    }
+
+    public function editTemplate(RecurringTemplate $template): Response
+    {
+        return Inertia::render('recurring-invoices/edit-template', [
+            'template' => $this->formatTemplate($template->load('client', 'recurringInvoices')),
+            'clients' => $this->getClientOptions(),
+            'services' => $this->getServiceOptions(),
+        ]);
+    }
+
     // ── Template CRUD ─────────────────────────────────────────────────────────
 
-    public function storeTemplate(Request $request): JsonResponse
+    public function storeTemplate(Request $request)
     {
         $data = $request->validate([
             'template_name' => 'required|string|max:255',
@@ -121,6 +140,7 @@ class RecurringInvoiceController extends Controller
             'items.*.client_id' => 'required|exists:clients,id',
             'items.*.service_name' => 'required|string|max:255',
             'items.*.quantity' => 'required|integer|min:1',
+            'items.*.unit' => 'nullable|string|max:50',
             'items.*.unit_price' => 'required|integer|min:0',
             'items.*.cogs_amount' => 'nullable|integer|min:0',
             'items.*.is_tax_deposit' => 'nullable|boolean',
@@ -132,7 +152,7 @@ class RecurringInvoiceController extends Controller
         try {
             DB::beginTransaction();
 
-            [$invoiceTemplate, $subtotal] = $this->buildInvoiceData($data);
+            [$invoiceTemplate] = $this->buildInvoiceData($data);
 
             $template = RecurringTemplate::create([
                 'client_id' => $data['client_id'],
@@ -146,6 +166,11 @@ class RecurringInvoiceController extends Controller
 
             DB::commit();
 
+            if ($request->hasHeader('X-Inertia')) {
+                return redirect()->route('recurring-invoices.index')
+                    ->with('success', "Template '{$template->template_name}' berhasil dibuat.");
+            }
+
             return response()->json([
                 'template' => $this->formatTemplate($template->load('client', 'recurringInvoices')),
                 'message' => "Template '{$template->template_name}' berhasil dibuat.",
@@ -154,11 +179,15 @@ class RecurringInvoiceController extends Controller
             DB::rollBack();
             \Log::error('Failed to create recurring template: ' . $e->getMessage());
 
-            return response()->json(['message' => 'Gagal membuat template.'], 500);
+            if ($request->hasHeader('X-Inertia')) {
+                return back()->withErrors(['general' => 'Gagal membuat template: ' . $e->getMessage()]);
+            }
+
+            return response()->json(['message' => 'Gagal membuat template: ' . $e->getMessage()], 500);
         }
     }
 
-    public function updateTemplate(Request $request, RecurringTemplate $template): JsonResponse
+    public function updateTemplate(Request $request, RecurringTemplate $template)
     {
         $data = $request->validate([
             'template_name' => 'required|string|max:255',
@@ -170,6 +199,7 @@ class RecurringInvoiceController extends Controller
             'items.*.client_id' => 'required|exists:clients,id',
             'items.*.service_name' => 'required|string|max:255',
             'items.*.quantity' => 'required|integer|min:1',
+            'items.*.unit' => 'nullable|string|max:50',
             'items.*.unit_price' => 'required|integer|min:0',
             'items.*.cogs_amount' => 'nullable|integer|min:0',
             'items.*.is_tax_deposit' => 'nullable|boolean',
@@ -194,6 +224,11 @@ class RecurringInvoiceController extends Controller
 
             DB::commit();
 
+            if ($request->hasHeader('X-Inertia')) {
+                return redirect()->route('recurring-invoices.index')
+                    ->with('success', "Template '{$template->template_name}' berhasil diperbarui.");
+            }
+
             return response()->json([
                 'template' => $this->formatTemplate($template->fresh(['client', 'recurringInvoices'])),
                 'message' => "Template '{$template->template_name}' berhasil diperbarui.",
@@ -201,7 +236,11 @@ class RecurringInvoiceController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return response()->json(['message' => 'Gagal memperbarui template.'], 500);
+            if ($request->hasHeader('X-Inertia')) {
+                return back()->withErrors(['general' => 'Gagal memperbarui template: ' . $e->getMessage()]);
+            }
+
+            return response()->json(['message' => 'Gagal memperbarui template: ' . $e->getMessage()], 500);
         }
     }
 
@@ -477,6 +516,33 @@ class RecurringInvoiceController extends Controller
             'published' => $published,
             'message' => "{$published} invoice berhasil dipublish.",
         ]);
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
+
+    private function getClientOptions(): \Illuminate\Support\Collection
+    {
+        return Client::where('status', 'active')
+            ->orderBy('name')
+            ->get(['id', 'name', 'type', 'email'])
+            ->map(fn ($c) => [
+                'id' => $c->id,
+                'name' => $c->name,
+                'display_name' => $c->name,
+                'email' => $c->email,
+            ]);
+    }
+
+    private function getServiceOptions(): \Illuminate\Support\Collection
+    {
+        return Service::orderBy('name')
+            ->get(['id', 'name', 'price', 'type'])
+            ->map(fn ($s) => [
+                'id' => $s->id,
+                'name' => $s->name,
+                'price' => $s->price,
+                'type' => $s->type,
+            ]);
     }
 
     // ── Formatters ────────────────────────────────────────────────────────────

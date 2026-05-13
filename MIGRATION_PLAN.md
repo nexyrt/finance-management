@@ -3,7 +3,7 @@
 > **Dokumen ini adalah panduan kerja untuk Claude Code.**
 > Dibuat: 2026-05-11 | Branch aktif: `feature/inertia-react-migration`
 > Update dokumen ini setiap kali fase selesai.
-> **Terakhir diupdate: 2026-05-13 — Fase 6 selesai penuh (Recurring Invoices). Fase 7 berikutnya.**
+> **Terakhir diupdate: 2026-05-14 — Fase 5 & 6 disempurnakan: invoice create/edit layout redesign (4/5+1/5 sticky), template create/edit jadi dedicated pages.**
 
 ---
 
@@ -321,6 +321,18 @@ resources/js/
 - Baris tabel clickable → buka InvoiceDrawer
 - Controller: `InvoiceController@index` — mendukung period_mode, date_from, date_to
 
+### Layout Redesign: Invoice Create & Edit (2026-05-14)
+
+Layout `invoices/create.tsx` dan `invoices/edit.tsx` diubah dari flat single-column ke **2-column sticky grid**:
+
+- **Kiri (4/5)** — dua card: "Detail Invoice" (nomor, klien, tanggal) + "Item Invoice" (compact repeater table)
+- **Kanan (1/5)** — sticky summary panel: subtotal, titipan pajak, diskon accordion, total `2xl`, laba kotor & Est. PPh 0.5% pills, tombol submit + batal
+- Grid: `xl:grid-cols-5` — kiri `xl:col-span-4`, kanan `xl:col-span-1 xl:sticky xl:top-6`
+- Diskon: accordion collapsible dengan `ChevronDown` rotate-180
+- `CurrencyCell` dan `ServiceLookup` di-export dari `create.tsx` untuk digunakan ulang di template pages
+- Focus ring dihilangkan dari search input ServiceLookup (`focus:ring-0`)
+- `onError` callback menampilkan pesan error aktual dari server (bukan pesan generik)
+
 ### Payment
 | Component | Status |
 |-----------|--------|
@@ -345,24 +357,38 @@ resources/js/
 
 **Commits:**
 - `feat(phase-6): add Inertia Recurring Invoices page (index, templates, monthly, analytics)`
+- `feat(phase-6): migrate template create/edit from modal to dedicated Inertia pages`
 
 | Component | Status |
 |-----------|--------|
-| Index (tabs) | ✅ 2026-05-13 — RecurringInvoicesIndex.tsx dengan 3 tab |
-| TemplatesTab | ✅ 2026-05-13 — Inline dalam index, TemplateFormModal |
+| Index (tabs) | ✅ 2026-05-13 |
+| TemplatesTab | ✅ 2026-05-14 — navigasi ke halaman dedicated, `TemplateFormModal` dihapus |
 | MonthlyTab | ✅ 2026-05-13 — MonthlyFormModal, GenerateModal, PublishModal, BulkPublishModal |
 | AnalyticsTab | ✅ 2026-05-13 — ApexCharts bar chart + template stats + status breakdown |
-| Create Template | ✅ 2026-05-13 — TemplateFormModal (store) |
-| Edit Template | ✅ 2026-05-13 — TemplateFormModal (update) |
+| Create Template | ✅ 2026-05-14 — halaman `create-template.tsx` (dedicated full-page, bukan modal) |
+| Edit Template | ✅ 2026-05-14 — halaman `edit-template.tsx` (dedicated full-page, bukan modal) |
 | Delete/Archive Template | ✅ 2026-05-13 — ConfirmDialog + auto-archive jika ada published invoices |
 | Generate Invoice (from template) | ✅ 2026-05-13 — GenerateModal + bulkPublishMonthly |
 
 **Notes:**
-- Controller: `RecurringInvoiceController.php` (12 endpoints — CRUD templates + monthly + analytics)
+- Controller: `RecurringInvoiceController.php` (14 endpoints — CRUD templates + monthly + analytics + 2 Inertia page methods)
+- `createTemplate()` dan `editTemplate()` di controller: render halaman Inertia (bukan JSON)
+- `storeTemplate()` dan `updateTemplate()`: detect `X-Inertia` header → redirect (Inertia) atau JSON response (API)
 - URL-based filter navigation: `?tab=`, `?month=`, `?year=` via `router.get()`
 - Bulk actions: select-all, bulk-destroy, bulk-publish
-- ItemsRepeater menggunakan `Input + datalist` untuk service_name (free-text + autocomplete)
+- Template form: sama komponen `TemplateForm` di-share antara create dan edit via export/import
+- Template form layout: 4/5+1/5 sticky grid (identik dengan invoice create/edit)
+- Template fields tambahan vs invoice: `template_name`, `frequency` (pill buttons), `start_date`, `end_date`
+- Item `quantity` di template = integer (bukan float seperti di invoice biasa)
+- Item `unit` field disertakan (autocomplete dari `datalist` 17 satuan umum)
+- Reuse komponen: `CurrencyCell` + `ServiceLookup` diimport dari `@/pages/invoices/create`
 - Analytics: ApexCharts bar chart, template performance table, status breakdown dengan progress bars
+
+**Routes baru (GET, untuk Inertia pages):**
+```php
+Route::get('/templates/create', [RecurringInvoiceController::class, 'createTemplate'])
+Route::get('/templates/{template}/edit', [RecurringInvoiceController::class, 'editTemplate'])
+```
 
 ---
 

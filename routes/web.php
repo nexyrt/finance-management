@@ -181,6 +181,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('index');
 
         // Templates
+        Route::get('/templates/create', [RecurringInvoiceController::class, 'createTemplate'])
+            ->middleware('can:create recurring-invoices')
+            ->name('templates.create');
+        Route::get('/templates/{template}/edit', [RecurringInvoiceController::class, 'editTemplate'])
+            ->middleware('can:edit recurring-invoices')
+            ->name('templates.edit');
         Route::post('/templates', [RecurringInvoiceController::class, 'storeTemplate'])
             ->middleware('can:create recurring-invoices')
             ->name('templates.store');

@@ -44,11 +44,17 @@ interface DialogContentProps extends React.ComponentPropsWithoutRef<typeof Dialo
 const DialogContent = React.forwardRef<
     React.ElementRef<typeof DialogPrimitive.Content>,
     DialogContentProps
->(({ className, children, size = 'lg', hideClose = false, ...props }, ref) => (
+>(({ className, children, size = 'lg', hideClose = false, onFocusOutside, ...props }, ref) => (
     <DialogPortal>
         <DialogOverlay />
         <DialogPrimitive.Content
             ref={ref}
+            onFocusOutside={(e) => {
+                // Prevent Dialog from recapturing focus when a Radix portal element
+                // (Combobox, Select, Popover) rendered outside the Dialog DOM is focused.
+                onFocusOutside?.(e);
+                if (!e.defaultPrevented) e.preventDefault();
+            }}
             className={cn(
                 'fixed left-[50%] top-[50%] z-50 translate-x-[-50%] translate-y-[-50%]',
                 'w-full',

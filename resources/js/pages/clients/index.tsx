@@ -1,4 +1,5 @@
 import { Head, router, useForm, usePage } from '@inertiajs/react';
+import { toast } from 'sonner';
 import {
     Building2,
     Mail,
@@ -330,10 +331,8 @@ export default function ClientsIndex() {
     function submitCreate(e: React.FormEvent) {
         e.preventDefault();
         createForm.post('/clients', {
-            onSuccess: () => {
-                setCreateOpen(false);
-                createForm.reset();
-            },
+            onSuccess: () => { setCreateOpen(false); createForm.reset(); toast.success('Klien berhasil ditambahkan.'); },
+            onError: () => toast.error('Gagal menyimpan klien. Periksa kembali form Anda.'),
         });
     }
 
@@ -361,7 +360,8 @@ export default function ClientsIndex() {
         e.preventDefault();
         if (!editTarget) return;
         editForm.put(`/clients/${editTarget.id}`, {
-            onSuccess: () => setEditTarget(null),
+            onSuccess: () => { setEditTarget(null); toast.success('Klien berhasil diperbarui.'); },
+            onError: () => toast.error('Gagal memperbarui klien. Periksa kembali form Anda.'),
         });
     }
 
@@ -371,7 +371,8 @@ export default function ClientsIndex() {
     function confirmDelete() {
         if (!deleteTarget) return;
         deleteForm.delete(`/clients/${deleteTarget.id}`, {
-            onSuccess: () => setDeleteTarget(null),
+            onSuccess: () => { setDeleteTarget(null); toast.success('Klien berhasil dihapus.'); },
+            onError: () => toast.error('Gagal menghapus klien.'),
         });
     }
 

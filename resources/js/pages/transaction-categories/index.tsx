@@ -1,4 +1,5 @@
 import { Head, router, useForm, usePage } from '@inertiajs/react';
+import { toast } from 'sonner';
 import {
     ChevronRight,
     FolderOpen,
@@ -86,6 +87,93 @@ const TYPE_CONFIG: Record<string, { label: string; color: 'green' | 'red' | 'blu
     transfer: { label: 'Transfer', color: 'purple' },
 };
 
+/* ─────────────────────────────────── category form ─── */
+
+interface CategoryFormProps {
+    form: {
+        data: { type: string; label: string; parent_id: string };
+        errors: Partial<Record<'type' | 'label' | 'parent_id', string>>;
+        processing: boolean;
+        setData(key: 'type' | 'label' | 'parent_id', value: string): void;
+    };
+    parentOptions: ParentOption[];
+    onCancel: () => void;
+    title: string;
+    submitLabel: string;
+}
+
+function CategoryForm({ form, parentOptions, onCancel, title, submitLabel }: CategoryFormProps) {
+    const availableParents = parentOptions.filter((p) => p.type === form.data.type);
+
+    return (
+        <>
+            <DialogHeader>
+                <div className="flex items-center gap-4 py-2">
+                    <div className="h-12 w-12 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center shrink-0">
+                        <FolderTree className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <div>
+                        <DialogTitle className="text-xl font-bold text-dark-900 dark:text-dark-50">{title}</DialogTitle>
+                        <p className="text-sm text-dark-500 dark:text-dark-400">Tipe, nama, dan parent kategori</p>
+                    </div>
+                </div>
+            </DialogHeader>
+
+            <div className="px-6 py-4 space-y-4">
+                <div className="space-y-1.5">
+                    <label className="block text-sm font-medium text-dark-900 dark:text-dark-300">Tipe *</label>
+                    <div className="grid grid-cols-2 gap-2">
+                        {Object.entries(TYPE_CONFIG).map(([val, cfg]) => (
+                            <button
+                                key={val}
+                                type="button"
+                                onClick={() => { form.setData('type', val); form.setData('parent_id', ''); }}
+                                className={cn(
+                                    'h-9 rounded-lg border text-sm font-medium transition-colors',
+                                    form.data.type === val
+                                        ? 'bg-primary-50 dark:bg-primary-900/20 border-primary-500 text-primary-700 dark:text-primary-300'
+                                        : 'border-secondary-300 dark:border-dark-600 text-dark-600 dark:text-dark-400 hover:bg-zinc-50 dark:hover:bg-dark-700',
+                                )}
+                            >
+                                {cfg.label}
+                            </button>
+                        ))}
+                    </div>
+                    {form.errors.type && <p className="text-xs text-red-600 dark:text-red-400">{form.errors.type}</p>}
+                </div>
+
+                <Input
+                    label="Nama Kategori *"
+                    value={form.data.label}
+                    onChange={(e) => form.setData('label', e.target.value)}
+                    error={form.errors.label}
+                    placeholder="Contoh: Gaji Karyawan"
+                />
+
+                {availableParents.length > 0 && (
+                    <Combobox
+                        label="Parent Kategori (opsional)"
+                        options={availableParents.map((p) => ({ value: p.id, label: p.label }))}
+                        value={form.data.parent_id ? Number(form.data.parent_id) : null}
+                        onChange={(v) => form.setData('parent_id', v != null ? String(v) : '')}
+                        placeholder="Kategori Utama (tanpa parent)"
+                        error={form.errors.parent_id}
+                    />
+                )}
+            </div>
+
+            <DialogFooter>
+                <Button variant="zinc" onClick={onCancel} disabled={form.processing} className="w-full sm:w-auto order-2 sm:order-1">
+                    Batal
+                </Button>
+                <Button type="submit" variant="primary" loading={form.processing} className="w-full sm:w-auto order-1 sm:order-2">
+                    {submitLabel}
+                </Button>
+            </DialogFooter>
+        </>
+    );
+}
+
 /* ─────────────────────────────────── main page ─── */
 
 export default function TransactionCategoriesIndex() {
@@ -116,7 +204,8 @@ export default function TransactionCategoriesIndex() {
     function submitCreate(e: React.FormEvent) {
         e.preventDefault();
         createForm.post('/transaction-categories', {
-            onSuccess: () => { setCreateOpen(false); createForm.reset(); },
+            onSuccess: () => { setCreateOpen(false); createForm.reset(); toast.success('Kategori berhasil ditambahkan.'); },
+            onError: () => toast.error('Gagal menyimpan kategori. Periksa kembali form Anda.'),
         });
     }
 
@@ -132,7 +221,8 @@ export default function TransactionCategoriesIndex() {
         e.preventDefault();
         if (!editTarget) return;
         editForm.put(`/transaction-categories/${editTarget.id}`, {
-            onSuccess: () => setEditTarget(null),
+            onSuccess: () => { setEditTarget(null); toast.success('Kategori berhasil diperbarui.'); },
+            onError: () => toast.error('Gagal memperbarui kategori. Periksa kembali form Anda.'),
         });
     }
 
@@ -142,86 +232,9 @@ export default function TransactionCategoriesIndex() {
     function confirmDelete() {
         if (!deleteTarget) return;
         deleteForm.delete(`/transaction-categories/${deleteTarget.id}`, {
-            onSuccess: () => setDeleteTarget(null),
+            onSuccess: () => { setDeleteTarget(null); toast.success('Kategori berhasil dihapus.'); },
+            onError: () => toast.error('Gagal menghapus kategori.'),
         });
-    }
-
-    /* ── CategoryForm shared component ── */
-    function CategoryForm({ form, onCancel, title, submitLabel }: {
-        form: typeof createForm;
-        onCancel: () => void;
-        title: string;
-        submitLabel: string;
-    }) {
-        const availableParents = parentOptions.filter((p) => p.type === form.data.type);
-
-        return (
-            <>
-                <DialogHeader>
-                    <div className="flex items-center gap-4 py-2">
-                        <div className="h-12 w-12 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center shrink-0">
-                            <FolderTree className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-                        </div>
-                        <div>
-                            <DialogTitle className="text-xl font-bold text-dark-900 dark:text-dark-50">{title}</DialogTitle>
-                            <p className="text-sm text-dark-500 dark:text-dark-400">Tipe, nama, dan parent kategori</p>
-                        </div>
-                    </div>
-                </DialogHeader>
-
-                <div className="px-6 py-4 space-y-4">
-                    <div className="space-y-1.5">
-                        <label className="block text-sm font-medium text-dark-900 dark:text-dark-300">Tipe *</label>
-                        <div className="grid grid-cols-2 gap-2">
-                            {Object.entries(TYPE_CONFIG).map(([val, cfg]) => (
-                                <button
-                                    key={val}
-                                    type="button"
-                                    onClick={() => { form.setData('type', val); form.setData('parent_id', ''); }}
-                                    className={cn(
-                                        'h-9 rounded-lg border text-sm font-medium transition-colors',
-                                        form.data.type === val
-                                            ? 'bg-primary-50 dark:bg-primary-900/20 border-primary-500 text-primary-700 dark:text-primary-300'
-                                            : 'border-secondary-300 dark:border-dark-600 text-dark-600 dark:text-dark-400 hover:bg-zinc-50 dark:hover:bg-dark-700',
-                                    )}
-                                >
-                                    {cfg.label}
-                                </button>
-                            ))}
-                        </div>
-                        {form.errors.type && <p className="text-xs text-red-600 dark:text-red-400">{form.errors.type}</p>}
-                    </div>
-
-                    <Input
-                        label="Nama Kategori *"
-                        value={form.data.label}
-                        onChange={(e) => form.setData('label', e.target.value)}
-                        error={form.errors.label}
-                        placeholder="Contoh: Gaji Karyawan"
-                    />
-
-                    {availableParents.length > 0 && (
-                        <Combobox
-                            label="Parent Kategori (opsional)"
-                            options={availableParents.map((p) => ({ value: p.id, label: p.label }))}
-                            value={form.data.parent_id ? Number(form.data.parent_id) : null}
-                            onChange={(v) => form.setData('parent_id', v != null ? String(v) : '')}
-                            placeholder="Kategori Utama (tanpa parent)"
-                            error={form.errors.parent_id}
-                        />
-                    )}
-                </div>
-
-                <DialogFooter>
-                    <Button variant="zinc" onClick={onCancel} disabled={form.processing} className="w-full sm:w-auto order-2 sm:order-1">
-                        Batal
-                    </Button>
-                    <Button type="submit" variant="primary" loading={form.processing} className="w-full sm:w-auto order-1 sm:order-2">
-                        {submitLabel}
-                    </Button>
-                </DialogFooter>
-            </>
-        );
     }
 
     return (
@@ -372,7 +385,7 @@ export default function TransactionCategoriesIndex() {
             <Dialog open={createOpen} onOpenChange={(o) => { setCreateOpen(o); if (!o) createForm.reset(); }}>
                 <DialogContent size="md">
                     <form onSubmit={submitCreate}>
-                        <CategoryForm form={createForm} onCancel={() => { setCreateOpen(false); createForm.reset(); }} title="Tambah Kategori" submitLabel="Simpan Kategori" />
+                        <CategoryForm form={createForm} parentOptions={parentOptions} onCancel={() => { setCreateOpen(false); createForm.reset(); }} title="Tambah Kategori" submitLabel="Simpan Kategori" />
                     </form>
                 </DialogContent>
             </Dialog>
@@ -381,7 +394,7 @@ export default function TransactionCategoriesIndex() {
             <Dialog open={!!editTarget} onOpenChange={(o) => { if (!o) setEditTarget(null); }}>
                 <DialogContent size="md">
                     <form onSubmit={submitEdit}>
-                        <CategoryForm form={editForm} onCancel={() => setEditTarget(null)} title="Edit Kategori" submitLabel="Perbarui Kategori" />
+                        <CategoryForm form={editForm} parentOptions={parentOptions} onCancel={() => setEditTarget(null)} title="Edit Kategori" submitLabel="Perbarui Kategori" />
                     </form>
                 </DialogContent>
             </Dialog>
