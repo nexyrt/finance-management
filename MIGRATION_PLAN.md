@@ -3,7 +3,7 @@
 > **Dokumen ini adalah panduan kerja untuk Claude Code.**
 > Dibuat: 2026-05-11 | Branch aktif: `feature/inertia-react-migration`
 > Update dokumen ini setiap kali fase selesai.
-> **Terakhir diupdate: 2026-05-12 — Fase 4 selesai, mulai Fase 5**
+> **Terakhir diupdate: 2026-05-13 — Fase 5 selesai penuh (Invoice + Payment). Fase 6 berikutnya.**
 
 ---
 
@@ -52,7 +52,7 @@ git show main:path/to/file.php
 | 2 | AppLayout.tsx | ✅ Selesai (2026-05-11) |
 | 3 | Auth Pages | ✅ Selesai (2026-05-12) |
 | 4 | Master Data | ✅ Selesai (2026-05-12) |
-| 5 | Invoice & Payment | ⬜ Belum Dimulai |
+| 5 | Invoice & Payment | ✅ Selesai (2026-05-13) |
 | 6 | Recurring Invoices | ⬜ Belum Dimulai |
 | 7 | Banking (Accounts + Cash Flow + Transactions) | ⬜ Belum Dimulai |
 | 8 | Operations (Reimbursements + Fund Requests) | ⬜ Belum Dimulai |
@@ -196,8 +196,11 @@ resources/js/
 - [x] `form-section.tsx` — section header dengan border-bottom
 - [x] `empty-state.tsx` — icon + title + description + action
 - [x] `pagination.tsx` — page number buttons dengan ellipsis, first/last/prev/next
+- [x] `file-upload.tsx` — drag-drop + click + clipboard paste (Ctrl+V), existing file chip, size/type validation (ditambahkan Fase 5)
 
 **Catatan:** `Repeater` dan `StatusBadge` dibangun inline saat dibutuhkan per-module (Fase 4+).
+
+**Catatan dialog animation:** `tailwindcss-animate` tidak ter-install. Animasi Dialog menggunakan `@keyframes` + `@utility` custom di `app.css` dengan `data-[state=open/closed]` attributes dari Radix UI. Keyframes menggunakan opacity-only untuk menghindari konflik dengan Tailwind centering transform.
 
 ---
 
@@ -294,29 +297,38 @@ resources/js/
 
 ---
 
-## Fase 5 — Invoice & Payment
+## Fase 5 — Invoice & Payment ✅ SELESAI
 
 **Route:** `/invoices`
 **Livewire source:** `app/Livewire/Invoices/`, `app/Livewire/Payments/`
 
+**Commit:** feat(phase-5): add Invoice & Payment CRUD with InvoiceDrawer, PaymentFormModal, FileUpload
+
 ### Invoice
 | Component | Status |
 |-----------|--------|
-| Index (stats + tabs) | ⬜ |
-| Listing (table + filter) | ⬜ |
-| Create (form + repeater items) | ⬜ |
-| Edit | ⬜ |
-| Delete | ⬜ |
-| Show (detail + PDF download) | ⬜ |
+| Index (stats + pipeline + tabs + filter + table) | ✅ 2026-05-13 |
+| Create (form + repeater items) | ✅ 2026-05-12 |
+| Edit | ✅ 2026-05-12 |
+| Delete (ConfirmDialog inline di index) | ✅ 2026-05-13 |
+| Show (InvoiceDrawer slide-over di index) | ✅ 2026-05-13 |
+
+**Catatan implementasi:**
+- Stats card: accent bar top + tooltip pattern (design system baru)
+- Status pipeline bar: proportional segments, clickable to filter
+- Tabs: `variant="underline"` dengan badge count per status
+- Filter: Combobox (klien) + DatePicker month/range + Input search — semua URL-based (`period_mode` param)
+- Baris tabel clickable → buka InvoiceDrawer
+- Controller: `InvoiceController@index` — mendukung period_mode, date_from, date_to
 
 ### Payment
 | Component | Status |
 |-----------|--------|
-| Listing | ⬜ |
-| Create | ⬜ |
-| Edit | ⬜ |
-| Delete | ⬜ |
-| AttachmentViewer | ⬜ |
+| Listing (embedded di InvoiceDrawer) | ✅ 2026-05-13 |
+| Create (PaymentFormModal di InvoiceDrawer) | ✅ 2026-05-13 |
+| Edit (PaymentFormModal di InvoiceDrawer) | ✅ 2026-05-13 |
+| Delete (ConfirmDialog di InvoiceDrawer) | ✅ 2026-05-13 |
+| AttachmentViewer (via attachment_url link) | ✅ 2026-05-13 |
 
 **Business logic penting:**
 - Invoice number format: `INV/{seq}/KSN/{mm}.{yy}`

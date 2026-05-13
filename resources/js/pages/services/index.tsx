@@ -13,6 +13,7 @@ import {
 import * as React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Combobox } from '@/components/ui/combobox';
 import {
     Dialog,
     DialogContent,
@@ -22,6 +23,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
+import { CurrencyInput } from '@/components/shared/currency-input';
 import { StatsCard } from '@/components/shared/stats-card';
 import { AppLayout } from '@/layouts/app-layout';
 import { formatCurrency } from '@/lib/utils';
@@ -169,48 +171,22 @@ export default function ServicesIndex() {
                         placeholder="Contoh: Pembuatan NPWP Badan"
                     />
 
-                    <div className="space-y-1.5">
-                        <label className="block text-sm font-medium text-dark-900 dark:text-dark-300">Kategori *</label>
-                        <select
-                            value={form.data.type}
-                            onChange={(e) => form.setData('type', e.target.value)}
-                            className={[
-                                'flex h-9 w-full rounded-lg border text-sm transition-colors',
-                                'bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-300',
-                                'focus:outline-none focus:ring-2 focus:ring-offset-0 focus:ring-primary-500 px-3',
-                                form.errors.type
-                                    ? 'border-red-500 dark:border-red-500'
-                                    : 'border-secondary-300 dark:border-dark-600',
-                            ].join(' ')}
-                        >
-                            <option value="">Pilih Kategori</option>
-                            {types.map((t) => <option key={t} value={t}>{t}</option>)}
-                        </select>
-                        {form.errors.type && <p className="text-xs text-red-600 dark:text-red-400">{form.errors.type}</p>}
-                    </div>
+                    <Combobox
+                        label="Kategori *"
+                        options={types.map((t) => ({ value: t, label: t }))}
+                        value={form.data.type || null}
+                        onChange={(v) => form.setData('type', v != null ? String(v) : '')}
+                        placeholder="Pilih Kategori"
+                        clearable={false}
+                        error={form.errors.type}
+                    />
 
-                    <div className="space-y-1.5">
-                        <label className="block text-sm font-medium text-dark-900 dark:text-dark-300">Harga *</label>
-                        <div className="relative">
-                            <span className="absolute inset-y-0 left-3 flex items-center text-sm text-dark-500 dark:text-dark-400">Rp</span>
-                            <input
-                                type="number"
-                                min={0}
-                                value={form.data.price}
-                                onChange={(e) => form.setData('price', parseInt(e.target.value) || 0)}
-                                className={[
-                                    'flex h-9 w-full rounded-lg border text-sm transition-colors',
-                                    'bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-300',
-                                    'focus:outline-none focus:ring-2 focus:ring-offset-0 focus:ring-primary-500',
-                                    'pl-10 pr-3 py-1.5',
-                                    form.errors.price
-                                        ? 'border-red-500 dark:border-red-500'
-                                        : 'border-secondary-300 dark:border-dark-600',
-                                ].join(' ')}
-                            />
-                        </div>
-                        {form.errors.price && <p className="text-xs text-red-600 dark:text-red-400">{form.errors.price}</p>}
-                    </div>
+                    <CurrencyInput
+                        label="Harga *"
+                        value={form.data.price}
+                        onChange={(v) => form.setData('price', v)}
+                        error={form.errors.price}
+                    />
                 </div>
 
                 <DialogFooter>
@@ -253,32 +229,31 @@ export default function ServicesIndex() {
                 </div>
 
                 {/* Filters */}
-                <div className="flex flex-col sm:flex-row gap-3">
-                    <div className="relative flex-1 max-w-xs">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-dark-400" />
-                        <input
+                <div className="flex flex-col sm:flex-row gap-3 items-end">
+                    <div className="w-full sm:w-64">
+                        <Input
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                             placeholder="Cari layanan..."
-                            className="flex h-9 w-full rounded-lg border border-secondary-300 dark:border-dark-600 bg-white dark:bg-dark-800 text-sm text-dark-900 dark:text-dark-300 placeholder:text-dark-400 focus:outline-none focus:ring-2 focus:ring-primary-500 pl-9 pr-3 py-1.5 transition-colors"
+                            icon={<Search className="h-4 w-4" />}
+                            iconRight={search ? (
+                                <button onClick={() => setSearch('')}>
+                                    <X className="h-3.5 w-3.5" />
+                                </button>
+                            ) : undefined}
                         />
-                        {search && (
-                            <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-dark-400 hover:text-dark-600">
-                                <X className="h-3.5 w-3.5" />
-                            </button>
-                        )}
                     </div>
 
-                    <select
-                        value={typeFilter}
-                        onChange={(e) => handleTypeFilter(e.target.value)}
-                        className="h-9 rounded-lg border border-secondary-300 dark:border-dark-600 bg-white dark:bg-dark-800 text-sm text-dark-900 dark:text-dark-300 focus:outline-none focus:ring-2 focus:ring-primary-500 px-3 transition-colors"
-                    >
-                        <option value="">Semua Kategori</option>
-                        {types.map((t) => <option key={t} value={t}>{t}</option>)}
-                    </select>
+                    <div className="w-full sm:w-52">
+                        <Combobox
+                            options={types.map((t) => ({ value: t, label: t }))}
+                            value={typeFilter || null}
+                            onChange={(v) => handleTypeFilter(v != null ? String(v) : '')}
+                            placeholder="Semua Kategori"
+                        />
+                    </div>
 
-                    <span className="text-sm text-dark-500 dark:text-dark-400 self-center">
+                    <span className="text-sm text-dark-500 dark:text-dark-400 shrink-0 pb-0.5">
                         {services.from ?? 0}–{services.to ?? 0} dari {services.total}
                     </span>
                 </div>

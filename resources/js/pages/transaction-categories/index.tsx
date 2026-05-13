@@ -14,6 +14,7 @@ import {
 import * as React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Combobox } from '@/components/ui/combobox';
 import {
     Dialog,
     DialogContent,
@@ -200,20 +201,14 @@ export default function TransactionCategoriesIndex() {
                     />
 
                     {availableParents.length > 0 && (
-                        <div className="space-y-1.5">
-                            <label className="block text-sm font-medium text-dark-900 dark:text-dark-300">Parent Kategori (opsional)</label>
-                            <select
-                                value={form.data.parent_id}
-                                onChange={(e) => form.setData('parent_id', e.target.value)}
-                                className="flex h-9 w-full rounded-lg border border-secondary-300 dark:border-dark-600 bg-white dark:bg-dark-800 text-sm text-dark-900 dark:text-dark-300 focus:outline-none focus:ring-2 focus:ring-primary-500 px-3 transition-colors"
-                            >
-                                <option value="">Kategori Utama (tanpa parent)</option>
-                                {availableParents.map((p) => (
-                                    <option key={p.id} value={p.id}>{p.label}</option>
-                                ))}
-                            </select>
-                            {form.errors.parent_id && <p className="text-xs text-red-600 dark:text-red-400">{form.errors.parent_id}</p>}
-                        </div>
+                        <Combobox
+                            label="Parent Kategori (opsional)"
+                            options={availableParents.map((p) => ({ value: p.id, label: p.label }))}
+                            value={form.data.parent_id ? Number(form.data.parent_id) : null}
+                            onChange={(v) => form.setData('parent_id', v != null ? String(v) : '')}
+                            placeholder="Kategori Utama (tanpa parent)"
+                            error={form.errors.parent_id}
+                        />
                     )}
                 </div>
 
@@ -258,34 +253,31 @@ export default function TransactionCategoriesIndex() {
                 </div>
 
                 {/* Filters */}
-                <div className="flex flex-col sm:flex-row gap-3">
-                    <div className="relative flex-1 max-w-xs">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-dark-400" />
-                        <input
+                <div className="flex flex-col sm:flex-row gap-3 items-end">
+                    <div className="w-full sm:w-64">
+                        <Input
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                             placeholder="Cari kategori..."
-                            className="flex h-9 w-full rounded-lg border border-secondary-300 dark:border-dark-600 bg-white dark:bg-dark-800 text-sm text-dark-900 dark:text-dark-300 placeholder:text-dark-400 focus:outline-none focus:ring-2 focus:ring-primary-500 pl-9 pr-3 py-1.5 transition-colors"
+                            icon={<Search className="h-4 w-4" />}
+                            iconRight={search ? (
+                                <button onClick={() => setSearch('')}>
+                                    <X className="h-3.5 w-3.5" />
+                                </button>
+                            ) : undefined}
                         />
-                        {search && (
-                            <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-dark-400 hover:text-dark-600">
-                                <X className="h-3.5 w-3.5" />
-                            </button>
-                        )}
                     </div>
 
-                    <select
-                        value={typeFilter}
-                        onChange={(e) => handleTypeFilter(e.target.value)}
-                        className="h-9 rounded-lg border border-secondary-300 dark:border-dark-600 bg-white dark:bg-dark-800 text-sm text-dark-900 dark:text-dark-300 focus:outline-none focus:ring-2 focus:ring-primary-500 px-3 transition-colors"
-                    >
-                        <option value="">Semua Tipe</option>
-                        {Object.entries(TYPE_CONFIG).map(([val, cfg]) => (
-                            <option key={val} value={val}>{cfg.label}</option>
-                        ))}
-                    </select>
+                    <div className="w-full sm:w-48">
+                        <Combobox
+                            options={Object.entries(TYPE_CONFIG).map(([val, cfg]) => ({ value: val, label: cfg.label }))}
+                            value={typeFilter || null}
+                            onChange={(v) => handleTypeFilter(v != null ? String(v) : '')}
+                            placeholder="Semua Tipe"
+                        />
+                    </div>
 
-                    <span className="text-sm text-dark-500 dark:text-dark-400 self-center">
+                    <span className="text-sm text-dark-500 dark:text-dark-400 shrink-0 pb-0.5">
                         {categories.from ?? 0}–{categories.to ?? 0} dari {categories.total}
                     </span>
                 </div>

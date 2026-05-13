@@ -27,8 +27,8 @@ const DialogOverlay = React.forwardRef<
         ref={ref}
         className={cn(
             'fixed inset-0 z-50 bg-black/40 backdrop-blur-sm',
-            'data-[state=open]:animate-in data-[state=closed]:animate-out',
-            'data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
+            'data-[state=open]:animate-dialog-overlay-show',
+            'data-[state=closed]:animate-dialog-overlay-hide',
             className,
         )}
         {...props}
@@ -57,11 +57,8 @@ const DialogContent = React.forwardRef<
                 'rounded-xl border border-secondary-200 dark:border-dark-600',
                 'shadow-xl',
                 'max-h-[90vh] overflow-y-auto',
-                'data-[state=open]:animate-in data-[state=closed]:animate-out',
-                'data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
-                'data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95',
-                'data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%]',
-                'data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%]',
+                'data-[state=open]:animate-dialog-content-show',
+                'data-[state=closed]:animate-dialog-content-hide',
                 className,
             )}
             {...props}

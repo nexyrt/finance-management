@@ -192,19 +192,31 @@ This is a critical section missing from DevTools-only analysis. The application 
 ├──────────────┬──────────────┬───────────────────────┤
 │  Stat Card   │  Stat Card   │  Stat Card  Stat Card  │
 ├──────────────┴──────────────┴───────────────────────┤
-│ [Filter dropdowns row]                               │
-│ [Search bar]        [active filters] [count]         │
-├─────────────────────────────────────────────────────┤
-│ Table (NO, Klien, Tanggal, Jatuh Tempo, Jumlah,     │
-│        Status, Faktur, Aksi)                        │
-│  row  row  row  ...                                 │
-└─────────────────────────────────────────────────────┘
+│ ████████▓▓▓▒▒▒░░░  ← Status pipeline bar            │
+│ ● Draft (n)  ● Terkirim (n)  ● Sebagian (n)  ● Lunas│
+├──────────────────────────────────────────────────────┤
+│ [Semua] [Draft n] [Terkirim n] [Sebagian n] [Lunas n]│  ← underline tabs
+├──────────────────────────────────────────────────────┤
+│ ┌──────────────────── Card ───────────────────────┐  │
+│ │ [Klien ▼] [Periode: Bulan|Rentang] [🔍 Cari...]│  │  ← filter toolbar (border-b)
+│ ├─────────────────────────────────────────────────┤  │
+│ │ Table (NO, Klien+Avatar, Tgl, Jatuh Tempo,      │  │
+│ │        Jumlah+progress, Status, ⋯ Aksi)        │  │  ← clickable rows
+│ ├─────────────────────────────────────────────────┤  │
+│ │ [Pagination]                       n–m dari tot │  │  ← conditional footer (border-t)
+│ └─────────────────────────────────────────────────┘  │
+└──────────────────────────────────────────────────────┘
 ```
 
-- Stats: 4 cards horizontal, each with colored icon (blue/green/red/orange) + label + large amount
-- Filter: inline, no section header, no border
-- Table action column: icon-only buttons (`title="Lihat"`, `title="Cetak"`, etc.)
-- Badges in table: solid colored pills (6px radius, 12px bold)
+- Stats: 4 cards, each with `h-1` colored top accent bar + uppercase tracked label + icon (top-right) + large value + sub-text line 3 + `Tooltip` on hover
+- Status pipeline bar: proportional `h-2 rounded-full` horizontal segments per status count, clickable to filter
+- Status tabs: `variant="underline"` with badge count per status
+- Unified table card: filter toolbar inside `Card` header (`border-b`), table in body, pagination in footer (`border-t`, conditional on `last_page > 1`)
+- Filter toolbar: `Combobox` for client, date mode toggle (pill), `DatePicker` (`mode="month"` or `mode="range"`), `Input` for search, reset button with `Badge` count
+- Table rows: fully clickable (`onClick → openDrawer`), `cursor-pointer`, actions cell stops propagation
+- Client column: `Avatar` + `AvatarFallback` (initials) + name + type
+- Amount column: value + inline progress bar for `partially_paid` status
+- Action column: `DropdownMenu` with `MoreHorizontal` trigger (Lihat Detail / Edit / Download PDF / Hapus)
 
 ### 2. Card Grid Layout — Templates (Recurring Invoices)
 
@@ -358,7 +370,7 @@ Input internals: transparent bg, radius 6px, padding `6px 12px`, font-size 14px,
 
 Note: in light mode the active nav item has a tinted blue-50 background that fills the entire row width. In dark mode it becomes a solid blue-500 row — much more prominent.
 
-### Tab Bar (Custom Pill/Segment style)
+### Tab Bar — Pill/Segment style
 
 ```
 [inactive tab] [ACTIVE TAB] [inactive tab]
@@ -367,6 +379,35 @@ Note: in light mode the active nav item has a tinted blue-50 background that fil
 Container: `bg-zinc-100 dark:bg-dark-700 rounded-xl border p-1`
 Active: `bg-white dark:bg-dark-800 shadow-sm border rounded-lg`
 Inactive: text muted, hover bg-zinc-50/dark-600
+
+Use for: switching between content modes (Templates / Bulanan / Analitik, etc.)
+
+### Tab Bar — Underline style
+
+```
+[Semua] [Draft 4] [Terkirim 2] [Sebagian 1] [Lunas 12]
+────────────────────────────────────────────────────────
+```
+
+Container: `flex items-center border-b border-secondary-200 dark:border-dark-600`
+Active tab: `border-b-2 -mb-px border-primary-600 dark:border-primary-400 text-primary-700`
+Inactive tab: `border-transparent text-dark-500`, hover `text-dark-800 hover:border-dark-200`
+Badge (active): `bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300`
+Badge (inactive): `bg-zinc-100 dark:bg-dark-700 text-dark-500`
+
+Use for: status filtering on list pages (all / draft / sent / paid, etc.)
+
+### Date Mode Toggle (Bulan / Rentang)
+
+```
+[Bulan] [Rentang]
+```
+
+A pill-style switcher (smaller scale than full tab bar) placed inline above a `DatePicker`:
+- Container: `inline-flex p-0.5 bg-zinc-100 dark:bg-dark-700 rounded-lg border`
+- Active: `bg-white dark:bg-dark-800 shadow-sm border rounded-md text-xs`
+- Inactive: `text-dark-500 text-xs`, hover text-dark-700
+- Drives `period_mode` URL param (`month` | `range`); switching navigates and preserves all other filters
 
 ---
 
@@ -434,6 +475,20 @@ Snappy and functional — transitions confirm state, never entertain. 100–300m
 | `primary-600` / `primary-500` (dark) | `primary` |
 | `rounded-xl` | override shadcn default (`rounded-md`) to `rounded-xl` |
 
+**Global cursor pointer (app.css):**
+```css
+button:not(:disabled),
+a,
+[role="button"]:not([aria-disabled="true"]),
+label[for],
+summary {
+    cursor: pointer;
+}
+```
+Applied globally — do not add `cursor-pointer` individually to every element.
+
+**Clickable table rows:** Add `onClick` + `cursor-pointer` to `<tr>`. Add `onClick={(e) => e.stopPropagation()}` to the actions cell to prevent row click from firing when the dropdown is used.
+
 **Icon library:** Heroicons in Blade → `lucide-react` or `@heroicons/react` in React.
 
 **Gradient heading (React):**
@@ -443,20 +498,41 @@ Snappy and functional — transitions confirm state, never entertain. 100–300m
 </h1>
 ```
 
-**Stats card (React/shadcn):**
+**Stats card (React/shadcn) — current pattern:**
+
+Three-row vertical layout with colored top accent bar and tooltip.
 ```tsx
-<Card className="hover:shadow-md transition-shadow">
-  <CardContent className="flex items-center gap-4 p-6">
-    <div className="h-12 w-12 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center shrink-0">
-      <Icon className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-    </div>
-    <div>
-      <p className="text-sm text-muted-foreground">Label</p>
-      <p className="text-2xl font-bold">Value</p>
-    </div>
-  </CardContent>
-</Card>
+<Tooltip>
+  <TooltipTrigger asChild>
+    <Card className="hover:shadow-md transition-all duration-200 overflow-hidden cursor-default">
+      <div className="bg-blue-500 h-1" />   {/* colored accent bar — 1px top stripe */}
+      <CardContent className="p-5">
+        <div className="flex items-start justify-between mb-3">
+          <p className="text-xs font-semibold uppercase tracking-wider text-dark-500 dark:text-dark-400 leading-none">
+            Label
+          </p>
+          <span className="text-blue-500 dark:text-blue-400 shrink-0"><Icon className="w-5 h-5" /></span>
+        </div>
+        <p className="text-xl font-bold text-dark-900 dark:text-dark-50 leading-none">Value</p>
+        <p className="text-xs text-dark-500 dark:text-dark-400 mt-2">Sub-text (concise context)</p>
+      </CardContent>
+    </Card>
+  </TooltipTrigger>
+  <TooltipContent side="bottom" className="max-w-56 text-center">
+    Full explanation of what this metric shows
+  </TooltipContent>
+</Tooltip>
 ```
+
+Wrap grid in `<TooltipProvider delayDuration={300}>`.
+
+Accent bar colors per semantic role:
+| Role | Accent | Icon color |
+|------|--------|-----------|
+| Revenue / total | `bg-blue-500` | `text-blue-500` |
+| Profit / positive metric | `bg-emerald-500` (red if negative) | `text-emerald-500` |
+| Payments received | `bg-green-500` | `text-green-500` |
+| Count / quantity | `bg-purple-500` | `text-purple-500` |
 
 **Form modal submit button — semantic color by action:**
 ```tsx

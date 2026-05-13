@@ -2,13 +2,18 @@ import { Head, router, useForm, usePage } from '@inertiajs/react';
 import {
     AlertCircle,
     ArrowUpDown,
+    Banknote,
     CheckCircle2,
+    CreditCard,
     Download,
     Eye,
     FileText,
+    Paperclip,
+    MoreHorizontal,
     Pencil,
     Plus,
     RotateCcw,
+    Search,
     Send,
     TrendingUp,
     Trash2,
@@ -16,9 +21,12 @@ import {
     X,
 } from 'lucide-react';
 import * as React from 'react';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { Combobox } from '@/components/ui/combobox';
+import { DatePicker } from '@/components/ui/date-picker';
 import {
     Dialog,
     DialogContent,
@@ -26,14 +34,29 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
+import { Switch } from '@/components/ui/switch';
 import { Tabs } from '@/components/ui/tabs';
 import type { TabItem } from '@/components/ui/tabs';
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
+import { CurrencyInput } from '@/components/shared/currency-input';
 import { EmptyState } from '@/components/shared/empty-state';
+import { FileUpload } from '@/components/shared/file-upload';
 import { PageHeader } from '@/components/shared/page-header';
 import { Pagination } from '@/components/shared/pagination';
-import { StatsCard } from '@/components/shared/stats-card';
 import { AppLayout } from '@/layouts/app-layout';
 import { cn, formatCurrency, formatDate } from '@/lib/utils';
 import type { SharedProps } from '@/types';
@@ -86,6 +109,9 @@ interface Filters {
     status?: string | null;
     client_id?: number | null;
     month?: string;
+    date_from?: string | null;
+    date_to?: string | null;
+    period_mode?: 'month' | 'range';
     per_page?: number;
     sort?: string;
     direction?: string;
@@ -127,8 +153,12 @@ interface InvoiceDetail {
         id: number;
         amount: number;
         payment_date: string;
-        bank_account: string | null;
-        notes: string | null;
+        payment_method: 'cash' | 'bank_transfer';
+        bank_account_id: number | null;
+        bank_account_name: string | null;
+        reference_number: string | null;
+        attachment_name: string | null;
+        attachment_url: string | null;
     }>;
 }
 
@@ -156,7 +186,40 @@ const STATUS_LABEL: Record<string, string> = {
     paid: 'Lunas',
 };
 
+function getInitials(name: string): string {
+    return name
+        .split(/\s+/)
+        .slice(0, 2)
+        .map((w) => w[0] ?? '')
+        .join('')
+        .toUpperCase();
+}
+
+function getCsrfToken(): string {
+    return (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content ?? '';
+}
+
 /* ─────────────────────────────────── slide-over ─── */
+
+interface PaymentFormState {
+    amount: number;
+    payment_date: string;
+    payment_method: 'cash' | 'bank_transfer';
+    bank_account_id: number | null;
+    reference_number: string;
+    attachment: File | null;
+    remove_attachment: boolean;
+}
+
+const EMPTY_PAYMENT_FORM: PaymentFormState = {
+    amount: 0,
+    payment_date: new Date().toISOString().slice(0, 10),
+    payment_method: 'bank_transfer',
+    bank_account_id: null,
+    reference_number: '',
+    attachment: null,
+    remove_attachment: false,
+};
 
 function InvoiceDrawer({
     open,
@@ -175,32 +238,51 @@ function InvoiceDrawer({
     const [deleteOpen, setDeleteOpen] = React.useState(false);
     const [deleteLoading, setDeleteLoading] = React.useState(false);
 
+    /* payment state */
+    const [bankAccounts, setBankAccounts] = React.useState<{ label: string; value: number }[]>([]);
+    const [paymentFormOpen, setPaymentFormOpen] = React.useState(false);
+    const [editPayment, setEditPayment] = React.useState<InvoiceDetail['payments'][number] | null>(null);
+    const [deletePaymentTarget, setDeletePaymentTarget] = React.useState<InvoiceDetail['payments'][number] | null>(null);
+    const [paymentForm, setPaymentForm] = React.useState<PaymentFormState>(EMPTY_PAYMENT_FORM);
+    const [paymentErrors, setPaymentErrors] = React.useState<Record<string, string>>({});
+    const [paymentLoading, setPaymentLoading] = React.useState(false);
+    const [deletePaymentLoading, setDeletePaymentLoading] = React.useState(false);
+
     const sendForm = useForm({ invoice_number: '' });
 
-    React.useEffect(() => {
-        if (!open || !invoiceId) {
-            setDetail(null);
-            return;
-        }
+    const fetchDetail = React.useCallback((id: number) => {
         setLoading(true);
-        fetch(`/invoices/${invoiceId}`, {
+        fetch(`/invoices/${id}`, {
             headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
         })
             .then((r) => r.json())
             .then((data) => {
                 setDetail(data);
                 if (data.status === 'draft') {
-                    const now = new Date(data.issue_date);
-                    const roman = [
-                        '', 'I', 'II', 'III', 'IV', 'V', 'VI',
-                        'VII', 'VIII', 'IX', 'X', 'XI', 'XII',
-                    ][now.getMonth() + 1];
                     sendForm.setData('invoice_number', data.invoice_number ?? '');
                 }
             })
             .catch(console.error)
             .finally(() => setLoading(false));
+    }, []);
+
+    React.useEffect(() => {
+        if (!open || !invoiceId) {
+            setDetail(null);
+            return;
+        }
+        fetchDetail(invoiceId);
     }, [open, invoiceId]);
+
+    React.useEffect(() => {
+        if (!open) return;
+        fetch('/api/bank-accounts', {
+            headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+        })
+            .then((r) => r.json())
+            .then(setBankAccounts)
+            .catch(console.error);
+    }, [open]);
 
     const handleSend = () => {
         if (!detail) return;
@@ -214,9 +296,7 @@ function InvoiceDrawer({
 
     const handleRollback = () => {
         if (!detail) return;
-        router.post(`/invoices/${detail.id}/rollback`, {}, {
-            onSuccess: () => onClose(),
-        });
+        router.post(`/invoices/${detail.id}/rollback`, {}, { onSuccess: () => onClose() });
     };
 
     const handleDelete = () => {
@@ -231,7 +311,118 @@ function InvoiceDrawer({
         });
     };
 
+    /* ── payment CRUD ── */
+
+    const openCreatePayment = () => {
+        const remaining = detail ? detail.amount_remaining : 0;
+        setPaymentForm({ ...EMPTY_PAYMENT_FORM, amount: remaining > 0 ? remaining : 0 });
+        setPaymentErrors({});
+        setEditPayment(null);
+        setPaymentFormOpen(true);
+    };
+
+    const openEditPayment = (p: InvoiceDetail['payments'][number]) => {
+        setPaymentForm({
+            amount: p.amount,
+            payment_date: p.payment_date,
+            payment_method: p.payment_method,
+            bank_account_id: p.bank_account_id,
+            reference_number: p.reference_number ?? '',
+            attachment: null,
+            remove_attachment: false,
+        });
+        setPaymentErrors({});
+        setEditPayment(p);
+        setPaymentFormOpen(true);
+    };
+
+    const handlePaymentSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!detail) return;
+
+        setPaymentLoading(true);
+        setPaymentErrors({});
+
+        const fd = new FormData();
+        fd.append('amount', String(paymentForm.amount));
+        fd.append('payment_date', paymentForm.payment_date);
+        fd.append('payment_method', paymentForm.payment_method);
+        if (paymentForm.bank_account_id != null) {
+            fd.append('bank_account_id', String(paymentForm.bank_account_id));
+        }
+        if (paymentForm.reference_number) {
+            fd.append('reference_number', paymentForm.reference_number);
+        }
+        if (paymentForm.attachment) {
+            fd.append('attachment', paymentForm.attachment);
+        }
+        if (editPayment && paymentForm.remove_attachment) {
+            fd.append('remove_attachment', '1');
+        }
+
+        const url = editPayment
+            ? `/payments/${editPayment.id}`
+            : `/invoices/${detail.id}/payments`;
+
+        try {
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': getCsrfToken(),
+                    Accept: 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                body: fd,
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                if (data.errors) {
+                    setPaymentErrors(data.errors);
+                } else {
+                    setPaymentErrors({ _: data.message ?? 'Terjadi kesalahan.' });
+                }
+                return;
+            }
+
+            setPaymentFormOpen(false);
+            setEditPayment(null);
+            fetchDetail(detail.id);
+            router.reload({ only: ['invoices', 'stats'] });
+        } catch {
+            setPaymentErrors({ _: 'Terjadi kesalahan jaringan.' });
+        } finally {
+            setPaymentLoading(false);
+        }
+    };
+
+    const handleDeletePayment = async () => {
+        if (!deletePaymentTarget || !detail) return;
+        setDeletePaymentLoading(true);
+        try {
+            const res = await fetch(`/payments/${deletePaymentTarget.id}`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': getCsrfToken(),
+                    Accept: 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+            });
+            if (res.ok) {
+                setDeletePaymentTarget(null);
+                fetchDetail(detail.id);
+                router.reload({ only: ['invoices', 'stats'] });
+            }
+        } catch {
+            /* noop */
+        } finally {
+            setDeletePaymentLoading(false);
+        }
+    };
+
     const isRollbackable = detail ? rollbackableIds.includes(detail.id) : false;
+    const canAddPayment = detail && (detail.status === 'sent' || detail.status === 'partially_paid');
 
     const netRevenue = detail
         ? detail.items.filter((i) => !i.is_tax_deposit).reduce((s, i) => s + i.amount, 0)
@@ -278,7 +469,9 @@ function InvoiceDrawer({
                             </h2>
                             {detail && (
                                 <div className="flex items-center gap-2 mt-0.5">
-                                    <Badge variant={STATUS_VARIANT[detail.status] ?? 'zinc'}>{STATUS_LABEL[detail.status] ?? detail.status}</Badge>
+                                    <Badge variant={STATUS_VARIANT[detail.status] ?? 'zinc'}>
+                                        {STATUS_LABEL[detail.status] ?? detail.status}
+                                    </Badge>
                                     <span className="text-xs text-dark-500 dark:text-dark-400">
                                         {detail.client.name}
                                     </span>
@@ -395,7 +588,7 @@ function InvoiceDrawer({
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {detail.items.map((item, idx) => (
+                                            {detail.items.map((item) => (
                                                 <tr
                                                     key={item.id}
                                                     className={cn(
@@ -451,36 +644,93 @@ function InvoiceDrawer({
                             </div>
 
                             {/* Payments */}
-                            {detail.payments.length > 0 && (
-                                <div className="space-y-3">
-                                    <h3 className="text-sm font-semibold text-dark-900 dark:text-dark-50 border-b border-secondary-200 dark:border-dark-600 pb-2">
+                            <div className="space-y-3">
+                                <div className="flex items-center justify-between border-b border-secondary-200 dark:border-dark-600 pb-2">
+                                    <h3 className="text-sm font-semibold text-dark-900 dark:text-dark-50">
                                         Riwayat Pembayaran
                                     </h3>
+                                    {canAddPayment && (
+                                        <Button
+                                            size="sm"
+                                            variant="primary"
+                                            icon={<Plus className="w-3.5 h-3.5" />}
+                                            onClick={openCreatePayment}
+                                        >
+                                            Catat Pembayaran
+                                        </Button>
+                                    )}
+                                </div>
+
+                                {detail.payments.length === 0 ? (
+                                    <p className="text-sm text-dark-500 dark:text-dark-400 py-2">
+                                        Belum ada pembayaran tercatat.
+                                    </p>
+                                ) : (
                                     <div className="space-y-2">
                                         {detail.payments.map((p) => (
                                             <div
                                                 key={p.id}
-                                                className="flex items-center justify-between p-3 rounded-xl border border-secondary-200 dark:border-dark-600 bg-secondary-50 dark:bg-dark-800"
+                                                className="flex items-start justify-between p-3 rounded-xl border border-secondary-200 dark:border-dark-600 bg-secondary-50 dark:bg-dark-800"
                                             >
-                                                <div>
-                                                    <p className="text-sm font-medium text-dark-900 dark:text-dark-50">
-                                                        {formatDate(p.payment_date)}
-                                                    </p>
-                                                    {p.bank_account && (
-                                                        <p className="text-xs text-dark-500 dark:text-dark-400">{p.bank_account}</p>
-                                                    )}
-                                                    {p.notes && (
-                                                        <p className="text-xs text-dark-400 dark:text-dark-500 mt-0.5">{p.notes}</p>
-                                                    )}
+                                                <div className="flex items-start gap-3 min-w-0">
+                                                    <div className={cn(
+                                                        'h-8 w-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5',
+                                                        p.payment_method === 'cash'
+                                                            ? 'bg-green-50 dark:bg-green-900/20'
+                                                            : 'bg-blue-50 dark:bg-blue-900/20',
+                                                    )}>
+                                                        {p.payment_method === 'cash'
+                                                            ? <Banknote className="w-4 h-4 text-green-600 dark:text-green-400" />
+                                                            : <CreditCard className="w-4 h-4 text-blue-600 dark:text-blue-400" />}
+                                                    </div>
+                                                    <div className="min-w-0">
+                                                        <p className="text-sm font-medium text-dark-900 dark:text-dark-50">
+                                                            {formatDate(p.payment_date)}
+                                                            <span className="ml-2 text-xs font-normal text-dark-500 dark:text-dark-400">
+                                                                {p.payment_method === 'cash' ? 'Tunai' : 'Transfer'}
+                                                            </span>
+                                                        </p>
+                                                        {p.bank_account_name && (
+                                                            <p className="text-xs text-dark-500 dark:text-dark-400 truncate">{p.bank_account_name}</p>
+                                                        )}
+                                                        {p.reference_number && (
+                                                            <p className="text-xs text-dark-400 dark:text-dark-500">Ref: {p.reference_number}</p>
+                                                        )}
+                                                        {p.attachment_name && (
+                                                            <a
+                                                                href={p.attachment_url ?? '#'}
+                                                                target="_blank"
+                                                                rel="noreferrer"
+                                                                className="inline-flex items-center gap-1 text-xs text-primary-600 dark:text-primary-400 hover:underline mt-0.5"
+                                                            >
+                                                                <Paperclip className="w-3 h-3" />
+                                                                {p.attachment_name}
+                                                            </a>
+                                                        )}
+                                                    </div>
                                                 </div>
-                                                <p className="font-bold text-green-600 dark:text-green-400 text-sm">
-                                                    +{formatCurrency(p.amount)}
-                                                </p>
+                                                <div className="flex items-center gap-1 shrink-0 ml-3">
+                                                    <p className="font-bold text-green-600 dark:text-green-400 text-sm mr-1">
+                                                        +{formatCurrency(p.amount)}
+                                                    </p>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon-sm"
+                                                        icon={<Pencil className="w-3.5 h-3.5" />}
+                                                        onClick={() => openEditPayment(p)}
+                                                    />
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon-sm"
+                                                        icon={<Trash2 className="w-3.5 h-3.5 text-red-500" />}
+                                                        onClick={() => setDeletePaymentTarget(p)}
+                                                    />
+                                                </div>
                                             </div>
                                         ))}
                                     </div>
-                                </div>
-                            )}
+                                )}
+                            </div>
 
                             {/* HPP breakdown */}
                             {(netRevenue > 0 || totalCogs > 0) && (
@@ -493,7 +743,13 @@ function InvoiceDrawer({
                                             { label: 'Pendapatan Bersih', value: netRevenue, cls: '' },
                                             { label: 'HPP / COGS', value: totalCogs, cls: 'text-red-600 dark:text-red-400' },
                                             { label: 'Titipan Pajak', value: totalTaxDeposits, cls: 'text-yellow-600 dark:text-yellow-400' },
-                                            { label: 'Laba Kotor', value: grossProfit, cls: grossProfit >= 0 ? 'text-emerald-600 dark:text-emerald-400 font-bold' : 'text-red-600 dark:text-red-400 font-bold' },
+                                            {
+                                                label: 'Laba Kotor',
+                                                value: grossProfit,
+                                                cls: grossProfit >= 0
+                                                    ? 'text-emerald-600 dark:text-emerald-400 font-bold'
+                                                    : 'text-red-600 dark:text-red-400 font-bold',
+                                            },
                                         ].map(({ label, value, cls }) => (
                                             <div key={label} className="flex justify-between">
                                                 <span className="text-dark-600 dark:text-dark-400">{label}</span>
@@ -592,11 +848,8 @@ function InvoiceDrawer({
                                 value={sendForm.data.invoice_number}
                                 onChange={(e) => sendForm.setData('invoice_number', e.target.value)}
                                 placeholder="001/INV/KSN-XXX/I/2026"
-                                className={sendForm.errors.invoice_number ? 'border-red-500' : ''}
+                                error={sendForm.errors.invoice_number}
                             />
-                            {sendForm.errors.invoice_number && (
-                                <p className="mt-1 text-xs text-red-600">{sendForm.errors.invoice_number}</p>
-                            )}
                         </div>
                     </div>
                     <DialogFooter>
@@ -615,7 +868,128 @@ function InvoiceDrawer({
                 </DialogContent>
             </Dialog>
 
-            {/* Delete confirm */}
+            {/* Payment form modal */}
+            <Dialog open={paymentFormOpen} onOpenChange={(o) => { if (!o) { setPaymentFormOpen(false); setEditPayment(null); } }}>
+                <DialogContent size="md">
+                    <form onSubmit={handlePaymentSubmit}>
+                        <DialogHeader>
+                            <div className="flex items-center gap-4 py-2">
+                                <div className="h-12 w-12 rounded-xl bg-green-50 dark:bg-green-900/20 flex items-center justify-center">
+                                    <Wallet className="w-6 h-6 text-green-600 dark:text-green-400" />
+                                </div>
+                                <div>
+                                    <DialogTitle className="text-xl font-bold text-dark-900 dark:text-dark-50">
+                                        {editPayment ? 'Edit Pembayaran' : 'Catat Pembayaran'}
+                                    </DialogTitle>
+                                    <p className="text-sm text-dark-600 dark:text-dark-400">
+                                        {detail?.invoice_number ?? 'Invoice'}
+                                    </p>
+                                </div>
+                            </div>
+                        </DialogHeader>
+
+                        <div className="px-6 py-4 space-y-4">
+                            {paymentErrors._ && (
+                                <div className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl px-3 py-2">
+                                    {paymentErrors._}
+                                </div>
+                            )}
+
+                            <CurrencyInput
+                                label="Jumlah Pembayaran *"
+                                value={paymentForm.amount}
+                                onChange={(v) => setPaymentForm((f) => ({ ...f, amount: v }))}
+                                error={paymentErrors.amount}
+                            />
+
+                            <DatePicker
+                                label="Tanggal Pembayaran *"
+                                value={paymentForm.payment_date || null}
+                                onChange={(v) => setPaymentForm((f) => ({ ...f, payment_date: v ?? '' }))}
+                                error={paymentErrors.payment_date}
+                            />
+
+                            {/* Payment method toggle */}
+                            <div>
+                                <label className="block text-sm font-medium text-dark-900 dark:text-dark-300 mb-2">
+                                    Metode Pembayaran *
+                                </label>
+                                <div className="inline-flex items-center gap-1 p-1 bg-zinc-100 dark:bg-dark-800 rounded-xl border border-zinc-200 dark:border-dark-600">
+                                    {(['bank_transfer', 'cash'] as const).map((method) => (
+                                        <button
+                                            key={method}
+                                            type="button"
+                                            onClick={() => setPaymentForm((f) => ({ ...f, payment_method: method }))}
+                                            className={cn(
+                                                'flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200',
+                                                paymentForm.payment_method === method
+                                                    ? 'bg-white dark:bg-dark-700 text-dark-900 dark:text-dark-50 shadow-sm border border-zinc-200 dark:border-dark-600'
+                                                    : 'text-dark-500 dark:text-dark-400 hover:text-dark-800 dark:hover:text-dark-200',
+                                            )}
+                                        >
+                                            {method === 'cash'
+                                                ? <><Banknote className="w-4 h-4" /> Tunai</>
+                                                : <><CreditCard className="w-4 h-4" /> Transfer</>}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {paymentForm.payment_method === 'bank_transfer' && (
+                                <Combobox
+                                    label="Rekening Bank"
+                                    options={bankAccounts}
+                                    value={paymentForm.bank_account_id}
+                                    onChange={(v) => setPaymentForm((f) => ({ ...f, bank_account_id: v != null ? Number(v) : null }))}
+                                    placeholder="Pilih rekening..."
+                                    error={paymentErrors.bank_account_id}
+                                />
+                            )}
+
+                            <Input
+                                label="Nomor Referensi"
+                                value={paymentForm.reference_number}
+                                onChange={(e) => setPaymentForm((f) => ({ ...f, reference_number: e.target.value }))}
+                                placeholder="No. transfer / cek / kwitansi"
+                                error={paymentErrors.reference_number}
+                            />
+
+                            {/* Attachment */}
+                            <FileUpload
+                                label="Lampiran"
+                                value={paymentForm.attachment}
+                                onChange={(file) => setPaymentForm((f) => ({ ...f, attachment: file, remove_attachment: false }))}
+                                existingFileName={!paymentForm.remove_attachment ? (editPayment?.attachment_name ?? null) : null}
+                                existingFileUrl={!paymentForm.remove_attachment ? (editPayment?.attachment_url ?? null) : null}
+                                onRemoveExisting={() => setPaymentForm((f) => ({ ...f, remove_attachment: true, attachment: null }))}
+                                error={paymentErrors.attachment}
+                            />
+                        </div>
+
+                        <DialogFooter>
+                            <Button
+                                type="button"
+                                variant="zinc"
+                                onClick={() => { setPaymentFormOpen(false); setEditPayment(null); }}
+                                disabled={paymentLoading}
+                                className="w-full sm:w-auto order-2 sm:order-1"
+                            >
+                                Batal
+                            </Button>
+                            <Button
+                                type="submit"
+                                variant="primary"
+                                loading={paymentLoading}
+                                className="w-full sm:w-auto order-1 sm:order-2"
+                            >
+                                {editPayment ? 'Simpan Perubahan' : 'Simpan Pembayaran'}
+                            </Button>
+                        </DialogFooter>
+                    </form>
+                </DialogContent>
+            </Dialog>
+
+            {/* Delete invoice confirm */}
             <ConfirmDialog
                 open={deleteOpen}
                 onOpenChange={setDeleteOpen}
@@ -625,11 +999,80 @@ function InvoiceDrawer({
                 loading={deleteLoading}
                 onConfirm={handleDelete}
             />
+
+            {/* Delete payment confirm */}
+            <ConfirmDialog
+                open={!!deletePaymentTarget}
+                onOpenChange={(o) => { if (!o) setDeletePaymentTarget(null); }}
+                title="Hapus Pembayaran"
+                description={deletePaymentTarget
+                    ? `Pembayaran sebesar ${formatCurrency(deletePaymentTarget.amount)} pada ${formatDate(deletePaymentTarget.payment_date)} akan dihapus permanen.`
+                    : ''}
+                confirmLabel="Hapus Pembayaran"
+                loading={deletePaymentLoading}
+                onConfirm={handleDeletePayment}
+            />
         </>
     );
 }
 
 /* ─────────────────────────────────── main page ─── */
+
+const DEFAULT_MONTH = new Date().toISOString().slice(0, 7);
+
+type DateMode = 'month' | 'range';
+
+/* Colored accent config for stats cards */
+const STATS_CONFIG = [
+    {
+        key: 'revenue',
+        label: 'Total Pendapatan',
+        accent: 'bg-blue-500',
+        iconCn: 'text-blue-500 dark:text-blue-400',
+        icon: <Wallet className="w-5 h-5" />,
+    },
+    {
+        key: 'profit',
+        label: 'Laba Kotor',
+        accent: 'bg-emerald-500',
+        accentNeg: 'bg-red-500',
+        iconCn: 'text-emerald-500 dark:text-emerald-400',
+        iconCnNeg: 'text-red-500 dark:text-red-400',
+        icon: <TrendingUp className="w-5 h-5" />,
+    },
+    {
+        key: 'paid_month',
+        label: 'Dibayar Bulan Ini',
+        accent: 'bg-green-500',
+        iconCn: 'text-green-500 dark:text-green-400',
+        icon: <CheckCircle2 className="w-5 h-5" />,
+    },
+    {
+        key: 'count',
+        label: 'Total Invoice',
+        accent: 'bg-purple-500',
+        iconCn: 'text-purple-500 dark:text-purple-400',
+        icon: <FileText className="w-5 h-5" />,
+    },
+] as const;
+
+/* Pipeline segments for status distribution */
+const PIPELINE_SEGMENTS = [
+    { key: 'draft', label: 'Draft', bar: 'bg-zinc-300 dark:bg-zinc-600', dot: 'bg-zinc-400 dark:bg-zinc-500' },
+    { key: 'sent', label: 'Terkirim', bar: 'bg-blue-400 dark:bg-blue-500', dot: 'bg-blue-400 dark:bg-blue-500' },
+    { key: 'partially_paid', label: 'Sebagian', bar: 'bg-amber-400 dark:bg-amber-500', dot: 'bg-amber-400 dark:bg-amber-500' },
+    { key: 'paid', label: 'Lunas', bar: 'bg-emerald-400 dark:bg-emerald-500', dot: 'bg-emerald-400 dark:bg-emerald-500' },
+] as const;
+
+const TABLE_COLS: { key: string; label: string; align?: 'right'; sortable?: false }[] = [
+    { key: 'invoice_number', label: 'No. Invoice' },
+    { key: 'client_name', label: 'Klien' },
+    { key: 'issue_date', label: 'Tgl Invoice' },
+    { key: 'due_date', label: 'Jatuh Tempo' },
+    { key: 'total_amount', label: 'Jumlah', align: 'right' },
+    { key: 'status', label: 'Status', sortable: false },
+    { key: 'actions', label: '', sortable: false },
+];
 
 function InvoicesPage({ invoices, stats, clients, rollbackableIds, filters }: Props) {
     const { flash } = usePage<Props>().props;
@@ -637,14 +1080,29 @@ function InvoicesPage({ invoices, stats, clients, rollbackableIds, filters }: Pr
     const [drawerOpen, setDrawerOpen] = React.useState(false);
     const [selectedId, setSelectedId] = React.useState<number | null>(null);
 
+    /* delete from table row */
+    const [deleteId, setDeleteId] = React.useState<number | null>(null);
+    const [deleteOpen, setDeleteOpen] = React.useState(false);
+    const [deleteLoading, setDeleteLoading] = React.useState(false);
+
     const currentFilters = {
         search: filters.search ?? '',
         status: filters.status ?? '',
         client_id: filters.client_id ?? '',
-        month: filters.month ?? new Date().toISOString().slice(0, 7),
+        month: filters.month ?? '',
+        date_from: filters.date_from ?? '',
+        date_to: filters.date_to ?? '',
+        period_mode: filters.period_mode ?? 'month',
         sort: filters.sort ?? 'issue_date',
         direction: filters.direction ?? 'desc',
         per_page: filters.per_page ?? 25,
+    };
+
+    /* derive date mode from URL — survives tab navigation / remount */
+    const dateMode: DateMode = currentFilters.period_mode === 'range' ? 'range' : 'month';
+    const dateRange = {
+        from: currentFilters.date_from ? new Date(currentFilters.date_from) : null,
+        to: currentFilters.date_to ? new Date(currentFilters.date_to) : null,
     };
 
     const [search, setSearch] = React.useState(currentFilters.search);
@@ -669,17 +1127,60 @@ function InvoicesPage({ invoices, stats, clients, rollbackableIds, filters }: Pr
         });
     };
 
+    const handleSwitchToMonth = () => {
+        navigate({ period_mode: 'month', month: DEFAULT_MONTH, date_from: '', date_to: '' });
+    };
+
+    const handleSwitchToRange = () => {
+        navigate({ period_mode: 'range', month: '', date_from: '', date_to: '' });
+    };
+
+    const handleDateRangeChange = (range: { from: Date | null; to: Date | null }) => {
+        navigate({
+            period_mode: 'range',
+            month: '',
+            date_from: range.from ? range.from.toISOString().slice(0, 10) : '',
+            date_to: range.to ? range.to.toISOString().slice(0, 10) : '',
+        });
+    };
+
+    const handleResetFilters = () => {
+        setSearch('');
+        navigate({ search: '', status: '', client_id: '', period_mode: 'month', month: DEFAULT_MONTH, date_from: '', date_to: '' });
+    };
+
+    const handleDeleteFromTable = () => {
+        if (!deleteId) return;
+        setDeleteLoading(true);
+        router.delete(`/invoices/${deleteId}`, {
+            onSuccess: () => {
+                setDeleteOpen(false);
+                setDeleteId(null);
+            },
+            onFinish: () => setDeleteLoading(false),
+        });
+    };
+
     const openDrawer = (id: number) => {
         setSelectedId(id);
         setDrawerOpen(true);
     };
 
+    const activeFiltersCount = [
+        !!currentFilters.status,
+        !!currentFilters.client_id,
+        !!currentFilters.search,
+        dateMode === 'month'
+            ? currentFilters.month && currentFilters.month !== DEFAULT_MONTH
+            : !!currentFilters.date_from || !!currentFilters.date_to,
+    ].filter(Boolean).length;
+
     const tabItems: TabItem[] = [
         { value: '', label: 'Semua' },
-        { value: 'draft', label: 'Draft', badge: stats.draft_count },
-        { value: 'sent', label: 'Terkirim', badge: stats.sent_count },
-        { value: 'partially_paid', label: 'Sebagian', badge: stats.partially_paid_count },
-        { value: 'paid', label: 'Lunas', badge: stats.paid_count },
+        { value: 'draft', label: 'Draft', badge: stats.draft_count || undefined },
+        { value: 'sent', label: 'Terkirim', badge: stats.sent_count || undefined },
+        { value: 'partially_paid', label: 'Sebagian', badge: stats.partially_paid_count || undefined },
+        { value: 'paid', label: 'Lunas', badge: stats.paid_count || undefined },
     ];
 
     return (
@@ -695,7 +1196,9 @@ function InvoicesPage({ invoices, stats, clients, rollbackableIds, filters }: Pr
                             ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-800'
                             : 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800',
                     )}>
-                        {flash.success ? <CheckCircle2 className="w-4 h-4 shrink-0" /> : <AlertCircle className="w-4 h-4 shrink-0" />}
+                        {flash.success
+                            ? <CheckCircle2 className="w-4 h-4 shrink-0" />
+                            : <AlertCircle className="w-4 h-4 shrink-0" />}
                         {flash.success ?? flash.error}
                     </div>
                 )}
@@ -716,91 +1219,277 @@ function InvoicesPage({ invoices, stats, clients, rollbackableIds, filters }: Pr
                     }
                 />
 
-                {/* Stats */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-                    <StatsCard
-                        label="Total Pendapatan"
-                        value={formatCurrency(stats.total_revenue)}
-                        icon={<Wallet className="w-6 h-6" />}
-                        color="blue"
-                    />
-                    <StatsCard
-                        label="Laba Kotor"
-                        value={
-                            <span className={stats.gross_profit < 0 ? 'text-red-500' : undefined}>
-                                {formatCurrency(stats.gross_profit)}
-                            </span>
-                        }
-                        icon={<TrendingUp className="w-6 h-6" />}
-                        color="emerald"
-                    />
-                    <StatsCard
-                        label="Dibayar Bulan Ini"
-                        value={formatCurrency(stats.paid_this_month)}
-                        icon={<CheckCircle2 className="w-6 h-6" />}
-                        color="green"
-                    />
-                    <StatsCard
-                        label="Total Invoice"
-                        value={stats.invoice_count}
-                        icon={<FileText className="w-6 h-6" />}
-                        color="purple"
-                    />
-                </div>
+                {/* ── Stats cards ── */}
+                <TooltipProvider delayDuration={300}>
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
 
-                {/* Tabs */}
+                        {/* Total Pendapatan */}
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Card className="hover:shadow-md transition-all duration-200 overflow-hidden cursor-default">
+                                    <div className={STATS_CONFIG[0].accent + ' h-1'} />
+                                    <CardContent className="p-5">
+                                        <div className="flex items-start justify-between mb-3">
+                                            <p className="text-xs font-semibold uppercase tracking-wider text-dark-500 dark:text-dark-400 leading-none">
+                                                {STATS_CONFIG[0].label}
+                                            </p>
+                                            <span className={STATS_CONFIG[0].iconCn + ' shrink-0'}>{STATS_CONFIG[0].icon}</span>
+                                        </div>
+                                        <p className="text-xl font-bold text-dark-900 dark:text-dark-50 leading-none">
+                                            {formatCurrency(stats.total_revenue)}
+                                        </p>
+                                        <p className="text-xs text-dark-500 dark:text-dark-400 mt-2">
+                                            Semua status invoice
+                                        </p>
+                                    </CardContent>
+                                </Card>
+                            </TooltipTrigger>
+                            <TooltipContent side="bottom" className="max-w-56 text-center">
+                                Total nilai semua invoice yang diterbitkan pada periode yang dipilih, mencakup semua status kecuali yang dihapus
+                            </TooltipContent>
+                        </Tooltip>
+
+                        {/* Laba Kotor */}
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Card className="hover:shadow-md transition-all duration-200 overflow-hidden cursor-default">
+                                    <div className={cn('h-1', stats.gross_profit < 0 ? 'bg-red-500' : 'bg-emerald-500')} />
+                                    <CardContent className="p-5">
+                                        <div className="flex items-start justify-between mb-3">
+                                            <p className="text-xs font-semibold uppercase tracking-wider text-dark-500 dark:text-dark-400 leading-none">
+                                                {STATS_CONFIG[1].label}
+                                            </p>
+                                            <span className={cn('shrink-0', stats.gross_profit < 0 ? 'text-red-500 dark:text-red-400' : 'text-emerald-500 dark:text-emerald-400')}>
+                                                {STATS_CONFIG[1].icon}
+                                            </span>
+                                        </div>
+                                        <p className={cn('text-xl font-bold leading-none', stats.gross_profit < 0 ? 'text-red-600 dark:text-red-400' : 'text-dark-900 dark:text-dark-50')}>
+                                            {formatCurrency(stats.gross_profit)}
+                                        </p>
+                                        <p className="text-xs text-dark-500 dark:text-dark-400 mt-2">
+                                            Pendapatan − HPP − Pajak
+                                        </p>
+                                    </CardContent>
+                                </Card>
+                            </TooltipTrigger>
+                            <TooltipContent side="bottom" className="max-w-56 text-center">
+                                Dihitung dari pendapatan bersih dikurangi HPP dan titipan pajak. Nilai merah berarti total biaya melebihi pendapatan.
+                            </TooltipContent>
+                        </Tooltip>
+
+                        {/* Dibayar Bulan Ini */}
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Card className="hover:shadow-md transition-all duration-200 overflow-hidden cursor-default">
+                                    <div className={STATS_CONFIG[2].accent + ' h-1'} />
+                                    <CardContent className="p-5">
+                                        <div className="flex items-start justify-between mb-3">
+                                            <p className="text-xs font-semibold uppercase tracking-wider text-dark-500 dark:text-dark-400 leading-none">
+                                                {STATS_CONFIG[2].label}
+                                            </p>
+                                            <span className={STATS_CONFIG[2].iconCn + ' shrink-0'}>{STATS_CONFIG[2].icon}</span>
+                                        </div>
+                                        <p className="text-xl font-bold text-dark-900 dark:text-dark-50 leading-none">
+                                            {formatCurrency(stats.paid_this_month)}
+                                        </p>
+                                        <p className="text-xs text-dark-500 dark:text-dark-400 mt-2">
+                                            Bulan kalender berjalan
+                                        </p>
+                                    </CardContent>
+                                </Card>
+                            </TooltipTrigger>
+                            <TooltipContent side="bottom" className="max-w-56 text-center">
+                                Total pembayaran yang masuk pada bulan ini berdasarkan tanggal pembayaran, tidak terpengaruh oleh filter periode yang dipilih
+                            </TooltipContent>
+                        </Tooltip>
+
+                        {/* Total Invoice */}
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Card className="hover:shadow-md transition-all duration-200 overflow-hidden cursor-default">
+                                    <div className={STATS_CONFIG[3].accent + ' h-1'} />
+                                    <CardContent className="p-5">
+                                        <div className="flex items-start justify-between mb-3">
+                                            <p className="text-xs font-semibold uppercase tracking-wider text-dark-500 dark:text-dark-400 leading-none">
+                                                {STATS_CONFIG[3].label}
+                                            </p>
+                                            <span className={STATS_CONFIG[3].iconCn + ' shrink-0'}>{STATS_CONFIG[3].icon}</span>
+                                        </div>
+                                        <p className="text-xl font-bold text-dark-900 dark:text-dark-50 leading-none">
+                                            {stats.invoice_count}
+                                        </p>
+                                        <p className="text-xs text-dark-500 dark:text-dark-400 mt-2">
+                                            {invoices.total} sesuai filter aktif
+                                        </p>
+                                    </CardContent>
+                                </Card>
+                            </TooltipTrigger>
+                            <TooltipContent side="bottom" className="max-w-56 text-center">
+                                Jumlah seluruh invoice dalam sistem. Angka di bawah menunjukkan invoice yang sesuai dengan filter aktif saat ini.
+                            </TooltipContent>
+                        </Tooltip>
+
+                    </div>
+                </TooltipProvider>
+
+                {/* ── Status pipeline bar ── */}
+                {stats.invoice_count > 0 && (
+                    <div className="space-y-2.5">
+                        <div className="flex h-2 rounded-full overflow-hidden gap-px">
+                            {PIPELINE_SEGMENTS.map((seg) => {
+                                const count = stats[`${seg.key}_count` as keyof Stats] as number;
+                                if (count === 0) return null;
+                                return (
+                                    <button
+                                        key={seg.key}
+                                        type="button"
+                                        className={cn('h-full rounded-full transition-opacity hover:opacity-75', seg.bar)}
+                                        style={{ width: `${(count / stats.invoice_count) * 100}%` }}
+                                        onClick={() => navigate({ status: seg.key })}
+                                        title={`${seg.label}: ${count}`}
+                                    />
+                                );
+                            })}
+                        </div>
+                        <div className="flex items-center flex-wrap gap-x-5 gap-y-1">
+                            {PIPELINE_SEGMENTS.map((seg) => {
+                                const count = stats[`${seg.key}_count` as keyof Stats] as number;
+                                if (count === 0) return null;
+                                return (
+                                    <button
+                                        key={seg.key}
+                                        type="button"
+                                        onClick={() => navigate({ status: seg.key })}
+                                        className="flex items-center gap-1.5 text-xs text-dark-500 dark:text-dark-400 hover:text-dark-900 dark:hover:text-dark-50 transition-colors"
+                                    >
+                                        <span className={cn('h-2 w-2 rounded-full inline-block shrink-0', seg.dot)} />
+                                        {seg.label} ({count})
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
+
+                {/* ── Status tabs ── */}
                 <Tabs
                     items={tabItems}
                     value={currentFilters.status}
                     onChange={(v) => navigate({ status: v })}
+                    variant="underline"
                 />
 
-                {/* Filters */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <Combobox
-                        options={clients}
-                        value={currentFilters.client_id || null}
-                        onChange={(v) => navigate({ client_id: v ?? '' })}
-                        placeholder="Semua Klien"
-                        label="Klien"
-                    />
-                    <Input
-                        type="month"
-                        label="Bulan"
-                        value={currentFilters.month}
-                        onChange={(e) => navigate({ month: e.target.value })}
-                    />
-                    <form onSubmit={handleSearchSubmit}>
-                        <Input
-                            label="Cari"
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                            placeholder="No. invoice atau nama klien..."
-                        />
-                    </form>
-                </div>
+                {/* ── Table card ── */}
+                <Card className="overflow-hidden">
+                    {/* Filter toolbar */}
+                    <div className="flex flex-col lg:flex-row lg:items-end gap-3 p-4 border-b border-secondary-200 dark:border-dark-600">
 
-                {/* Table */}
-                <div className="rounded-xl border border-secondary-200 dark:border-dark-600 overflow-hidden bg-white dark:bg-dark-700">
+                        {/* Klien */}
+                        <div className="w-full lg:w-56 shrink-0">
+                            <Combobox
+                                options={clients}
+                                value={currentFilters.client_id || null}
+                                onChange={(v) => navigate({ client_id: v ?? '' })}
+                                placeholder="Semua Klien"
+                                label="Klien"
+                            />
+                        </div>
+
+                        {/* Periode */}
+                        <div className="flex flex-col gap-1.5 w-full lg:w-64 shrink-0">
+                            <div className="flex items-center justify-between">
+                                <label className="text-sm font-medium text-dark-900 dark:text-dark-300">
+                                    Periode
+                                </label>
+                                <div className="inline-flex items-center p-0.5 bg-zinc-100 dark:bg-dark-700 rounded-lg border border-zinc-200 dark:border-dark-600">
+                                    <button
+                                        type="button"
+                                        onClick={handleSwitchToMonth}
+                                        className={cn(
+                                            'px-2.5 py-1 rounded-md text-xs font-medium transition-colors',
+                                            dateMode === 'month'
+                                                ? 'bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 shadow-sm border border-zinc-200 dark:border-dark-600'
+                                                : 'text-dark-500 dark:text-dark-400 hover:text-dark-700 dark:hover:text-dark-200',
+                                        )}
+                                    >
+                                        Bulan
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={handleSwitchToRange}
+                                        className={cn(
+                                            'px-2.5 py-1 rounded-md text-xs font-medium transition-colors',
+                                            dateMode === 'range'
+                                                ? 'bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 shadow-sm border border-zinc-200 dark:border-dark-600'
+                                                : 'text-dark-500 dark:text-dark-400 hover:text-dark-700 dark:hover:text-dark-200',
+                                        )}
+                                    >
+                                        Rentang
+                                    </button>
+                                </div>
+                            </div>
+                            {dateMode === 'month' ? (
+                                <DatePicker
+                                    mode="month"
+                                    value={currentFilters.month || null}
+                                    onChange={(v) => navigate({ month: v ?? '', date_from: '', date_to: '' })}
+                                    placeholder="Pilih bulan..."
+                                />
+                            ) : (
+                                <DatePicker
+                                    mode="range"
+                                    value={dateRange}
+                                    onChange={handleDateRangeChange}
+                                    placeholder="Tanggal mulai..."
+                                    placeholderTo="Tanggal akhir..."
+                                />
+                            )}
+                        </div>
+
+                        {/* Search + controls */}
+                        <div className="flex-1 flex items-end gap-2 min-w-0">
+                            <form onSubmit={handleSearchSubmit} className="flex-1 min-w-0 max-w-xs">
+                                <Input
+                                    value={search}
+                                    onChange={(e) => setSearch(e.target.value)}
+                                    placeholder="Cari invoice atau klien..."
+                                    icon={<Search className="w-4 h-4" />}
+                                />
+                            </form>
+                            {activeFiltersCount > 0 && (
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={handleResetFilters}
+                                    className="shrink-0 gap-1 text-dark-500 dark:text-dark-400"
+                                >
+                                    <X className="w-3.5 h-3.5" />
+                                    Reset
+                                    <Badge variant="blue" size="sm">{activeFiltersCount}</Badge>
+                                </Button>
+                            )}
+                        </div>
+
+                        {/* Result count */}
+                        <p className="text-sm text-dark-500 dark:text-dark-400 shrink-0 self-end pb-0.5 hidden lg:block">
+                            {invoices.from ?? 0}–{invoices.to ?? 0} dari {invoices.total}
+                        </p>
+                    </div>
+
+                    {/* Table */}
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm">
                             <thead>
-                                <tr className="bg-secondary-50 dark:bg-dark-800 border-b border-secondary-200 dark:border-dark-600">
-                                    {[
-                                        { key: 'invoice_number', label: 'No. Invoice' },
-                                        { key: 'client_name', label: 'Klien' },
-                                        { key: 'issue_date', label: 'Tgl Invoice' },
-                                        { key: 'due_date', label: 'Jatuh Tempo' },
-                                        { key: 'total_amount', label: 'Jumlah' },
-                                        { key: 'status', label: 'Status', sortable: false },
-                                        { key: 'actions', label: 'Aksi', sortable: false },
-                                    ].map((col) => (
+                                <tr className="bg-zinc-50 dark:bg-dark-800 border-b border-secondary-200 dark:border-dark-600">
+                                    {TABLE_COLS.map((col) => (
                                         <th
                                             key={col.key}
                                             className={cn(
-                                                'px-4 py-3 text-left text-xs font-semibold text-dark-600 dark:text-dark-400 whitespace-nowrap',
-                                                col.sortable !== false && 'cursor-pointer select-none hover:text-dark-900 dark:hover:text-dark-50',
-                                                col.key === 'actions' && 'text-right',
+                                                'px-4 py-3 text-xs font-semibold uppercase tracking-wider text-dark-500 dark:text-dark-400 whitespace-nowrap select-none',
+                                                col.align === 'right' ? 'text-right' : 'text-left',
+                                                col.key === 'actions' && 'w-10',
+                                                col.sortable !== false && 'cursor-pointer hover:text-dark-900 dark:hover:text-dark-50',
                                             )}
                                             onClick={() => {
                                                 if (col.sortable === false) return;
@@ -810,18 +1499,21 @@ function InvoicesPage({ invoices, stats, clients, rollbackableIds, filters }: Pr
                                         >
                                             <span className="inline-flex items-center gap-1">
                                                 {col.label}
-                                                {col.sortable !== false && (
-                                                    <ArrowUpDown className="w-3 h-3 opacity-40" />
+                                                {col.sortable !== false && col.label && (
+                                                    <ArrowUpDown className={cn(
+                                                        'w-3 h-3 transition-opacity',
+                                                        currentFilters.sort === col.key ? 'opacity-80' : 'opacity-30',
+                                                    )} />
                                                 )}
                                             </span>
                                         </th>
                                     ))}
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody className="divide-y divide-secondary-200 dark:divide-dark-600">
                                 {invoices.data.length === 0 ? (
                                     <tr>
-                                        <td colSpan={7}>
+                                        <td colSpan={TABLE_COLS.length}>
                                             <EmptyState
                                                 icon={<FileText className="w-8 h-8" />}
                                                 title="Tidak ada invoice ditemukan"
@@ -833,75 +1525,140 @@ function InvoicesPage({ invoices, stats, clients, rollbackableIds, filters }: Pr
                                     invoices.data.map((inv) => {
                                         const isOverdue =
                                             inv.status !== 'paid' &&
+                                            inv.status !== 'draft' &&
                                             new Date(inv.due_date) < new Date();
+                                        const paymentPct = inv.total_amount > 0
+                                            ? Math.min(100, Math.round((inv.amount_paid / inv.total_amount) * 100))
+                                            : 0;
+
                                         return (
                                             <tr
                                                 key={inv.id}
-                                                className="border-b border-secondary-200 dark:border-dark-600 last:border-0 hover:bg-secondary-50 dark:hover:bg-dark-800/50 transition-colors"
+                                                onClick={() => openDrawer(inv.id)}
+                                                className={cn(
+                                                    'transition-colors cursor-pointer',
+                                                    isOverdue
+                                                        ? 'bg-red-50/40 dark:bg-red-900/10 hover:bg-red-50/70 dark:hover:bg-red-900/15'
+                                                        : 'hover:bg-zinc-50 dark:hover:bg-dark-800/60',
+                                                )}
                                             >
-                                                <td className="px-4 py-3">
+                                                {/* No. Invoice */}
+                                                <td className="px-4 py-3.5">
                                                     <span className="font-mono text-xs font-medium text-dark-900 dark:text-dark-50">
                                                         {inv.invoice_number ?? (
-                                                            <span className="text-dark-400 dark:text-dark-500 italic">Draft</span>
+                                                            <span className="text-dark-400 dark:text-dark-500 not-italic">—</span>
                                                         )}
                                                     </span>
                                                 </td>
-                                                <td className="px-4 py-3">
-                                                    <div className="font-medium text-dark-900 dark:text-dark-50">{inv.client_name}</div>
-                                                    <div className="text-xs text-dark-500 dark:text-dark-400 capitalize">{inv.client_type}</div>
+
+                                                {/* Klien — with avatar */}
+                                                <td className="px-4 py-3.5">
+                                                    <div className="flex items-center gap-2.5">
+                                                        <Avatar className="h-8 w-8 shrink-0">
+                                                            <AvatarFallback className="text-xs font-semibold">
+                                                                {getInitials(inv.client_name)}
+                                                            </AvatarFallback>
+                                                        </Avatar>
+                                                        <div className="min-w-0">
+                                                            <div className="font-medium text-dark-900 dark:text-dark-50 truncate">
+                                                                {inv.client_name}
+                                                            </div>
+                                                            <div className="text-xs text-dark-500 dark:text-dark-400 capitalize">
+                                                                {inv.client_type}
+                                                            </div>
+                                                        </div>
+                                                    </div>
                                                 </td>
-                                                <td className="px-4 py-3 text-dark-600 dark:text-dark-400 whitespace-nowrap">
+
+                                                {/* Tgl Invoice */}
+                                                <td className="px-4 py-3.5 whitespace-nowrap text-dark-600 dark:text-dark-400 text-sm">
                                                     {formatDate(inv.issue_date)}
                                                 </td>
-                                                <td className="px-4 py-3 whitespace-nowrap">
-                                                    <span className={cn(
-                                                        'text-sm',
-                                                        isOverdue
-                                                            ? 'text-red-600 dark:text-red-400 font-semibold'
-                                                            : 'text-dark-600 dark:text-dark-400',
-                                                    )}>
-                                                        {formatDate(inv.due_date)}
-                                                    </span>
+
+                                                {/* Jatuh Tempo */}
+                                                <td className="px-4 py-3.5 whitespace-nowrap">
+                                                    <div className="flex items-center gap-1.5">
+                                                        <span className={cn(
+                                                            'text-sm',
+                                                            isOverdue
+                                                                ? 'text-red-600 dark:text-red-400 font-semibold'
+                                                                : 'text-dark-600 dark:text-dark-400',
+                                                        )}>
+                                                            {formatDate(inv.due_date)}
+                                                        </span>
+                                                        {isOverdue && (
+                                                            <Badge variant="red" size="sm">Lewat</Badge>
+                                                        )}
+                                                    </div>
                                                 </td>
-                                                <td className="px-4 py-3">
-                                                    <div className="font-semibold text-dark-900 dark:text-dark-50 whitespace-nowrap">
+
+                                                {/* Jumlah + progress bar */}
+                                                <td className="px-4 py-3.5 text-right">
+                                                    <div className="font-semibold text-dark-900 dark:text-dark-50 tabular-nums whitespace-nowrap">
                                                         {formatCurrency(inv.total_amount)}
                                                     </div>
-                                                    {inv.amount_paid > 0 && inv.status !== 'paid' && (
-                                                        <div className="text-xs text-dark-500 dark:text-dark-400">
-                                                            Sisa: {formatCurrency(inv.amount_remaining)}
+                                                    {inv.status === 'partially_paid' && inv.amount_paid > 0 && (
+                                                        <div className="mt-1.5 space-y-1 min-w-[5rem]">
+                                                            <div className="h-1.5 w-full bg-secondary-200 dark:bg-dark-600 rounded-full overflow-hidden">
+                                                                <div
+                                                                    className="h-full bg-emerald-500 dark:bg-emerald-400 rounded-full transition-all"
+                                                                    style={{ width: `${paymentPct}%` }}
+                                                                />
+                                                            </div>
+                                                            <p className="text-xs text-dark-400 dark:text-dark-500 text-right tabular-nums">
+                                                                {paymentPct}% dibayar
+                                                            </p>
                                                         </div>
                                                     )}
                                                 </td>
-                                                <td className="px-4 py-3">
-                                                    <Badge variant={STATUS_VARIANT[inv.status] ?? 'zinc'}>{STATUS_LABEL[inv.status] ?? inv.status}</Badge>
+
+                                                {/* Status */}
+                                                <td className="px-4 py-3.5">
+                                                    <Badge variant={STATUS_VARIANT[inv.status] ?? 'zinc'}>
+                                                        {STATUS_LABEL[inv.status] ?? inv.status}
+                                                    </Badge>
                                                 </td>
-                                                <td className="px-4 py-3">
-                                                    <div className="flex items-center justify-end gap-1">
-                                                        <button
-                                                            title="Lihat Detail"
-                                                            onClick={() => openDrawer(inv.id)}
-                                                            className="h-7 w-7 rounded-lg flex items-center justify-center hover:bg-blue-50 dark:hover:bg-blue-900/20 text-dark-500 dark:text-dark-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-                                                        >
-                                                            <Eye className="w-4 h-4" />
-                                                        </button>
-                                                        <button
-                                                            title="Edit"
-                                                            onClick={() => router.get(`/invoices/${inv.id}/edit`)}
-                                                            className="h-7 w-7 rounded-lg flex items-center justify-center hover:bg-zinc-100 dark:hover:bg-dark-600 text-dark-500 dark:text-dark-400 hover:text-dark-900 dark:hover:text-dark-50 transition-colors"
-                                                        >
-                                                            <Pencil className="w-4 h-4" />
-                                                        </button>
-                                                        {inv.invoice_number && (
-                                                            <button
-                                                                title="Download PDF"
-                                                                onClick={() => window.open(`/invoice/${inv.id}/download`, '_blank')}
-                                                                className="h-7 w-7 rounded-lg flex items-center justify-center hover:bg-zinc-100 dark:hover:bg-dark-600 text-dark-500 dark:text-dark-400 hover:text-dark-900 dark:hover:text-dark-50 transition-colors"
+
+                                                {/* Aksi — dropdown menu */}
+                                                <td className="px-4 py-3.5" onClick={(e) => e.stopPropagation()}>
+                                                    <DropdownMenu>
+                                                        <DropdownMenuTrigger asChild>
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="icon-sm"
+                                                                className="h-8 w-8 text-dark-500 dark:text-dark-400 hover:text-dark-900 dark:hover:text-dark-50"
                                                             >
-                                                                <Download className="w-4 h-4" />
-                                                            </button>
-                                                        )}
-                                                    </div>
+                                                                <MoreHorizontal className="w-4 h-4" />
+                                                            </Button>
+                                                        </DropdownMenuTrigger>
+                                                        <DropdownMenuContent align="end" className="w-44">
+                                                            <DropdownMenuItem onClick={() => openDrawer(inv.id)}>
+                                                                <Eye className="w-4 h-4" />
+                                                                Lihat Detail
+                                                            </DropdownMenuItem>
+                                                            <DropdownMenuItem onClick={() => router.get(`/invoices/${inv.id}/edit`)}>
+                                                                <Pencil className="w-4 h-4" />
+                                                                Edit
+                                                            </DropdownMenuItem>
+                                                            {inv.invoice_number && (
+                                                                <DropdownMenuItem onClick={() => window.open(`/invoice/${inv.id}/download`, '_blank')}>
+                                                                    <Download className="w-4 h-4" />
+                                                                    Download PDF
+                                                                </DropdownMenuItem>
+                                                            )}
+                                                            <DropdownMenuSeparator />
+                                                            <DropdownMenuItem
+                                                                className="text-red-600 dark:text-red-400 focus:text-red-700 dark:focus:text-red-300 focus:bg-red-50 dark:focus:bg-red-900/20"
+                                                                onClick={() => {
+                                                                    setDeleteId(inv.id);
+                                                                    setDeleteOpen(true);
+                                                                }}
+                                                            >
+                                                                <Trash2 className="w-4 h-4" />
+                                                                Hapus
+                                                            </DropdownMenuItem>
+                                                        </DropdownMenuContent>
+                                                    </DropdownMenu>
                                                 </td>
                                             </tr>
                                         );
@@ -910,20 +1667,24 @@ function InvoicesPage({ invoices, stats, clients, rollbackableIds, filters }: Pr
                             </tbody>
                         </table>
                     </div>
-                </div>
 
-                {/* Pagination */}
-                <Pagination
-                    meta={{
-                        current_page: invoices.current_page,
-                        last_page: invoices.last_page,
-                        per_page: invoices.per_page,
-                        total: invoices.total,
-                        from: invoices.from,
-                        to: invoices.to,
-                    }}
-                    onPageChange={handlePageChange}
-                />
+                    {/* Pagination footer */}
+                    {invoices.last_page > 1 && (
+                        <div className="px-4 py-3 border-t border-secondary-200 dark:border-dark-600">
+                            <Pagination
+                                meta={{
+                                    current_page: invoices.current_page,
+                                    last_page: invoices.last_page,
+                                    per_page: invoices.per_page,
+                                    total: invoices.total,
+                                    from: invoices.from,
+                                    to: invoices.to,
+                                }}
+                                onPageChange={handlePageChange}
+                            />
+                        </div>
+                    )}
+                </Card>
             </div>
 
             {/* Slide-over drawer */}
@@ -932,6 +1693,20 @@ function InvoicesPage({ invoices, stats, clients, rollbackableIds, filters }: Pr
                 onClose={() => setDrawerOpen(false)}
                 invoiceId={selectedId}
                 rollbackableIds={rollbackableIds}
+            />
+
+            {/* Delete confirm (table row) */}
+            <ConfirmDialog
+                open={deleteOpen}
+                onOpenChange={(o) => {
+                    setDeleteOpen(o);
+                    if (!o) setDeleteId(null);
+                }}
+                title="Hapus Invoice"
+                description="Invoice ini akan dihapus permanen beserta semua item dan data terkaitnya."
+                confirmLabel="Hapus Invoice"
+                loading={deleteLoading}
+                onConfirm={handleDeleteFromTable}
             />
         </>
     );

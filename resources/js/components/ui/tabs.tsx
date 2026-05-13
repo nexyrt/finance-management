@@ -14,9 +14,51 @@ interface TabsProps {
     onChange: (value: string) => void;
     className?: string;
     storageKey?: string;
+    variant?: 'pill' | 'underline';
 }
 
-function Tabs({ items, value, onChange, className }: TabsProps) {
+function Tabs({ items, value, onChange, className, variant = 'pill' }: TabsProps) {
+    if (variant === 'underline') {
+        return (
+            <div
+                className={cn(
+                    'flex items-center border-b border-secondary-200 dark:border-dark-600',
+                    className,
+                )}
+            >
+                {items.map((item) => (
+                    <button
+                        key={item.value}
+                        type="button"
+                        onClick={() => onChange(item.value)}
+                        className={cn(
+                            'relative flex items-center gap-2 px-4 py-2.5 text-sm font-medium transition-all duration-150',
+                            'border-b-2 -mb-px',
+                            value === item.value
+                                ? 'border-primary-600 dark:border-primary-400 text-primary-700 dark:text-primary-400'
+                                : 'border-transparent text-dark-500 dark:text-dark-400 hover:text-dark-800 dark:hover:text-dark-200 hover:border-dark-200 dark:hover:border-dark-500',
+                        )}
+                    >
+                        {item.icon && <span className="h-4 w-4 shrink-0">{item.icon}</span>}
+                        <span>{item.label}</span>
+                        {item.badge !== undefined && (
+                            <span
+                                className={cn(
+                                    'ml-0.5 min-w-4.5 px-1.5 py-px text-xs font-semibold rounded-full text-center',
+                                    value === item.value
+                                        ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
+                                        : 'bg-zinc-100 dark:bg-dark-700 text-dark-500 dark:text-dark-400',
+                                )}
+                            >
+                                {item.badge}
+                            </span>
+                        )}
+                    </button>
+                ))}
+            </div>
+        );
+    }
+
     return (
         <div
             className={cn(

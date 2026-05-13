@@ -21,7 +21,10 @@ class InvoiceController extends Controller
         $search = $request->input('search');
         $status = $request->input('status');
         $clientId = $request->input('client_id');
-        $month = $request->input('month', now()->format('Y-m'));
+        $periodMode = $request->input('period_mode', 'month');
+        $month = $request->input('month', $periodMode === 'range' ? null : now()->format('Y-m'));
+        $dateFrom = $request->input('date_from');
+        $dateTo = $request->input('date_to');
         $perPage = (int) $request->input('per_page', 25);
         $sort = $request->input('sort', 'issue_date');
         $direction = $request->input('direction', 'desc');
@@ -44,7 +47,9 @@ class InvoiceController extends Controller
             }))
             ->when($status, fn ($q) => $q->where('invoices.status', $status))
             ->when($clientId, fn ($q) => $q->where('invoices.billed_to_id', $clientId))
-            ->when($month, fn ($q) => $q
+            ->when($periodMode === 'range' && $dateFrom, fn ($q) => $q->whereDate('invoices.issue_date', '>=', $dateFrom))
+            ->when($periodMode === 'range' && $dateTo, fn ($q) => $q->whereDate('invoices.issue_date', '<=', $dateTo))
+            ->when($periodMode !== 'range' && $month, fn ($q) => $q
                 ->whereYear('invoices.issue_date', substr($month, 0, 4))
                 ->whereMonth('invoices.issue_date', substr($month, 5, 2))
             );
@@ -72,7 +77,9 @@ class InvoiceController extends Controller
         // Stats (exclude drafts from revenue calculations, match Listing.php behaviour)
         $statsIds = Invoice::query()
             ->whereNotIn('status', ['draft'])
-            ->when($month, fn ($q) => $q
+            ->when($periodMode === 'range' && $dateFrom, fn ($q) => $q->whereDate('issue_date', '>=', $dateFrom))
+            ->when($periodMode === 'range' && $dateTo, fn ($q) => $q->whereDate('issue_date', '<=', $dateTo))
+            ->when($periodMode !== 'range' && $month, fn ($q) => $q
                 ->whereYear('issue_date', substr($month, 0, 4))
                 ->whereMonth('issue_date', substr($month, 5, 2))
             )
@@ -141,6 +148,9 @@ class InvoiceController extends Controller
                 'status' => $status,
                 'client_id' => $clientId ? (int) $clientId : null,
                 'month' => $month,
+                'date_from' => $dateFrom,
+                'date_to' => $dateTo,
+                'period_mode' => $periodMode,
                 'per_page' => $perPage,
                 'sort' => $sort,
                 'direction' => $direction,
@@ -188,10 +198,14 @@ class InvoiceController extends Controller
                 'id' => $payment->id,
                 'amount' => $payment->amount,
                 'payment_date' => $payment->payment_date?->format('Y-m-d'),
-                'bank_account' => $payment->bankAccount
+                'payment_method' => $payment->payment_method,
+                'bank_account_id' => $payment->bank_account_id,
+                'bank_account_name' => $payment->bankAccount
                     ? $payment->bankAccount->account_name.' ('.$payment->bankAccount->bank_name.')'
                     : null,
-                'notes' => $payment->notes,
+                'reference_number' => $payment->reference_number,
+                'attachment_name' => $payment->attachment_name,
+                'attachment_url' => $payment->attachment_url,
             ]),
         ]);
     }

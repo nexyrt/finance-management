@@ -36,7 +36,24 @@ export interface DatePickerRangeProps extends BaseProps {
     placeholderTo?: string;
 }
 
-export type DatePickerProps = DatePickerSingleProps | DatePickerRangeProps;
+/** value is a "YYYY-MM" string, e.g. "2026-05" */
+export interface DatePickerMonthProps extends BaseProps {
+    mode: 'month';
+    value?: string | null;
+    onChange: (month: string | null) => void;
+}
+
+export type DatePickerProps = DatePickerSingleProps | DatePickerRangeProps | DatePickerMonthProps;
+
+/* ─── Month names (Indonesian short) ───────────────────── */
+
+const MONTH_NAMES_SHORT = Array.from({ length: 12 }, (_, i) =>
+    format(new Date(2024, i, 1), 'MMM', { locale: idLocale }),
+);
+
+const MONTH_NAMES_FULL = Array.from({ length: 12 }, (_, i) =>
+    format(new Date(2024, i, 1), 'MMMM', { locale: idLocale }),
+);
 
 /* ─── Inline calendar header dropdown ──────────────────── */
 
@@ -99,7 +116,7 @@ function CalendarDropdown({
     );
 }
 
-/* ─── Custom MonthCaption ───────────────────────────────── */
+/* ─── Custom MonthCaption (for day/range modes) ─────────── */
 
 function MonthCaptionInner({
     calendarMonth,
@@ -169,6 +186,85 @@ function MonthCaptionInner({
     );
 }
 
+/* ─── Month grid (for month mode) ──────────────────────── */
+
+function MonthGrid({
+    year,
+    selectedValue,
+    onSelect,
+    onYearChange,
+    fromYear,
+    toYear,
+}: {
+    year: number;
+    selectedValue: string | null;
+    onSelect: (month: string) => void;
+    onYearChange: (year: number) => void;
+    fromYear: number;
+    toYear: number;
+}) {
+    const now = new Date();
+    const selectedYear = selectedValue ? parseInt(selectedValue.split('-')[0]) : null;
+    const selectedMonth = selectedValue ? parseInt(selectedValue.split('-')[1]) - 1 : null;
+
+    return (
+        <div className="p-3 w-56">
+            {/* Year navigation */}
+            <div className="flex items-center justify-between mb-3">
+                <button
+                    type="button"
+                    disabled={year <= fromYear}
+                    onClick={() => onYearChange(year - 1)}
+                    className="h-8 w-8 flex items-center justify-center rounded-lg text-dark-400 hover:bg-zinc-100 dark:hover:bg-dark-600 hover:text-dark-900 dark:hover:text-dark-50 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                >
+                    <ChevronLeft className="h-4 w-4" />
+                </button>
+                <span className="text-sm font-semibold text-dark-900 dark:text-dark-50 tabular-nums">
+                    {year}
+                </span>
+                <button
+                    type="button"
+                    disabled={year >= toYear}
+                    onClick={() => onYearChange(year + 1)}
+                    className="h-8 w-8 flex items-center justify-center rounded-lg text-dark-400 hover:bg-zinc-100 dark:hover:bg-dark-600 hover:text-dark-900 dark:hover:text-dark-50 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                >
+                    <ChevronRight className="h-4 w-4" />
+                </button>
+            </div>
+
+            {/* Month grid — 3 columns × 4 rows */}
+            <div className="grid grid-cols-3 gap-1">
+                {MONTH_NAMES_SHORT.map((name, idx) => {
+                    const isSelected = selectedYear === year && selectedMonth === idx;
+                    const isCurrentMonth = now.getFullYear() === year && now.getMonth() === idx;
+
+                    return (
+                        <button
+                            key={idx}
+                            type="button"
+                            onClick={() => {
+                                const mm = String(idx + 1).padStart(2, '0');
+                                onSelect(`${year}-${mm}`);
+                            }}
+                            title={MONTH_NAMES_FULL[idx]}
+                            className={cn(
+                                'py-2 rounded-lg text-sm text-center font-medium transition-colors',
+                                isSelected
+                                    ? 'bg-primary-600 text-white hover:bg-primary-700'
+                                    : isCurrentMonth
+                                      ? 'text-primary-600 dark:text-primary-400 hover:bg-zinc-100 dark:hover:bg-dark-600'
+                                      : 'text-dark-700 dark:text-dark-300 hover:bg-zinc-100 dark:hover:bg-dark-600',
+                            )}
+                        >
+                            {name}
+                        </button>
+                    );
+                })}
+            </div>
+        </div>
+    );
+}
+
 /* ─── DatePicker ────────────────────────────────────────── */
 
 export function DatePicker(props: DatePickerProps) {
@@ -189,16 +285,48 @@ export function DatePicker(props: DatePickerProps) {
     const [open, setOpen] = React.useState(false);
     const inputId = React.useId();
 
+    const isMonth = props.mode === 'month';
     const isRange = props.mode === 'range';
-    const singleValue = isRange ? null : ((props as DatePickerSingleProps).value ?? null);
+
+    const monthValue = isMonth ? ((props as DatePickerMonthProps).value ?? null) : null;
+    const singleValue = !isMonth && !isRange ? ((props as DatePickerSingleProps).value ?? null) : null;
     const rangeValue = isRange ? ((props as DatePickerRangeProps).value ?? null) : null;
-    const placeholderTo = isRange
-        ? ((props as DatePickerRangeProps).placeholderTo ?? 'Tanggal akhir...')
-        : '';
-    const hasValue = isRange ? !!(rangeValue?.from || rangeValue?.to) : !!singleValue;
+
+    /* picker year for month mode — initialised from value or current year */
+    const initialPickerYear = React.useMemo(() => {
+        if (monthValue) return parseInt(monthValue.split('-')[0]);
+        return new Date().getFullYear();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+    const [pickerYear, setPickerYear] = React.useState(initialPickerYear);
+
+    /* sync pickerYear when popover opens */
+    React.useEffect(() => {
+        if (open && isMonth) {
+            setPickerYear(
+                monthValue ? parseInt(monthValue.split('-')[0]) : new Date().getFullYear(),
+            );
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [open]);
+
+    const hasValue = isMonth
+        ? !!monthValue
+        : isRange
+          ? !!(rangeValue?.from || rangeValue?.to)
+          : !!singleValue;
 
     /* trigger label */
-    const triggerLabel = isRange ? (
+    const triggerLabel = isMonth ? (
+        monthValue ? (
+            <span className="text-dark-900 dark:text-dark-50 truncate">
+                {MONTH_NAMES_FULL[parseInt(monthValue.split('-')[1]) - 1]}{' '}
+                {monthValue.split('-')[0]}
+            </span>
+        ) : (
+            <span className="text-dark-400 dark:text-dark-500">{placeholder}</span>
+        )
+    ) : isRange ? (
         !rangeValue?.from && !rangeValue?.to ? (
             <span className="text-dark-400 dark:text-dark-500">{placeholder}</span>
         ) : (
@@ -226,7 +354,7 @@ export function DatePicker(props: DatePickerProps) {
                 >
                     {rangeValue?.to
                         ? format(rangeValue.to, 'dd MMM yyyy', { locale: idLocale })
-                        : placeholderTo}
+                        : (props as DatePickerRangeProps).placeholderTo ?? 'Tanggal akhir...'}
                 </span>
             </div>
         )
@@ -245,17 +373,19 @@ export function DatePicker(props: DatePickerProps) {
     const handleClear = React.useCallback(
         (e: React.MouseEvent | React.KeyboardEvent) => {
             e.stopPropagation();
-            if (isRange) {
+            if (isMonth) {
+                (props as DatePickerMonthProps).onChange(null);
+            } else if (isRange) {
                 (props as DatePickerRangeProps).onChange({ from: null, to: null });
             } else {
                 (props as DatePickerSingleProps).onChange(null);
             }
         },
         // eslint-disable-next-line react-hooks/exhaustive-deps
-        [isRange],
+        [isMonth, isRange],
     );
 
-    /* stable MonthCaption component that closes over fromYear/toYear */
+    /* stable MonthCaption component for day/range modes */
     const MonthCaptionComponent = React.useMemo(() => {
         const fy = fromYear;
         const ty = toYear;
@@ -265,7 +395,7 @@ export function DatePicker(props: DatePickerProps) {
         );
     }, [fromYear, toYear]);
 
-    /* DayPicker props vary by mode */
+    /* DayPicker props for single/range modes */
     const pickerProps = isRange
         ? {
               mode: 'range' as const,
@@ -341,7 +471,6 @@ export function DatePicker(props: DatePickerProps) {
                     </button>
                 </PopoverTrigger>
 
-                {/* Prevent outer popover closing when month/year inner popovers open */}
                 <PopoverContent
                     className="w-auto p-0"
                     align="start"
@@ -352,40 +481,54 @@ export function DatePicker(props: DatePickerProps) {
                         }
                     }}
                 >
-                    <DayPicker
-                        {...pickerProps}
-                        locale={idLocale}
-                        disabled={[
-                            ...(minDate ? [{ before: minDate }] : []),
-                            ...(maxDate ? [{ after: maxDate }] : []),
-                        ]}
-                        components={{ MonthCaption: MonthCaptionComponent as any }}
-                        classNames={{
-                            root: 'p-3',
-                            months: 'flex flex-col',
-                            month: 'space-y-0',
-                            month_caption: '',
-                            caption_label: 'hidden',
-                            nav: 'hidden',
-                            month_grid: 'w-full border-collapse',
-                            weekdays: 'flex',
-                            weekday:
-                                'text-dark-400 dark:text-dark-500 w-9 font-medium text-[0.8rem] text-center',
-                            weeks: '',
-                            week: 'flex w-full mt-2',
-                            day: 'h-9 w-9 text-center text-sm p-0 relative',
-                            day_button:
-                                'h-9 w-9 p-0 font-normal rounded-xl hover:bg-zinc-100 dark:hover:bg-dark-600 text-dark-900 dark:text-dark-200 flex items-center justify-center text-sm transition-colors',
-                            selected: '!bg-primary-600 !text-white hover:!bg-primary-700',
-                            today: '!font-bold !text-primary-600 dark:!text-primary-400',
-                            outside: 'opacity-30',
-                            disabled: 'opacity-30 cursor-not-allowed',
-                            range_start: '!rounded-r-none',
-                            range_end: '!rounded-l-none',
-                            range_middle:
-                                '!bg-primary-100 dark:!bg-primary-900/30 !rounded-none !text-primary-900 dark:!text-primary-100 hover:!bg-primary-200 dark:hover:!bg-primary-900/50',
-                        }}
-                    />
+                    {isMonth ? (
+                        <MonthGrid
+                            year={pickerYear}
+                            selectedValue={monthValue}
+                            onSelect={(month) => {
+                                (props as DatePickerMonthProps).onChange(month);
+                                setOpen(false);
+                            }}
+                            onYearChange={setPickerYear}
+                            fromYear={fromYear}
+                            toYear={toYear}
+                        />
+                    ) : (
+                        <DayPicker
+                            {...pickerProps}
+                            locale={idLocale}
+                            disabled={[
+                                ...(minDate ? [{ before: minDate }] : []),
+                                ...(maxDate ? [{ after: maxDate }] : []),
+                            ]}
+                            components={{ MonthCaption: MonthCaptionComponent as any }}
+                            classNames={{
+                                root: 'p-3',
+                                months: 'flex flex-col',
+                                month: 'space-y-0',
+                                month_caption: '',
+                                caption_label: 'hidden',
+                                nav: 'hidden',
+                                month_grid: 'w-full border-collapse',
+                                weekdays: 'flex',
+                                weekday:
+                                    'text-dark-400 dark:text-dark-500 w-9 font-medium text-[0.8rem] text-center',
+                                weeks: '',
+                                week: 'flex w-full mt-2',
+                                day: 'h-9 w-9 text-center text-sm p-0 relative',
+                                day_button:
+                                    'h-9 w-9 p-0 font-normal rounded-xl hover:bg-zinc-100 dark:hover:bg-dark-600 text-dark-900 dark:text-dark-200 flex items-center justify-center text-sm transition-colors',
+                                selected: '!bg-primary-600 !text-white hover:!bg-primary-700',
+                                today: '!font-bold !text-primary-600 dark:!text-primary-400',
+                                outside: 'opacity-30',
+                                disabled: 'opacity-30 cursor-not-allowed',
+                                range_start: '!rounded-r-none',
+                                range_end: '!rounded-l-none',
+                                range_middle:
+                                    '!bg-primary-100 dark:!bg-primary-900/30 !rounded-none !text-primary-900 dark:!text-primary-100 hover:!bg-primary-200 dark:hover:!bg-primary-900/50',
+                            }}
+                        />
+                    )}
                 </PopoverContent>
             </Popover>
 

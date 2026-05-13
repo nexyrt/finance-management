@@ -105,6 +105,15 @@
 
 [x-cloak] { display: none !important; }
 
+/* Pointer cursor for all interactive elements */
+button:not(:disabled),
+a,
+[role="button"]:not([aria-disabled="true"]),
+label[for],
+summary {
+    cursor: pointer;
+}
+
 /* Typography - Heading fonts */
 h1, h2, h3, h4, h5, h6,
 .heading,
@@ -116,6 +125,41 @@ h1, h2, h3, h4, h5, h6,
 * {
     scrollbar-width: thin;
     scrollbar-color: var(--color-dark-400) transparent;
+}
+
+/* =========================================================================
+   Dialog / Modal Animations
+   ========================================================================= */
+
+@keyframes dialog-overlay-show {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+@keyframes dialog-overlay-hide {
+    from { opacity: 1; }
+    to   { opacity: 0; }
+}
+
+@keyframes dialog-content-show {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+@keyframes dialog-content-hide {
+    from { opacity: 1; }
+    to   { opacity: 0; }
+}
+
+@utility animate-dialog-overlay-show {
+    animation: dialog-overlay-show 180ms ease-out forwards;
+}
+@utility animate-dialog-overlay-hide {
+    animation: dialog-overlay-hide 150ms ease-in forwards;
+}
+@utility animate-dialog-content-show {
+    animation: dialog-content-show 200ms ease-out forwards;
+}
+@utility animate-dialog-content-hide {
+    animation: dialog-content-hide 150ms ease-in forwards;
 }
 
 :where(.dark, .dark *) {

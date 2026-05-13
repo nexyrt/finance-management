@@ -4,6 +4,7 @@ use App\Http\Controllers\CashFlowExportController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\TransactionCategoryController;
 use App\Livewire\Accounts\Index as AccountsIndex;
@@ -133,6 +134,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('/{invoice}', [InvoiceController::class, 'destroy'])->middleware('can:delete invoices')->name('destroy');
         Route::post('/{invoice}/send', [InvoiceController::class, 'send'])->name('send');
         Route::post('/{invoice}/rollback', [InvoiceController::class, 'rollback'])->name('rollback');
+        Route::post('/{invoice}/payments', [PaymentController::class, 'store'])->middleware('can:create invoices')->name('payments.store');
+    });
+
+    Route::prefix('payments')->name('payments.')->middleware('can:edit invoices')->group(function () {
+        Route::post('/{payment}', [PaymentController::class, 'update'])->name('update');
+        Route::delete('/{payment}', [PaymentController::class, 'destroy'])->name('destroy');
     });
 
     // Invoice PDF Operations
