@@ -5,6 +5,7 @@ use App\Http\Controllers\ClientController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\RecurringInvoiceController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\TransactionCategoryController;
 use App\Livewire\Accounts\Index as AccountsIndex;
@@ -17,11 +18,6 @@ use App\Livewire\FundRequests\Index as FundRequestsIndex;
 use App\Livewire\Loans\Index as LoansIndex;
 use App\Livewire\Permissions\Index as PermissionsIndex;
 use App\Livewire\Receivables\Index as ReceivablesIndex;
-use App\Livewire\RecurringInvoices\CreateTemplate as RecurringInvoicesCreateTemplate;
-use App\Livewire\RecurringInvoices\EditTemplate as RecurringInvoicesEditTemplate;
-use App\Livewire\RecurringInvoices\Index as RecurringInvoicesIndex;
-use App\Livewire\RecurringInvoices\Monthly\CreateInvoice as RecurringInvoicesMonthlyCreate;
-use App\Livewire\RecurringInvoices\Monthly\EditInvoice as RecurringInvoicesMonthlyEdit;
 use App\Livewire\Reimbursements\Index as ReimbursementIndex;
 use App\Livewire\Settings\CompanyProfileSettings;
 use App\Livewire\Settings\Password;
@@ -180,25 +176,46 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // FINANCE - RECURRING INVOICES
     // ------------------------------------------------------------------------
     Route::prefix('recurring-invoices')->name('recurring-invoices.')->group(function () {
-        Route::get('/', RecurringInvoicesIndex::class)
+        Route::get('/', [RecurringInvoiceController::class, 'index'])
             ->middleware('can:view recurring-invoices')
             ->name('index');
 
-        Route::get('/template/create', RecurringInvoicesCreateTemplate::class)
+        // Templates
+        Route::post('/templates', [RecurringInvoiceController::class, 'storeTemplate'])
             ->middleware('can:create recurring-invoices')
-            ->name('template.create');
-
-        Route::get('/template/{template}/edit', RecurringInvoicesEditTemplate::class)
+            ->name('templates.store');
+        Route::put('/templates/{template}', [RecurringInvoiceController::class, 'updateTemplate'])
             ->middleware('can:edit recurring-invoices')
-            ->name('template.edit');
+            ->name('templates.update');
+        Route::delete('/templates/{template}', [RecurringInvoiceController::class, 'destroyTemplate'])
+            ->middleware('can:edit recurring-invoices')
+            ->name('templates.destroy');
+        Route::post('/templates/{template}/restore', [RecurringInvoiceController::class, 'restoreTemplate'])
+            ->middleware('can:edit recurring-invoices')
+            ->name('templates.restore');
 
-        Route::get('/monthly/create', RecurringInvoicesMonthlyCreate::class)
+        // Monthly invoices
+        Route::post('/monthly/generate', [RecurringInvoiceController::class, 'generateMonthly'])
             ->middleware('can:create recurring-invoices')
-            ->name('monthly.create');
-
-        Route::get('/monthly/{invoice}/edit', RecurringInvoicesMonthlyEdit::class)
+            ->name('monthly.generate');
+        Route::post('/monthly', [RecurringInvoiceController::class, 'storeMonthly'])
+            ->middleware('can:create recurring-invoices')
+            ->name('monthly.store');
+        Route::put('/monthly/{invoice}', [RecurringInvoiceController::class, 'updateMonthly'])
             ->middleware('can:edit recurring-invoices')
-            ->name('monthly.edit');
+            ->name('monthly.update');
+        Route::delete('/monthly/{invoice}', [RecurringInvoiceController::class, 'destroyMonthly'])
+            ->middleware('can:edit recurring-invoices')
+            ->name('monthly.destroy');
+        Route::post('/monthly/{invoice}/publish', [RecurringInvoiceController::class, 'publishMonthly'])
+            ->middleware('can:edit recurring-invoices')
+            ->name('monthly.publish');
+        Route::post('/monthly/bulk-destroy', [RecurringInvoiceController::class, 'bulkDestroyMonthly'])
+            ->middleware('can:edit recurring-invoices')
+            ->name('monthly.bulk-destroy');
+        Route::post('/monthly/bulk-publish', [RecurringInvoiceController::class, 'bulkPublishMonthly'])
+            ->middleware('can:edit recurring-invoices')
+            ->name('monthly.bulk-publish');
     });
 
     // ------------------------------------------------------------------------

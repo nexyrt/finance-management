@@ -1,9 +1,9 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../wayfinder'
-import template from './template'
+import templates from './templates'
 import monthly from './monthly'
 /**
-* @see \App\Livewire\RecurringInvoices\Index::__invoke
- * @see app/Livewire/RecurringInvoices/Index.php:7
+* @see \App\Http\Controllers\RecurringInvoiceController::index
+ * @see app/Http/Controllers/RecurringInvoiceController.php:18
  * @route '/recurring-invoices'
  */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -17,8 +17,8 @@ index.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see \App\Livewire\RecurringInvoices\Index::__invoke
- * @see app/Livewire/RecurringInvoices/Index.php:7
+* @see \App\Http\Controllers\RecurringInvoiceController::index
+ * @see app/Http/Controllers/RecurringInvoiceController.php:18
  * @route '/recurring-invoices'
  */
 index.url = (options?: RouteQueryOptions) => {
@@ -26,8 +26,8 @@ index.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see \App\Livewire\RecurringInvoices\Index::__invoke
- * @see app/Livewire/RecurringInvoices/Index.php:7
+* @see \App\Http\Controllers\RecurringInvoiceController::index
+ * @see app/Http/Controllers/RecurringInvoiceController.php:18
  * @route '/recurring-invoices'
  */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,8 +35,8 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     method: 'get',
 })
 /**
-* @see \App\Livewire\RecurringInvoices\Index::__invoke
- * @see app/Livewire/RecurringInvoices/Index.php:7
+* @see \App\Http\Controllers\RecurringInvoiceController::index
+ * @see app/Http/Controllers/RecurringInvoiceController.php:18
  * @route '/recurring-invoices'
  */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -45,7 +45,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 const recurringInvoices = {
     index: Object.assign(index, index),
-template: Object.assign(template, template),
+templates: Object.assign(templates, templates),
 monthly: Object.assign(monthly, monthly),
 }
 

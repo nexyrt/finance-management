@@ -3,7 +3,7 @@
 > **Dokumen ini adalah panduan kerja untuk Claude Code.**
 > Dibuat: 2026-05-11 | Branch aktif: `feature/inertia-react-migration`
 > Update dokumen ini setiap kali fase selesai.
-> **Terakhir diupdate: 2026-05-13 — Fase 5 selesai penuh (Invoice + Payment). Fase 6 berikutnya.**
+> **Terakhir diupdate: 2026-05-13 — Fase 6 selesai penuh (Recurring Invoices). Fase 7 berikutnya.**
 
 ---
 
@@ -53,7 +53,7 @@ git show main:path/to/file.php
 | 3 | Auth Pages | ✅ Selesai (2026-05-12) |
 | 4 | Master Data | ✅ Selesai (2026-05-12) |
 | 5 | Invoice & Payment | ✅ Selesai (2026-05-13) |
-| 6 | Recurring Invoices | ⬜ Belum Dimulai |
+| 6 | Recurring Invoices | ✅ Selesai (2026-05-13) |
 | 7 | Banking (Accounts + Cash Flow + Transactions) | ⬜ Belum Dimulai |
 | 8 | Operations (Reimbursements + Fund Requests) | ⬜ Belum Dimulai |
 | 9 | Finance (Loans + Receivables) | ⬜ Belum Dimulai |
@@ -338,21 +338,31 @@ resources/js/
 
 ---
 
-## Fase 6 — Recurring Invoices
+## Fase 6 — Recurring Invoices ✅ SELESAI
 
 **Route:** `/recurring-invoices`
 **Livewire source:** `app/Livewire/RecurringInvoices/`
 
+**Commits:**
+- `feat(phase-6): add Inertia Recurring Invoices page (index, templates, monthly, analytics)`
+
 | Component | Status |
 |-----------|--------|
-| Index (tabs) | ⬜ |
-| TemplatesTab | ⬜ |
-| MonthlyTab | ⬜ |
-| AnalyticsTab | ⬜ |
-| Create Template | ⬜ |
-| Edit Template | ⬜ |
-| Delete Template | ⬜ |
-| Generate Invoice (from template) | ⬜ |
+| Index (tabs) | ✅ 2026-05-13 — RecurringInvoicesIndex.tsx dengan 3 tab |
+| TemplatesTab | ✅ 2026-05-13 — Inline dalam index, TemplateFormModal |
+| MonthlyTab | ✅ 2026-05-13 — MonthlyFormModal, GenerateModal, PublishModal, BulkPublishModal |
+| AnalyticsTab | ✅ 2026-05-13 — ApexCharts bar chart + template stats + status breakdown |
+| Create Template | ✅ 2026-05-13 — TemplateFormModal (store) |
+| Edit Template | ✅ 2026-05-13 — TemplateFormModal (update) |
+| Delete/Archive Template | ✅ 2026-05-13 — ConfirmDialog + auto-archive jika ada published invoices |
+| Generate Invoice (from template) | ✅ 2026-05-13 — GenerateModal + bulkPublishMonthly |
+
+**Notes:**
+- Controller: `RecurringInvoiceController.php` (12 endpoints — CRUD templates + monthly + analytics)
+- URL-based filter navigation: `?tab=`, `?month=`, `?year=` via `router.get()`
+- Bulk actions: select-all, bulk-destroy, bulk-publish
+- ItemsRepeater menggunakan `Input + datalist` untuk service_name (free-text + autocomplete)
+- Analytics: ApexCharts bar chart, template performance table, status breakdown dengan progress bars
 
 ---
 

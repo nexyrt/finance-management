@@ -1,4 +1,3 @@
-import RecurringInvoices from './RecurringInvoices'
 import Accounts from './Accounts'
 import CashFlow from './CashFlow'
 import Reimbursements from './Reimbursements'
@@ -11,8 +10,7 @@ import Users from './Users'
 import Settings from './Settings'
 import TestingPage from './TestingPage'
 const Livewire = {
-    RecurringInvoices: Object.assign(RecurringInvoices, RecurringInvoices),
-Accounts: Object.assign(Accounts, Accounts),
+    Accounts: Object.assign(Accounts, Accounts),
 CashFlow: Object.assign(CashFlow, CashFlow),
 Reimbursements: Object.assign(Reimbursements, Reimbursements),
 FundRequests: Object.assign(FundRequests, FundRequests),
