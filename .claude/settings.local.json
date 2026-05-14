@@ -92,7 +92,18 @@
       "Bash(./vendor/bin/pint app/Livewire/Dashboard.php --format agent)",
       "mcp__laravel-boost__database-schema",
       "mcp__laravel-boost__read-log-entries",
-      "mcp__tallstackui__search-customization-tool"
+      "mcp__tallstackui__search-customization-tool",
+      "mcp__laravel-boost__application-info",
+      "PowerShell(git -C \"d:\\\\Laravel\\\\finance-management\" log --oneline -5)",
+      "PowerShell(Copy-Item -Path \"d:\\\\Laravel\\\\finance-management\" -Destination \"d:\\\\Laravel\\\\bjm-finance\" -Recurse -Exclude @\\(\".git\", \"node_modules\", \"vendor\"\\))",
+      "PowerShell(git -C \"d:\\\\Laravel\\\\bjm-finance\" init)",
+      "PowerShell(git -C \"d:\\\\Laravel\\\\bjm-finance\" add .)",
+      "PowerShell(git -C \"d:\\\\Laravel\\\\bjm-finance\" commit -m \"initial commit: fork from finance-management\")",
+      "PowerShell(mysql -u root -pLKJHgfdsa2025# -e \"CREATE DATABASE IF NOT EXISTS bjm_finance CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;\")",
+      "PowerShell(php -C \"d:\\\\Laravel\\\\bjm-finance\\\\artisan\" db:show 2>&1)",
+      "PowerShell(head -5)",
+      "PowerShell(git -C \"d:\\\\Laravel\\\\bjm-finance\" add database/migrations/2026_05_04_044924_add_bjm_fields_to_invoices_table.php database/migrations/2026_05_04_044957_add_bjm_fields_to_invoice_items_table.php app/Models/Invoice.php app/Models/InvoiceItem.php .env)",
+      "PowerShell(git -C \"d:\\\\Laravel\\\\bjm-finance\" add database/migrations/2026_05_04_044924_add_bjm_fields_to_invoices_table.php database/migrations/2026_05_04_044957_add_bjm_fields_to_invoice_items_table.php app/Models/Invoice.php app/Models/InvoiceItem.php)"
     ]
   },
   "enableAllProjectMcpServers": true,
