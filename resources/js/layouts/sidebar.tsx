@@ -101,7 +101,6 @@ const NAV: NavSection[] = [
                 icon: <Building2 className="w-4 h-4 shrink-0" />,
                 permission: 'view bank-accounts',
                 matchPrefix: '/bank-accounts',
-                comingSoon: true,
             },
         ],
     },
