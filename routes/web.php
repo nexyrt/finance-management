@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\BankAccountController;
 use App\Http\Controllers\CashFlowExportController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\DashboardController;
@@ -8,7 +9,6 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\RecurringInvoiceController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\TransactionCategoryController;
-use App\Livewire\Accounts\Index as AccountsIndex;
 use App\Livewire\CashFlow\ExpensesPage as CashFlowExpenses;
 use App\Livewire\CashFlow\Income as CashFlowIncome;
 use App\Livewire\CashFlow\Transfers as CashFlowTransfers;
@@ -225,11 +225,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     // ------------------------------------------------------------------------
-    // FINANCE - BANK & CASH FLOW
+    // FINANCE - BANK ACCOUNTS
     // ------------------------------------------------------------------------
-    Route::get('/bank-accounts', AccountsIndex::class)
-        ->middleware('can:view bank-accounts')
-        ->name('bank-accounts.index');
+    Route::prefix('bank-accounts')->name('bank-accounts.')->middleware('can:view bank-accounts')->group(function () {
+        Route::get('/', [BankAccountController::class, 'index'])->name('index');
+        Route::post('/', [BankAccountController::class, 'store'])->middleware('can:create bank-accounts')->name('store');
+        Route::put('/{bankAccount}', [BankAccountController::class, 'update'])->middleware('can:edit bank-accounts')->name('update');
+        Route::delete('/{bankAccount}', [BankAccountController::class, 'destroy'])->middleware('can:delete bank-accounts')->name('destroy');
+        Route::get('/{bankAccount}/chart-data', [BankAccountController::class, 'chartData'])->name('chart-data');
+    });
 
     Route::get('/bank-account/export/pdf', [CashFlowExportController::class, 'exportPdf'])
         ->middleware('can:view bank-accounts')
