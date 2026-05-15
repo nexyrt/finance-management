@@ -27,7 +27,7 @@ import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { CurrencyInput } from '@/components/shared/currency-input';
 import { StatsCard } from '@/components/shared/stats-card';
 import { AppLayout } from '@/layouts/app-layout';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, toastErrors } from '@/lib/utils';
 import type { SharedProps } from '@/types';
 
 /* ─────────────────────────────────── types ─── */
@@ -162,7 +162,10 @@ export default function ServicesIndex() {
     const [editTarget, setEditTarget] = React.useState<Service | null>(null);
     const [deleteTarget, setDeleteTarget] = React.useState<Service | null>(null);
 
+    /* filter debounce — skip initial mount to avoid double request */
+    const isMounted = React.useRef(false);
     React.useEffect(() => {
+        if (!isMounted.current) { isMounted.current = true; return; }
         const t = setTimeout(() => {
             router.get('/services', { search: search || undefined, type: typeFilter || undefined, per_page: filters.per_page }, { preserveState: true, replace: true });
         }, 300);
@@ -181,7 +184,7 @@ export default function ServicesIndex() {
         e.preventDefault();
         createForm.post('/services', {
             onSuccess: () => { setCreateOpen(false); createForm.reset(); toast.success('Layanan berhasil ditambahkan.'); },
-            onError: () => toast.error('Gagal menyimpan layanan. Periksa kembali form Anda.'),
+            onError: (errs) => toastErrors(errs, 'CreateService'),
         });
     }
 
@@ -198,7 +201,7 @@ export default function ServicesIndex() {
         if (!editTarget) return;
         editForm.put(`/services/${editTarget.id}`, {
             onSuccess: () => { setEditTarget(null); toast.success('Layanan berhasil diperbarui.'); },
-            onError: () => toast.error('Gagal memperbarui layanan. Periksa kembali form Anda.'),
+            onError: (errs) => toastErrors(errs, 'UpdateService'),
         });
     }
 
@@ -209,7 +212,7 @@ export default function ServicesIndex() {
         if (!deleteTarget) return;
         deleteForm.delete(`/services/${deleteTarget.id}`, {
             onSuccess: () => { setDeleteTarget(null); toast.success('Layanan berhasil dihapus.'); },
-            onError: () => toast.error('Gagal menghapus layanan.'),
+            onError: (errs) => toastErrors(errs, 'DeleteService'),
         });
     }
 

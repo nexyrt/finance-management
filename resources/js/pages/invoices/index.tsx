@@ -107,7 +107,7 @@ interface ClientOption {
 interface Filters {
     search?: string | null;
     status?: string | null;
-    client_id?: number | null;
+    client_ids?: number[];
     month?: string;
     date_from?: string | null;
     date_to?: string | null;
@@ -197,6 +197,28 @@ function getInitials(name: string): string {
 
 function getCsrfToken(): string {
     return (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content ?? '';
+}
+
+function daysDiff(dateStr: string): number {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const target = new Date(dateStr);
+    target.setHours(0, 0, 0, 0);
+    return Math.round((today.getTime() - target.getTime()) / 86400000);
+}
+
+function relativeIssueDate(dateStr: string): string {
+    const diff = daysDiff(dateStr);
+    if (diff === 0) return 'Hari ini';
+    if (diff === 1) return 'Kemarin';
+    return `${diff} hari lalu`;
+}
+
+function relativeDueDate(dateStr: string): { label: string; overdue: boolean } {
+    const diff = daysDiff(dateStr);
+    if (diff < 0) return { label: `${Math.abs(diff)} hari lagi`, overdue: false };
+    if (diff === 0) return { label: 'Hari ini', overdue: false };
+    return { label: `${diff} hari lewat`, overdue: true };
 }
 
 /* ─────────────────────────────────── slide-over ─── */
@@ -382,6 +404,7 @@ function InvoiceDrawer({
                     setPaymentErrors(data.errors);
                 } else {
                     setPaymentErrors({ _: data.message ?? 'Terjadi kesalahan.' });
+                    console.error('[PaymentSubmit]', res.status, data);
                 }
                 return;
             }
@@ -390,8 +413,9 @@ function InvoiceDrawer({
             setEditPayment(null);
             fetchDetail(detail.id);
             router.reload({ only: ['invoices', 'stats'] });
-        } catch {
-            setPaymentErrors({ _: 'Terjadi kesalahan jaringan.' });
+        } catch (err) {
+            setPaymentErrors({ _: err instanceof Error ? err.message : 'Terjadi kesalahan jaringan.' });
+            console.error('[PaymentSubmit] network error', err);
         } finally {
             setPaymentLoading(false);
         }
@@ -413,9 +437,12 @@ function InvoiceDrawer({
                 setDeletePaymentTarget(null);
                 fetchDetail(detail.id);
                 router.reload({ only: ['invoices', 'stats'] });
+            } else {
+                const data = await res.json().catch(() => ({}));
+                console.error('[DeletePayment]', res.status, data);
             }
-        } catch {
-            /* noop */
+        } catch (err) {
+            console.error('[DeletePayment] network error', err);
         } finally {
             setDeletePaymentLoading(false);
         }
@@ -1088,7 +1115,7 @@ function InvoicesPage({ invoices, stats, clients, rollbackableIds, filters }: Pr
     const currentFilters = {
         search: filters.search ?? '',
         status: filters.status ?? '',
-        client_id: filters.client_id ?? '',
+        client_ids: filters.client_ids ?? [],
         month: filters.month ?? '',
         date_from: filters.date_from ?? '',
         date_to: filters.date_to ?? '',
@@ -1146,7 +1173,7 @@ function InvoicesPage({ invoices, stats, clients, rollbackableIds, filters }: Pr
 
     const handleResetFilters = () => {
         setSearch('');
-        navigate({ search: '', status: '', client_id: '', period_mode: 'month', month: DEFAULT_MONTH, date_from: '', date_to: '' });
+        navigate({ search: '', status: '', client_ids: [], period_mode: 'month', month: DEFAULT_MONTH, date_from: '', date_to: '' });
     };
 
     const handleDeleteFromTable = () => {
@@ -1168,7 +1195,7 @@ function InvoicesPage({ invoices, stats, clients, rollbackableIds, filters }: Pr
 
     const activeFiltersCount = [
         !!currentFilters.status,
-        !!currentFilters.client_id,
+        currentFilters.client_ids.length > 0,
         !!currentFilters.search,
         dateMode === 'month'
             ? currentFilters.month && currentFilters.month !== DEFAULT_MONTH
@@ -1385,11 +1412,12 @@ function InvoicesPage({ invoices, stats, clients, rollbackableIds, filters }: Pr
                     <div className="flex flex-col lg:flex-row lg:items-end gap-3 p-4 border-b border-secondary-200 dark:border-dark-600">
 
                         {/* Klien */}
-                        <div className="w-full lg:w-56 shrink-0">
+                        <div className="w-full lg:w-64 shrink-0">
                             <Combobox
+                                multiple
                                 options={clients}
-                                value={currentFilters.client_id || null}
-                                onChange={(v) => navigate({ client_id: v ?? '' })}
+                                value={currentFilters.client_ids}
+                                onChange={(v) => navigate({ client_ids: v })}
                                 placeholder="Semua Klien"
                                 label="Klien"
                             />
@@ -1571,25 +1599,46 @@ function InvoicesPage({ invoices, stats, clients, rollbackableIds, filters }: Pr
                                                 </td>
 
                                                 {/* Tgl Invoice */}
-                                                <td className="px-4 py-3.5 whitespace-nowrap text-dark-600 dark:text-dark-400 text-sm">
-                                                    {formatDate(inv.issue_date)}
+                                                <td className="px-4 py-3.5 whitespace-nowrap">
+                                                    <div className="text-sm text-dark-600 dark:text-dark-400">
+                                                        {formatDate(inv.issue_date)}
+                                                    </div>
+                                                    <div className="text-xs text-dark-400 dark:text-dark-500 mt-0.5">
+                                                        {relativeIssueDate(inv.issue_date)}
+                                                    </div>
                                                 </td>
 
                                                 {/* Jatuh Tempo */}
                                                 <td className="px-4 py-3.5 whitespace-nowrap">
-                                                    <div className="flex items-center gap-1.5">
-                                                        <span className={cn(
-                                                            'text-sm',
-                                                            isOverdue
-                                                                ? 'text-red-600 dark:text-red-400 font-semibold'
-                                                                : 'text-dark-600 dark:text-dark-400',
-                                                        )}>
-                                                            {formatDate(inv.due_date)}
-                                                        </span>
-                                                        {isOverdue && (
-                                                            <Badge variant="red" size="sm">Lewat</Badge>
-                                                        )}
-                                                    </div>
+                                                    {(() => {
+                                                        const due = relativeDueDate(inv.due_date);
+                                                        const showRelative = inv.status !== 'paid' && inv.status !== 'draft';
+                                                        return (
+                                                            <>
+                                                                <div className={cn(
+                                                                    'text-sm',
+                                                                    isOverdue
+                                                                        ? 'text-red-600 dark:text-red-400 font-semibold'
+                                                                        : 'text-dark-600 dark:text-dark-400',
+                                                                )}>
+                                                                    {formatDate(inv.due_date)}
+                                                                </div>
+                                                                {showRelative && (
+                                                                    <div className={cn(
+                                                                        'text-xs mt-0.5',
+                                                                        due.overdue
+                                                                            ? 'text-red-500 dark:text-red-400'
+                                                                            : 'text-dark-400 dark:text-dark-500',
+                                                                    )}>
+                                                                        {due.label}
+                                                                    </div>
+                                                                )}
+                                                                {(inv.status === 'paid' || inv.status === 'draft') && (
+                                                                    <div className="text-xs mt-0.5 text-dark-400 dark:text-dark-500 opacity-0 select-none">—</div>
+                                                                )}
+                                                            </>
+                                                        );
+                                                    })()}
                                                 </td>
 
                                                 {/* Jumlah + progress bar */}
@@ -1597,19 +1646,19 @@ function InvoicesPage({ invoices, stats, clients, rollbackableIds, filters }: Pr
                                                     <div className="font-semibold text-dark-900 dark:text-dark-50 tabular-nums whitespace-nowrap">
                                                         {formatCurrency(inv.total_amount)}
                                                     </div>
-                                                    {inv.status === 'partially_paid' && inv.amount_paid > 0 && (
-                                                        <div className="mt-1.5 space-y-1 min-w-[5rem]">
-                                                            <div className="h-1.5 w-full bg-secondary-200 dark:bg-dark-600 rounded-full overflow-hidden">
-                                                                <div
-                                                                    className="h-full bg-emerald-500 dark:bg-emerald-400 rounded-full transition-all"
-                                                                    style={{ width: `${paymentPct}%` }}
-                                                                />
-                                                            </div>
-                                                            <p className="text-xs text-dark-400 dark:text-dark-500 text-right tabular-nums">
-                                                                {paymentPct}% dibayar
-                                                            </p>
+                                                    <div className="mt-1.5 min-w-[5rem]">
+                                                        <div className="h-1.5 w-full bg-secondary-200 dark:bg-dark-600 rounded-full overflow-hidden">
+                                                            <div
+                                                                className={cn(
+                                                                    'h-full rounded-full transition-all',
+                                                                    inv.status === 'paid'
+                                                                        ? 'bg-emerald-500 dark:bg-emerald-400'
+                                                                        : 'bg-emerald-500 dark:bg-emerald-400',
+                                                                )}
+                                                                style={{ width: `${paymentPct}%` }}
+                                                            />
                                                         </div>
-                                                    )}
+                                                    </div>
                                                 </td>
 
                                                 {/* Status */}

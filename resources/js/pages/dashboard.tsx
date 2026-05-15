@@ -1,4 +1,4 @@
-import { usePage } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import {
     ArrowDownRight,
     ArrowUpRight,
@@ -221,12 +221,12 @@ function SectionHeader({ title, href }: { title: string; href?: string }) {
         <div className="flex items-center justify-between">
             <CardTitle className="text-base font-semibold">{title}</CardTitle>
             {href && (
-                <a
+                <Link
                     href={href}
                     className="flex items-center gap-0.5 text-xs text-primary-600 dark:text-primary-400 hover:underline"
                 >
                     Lihat semua <ChevronRight className="w-3 h-3" />
-                </a>
+                </Link>
             )}
         </div>
     );

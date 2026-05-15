@@ -1,4 +1,4 @@
-import { Head, router, useForm, usePage } from '@inertiajs/react';
+import { Head, Link, useForm } from '@inertiajs/react';
 import { toast } from 'sonner';
 import {
     ArrowLeft,
@@ -17,8 +17,9 @@ import { DatePicker } from '@/components/ui/date-picker';
 import { Input } from '@/components/ui/input';
 import { CurrencyInput } from '@/components/shared/currency-input';
 import { AppLayout } from '@/layouts/app-layout';
-import { cn, formatCurrency } from '@/lib/utils';
-import { CurrencyCell, ServiceLookup } from '@/pages/invoices/create';
+import { cn, formatCurrency, toastErrors } from '@/lib/utils';
+import { CurrencyCell, ServiceLookup, ColDef, useColumnResize, ResizableTh, parseQty } from '@/pages/invoices/create';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import type { SharedProps } from '@/types';
 
 /* ─────────────────────────────────── types ─── */
@@ -114,7 +115,7 @@ export function TemplateForm({
     isEdit = false,
     initialData,
 }: TemplateFormProps) {
-    const { data, setData, post, put, processing, errors } = useForm({
+    const { data, setData, post, put, transform, processing, errors } = useForm({
         template_name: initialData?.template_name ?? '',
         client_id: initialData?.client_id ?? null as number | null,
         start_date: initialData?.start_date ?? '',
@@ -128,8 +129,23 @@ export function TemplateForm({
 
     const [discountOpen, setDiscountOpen] = React.useState(false);
 
+    /* ── column resize ── */
+    const COL_DEFS: ColDef[] = [
+        { key: 'no',       defaultWidth: 32,  minWidth: 32  },
+        { key: 'client',   defaultWidth: 140, minWidth: 60  },
+        { key: 'service',  defaultWidth: 220, minWidth: 80  },
+        { key: 'qty',      defaultWidth: 64,  minWidth: 48  },
+        { key: 'unit',     defaultWidth: 80,  minWidth: 48  },
+        { key: 'price',    defaultWidth: 112, minWidth: 64  },
+        { key: 'hpp',      defaultWidth: 112, minWidth: 64  },
+        { key: 'pph',      defaultWidth: 40,  minWidth: 40  },
+        { key: 'subtotal', defaultWidth: 112, minWidth: 64  },
+        { key: 'del',      defaultWidth: 36,  minWidth: 36  },
+    ];
+    const { widths, onMouseDown, resetWidths } = useColumnResize(COL_DEFS, 'template-items-col-widths');
+
     /* ── calculations ── */
-    const itemTotals = data.items.map((item) => Math.round(item.unit_price * item.quantity));
+    const itemTotals = data.items.map((item) => Math.round(item.unit_price * parseQty(String(item.quantity))));
     const subtotal = data.items.filter((i) => !i.is_tax_deposit).reduce((s, item, idx) => s + (item.is_tax_deposit ? 0 : itemTotals[idx]), 0);
     const totalTaxDeposits = data.items.reduce((s, item, idx) => s + (item.is_tax_deposit ? itemTotals[idx] : 0), 0);
     const discountAmount = data.discount_type === 'percentage'
@@ -148,6 +164,17 @@ export function TemplateForm({
     const updateItemFields = (idx: number, updates: Partial<TemplateItem>) =>
         setData('items', data.items.map((item, i) => i === idx ? { ...item, ...updates } : item));
 
+    const handleClientChange = (v: string | number | null) => {
+        const newClientId = v ? Number(v) : null;
+        setData((prev) => ({
+            ...prev,
+            client_id: newClientId,
+            items: prev.items.map((item) =>
+                item.client_id === null ? { ...item, client_id: newClientId } : item,
+            ),
+        }));
+    };
+
     const handleServiceNameChange = (idx: number, name: string) => {
         const matched = services.find((s) => s.name === name);
         updateItemFields(idx, { service_name: name, ...(matched ? { unit_price: matched.price } : {}) });
@@ -156,12 +183,13 @@ export function TemplateForm({
     /* ── submit ── */
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+        transform((d) => ({
+            ...d,
+            items: d.items.map((item) => ({ ...item, quantity: parseQty(String(item.quantity)) })),
+        }));
         const options = {
             onSuccess: () => toast.success(isEdit ? 'Template berhasil diperbarui.' : 'Template berhasil dibuat.'),
-            onError: (errs: Record<string, string>) => {
-                const first = Object.values(errs)[0];
-                toast.error(first ?? 'Gagal menyimpan template.');
-            },
+            onError: (errs: Record<string, string>) => toastErrors(errs, isEdit ? 'UpdateTemplate' : 'CreateTemplate'),
         };
         if (method === 'put') put(submitUrl, options);
         else post(submitUrl, options);
@@ -171,14 +199,14 @@ export function TemplateForm({
 
     return (
         <form onSubmit={handleSubmit}>
-            <div className="grid grid-cols-1 xl:grid-cols-5 gap-6 items-start">
+            <div className="grid grid-cols-1 xl:grid-cols-4 gap-6 items-start">
 
-                {/* ── LEFT COLUMN (4/5) ── */}
-                <div className="xl:col-span-4 space-y-6">
+                {/* ── LEFT COLUMN (3/4) ── */}
+                <div className="xl:col-span-3 space-y-6">
 
                     {/* Card 1: Detail Template */}
                     <div className="bg-white dark:bg-dark-700 rounded-xl border border-secondary-200 dark:border-dark-600 overflow-hidden">
-                        <div className="px-6 py-4 border-b border-secondary-200 dark:border-dark-600 flex items-center gap-3">
+                        <div className="px-4 sm:px-6 py-4 border-b border-secondary-200 dark:border-dark-600 flex items-center gap-3">
                             <div className="w-8 h-8 bg-primary-50 dark:bg-primary-900/20 rounded-lg flex items-center justify-center shrink-0">
                                 <FileText className="w-4 h-4 text-primary-600 dark:text-primary-400" />
                             </div>
@@ -187,7 +215,7 @@ export function TemplateForm({
                                 <p className="text-xs text-dark-500 dark:text-dark-400">Nama, klien, periode, dan frekuensi tagihan</p>
                             </div>
                         </div>
-                        <div className="p-6 space-y-5">
+                        <div className="p-4 sm:p-6 space-y-5">
 
                             {/* Row 1: Template Name + Client */}
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
@@ -202,7 +230,7 @@ export function TemplateForm({
                                     label="Klien *"
                                     options={clientOptions}
                                     value={data.client_id}
-                                    onChange={(v) => setData('client_id', v ? Number(v) : null)}
+                                    onChange={handleClientChange}
                                     placeholder="Pilih klien..."
                                     error={errors.client_id}
                                 />
@@ -254,186 +282,179 @@ export function TemplateForm({
 
                     {/* Card 2: Invoice Items */}
                     <div className="bg-white dark:bg-dark-700 rounded-xl border border-secondary-200 dark:border-dark-600 overflow-hidden">
-                        <div className="px-6 py-4 border-b border-secondary-200 dark:border-dark-600 flex items-center justify-between">
-                            <div className="flex items-center gap-3">
+                        <div className="px-4 sm:px-6 py-4 border-b border-secondary-200 dark:border-dark-600 flex flex-wrap items-center justify-between gap-3">
+                            <div className="flex items-center gap-3 min-w-0">
                                 <div className="w-8 h-8 bg-blue-50 dark:bg-blue-900/20 rounded-lg flex items-center justify-center shrink-0">
                                     <List className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                                 </div>
-                                <div>
+                                <div className="min-w-0">
                                     <h2 className="text-sm font-semibold text-dark-900 dark:text-dark-50">Item Invoice</h2>
                                     <p className="text-xs text-dark-500 dark:text-dark-400 flex items-center gap-1">
                                         <Info className="w-3 h-3 shrink-0" />
-                                        Item akan digunakan setiap kali invoice di-generate
+                                        <span className="hidden sm:inline">Item akan digunakan setiap kali invoice di-generate</span>
+                                        <span className="sm:hidden">Item per generate</span>
                                     </p>
                                 </div>
                             </div>
-                            <Button type="button" variant="outline" size="sm" onClick={addItem}>
-                                <Plus className="w-3.5 h-3.5 mr-1" /> Tambah Item
-                            </Button>
+                            <div className="flex items-center gap-2 shrink-0">
+                                <button
+                                    type="button"
+                                    onClick={resetWidths}
+                                    className="hidden sm:block text-xs text-dark-400 dark:text-dark-500 hover:text-dark-600 dark:hover:text-dark-300 transition-colors"
+                                    title="Reset lebar kolom ke default"
+                                >
+                                    Reset kolom
+                                </button>
+                                <Button type="button" variant="outline" size="sm" onClick={addItem}>
+                                    <Plus className="w-3.5 h-3.5 mr-1" /> Tambah Item
+                                </Button>
+                            </div>
                         </div>
 
                         {errors.items && (
-                            <p className="px-6 pt-3 text-xs text-red-600 dark:text-red-400">{errors.items}</p>
+                            <p className="px-4 sm:px-6 pt-3 text-xs text-red-600 dark:text-red-400">{errors.items}</p>
                         )}
 
                         <div className="overflow-x-auto">
-                            <div style={{ minWidth: '780px' }}>
-
-                                {/* Header */}
-                                <div className="grid bg-secondary-50 dark:bg-dark-800 border-b border-secondary-200 dark:border-dark-600"
-                                    style={{ gridTemplateColumns: '32px 2fr 3fr 1fr 1.5fr 2fr 2fr 40px 2fr 36px' }}>
-                                    <div className="px-2 py-2.5 text-xs font-semibold text-dark-400 dark:text-dark-500 text-center">#</div>
-                                    <div className="px-2 py-2.5 text-xs font-semibold text-dark-600 dark:text-dark-400">Klien</div>
-                                    <div className="px-2 py-2.5 text-xs font-semibold text-dark-600 dark:text-dark-400">Nama Layanan</div>
-                                    <div className="px-2 py-2.5 text-xs font-semibold text-dark-600 dark:text-dark-400 text-right">Qty</div>
-                                    <div className="px-2 py-2.5 text-xs font-semibold text-dark-600 dark:text-dark-400">Satuan</div>
-                                    <div className="px-2 py-2.5 text-xs font-semibold text-dark-600 dark:text-dark-400 text-right">Harga Sat.</div>
-                                    <div className="px-2 py-2.5 text-xs font-semibold text-dark-600 dark:text-dark-400 text-right">HPP</div>
-                                    <div className="px-2 py-2.5 text-xs font-semibold text-dark-600 dark:text-dark-400 text-center" title="Titipan Pajak">PPh</div>
-                                    <div className="px-2 py-2.5 text-xs font-semibold text-dark-600 dark:text-dark-400 text-right">Subtotal</div>
-                                    <div />
-                                </div>
-
-                                {/* Rows */}
-                                {data.items.map((item, idx) => (
-                                    <div
-                                        key={idx}
-                                        className={cn(
-                                            'grid border-b border-secondary-200 dark:border-dark-600 last:border-0',
-                                            'hover:bg-secondary-50/50 dark:hover:bg-dark-800/30 transition-colors group',
-                                            item.is_tax_deposit && 'bg-amber-50/40 dark:bg-amber-900/5',
-                                        )}
-                                        style={{ gridTemplateColumns: '32px 2fr 3fr 1fr 1.5fr 2fr 2fr 40px 2fr 36px' }}
-                                    >
-                                        <div className="flex items-center justify-center px-1 py-1.5">
-                                            <span className="text-xs font-mono text-dark-400 dark:text-dark-500">{idx + 1}</span>
-                                        </div>
-
-                                        {/* Client per-item */}
-                                        <div className="flex items-center px-1 py-1.5">
-                                            <Combobox
-                                                options={[
-                                                    { value: -1, label: '— default —' },
-                                                    ...clientOptions,
-                                                ]}
-                                                value={item.client_id ?? -1}
-                                                onChange={(v) => {
-                                                    const val = v ? Number(v) : null;
-                                                    updateItem(idx, 'client_id', val === -1 ? null : val);
-                                                }}
-                                                placeholder="Default"
-                                                className="w-full [&_button]:h-8 [&_button]:text-xs [&_button]:px-2 [&_button]:rounded-md [&_button]:ring-0 [&_button]:shadow-none"
-                                            />
-                                        </div>
-
-                                        {/* Service name + lookup */}
-                                        <div className="flex items-center gap-0.5 px-1 py-1.5">
-                                            <div className="flex-1 min-w-0">
+                            <table className="table-fixed text-xs w-full" style={{ minWidth: Object.values(widths).reduce((a, b) => a + b, 0) }}>
+                                <thead>
+                                    <tr className="bg-secondary-50 dark:bg-dark-800 border-b border-secondary-200 dark:border-dark-600">
+                                        <ResizableTh width={widths.no} onResizeStart={(e) => onMouseDown('no', e)} className="px-2 py-2.5 text-xs font-semibold text-dark-400 dark:text-dark-500 text-left">#</ResizableTh>
+                                        <ResizableTh width={widths.client} onResizeStart={(e) => onMouseDown('client', e)} className="px-2 py-2.5 text-xs font-semibold text-dark-600 dark:text-dark-400 text-left">Klien</ResizableTh>
+                                        <ResizableTh width={widths.service} onResizeStart={(e) => onMouseDown('service', e)} className="px-2 py-2.5 text-xs font-semibold text-dark-600 dark:text-dark-400 text-left">Nama Layanan</ResizableTh>
+                                        <ResizableTh width={widths.qty} onResizeStart={(e) => onMouseDown('qty', e)} className="px-2 py-2.5 text-xs font-semibold text-dark-600 dark:text-dark-400 text-left">
+                                            <TooltipProvider delayDuration={0}>
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <span className="inline-flex items-center gap-1 cursor-default">
+                                                            Qty
+                                                            <Info className="w-3 h-3 text-primary-400 dark:text-primary-500" />
+                                                        </span>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent side="top" className="max-w-48 text-center leading-relaxed">
+                                                        Gunakan titik atau koma sebagai pemisah desimal.<br />
+                                                        Contoh: <span className="font-mono">1.5</span>, <span className="font-mono">5.000,25</span>
+                                                    </TooltipContent>
+                                                </Tooltip>
+                                            </TooltipProvider>
+                                        </ResizableTh>
+                                        <ResizableTh width={widths.unit} onResizeStart={(e) => onMouseDown('unit', e)} className="px-2 py-2.5 text-xs font-semibold text-dark-600 dark:text-dark-400 text-left">Satuan</ResizableTh>
+                                        <ResizableTh width={widths.price} onResizeStart={(e) => onMouseDown('price', e)} className="px-2 py-2.5 text-xs font-semibold text-dark-600 dark:text-dark-400 text-left">Harga Sat.</ResizableTh>
+                                        <ResizableTh width={widths.hpp} onResizeStart={(e) => onMouseDown('hpp', e)} className="px-2 py-2.5 text-xs font-semibold text-dark-600 dark:text-dark-400 text-left">HPP</ResizableTh>
+                                        <ResizableTh width={widths.pph} onResizeStart={(e) => onMouseDown('pph', e)} className="px-2 py-2.5 text-xs font-semibold text-dark-600 dark:text-dark-400 text-left" title="Titipan Pajak (PPh)">PPh</ResizableTh>
+                                        <ResizableTh width={widths.subtotal} onResizeStart={(e) => onMouseDown('subtotal', e)} className="px-2 py-2.5 text-xs font-semibold text-dark-600 dark:text-dark-400 text-left">Subtotal</ResizableTh>
+                                        <th style={{ width: widths.del, minWidth: widths.del }} />
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-secondary-200 dark:divide-dark-600">
+                                    {data.items.map((item, idx) => (
+                                        <tr key={idx} className={cn('hover:bg-secondary-50/50 dark:hover:bg-dark-800/30 transition-colors group', item.is_tax_deposit && 'bg-amber-50/40 dark:bg-amber-900/5')}>
+                                            <td className="px-1 py-1.5 text-center overflow-hidden">
+                                                <span className="font-mono text-dark-400 dark:text-dark-500">{idx + 1}</span>
+                                            </td>
+                                            <td className="px-1 py-1.5 overflow-hidden">
+                                                <Combobox
+                                                    options={clientOptions}
+                                                    value={item.client_id}
+                                                    onChange={(v) => updateItem(idx, 'client_id', v ? Number(v) : null)}
+                                                    placeholder="Pilih klien..."
+                                                    clearable
+                                                    popoverWidth="w-56"
+                                                    className="w-full [&_button]:h-8 [&_button]:text-xs [&_button]:px-2 [&_button]:rounded-md [&_button]:ring-0 [&_button]:shadow-none"
+                                                />
+                                            </td>
+                                            <td className="px-1 py-1.5 overflow-hidden">
+                                                <div className="flex items-center gap-0.5">
+                                                    <div className="flex-1 min-w-0">
+                                                        <Input
+                                                            value={item.service_name}
+                                                            onChange={(e) => handleServiceNameChange(idx, e.target.value)}
+                                                            placeholder="Nama layanan..."
+                                                            error={errors[`items.${idx}.service_name` as keyof typeof errors]}
+                                                            className={cellCls}
+                                                        />
+                                                    </div>
+                                                    <ServiceLookup
+                                                        services={services}
+                                                        onSelect={(svc) => updateItemFields(idx, { service_name: svc.name, unit_price: svc.price })}
+                                                    />
+                                                </div>
+                                            </td>
+                                            <td className="px-1 py-1.5 overflow-hidden">
                                                 <Input
-                                                    value={item.service_name}
-                                                    onChange={(e) => handleServiceNameChange(idx, e.target.value)}
-                                                    placeholder="Nama layanan..."
-                                                    error={errors[`items.${idx}.service_name` as keyof typeof errors]}
+                                                    type="text"
+                                                    inputMode="decimal"
+                                                    value={item.quantity === 0 ? '' : String(item.quantity)}
+                                                    onChange={(e) => updateItem(idx, 'quantity', e.target.value)}
+                                                    placeholder="1"
                                                     className={cellCls}
                                                 />
-                                            </div>
-                                            <ServiceLookup
-                                                services={services}
-                                                onSelect={(svc) => updateItemFields(idx, { service_name: svc.name, unit_price: svc.price })}
-                                            />
-                                        </div>
-
-                                        {/* Qty */}
-                                        <div className="flex items-center px-1 py-1.5">
-                                            <Input
-                                                type="number"
-                                                value={item.quantity}
-                                                onChange={(e) => updateItem(idx, 'quantity', parseInt(e.target.value) || 1)}
-                                                min="1"
-                                                step="1"
-                                                placeholder="1"
-                                                className={cn(cellCls, 'text-right')}
-                                            />
-                                        </div>
-
-                                        {/* Unit */}
-                                        <div className="flex items-center px-1 py-1.5">
-                                            <Input
-                                                list={`unit-list-${idx}`}
-                                                value={item.unit}
-                                                onChange={(e) => updateItem(idx, 'unit', e.target.value)}
-                                                placeholder="satuan"
-                                                className={cellCls}
-                                            />
-                                            <datalist id={`unit-list-${idx}`}>
-                                                {COMMON_UNITS.map((u) => <option key={u} value={u} />)}
-                                            </datalist>
-                                        </div>
-
-                                        {/* Unit price */}
-                                        <div className="flex items-center px-1 py-1.5">
-                                            <CurrencyCell value={item.unit_price} onChange={(v) => updateItem(idx, 'unit_price', v)} />
-                                        </div>
-
-                                        {/* COGS */}
-                                        <div className="flex items-center px-1 py-1.5">
-                                            <CurrencyCell value={item.cogs_amount} onChange={(v) => updateItem(idx, 'cogs_amount', v)} />
-                                        </div>
-
-                                        {/* PPh toggle */}
-                                        <div className="flex items-center justify-center px-1 py-1.5">
-                                            <button
-                                                type="button"
-                                                onClick={() => updateItem(idx, 'is_tax_deposit', !item.is_tax_deposit)}
-                                                title={item.is_tax_deposit ? 'Titipan pajak: aktif' : 'Titipan pajak: nonaktif'}
-                                                className={cn(
-                                                    'h-5 w-5 rounded flex items-center justify-center border text-xs font-bold transition-colors',
-                                                    item.is_tax_deposit
-                                                        ? 'bg-amber-500 border-amber-500 text-white'
-                                                        : 'border-secondary-300 dark:border-dark-600 text-transparent hover:border-amber-400',
-                                                )}
-                                            >
-                                                ✓
-                                            </button>
-                                        </div>
-
-                                        {/* Line total */}
-                                        <div className="flex items-center justify-end px-2 py-1.5">
-                                            <span className="text-xs font-semibold text-dark-900 dark:text-dark-50 tabular-nums whitespace-nowrap">
-                                                {formatCurrency(itemTotals[idx])}
-                                            </span>
-                                        </div>
-
-                                        {/* Delete */}
-                                        <div className="flex items-center justify-center px-1 py-1.5">
-                                            {data.items.length > 1 && (
+                                            </td>
+                                            <td className="px-1 py-1.5 overflow-hidden">
+                                                <Input
+                                                    list={`unit-list-${idx}`}
+                                                    value={item.unit}
+                                                    onChange={(e) => updateItem(idx, 'unit', e.target.value)}
+                                                    placeholder="satuan"
+                                                    className={cellCls}
+                                                />
+                                                <datalist id={`unit-list-${idx}`}>
+                                                    {COMMON_UNITS.map((u) => <option key={u} value={u} />)}
+                                                </datalist>
+                                            </td>
+                                            <td className="px-1 py-1.5 overflow-hidden">
+                                                <CurrencyCell value={item.unit_price} onChange={(v) => updateItem(idx, 'unit_price', v)} />
+                                            </td>
+                                            <td className="px-1 py-1.5 overflow-hidden">
+                                                <CurrencyCell value={item.cogs_amount} onChange={(v) => updateItem(idx, 'cogs_amount', v)} />
+                                            </td>
+                                            <td className="px-1 py-1.5 text-center overflow-hidden">
                                                 <button
                                                     type="button"
-                                                    onClick={() => removeItem(idx)}
-                                                    className="h-6 w-6 rounded flex items-center justify-center text-dark-300 dark:text-dark-600 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 opacity-0 group-hover:opacity-100 transition-all"
-                                                >
-                                                    <Trash2 className="w-3.5 h-3.5" />
-                                                </button>
-                                            )}
-                                        </div>
-                                    </div>
-                                ))}
-
-                                {/* Footer */}
-                                <div className="grid bg-secondary-50/60 dark:bg-dark-800/60 border-t border-secondary-200 dark:border-dark-600"
-                                    style={{ gridTemplateColumns: '32px 2fr 3fr 1fr 1.5fr 2fr 2fr 40px 2fr 36px' }}>
-                                    <div className="col-span-8 px-3 py-2 text-xs text-dark-500 dark:text-dark-400 flex items-center gap-1">
-                                        <span className="font-medium text-dark-700 dark:text-dark-300">{data.items.length} item</span>
-                                        <span>·</span>
-                                        <span>HPP total:</span>
-                                        <span className="font-medium text-dark-700 dark:text-dark-300">{formatCurrency(totalCogs)}</span>
-                                    </div>
-                                    <div className="px-2 py-2 text-xs font-bold text-dark-900 dark:text-dark-50 text-right tabular-nums">
-                                        {formatCurrency(subtotal + totalTaxDeposits)}
-                                    </div>
-                                    <div />
-                                </div>
-                            </div>
+                                                    onClick={() => updateItem(idx, 'is_tax_deposit', !item.is_tax_deposit)}
+                                                    title={item.is_tax_deposit ? 'Titipan pajak: aktif' : 'Titipan pajak: nonaktif'}
+                                                    className={cn(
+                                                        'h-5 w-5 rounded inline-flex items-center justify-center border text-xs font-bold transition-colors',
+                                                        item.is_tax_deposit
+                                                            ? 'bg-amber-500 border-amber-500 text-white'
+                                                            : 'border-secondary-300 dark:border-dark-600 text-transparent hover:border-amber-400',
+                                                    )}
+                                                >✓</button>
+                                            </td>
+                                            <td className="px-2 py-1.5 text-right overflow-hidden">
+                                                <span className="font-semibold text-dark-900 dark:text-dark-50 tabular-nums truncate block">
+                                                    {formatCurrency(itemTotals[idx])}
+                                                </span>
+                                            </td>
+                                            <td className="px-1 py-1.5 text-center overflow-hidden">
+                                                {data.items.length > 1 && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => removeItem(idx)}
+                                                        className="h-6 w-6 rounded inline-flex items-center justify-center text-dark-300 dark:text-dark-600 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 opacity-0 group-hover:opacity-100 transition-all"
+                                                    >
+                                                        <Trash2 className="w-3.5 h-3.5" />
+                                                    </button>
+                                                )}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                                <tfoot>
+                                    <tr className="bg-secondary-50/60 dark:bg-dark-800/60 border-t border-secondary-200 dark:border-dark-600">
+                                        <td colSpan={8} className="px-3 py-2 text-xs text-dark-500 dark:text-dark-400 overflow-hidden">
+                                            <span className="font-medium text-dark-700 dark:text-dark-300">{data.items.length} item</span>
+                                            <span className="mx-1">·</span>
+                                            <span>HPP total:</span>
+                                            <span className="font-medium text-dark-700 dark:text-dark-300 ml-1">{formatCurrency(totalCogs)}</span>
+                                        </td>
+                                        <td className="px-2 py-2 text-xs font-bold text-dark-900 dark:text-dark-50 text-right overflow-hidden">
+                                            <span className="tabular-nums truncate block">{formatCurrency(subtotal + totalTaxDeposits)}</span>
+                                        </td>
+                                        <td />
+                                    </tr>
+                                </tfoot>
+                            </table>
                         </div>
                     </div>
                 </div>
@@ -560,14 +581,15 @@ export function TemplateForm({
                             >
                                 {submitLabel}
                             </Button>
-                            <Button
-                                type="button"
-                                variant="zinc"
-                                onClick={() => router.get('/recurring-invoices')}
-                                className="w-full"
-                            >
-                                Batal
-                            </Button>
+                            <Link href="/recurring-invoices" className="w-full">
+                                <Button
+                                    type="button"
+                                    variant="zinc"
+                                    className="w-full"
+                                >
+                                    Batal
+                                </Button>
+                            </Link>
                         </div>
                     </div>
                 </div>
@@ -585,17 +607,17 @@ function CreateTemplatePage({ clients, services }: Props) {
             <Head title="Buat Template Recurring" />
             <div className="space-y-6">
                 <div className="flex items-center gap-3">
-                    <button
-                        onClick={() => router.get('/recurring-invoices')}
+                    <Link
+                        href="/recurring-invoices"
                         className="h-9 w-9 rounded-xl flex items-center justify-center border border-secondary-200 dark:border-dark-600 hover:bg-zinc-100 dark:hover:bg-dark-600 transition-colors"
                     >
                         <ArrowLeft className="w-4 h-4 text-dark-600 dark:text-dark-400" />
-                    </button>
+                    </Link>
                     <div>
-                        <h1 className="text-4xl font-bold bg-linear-to-r from-gray-900 via-blue-800 to-indigo-800 dark:from-white dark:via-blue-200 dark:to-indigo-200 bg-clip-text text-transparent">
+                        <h1 className="text-2xl sm:text-4xl font-bold bg-linear-to-r from-gray-900 via-blue-800 to-indigo-800 dark:from-white dark:via-blue-200 dark:to-indigo-200 bg-clip-text text-transparent">
                             Buat Template Recurring
                         </h1>
-                        <p className="text-gray-600 dark:text-zinc-400 text-lg">
+                        <p className="text-gray-600 dark:text-zinc-400 text-sm sm:text-lg">
                             Template invoice yang akan di-generate secara periodik
                         </p>
                     </div>

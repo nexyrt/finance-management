@@ -1,4 +1,4 @@
-import { usePage } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import {
     ArrowLeftRight,
     Briefcase,
@@ -254,7 +254,7 @@ function NavLink({
     }
 
     return (
-        <a
+        <Link
             href={item.href}
             onClick={onClick}
             title={collapsed ? item.label : undefined}
@@ -271,7 +271,7 @@ function NavLink({
         >
             {item.icon}
             {!collapsed && <span>{item.label}</span>}
-        </a>
+        </Link>
     );
 }
 
@@ -420,20 +420,20 @@ export function Sidebar({ open, collapsed, onClose, onToggleCollapse }: SidebarP
                             </p>
                         </div>
                         <div className="p-1">
-                            <a
+                            <Link
                                 href="/settings/profile"
                                 className="flex items-center gap-2 px-2.5 py-1.5 text-xs text-gray-700 dark:text-zinc-300 hover:bg-gray-50 dark:hover:bg-white/6 rounded-lg transition-colors"
                             >
                                 <Users className="w-3.5 h-3.5 opacity-60" />
                                 Profil Saya
-                            </a>
-                            <a
+                            </Link>
+                            <Link
                                 href="/settings/company"
                                 className="flex items-center gap-2 px-2.5 py-1.5 text-xs text-gray-700 dark:text-zinc-300 hover:bg-gray-50 dark:hover:bg-white/6 rounded-lg transition-colors"
                             >
                                 <Building2 className="w-3.5 h-3.5 opacity-60" />
                                 Profil Perusahaan
-                            </a>
+                            </Link>
                         </div>
                         <div className="p-1 border-t border-gray-100 dark:border-white/6">
                             <form method="POST" action="/logout">

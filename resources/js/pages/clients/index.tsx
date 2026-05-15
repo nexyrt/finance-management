@@ -31,7 +31,7 @@ import { PageHeader } from '@/components/shared/page-header';
 import { Pagination } from '@/components/shared/pagination';
 import { StatsCard } from '@/components/shared/stats-card';
 import { AppLayout } from '@/layouts/app-layout';
-import { cn, formatCurrency } from '@/lib/utils';
+import { cn, formatCurrency, toastErrors } from '@/lib/utils';
 import type { SharedProps } from '@/types';
 
 /* ─────────────────────────────────── types ─── */
@@ -300,8 +300,10 @@ export default function ClientsIndex() {
     const [editTarget, setEditTarget] = React.useState<Client | null>(null);
     const [deleteTarget, setDeleteTarget] = React.useState<Client | null>(null);
 
-    /* filter debounce */
+    /* filter debounce — skip initial mount to avoid double request */
+    const isMounted = React.useRef(false);
     React.useEffect(() => {
+        if (!isMounted.current) { isMounted.current = true; return; }
         const t = setTimeout(() => applyFilters(), 300);
         return () => clearTimeout(t);
     }, [search]);
@@ -332,7 +334,7 @@ export default function ClientsIndex() {
         e.preventDefault();
         createForm.post('/clients', {
             onSuccess: () => { setCreateOpen(false); createForm.reset(); toast.success('Klien berhasil ditambahkan.'); },
-            onError: () => toast.error('Gagal menyimpan klien. Periksa kembali form Anda.'),
+            onError: (errs) => toastErrors(errs, 'CreateClient'),
         });
     }
 
@@ -361,7 +363,7 @@ export default function ClientsIndex() {
         if (!editTarget) return;
         editForm.put(`/clients/${editTarget.id}`, {
             onSuccess: () => { setEditTarget(null); toast.success('Klien berhasil diperbarui.'); },
-            onError: () => toast.error('Gagal memperbarui klien. Periksa kembali form Anda.'),
+            onError: (errs) => toastErrors(errs, 'UpdateClient'),
         });
     }
 
@@ -372,7 +374,7 @@ export default function ClientsIndex() {
         if (!deleteTarget) return;
         deleteForm.delete(`/clients/${deleteTarget.id}`, {
             onSuccess: () => { setDeleteTarget(null); toast.success('Klien berhasil dihapus.'); },
-            onError: () => toast.error('Gagal menghapus klien.'),
+            onError: (errs) => toastErrors(errs, 'DeleteClient'),
         });
     }
 

@@ -27,7 +27,7 @@ import { Input } from '@/components/ui/input';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { StatsCard } from '@/components/shared/stats-card';
 import { AppLayout } from '@/layouts/app-layout';
-import { cn } from '@/lib/utils';
+import { cn, toastErrors } from '@/lib/utils';
 import type { SharedProps } from '@/types';
 
 /* ─────────────────────────────────── types ─── */
@@ -186,7 +186,10 @@ export default function TransactionCategoriesIndex() {
     const [editTarget, setEditTarget] = React.useState<Category | null>(null);
     const [deleteTarget, setDeleteTarget] = React.useState<Category | null>(null);
 
+    /* filter debounce — skip initial mount to avoid double request */
+    const isMounted = React.useRef(false);
     React.useEffect(() => {
+        if (!isMounted.current) { isMounted.current = true; return; }
         const t = setTimeout(() => {
             router.get('/transaction-categories', { search: search || undefined, type: typeFilter || undefined, per_page: filters.per_page }, { preserveState: true, replace: true });
         }, 300);
@@ -205,7 +208,7 @@ export default function TransactionCategoriesIndex() {
         e.preventDefault();
         createForm.post('/transaction-categories', {
             onSuccess: () => { setCreateOpen(false); createForm.reset(); toast.success('Kategori berhasil ditambahkan.'); },
-            onError: () => toast.error('Gagal menyimpan kategori. Periksa kembali form Anda.'),
+            onError: (errs) => toastErrors(errs, 'CreateCategory'),
         });
     }
 
@@ -222,7 +225,7 @@ export default function TransactionCategoriesIndex() {
         if (!editTarget) return;
         editForm.put(`/transaction-categories/${editTarget.id}`, {
             onSuccess: () => { setEditTarget(null); toast.success('Kategori berhasil diperbarui.'); },
-            onError: () => toast.error('Gagal memperbarui kategori. Periksa kembali form Anda.'),
+            onError: (errs) => toastErrors(errs, 'UpdateCategory'),
         });
     }
 
@@ -233,7 +236,7 @@ export default function TransactionCategoriesIndex() {
         if (!deleteTarget) return;
         deleteForm.delete(`/transaction-categories/${deleteTarget.id}`, {
             onSuccess: () => { setDeleteTarget(null); toast.success('Kategori berhasil dihapus.'); },
-            onError: () => toast.error('Gagal menghapus kategori.'),
+            onError: (errs) => toastErrors(errs, 'DeleteCategory'),
         });
     }
 
