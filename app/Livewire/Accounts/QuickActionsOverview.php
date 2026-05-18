@@ -123,10 +123,11 @@ class QuickActionsOverview extends Component
     }
 
     /**
-     * Determine the effective stats month: current month if it has data,
-     * otherwise fallback to the latest month with transaction/payment data.
+     * Resolve the stats period.
+     * - Month selected  → filter to that month
+     * - No filter       → all time (null start/end)
      *
-     * @return array{start: Carbon, end: Carbon, label: string}
+     * @return array{start: Carbon|null, end: Carbon|null, label: string, is_all_time: bool}
      */
     #[Computed]
     public function statsMonth(): array
@@ -135,64 +136,20 @@ class QuickActionsOverview extends Component
         // when hydrating from old snapshots that predate this property.
         $selectedMonth = $this->all()['selectedMonth'] ?? '';
 
-        // Manual override: user picked a specific month
         if ($selectedMonth !== '') {
             $date = Carbon::createFromFormat('Y-m', $selectedMonth);
             $start = $date->copy()->startOfMonth();
             $end = $date->copy()->endOfMonth();
 
-            return ['start' => $start, 'end' => $end, 'label' => $start->translatedFormat('F Y'), 'is_auto' => false];
+            return ['start' => $start, 'end' => $end, 'label' => $start->translatedFormat('F Y'), 'is_all_time' => false];
         }
 
-        $start = now()->startOfMonth();
-        $end = now()->endOfMonth();
-
-        if (! $this->selectedAccountId) {
-            return ['start' => $start, 'end' => $end, 'label' => $start->translatedFormat('F Y'), 'is_auto' => true];
-        }
-
-        // Check if current month has any data
-        $hasCurrentData = BankTransaction::where('bank_account_id', $this->selectedAccountId)
-            ->whereBetween('transaction_date', [$start, $end])
-            ->exists();
-
-        if (! $hasCurrentData) {
-            $hasCurrentData = Payment::where('bank_account_id', $this->selectedAccountId)
-                ->whereBetween('payment_date', [$start, $end])
-                ->exists();
-        }
-
-        if ($hasCurrentData) {
-            return ['start' => $start, 'end' => $end, 'label' => $start->translatedFormat('F Y'), 'is_auto' => true];
-        }
-
-        // Fallback: find the latest month with data
-        $latestTrx = BankTransaction::where('bank_account_id', $this->selectedAccountId)
-            ->orderByDesc('transaction_date')
-            ->value('transaction_date');
-
-        $latestPayment = Payment::where('bank_account_id', $this->selectedAccountId)
-            ->orderByDesc('payment_date')
-            ->value('payment_date');
-
-        $latest = collect([$latestTrx, $latestPayment])->filter()->max();
-
-        if ($latest) {
-            $latestDate = Carbon::parse($latest);
-            $start = $latestDate->copy()->startOfMonth();
-            $end = $latestDate->copy()->endOfMonth();
-
-            return ['start' => $start, 'end' => $end, 'label' => $start->translatedFormat('F Y'), 'is_auto' => true];
-        }
-
-        // No data at all
-        return ['start' => now()->startOfMonth(), 'end' => now()->endOfMonth(), 'label' => now()->translatedFormat('F Y'), 'is_auto' => true];
+        return ['start' => null, 'end' => null, 'label' => __('pages.all_time'), 'is_all_time' => true];
     }
 
     /**
      * Top expense categories — donut chart.
-     * Uses smart period (current month or latest month with data).
-     * 1 query with JOIN + GROUP BY.
+     * Scoped to selected month, or all time when no filter is set.
      */
     #[Computed]
     public function categoryBreakdown(): array
@@ -203,23 +160,25 @@ class QuickActionsOverview extends Component
 
         $period = $this->statsMonth;
 
-        return BankTransaction::where('bank_transactions.bank_account_id', $this->selectedAccountId)
+        $query = BankTransaction::where('bank_transactions.bank_account_id', $this->selectedAccountId)
             ->where('bank_transactions.transaction_type', 'debit')
-            ->whereBetween('bank_transactions.transaction_date', [$period['start'], $period['end']])
             ->whereNotNull('bank_transactions.category_id')
             ->join('transaction_categories', 'bank_transactions.category_id', '=', 'transaction_categories.id')
             ->selectRaw('transaction_categories.label as name, SUM(bank_transactions.amount) as total')
             ->groupBy('transaction_categories.id', 'transaction_categories.label')
             ->orderByDesc('total')
-            ->limit(6)
-            ->get()
-            ->toArray();
+            ->limit(6);
+
+        if (! $period['is_all_time']) {
+            $query->whereBetween('bank_transactions.transaction_date', [$period['start'], $period['end']]);
+        }
+
+        return $query->get()->toArray();
     }
 
     /**
      * Account stats — mini stat cards.
-     * Uses smart period (current month or latest month with data).
-     * 2 queries (transactions CASE WHEN + payments SUM).
+     * Scoped to selected month, or all time when no filter is set.
      */
     #[Computed]
     public function accountStats(): array
@@ -235,19 +194,21 @@ class QuickActionsOverview extends Component
 
         $period = $this->statsMonth;
 
-        $trxStats = BankTransaction::where('bank_account_id', $this->selectedAccountId)
-            ->whereBetween('transaction_date', [$period['start'], $period['end']])
-            ->selectRaw("
+        $trxQuery = BankTransaction::where('bank_account_id', $this->selectedAccountId);
+        $payQuery = Payment::where('bank_account_id', $this->selectedAccountId);
+
+        if (! $period['is_all_time']) {
+            $trxQuery->whereBetween('transaction_date', [$period['start'], $period['end']]);
+            $payQuery->whereBetween('payment_date', [$period['start'], $period['end']]);
+        }
+
+        $trxStats = $trxQuery->selectRaw("
                 SUM(CASE WHEN transaction_type = 'credit' THEN amount ELSE 0 END) as credit_total,
                 SUM(CASE WHEN transaction_type = 'debit' THEN amount ELSE 0 END) as debit_total,
                 COUNT(*) as trx_count
-            ")
-            ->first();
+            ")->first();
 
-        $paymentsIncome = (int) Payment::where('bank_account_id', $this->selectedAccountId)
-            ->whereBetween('payment_date', [$period['start'], $period['end']])
-            ->sum('amount');
-
+        $paymentsIncome = (int) $payQuery->sum('amount');
         $totalIncome = $paymentsIncome + (int) $trxStats->credit_total;
         $totalExpense = (int) $trxStats->debit_total;
 
