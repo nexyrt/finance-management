@@ -18,6 +18,15 @@ class QuickActionsOverview extends Component
 
     public string $selectedMonth = '';
 
+    public function hydrate(): void
+    {
+        // Guard against PropertyNotFoundException when hydrating from snapshots
+        // that were created before $selectedMonth was added to this component.
+        if (! isset($this->selectedMonth)) {
+            $this->selectedMonth = '';
+        }
+    }
+
     public function placeholder(): View
     {
         return view('livewire.placeholders.quick-actions-skeleton');
@@ -137,14 +146,14 @@ class QuickActionsOverview extends Component
             $start = $date->copy()->startOfMonth();
             $end = $date->copy()->endOfMonth();
 
-            return ['start' => $start, 'end' => $end, 'label' => $start->translatedFormat('F Y')];
+            return ['start' => $start, 'end' => $end, 'label' => $start->translatedFormat('F Y'), 'is_auto' => false];
         }
 
         $start = now()->startOfMonth();
         $end = now()->endOfMonth();
 
         if (! $this->selectedAccountId) {
-            return ['start' => $start, 'end' => $end, 'label' => $start->translatedFormat('F Y')];
+            return ['start' => $start, 'end' => $end, 'label' => $start->translatedFormat('F Y'), 'is_auto' => true];
         }
 
         // Check if current month has any data
@@ -159,7 +168,7 @@ class QuickActionsOverview extends Component
         }
 
         if ($hasCurrentData) {
-            return ['start' => $start, 'end' => $end, 'label' => $start->translatedFormat('F Y')];
+            return ['start' => $start, 'end' => $end, 'label' => $start->translatedFormat('F Y'), 'is_auto' => true];
         }
 
         // Fallback: find the latest month with data
@@ -178,11 +187,11 @@ class QuickActionsOverview extends Component
             $start = $latestDate->copy()->startOfMonth();
             $end = $latestDate->copy()->endOfMonth();
 
-            return ['start' => $start, 'end' => $end, 'label' => $start->translatedFormat('F Y')];
+            return ['start' => $start, 'end' => $end, 'label' => $start->translatedFormat('F Y'), 'is_auto' => true];
         }
 
         // No data at all
-        return ['start' => now()->startOfMonth(), 'end' => now()->endOfMonth(), 'label' => now()->translatedFormat('F Y')];
+        return ['start' => now()->startOfMonth(), 'end' => now()->endOfMonth(), 'label' => now()->translatedFormat('F Y'), 'is_auto' => true];
     }
 
     /**

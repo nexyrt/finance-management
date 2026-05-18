@@ -4,7 +4,11 @@
     @if ($selectedAccountId)
         <div class="flex items-center justify-between mb-1">
             <p class="text-xs font-medium text-dark-500 dark:text-dark-400">
-                {{ __('pages.stats_period', ['period' => $this->statsMonth['label']]) }}
+                @if ($this->statsMonth['is_auto'])
+                    {{ __('pages.stats_period_auto', ['period' => $this->statsMonth['label']]) }}
+                @else
+                    {{ __('pages.stats_period', ['period' => $this->statsMonth['label']]) }}
+                @endif
             </p>
             <div class="flex items-center gap-2">
                 <x-date
@@ -108,7 +112,13 @@
                     </div>
                     <div>
                         <h3 class="text-sm font-semibold text-dark-900 dark:text-dark-50">{{ __('pages.category_breakdown') }}</h3>
-                        <p class="text-xs text-dark-500 dark:text-dark-400">{{ __('pages.expenses_period', ['period' => $this->statsMonth['label']]) }}</p>
+                        <p class="text-xs text-dark-500 dark:text-dark-400">
+                            @if ($this->statsMonth['is_auto'])
+                                {{ __('pages.expenses_period_auto', ['period' => $this->statsMonth['label']]) }}
+                            @else
+                                {{ __('pages.expenses_period', ['period' => $this->statsMonth['label']]) }}
+                            @endif
+                        </p>
                     </div>
                 </div>
 
