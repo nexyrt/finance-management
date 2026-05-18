@@ -201,7 +201,12 @@
       "mcp__playwright__browser_wait_for",
       "mcp__playwright__browser_console_messages",
       "mcp__playwright__browser_resize",
-      "mcp__playwright__browser_tabs"
+      "mcp__playwright__browser_tabs",
+      "Bash(./vendor/bin/pint app/Http/Controllers/InvoiceController.php --format agent)",
+      "Skill(frontend-design)",
+      "Skill(frontend-design:*)",
+      "Bash(Get-ChildItem -Path \"d:\\\\Laravel\\\\finance-management\\\\app\\\\Livewire\" -Recurse -Name)",
+      "Bash(Select-Object -First 20)"
     ]
   },
   "enableAllProjectMcpServers": true,

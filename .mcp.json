@@ -1,30 +1,30 @@
 {
-    "mcpServers": {
-        "laravel-boost": {
-            "command": "php",
-            "args": [
-                "artisan",
-                "boost:mcp"
-            ]
-        },
-        "tallstackui": {
-            "type": "http",
-            "url": "https://tallstackui.com/mcp/tallstackui"
-        },
-        "playwright": {
-            "command": "npx",
-            "args": [
-                "@playwright/mcp@latest",
-                "--output-dir",
-                ".playwright-mcp"
-            ]
-        },
-        "shadcn": {
-            "command": "npx",
-            "args": [
-                "shadcn@latest",
-                "mcp"
-            ]
-        }
+  "mcpServers": {
+    "laravel-boost": {
+      "command": "php",
+      "args": [
+        "artisan",
+        "boost:mcp"
+      ]
+    },
+    "tallstackui": {
+      "type": "http",
+      "url": "https://tallstackui.com/mcp/tallstackui"
+    },
+    "playwright": {
+      "command": "npx",
+      "args": [
+        "@playwright/mcp@latest",
+        "--output-dir",
+        ".playwright-mcp"
+      ]
+    },
+    "shadcn": {
+      "command": "npx",
+      "args": [
+        "shadcn@latest",
+        "mcp"
+      ]
     }
+  }
 }
