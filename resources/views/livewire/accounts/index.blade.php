@@ -157,7 +157,7 @@
                     {{-- Monthly Summary Stats --}}
                     <div class="bg-white dark:bg-[#1e1e1e] rounded-xl border border-secondary-200 dark:border-white/10 p-4 space-y-3">
                         <h4 class="text-xs font-semibold text-dark-500 dark:text-dark-400 uppercase tracking-wider">
-                            {{ __('pages.monthly_summary') }}
+                            {{ __('pages.overall_summary') }}
                         </h4>
 
                         {{-- Total Balance --}}

@@ -133,7 +133,7 @@ class Index extends Component
     }
 
     /**
-     * Monthly summary for sidebar — income & expense across ALL accounts.
+     * Overall summary for sidebar — total income & expense across ALL accounts, ALL time.
      */
     #[Computed]
     public function monthlySummary(): array
@@ -142,18 +142,13 @@ class Index extends Component
             return ['income' => 0, 'expense' => 0];
         }
 
-        $thisMonthStart = now()->startOfMonth();
-        $thisMonthEnd = now()->endOfMonth();
-
-        $trxStats = BankTransaction::whereBetween('transaction_date', [$thisMonthStart, $thisMonthEnd])
-            ->selectRaw("
+        $trxStats = BankTransaction::selectRaw("
                 SUM(CASE WHEN transaction_type = 'credit' THEN amount ELSE 0 END) as credit_total,
                 SUM(CASE WHEN transaction_type = 'debit' THEN amount ELSE 0 END) as debit_total
             ")
             ->first();
 
-        $paymentsIncome = (int) Payment::whereBetween('payment_date', [$thisMonthStart, $thisMonthEnd])
-            ->sum('amount');
+        $paymentsIncome = (int) Payment::sum('amount');
 
         return [
             'income' => $paymentsIncome + (int) $trxStats->credit_total,
