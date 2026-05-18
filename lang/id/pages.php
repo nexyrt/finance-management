@@ -489,6 +489,8 @@ return [
     'this_month_expenses' => 'Pengeluaran bulan ini',
     'expenses_period' => 'Pengeluaran :period',
     'stats_period' => 'Periode: :period',
+    'all_months' => 'Semua Bulan',
+    'reset_to_auto' => 'Reset ke otomatis',
     'no_category_data' => 'Belum ada data kategori',
     'trending_up' => 'Naik',
     'trending_down' => 'Turun',

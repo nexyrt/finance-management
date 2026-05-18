@@ -6,6 +6,23 @@
             <p class="text-xs font-medium text-dark-500 dark:text-dark-400">
                 {{ __('pages.stats_period', ['period' => $this->statsMonth['label']]) }}
             </p>
+            <div class="flex items-center gap-2">
+                <x-date
+                    wire:model.live="selectedMonth"
+                    month-year-only
+                    placeholder="{{ __('pages.all_months') }}"
+                    class="h-7 text-xs w-36"
+                />
+                @if ($selectedMonth !== '')
+                    <button
+                        wire:click="$set('selectedMonth', '')"
+                        class="text-xs text-dark-400 dark:text-dark-500 hover:text-dark-700 dark:hover:text-dark-200 transition-colors"
+                        title="{{ __('pages.reset_to_auto') }}"
+                    >
+                        <x-icon name="x-mark" class="w-3.5 h-3.5" />
+                    </button>
+                @endif
+            </div>
         </div>
         <div class="grid grid-cols-3 gap-3">
             {{-- Income --}}

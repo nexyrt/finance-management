@@ -4,6 +4,7 @@ namespace App\Livewire\Accounts;
 
 use App\Models\BankTransaction;
 use App\Models\Payment;
+use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Lazy;
@@ -15,9 +16,21 @@ class QuickActionsOverview extends Component
 {
     public $selectedAccountId;
 
+    public string $selectedMonth = '';
+
     public function placeholder(): View
     {
         return view('livewire.placeholders.quick-actions-skeleton');
+    }
+
+    public function updatedSelectedMonth(): void
+    {
+        unset($this->accountStats, $this->categoryBreakdown, $this->statsMonth);
+
+        $this->dispatch('account-charts-updated', [
+            'incomeExpense' => $this->chartData,
+            'categoryBreakdown' => $this->categoryBreakdown,
+        ]);
     }
 
     public function render()
@@ -29,6 +42,7 @@ class QuickActionsOverview extends Component
     public function handleAccountChange($accountId): void
     {
         $this->selectedAccountId = $accountId;
+        $this->selectedMonth = '';
 
         // Invalidate computed caches
         unset($this->chartData, $this->accountStats, $this->categoryBreakdown, $this->statsMonth);
@@ -112,11 +126,20 @@ class QuickActionsOverview extends Component
      * Determine the effective stats month: current month if it has data,
      * otherwise fallback to the latest month with transaction/payment data.
      *
-     * @return array{start: \Carbon\Carbon, end: \Carbon\Carbon, label: string}
+     * @return array{start: Carbon, end: Carbon, label: string}
      */
     #[Computed]
     public function statsMonth(): array
     {
+        // Manual override: user picked a specific month
+        if ($this->selectedMonth !== '') {
+            $date = Carbon::createFromFormat('Y-m', $this->selectedMonth);
+            $start = $date->copy()->startOfMonth();
+            $end = $date->copy()->endOfMonth();
+
+            return ['start' => $start, 'end' => $end, 'label' => $start->translatedFormat('F Y')];
+        }
+
         $start = now()->startOfMonth();
         $end = now()->endOfMonth();
 
@@ -151,7 +174,7 @@ class QuickActionsOverview extends Component
         $latest = collect([$latestTrx, $latestPayment])->filter()->max();
 
         if ($latest) {
-            $latestDate = \Carbon\Carbon::parse($latest);
+            $latestDate = Carbon::parse($latest);
             $start = $latestDate->copy()->startOfMonth();
             $end = $latestDate->copy()->endOfMonth();
 
