@@ -3,7 +3,7 @@
 > **Dokumen ini adalah panduan kerja untuk Claude Code.**
 > Dibuat: 2026-05-11 | Branch aktif: `feature/inertia-react-migration`
 > Update dokumen ini setiap kali fase selesai.
-> **Terakhir diupdate: 2026-05-14 — Fase 5 & 6 disempurnakan: invoice create/edit layout redesign (4/5+1/5 sticky), template create/edit jadi dedicated pages.**
+> **Terakhir diupdate: 2026-05-17 — Fase 7a selesai: Bank Accounts halaman penuh dimigrasi ke Inertia+React dengan Premium Wallet Stack UI, analytics widgets, dan design system compliance.**
 
 ---
 
@@ -54,7 +54,7 @@ git show main:path/to/file.php
 | 4 | Master Data | ✅ Selesai (2026-05-12) |
 | 5 | Invoice & Payment | ✅ Selesai (2026-05-13) |
 | 6 | Recurring Invoices | ✅ Selesai (2026-05-13) |
-| 7 | Banking (Accounts + Cash Flow + Transactions) | ⬜ Belum Dimulai |
+| 7 | Banking (Accounts + Cash Flow + Transactions) | 🔄 Sedang Dikerjakan |
 | 8 | Operations (Reimbursements + Fund Requests) | ⬜ Belum Dimulai |
 | 9 | Finance (Loans + Receivables) | ⬜ Belum Dimulai |
 | 10 | Admin (Users + Permissions + Settings) | ⬜ Belum Dimulai |
@@ -348,6 +348,10 @@ Layout `invoices/create.tsx` dan `invoices/edit.tsx` diubah dari flat single-col
 - Currency: simpan integer (150000 = Rp 1.500)
 - PDF download via `GET /invoice/{invoice}/download?template=kisantra-invoice`
 
+**Perbaikan tambahan (2026-05-17):**
+- `InvoiceController@index`: filter `client_id` (single) → `client_ids[]` (multi-select array) untuk mendukung filter multi-klien
+- `DatePicker` range mode: tambah draft state internal — perubahan tidak langsung commit ke parent, harus klik tombol "Terapkan". Mencegah close popup saat user masih memilih tanggal kedua. Footer footer menampilkan preview range yang dipilih (`dd MMM → dd MMM yyyy`).
+
 ---
 
 ## Fase 6 — Recurring Invoices ✅ SELESAI
@@ -392,23 +396,91 @@ Route::get('/templates/{template}/edit', [RecurringInvoiceController::class, 'ed
 
 ---
 
-## Fase 7 — Banking
+## Fase 7 — Banking 🔄 SEDANG DIKERJAKAN
 
-### Bank Accounts
+### Fase 7a — Bank Accounts ✅ SELESAI (2026-05-17)
+
 **Route:** `/bank-accounts`
-**Livewire source:** `app/Livewire/BankAccounts/`
+**Livewire source:** `app/Livewire/Accounts/`
+
+**Commits:**
+- `ab2dcce` — feat(phase-7a): migrate Bank Accounts to Inertia+React
+- `06416b3` — feat(phase-7a): activate Rekening Bank menu item in sidebar
+- `02be5ec` — feat(phase-7a): redesign Bank Accounts detail panel — widget bawah & analytics
 
 | Component | Status |
 |-----------|--------|
-| Index | ⬜ |
-| Create | ⬜ |
-| Edit | ⬜ |
-| Delete | ⬜ |
-| QuickActionsOverview | ⬜ |
+| Index (halaman utama) | ✅ |
+| Create (AccountFormModal) | ✅ |
+| Edit (AccountFormModal) | ✅ |
+| Delete (ConfirmDialog) | ✅ |
+| Hero — Wallet Stack | ✅ |
+| Analytics widgets | ✅ |
+| Transactions & Payments tabel | ⬜ — Next |
+
+**Controller:** `app/Http/Controllers/BankAccountController.php`
+**Endpoints:**
+- `GET /bank-accounts` — index (Inertia page)
+- `POST /bank-accounts` — store
+- `PUT /bank-accounts/{id}` — update
+- `DELETE /bank-accounts/{id}` — destroy
+- `GET /bank-accounts/{id}/chart-data` — JSON (categories)
+- `GET /bank-accounts/{id}/activity` — JSON (8 entri terbaru)
+- `GET /bank-accounts/{id}/monthly-stats` — JSON (stats + 12-bulan chart + categories)
+
+**Halaman React:** `resources/js/pages/bank-accounts/`
+```
+index.tsx                        ← orchestrator (hero + wallet stack + widgets)
+_components/
+  AccountFormModal.tsx           ← form tambah/edit (design system compliant)
+  BankPattern.tsx                ← BANK_CONFIG + SVG pattern per bank
+  WalletCard.tsx                 ← kartu fisik individual (gradient + pattern + badge)
+  WalletStack.tsx                ← stack container (fan-out hover, lift, keyboard nav)
+  LiveActivityTicker.tsx         ← ticker 8 entri terbaru dari /activity
+  Sparkline30Days.tsx            ← grafik sparkline 30 hari (pure SVG)
+  CategoryBars.tsx               ← horizontal ranked bars top 6 kategori
+  InsightPanel.tsx               ← smart insight + metadata + Edit/Hapus
+  IncomeExpenseChart.tsx         ← bar chart 12 bulan (pure SVG, tanpa library)
+```
+
+**UI Design:**
+- Hero: Premium Banking Dark (bg zinc-900→zinc-950, glow accent biru)
+- Wallet Stack: Apple Wallet-style dengan fan-out hover + lift click + keyboard nav
+- Bank-specific gradient + SVG pattern (BCA/Mandiri/BNI/BRI/BSI/default)
+- Widget bawah Baris 1: 3 stat cards (Income/Expense/Net, smart period) + Sparkline + Live Activity
+- Widget bawah Baris 2: IncomeExpenseChart 12 bulan + CategoryBars + InsightPanel
+- Smart period logic di backend: bulan ini jika ada data, fallback ke bulan terakhir ada data
 
 **Penting:** Balance adalah COMPUTED (tidak stored). `initial_balance + payments(credit) + tx(credit) - tx(debit)`
 
-### Cash Flow
+**Yang belum dikerjakan (next: Fase 7b):**
+- Tabel transaksi per rekening (filter bulan/tipe/kategori, search, pagination, bulk delete)
+- Tabel pembayaran per rekening (filter bulan/payment_method/status, search, pagination)
+- Port dari Livewire: `app/Livewire/Accounts/TransactionList.php` + `PaymentList.php`
+- Paired TRF transaction deletion (delete keduanya saat hapus 1 transfer)
+- Create transaksi (income/expense/transfer) via modal
+
+---
+
+### Fase 7b — Transactions & Payments per Rekening ⬜ BELUM DIMULAI
+
+**Livewire source:** `app/Livewire/Accounts/TransactionList.php`, `app/Livewire/Accounts/PaymentList.php`
+
+| Component | Status |
+|-----------|--------|
+| TransactionList (tabel + filter + pagination) | ⬜ |
+| PaymentList (tabel + filter + pagination) | ⬜ |
+| CreateTransaction (income modal) | ⬜ |
+| CreateExpense (expense modal) | ⬜ |
+| CreateTransfer (transfer antar rekening) | ⬜ |
+| DeleteTransaction (+ paired TRF) | ⬜ |
+| CategorizeTransaction | ⬜ |
+| Bulk delete transactions | ⬜ |
+
+---
+
+### Fase 7c — Cash Flow ⬜ BELUM DIMULAI
+
 **Route:** `/cash-flow`
 **Livewire source:** `app/Livewire/CashFlow/`
 
@@ -419,19 +491,6 @@ Route::get('/templates/{template}/edit', [RecurringInvoiceController::class, 'ed
 | IncomeTab | ⬜ |
 | ExpensesTab | ⬜ |
 | TransfersTab | ⬜ |
-
-### Transactions
-**Livewire source:** `app/Livewire/Transactions/`
-
-| Component | Status |
-|-----------|--------|
-| Listing | ⬜ |
-| Create | ⬜ |
-| CreateIncome | ⬜ |
-| CreateExpense | ⬜ |
-| Delete | ⬜ |
-| Categorize | ⬜ |
-| Transfer | ⬜ |
 
 ---
 
