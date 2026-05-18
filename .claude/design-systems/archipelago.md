@@ -543,3 +543,152 @@ Accent bar colors per semantic role:
 // Neutral create
 <Button>Buat Invoice</Button> {/* uses default primary */}
 ```
+
+---
+
+## React Form Modal Pattern (Inertia+React pages)
+
+**WAJIB diikuti untuk SEMUA form modal baru di React.** Referensi verified: `clients/index.tsx`, `services/index.tsx`, `bank-accounts/_components/AccountFormModal.tsx`.
+
+### Struktur Lengkap
+
+```tsx
+import { SomeIcon } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { CurrencyInput } from '@/components/shared/currency-input';
+import { FormSection } from '@/components/shared/form-section';
+import {
+    Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle,
+} from '@/components/ui/dialog';
+
+<Dialog open={open} onOpenChange={onOpenChange}>
+    <DialogContent size="lg">           {/* size: sm|md|lg|xl|2xl|3xl — pilih sesuai jumlah field */}
+        <form id="form-id" onSubmit={handleSubmit}>
+
+            {/* ── HEADER: icon + title + description ── */}
+            <DialogHeader>
+                <div className="flex items-center gap-4 py-2">
+                    <div className="h-12 w-12 bg-primary-50 dark:bg-primary-900/20 rounded-xl flex items-center justify-center shrink-0">
+                        <SomeIcon className="w-6 h-6 text-primary-600 dark:text-primary-400" />
+                    </div>
+                    <div>
+                        <DialogTitle className="text-xl font-bold text-dark-900 dark:text-dark-50">
+                            Judul Modal
+                        </DialogTitle>
+                        <p className="text-sm text-dark-500 dark:text-dark-400">
+                            Deskripsi singkat isi form
+                        </p>
+                    </div>
+                </div>
+            </DialogHeader>
+
+            {/* ── BODY: 2-kolom dengan FormSection ── */}
+            <div className="px-6 py-4">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <FormSection title="Kolom Kiri" description="Sub-judul kolom kiri">
+                        <Input label="Field Wajib *" ... />
+                        <Input label="Field Lain *" ... />
+                    </FormSection>
+
+                    <FormSection title="Kolom Kanan" description="Sub-judul kolom kanan">
+                        <Input label="Field Opsional" ... />
+                        <CurrencyInput label="Jumlah *" ... />
+                    </FormSection>
+                </div>
+            </div>
+
+            {/* ── FOOTER: Batal (kiri) + Submit (kanan) ── */}
+            <DialogFooter>
+                <Button
+                    type="button"
+                    variant="zinc"
+                    onClick={() => onOpenChange(false)}
+                    disabled={saving}
+                    className="w-full sm:w-auto order-2 sm:order-1"
+                >
+                    Batal
+                </Button>
+                <Button
+                    type="submit"
+                    disabled={saving}
+                    className="w-full sm:w-auto order-1 sm:order-2"
+                >
+                    {saving ? 'Menyimpan...' : 'Simpan Data'}
+                </Button>
+            </DialogFooter>
+
+        </form>
+    </DialogContent>
+</Dialog>
+```
+
+### Aturan Wajib
+
+**Header icon color by context:**
+| Context | Icon container bg | Icon color |
+|---------|-------------------|------------|
+| Neutral / create | `bg-primary-50 dark:bg-primary-900/20` | `text-primary-600 dark:text-primary-400` |
+| Edit / update | `bg-yellow-50 dark:bg-yellow-900/20` | `text-yellow-600 dark:text-yellow-400` |
+| Income / positive | `bg-green-50 dark:bg-green-900/20` | `text-green-600 dark:text-green-400` |
+| Expense / danger | `bg-red-50 dark:bg-red-900/20` | `text-red-600 dark:text-red-400` |
+| Info / reference | `bg-blue-50 dark:bg-blue-900/20` | `text-blue-600 dark:text-blue-400` |
+
+**DialogContent size guidelines:**
+| Jumlah field | Size | Contoh |
+|-------------|------|--------|
+| 1–3 field sederhana | `md` | Services form |
+| 4–6 field, 1 kolom | `lg` | — |
+| 2-kolom grid (minimal) | `2xl` | Bank account form |
+| 2-kolom grid (banyak field) | `2xl` atau `3xl` | Client form, Transaction form |
+| Form sangat kompleks | `3xl` | Invoice create/edit |
+
+> ⚠️ Jangan pakai `lg` untuk layout 2-kolom — `max-w-lg` (512px) terlalu sempit, CurrencyInput dan input dengan prefix akan overflow.
+
+**Body layout:**
+- Form 1 kolom (≤3 field): `<div className="px-6 py-4 space-y-4">` langsung tanpa grid
+- Form 2 kolom: `<div className="px-6 py-4"><div className="grid grid-cols-1 lg:grid-cols-2 gap-6">` + `FormSection` per kolom
+- `FormSection` dari `@/components/shared/form-section` — WAJIB dipakai sebagai section header dalam grid, jangan buat div header manual
+
+**Footer button rules:**
+- "Batal": selalu `variant="zinc"`, `order-2 sm:order-1` (desktop kiri, mobile bawah)
+- Submit: default primary, `order-1 sm:order-2` (desktop kanan, mobile atas)
+- Submit color overrides: `variant` atau className sesuai semantic action (lihat tabel di atas)
+- State loading: gunakan prop `loading={saving}` jika Button mendukung, atau ganti label teks
+
+**Form sebagai child langsung `DialogContent`:**
+- Letakkan `<form>` sebagai child langsung `DialogContent` agar `type="submit"` dan `form="id"` bekerja tanpa cross-form confusion
+- Gunakan `id` pada `<form>` dan `form="form-id"` pada Button submit jika Button ada di luar `<form>` (e.g., di DialogFooter yang terpisah DOM)
+
+### Form 1-kolom (simple)
+
+Untuk form dengan ≤3 field, tidak perlu grid dan FormSection:
+
+```tsx
+<DialogContent size="md">
+    <form onSubmit={handleSubmit}>
+        <DialogHeader>
+            <div className="flex items-center gap-4 py-2">
+                <div className="h-12 w-12 bg-green-50 dark:bg-green-900/20 rounded-xl flex items-center justify-center shrink-0">
+                    <Tag className="w-6 h-6 text-green-600 dark:text-green-400" />
+                </div>
+                <div>
+                    <DialogTitle className="text-xl font-bold text-dark-900 dark:text-dark-50">Judul</DialogTitle>
+                    <p className="text-sm text-dark-500 dark:text-dark-400">Deskripsi</p>
+                </div>
+            </div>
+        </DialogHeader>
+
+        <div className="px-6 py-4 space-y-4">
+            <Input label="Field 1 *" ... />
+            <Combobox label="Field 2 *" ... />
+            <CurrencyInput label="Field 3 *" ... />
+        </div>
+
+        <DialogFooter>
+            <Button type="button" variant="zinc" onClick={onCancel} className="w-full sm:w-auto order-2 sm:order-1">Batal</Button>
+            <Button type="submit" className="w-full sm:w-auto order-1 sm:order-2">Simpan</Button>
+        </DialogFooter>
+    </form>
+</DialogContent>
+```

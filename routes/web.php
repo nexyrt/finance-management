@@ -233,6 +233,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::put('/{bankAccount}', [BankAccountController::class, 'update'])->middleware('can:edit bank-accounts')->name('update');
         Route::delete('/{bankAccount}', [BankAccountController::class, 'destroy'])->middleware('can:delete bank-accounts')->name('destroy');
         Route::get('/{bankAccount}/chart-data', [BankAccountController::class, 'chartData'])->name('chart-data');
+        Route::get('/{bankAccount}/activity', [BankAccountController::class, 'activity'])->name('activity');
+        Route::get('/{bankAccount}/monthly-stats', [BankAccountController::class, 'monthlyStats'])->name('monthly-stats');
     });
 
     Route::get('/bank-account/export/pdf', [CashFlowExportController::class, 'exportPdf'])
