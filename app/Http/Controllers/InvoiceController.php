@@ -20,7 +20,7 @@ class InvoiceController extends Controller
     {
         $search = $request->input('search');
         $status = $request->input('status');
-        $clientId = $request->input('client_id');
+        $clientIds = array_filter((array) $request->input('client_ids', []), fn ($v) => $v !== '' && $v !== null);
         $periodMode = $request->input('period_mode', 'month');
         $month = $request->input('month', $periodMode === 'range' ? null : now()->format('Y-m'));
         $dateFrom = $request->input('date_from');
@@ -46,7 +46,7 @@ class InvoiceController extends Controller
                     ->orWhere('clients.name', 'like', "%{$search}%");
             }))
             ->when($status, fn ($q) => $q->where('invoices.status', $status))
-            ->when($clientId, fn ($q) => $q->where('invoices.billed_to_id', $clientId))
+            ->when($clientIds, fn ($q) => $q->whereIn('invoices.billed_to_id', $clientIds))
             ->when($periodMode === 'range' && $dateFrom, fn ($q) => $q->whereDate('invoices.issue_date', '>=', $dateFrom))
             ->when($periodMode === 'range' && $dateTo, fn ($q) => $q->whereDate('invoices.issue_date', '<=', $dateTo))
             ->when($periodMode !== 'range' && $month, fn ($q) => $q
@@ -146,7 +146,7 @@ class InvoiceController extends Controller
             'filters' => [
                 'search' => $search,
                 'status' => $status,
-                'client_id' => $clientId ? (int) $clientId : null,
+                'client_ids' => array_values(array_map('intval', $clientIds)),
                 'month' => $month,
                 'date_from' => $dateFrom,
                 'date_to' => $dateTo,

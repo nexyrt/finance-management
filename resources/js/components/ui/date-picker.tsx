@@ -395,20 +395,41 @@ export function DatePicker(props: DatePickerProps) {
         );
     }, [fromYear, toYear]);
 
+    /* internal draft state for range mode — committed only on "Terapkan" */
+    const [draftRange, setDraftRange] = React.useState<{ from: Date | null; to: Date | null }>({
+        from: null,
+        to: null,
+    });
+
+    /* sync draft when popover opens */
+    React.useEffect(() => {
+        if (open && isRange) {
+            setDraftRange({
+                from: rangeValue?.from ?? null,
+                to: rangeValue?.to ?? null,
+            });
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [open]);
+
+    const commitRange = () => {
+        (props as DatePickerRangeProps).onChange(draftRange);
+        setOpen(false);
+    };
+
     /* DayPicker props for single/range modes */
     const pickerProps = isRange
         ? {
               mode: 'range' as const,
               selected: {
-                  from: rangeValue?.from ?? undefined,
-                  to: rangeValue?.to ?? undefined,
+                  from: draftRange.from ?? undefined,
+                  to: draftRange.to ?? undefined,
               },
               onSelect: (range: { from?: Date; to?: Date } | undefined) => {
-                  (props as DatePickerRangeProps).onChange({
+                  setDraftRange({
                       from: range?.from ?? null,
                       to: range?.to ?? null,
                   });
-                  if (range?.from && range?.to) setOpen(false);
               },
           }
         : {
@@ -476,7 +497,13 @@ export function DatePicker(props: DatePickerProps) {
                     align="start"
                     onInteractOutside={(e) => {
                         const target = e.target as HTMLElement;
+                        /* prevent close when clicking nested popovers (month/year dropdowns) */
                         if (target.closest('[data-radix-popper-content-wrapper]')) {
+                            e.preventDefault();
+                            return;
+                        }
+                        /* range mode: always prevent accidental close, user must click Terapkan */
+                        if (isRange) {
                             e.preventDefault();
                         }
                     }}
@@ -494,6 +521,7 @@ export function DatePicker(props: DatePickerProps) {
                             toYear={toYear}
                         />
                     ) : (
+                        <>
                         <DayPicker
                             {...pickerProps}
                             locale={idLocale}
@@ -528,6 +556,35 @@ export function DatePicker(props: DatePickerProps) {
                                     '!bg-primary-100 dark:!bg-primary-900/30 !rounded-none !text-primary-900 dark:!text-primary-100 hover:!bg-primary-200 dark:hover:!bg-primary-900/50',
                             }}
                         />
+                        {isRange && (
+                            <div className="flex items-center justify-between gap-2 px-3 pb-3 pt-1 border-t border-secondary-200 dark:border-dark-600">
+                                <span className="text-xs text-dark-400 dark:text-dark-500">
+                                    {draftRange.from && draftRange.to
+                                        ? `${format(draftRange.from, 'dd MMM', { locale: idLocale })} → ${format(draftRange.to, 'dd MMM yyyy', { locale: idLocale })}`
+                                        : draftRange.from
+                                          ? `${format(draftRange.from, 'dd MMM yyyy', { locale: idLocale })} → ...`
+                                          : 'Pilih tanggal awal'}
+                                </span>
+                                <div className="flex items-center gap-1.5">
+                                    <button
+                                        type="button"
+                                        onClick={() => setOpen(false)}
+                                        className="px-3 py-1.5 text-xs font-medium rounded-lg text-dark-600 dark:text-dark-400 hover:bg-zinc-100 dark:hover:bg-dark-600 transition-colors"
+                                    >
+                                        Batal
+                                    </button>
+                                    <button
+                                        type="button"
+                                        disabled={!draftRange.from || !draftRange.to}
+                                        onClick={commitRange}
+                                        className="px-3 py-1.5 text-xs font-medium rounded-lg bg-primary-600 text-white hover:bg-primary-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                                    >
+                                        Terapkan
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                        </>
                     )}
                 </PopoverContent>
             </Popover>
