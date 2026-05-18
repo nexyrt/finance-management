@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../wayfinder'
 /**
 * @see \Livewire\Mechanisms\HandleRequests\HandleRequests::update
- * @see vendor/livewire/livewire/src/Mechanisms/HandleRequests/HandleRequests.php:116
+ * @see vendor/livewire/livewire/src/Mechanisms/HandleRequests/HandleRequests.php:114
  * @route '/livewire/update'
  */
 export const update = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -16,7 +16,7 @@ update.definition = {
 
 /**
 * @see \Livewire\Mechanisms\HandleRequests\HandleRequests::update
- * @see vendor/livewire/livewire/src/Mechanisms/HandleRequests/HandleRequests.php:116
+ * @see vendor/livewire/livewire/src/Mechanisms/HandleRequests/HandleRequests.php:114
  * @route '/livewire/update'
  */
 update.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ update.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \Livewire\Mechanisms\HandleRequests\HandleRequests::update
- * @see vendor/livewire/livewire/src/Mechanisms/HandleRequests/HandleRequests.php:116
+ * @see vendor/livewire/livewire/src/Mechanisms/HandleRequests/HandleRequests.php:114
  * @route '/livewire/update'
  */
 update.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
