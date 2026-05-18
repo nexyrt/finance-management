@@ -18,15 +18,6 @@ class QuickActionsOverview extends Component
 
     public string $selectedMonth = '';
 
-    public function hydrate(): void
-    {
-        // Guard against PropertyNotFoundException when hydrating from snapshots
-        // that were created before $selectedMonth was added to this component.
-        if (! isset($this->selectedMonth)) {
-            $this->selectedMonth = '';
-        }
-    }
-
     public function placeholder(): View
     {
         return view('livewire.placeholders.quick-actions-skeleton');
@@ -140,9 +131,13 @@ class QuickActionsOverview extends Component
     #[Computed]
     public function statsMonth(): array
     {
+        // Read directly from Livewire's data bag to avoid PropertyNotFoundException
+        // when hydrating from old snapshots that predate this property.
+        $selectedMonth = $this->all()['selectedMonth'] ?? '';
+
         // Manual override: user picked a specific month
-        if ($this->selectedMonth !== '') {
-            $date = Carbon::createFromFormat('Y-m', $this->selectedMonth);
+        if ($selectedMonth !== '') {
+            $date = Carbon::createFromFormat('Y-m', $selectedMonth);
             $start = $date->copy()->startOfMonth();
             $end = $date->copy()->endOfMonth();
 
