@@ -221,15 +221,16 @@ export default function BankAccountsPage({ accounts: initialAccounts, stats: ini
                                 }}
                             />
                         ) : (
-                            <div className="flex flex-col items-center gap-2">
-                                <div className="text-center mb-4">
-                                    <p className="text-white/40 text-[10px] uppercase tracking-[0.25em] mb-1">
-                                        TREASURY · {accounts.length} vault{accounts.length !== 1 ? 's' : ''} aktif
+                            <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-8 items-center">
+                                {/* Left — Treasury summary */}
+                                <div>
+                                    <p className="text-white/40 text-[10px] uppercase tracking-[0.25em] mb-2">
+                                        TREASURY · {accounts.length} rekening aktif
                                     </p>
                                     <p className="text-white font-black text-4xl sm:text-5xl tabular-nums tracking-tight leading-none">
                                         {formatCurrency(stats.total_balance)}
                                     </p>
-                                    <div className="flex items-center justify-center gap-2 mt-2">
+                                    <div className="flex items-center gap-2 mt-3">
                                         {trendUp ? (
                                             <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
                                         ) : (
@@ -243,12 +244,36 @@ export default function BankAccountsPage({ accounts: initialAccounts, stats: ini
                                             Net {trendUp ? '+' : ''}{formatCurrency(stats.trend_30d_total ?? 0)} (30 hari)
                                         </span>
                                     </div>
+
+                                    {/* Mini aggregate stats */}
+                                    <div className="flex items-center gap-4 mt-5">
+                                        <div className="flex items-center gap-1.5">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                                            <span className="text-[11px] text-white/50">Masuk</span>
+                                            <span className="text-[11px] font-bold text-emerald-400 tabular-nums">
+                                                +{formatCurrency(stats.total_income)}
+                                            </span>
+                                        </div>
+                                        <div className="w-px h-3 bg-white/15" />
+                                        <div className="flex items-center gap-1.5">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-rose-400" />
+                                            <span className="text-[11px] text-white/50">Keluar</span>
+                                            <span className="text-[11px] font-bold text-rose-400 tabular-nums">
+                                                -{formatCurrency(stats.total_expense)}
+                                            </span>
+                                        </div>
+                                    </div>
                                 </div>
-                                <WalletStack
-                                    accounts={accounts}
-                                    selectedIdx={Math.min(selectedIdx, accounts.length - 1)}
-                                    onSelect={setSelectedIdx}
-                                />
+
+                                {/* Right — Vertical wallet list */}
+                                <div className="w-full lg:w-96">
+                                    <WalletStack
+                                        accounts={accounts}
+                                        selectedIdx={Math.min(selectedIdx, accounts.length - 1)}
+                                        onSelect={setSelectedIdx}
+                                        onAddAccount={() => { setEditAccount(null); setModalOpen(true); }}
+                                    />
+                                </div>
                             </div>
                         )}
                     </div>
