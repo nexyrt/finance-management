@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\BankAccountController;
+use App\Http\Controllers\BankTransactionController;
 use App\Http\Controllers\CashFlowExportController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\DashboardController;
@@ -235,6 +236,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/{bankAccount}/chart-data', [BankAccountController::class, 'chartData'])->name('chart-data');
         Route::get('/{bankAccount}/activity', [BankAccountController::class, 'activity'])->name('activity');
         Route::get('/{bankAccount}/monthly-stats', [BankAccountController::class, 'monthlyStats'])->name('monthly-stats');
+        Route::get('/{bankAccount}/transactions', [BankAccountController::class, 'transactions'])->name('transactions');
+        Route::get('/{bankAccount}/payments', [BankAccountController::class, 'payments'])->name('payments');
+    });
+
+    // Bank Transactions CRUD
+    Route::prefix('bank-transactions')->name('bank-transactions.')->middleware('can:create bank-accounts')->group(function () {
+        Route::post('/', [BankTransactionController::class, 'store'])->name('store');
+        Route::post('/transfer', [BankTransactionController::class, 'transfer'])->name('transfer');
+        Route::patch('/categorize', [BankTransactionController::class, 'categorize'])->name('categorize');
+        Route::delete('/bulk', [BankTransactionController::class, 'bulkDestroy'])->name('bulk-destroy');
+        Route::put('/{bankTransaction}', [BankTransactionController::class, 'update'])->name('update');
+        Route::delete('/{bankTransaction}', [BankTransactionController::class, 'destroy'])->name('destroy');
     });
 
     Route::get('/bank-account/export/pdf', [CashFlowExportController::class, 'exportPdf'])

@@ -1,6 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../wayfinder'
 /**
- * @see routes/web.php:143
+ * @see routes/web.php:144
  * @route '/invoice/{invoice}/download'
  */
 export const download = (args: { invoice: number | { id: number } } | [invoice: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -14,7 +14,7 @@ download.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
- * @see routes/web.php:143
+ * @see routes/web.php:144
  * @route '/invoice/{invoice}/download'
  */
 download.url = (args: { invoice: number | { id: number } } | [invoice: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -46,7 +46,7 @@ download.url = (args: { invoice: number | { id: number } } | [invoice: number | 
 }
 
 /**
- * @see routes/web.php:143
+ * @see routes/web.php:144
  * @route '/invoice/{invoice}/download'
  */
 download.get = (args: { invoice: number | { id: number } } | [invoice: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -54,7 +54,7 @@ download.get = (args: { invoice: number | { id: number } } | [invoice: number | 
     method: 'get',
 })
 /**
- * @see routes/web.php:143
+ * @see routes/web.php:144
  * @route '/invoice/{invoice}/download'
  */
 download.head = (args: { invoice: number | { id: number } } | [invoice: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -63,7 +63,7 @@ download.head = (args: { invoice: number | { id: number } } | [invoice: number |
 })
 
 /**
- * @see routes/web.php:161
+ * @see routes/web.php:162
  * @route '/invoice/{invoice}/preview'
  */
 export const preview = (args: { invoice: number | { id: number } } | [invoice: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -77,7 +77,7 @@ preview.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
- * @see routes/web.php:161
+ * @see routes/web.php:162
  * @route '/invoice/{invoice}/preview'
  */
 preview.url = (args: { invoice: number | { id: number } } | [invoice: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -109,7 +109,7 @@ preview.url = (args: { invoice: number | { id: number } } | [invoice: number | {
 }
 
 /**
- * @see routes/web.php:161
+ * @see routes/web.php:162
  * @route '/invoice/{invoice}/preview'
  */
 preview.get = (args: { invoice: number | { id: number } } | [invoice: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -117,7 +117,7 @@ preview.get = (args: { invoice: number | { id: number } } | [invoice: number | {
     method: 'get',
 })
 /**
- * @see routes/web.php:161
+ * @see routes/web.php:162
  * @route '/invoice/{invoice}/preview'
  */
 preview.head = (args: { invoice: number | { id: number } } | [invoice: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({

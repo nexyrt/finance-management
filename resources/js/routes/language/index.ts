@@ -1,6 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../wayfinder'
 /**
- * @see routes/web.php:379
+ * @see routes/web.php:392
  * @route '/language'
  */
 export const switchMethod = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -14,7 +14,7 @@ switchMethod.definition = {
 } satisfies RouteDefinition<["post"]>
 
 /**
- * @see routes/web.php:379
+ * @see routes/web.php:392
  * @route '/language'
  */
 switchMethod.url = (options?: RouteQueryOptions) => {
@@ -22,7 +22,7 @@ switchMethod.url = (options?: RouteQueryOptions) => {
 }
 
 /**
- * @see routes/web.php:379
+ * @see routes/web.php:392
  * @route '/language'
  */
 switchMethod.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({

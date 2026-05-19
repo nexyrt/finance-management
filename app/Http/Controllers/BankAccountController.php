@@ -262,24 +262,157 @@ class BankAccountController extends Controller
         ]);
     }
 
-    public function monthlyStats(BankAccount $bankAccount): JsonResponse
+    public function transactions(BankAccount $bankAccount, Request $request): JsonResponse
     {
-        // Smart period: current month if it has data, else latest month with data
-        $start = now()->startOfMonth();
-        $end = now()->endOfMonth();
+        $query = $bankAccount->transactions()->with('category.parent');
 
-        $hasData = $bankAccount->transactions()->whereBetween('transaction_date', [$start, $end])->exists()
-            || $bankAccount->payments()->whereBetween('payment_date', [$start, $end])->exists();
+        if ($request->filled('transaction_type')) {
+            $query->where('transaction_type', $request->input('transaction_type'));
+        }
 
-        if (! $hasData) {
-            $latestTrx = $bankAccount->transactions()->orderByDesc('transaction_date')->value('transaction_date');
-            $latestPay = $bankAccount->payments()->orderByDesc('payment_date')->value('payment_date');
-            $latest = collect([$latestTrx, $latestPay])->filter()->max();
+        if ($request->filled('category_id')) {
+            $query->where('category_id', $request->input('category_id'));
+        }
 
-            if ($latest) {
-                $d = Carbon::parse($latest);
-                $start = $d->copy()->startOfMonth();
-                $end = $d->copy()->endOfMonth();
+        if ($request->filled('month')) {
+            [$year, $month] = explode('-', $request->input('month'));
+            $query->whereYear('transaction_date', $year)->whereMonth('transaction_date', $month);
+        }
+
+        if ($request->filled('search')) {
+            $search = '%'.$request->input('search').'%';
+            $query->where(function ($q) use ($search) {
+                $q->where('description', 'like', $search)
+                    ->orWhere('reference_number', 'like', $search);
+            });
+        }
+
+        $sortBy = in_array($request->input('sort_by'), ['description', 'transaction_date', 'amount'])
+            ? $request->input('sort_by')
+            : 'transaction_date';
+        $sortDir = $request->input('sort_direction', 'desc') === 'asc' ? 'asc' : 'desc';
+
+        $query->orderBy($sortBy, $sortDir);
+
+        $perPage = min((int) $request->input('per_page', 15), 100);
+        $paginated = $query->paginate($perPage);
+
+        return response()->json([
+            'data' => $paginated->getCollection()->map(fn ($t) => [
+                'id' => $t->id,
+                'transaction_type' => $t->transaction_type,
+                'amount' => $t->amount,
+                'transaction_date' => $t->transaction_date?->format('Y-m-d'),
+                'description' => $t->description,
+                'reference_number' => $t->reference_number,
+                'category_id' => $t->category_id,
+                'category' => $t->category ? [
+                    'id' => $t->category->id,
+                    'label' => $t->category->label,
+                    'parent' => $t->category->parent ? ['id' => $t->category->parent->id, 'label' => $t->category->parent->label] : null,
+                ] : null,
+                'attachment_url' => $t->attachment_path ? \Storage::url($t->attachment_path) : null,
+                'attachment_name' => $t->attachment_name,
+            ]),
+            'meta' => [
+                'current_page' => $paginated->currentPage(),
+                'last_page' => $paginated->lastPage(),
+                'per_page' => $paginated->perPage(),
+                'total' => $paginated->total(),
+            ],
+        ]);
+    }
+
+    public function payments(BankAccount $bankAccount, Request $request): JsonResponse
+    {
+        $query = $bankAccount->payments()->with('invoice.client');
+
+        if ($request->filled('payment_method')) {
+            $query->where('payment_method', $request->input('payment_method'));
+        }
+
+        if ($request->filled('invoice_status')) {
+            $query->whereHas('invoice', fn ($q) => $q->where('status', $request->input('invoice_status')));
+        }
+
+        if ($request->filled('month')) {
+            [$year, $month] = explode('-', $request->input('month'));
+            $query->whereYear('payment_date', $year)->whereMonth('payment_date', $month);
+        }
+
+        if ($request->filled('search')) {
+            $search = '%'.$request->input('search').'%';
+            $query->where(function ($q) use ($search) {
+                $q->where('reference_number', 'like', $search)
+                    ->orWhereHas('invoice', fn ($iq) => $iq->where('invoice_number', 'like', $search))
+                    ->orWhereHas('invoice.client', fn ($cq) => $cq->where('name', 'like', $search));
+            });
+        }
+
+        $sortBy = $request->input('sort_by', 'payment_date');
+        $sortDir = $request->input('sort_direction', 'desc') === 'asc' ? 'asc' : 'desc';
+
+        if (in_array($sortBy, ['payment_date', 'amount', 'payment_method'])) {
+            $query->orderBy($sortBy, $sortDir);
+        } else {
+            $query->orderBy('payment_date', $sortDir);
+        }
+
+        $perPage = min((int) $request->input('per_page', 15), 100);
+        $paginated = $query->paginate($perPage);
+
+        return response()->json([
+            'data' => $paginated->getCollection()->map(fn ($p) => [
+                'id' => $p->id,
+                'amount' => $p->amount,
+                'payment_date' => $p->payment_date?->format('Y-m-d'),
+                'payment_method' => $p->payment_method,
+                'reference_number' => $p->reference_number,
+                'invoice_number' => $p->invoice?->invoice_number,
+                'invoice_status' => $p->invoice?->status,
+                'client_name' => $p->invoice?->client?->name,
+                'client_type' => $p->invoice?->client?->type,
+                'attachment_url' => $p->attachment_path ? \Storage::url($p->attachment_path) : null,
+                'attachment_name' => $p->attachment_name,
+            ]),
+            'meta' => [
+                'current_page' => $paginated->currentPage(),
+                'last_page' => $paginated->lastPage(),
+                'per_page' => $paginated->perPage(),
+                'total' => $paginated->total(),
+            ],
+        ]);
+    }
+
+    public function monthlyStats(BankAccount $bankAccount, Request $request): JsonResponse
+    {
+        // Custom period override
+        if ($request->filled('from') && $request->filled('to')) {
+            $start = Carbon::parse($request->input('from'))->startOfDay();
+            $end = Carbon::parse($request->input('to'))->endOfDay();
+            $periodLabel = $start->translatedFormat('d M').' – '.$end->translatedFormat('d M Y');
+        } else {
+            // Smart period: current month if it has data, else latest month with data
+            $start = now()->startOfMonth();
+            $end = now()->endOfMonth();
+            $periodLabel = null;
+        }
+
+        // Smart period fallback only when no custom period
+        if (! $request->filled('from')) {
+            $hasData = $bankAccount->transactions()->whereBetween('transaction_date', [$start, $end])->exists()
+                || $bankAccount->payments()->whereBetween('payment_date', [$start, $end])->exists();
+
+            if (! $hasData) {
+                $latestTrx = $bankAccount->transactions()->orderByDesc('transaction_date')->value('transaction_date');
+                $latestPay = $bankAccount->payments()->orderByDesc('payment_date')->value('payment_date');
+                $latest = collect([$latestTrx, $latestPay])->filter()->max();
+
+                if ($latest) {
+                    $d = Carbon::parse($latest);
+                    $start = $d->copy()->startOfMonth();
+                    $end = $d->copy()->endOfMonth();
+                }
             }
         }
 
@@ -352,7 +485,7 @@ class BankAccountController extends Controller
             ->toArray();
 
         return response()->json([
-            'period_label' => $start->translatedFormat('F Y'),
+            'period_label' => $periodLabel ?? $start->translatedFormat('F Y'),
             'total_income' => $totalIncome,
             'total_expense' => $totalExpense,
             'net_cashflow' => $totalIncome - $totalExpense,

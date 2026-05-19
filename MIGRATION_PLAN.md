@@ -3,7 +3,7 @@
 > **Dokumen ini adalah panduan kerja untuk Claude Code.**
 > Dibuat: 2026-05-11 | Branch aktif: `feature/inertia-react-migration`
 > Update dokumen ini setiap kali fase selesai.
-> **Terakhir diupdate: 2026-05-17 — Fase 7a selesai: Bank Accounts halaman penuh dimigrasi ke Inertia+React dengan Premium Wallet Stack UI, analytics widgets, dan design system compliance.**
+> **Terakhir diupdate: 2026-05-20 — Fase 7b selesai: Full transactional features — tabel transaksi & pembayaran per rekening, 3 create modals (income/expense/transfer), bulk delete + bulk categorize, attachment viewer, PDF export, InsightPanel quick actions, vertical wallet stack.**
 
 ---
 
@@ -453,29 +453,37 @@ _components/
 
 **Penting:** Balance adalah COMPUTED (tidak stored). `initial_balance + payments(credit) + tx(credit) - tx(debit)`
 
-**Yang belum dikerjakan (next: Fase 7b):**
-- Tabel transaksi per rekening (filter bulan/tipe/kategori, search, pagination, bulk delete)
-- Tabel pembayaran per rekening (filter bulan/payment_method/status, search, pagination)
+**Yang dikerjakan di Fase 7b (selesai 2026-05-20):**
+- Tabel transaksi per rekening (filter bulan/tipe/kategori, search, pagination, bulk delete) ✅
+- Tabel pembayaran per rekening (filter bulan/payment_method/status, search, pagination) ✅
 - Port dari Livewire: `app/Livewire/Accounts/TransactionList.php` + `PaymentList.php`
 - Paired TRF transaction deletion (delete keduanya saat hapus 1 transfer)
 - Create transaksi (income/expense/transfer) via modal
 
 ---
 
-### Fase 7b — Transactions & Payments per Rekening ⬜ BELUM DIMULAI
+### Fase 7b — Transactions & Payments per Rekening ✅ SELESAI (2026-05-20)
 
 **Livewire source:** `app/Livewire/Accounts/TransactionList.php`, `app/Livewire/Accounts/PaymentList.php`
 
 | Component | Status |
 |-----------|--------|
-| TransactionList (tabel + filter + pagination) | ⬜ |
-| PaymentList (tabel + filter + pagination) | ⬜ |
-| CreateTransaction (income modal) | ⬜ |
-| CreateExpense (expense modal) | ⬜ |
-| CreateTransfer (transfer antar rekening) | ⬜ |
-| DeleteTransaction (+ paired TRF) | ⬜ |
-| CategorizeTransaction | ⬜ |
-| Bulk delete transactions | ⬜ |
+| TransactionsTable (tabel + filter type/category/month/search + sort + pagination) | ✅ |
+| PaymentsTable (tabel + filter method/status/month/search + sort + pagination) | ✅ |
+| TransactionPaymentTabs (tab navigator, localStorage persist) | ✅ |
+| CreateIncomeModal (credit, attachment upload) | ✅ |
+| CreateExpenseModal (debit, attachment upload) | ✅ |
+| CreateTransferModal (antar rekening, admin fee, visual flow indicator) | ✅ |
+| BankTransactionController (store, update, destroy, bulkDestroy, categorize, transfer) | ✅ |
+| DeleteTransaction + paired TRF detection | ✅ |
+| CategorizeTransactionModal (single + bulk) | ✅ |
+| Bulk delete transactions (+ TRF pair expansion) | ✅ |
+| AttachmentViewerModal (image + PDF preview) | ✅ |
+| InsightPanel quick actions (+ Pemasukan, + Pengeluaran, Transfer, Export PDF) | ✅ |
+| BankAccountController: transactions() + payments() endpoints | ✅ |
+| BankAccountController: monthlyStats() custom period (from/to params) | ✅ |
+| WalletStack redesign: vertical list, scroll, staggered entrance animation | ✅ |
+| Layout 2-column side-by-side (380px sticky left + flex-1 right) | ✅ |
 
 ---
 

@@ -261,7 +261,7 @@ chartData.head = (args: { bankAccount: number | { id: number } } | [bankAccount:
 
 /**
 * @see \App\Http\Controllers\BankAccountController::activity
- * @see app/Http/Controllers/BankAccountController.php:364
+ * @see app/Http/Controllers/BankAccountController.php:497
  * @route '/bank-accounts/{bankAccount}/activity'
  */
 export const activity = (args: { bankAccount: number | { id: number } } | [bankAccount: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -276,7 +276,7 @@ activity.definition = {
 
 /**
 * @see \App\Http\Controllers\BankAccountController::activity
- * @see app/Http/Controllers/BankAccountController.php:364
+ * @see app/Http/Controllers/BankAccountController.php:497
  * @route '/bank-accounts/{bankAccount}/activity'
  */
 activity.url = (args: { bankAccount: number | { id: number } } | [bankAccount: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -309,7 +309,7 @@ activity.url = (args: { bankAccount: number | { id: number } } | [bankAccount: n
 
 /**
 * @see \App\Http\Controllers\BankAccountController::activity
- * @see app/Http/Controllers/BankAccountController.php:364
+ * @see app/Http/Controllers/BankAccountController.php:497
  * @route '/bank-accounts/{bankAccount}/activity'
  */
 activity.get = (args: { bankAccount: number | { id: number } } | [bankAccount: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -318,7 +318,7 @@ activity.get = (args: { bankAccount: number | { id: number } } | [bankAccount: n
 })
 /**
 * @see \App\Http\Controllers\BankAccountController::activity
- * @see app/Http/Controllers/BankAccountController.php:364
+ * @see app/Http/Controllers/BankAccountController.php:497
  * @route '/bank-accounts/{bankAccount}/activity'
  */
 activity.head = (args: { bankAccount: number | { id: number } } | [bankAccount: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -328,7 +328,7 @@ activity.head = (args: { bankAccount: number | { id: number } } | [bankAccount: 
 
 /**
 * @see \App\Http\Controllers\BankAccountController::monthlyStats
- * @see app/Http/Controllers/BankAccountController.php:265
+ * @see app/Http/Controllers/BankAccountController.php:387
  * @route '/bank-accounts/{bankAccount}/monthly-stats'
  */
 export const monthlyStats = (args: { bankAccount: number | { id: number } } | [bankAccount: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -343,7 +343,7 @@ monthlyStats.definition = {
 
 /**
 * @see \App\Http\Controllers\BankAccountController::monthlyStats
- * @see app/Http/Controllers/BankAccountController.php:265
+ * @see app/Http/Controllers/BankAccountController.php:387
  * @route '/bank-accounts/{bankAccount}/monthly-stats'
  */
 monthlyStats.url = (args: { bankAccount: number | { id: number } } | [bankAccount: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -376,7 +376,7 @@ monthlyStats.url = (args: { bankAccount: number | { id: number } } | [bankAccoun
 
 /**
 * @see \App\Http\Controllers\BankAccountController::monthlyStats
- * @see app/Http/Controllers/BankAccountController.php:265
+ * @see app/Http/Controllers/BankAccountController.php:387
  * @route '/bank-accounts/{bankAccount}/monthly-stats'
  */
 monthlyStats.get = (args: { bankAccount: number | { id: number } } | [bankAccount: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -385,13 +385,147 @@ monthlyStats.get = (args: { bankAccount: number | { id: number } } | [bankAccoun
 })
 /**
 * @see \App\Http\Controllers\BankAccountController::monthlyStats
- * @see app/Http/Controllers/BankAccountController.php:265
+ * @see app/Http/Controllers/BankAccountController.php:387
  * @route '/bank-accounts/{bankAccount}/monthly-stats'
  */
 monthlyStats.head = (args: { bankAccount: number | { id: number } } | [bankAccount: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: monthlyStats.url(args, options),
     method: 'head',
 })
-const BankAccountController = { index, store, update, destroy, chartData, activity, monthlyStats }
+
+/**
+* @see \App\Http\Controllers\BankAccountController::transactions
+ * @see app/Http/Controllers/BankAccountController.php:265
+ * @route '/bank-accounts/{bankAccount}/transactions'
+ */
+export const transactions = (args: { bankAccount: number | { id: number } } | [bankAccount: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: transactions.url(args, options),
+    method: 'get',
+})
+
+transactions.definition = {
+    methods: ["get","head"],
+    url: '/bank-accounts/{bankAccount}/transactions',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\BankAccountController::transactions
+ * @see app/Http/Controllers/BankAccountController.php:265
+ * @route '/bank-accounts/{bankAccount}/transactions'
+ */
+transactions.url = (args: { bankAccount: number | { id: number } } | [bankAccount: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { bankAccount: args }
+    }
+
+            if (typeof args === 'object' && !Array.isArray(args) && 'id' in args) {
+            args = { bankAccount: args.id }
+        }
+    
+    if (Array.isArray(args)) {
+        args = {
+                    bankAccount: args[0],
+                }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+                        bankAccount: typeof args.bankAccount === 'object'
+                ? args.bankAccount.id
+                : args.bankAccount,
+                }
+
+    return transactions.definition.url
+            .replace('{bankAccount}', parsedArgs.bankAccount.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\BankAccountController::transactions
+ * @see app/Http/Controllers/BankAccountController.php:265
+ * @route '/bank-accounts/{bankAccount}/transactions'
+ */
+transactions.get = (args: { bankAccount: number | { id: number } } | [bankAccount: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: transactions.url(args, options),
+    method: 'get',
+})
+/**
+* @see \App\Http\Controllers\BankAccountController::transactions
+ * @see app/Http/Controllers/BankAccountController.php:265
+ * @route '/bank-accounts/{bankAccount}/transactions'
+ */
+transactions.head = (args: { bankAccount: number | { id: number } } | [bankAccount: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: transactions.url(args, options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\BankAccountController::payments
+ * @see app/Http/Controllers/BankAccountController.php:326
+ * @route '/bank-accounts/{bankAccount}/payments'
+ */
+export const payments = (args: { bankAccount: number | { id: number } } | [bankAccount: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: payments.url(args, options),
+    method: 'get',
+})
+
+payments.definition = {
+    methods: ["get","head"],
+    url: '/bank-accounts/{bankAccount}/payments',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\BankAccountController::payments
+ * @see app/Http/Controllers/BankAccountController.php:326
+ * @route '/bank-accounts/{bankAccount}/payments'
+ */
+payments.url = (args: { bankAccount: number | { id: number } } | [bankAccount: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { bankAccount: args }
+    }
+
+            if (typeof args === 'object' && !Array.isArray(args) && 'id' in args) {
+            args = { bankAccount: args.id }
+        }
+    
+    if (Array.isArray(args)) {
+        args = {
+                    bankAccount: args[0],
+                }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+                        bankAccount: typeof args.bankAccount === 'object'
+                ? args.bankAccount.id
+                : args.bankAccount,
+                }
+
+    return payments.definition.url
+            .replace('{bankAccount}', parsedArgs.bankAccount.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\BankAccountController::payments
+ * @see app/Http/Controllers/BankAccountController.php:326
+ * @route '/bank-accounts/{bankAccount}/payments'
+ */
+payments.get = (args: { bankAccount: number | { id: number } } | [bankAccount: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: payments.url(args, options),
+    method: 'get',
+})
+/**
+* @see \App\Http\Controllers\BankAccountController::payments
+ * @see app/Http/Controllers/BankAccountController.php:326
+ * @route '/bank-accounts/{bankAccount}/payments'
+ */
+payments.head = (args: { bankAccount: number | { id: number } } | [bankAccount: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: payments.url(args, options),
+    method: 'head',
+})
+const BankAccountController = { index, store, update, destroy, chartData, activity, monthlyStats, transactions, payments }
 
 export default BankAccountController
