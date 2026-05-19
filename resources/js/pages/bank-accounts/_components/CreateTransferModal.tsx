@@ -107,7 +107,7 @@ export default function CreateTransferModal({ open, onOpenChange, defaultAccount
                     </div>
                 </DialogHeader>
 
-                <form id="create-transfer-form" onSubmit={handleSubmit}>
+                <form id="create-transfer-form" onSubmit={handleSubmit} className="px-6 py-4">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         <div className="space-y-4">
                             <FormSection title="Rekening Transfer" description="Sumber dan tujuan dana" />

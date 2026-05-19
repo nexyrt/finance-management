@@ -80,7 +80,7 @@ export default function CategorizeTransactionModal({ open, onOpenChange, transac
                     </div>
                 </DialogHeader>
 
-                <form id="categorize-form" onSubmit={handleSubmit} className="space-y-4 py-2">
+                <form id="categorize-form" onSubmit={handleSubmit} className="space-y-4 px-6 py-4">
                     <Combobox
                         options={categories}
                         value={categoryId ?? undefined}

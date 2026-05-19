@@ -103,7 +103,7 @@ export default function CreateExpenseModal({ open, onOpenChange, defaultAccountI
                     </div>
                 </DialogHeader>
 
-                <form id="create-expense-form" onSubmit={handleSubmit}>
+                <form id="create-expense-form" onSubmit={handleSubmit} className="px-6 py-4">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         <div className="space-y-4">
                             <FormSection title="Detail Transaksi" description="Informasi utama pengeluaran" />

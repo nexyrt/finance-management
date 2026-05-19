@@ -103,7 +103,7 @@ export default function CreateIncomeModal({ open, onOpenChange, defaultAccountId
                     </div>
                 </DialogHeader>
 
-                <form id="create-income-form" onSubmit={handleSubmit}>
+                <form id="create-income-form" onSubmit={handleSubmit} className="px-6 py-4">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         {/* Left */}
                         <div className="space-y-4">
