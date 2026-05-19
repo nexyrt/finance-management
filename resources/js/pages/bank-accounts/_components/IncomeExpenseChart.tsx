@@ -11,91 +11,104 @@ interface IncomeExpenseChartProps {
     height?: number;
 }
 
-export default function IncomeExpenseChart({ months, height = 120 }: IncomeExpenseChartProps) {
+export default function IncomeExpenseChart({ months, height = 128 }: IncomeExpenseChartProps) {
     if (!months || months.length === 0) {
         return (
-            <div className="flex items-center justify-center h-[120px]">
+            <div className="flex items-center justify-center" style={{ height }}>
                 <p className="text-xs text-dark-500 dark:text-dark-400 italic">Belum ada data.</p>
             </div>
         );
     }
 
     const maxVal = Math.max(...months.flatMap((m) => [m.income, m.expense]), 1);
-    const barAreaHeight = height - 24; // reserve 24px for labels
-    const totalBars = months.length * 2;
-    const gap = 2;
-    const groupGap = 6;
-    const totalGroups = months.length;
+    const LABEL_H = 20;       // px reserved for month labels at bottom
+    const LEGEND_H = 20;      // px for legend row
+    const chartH = height - LABEL_H - LEGEND_H;
+    const totalMonths = months.length;
 
-    // Calculate bar width dynamically
-    const svgWidth = 100; // use viewBox, scale with CSS
-    const groupWidth = svgWidth / totalGroups;
-    const barWidth = (groupWidth - groupGap) / 2 - gap / 2;
+    // Layout in percentage of total width
+    const groupPct = 100 / totalMonths;
+    const barPadPct = groupPct * 0.18;       // padding inside each group
+    const innerPct = groupPct - barPadPct * 2;
+    const gapPct = innerPct * 0.15;
+    const barPct = (innerPct - gapPct) / 2;
 
     return (
-        <div className="w-full overflow-hidden" aria-hidden>
-            <svg
-                viewBox={`0 0 ${svgWidth} ${height}`}
-                preserveAspectRatio="none"
-                className="w-full"
-                style={{ height }}
-            >
-                {months.map((m, i) => {
-                    const gx = i * groupWidth;
-                    const incomeH = Math.max((m.income / maxVal) * barAreaHeight, m.income > 0 ? 2 : 0);
-                    const expenseH = Math.max((m.expense / maxVal) * barAreaHeight, m.expense > 0 ? 2 : 0);
-                    const incomeY = barAreaHeight - incomeH;
-                    const expenseY = barAreaHeight - expenseH;
-                    const bx1 = gx + groupGap / 2;
-                    const bx2 = bx1 + barWidth + gap;
+        <div className="w-full select-none" aria-hidden>
+            {/* Chart area */}
+            <div className="relative w-full" style={{ height: chartH }}>
+                {/* Subtle gridlines */}
+                {[0.25, 0.5, 0.75, 1].map((fraction) => (
+                    <div
+                        key={fraction}
+                        className="absolute w-full border-t border-dark-700/40 dark:border-dark-600/30"
+                        style={{ bottom: `${fraction * 100}%` }}
+                    />
+                ))}
 
-                    return (
-                        <g key={m.label}>
-                            {/* Income bar */}
-                            <rect
-                                x={bx1}
-                                y={incomeY}
-                                width={barWidth}
-                                height={incomeH}
-                                rx={1}
-                                fill="#34d399"
-                                opacity={m.income > 0 ? 0.85 : 0.15}
-                            />
-                            {/* Expense bar */}
-                            <rect
-                                x={bx2}
-                                y={expenseY}
-                                width={barWidth}
-                                height={expenseH}
-                                rx={1}
-                                fill="#f87171"
-                                opacity={m.expense > 0 ? 0.85 : 0.15}
-                            />
-                            {/* Month label */}
-                            <text
-                                x={gx + groupWidth / 2}
-                                y={barAreaHeight + 14}
-                                textAnchor="middle"
-                                fontSize={4.5}
-                                fill="currentColor"
-                                className="text-dark-400"
-                                opacity={0.6}
+                {/* Bars */}
+                <div className="absolute inset-0 flex items-end">
+                    {months.map((m, i) => {
+                        const incomeH = m.income > 0 ? Math.max((m.income / maxVal) * 100, 2) : 0;
+                        const expenseH = m.expense > 0 ? Math.max((m.expense / maxVal) * 100, 2) : 0;
+
+                        return (
+                            <div
+                                key={i}
+                                className="relative flex items-end justify-center"
+                                style={{ width: `${groupPct}%`, height: '100%', paddingLeft: `${barPadPct}%`, paddingRight: `${barPadPct}%` }}
                             >
-                                {m.label}
-                            </text>
-                        </g>
-                    );
-                })}
-            </svg>
+                                {/* Income bar */}
+                                <div
+                                    title={`Masuk: ${formatCurrency(m.income)}`}
+                                    className="rounded-t-sm transition-all duration-500"
+                                    style={{
+                                        width: `${barPct}%`,
+                                        height: `${incomeH}%`,
+                                        minHeight: m.income > 0 ? 2 : 0,
+                                        marginRight: `${gapPct / 2}%`,
+                                        backgroundColor: m.income > 0 ? '#34d399' : 'rgba(52,211,153,0.12)',
+                                    }}
+                                />
+                                {/* Expense bar */}
+                                <div
+                                    title={`Keluar: ${formatCurrency(m.expense)}`}
+                                    className="rounded-t-sm transition-all duration-500"
+                                    style={{
+                                        width: `${barPct}%`,
+                                        height: `${expenseH}%`,
+                                        minHeight: m.expense > 0 ? 2 : 0,
+                                        marginLeft: `${gapPct / 2}%`,
+                                        backgroundColor: m.expense > 0 ? '#f87171' : 'rgba(248,113,113,0.12)',
+                                    }}
+                                />
+                            </div>
+                        );
+                    })}
+                </div>
+            </div>
+
+            {/* Month labels */}
+            <div className="flex" style={{ height: LABEL_H }}>
+                {months.map((m, i) => (
+                    <div
+                        key={i}
+                        className="flex items-center justify-center text-[9px] text-dark-400 dark:text-dark-500 truncate"
+                        style={{ width: `${groupPct}%` }}
+                    >
+                        {m.label}
+                    </div>
+                ))}
+            </div>
 
             {/* Legend */}
-            <div className="flex items-center gap-4 mt-1">
+            <div className="flex items-center gap-4" style={{ height: LEGEND_H }}>
                 <div className="flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0" />
+                    <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: '#34d399' }} />
                     <span className="text-[10px] text-dark-500 dark:text-dark-400">Pemasukan</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-rose-400 shrink-0" />
+                    <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: '#f87171' }} />
                     <span className="text-[10px] text-dark-500 dark:text-dark-400">Pengeluaran</span>
                 </div>
             </div>
