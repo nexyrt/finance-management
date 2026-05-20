@@ -7,6 +7,7 @@ import RecurringInvoiceController from './RecurringInvoiceController'
 import BankAccountController from './BankAccountController'
 import BankTransactionController from './BankTransactionController'
 import CashFlowExportController from './CashFlowExportController'
+import CashFlowController from './CashFlowController'
 import TransactionCategoryController from './TransactionCategoryController'
 import Auth from './Auth'
 const Controllers = {
@@ -19,6 +20,7 @@ RecurringInvoiceController: Object.assign(RecurringInvoiceController, RecurringI
 BankAccountController: Object.assign(BankAccountController, BankAccountController),
 BankTransactionController: Object.assign(BankTransactionController, BankTransactionController),
 CashFlowExportController: Object.assign(CashFlowExportController, CashFlowExportController),
+CashFlowController: Object.assign(CashFlowController, CashFlowController),
 TransactionCategoryController: Object.assign(TransactionCategoryController, TransactionCategoryController),
 Auth: Object.assign(Auth, Auth),
 }

@@ -54,7 +54,7 @@ git show main:path/to/file.php
 | 4 | Master Data | ✅ Selesai (2026-05-12) |
 | 5 | Invoice & Payment | ✅ Selesai (2026-05-13) |
 | 6 | Recurring Invoices | ✅ Selesai (2026-05-13) |
-| 7 | Banking (Accounts + Cash Flow + Transactions) | ⬜ Belum Dimulai |
+| 7 | Banking (Accounts + Cash Flow + Transactions) | ✅ Selesai (2026-05-20) |
 | 8 | Operations (Reimbursements + Fund Requests) | ⬜ Belum Dimulai |
 | 9 | Finance (Loans + Receivables) | ⬜ Belum Dimulai |
 | 10 | Admin (Users + Permissions + Settings) | ⬜ Belum Dimulai |
@@ -419,17 +419,26 @@ Route::get('/templates/{template}/edit', [RecurringInvoiceController::class, 'ed
 
 **Penting:** Balance adalah COMPUTED (tidak stored). `initial_balance + payments(credit) + tx(credit) - tx(debit)`
 
-### Cash Flow
-**Route:** `/cash-flow`
+### Cash Flow ✅ SELESAI (2026-05-20)
+**Route:** `/cash-flow/income`, `/cash-flow/expenses`, `/cash-flow/transfers`
 **Livewire source:** `app/Livewire/CashFlow/`
 
-| Component | Status |
-|-----------|--------|
-| Index (tabs) | ⬜ |
-| OverviewTab (charts) | ⬜ |
-| IncomeTab | ⬜ |
-| ExpensesTab | ⬜ |
-| TransfersTab | ⬜ |
+| Component | Status | Catatan |
+|-----------|--------|---------|
+| Index (redirect) | ✅ | `/cash-flow` → `/cash-flow/income` |
+| OverviewTab (charts) | — | Orphan code di Livewire, tidak dipakai |
+| IncomeTab | ✅ | `cash-flow/income.tsx` — UNION payments + bank_transactions |
+| ExpensesTab | ✅ | `cash-flow/expenses.tsx` — debit bank_transactions |
+| TransfersTab | ✅ | `cash-flow/transfers.tsx` — TRF pair visualization |
+
+**Implementasi:**
+- `CashFlowController` — 3 index methods + bulkDestroy
+- Shared types & stats card component
+- Server-side filter via `router.get()` + Inertia partial reload (`only: ['rows', ...]`)
+- Single-select filter (clients/categories/bank_accounts) — backend support array, frontend kirim 1 item
+- Floating bulk-action bar (sama pattern dengan bank-accounts)
+- Export PDF via existing `CashFlowExportController` (window.open)
+- Activate menu items (Pemasukan/Pengeluaran/Transfer & Penyesuaian)
 
 ### Transactions
 **Livewire source:** `app/Livewire/Transactions/`

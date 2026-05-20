@@ -114,7 +114,6 @@ const NAV: NavSection[] = [
                 icon: <TrendingUp className="w-4 h-4 shrink-0" />,
                 permission: 'view cash-flow',
                 matchPrefix: '/cash-flow/income',
-                comingSoon: true,
             },
             {
                 label: 'Pengeluaran',
@@ -122,7 +121,6 @@ const NAV: NavSection[] = [
                 icon: <TrendingDown className="w-4 h-4 shrink-0" />,
                 permission: 'view cash-flow',
                 matchPrefix: '/cash-flow/expenses',
-                comingSoon: true,
             },
             {
                 label: 'Transfer & Penyesuaian',
@@ -130,7 +128,6 @@ const NAV: NavSection[] = [
                 icon: <ArrowLeftRight className="w-4 h-4 shrink-0" />,
                 permission: 'view cash-flow',
                 matchPrefix: '/cash-flow/transfers',
-                comingSoon: true,
             },
         ],
     },

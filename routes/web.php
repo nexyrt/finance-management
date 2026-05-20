@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\BankAccountController;
 use App\Http\Controllers\BankTransactionController;
+use App\Http\Controllers\CashFlowController;
 use App\Http\Controllers\CashFlowExportController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\DashboardController;
@@ -10,10 +11,6 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\RecurringInvoiceController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\TransactionCategoryController;
-use App\Livewire\CashFlow\ExpensesPage as CashFlowExpenses;
-use App\Livewire\CashFlow\Income as CashFlowIncome;
-use App\Livewire\CashFlow\Transfers as CashFlowTransfers;
-use App\Livewire\Dashboard;
 use App\Livewire\Feedbacks\Index as FeedbacksIndex;
 use App\Livewire\FundRequests\Index as FundRequestsIndex;
 use App\Livewire\Loans\Index as LoansIndex;
@@ -270,9 +267,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::prefix('cash-flow')->name('cash-flow.')->middleware('can:view cash-flow')->group(function () {
         Route::get('/', fn () => redirect()->route('cash-flow.income'))->name('index');
-        Route::get('/income', CashFlowIncome::class)->name('income');
-        Route::get('/expenses', CashFlowExpenses::class)->name('expenses');
-        Route::get('/transfers', CashFlowTransfers::class)->name('transfers');
+        Route::get('/income', [CashFlowController::class, 'income'])->name('income');
+        Route::get('/expenses', [CashFlowController::class, 'expenses'])->name('expenses');
+        Route::get('/transfers', [CashFlowController::class, 'transfers'])->name('transfers');
+        Route::post('/bulk-delete', [CashFlowController::class, 'bulkDestroy'])
+            ->middleware('can:delete transactions')
+            ->name('bulk-destroy');
 
         Route::get('/export/pdf', [CashFlowExportController::class, 'exportPdf'])->name('export.pdf');
         Route::get('/export/pdf/preview', [CashFlowExportController::class, 'previewPdf'])->name('export.pdf.preview');
