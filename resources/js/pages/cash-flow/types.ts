@@ -32,6 +32,7 @@ export interface IncomeRow {
     invoice_number: string | null;
     client_name: string | null;
     bank_name: string;
+    category_id: number | null;
     category_label: string | null;
     description: string | null;
     attachment_url: string | null;
@@ -58,6 +59,7 @@ export interface ExpenseRow {
     amount: number;
     description: string | null;
     reference_number: string | null;
+    category_id: number;
     category_label: string | null;
     bank_name: string;
     account_name: string;

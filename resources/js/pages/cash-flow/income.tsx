@@ -27,6 +27,10 @@ import { AppLayout } from '@/layouts/app-layout';
 import { cn, formatCurrency, formatDate } from '@/lib/utils';
 import * as cashFlowRoutes from '@/routes/cash-flow';
 import { CashFlowStatsBar } from './components/cash-flow-stats';
+import {
+    TransactionDetailDialog,
+    type CashFlowDialogData,
+} from './components/transaction-detail-dialog';
 import type { FilterOption, IncomeFilters, IncomeRow, PaginationMeta, CashFlowStats } from './types';
 
 interface Props {
@@ -50,6 +54,34 @@ export default function CashFlowIncome({ rows, pagination, stats, filters, clien
     const [selected, setSelected] = React.useState<string[]>([]);
     const [bulkDeleteOpen, setBulkDeleteOpen] = React.useState(false);
     const [deleteProcessing, setDeleteProcessing] = React.useState(false);
+    const [dialogData, setDialogData] = React.useState<CashFlowDialogData | null>(null);
+
+    const openRow = (row: IncomeRow) => {
+        if (row.source_type === 'payment') {
+            setDialogData({
+                kind: 'payment',
+                amount: row.amount,
+                date: row.date,
+                invoice_number: row.invoice_number,
+                client_name: row.client_name,
+                reference_number: row.reference_number,
+                attachment_url: row.attachment_url,
+                attachment_name: row.attachment_name,
+            });
+        } else {
+            setDialogData({
+                kind: 'income',
+                id: row.id,
+                amount: row.amount,
+                date: row.date,
+                description: row.description,
+                category_id: row.category_id,
+                reference_number: row.reference_number,
+                attachment_url: row.attachment_url,
+                attachment_name: row.attachment_name,
+            });
+        }
+    };
 
     // Local filter state — debounced search
     const [search, setSearch] = React.useState(filters.search ?? '');
@@ -269,14 +301,15 @@ export default function CashFlowIncome({ rows, pagination, stats, filters, clien
                                     {rows.map((row) => (
                                         <tr
                                             key={row.uid}
+                                            onClick={() => openRow(row)}
                                             className={cn(
-                                                'transition-colors',
+                                                'transition-colors cursor-pointer',
                                                 selected.includes(row.uid)
                                                     ? 'bg-primary-50/50 dark:bg-primary-900/10'
                                                     : 'hover:bg-secondary-50/80 dark:hover:bg-dark-800/50',
                                             )}
                                         >
-                                            <td className="px-4 py-3 align-middle">
+                                            <td className="px-4 py-3 align-middle" onClick={(e) => e.stopPropagation()}>
                                                 <Checkbox
                                                     checked={selected.includes(row.uid)}
                                                     onCheckedChange={() => toggleOne(row.uid)}
@@ -378,6 +411,13 @@ export default function CashFlowIncome({ rows, pagination, stats, filters, clien
                 confirmLabel={`Hapus ${selected.length}`}
                 loading={deleteProcessing}
                 onConfirm={handleBulkDelete}
+            />
+
+            <TransactionDetailDialog
+                open={!!dialogData}
+                onOpenChange={(open) => { if (!open) setDialogData(null); }}
+                data={dialogData}
+                categoryOptions={categoryOptions}
             />
         </AppLayout>
     );

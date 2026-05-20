@@ -26,6 +26,10 @@ import { AppLayout } from '@/layouts/app-layout';
 import { cn, formatCurrency, formatDate } from '@/lib/utils';
 import * as cashFlowRoutes from '@/routes/cash-flow';
 import { CashFlowStatsBar } from './components/cash-flow-stats';
+import {
+    TransactionDetailDialog,
+    type CashFlowDialogData,
+} from './components/transaction-detail-dialog';
 import type {
     CashFlowStats,
     FilterOption,
@@ -54,6 +58,24 @@ export default function CashFlowTransfers({ rows, pagination, stats, filters, ba
     const [bulkDeleteOpen, setBulkDeleteOpen] = React.useState(false);
     const [deleteProcessing, setDeleteProcessing] = React.useState(false);
     const [search, setSearch] = React.useState(filters.search ?? '');
+    const [dialogData, setDialogData] = React.useState<CashFlowDialogData | null>(null);
+
+    const openRow = (row: TransferRow) => {
+        setDialogData({
+            kind: 'transfer',
+            id: row.id,
+            amount: row.amount,
+            total_debit: row.total_debit,
+            admin_fee: row.admin_fee,
+            date: row.transaction_date,
+            description: row.description,
+            reference_number: row.reference_number,
+            from_account: row.from_account,
+            to_account: row.to_account,
+            attachment_url: row.attachment_url,
+            attachment_name: row.attachment_name,
+        });
+    };
 
     React.useEffect(() => {
         const t = setTimeout(() => {
@@ -236,14 +258,15 @@ export default function CashFlowTransfers({ rows, pagination, stats, filters, ba
                                     {rows.map((row) => (
                                         <tr
                                             key={row.id}
+                                            onClick={() => openRow(row)}
                                             className={cn(
-                                                'transition-colors',
+                                                'transition-colors cursor-pointer',
                                                 selected.includes(row.id)
                                                     ? 'bg-primary-50/50 dark:bg-primary-900/10'
                                                     : 'hover:bg-secondary-50/80 dark:hover:bg-dark-800/50',
                                             )}
                                         >
-                                            <td className="px-4 py-3 align-middle">
+                                            <td className="px-4 py-3 align-middle" onClick={(e) => e.stopPropagation()}>
                                                 <Checkbox
                                                     checked={selected.includes(row.id)}
                                                     onCheckedChange={() => toggleOne(row.id)}
@@ -340,6 +363,13 @@ export default function CashFlowTransfers({ rows, pagination, stats, filters, ba
                 confirmLabel={`Hapus ${selected.length}`}
                 loading={deleteProcessing}
                 onConfirm={handleBulkDelete}
+            />
+
+            <TransactionDetailDialog
+                open={!!dialogData}
+                onOpenChange={(open) => { if (!open) setDialogData(null); }}
+                data={dialogData}
+                categoryOptions={[]}
             />
         </AppLayout>
     );

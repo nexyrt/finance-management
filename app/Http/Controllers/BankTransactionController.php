@@ -187,6 +187,72 @@ class BankTransactionController extends Controller
     }
 
     /**
+     * Update a transaction. For TRF transfers, syncs description + date to the paired transaction.
+     */
+    public function update(Request $request, BankTransaction $bankTransaction): RedirectResponse
+    {
+        $isTransfer = $bankTransaction->reference_number
+            && str_starts_with($bankTransaction->reference_number, 'TRF');
+
+        $rules = [
+            'transaction_date' => ['required', 'date'],
+            'description' => ['required', 'string', 'max:255'],
+        ];
+
+        if (! $isTransfer) {
+            $rules = array_merge($rules, [
+                'amount' => ['required', 'integer', 'min:1'],
+                'category_id' => ['required', 'exists:transaction_categories,id'],
+                'reference_number' => ['nullable', 'string', 'max:255'],
+                'attachment' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
+                'remove_attachment' => ['nullable', 'boolean'],
+            ]);
+        }
+
+        $validated = $request->validate($rules);
+
+        $data = [
+            'transaction_date' => $validated['transaction_date'],
+            'description' => $validated['description'],
+        ];
+
+        if (! $isTransfer) {
+            $data['amount'] = $validated['amount'];
+            $data['category_id'] = $validated['category_id'];
+            $data['reference_number'] = $validated['reference_number'] ?? null;
+
+            if ($request->boolean('remove_attachment')) {
+                if ($bankTransaction->attachment_path) {
+                    Storage::disk('public')->delete($bankTransaction->attachment_path);
+                }
+                $data['attachment_path'] = null;
+                $data['attachment_name'] = null;
+            } elseif ($request->hasFile('attachment')) {
+                if ($bankTransaction->attachment_path) {
+                    Storage::disk('public')->delete($bankTransaction->attachment_path);
+                }
+                $file = $request->file('attachment');
+                $data['attachment_path'] = $file->store('transaction-attachments', 'public');
+                $data['attachment_name'] = $file->getClientOriginalName();
+            }
+        }
+
+        $bankTransaction->update($data);
+
+        if ($isTransfer) {
+            $pairType = $bankTransaction->transaction_type === 'credit' ? 'debit' : 'credit';
+            BankTransaction::where('reference_number', $bankTransaction->reference_number)
+                ->where('transaction_type', $pairType)
+                ->update([
+                    'transaction_date' => $validated['transaction_date'],
+                    'description' => $validated['description'],
+                ]);
+        }
+
+        return redirect()->back()->with('success', __('pages.transaction_updated_successfully'));
+    }
+
+    /**
      * Delete a transaction. Handles transfer pairs (TRF reference).
      */
     public function destroy(BankTransaction $bankTransaction): RedirectResponse

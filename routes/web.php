@@ -246,6 +246,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/bank-transactions', [BankTransactionController::class, 'store'])
             ->middleware('can:create transactions')
             ->name('bank-transactions.store');
+        Route::put('/bank-transactions/{bankTransaction}', [BankTransactionController::class, 'update'])
+            ->middleware('can:edit transactions')
+            ->name('bank-transactions.update');
         Route::delete('/bank-transactions/{bankTransaction}', [BankTransactionController::class, 'destroy'])
             ->middleware('can:delete transactions')
             ->name('bank-transactions.destroy');

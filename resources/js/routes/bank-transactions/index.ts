@@ -34,8 +34,66 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 })
 
 /**
-* @see \App\Http\Controllers\BankTransactionController::destroy
+* @see \App\Http\Controllers\BankTransactionController::update
  * @see app/Http/Controllers/BankTransactionController.php:192
+ * @route '/bank-transactions/{bankTransaction}'
+ */
+export const update = (args: { bankTransaction: number | { id: number } } | [bankTransaction: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
+    url: update.url(args, options),
+    method: 'put',
+})
+
+update.definition = {
+    methods: ["put"],
+    url: '/bank-transactions/{bankTransaction}',
+} satisfies RouteDefinition<["put"]>
+
+/**
+* @see \App\Http\Controllers\BankTransactionController::update
+ * @see app/Http/Controllers/BankTransactionController.php:192
+ * @route '/bank-transactions/{bankTransaction}'
+ */
+update.url = (args: { bankTransaction: number | { id: number } } | [bankTransaction: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { bankTransaction: args }
+    }
+
+            if (typeof args === 'object' && !Array.isArray(args) && 'id' in args) {
+            args = { bankTransaction: args.id }
+        }
+    
+    if (Array.isArray(args)) {
+        args = {
+                    bankTransaction: args[0],
+                }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+                        bankTransaction: typeof args.bankTransaction === 'object'
+                ? args.bankTransaction.id
+                : args.bankTransaction,
+                }
+
+    return update.definition.url
+            .replace('{bankTransaction}', parsedArgs.bankTransaction.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\BankTransactionController::update
+ * @see app/Http/Controllers/BankTransactionController.php:192
+ * @route '/bank-transactions/{bankTransaction}'
+ */
+update.put = (args: { bankTransaction: number | { id: number } } | [bankTransaction: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
+    url: update.url(args, options),
+    method: 'put',
+})
+
+/**
+* @see \App\Http\Controllers\BankTransactionController::destroy
+ * @see app/Http/Controllers/BankTransactionController.php:258
  * @route '/bank-transactions/{bankTransaction}'
  */
 export const destroy = (args: { bankTransaction: number | { id: number } } | [bankTransaction: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -50,7 +108,7 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\BankTransactionController::destroy
- * @see app/Http/Controllers/BankTransactionController.php:192
+ * @see app/Http/Controllers/BankTransactionController.php:258
  * @route '/bank-transactions/{bankTransaction}'
  */
 destroy.url = (args: { bankTransaction: number | { id: number } } | [bankTransaction: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -83,7 +141,7 @@ destroy.url = (args: { bankTransaction: number | { id: number } } | [bankTransac
 
 /**
 * @see \App\Http\Controllers\BankTransactionController::destroy
- * @see app/Http/Controllers/BankTransactionController.php:192
+ * @see app/Http/Controllers/BankTransactionController.php:258
  * @route '/bank-transactions/{bankTransaction}'
  */
 destroy.delete = (args: { bankTransaction: number | { id: number } } | [bankTransaction: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -93,7 +151,7 @@ destroy.delete = (args: { bankTransaction: number | { id: number } } | [bankTran
 
 /**
 * @see \App\Http\Controllers\BankTransactionController::bulkDestroy
- * @see app/Http/Controllers/BankTransactionController.php:207
+ * @see app/Http/Controllers/BankTransactionController.php:273
  * @route '/bank-transactions/bulk-delete'
  */
 export const bulkDestroy = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -108,7 +166,7 @@ bulkDestroy.definition = {
 
 /**
 * @see \App\Http\Controllers\BankTransactionController::bulkDestroy
- * @see app/Http/Controllers/BankTransactionController.php:207
+ * @see app/Http/Controllers/BankTransactionController.php:273
  * @route '/bank-transactions/bulk-delete'
  */
 bulkDestroy.url = (options?: RouteQueryOptions) => {
@@ -117,7 +175,7 @@ bulkDestroy.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\BankTransactionController::bulkDestroy
- * @see app/Http/Controllers/BankTransactionController.php:207
+ * @see app/Http/Controllers/BankTransactionController.php:273
  * @route '/bank-transactions/bulk-delete'
  */
 bulkDestroy.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -127,7 +185,7 @@ bulkDestroy.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\BankTransactionController::transfer
- * @see app/Http/Controllers/BankTransactionController.php:242
+ * @see app/Http/Controllers/BankTransactionController.php:308
  * @route '/bank-transactions/transfer'
  */
 export const transfer = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -142,7 +200,7 @@ transfer.definition = {
 
 /**
 * @see \App\Http\Controllers\BankTransactionController::transfer
- * @see app/Http/Controllers/BankTransactionController.php:242
+ * @see app/Http/Controllers/BankTransactionController.php:308
  * @route '/bank-transactions/transfer'
  */
 transfer.url = (options?: RouteQueryOptions) => {
@@ -151,7 +209,7 @@ transfer.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\BankTransactionController::transfer
- * @see app/Http/Controllers/BankTransactionController.php:242
+ * @see app/Http/Controllers/BankTransactionController.php:308
  * @route '/bank-transactions/transfer'
  */
 transfer.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -160,6 +218,7 @@ transfer.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 })
 const bankTransactions = {
     store: Object.assign(store, store),
+update: Object.assign(update, update),
 destroy: Object.assign(destroy, destroy),
 bulkDestroy: Object.assign(bulkDestroy, bulkDestroy),
 transfer: Object.assign(transfer, transfer),

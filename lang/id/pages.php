@@ -672,6 +672,7 @@ return [
     'bulk_delete_confirm_title' => 'Hapus :count transaksi?',
     'bulk_delete_confirm_message' => 'Data transaksi yang dihapus tidak dapat dikembalikan.',
     'bulk_delete_success' => ':count transaksi berhasil dihapus',
+    'transaction_updated_successfully' => 'Transaksi berhasil diperbarui',
 
     // Transactions - Bulk Actions
     'bulk_selected' => ' transaksi dipilih',
