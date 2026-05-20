@@ -44,7 +44,7 @@ income.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\CashFlowController::expenses
- * @see app/Http/Controllers/CashFlowController.php:174
+ * @see app/Http/Controllers/CashFlowController.php:175
  * @route '/cash-flow/expenses'
  */
 export const expenses = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -59,7 +59,7 @@ expenses.definition = {
 
 /**
 * @see \App\Http\Controllers\CashFlowController::expenses
- * @see app/Http/Controllers/CashFlowController.php:174
+ * @see app/Http/Controllers/CashFlowController.php:175
  * @route '/cash-flow/expenses'
  */
 expenses.url = (options?: RouteQueryOptions) => {
@@ -68,7 +68,7 @@ expenses.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\CashFlowController::expenses
- * @see app/Http/Controllers/CashFlowController.php:174
+ * @see app/Http/Controllers/CashFlowController.php:175
  * @route '/cash-flow/expenses'
  */
 expenses.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -77,7 +77,7 @@ expenses.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\CashFlowController::expenses
- * @see app/Http/Controllers/CashFlowController.php:174
+ * @see app/Http/Controllers/CashFlowController.php:175
  * @route '/cash-flow/expenses'
  */
 expenses.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -87,7 +87,7 @@ expenses.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\CashFlowController::transfers
- * @see app/Http/Controllers/CashFlowController.php:268
+ * @see app/Http/Controllers/CashFlowController.php:270
  * @route '/cash-flow/transfers'
  */
 export const transfers = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -102,7 +102,7 @@ transfers.definition = {
 
 /**
 * @see \App\Http\Controllers\CashFlowController::transfers
- * @see app/Http/Controllers/CashFlowController.php:268
+ * @see app/Http/Controllers/CashFlowController.php:270
  * @route '/cash-flow/transfers'
  */
 transfers.url = (options?: RouteQueryOptions) => {
@@ -111,7 +111,7 @@ transfers.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\CashFlowController::transfers
- * @see app/Http/Controllers/CashFlowController.php:268
+ * @see app/Http/Controllers/CashFlowController.php:270
  * @route '/cash-flow/transfers'
  */
 transfers.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -120,7 +120,7 @@ transfers.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\CashFlowController::transfers
- * @see app/Http/Controllers/CashFlowController.php:268
+ * @see app/Http/Controllers/CashFlowController.php:270
  * @route '/cash-flow/transfers'
  */
 transfers.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -130,7 +130,7 @@ transfers.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\CashFlowController::bulkDestroy
- * @see app/Http/Controllers/CashFlowController.php:392
+ * @see app/Http/Controllers/CashFlowController.php:394
  * @route '/cash-flow/bulk-delete'
  */
 export const bulkDestroy = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -145,7 +145,7 @@ bulkDestroy.definition = {
 
 /**
 * @see \App\Http\Controllers\CashFlowController::bulkDestroy
- * @see app/Http/Controllers/CashFlowController.php:392
+ * @see app/Http/Controllers/CashFlowController.php:394
  * @route '/cash-flow/bulk-delete'
  */
 bulkDestroy.url = (options?: RouteQueryOptions) => {
@@ -154,7 +154,7 @@ bulkDestroy.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\CashFlowController::bulkDestroy
- * @see app/Http/Controllers/CashFlowController.php:392
+ * @see app/Http/Controllers/CashFlowController.php:394
  * @route '/cash-flow/bulk-delete'
  */
 bulkDestroy.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({

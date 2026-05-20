@@ -148,7 +148,6 @@ const NAV: NavSection[] = [
                 icon: <Receipt className="w-4 h-4 shrink-0" />,
                 permission: 'view fund requests',
                 matchPrefix: '/fund-requests',
-                comingSoon: true,
             },
             {
                 label: 'Reimbursement',
@@ -156,7 +155,6 @@ const NAV: NavSection[] = [
                 icon: <ArrowLeftRight className="w-4 h-4 shrink-0" />,
                 permission: 'view reimbursements',
                 matchPrefix: '/reimbursements',
-                comingSoon: true,
             },
         ],
     },

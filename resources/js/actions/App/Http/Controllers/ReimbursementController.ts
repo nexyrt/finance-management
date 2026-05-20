@@ -1,4 +1,4 @@
-import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../wayfinder'
+import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\ReimbursementController::index
  * @see app/Http/Controllers/ReimbursementController.php:18
@@ -475,16 +475,6 @@ pay.post = (args: { reimbursement: number | { id: number } } | [reimbursement: n
     url: pay.url(args, options),
     method: 'post',
 })
-const reimbursements = {
-    index: Object.assign(index, index),
-create: Object.assign(create, create),
-store: Object.assign(store, store),
-edit: Object.assign(edit, edit),
-update: Object.assign(update, update),
-destroy: Object.assign(destroy, destroy),
-submit: Object.assign(submit, submit),
-review: Object.assign(review, review),
-pay: Object.assign(pay, pay),
-}
+const ReimbursementController = { index, create, store, edit, update, destroy, submit, review, pay }
 
-export default reimbursements
+export default ReimbursementController

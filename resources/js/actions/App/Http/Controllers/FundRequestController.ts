@@ -1,5 +1,4 @@
-import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../wayfinder'
-import exportMethod from './export'
+import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\FundRequestController::index
  * @see app/Http/Controllers/FundRequestController.php:20
@@ -476,17 +475,6 @@ disburse.post = (args: { fundRequest: number | { id: number } } | [fundRequest: 
     url: disburse.url(args, options),
     method: 'post',
 })
-const fundRequests = {
-    index: Object.assign(index, index),
-create: Object.assign(create, create),
-store: Object.assign(store, store),
-edit: Object.assign(edit, edit),
-update: Object.assign(update, update),
-destroy: Object.assign(destroy, destroy),
-submit: Object.assign(submit, submit),
-review: Object.assign(review, review),
-disburse: Object.assign(disburse, disburse),
-export: Object.assign(exportMethod, exportMethod),
-}
+const FundRequestController = { index, create, store, edit, update, destroy, submit, review, disburse }
 
-export default fundRequests
+export default FundRequestController

@@ -6,17 +6,17 @@ use App\Http\Controllers\CashFlowController;
 use App\Http\Controllers\CashFlowExportController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\FundRequestController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\RecurringInvoiceController;
+use App\Http\Controllers\ReimbursementController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\TransactionCategoryController;
 use App\Livewire\Feedbacks\Index as FeedbacksIndex;
-use App\Livewire\FundRequests\Index as FundRequestsIndex;
 use App\Livewire\Loans\Index as LoansIndex;
 use App\Livewire\Permissions\Index as PermissionsIndex;
 use App\Livewire\Receivables\Index as ReceivablesIndex;
-use App\Livewire\Reimbursements\Index as ReimbursementIndex;
 use App\Livewire\Settings\CompanyProfileSettings;
 use App\Livewire\Settings\Password;
 use App\Livewire\Settings\Profile;
@@ -294,16 +294,32 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // ------------------------------------------------------------------------
     // REIMBURSEMENTS
     // ------------------------------------------------------------------------
-    Route::get('/reimbursements', ReimbursementIndex::class)
-        ->middleware('can:view reimbursements')
-        ->name('reimbursements.index');
+    Route::middleware('can:view reimbursements')->group(function () {
+        Route::get('/reimbursements', [ReimbursementController::class, 'index'])->name('reimbursements.index');
+        Route::get('/reimbursements/create', [ReimbursementController::class, 'create'])->middleware('can:create reimbursements')->name('reimbursements.create');
+        Route::post('/reimbursements', [ReimbursementController::class, 'store'])->middleware('can:create reimbursements')->name('reimbursements.store');
+        Route::get('/reimbursements/{reimbursement}/edit', [ReimbursementController::class, 'edit'])->middleware('can:edit reimbursements')->name('reimbursements.edit');
+        Route::put('/reimbursements/{reimbursement}', [ReimbursementController::class, 'update'])->middleware('can:edit reimbursements')->name('reimbursements.update');
+        Route::delete('/reimbursements/{reimbursement}', [ReimbursementController::class, 'destroy'])->middleware('can:delete reimbursements')->name('reimbursements.destroy');
+        Route::post('/reimbursements/{reimbursement}/submit', [ReimbursementController::class, 'submit'])->name('reimbursements.submit');
+        Route::post('/reimbursements/{reimbursement}/review', [ReimbursementController::class, 'review'])->middleware('can:approve reimbursements')->name('reimbursements.review');
+        Route::post('/reimbursements/{reimbursement}/pay', [ReimbursementController::class, 'pay'])->middleware('can:pay reimbursements')->name('reimbursements.pay');
+    });
 
     // ------------------------------------------------------------------------
     // FUND REQUESTS
     // ------------------------------------------------------------------------
-    Route::get('/fund-requests', FundRequestsIndex::class)
-        ->middleware('can:view fund requests')
-        ->name('fund-requests.index');
+    Route::middleware('can:view fund requests')->group(function () {
+        Route::get('/fund-requests', [FundRequestController::class, 'index'])->name('fund-requests.index');
+        Route::get('/fund-requests/create', [FundRequestController::class, 'create'])->middleware('can:create fund requests')->name('fund-requests.create');
+        Route::post('/fund-requests', [FundRequestController::class, 'store'])->middleware('can:create fund requests')->name('fund-requests.store');
+        Route::get('/fund-requests/{fundRequest}/edit', [FundRequestController::class, 'edit'])->middleware('can:edit fund requests')->name('fund-requests.edit');
+        Route::put('/fund-requests/{fundRequest}', [FundRequestController::class, 'update'])->middleware('can:edit fund requests')->name('fund-requests.update');
+        Route::delete('/fund-requests/{fundRequest}', [FundRequestController::class, 'destroy'])->middleware('can:delete fund requests')->name('fund-requests.destroy');
+        Route::post('/fund-requests/{fundRequest}/submit', [FundRequestController::class, 'submit'])->name('fund-requests.submit');
+        Route::post('/fund-requests/{fundRequest}/review', [FundRequestController::class, 'review'])->middleware('can:approve fund requests')->name('fund-requests.review');
+        Route::post('/fund-requests/{fundRequest}/disburse', [FundRequestController::class, 'disburse'])->middleware('can:disburse fund requests')->name('fund-requests.disburse');
+    });
 
     Route::get('/fund-requests/export/pdf', function (Request $request) {
         $filters = [

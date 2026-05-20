@@ -9,6 +9,8 @@ import BankTransactionController from './BankTransactionController'
 import CashFlowExportController from './CashFlowExportController'
 import CashFlowController from './CashFlowController'
 import TransactionCategoryController from './TransactionCategoryController'
+import ReimbursementController from './ReimbursementController'
+import FundRequestController from './FundRequestController'
 import Auth from './Auth'
 const Controllers = {
     DashboardController: Object.assign(DashboardController, DashboardController),
@@ -22,6 +24,8 @@ BankTransactionController: Object.assign(BankTransactionController, BankTransact
 CashFlowExportController: Object.assign(CashFlowExportController, CashFlowExportController),
 CashFlowController: Object.assign(CashFlowController, CashFlowController),
 TransactionCategoryController: Object.assign(TransactionCategoryController, TransactionCategoryController),
+ReimbursementController: Object.assign(ReimbursementController, ReimbursementController),
+FundRequestController: Object.assign(FundRequestController, FundRequestController),
 Auth: Object.assign(Auth, Auth),
 }
 
