@@ -394,17 +394,28 @@ Route::get('/templates/{template}/edit', [RecurringInvoiceController::class, 'ed
 
 ## Fase 7 — Banking
 
-### Bank Accounts
+### Bank Accounts ✅ SELESAI (2026-05-20)
 **Route:** `/bank-accounts`
-**Livewire source:** `app/Livewire/BankAccounts/`
+**Livewire source:** `app/Livewire/Accounts/` + `app/Livewire/Transactions/`
 
 | Component | Status |
 |-----------|--------|
-| Index | ⬜ |
-| Create | ⬜ |
-| Edit | ⬜ |
-| Delete | ⬜ |
-| QuickActionsOverview | ⬜ |
+| Index (master-detail) | ✅ |
+| Create + Edit (unified dialog) | ✅ |
+| Delete (ConfirmDialog) | ✅ |
+| QuickActionsOverview (charts + stats) | ✅ |
+| TransactionList (with bulk delete) | ✅ |
+| PaymentList | ✅ |
+| CreateIncome + CreateExpense (unified) | ✅ |
+| Transfer (debit+credit pair) | ✅ |
+| Workflow Guide (3-tab info) | ✅ |
+
+**Implementasi:**
+- `BankAccountController` — index dengan accounts + chart data + stats
+- `BankTransactionController` — JSON list endpoints (transactions + payments), CRUD, bulk delete, transfer
+- 10 React/TSX file modular di `resources/js/pages/bank-accounts/`
+- Charts: ApexCharts (bar 12-bulan + donut breakdown) dengan reactive dark mode
+- Floating bulk-action bar untuk multi-select transaksi
 
 **Penting:** Balance adalah COMPUTED (tidak stored). `initial_balance + payments(credit) + tx(credit) - tx(debit)`
 
@@ -423,15 +434,15 @@ Route::get('/templates/{template}/edit', [RecurringInvoiceController::class, 'ed
 ### Transactions
 **Livewire source:** `app/Livewire/Transactions/`
 
-| Component | Status |
-|-----------|--------|
-| Listing | ⬜ |
-| Create | ⬜ |
-| CreateIncome | ⬜ |
-| CreateExpense | ⬜ |
-| Delete | ⬜ |
-| Categorize | ⬜ |
-| Transfer | ⬜ |
+| Component | Status | Catatan |
+|-----------|--------|---------|
+| Listing | ✅ | Embedded di bank-accounts page (TransactionsTab) |
+| Create | ✅ | Unified dialog (income/expense) via `transaction_type` |
+| CreateIncome | ✅ | Bagian dari unified dialog |
+| CreateExpense | ✅ | Bagian dari unified dialog |
+| Delete | ✅ | ConfirmDialog + bulk delete |
+| Categorize | ⬜ | Belum diperlukan (kategori dipilih saat create) |
+| Transfer | ✅ | TransferDialog (TRF pair) |
 
 ---
 

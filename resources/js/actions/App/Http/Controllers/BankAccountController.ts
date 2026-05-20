@@ -1,4 +1,4 @@
-import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../wayfinder'
+import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\BankAccountController::index
  * @see app/Http/Controllers/BankAccountController.php:17
@@ -191,99 +191,6 @@ destroy.delete = (args: { bankAccount: number | { id: number } } | [bankAccount:
     url: destroy.url(args, options),
     method: 'delete',
 })
+const BankAccountController = { index, store, update, destroy }
 
-/**
-* @see \App\Http\Controllers\BankTransactionController::transactions
- * @see app/Http/Controllers/BankTransactionController.php:18
- * @route '/bank-accounts/transactions'
- */
-export const transactions = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: transactions.url(options),
-    method: 'get',
-})
-
-transactions.definition = {
-    methods: ["get","head"],
-    url: '/bank-accounts/transactions',
-} satisfies RouteDefinition<["get","head"]>
-
-/**
-* @see \App\Http\Controllers\BankTransactionController::transactions
- * @see app/Http/Controllers/BankTransactionController.php:18
- * @route '/bank-accounts/transactions'
- */
-transactions.url = (options?: RouteQueryOptions) => {
-    return transactions.definition.url + queryParams(options)
-}
-
-/**
-* @see \App\Http\Controllers\BankTransactionController::transactions
- * @see app/Http/Controllers/BankTransactionController.php:18
- * @route '/bank-accounts/transactions'
- */
-transactions.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: transactions.url(options),
-    method: 'get',
-})
-/**
-* @see \App\Http\Controllers\BankTransactionController::transactions
- * @see app/Http/Controllers/BankTransactionController.php:18
- * @route '/bank-accounts/transactions'
- */
-transactions.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
-    url: transactions.url(options),
-    method: 'head',
-})
-
-/**
-* @see \App\Http\Controllers\BankTransactionController::payments
- * @see app/Http/Controllers/BankTransactionController.php:77
- * @route '/bank-accounts/payments'
- */
-export const payments = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: payments.url(options),
-    method: 'get',
-})
-
-payments.definition = {
-    methods: ["get","head"],
-    url: '/bank-accounts/payments',
-} satisfies RouteDefinition<["get","head"]>
-
-/**
-* @see \App\Http\Controllers\BankTransactionController::payments
- * @see app/Http/Controllers/BankTransactionController.php:77
- * @route '/bank-accounts/payments'
- */
-payments.url = (options?: RouteQueryOptions) => {
-    return payments.definition.url + queryParams(options)
-}
-
-/**
-* @see \App\Http\Controllers\BankTransactionController::payments
- * @see app/Http/Controllers/BankTransactionController.php:77
- * @route '/bank-accounts/payments'
- */
-payments.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: payments.url(options),
-    method: 'get',
-})
-/**
-* @see \App\Http\Controllers\BankTransactionController::payments
- * @see app/Http/Controllers/BankTransactionController.php:77
- * @route '/bank-accounts/payments'
- */
-payments.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
-    url: payments.url(options),
-    method: 'head',
-})
-const bankAccounts = {
-    index: Object.assign(index, index),
-store: Object.assign(store, store),
-update: Object.assign(update, update),
-destroy: Object.assign(destroy, destroy),
-transactions: Object.assign(transactions, transactions),
-payments: Object.assign(payments, payments),
-}
-
-export default bankAccounts
+export default BankAccountController

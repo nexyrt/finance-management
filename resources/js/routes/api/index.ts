@@ -1,6 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../wayfinder'
 /**
- * @see routes/web.php:46
+ * @see routes/web.php:47
  * @route '/api/transaction-categories'
  */
 export const transactionCategories = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -14,7 +14,7 @@ transactionCategories.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
- * @see routes/web.php:46
+ * @see routes/web.php:47
  * @route '/api/transaction-categories'
  */
 transactionCategories.url = (options?: RouteQueryOptions) => {
@@ -22,7 +22,7 @@ transactionCategories.url = (options?: RouteQueryOptions) => {
 }
 
 /**
- * @see routes/web.php:46
+ * @see routes/web.php:47
  * @route '/api/transaction-categories'
  */
 transactionCategories.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -30,7 +30,7 @@ transactionCategories.get = (options?: RouteQueryOptions): RouteDefinition<'get'
     method: 'get',
 })
 /**
- * @see routes/web.php:46
+ * @see routes/web.php:47
  * @route '/api/transaction-categories'
  */
 transactionCategories.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -39,7 +39,7 @@ transactionCategories.head = (options?: RouteQueryOptions): RouteDefinition<'hea
 })
 
 /**
- * @see routes/web.php:77
+ * @see routes/web.php:78
  * @route '/api/bank-accounts'
  */
 export const bankAccounts = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -53,7 +53,7 @@ bankAccounts.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
- * @see routes/web.php:77
+ * @see routes/web.php:78
  * @route '/api/bank-accounts'
  */
 bankAccounts.url = (options?: RouteQueryOptions) => {
@@ -61,7 +61,7 @@ bankAccounts.url = (options?: RouteQueryOptions) => {
 }
 
 /**
- * @see routes/web.php:77
+ * @see routes/web.php:78
  * @route '/api/bank-accounts'
  */
 bankAccounts.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -69,7 +69,7 @@ bankAccounts.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     method: 'get',
 })
 /**
- * @see routes/web.php:77
+ * @see routes/web.php:78
  * @route '/api/bank-accounts'
  */
 bankAccounts.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -78,7 +78,7 @@ bankAccounts.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
- * @see routes/web.php:87
+ * @see routes/web.php:88
  * @route '/api/clients'
  */
 export const clients = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -92,7 +92,7 @@ clients.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
- * @see routes/web.php:87
+ * @see routes/web.php:88
  * @route '/api/clients'
  */
 clients.url = (options?: RouteQueryOptions) => {
@@ -100,7 +100,7 @@ clients.url = (options?: RouteQueryOptions) => {
 }
 
 /**
- * @see routes/web.php:87
+ * @see routes/web.php:88
  * @route '/api/clients'
  */
 clients.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -108,7 +108,7 @@ clients.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     method: 'get',
 })
 /**
- * @see routes/web.php:87
+ * @see routes/web.php:88
  * @route '/api/clients'
  */
 clients.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

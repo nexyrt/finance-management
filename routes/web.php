@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\BankAccountController;
+use App\Http\Controllers\BankTransactionController;
 use App\Http\Controllers\CashFlowExportController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\DashboardController;
@@ -8,7 +10,6 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\RecurringInvoiceController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\TransactionCategoryController;
-use App\Livewire\Accounts\Index as AccountsIndex;
 use App\Livewire\CashFlow\ExpensesPage as CashFlowExpenses;
 use App\Livewire\CashFlow\Income as CashFlowIncome;
 use App\Livewire\CashFlow\Transfers as CashFlowTransfers;
@@ -227,9 +228,37 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // ------------------------------------------------------------------------
     // FINANCE - BANK & CASH FLOW
     // ------------------------------------------------------------------------
-    Route::get('/bank-accounts', AccountsIndex::class)
-        ->middleware('can:view bank-accounts')
-        ->name('bank-accounts.index');
+    Route::middleware('can:view bank-accounts')->group(function () {
+        Route::get('/bank-accounts', [BankAccountController::class, 'index'])->name('bank-accounts.index');
+        Route::post('/bank-accounts', [BankAccountController::class, 'store'])
+            ->middleware('can:create bank-accounts')
+            ->name('bank-accounts.store');
+        Route::put('/bank-accounts/{bankAccount}', [BankAccountController::class, 'update'])
+            ->middleware('can:edit bank-accounts')
+            ->name('bank-accounts.update');
+        Route::delete('/bank-accounts/{bankAccount}', [BankAccountController::class, 'destroy'])
+            ->middleware('can:delete bank-accounts')
+            ->name('bank-accounts.destroy');
+
+        // Transactions for the selected account (JSON endpoints)
+        Route::get('/bank-accounts/transactions', [BankTransactionController::class, 'indexTransactions'])
+            ->name('bank-accounts.transactions');
+        Route::get('/bank-accounts/payments', [BankTransactionController::class, 'indexPayments'])
+            ->name('bank-accounts.payments');
+
+        Route::post('/bank-transactions', [BankTransactionController::class, 'store'])
+            ->middleware('can:create transactions')
+            ->name('bank-transactions.store');
+        Route::delete('/bank-transactions/{bankTransaction}', [BankTransactionController::class, 'destroy'])
+            ->middleware('can:delete transactions')
+            ->name('bank-transactions.destroy');
+        Route::post('/bank-transactions/bulk-delete', [BankTransactionController::class, 'bulkDestroy'])
+            ->middleware('can:delete transactions')
+            ->name('bank-transactions.bulk-destroy');
+        Route::post('/bank-transactions/transfer', [BankTransactionController::class, 'transfer'])
+            ->middleware('can:create transactions')
+            ->name('bank-transactions.transfer');
+    });
 
     Route::get('/bank-account/export/pdf', [CashFlowExportController::class, 'exportPdf'])
         ->middleware('can:view bank-accounts')
