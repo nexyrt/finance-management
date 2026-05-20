@@ -1,4 +1,4 @@
-import { Head, router } from '@inertiajs/react';
+import { Head, router, useForm } from '@inertiajs/react';
 import {
     CheckCircle,
     Clock,
@@ -20,7 +20,17 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Combobox } from '@/components/ui/combobox';
 import { DatePicker } from '@/components/ui/date-picker';
 import { Input } from '@/components/ui/input';
+import {
+    Sheet,
+    SheetBody,
+    SheetContent,
+    SheetDescription,
+    SheetFooter,
+    SheetHeader,
+    SheetTitle,
+} from '@/components/ui/sheet';
 import { Tabs, TabsPanel } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { CurrencyInput } from '@/components/shared/currency-input';
 import { EmptyState } from '@/components/shared/empty-state';
@@ -29,13 +39,6 @@ import { Pagination } from '@/components/shared/pagination';
 import { AppLayout } from '@/layouts/app-layout';
 import { cn, formatCurrency, formatDate } from '@/lib/utils';
 import * as reimbursementRoutes from '@/routes/reimbursements';
-import type {
-    FilterOption,
-    PaginationMeta,
-    ReimbursementFilters,
-    ReimbursementRow,
-    ReimbursementStats,
-} from './types';
 import {
     Dialog,
     DialogContent,
@@ -44,7 +47,13 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import type {
+    FilterOption,
+    PaginationMeta,
+    ReimbursementFilters,
+    ReimbursementRow,
+    ReimbursementStats,
+} from './types';
 
 interface Props {
     rows: ReimbursementRow[];
@@ -72,7 +81,7 @@ const STATUS_OPTIONS: FilterOption[] = [
     { label: 'Paid', value: 'paid' },
 ];
 
-const CATEGORY_OPTIONS: FilterOption[] = [
+const CATEGORY_OPTIONS = [
     { label: 'Transport', value: 'transport' },
     { label: 'Meals & Entertainment', value: 'meals' },
     { label: 'Office Supplies', value: 'office_supplies' },
@@ -97,6 +106,12 @@ export default function ReimbursementsIndex({
 
     // Detail dialog
     const [detailRow, setDetailRow] = React.useState<ReimbursementRow | null>(null);
+
+    // Create sheet
+    const [createOpen, setCreateOpen] = React.useState(false);
+
+    // Edit sheet
+    const [editRow, setEditRow] = React.useState<ReimbursementRow | null>(null);
 
     // Review dialog
     const [reviewRow, setReviewRow] = React.useState<ReimbursementRow | null>(null);
@@ -256,6 +271,11 @@ export default function ReimbursementsIndex({
         setReviewCategoryId(row.category_id);
     };
 
+    const openEditSheet = (row: ReimbursementRow) => {
+        setDetailRow(null);
+        setEditRow(row);
+    };
+
     const activeFilterCount =
         (filters.search ? 1 : 0) +
         (filters.status ? 1 : 0) +
@@ -278,7 +298,7 @@ export default function ReimbursementsIndex({
                     title="Reimbursement"
                     description="Kelola pengajuan reimbursement biaya operasional."
                     action={
-                        <Button variant="primary" size="md" onClick={() => router.visit(reimbursementRoutes.create.url())}>
+                        <Button variant="primary" size="md" onClick={() => setCreateOpen(true)}>
                             <Plus className="w-4 h-4" />
                             Buat Pengajuan
                         </Button>
@@ -368,7 +388,7 @@ export default function ReimbursementsIndex({
                             title="Belum ada reimbursement"
                             description="Buat pengajuan reimbursement baru untuk memulai."
                             action={
-                                <Button variant="primary" size="sm" onClick={() => router.visit(reimbursementRoutes.create.url())}>
+                                <Button variant="primary" size="sm" onClick={() => setCreateOpen(true)}>
                                     <Plus className="w-4 h-4" />
                                     Buat Pengajuan
                                 </Button>
@@ -479,7 +499,7 @@ export default function ReimbursementsIndex({
                                                         <Button
                                                             variant="outline"
                                                             size="icon"
-                                                            onClick={() => router.visit(reimbursementRoutes.edit.url({ reimbursement: row.id }))}
+                                                            onClick={() => openEditSheet(row)}
                                                         >
                                                             <Edit className="w-3.5 h-3.5" />
                                                         </Button>
@@ -511,6 +531,29 @@ export default function ReimbursementsIndex({
                 </div>
             </div>
 
+            {/* Create sheet */}
+            <Sheet open={createOpen} onOpenChange={setCreateOpen}>
+                <SheetContent size="md">
+                    <ReimbursementForm
+                        mode="create"
+                        onClose={() => setCreateOpen(false)}
+                    />
+                </SheetContent>
+            </Sheet>
+
+            {/* Edit sheet */}
+            <Sheet open={!!editRow} onOpenChange={(open) => { if (!open) setEditRow(null); }}>
+                <SheetContent size="md">
+                    {editRow && (
+                        <ReimbursementForm
+                            mode="edit"
+                            row={editRow}
+                            onClose={() => setEditRow(null)}
+                        />
+                    )}
+                </SheetContent>
+            </Sheet>
+
             {/* Detail dialog */}
             <Dialog open={!!detailRow} onOpenChange={(open) => { if (!open) setDetailRow(null); }}>
                 <DialogContent size="lg">
@@ -518,7 +561,7 @@ export default function ReimbursementsIndex({
                         <DialogTitle>{detailRow?.title}</DialogTitle>
                     </DialogHeader>
                     {detailRow && (
-                        <div className="space-y-4">
+                        <div className="space-y-4 p-6">
                             <div className="grid grid-cols-2 gap-4 text-sm">
                                 <Field label="Pemohon" value={detailRow.user_name ?? '—'} />
                                 <Field label="Tanggal Pengeluaran" value={formatDate(detailRow.expense_date)} />
@@ -578,7 +621,7 @@ export default function ReimbursementsIndex({
                                 </Button>
                             )}
                             {detailRow?.can_edit && (
-                                <Button variant="outline" size="sm" onClick={() => router.visit(reimbursementRoutes.edit.url({ reimbursement: detailRow.id }))}>
+                                <Button variant="outline" size="sm" onClick={() => openEditSheet(detailRow)}>
                                     <Edit className="w-3.5 h-3.5" />
                                     Edit
                                 </Button>
@@ -596,7 +639,7 @@ export default function ReimbursementsIndex({
                             {reviewAction === 'approve' ? 'Setujui Reimbursement' : 'Tolak Reimbursement'}
                         </DialogTitle>
                     </DialogHeader>
-                    <div className="space-y-4">
+                    <div className="p-6 space-y-4">
                         {reviewRow && (
                             <div className="rounded-xl border border-secondary-200 dark:border-dark-600 p-3 bg-secondary-50/50 dark:bg-dark-800/50">
                                 <p className="font-medium text-dark-900 dark:text-dark-50">{reviewRow.title}</p>
@@ -642,7 +685,7 @@ export default function ReimbursementsIndex({
                     <DialogHeader>
                         <DialogTitle>Proses Pembayaran</DialogTitle>
                     </DialogHeader>
-                    <div className="space-y-4">
+                    <div className="p-6 space-y-4">
                         {payRow && (
                             <div className="rounded-xl border border-secondary-200 dark:border-dark-600 p-3 bg-secondary-50/50 dark:bg-dark-800/50">
                                 <p className="font-medium text-dark-900 dark:text-dark-50">{payRow.title}</p>
@@ -715,6 +758,175 @@ export default function ReimbursementsIndex({
                 onConfirm={() => deleteRow && handleDelete(deleteRow)}
             />
         </AppLayout>
+    );
+}
+
+/* ─── Reimbursement Form (Sheet) ──────────────────────────── */
+
+interface ReimbursementFormProps {
+    mode: 'create' | 'edit';
+    row?: ReimbursementRow;
+    onClose: () => void;
+}
+
+function ReimbursementForm({ mode, row, onClose }: ReimbursementFormProps) {
+    const isEdit = mode === 'edit';
+
+    const { data, setData, post, processing, errors, reset } = useForm<{
+        title: string;
+        description: string;
+        amount: number;
+        expense_date: string;
+        category: string;
+        attachment: File | null;
+        remove_attachment: boolean;
+        action: 'draft' | 'submit';
+        _method: string;
+    }>({
+        title: row?.title ?? '',
+        description: row?.description ?? '',
+        amount: row?.amount ?? 0,
+        expense_date: row?.expense_date ?? new Date().toISOString().slice(0, 10),
+        category: row?.category_input ?? '',
+        attachment: null,
+        remove_attachment: false,
+        action: 'draft',
+        _method: isEdit ? 'PUT' : 'POST',
+    });
+
+    const hasExistingAttachment = isEdit && !!row?.attachment_name && !data.remove_attachment;
+
+    const submit = (action: 'draft' | 'submit') => {
+        setData('action', action);
+        if (isEdit && row) {
+            post(reimbursementRoutes.update.url({ reimbursement: row.id }), {
+                forceFormData: true,
+                preserveScroll: true,
+                onSuccess: () => {
+                    toast.success('Reimbursement berhasil diperbarui');
+                    onClose();
+                },
+                onError: () => toast.error('Gagal menyimpan'),
+            });
+        } else {
+            post(reimbursementRoutes.store.url(), {
+                forceFormData: true,
+                preserveScroll: true,
+                onSuccess: () => {
+                    toast.success('Reimbursement berhasil dibuat');
+                    reset();
+                    onClose();
+                },
+                onError: () => toast.error('Gagal menyimpan'),
+            });
+        }
+    };
+
+    return (
+        <>
+            <SheetHeader>
+                <div className="flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-xl bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center shrink-0">
+                        <FileText className="w-4 h-4 text-primary-600 dark:text-primary-400" />
+                    </div>
+                    <div>
+                        <SheetTitle>
+                            {isEdit ? 'Edit Reimbursement' : 'Buat Reimbursement'}
+                        </SheetTitle>
+                        <SheetDescription>
+                            {isEdit
+                                ? `Memperbarui: ${row?.title}`
+                                : 'Ajukan penggantian biaya operasional.'}
+                        </SheetDescription>
+                    </div>
+                </div>
+            </SheetHeader>
+
+            <SheetBody className="space-y-5">
+                <Input
+                    label="Judul *"
+                    value={data.title}
+                    onChange={(e) => setData('title', e.target.value)}
+                    error={errors.title}
+                    placeholder="cth: Transportasi meeting klien..."
+                />
+                <Textarea
+                    label="Deskripsi"
+                    value={data.description}
+                    onChange={(e) => setData('description', e.target.value)}
+                    error={errors.description}
+                    placeholder="Detail biaya yang dikeluarkan..."
+                    rows={3}
+                />
+                    <CurrencyInput
+                        label="Jumlah *"
+                        value={data.amount}
+                        onChange={(v) => setData('amount', v)}
+                        error={errors.amount}
+                    />
+                    <DatePicker
+                        label="Tanggal Pengeluaran *"
+                        value={data.expense_date ? new Date(data.expense_date) : null}
+                        onChange={(d) => setData('expense_date', d ? d.toISOString().slice(0, 10) : '')}
+                        error={errors.expense_date}
+                    />
+                <Combobox
+                    label="Kategori *"
+                    options={CATEGORY_OPTIONS}
+                    value={data.category || null}
+                    onChange={(v) => setData('category', v ? String(v) : '')}
+                    error={errors.category}
+                    placeholder="Pilih kategori biaya"
+                />
+
+                {/* Attachment */}
+                <div>
+                    <label className="block text-sm font-medium text-dark-700 dark:text-dark-300 mb-1.5">
+                        Lampiran{' '}
+                        <span className="text-dark-400 dark:text-dark-500 font-normal">
+                            ({isEdit ? 'maks 5MB' : 'opsional, maks 5MB'})
+                        </span>
+                    </label>
+                    {hasExistingAttachment ? (
+                        <div className="flex items-center gap-2 p-2.5 rounded-lg border border-secondary-200 dark:border-dark-600 bg-secondary-50 dark:bg-dark-800">
+                            <Paperclip className="w-4 h-4 text-dark-400 shrink-0" />
+                            <span className="text-sm text-dark-700 dark:text-dark-300 truncate flex-1">
+                                {row?.attachment_name}
+                            </span>
+                            <button
+                                type="button"
+                                onClick={() => setData('remove_attachment', true)}
+                                className="text-dark-400 hover:text-red-500 transition-colors"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
+                        </div>
+                    ) : (
+                        <input
+                            type="file"
+                            accept="image/jpeg,image/png,application/pdf"
+                            onChange={(e) => setData('attachment', e.target.files?.[0] ?? null)}
+                            className="block w-full text-sm text-dark-700 dark:text-dark-300 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-primary-50 file:text-primary-700 dark:file:bg-primary-900/20 dark:file:text-primary-300 hover:file:bg-primary-100 dark:hover:file:bg-primary-900/30 cursor-pointer"
+                        />
+                    )}
+                    {errors.attachment && <p className="text-xs text-red-500 mt-1">{errors.attachment}</p>}
+                </div>
+            </SheetBody>
+
+            <SheetFooter>
+                <Button variant="zinc" onClick={onClose} disabled={processing}>
+                    Batal
+                </Button>
+                <div className="flex gap-2">
+                    <Button variant="outline" onClick={() => submit('draft')} disabled={processing}>
+                        Simpan Draft
+                    </Button>
+                    <Button variant="primary" onClick={() => submit('submit')} disabled={processing}>
+                        Ajukan
+                    </Button>
+                </div>
+            </SheetFooter>
+        </>
     );
 }
 

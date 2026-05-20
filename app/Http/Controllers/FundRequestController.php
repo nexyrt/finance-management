@@ -113,6 +113,42 @@ class FundRequestController extends Controller
             ? User::orderBy('name')->get()->map(fn ($u) => ['value' => $u->id, 'label' => $u->name])
             : collect();
 
+        $categories = TransactionCategory::with('parent')
+            ->where('type', 'expense')
+            ->orderBy('label')
+            ->get()
+            ->map(fn ($c) => ['value' => $c->id, 'label' => $c->full_path]);
+
+        $nextNumber = FundRequest::generateRequestNumber();
+
+        // Load edit data when ?edit={id} is requested (used by the edit Sheet)
+        $editFundRequest = null;
+        if ($editId = $request->input('edit')) {
+            $fr = FundRequest::with('items')->find($editId);
+            if ($fr && ($fr->user_id === auth()->id() || auth()->user()->hasRole('admin')) && $fr->canEdit()) {
+                $editFundRequest = [
+                    'id' => $fr->id,
+                    'request_number' => $fr->request_number,
+                    'title' => $fr->title,
+                    'purpose' => $fr->purpose,
+                    'priority' => $fr->priority,
+                    'needed_by_date' => $fr->needed_by_date?->format('Y-m-d'),
+                    'attachment_url' => $fr->attachment_path ? Storage::url($fr->attachment_path) : null,
+                    'attachment_name' => $fr->attachment_name,
+                    'status' => $fr->status,
+                    'items' => $fr->items->map(fn ($i) => [
+                        'id' => $i->id,
+                        'description' => $i->description,
+                        'category_id' => $i->category_id,
+                        'quantity' => $i->quantity,
+                        'unit_price' => $i->unit_price,
+                        'amount' => $i->amount,
+                        'notes' => $i->notes ?? '',
+                    ]),
+                ];
+            }
+        }
+
         return Inertia::render('fund-requests/index', [
             'rows' => $rows,
             'pagination' => [
@@ -142,6 +178,9 @@ class FundRequestController extends Controller
             ],
             'bankAccountOptions' => $bankAccountOptions,
             'userOptions' => $userOptions,
+            'categories' => $categories,
+            'nextNumber' => $nextNumber,
+            'editFundRequest' => $editFundRequest,
             'canApprove' => $canApprove,
             'canDisburse' => $canDisburse,
         ]);

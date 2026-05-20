@@ -79,7 +79,6 @@ export default function ReimbursementsCreate() {
                             placeholder="Detail biaya yang dikeluarkan..."
                             rows={3}
                         />
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <CurrencyInput
                                 label="Jumlah *"
                                 value={data.amount}
@@ -92,7 +91,6 @@ export default function ReimbursementsCreate() {
                                 onChange={(d) => setData('expense_date', d ? d.toISOString().slice(0, 10) : '')}
                                 error={errors.expense_date}
                             />
-                        </div>
                         <Combobox
                             label="Kategori *"
                             options={CATEGORY_OPTIONS}

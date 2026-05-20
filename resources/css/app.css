@@ -162,6 +162,26 @@ h1, h2, h3, h4, h5, h6,
     animation: dialog-content-hide 150ms ease-in forwards;
 }
 
+/* =========================================================================
+   Sheet / Drawer Animations (slide from right)
+   ========================================================================= */
+
+@keyframes sheet-slide-in {
+    from { transform: translateX(100%); }
+    to   { transform: translateX(0); }
+}
+@keyframes sheet-slide-out {
+    from { transform: translateX(0); }
+    to   { transform: translateX(100%); }
+}
+
+@utility animate-sheet-slide-in {
+    animation: sheet-slide-in 280ms cubic-bezier(0.32, 0.72, 0, 1) forwards;
+}
+@utility animate-sheet-slide-out {
+    animation: sheet-slide-out 220ms cubic-bezier(0.32, 0.72, 0, 1) forwards;
+}
+
 :where(.dark, .dark *) {
     scrollbar-color: var(--color-dark-600) transparent;
 }
