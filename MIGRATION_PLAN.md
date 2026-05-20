@@ -3,7 +3,7 @@
 > **Dokumen ini adalah panduan kerja untuk Claude Code.**
 > Dibuat: 2026-05-11 | Branch aktif: `feature/inertia-react-migration`
 > Update dokumen ini setiap kali fase selesai.
-> **Terakhir diupdate: 2026-05-14 — Fase 5 & 6 disempurnakan: invoice create/edit layout redesign (4/5+1/5 sticky), template create/edit jadi dedicated pages.**
+> **Terakhir diupdate: 2026-05-20 — Fase 9 selesai: Loans + Receivables.**
 
 ---
 
@@ -55,8 +55,8 @@ git show main:path/to/file.php
 | 5 | Invoice & Payment | ✅ Selesai (2026-05-13) |
 | 6 | Recurring Invoices | ✅ Selesai (2026-05-13) |
 | 7 | Banking (Accounts + Cash Flow + Transactions) | ✅ Selesai (2026-05-20) |
-| 8 | Operations (Reimbursements + Fund Requests) | ⬜ Belum Dimulai |
-| 9 | Finance (Loans + Receivables) | ⬜ Belum Dimulai |
+| 8 | Operations (Reimbursements + Fund Requests) | ✅ Selesai (2026-05-20) |
+| 9 | Finance (Loans + Receivables) | ✅ Selesai (2026-05-20) |
 | 10 | Admin (Users + Permissions + Settings) | ⬜ Belum Dimulai |
 | 11 | Utility Components & Dashboard | ⬜ Belum Dimulai |
 | 12 | Backend Refactoring (Controllers + Form Requests) | ⬜ Belum Dimulai |
@@ -455,40 +455,41 @@ Route::get('/templates/{template}/edit', [RecurringInvoiceController::class, 'ed
 
 ---
 
-## Fase 8 — Operations
+## Fase 8 — Operations ✅ SELESAI (2026-05-20)
 
-### Reimbursements
+### Reimbursements ✅
 **Route:** `/reimbursements`
-**Livewire source:** `app/Livewire/Reimbursements/`
+**Controller:** `app/Http/Controllers/ReimbursementController.php`
 
 | Component | Status |
 |-----------|--------|
-| Index (tabs: AllRequests / MyRequests) | ⬜ |
-| Create | ⬜ |
-| Update | ⬜ |
-| Delete | ⬜ |
-| Show | ⬜ |
-| Review (approve/reject) | ⬜ |
-| Payment | ⬜ |
+| Index (tabs: Semua / Saya, stats, filter, table) | ✅ |
+| Create (Sheet drawer kanan) | ✅ |
+| Edit (Sheet drawer kanan, pre-fill dari row) | ✅ |
+| Delete (ConfirmDialog) | ✅ |
+| Detail (Dialog) | ✅ |
+| Review (approve/reject + category) | ✅ |
+| Pay (BankTransaction debit) | ✅ |
 
 **Status flow:** `draft → pending → approved → paid` (atau `rejected`)
 
-### Fund Requests
+### Fund Requests ✅
 **Route:** `/fund-requests`
-**Livewire source:** `app/Livewire/FundRequests/`
+**Controller:** `app/Http/Controllers/FundRequestController.php`
 
 | Component | Status |
 |-----------|--------|
-| Index (tabs: AllRequests / MyRequests) | ⬜ |
-| Create | ⬜ |
-| Edit | ⬜ |
-| Delete | ⬜ |
-| Show | ⬜ |
-| Review | ⬜ |
-| Disburse | ⬜ |
+| Index (tabs: Semua / Saya, stats, filter, table) | ✅ |
+| Create (Sheet drawer kanan, items repeater) | ✅ |
+| Edit (Sheet drawer kanan, Inertia partial reload ?edit={id}) | ✅ |
+| Delete (ConfirmDialog) | ✅ |
+| Detail (Dialog) | ✅ |
+| Review (approve/reject) | ✅ |
+| Disburse (BankTransaction per item) | ✅ |
 
 **Format nomor:** `001/KSN/I/2026`
 **Status flow:** `draft → pending → approved → disbursed` (atau `rejected`)
+**Sheet pattern:** Index controller pass `categories`, `nextNumber`, `editFundRequest` (lazy via `?edit={id}`)
 
 ---
 

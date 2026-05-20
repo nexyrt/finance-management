@@ -8,15 +8,15 @@ use App\Http\Controllers\ClientController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FundRequestController;
 use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\LoanController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\ReceivableController;
 use App\Http\Controllers\RecurringInvoiceController;
 use App\Http\Controllers\ReimbursementController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\TransactionCategoryController;
 use App\Livewire\Feedbacks\Index as FeedbacksIndex;
-use App\Livewire\Loans\Index as LoansIndex;
 use App\Livewire\Permissions\Index as PermissionsIndex;
-use App\Livewire\Receivables\Index as ReceivablesIndex;
 use App\Livewire\Settings\CompanyProfileSettings;
 use App\Livewire\Settings\Password;
 use App\Livewire\Settings\Profile;
@@ -374,13 +374,23 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // ------------------------------------------------------------------------
     // DEBT & RECEIVABLES
     // ------------------------------------------------------------------------
-    Route::get('/loans', LoansIndex::class)
-        ->middleware('can:view loans')
-        ->name('loans.index');
+    Route::middleware('can:view loans')->group(function () {
+        Route::get('/loans', [LoanController::class, 'index'])->name('loans.index');
+        Route::post('/loans', [LoanController::class, 'store'])->middleware('can:create loans')->name('loans.store');
+        Route::put('/loans/{loan}', [LoanController::class, 'update'])->middleware('can:edit loans')->name('loans.update');
+        Route::delete('/loans/{loan}', [LoanController::class, 'destroy'])->middleware('can:delete loans')->name('loans.destroy');
+        Route::post('/loans/{loan}/pay', [LoanController::class, 'pay'])->middleware('can:pay loans')->name('loans.pay');
+    });
 
-    Route::get('/receivables', ReceivablesIndex::class)
-        ->middleware('can:view receivables')
-        ->name('receivables.index');
+    Route::middleware('can:view receivables')->group(function () {
+        Route::get('/receivables', [ReceivableController::class, 'index'])->name('receivables.index');
+        Route::post('/receivables', [ReceivableController::class, 'store'])->middleware('can:create receivables')->name('receivables.store');
+        Route::put('/receivables/{receivable}', [ReceivableController::class, 'update'])->middleware('can:edit receivables')->name('receivables.update');
+        Route::delete('/receivables/{receivable}', [ReceivableController::class, 'destroy'])->middleware('can:delete receivables')->name('receivables.destroy');
+        Route::post('/receivables/{receivable}/submit', [ReceivableController::class, 'submit'])->name('receivables.submit');
+        Route::post('/receivables/{receivable}/approve', [ReceivableController::class, 'approve'])->middleware('can:approve receivables')->name('receivables.approve');
+        Route::post('/receivables/{receivable}/pay', [ReceivableController::class, 'pay'])->middleware('can:pay receivables')->name('receivables.pay');
+    });
 
     // ------------------------------------------------------------------------
     // ADMINISTRATION - PERMISSIONS

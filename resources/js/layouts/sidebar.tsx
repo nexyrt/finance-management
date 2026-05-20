@@ -168,7 +168,6 @@ const NAV: NavSection[] = [
                 icon: <CreditCard className="w-4 h-4 shrink-0" />,
                 permission: 'view loans',
                 matchPrefix: '/loans',
-                comingSoon: true,
             },
             {
                 label: 'Piutang',
@@ -176,7 +175,6 @@ const NAV: NavSection[] = [
                 icon: <Wallet className="w-4 h-4 shrink-0" />,
                 permission: 'view receivables',
                 matchPrefix: '/receivables',
-                comingSoon: true,
             },
         ],
     },
