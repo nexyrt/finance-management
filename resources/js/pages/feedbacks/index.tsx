@@ -12,7 +12,6 @@ import {
     Loader2,
     MessageCircle,
     MessageSquare,
-    Paperclip,
     Pencil,
     Plus,
     Reply,
@@ -45,6 +44,7 @@ import { Input } from '@/components/ui/input';
 import { SegmentedControl, type SegmentedOption } from '@/components/ui/segmented-control';
 import { Tabs } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
+import { AttachmentPreviewButton } from '@/components/shared/file-preview-dialog';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { EmptyState } from '@/components/shared/empty-state';
 import { FileUpload } from '@/components/shared/file-upload';
@@ -542,15 +542,13 @@ function ShowFeedbackDialog({
                             <h4 className="text-xs font-semibold uppercase tracking-wider text-dark-500 dark:text-dark-400 mb-2">
                                 Lampiran
                             </h4>
-                            <a
-                                href={feedback.attachment_url}
-                                target="_blank"
-                                rel="noopener noreferrer"
+                            <AttachmentPreviewButton
+                                url={feedback.attachment_url}
+                                name={feedback.attachment_name}
+                                label={feedback.attachment_name ?? 'Lampiran'}
                                 className="inline-flex items-center gap-2 text-sm text-primary-600 dark:text-primary-400 hover:underline"
-                            >
-                                <Paperclip className="w-4 h-4" />
-                                {feedback.attachment_name ?? 'Lampiran'}
-                            </a>
+                                iconSize="w-4 h-4"
+                            />
                         </div>
                     )}
 

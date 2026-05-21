@@ -19,6 +19,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Combobox } from '@/components/ui/combobox';
 import { DatePicker } from '@/components/ui/date-picker';
 import { Input } from '@/components/ui/input';
+import { AttachmentPreviewButton } from '@/components/shared/file-preview-dialog';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { EmptyState } from '@/components/shared/empty-state';
 import { PageHeader } from '@/components/shared/page-header';
@@ -342,15 +343,10 @@ export default function CashFlowIncome({ rows, pagination, stats, filters, clien
                                                     </>
                                                 )}
                                                 {row.attachment_url && (
-                                                    <a
-                                                        href={row.attachment_url}
-                                                        target="_blank"
-                                                        rel="noreferrer"
-                                                        className="inline-flex items-center gap-1 mt-1 text-xs text-primary-600 dark:text-primary-400 hover:underline"
-                                                    >
-                                                        <Paperclip className="w-3 h-3" />
-                                                        Lampiran
-                                                    </a>
+                                                    <AttachmentPreviewButton
+                                                        url={row.attachment_url}
+                                                        name={row.attachment_name}
+                                                    />
                                                 )}
                                             </td>
                                             <td className="px-3 py-3 align-middle hidden lg:table-cell">

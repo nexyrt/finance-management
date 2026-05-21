@@ -2,7 +2,7 @@ import { Head, router, useForm } from '@inertiajs/react';
 import {
     CheckCircle,
     Clock,
-    Download,
+
     Edit,
     FileText,
     Filter,
@@ -31,6 +31,7 @@ import {
 } from '@/components/ui/sheet';
 import { Tabs, TabsPanel } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
+import { AttachmentPreviewButton } from '@/components/shared/file-preview-dialog';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { CurrencyInput } from '@/components/shared/currency-input';
 import { EmptyState } from '@/components/shared/empty-state';
@@ -593,15 +594,13 @@ export default function ReimbursementsIndex({
                                 </div>
                             )}
                             {detailRow.attachment_url && (
-                                <a
-                                    href={detailRow.attachment_url}
-                                    target="_blank"
-                                    rel="noreferrer"
+                                <AttachmentPreviewButton
+                                    url={detailRow.attachment_url}
+                                    name={detailRow.attachment_name}
+                                    label={detailRow.attachment_name ?? 'Lihat Lampiran'}
                                     className="inline-flex items-center gap-2 text-sm text-primary-600 dark:text-primary-400 hover:underline"
-                                >
-                                    <Download className="w-4 h-4" />
-                                    {detailRow.attachment_name ?? 'Lihat Lampiran'}
-                                </a>
+                                    iconSize="w-4 h-4"
+                                />
                             )}
                         </div>
                     )}

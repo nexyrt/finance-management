@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Combobox } from '@/components/ui/combobox';
 import { DatePicker } from '@/components/ui/date-picker';
 import { Input } from '@/components/ui/input';
+import { AttachmentPreviewButton } from '@/components/shared/file-preview-dialog';
 import { EmptyState } from '@/components/shared/empty-state';
 import { Pagination } from '@/components/shared/pagination';
 import { cn, formatCurrency, formatDate } from '@/lib/utils';
@@ -269,15 +270,10 @@ export function PaymentsTab({ accountId, refreshKey }: Props) {
                                                 </div>
                                             )}
                                             {row.attachment_url && (
-                                                <a
-                                                    href={row.attachment_url}
-                                                    target="_blank"
-                                                    rel="noreferrer"
-                                                    className="inline-flex items-center gap-1 mt-1 text-xs text-primary-600 dark:text-primary-400 hover:underline"
-                                                >
-                                                    <Paperclip className="w-3 h-3" />
-                                                    Lampiran
-                                                </a>
+                                                <AttachmentPreviewButton
+                                                    url={row.attachment_url}
+                                                    name={row.attachment_name}
+                                                />
                                             )}
                                         </td>
                                         <td className="px-3 py-3 align-middle hidden md:table-cell">

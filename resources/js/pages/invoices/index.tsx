@@ -7,7 +7,6 @@ import {
     Download,
     Eye,
     FileText,
-    Paperclip,
     MoreHorizontal,
     Pencil,
     Plus,
@@ -58,6 +57,7 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { AttachmentPreviewButton } from '@/components/shared/file-preview-dialog';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { CurrencyInput } from '@/components/shared/currency-input';
 import { EmptyState } from '@/components/shared/empty-state';
@@ -708,16 +708,13 @@ function InvoiceDrawer({
                                                         {p.reference_number && (
                                                             <p className="text-xs text-dark-400 dark:text-dark-500">Ref: {p.reference_number}</p>
                                                         )}
-                                                        {p.attachment_name && (
-                                                            <a
-                                                                href={p.attachment_url ?? '#'}
-                                                                target="_blank"
-                                                                rel="noreferrer"
+                                                        {p.attachment_name && p.attachment_url && (
+                                                            <AttachmentPreviewButton
+                                                                url={p.attachment_url}
+                                                                name={p.attachment_name}
+                                                                label={p.attachment_name}
                                                                 className="inline-flex items-center gap-1 text-xs text-primary-600 dark:text-primary-400 hover:underline mt-0.5"
-                                                            >
-                                                                <Paperclip className="w-3 h-3" />
-                                                                {p.attachment_name}
-                                                            </a>
+                                                            />
                                                         )}
                                                     </div>
                                                 </div>
