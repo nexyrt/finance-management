@@ -33,16 +33,13 @@ const EXT_TO_MIME: Record<string, string> = {
 
 const IMAGE_MIMES = new Set(['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/bmp']);
 
-function isImageUrl(url: string): boolean {
-    const path = url.split('?')[0];
-    const ext = path.split('.').pop()?.toLowerCase() ?? '';
+function isImageFilename(name: string): boolean {
+    const ext = name.split('.').pop()?.toLowerCase() ?? '';
     return ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'].includes(ext);
 }
 
-function isPdfUrl(url: string): boolean {
-    const path = url.split('?')[0];
-    const ext = path.split('.').pop()?.toLowerCase() ?? '';
-    return ext === 'pdf';
+function isPdfFilename(name: string): boolean {
+    return (name.split('.').pop()?.toLowerCase() ?? '') === 'pdf';
 }
 
 /* ── Image viewer with cursor-following zoom ── */
@@ -168,8 +165,8 @@ interface FilePreviewDialogProps {
 }
 
 function FilePreviewDialog({ open, onOpenChange, fileName, fileUrl }: FilePreviewDialogProps) {
-    const isImage = isImageUrl(fileUrl);
-    const isPdf = isPdfUrl(fileUrl);
+    const isImage = isImageFilename(fileName);
+    const isPdf = isPdfFilename(fileName);
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -231,7 +228,21 @@ export function FileUpload({
     const [sizeError, setSizeError] = React.useState<string | null>(null);
     const [pasteHint, setPasteHint] = React.useState(false);
     const [previewOpen, setPreviewOpen] = React.useState(false);
+    const [previewData, setPreviewData] = React.useState<{ url: string; name: string; isObjectUrl: boolean } | null>(null);
     const containerRef = React.useRef<HTMLDivElement>(null);
+
+    const openPreview = React.useCallback((url: string, name: string, isObjectUrl = false) => {
+        setPreviewData({ url, name, isObjectUrl });
+        setPreviewOpen(true);
+    }, []);
+
+    const closePreview = React.useCallback(() => {
+        setPreviewOpen(false);
+        setPreviewData((prev) => {
+            if (prev?.isObjectUrl) URL.revokeObjectURL(prev.url);
+            return null;
+        });
+    }, []);
 
     const acceptedMimes = React.useMemo(
         () => new Set(accept.map((e) => EXT_TO_MIME[e]).filter(Boolean) as string[]),
@@ -329,7 +340,7 @@ export function FileUpload({
                     {existingFileUrl ? (
                         <button
                             type="button"
-                            onClick={() => setPreviewOpen(true)}
+                            onClick={() => openPreview(existingFileUrl, existingFileName!)}
                             className="text-sm truncate text-primary-600 dark:text-primary-400 hover:underline flex-1 text-left"
                         >
                             {existingFileName}
@@ -354,9 +365,13 @@ export function FileUpload({
                 /* Newly-selected file chip */
                 <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl border border-primary-200 dark:border-primary-800 bg-primary-50 dark:bg-primary-900/20">
                     <Paperclip className="w-4 h-4 shrink-0 text-primary-600 dark:text-primary-400" />
-                    <span className="text-sm truncate text-primary-700 dark:text-primary-300 flex-1">
+                    <button
+                        type="button"
+                        onClick={() => openPreview(URL.createObjectURL(value), value.name, true)}
+                        className="text-sm truncate text-primary-700 dark:text-primary-300 hover:text-primary-600 dark:hover:text-primary-400 hover:underline flex-1 text-left"
+                    >
                         {value.name}
-                    </span>
+                    </button>
                     <button
                         type="button"
                         onClick={() => { setSizeError(null); onChange?.(null); }}
@@ -422,13 +437,13 @@ export function FileUpload({
                 <p className="mt-1 text-xs text-dark-500 dark:text-dark-400">{hint}</p>
             )}
 
-            {/* File preview dialog — rendered outside the chip so it's not inside any parent form */}
-            {existingFileUrl && existingFileName && (
+            {/* File preview dialog — covers both new and existing files */}
+            {previewData && (
                 <FilePreviewDialog
                     open={previewOpen}
-                    onOpenChange={setPreviewOpen}
-                    fileName={existingFileName}
-                    fileUrl={existingFileUrl}
+                    onOpenChange={(o) => { if (!o) closePreview(); }}
+                    fileName={previewData.name}
+                    fileUrl={previewData.url}
                 />
             )}
         </div>
