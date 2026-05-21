@@ -1,6 +1,5 @@
-import { Head, router, useForm, usePage } from '@inertiajs/react';
+import { Head, router, useForm } from '@inertiajs/react';
 import {
-    AlertCircle,
     ArrowUpDown,
     Banknote,
     CheckCircle2,
@@ -1082,8 +1081,6 @@ const TABLE_COLS: { key: string; label: string; align?: 'right'; sortable?: fals
 ];
 
 function InvoicesPage({ invoices, stats, clients, rollbackableIds, filters }: Props) {
-    const { flash } = usePage<Props>().props;
-
     const [drawerOpen, setDrawerOpen] = React.useState(false);
     const [selectedId, setSelectedId] = React.useState<number | null>(null);
 
@@ -1200,21 +1197,6 @@ function InvoicesPage({ invoices, stats, clients, rollbackableIds, filters }: Pr
             <Head title="Invoice" />
 
             <div className="space-y-6">
-                {/* Flash */}
-                {(flash?.success || flash?.error) && (
-                    <div className={cn(
-                        'flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium',
-                        flash.success
-                            ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-800'
-                            : 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800',
-                    )}>
-                        {flash.success
-                            ? <CheckCircle2 className="w-4 h-4 shrink-0" />
-                            : <AlertCircle className="w-4 h-4 shrink-0" />}
-                        {flash.success ?? flash.error}
-                    </div>
-                )}
-
                 {/* Header */}
                 <PageHeader
                     title="Invoice"
