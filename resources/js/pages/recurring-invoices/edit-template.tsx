@@ -1,4 +1,4 @@
-import { Head, router, usePage } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import { ArrowLeft } from 'lucide-react';
 import * as React from 'react';
 import { TemplateForm } from './create-template';
@@ -61,17 +61,17 @@ function EditTemplatePage() {
             <Head title={`Edit Template — ${template.template_name}`} />
             <div className="space-y-6">
                 <div className="flex items-center gap-3">
-                    <button
-                        onClick={() => router.get('/recurring-invoices')}
+                    <Link
+                        href="/recurring-invoices"
                         className="h-9 w-9 rounded-xl flex items-center justify-center border border-secondary-200 dark:border-dark-600 hover:bg-zinc-100 dark:hover:bg-dark-600 transition-colors"
                     >
                         <ArrowLeft className="w-4 h-4 text-dark-600 dark:text-dark-400" />
-                    </button>
+                    </Link>
                     <div>
-                        <h1 className="text-4xl font-bold bg-linear-to-r from-gray-900 via-blue-800 to-indigo-800 dark:from-white dark:via-blue-200 dark:to-indigo-200 bg-clip-text text-transparent">
+                        <h1 className="text-2xl sm:text-4xl font-bold bg-linear-to-r from-gray-900 via-blue-800 to-indigo-800 dark:from-white dark:via-blue-200 dark:to-indigo-200 bg-clip-text text-transparent">
                             Edit Template Recurring
                         </h1>
-                        <p className="text-gray-600 dark:text-zinc-400 text-lg">
+                        <p className="text-gray-600 dark:text-zinc-400 text-sm sm:text-lg">
                             {template.template_name}
                         </p>
                     </div>

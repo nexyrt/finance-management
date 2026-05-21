@@ -1,5 +1,5 @@
-import { router, usePage } from '@inertiajs/react';
-import { Menu, Moon, Sun } from 'lucide-react';
+import { Link, router, usePage } from '@inertiajs/react';
+import { Bell, Menu, Moon, Sun } from 'lucide-react';
 import * as React from 'react';
 import { NotificationBell } from '@/components/notifications/notification-bell';
 import { NotificationDrawer } from '@/components/notifications/notification-drawer';
@@ -138,7 +138,7 @@ export function Header({ onMenuClick, darkMode, onToggleDark }: HeaderProps) {
 
             {/* Breadcrumb */}
             <nav className="flex items-center gap-1 text-sm flex-1 overflow-x-auto scrollbar-none">
-                <a
+                <Link
                     href="/dashboard"
                     className="shrink-0 text-gray-400 dark:text-zinc-500 hover:text-gray-600 dark:hover:text-zinc-300 transition-colors"
                 >
@@ -155,7 +155,7 @@ export function Header({ onMenuClick, darkMode, onToggleDark }: HeaderProps) {
                             d="M3 3h7v7H3zm11 0h7v7h-7zm0 11h7v7h-7zM3 14h7v7H3z"
                         />
                     </svg>
-                </a>
+                </Link>
 
                 {breadcrumbs.map((crumb, i) => (
                     <React.Fragment key={i}>
@@ -177,12 +177,12 @@ export function Header({ onMenuClick, darkMode, onToggleDark }: HeaderProps) {
                                 {crumb.label}
                             </span>
                         ) : crumb.href ? (
-                            <a
+                            <Link
                                 href={crumb.href}
                                 className="text-gray-400 dark:text-zinc-500 hover:text-gray-600 dark:hover:text-zinc-300 transition-colors text-sm whitespace-nowrap shrink-0"
                             >
                                 {crumb.label}
-                            </a>
+                            </Link>
                         ) : (
                             <span className="text-gray-400 dark:text-zinc-600 text-sm whitespace-nowrap shrink-0">
                                 {crumb.label}

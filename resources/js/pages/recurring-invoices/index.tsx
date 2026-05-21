@@ -8,14 +8,15 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { Switch } from '@/components/ui/switch';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { CurrencyInput } from '@/components/shared/currency-input';
 import { EmptyState } from '@/components/shared/empty-state';
 import { PageHeader } from '@/components/shared/page-header';
 import { StatsCard } from '@/components/shared/stats-card';
 import { AppLayout } from '@/layouts/app-layout';
-import { formatCurrency } from '@/lib/utils';
+import { cn, formatCurrency, toastError, toastErrors } from '@/lib/utils';
+import { ColDef, CurrencyCell, ResizableTh, parseQty, useColumnResize } from '@/pages/invoices/create';
 import { router } from '@inertiajs/react';
 import {
     BarChart3,
@@ -27,6 +28,7 @@ import {
     Edit2,
     ExternalLink,
     FileText,
+    Info,
     Loader2,
     PenLine,
     Plus,
@@ -52,13 +54,14 @@ interface ItemForm {
     client_id: number | null;
     service_name: string;
     quantity: number;
+    unit: string;
     unit_price: number;
     cogs_amount: number;
     is_tax_deposit: boolean;
 }
 
 interface InvoiceTemplateData {
-    items: Array<ItemForm & { amount: number }>;
+    items: Array<ItemForm & { amount: number; unit: string }>;
     subtotal: number;
     discount_type: 'fixed' | 'percentage';
     discount_value: number;
@@ -177,7 +180,15 @@ const FREQUENCY_COLORS: Record<string, string> = {
 const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
 const MONTH_NAMES_FULL = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
 
-const EMPTY_ITEM: ItemForm = { client_id: null, service_name: '', quantity: 1, unit_price: 0, cogs_amount: 0, is_tax_deposit: false };
+const EMPTY_ITEM: ItemForm = { client_id: null, service_name: '', quantity: 1, unit: '', unit_price: 0, cogs_amount: 0, is_tax_deposit: false };
+
+const COMMON_UNITS = [
+    'jam', 'hari', 'minggu', 'bulan', 'tahun',
+    'project', 'paket', 'set', 'lot', 'kali',
+    'pcs', 'unit', 'lembar', 'kg', 'ton', 'm²', 'm³',
+];
+
+const itemCellCls = 'h-8 text-xs px-2 rounded-md border-transparent hover:border-secondary-300 dark:hover:border-dark-600 bg-transparent dark:bg-transparent focus:bg-white dark:focus:bg-dark-800';
 
 function getCsrfToken(): string {
     return document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? '';
@@ -195,8 +206,23 @@ interface ItemsRepeaterProps {
 }
 
 function ItemsRepeater({ items, onChange, clients, services, defaultClientId, errors }: ItemsRepeaterProps) {
-    const clientOptions = clients.map((c) => ({ value: String(c.id), label: c.display_name || c.name }));
-    const serviceOptions = services.map((s) => ({ value: s.name, label: s.name }));
+    const clientOptions = clients.map((c) => ({ value: c.id, label: c.display_name || c.name }));
+
+    const COL_DEFS: ColDef[] = [
+        { key: 'no',       defaultWidth: 32,  minWidth: 32  },
+        { key: 'client',   defaultWidth: 140, minWidth: 60  },
+        { key: 'service',  defaultWidth: 220, minWidth: 80  },
+        { key: 'qty',      defaultWidth: 64,  minWidth: 48  },
+        { key: 'unit',     defaultWidth: 80,  minWidth: 48  },
+        { key: 'price',    defaultWidth: 112, minWidth: 64  },
+        { key: 'hpp',      defaultWidth: 112, minWidth: 64  },
+        { key: 'pph',      defaultWidth: 40,  minWidth: 40  },
+        { key: 'subtotal', defaultWidth: 112, minWidth: 64  },
+        { key: 'del',      defaultWidth: 36,  minWidth: 36  },
+    ];
+    const { widths, onMouseDown, resetWidths } = useColumnResize(COL_DEFS, 'monthly-items-col-widths');
+
+    const itemTotals = items.map((item) => Math.round(item.unit_price * parseQty(String(item.quantity))));
 
     const addItem = () => {
         onChange([...items, { ...EMPTY_ITEM, client_id: defaultClientId ?? null }]);
@@ -210,103 +236,157 @@ function ItemsRepeater({ items, onChange, clients, services, defaultClientId, er
         onChange(items.map((item, i) => i !== idx ? item : { ...item, [field]: value }));
     };
 
+    const handleServiceChange = (idx: number, name: string) => {
+        const svc = services.find((s) => s.name === name);
+        onChange(items.map((it, i) => i !== idx ? it : { ...it, service_name: name, ...(svc ? { unit_price: svc.price } : {}) }));
+    };
+
     return (
         <div className="space-y-3">
-            {items.map((item, idx) => (
-                <div key={idx} className="rounded-xl border border-secondary-200 dark:border-dark-600 bg-secondary-50 dark:bg-dark-800 p-4 space-y-3">
-                    <div className="flex items-center justify-between">
-                        <span className="text-xs font-semibold text-dark-500 dark:text-dark-400 uppercase tracking-wide">Item #{idx + 1}</span>
-                        <div className="flex items-center gap-2">
-                            <div className="flex items-center gap-2">
-                                <Switch
-                                    id={`tax-${idx}`}
-                                    checked={item.is_tax_deposit}
-                                    onCheckedChange={(v) => updateItem(idx, 'is_tax_deposit', v)}
-                                />
-                                <Label htmlFor={`tax-${idx}`} className="text-xs text-dark-500 dark:text-dark-400">Titipan Pajak</Label>
-                            </div>
-                            {items.length > 1 && (
-                                <button
-                                    type="button"
-                                    onClick={() => removeItem(idx)}
-                                    className="p-1 rounded text-dark-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
-                                >
-                                    <Trash2 className="w-4 h-4" />
-                                </button>
-                            )}
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <Combobox
-                            label="Klien"
-                            options={clientOptions}
-                            value={item.client_id ? String(item.client_id) : ''}
-                            onChange={(v) => updateItem(idx, 'client_id', v ? parseInt(v) : null)}
-                            placeholder="Pilih klien"
-                            error={errors?.[`items.${idx}.client_id`]}
-                        />
-                        <div>
-                            <Input
-                                label="Nama Layanan"
-                                value={item.service_name}
-                                onChange={(e) => {
-                                    const name = e.target.value;
-                                    const svc = services.find((s) => s.name === name);
-                                    onChange(items.map((it, i) =>
-                                        i === idx ? { ...it, service_name: name, ...(svc ? { unit_price: svc.price } : {}) } : it
-                                    ));
-                                }}
-                                placeholder="Nama layanan"
-                                list={`services-${idx}`}
-                                error={errors?.[`items.${idx}.service_name`]}
-                            />
-                            <datalist id={`services-${idx}`}>
-                                {services.map((s) => <option key={s.id} value={s.name} />)}
-                            </datalist>
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                        <Input
-                            label="Qty"
-                            type="number"
-                            min="1"
-                            value={item.quantity}
-                            onChange={(e) => updateItem(idx, 'quantity', parseInt(e.target.value) || 1)}
-                            error={errors?.[`items.${idx}.quantity`]}
-                        />
-                        <CurrencyInput
-                            label="Harga Satuan"
-                            value={item.unit_price}
-                            onChange={(v) => updateItem(idx, 'unit_price', v)}
-                            error={errors?.[`items.${idx}.unit_price`]}
-                        />
-                        <CurrencyInput
-                            label="COGS"
-                            value={item.cogs_amount}
-                            onChange={(v) => updateItem(idx, 'cogs_amount', v)}
-                        />
-                        <div className="flex flex-col justify-end">
-                            <Label className="mb-1.5 block text-sm font-medium text-dark-900 dark:text-dark-300">
-                                Subtotal
-                            </Label>
-                            <div className="h-10 flex items-center px-3 rounded-xl border border-secondary-200 dark:border-dark-600 bg-white dark:bg-dark-700 text-sm font-medium text-dark-900 dark:text-dark-50">
-                                {formatCurrency(item.unit_price * item.quantity)}
-                            </div>
-                        </div>
-                    </div>
+            <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-dark-500 dark:text-dark-400 uppercase tracking-wide">{items.length} item</span>
+                <div className="flex items-center gap-2">
+                    <button
+                        type="button"
+                        onClick={resetWidths}
+                        className="hidden sm:block text-xs text-dark-400 dark:text-dark-500 hover:text-dark-600 dark:hover:text-dark-300 transition-colors"
+                        title="Reset lebar kolom ke default"
+                    >
+                        Reset kolom
+                    </button>
+                    <button
+                        type="button"
+                        onClick={addItem}
+                        className="flex items-center gap-1 text-xs text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium transition-colors"
+                    >
+                        <Plus className="w-3.5 h-3.5" /> Tambah Item
+                    </button>
                 </div>
-            ))}
+            </div>
 
-            <button
-                type="button"
-                onClick={addItem}
-                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border-2 border-dashed border-secondary-300 dark:border-dark-600 text-sm text-dark-500 dark:text-dark-400 hover:border-primary-400 dark:hover:border-primary-700 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
-            >
-                <Plus className="w-4 h-4" />
-                Tambah Item
-            </button>
+            <div className="overflow-x-auto rounded-xl border border-secondary-200 dark:border-dark-600">
+                <table className="table-fixed text-xs w-full" style={{ minWidth: Object.values(widths).reduce((a, b) => a + b, 0) }}>
+                    <thead>
+                        <tr className="bg-secondary-50 dark:bg-dark-800 border-b border-secondary-200 dark:border-dark-600">
+                            <ResizableTh width={widths.no} onResizeStart={(e) => onMouseDown('no', e)} className="px-2 py-2.5 text-xs font-semibold text-dark-400 dark:text-dark-500 text-left">#</ResizableTh>
+                            <ResizableTh width={widths.client} onResizeStart={(e) => onMouseDown('client', e)} className="px-2 py-2.5 text-xs font-semibold text-dark-600 dark:text-dark-400 text-left">Klien</ResizableTh>
+                            <ResizableTh width={widths.service} onResizeStart={(e) => onMouseDown('service', e)} className="px-2 py-2.5 text-xs font-semibold text-dark-600 dark:text-dark-400 text-left">Nama Layanan</ResizableTh>
+                            <ResizableTh width={widths.qty} onResizeStart={(e) => onMouseDown('qty', e)} className="px-2 py-2.5 text-xs font-semibold text-dark-600 dark:text-dark-400 text-left">
+                                <TooltipProvider delayDuration={0}>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <span className="inline-flex items-center gap-1 cursor-default">
+                                                Qty
+                                                <Info className="w-3 h-3 text-primary-400 dark:text-primary-500" />
+                                            </span>
+                                        </TooltipTrigger>
+                                        <TooltipContent side="top" className="max-w-48 text-center leading-relaxed">
+                                            Gunakan titik atau koma sebagai pemisah desimal.<br />
+                                            Contoh: <span className="font-mono">1.5</span>, <span className="font-mono">5.000,25</span>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
+                            </ResizableTh>
+                            <ResizableTh width={widths.unit} onResizeStart={(e) => onMouseDown('unit', e)} className="px-2 py-2.5 text-xs font-semibold text-dark-600 dark:text-dark-400 text-left">Satuan</ResizableTh>
+                            <ResizableTh width={widths.price} onResizeStart={(e) => onMouseDown('price', e)} className="px-2 py-2.5 text-xs font-semibold text-dark-600 dark:text-dark-400 text-left">Harga Sat.</ResizableTh>
+                            <ResizableTh width={widths.hpp} onResizeStart={(e) => onMouseDown('hpp', e)} className="px-2 py-2.5 text-xs font-semibold text-dark-600 dark:text-dark-400 text-left">HPP</ResizableTh>
+                            <ResizableTh width={widths.pph} onResizeStart={(e) => onMouseDown('pph', e)} className="px-2 py-2.5 text-xs font-semibold text-dark-600 dark:text-dark-400 text-left" title="Titipan Pajak (PPh)">PPh</ResizableTh>
+                            <ResizableTh width={widths.subtotal} onResizeStart={(e) => onMouseDown('subtotal', e)} className="px-2 py-2.5 text-xs font-semibold text-dark-600 dark:text-dark-400 text-left">Subtotal</ResizableTh>
+                            <th style={{ width: widths.del, minWidth: widths.del }} />
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-secondary-200 dark:divide-dark-600">
+                        {items.map((item, idx) => (
+                            <tr key={idx} className={cn('hover:bg-secondary-50/50 dark:hover:bg-dark-800/30 transition-colors group', item.is_tax_deposit && 'bg-amber-50/40 dark:bg-amber-900/5')}>
+                                <td className="px-1 py-1.5 text-center overflow-hidden">
+                                    <span className="font-mono text-dark-400 dark:text-dark-500">{idx + 1}</span>
+                                </td>
+                                <td className="px-1 py-1.5 overflow-hidden">
+                                    <Combobox
+                                        options={clientOptions}
+                                        value={item.client_id}
+                                        onChange={(v) => updateItem(idx, 'client_id', v ? Number(v) : null)}
+                                        placeholder="Pilih klien..."
+                                        clearable
+                                        popoverWidth="w-56"
+                                        className="w-full [&_button]:h-8 [&_button]:text-xs [&_button]:px-2 [&_button]:rounded-md [&_button]:ring-0 [&_button]:shadow-none"
+                                    />
+                                </td>
+                                <td className="px-1 py-1.5 overflow-hidden">
+                                    <Input
+                                        value={item.service_name}
+                                        onChange={(e) => handleServiceChange(idx, e.target.value)}
+                                        placeholder="Nama layanan..."
+                                        list={`services-monthly-${idx}`}
+                                        error={errors?.[`items.${idx}.service_name`]}
+                                        className={itemCellCls}
+                                    />
+                                    <datalist id={`services-monthly-${idx}`}>
+                                        {services.map((s) => <option key={s.id} value={s.name} />)}
+                                    </datalist>
+                                </td>
+                                <td className="px-1 py-1.5 overflow-hidden">
+                                    <Input
+                                        type="text"
+                                        inputMode="decimal"
+                                        value={item.quantity === 0 ? '' : String(item.quantity)}
+                                        onChange={(e) => updateItem(idx, 'quantity', e.target.value)}
+                                        placeholder="1"
+                                        className={itemCellCls}
+                                    />
+                                </td>
+                                <td className="px-1 py-1.5 overflow-hidden">
+                                    <Input
+                                        list={`unit-monthly-${idx}`}
+                                        value={item.unit}
+                                        onChange={(e) => updateItem(idx, 'unit', e.target.value)}
+                                        placeholder="satuan"
+                                        className={itemCellCls}
+                                    />
+                                    <datalist id={`unit-monthly-${idx}`}>
+                                        {COMMON_UNITS.map((u) => <option key={u} value={u} />)}
+                                    </datalist>
+                                </td>
+                                <td className="px-1 py-1.5 overflow-hidden">
+                                    <CurrencyCell value={item.unit_price} onChange={(v) => updateItem(idx, 'unit_price', v)} />
+                                </td>
+                                <td className="px-1 py-1.5 overflow-hidden">
+                                    <CurrencyCell value={item.cogs_amount} onChange={(v) => updateItem(idx, 'cogs_amount', v)} />
+                                </td>
+                                <td className="px-1 py-1.5 text-center overflow-hidden">
+                                    <button
+                                        type="button"
+                                        onClick={() => updateItem(idx, 'is_tax_deposit', !item.is_tax_deposit)}
+                                        title={item.is_tax_deposit ? 'Titipan pajak: aktif' : 'Titipan pajak: nonaktif'}
+                                        className={cn(
+                                            'h-5 w-5 rounded inline-flex items-center justify-center border text-xs font-bold transition-colors',
+                                            item.is_tax_deposit
+                                                ? 'bg-amber-500 border-amber-500 text-white'
+                                                : 'border-secondary-300 dark:border-dark-600 text-transparent hover:border-amber-400',
+                                        )}
+                                    >✓</button>
+                                </td>
+                                <td className="px-2 py-1.5 text-right overflow-hidden">
+                                    <span className="font-semibold text-dark-900 dark:text-dark-50 tabular-nums truncate block">
+                                        {formatCurrency(itemTotals[idx])}
+                                    </span>
+                                </td>
+                                <td className="px-1 py-1.5 text-center overflow-hidden">
+                                    {items.length > 1 && (
+                                        <button
+                                            type="button"
+                                            onClick={() => removeItem(idx)}
+                                            className="h-6 w-6 rounded inline-flex items-center justify-center text-dark-300 dark:text-dark-600 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 opacity-0 group-hover:opacity-100 transition-all"
+                                        >
+                                            <Trash2 className="w-3.5 h-3.5" />
+                                        </button>
+                                    )}
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
         </div>
     );
 }
@@ -326,8 +406,8 @@ interface InvoiceSummaryProps {
 }
 
 function InvoiceSummary({ items, summary, onSummaryChange }: InvoiceSummaryProps) {
-    const subtotal = items.filter((i) => !i.is_tax_deposit).reduce((acc, i) => acc + i.unit_price * i.quantity, 0);
-    const taxDeposit = items.filter((i) => i.is_tax_deposit).reduce((acc, i) => acc + i.unit_price * i.quantity, 0);
+    const subtotal = items.filter((i) => !i.is_tax_deposit).reduce((acc, i) => acc + Math.round(i.unit_price * parseQty(String(i.quantity))), 0);
+    const taxDeposit = items.filter((i) => i.is_tax_deposit).reduce((acc, i) => acc + Math.round(i.unit_price * parseQty(String(i.quantity))), 0);
     const discountAmount = summary.discount_type === 'fixed'
         ? summary.discount_value
         : Math.round((subtotal * summary.discount_value) / 100);
@@ -365,12 +445,11 @@ function InvoiceSummary({ items, summary, onSummaryChange }: InvoiceSummaryProps
                         />
                     ) : (
                         <Input
-                            type="number"
-                            min="0"
-                            max="100"
-                            step="0.1"
-                            value={summary.discount_value}
-                            onChange={(e) => onSummaryChange({ ...summary, discount_value: parseFloat(e.target.value) || 0 })}
+                            type="text"
+                            inputMode="decimal"
+                            value={summary.discount_value === 0 ? '' : String(summary.discount_value)}
+                            onChange={(e) => onSummaryChange({ ...summary, discount_value: parseFloat(e.target.value.replace(',', '.')) || 0 })}
+                            placeholder="0"
                             className="flex-1"
                             iconRight={<span className="text-xs text-dark-400">%</span>}
                         />
@@ -401,7 +480,7 @@ function InvoiceSummary({ items, summary, onSummaryChange }: InvoiceSummaryProps
                 )}
                 {discountAmount > 0 && (
                     <div className="flex justify-between text-red-600 dark:text-red-400">
-                        <span>Diskon {summary.discount_type === 'percentage' ? `(${summary.discount_value}%)` : ''}</span>
+                        <span>Diskon {summary.discount_type === 'percentage' && summary.discount_value > 0 ? `(${summary.discount_value}%)` : ''}</span>
                         <span>- {formatCurrency(discountAmount)}</span>
                     </div>
                 )}
@@ -470,6 +549,7 @@ function MonthlyFormModal({ open, onClose, onSuccess, editTarget, clients, servi
                         client_id: i.client_id,
                         service_name: i.service_name,
                         quantity: i.quantity,
+                        unit: i.unit ?? '',
                         unit_price: i.unit_price,
                         cogs_amount: i.cogs_amount,
                         is_tax_deposit: i.is_tax_deposit,
@@ -498,6 +578,7 @@ function MonthlyFormModal({ open, onClose, onSuccess, editTarget, clients, servi
                 client_id: i.client_id,
                 service_name: i.service_name,
                 quantity: i.quantity,
+                unit: i.unit ?? '',
                 unit_price: i.unit_price,
                 cogs_amount: i.cogs_amount,
                 is_tax_deposit: i.is_tax_deposit,
@@ -521,7 +602,7 @@ function MonthlyFormModal({ open, onClose, onSuccess, editTarget, clients, servi
             scheduled_date: form.scheduled_date,
             issue_date: form.issue_date || null,
             due_date: form.due_date || null,
-            items: form.items,
+            items: form.items.map((item) => ({ ...item, quantity: parseQty(String(item.quantity)) })),
             discount_type: form.discount_type,
             discount_value: form.discount_value,
             discount_reason: form.discount_reason,
@@ -537,16 +618,22 @@ function MonthlyFormModal({ open, onClose, onSuccess, editTarget, clients, servi
             const json = await res.json();
 
             if (!res.ok) {
-                if (res.status === 422) setErrors(json.errors ?? {});
-                else toast.error(json.message ?? 'Terjadi kesalahan.');
+                if (res.status === 422 && json.errors) {
+                    setErrors(json.errors);
+                    toastErrors(json.errors, 'RecurringInvoiceForm');
+                } else {
+                    toastError(json.message ?? 'Terjadi kesalahan.');
+                    console.error('[RecurringInvoiceForm]', res.status, json);
+                }
                 return;
             }
 
             toast.success(json.message);
             onSuccess(json.invoice);
             onClose();
-        } catch {
-            toast.error('Terjadi kesalahan jaringan.');
+        } catch (err) {
+            toastError(err instanceof Error ? err.message : 'Terjadi kesalahan jaringan.');
+            console.error('[RecurringInvoiceForm]', err);
         } finally {
             setLoading(false);
         }
@@ -673,11 +760,11 @@ function GenerateModal({ open, onClose, onSuccess, month, year }: GenerateModalP
                 body: JSON.stringify({ month, year, issue_date: issueDate, due_date: dueDate }),
             });
             const json = await res.json();
-            if (!res.ok) { toast.error(json.message ?? 'Gagal generate.'); return; }
+            if (!res.ok) { toastError(json.message ?? 'Gagal generate.'); console.error('[Generate]', res.status, json); return; }
             toast.success(json.message);
             onSuccess();
             onClose();
-        } catch { toast.error('Terjadi kesalahan jaringan.'); }
+        } catch (err) { toastError(err instanceof Error ? err.message : 'Terjadi kesalahan jaringan.'); console.error('[Generate]', err); }
         finally { setLoading(false); }
     };
 
@@ -764,11 +851,11 @@ function PublishModal({ open, onClose, onSuccess, invoice }: PublishModalProps) 
                 body: JSON.stringify({ issue_date: issueDate, due_date: dueDate }),
             });
             const json = await res.json();
-            if (!res.ok) { toast.error(json.message ?? 'Gagal publish.'); return; }
+            if (!res.ok) { toastError(json.message ?? 'Gagal publish.'); console.error('[Publish]', res.status, json); return; }
             toast.success(json.message);
             onSuccess(json.invoice);
             onClose();
-        } catch { toast.error('Terjadi kesalahan jaringan.'); }
+        } catch (err) { toastError(err instanceof Error ? err.message : 'Terjadi kesalahan jaringan.'); console.error('[Publish]', err); }
         finally { setLoading(false); }
     };
 
@@ -842,11 +929,11 @@ function BulkPublishModal({ open, onClose, onSuccess, selectedIds }: BulkPublish
                 body: JSON.stringify({ ids: selectedIds, issue_date: issueDate, due_date: dueDate }),
             });
             const json = await res.json();
-            if (!res.ok) { toast.error(json.message ?? 'Gagal.'); return; }
+            if (!res.ok) { toastError(json.message ?? 'Gagal bulk publish.'); console.error('[BulkPublish]', res.status, json); return; }
             toast.success(json.message);
             onSuccess();
             onClose();
-        } catch { toast.error('Terjadi kesalahan.'); }
+        } catch (err) { toastError(err instanceof Error ? err.message : 'Terjadi kesalahan jaringan.'); console.error('[BulkPublish]', err); }
         finally { setLoading(false); }
     };
 
@@ -972,14 +1059,14 @@ export default function RecurringInvoicesIndex({
                 headers: { 'X-CSRF-TOKEN': getCsrfToken(), Accept: 'application/json' },
             });
             const json = await res.json();
-            if (!res.ok) { toast.error(json.message); return; }
+            if (!res.ok) { toastError(json.message); console.error('[DeleteTemplate]', res.status, json); return; }
             toast.success(json.message);
             if (json.archived) {
                 setTemplates((prev) => prev.map((t) => t.id === deleteTemplateTarget!.id ? { ...t, status: 'archived' } : t));
             } else {
                 setTemplates((prev) => prev.filter((t) => t.id !== deleteTemplateTarget!.id));
             }
-        } catch { toast.error('Terjadi kesalahan.'); }
+        } catch (err) { toastError(err instanceof Error ? err.message : 'Terjadi kesalahan jaringan.'); console.error('[DeleteTemplate]', err); }
         finally { setDeleteTemplateLoading(false); setDeleteTemplateTarget(null); }
     };
 
@@ -990,10 +1077,10 @@ export default function RecurringInvoicesIndex({
                 headers: { 'X-CSRF-TOKEN': getCsrfToken(), Accept: 'application/json' },
             });
             const json = await res.json();
-            if (!res.ok) { toast.error(json.message); return; }
+            if (!res.ok) { toastError(json.message); console.error('[RestoreTemplate]', res.status, json); return; }
             toast.success(json.message);
             setTemplates((prev) => prev.map((t) => t.id === template.id ? { ...t, status: 'active' } : t));
-        } catch { toast.error('Terjadi kesalahan.'); }
+        } catch (err) { toastError(err instanceof Error ? err.message : 'Terjadi kesalahan jaringan.'); console.error('[RestoreTemplate]', err); }
     };
 
     // ── Monthly CRUD handlers ──
@@ -1016,11 +1103,11 @@ export default function RecurringInvoicesIndex({
                 headers: { 'X-CSRF-TOKEN': getCsrfToken(), Accept: 'application/json' },
             });
             const json = await res.json();
-            if (!res.ok) { toast.error(json.message); return; }
+            if (!res.ok) { toastError(json.message); console.error('[DeleteMonthly]', res.status, json); return; }
             toast.success(json.message);
             setMonthly((prev) => ({ ...prev, invoices: prev.invoices.filter((x) => x.id !== deleteMonthlyTarget!.id) }));
             setSelectedIds((prev) => prev.filter((id) => id !== deleteMonthlyTarget!.id));
-        } catch { toast.error('Terjadi kesalahan.'); }
+        } catch (err) { toastError(err instanceof Error ? err.message : 'Terjadi kesalahan jaringan.'); console.error('[DeleteMonthly]', err); }
         finally { setDeleteMonthlyLoading(false); setDeleteMonthlyTarget(null); }
     };
 
@@ -1034,11 +1121,11 @@ export default function RecurringInvoicesIndex({
                 body: JSON.stringify({ ids: selectedIds }),
             });
             const json = await res.json();
-            if (!res.ok) { toast.error(json.message); return; }
+            if (!res.ok) { toastError(json.message); console.error('[BulkDelete]', res.status, json); return; }
             toast.success(json.message);
             setMonthly((prev) => ({ ...prev, invoices: prev.invoices.filter((x) => !selectedIds.includes(x.id)) }));
             setSelectedIds([]);
-        } catch { toast.error('Terjadi kesalahan.'); }
+        } catch (err) { toastError(err instanceof Error ? err.message : 'Terjadi kesalahan jaringan.'); console.error('[BulkDelete]', err); }
         finally { setBulkDeleteLoading(false); }
     };
 

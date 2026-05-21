@@ -18,8 +18,9 @@ import { DatePicker } from '@/components/ui/date-picker';
 import { Input } from '@/components/ui/input';
 import { CurrencyInput } from '@/components/shared/currency-input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { AppLayout } from '@/layouts/app-layout';
-import { cn, formatCurrency } from '@/lib/utils';
+import { cn, formatCurrency, toastErrors } from '@/lib/utils';
 import type { SharedProps } from '@/types';
 
 /* ─────────────────────────────────── types ─── */
@@ -96,6 +97,119 @@ function emptyItem(defaultClientId: number | null = null): InvoiceItem {
 /* ─────────────────────────────────── shared cell style ─── */
 
 const cellCls = 'h-8 text-xs px-2 rounded-md border-transparent hover:border-secondary-300 dark:hover:border-dark-600 bg-transparent dark:bg-transparent focus:bg-white dark:focus:bg-dark-800';
+
+/** Parse quantity string — supports both dot and comma as decimal separator, dot-as-thousands ignored.
+ *  "5.000,25" → 5000.25 | "5000.25" → 5000.25 | "1,5" → 1.5 | "3" → 3 */
+export function parseQty(raw: string): number {
+    if (!raw) return 0;
+    const s = raw.trim();
+    // Format ribuan dengan koma desimal: ada koma → koma = desimal, titik = ribuan
+    if (s.includes(',')) {
+        return parseFloat(s.replace(/\./g, '').replace(',', '.')) || 0;
+    }
+    // Tidak ada koma: titik = desimal biasa
+    return parseFloat(s) || 0;
+}
+
+/* ─────────────────────────────────── column resize hook ─── */
+
+export interface ColDef {
+    key: string;
+    defaultWidth: number;
+    minWidth?: number;
+}
+
+export function useColumnResize(cols: ColDef[], storageKey: string) {
+    const [widths, setWidths] = React.useState<Record<string, number>>(() => {
+        try {
+            const saved = localStorage.getItem(storageKey);
+            if (saved) {
+                const parsed = JSON.parse(saved) as Record<string, number>;
+                // merge saved with defaults so new columns always have a value
+                return cols.reduce<Record<string, number>>((acc, col) => {
+                    acc[col.key] = parsed[col.key] ?? col.defaultWidth;
+                    return acc;
+                }, {});
+            }
+        } catch { /* ignore */ }
+        return cols.reduce<Record<string, number>>((acc, col) => {
+            acc[col.key] = col.defaultWidth;
+            return acc;
+        }, {});
+    });
+
+    const resizing = React.useRef<{ key: string; startX: number; startW: number } | null>(null);
+
+    const onMouseDown = React.useCallback((key: string, e: React.MouseEvent) => {
+        e.preventDefault();
+        const currentW = widths[key] ?? cols.find((c) => c.key === key)?.defaultWidth ?? 80;
+        resizing.current = { key, startX: e.clientX, startW: currentW };
+
+        const onMove = (ev: MouseEvent) => {
+            if (!resizing.current) return;
+            const { key: k, startX, startW } = resizing.current;
+            const minW = cols.find((c) => c.key === k)?.minWidth ?? 40;
+            const next = Math.max(minW, startW + ev.clientX - startX);
+            setWidths((prev) => ({ ...prev, [k]: next }));
+        };
+
+        const onUp = () => {
+            resizing.current = null;
+            document.removeEventListener('mousemove', onMove);
+            document.removeEventListener('mouseup', onUp);
+            setWidths((prev) => {
+                try { localStorage.setItem(storageKey, JSON.stringify(prev)); } catch { /* ignore */ }
+                return prev;
+            });
+        };
+
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('mouseup', onUp);
+    }, [widths, cols, storageKey]);
+
+    const resetWidths = React.useCallback(() => {
+        const defaults = cols.reduce<Record<string, number>>((acc, col) => {
+            acc[col.key] = col.defaultWidth;
+            return acc;
+        }, {});
+        setWidths(defaults);
+        try { localStorage.removeItem(storageKey); } catch { /* ignore */ }
+    }, [cols, storageKey]);
+
+    return { widths, onMouseDown, resetWidths };
+}
+
+/* ─────────────────────────────────── resizable th ─── */
+
+export function ResizableTh({
+    children,
+    width,
+    onResizeStart,
+    className,
+    title,
+}: {
+    children?: React.ReactNode;
+    width: number;
+    onResizeStart: (e: React.MouseEvent) => void;
+    className?: string;
+    title?: string;
+}) {
+    return (
+        <th
+            style={{ width, minWidth: width }}
+            className={cn('relative select-none', className)}
+            title={title}
+        >
+            {children}
+            <div
+                onMouseDown={onResizeStart}
+                className="absolute right-0 top-0 h-full w-3 cursor-col-resize flex items-center justify-center group/handle z-10"
+            >
+                <div className="w-px h-3/5 bg-secondary-300 dark:bg-dark-500 group-hover/handle:bg-primary-400 dark:group-hover/handle:bg-primary-500 group-hover/handle:w-0.5 transition-all" />
+            </div>
+        </th>
+    );
+}
 
 /* ─────────────────────────────────── currency cell ─── */
 
@@ -226,7 +340,22 @@ export function InvoiceForm({
     submitLabel,
     isEdit = false,
 }: InvoiceFormProps) {
-    const { data, setData, post, put, processing, errors } = useForm({
+    const COL_DEFS: ColDef[] = [
+        { key: 'no',       defaultWidth: 32,  minWidth: 32  },
+        { key: 'client',   defaultWidth: 140, minWidth: 60  },
+        { key: 'service',  defaultWidth: 220, minWidth: 80  },
+        { key: 'qty',      defaultWidth: 64,  minWidth: 48  },
+        { key: 'unit',     defaultWidth: 80,  minWidth: 48  },
+        { key: 'price',    defaultWidth: 112, minWidth: 64  },
+        { key: 'hpp',      defaultWidth: 112, minWidth: 64  },
+        { key: 'pph',      defaultWidth: 40,  minWidth: 40  },
+        { key: 'subtotal', defaultWidth: 112, minWidth: 64  },
+        { key: 'del',      defaultWidth: 36,  minWidth: 36  },
+    ];
+
+    const { widths, onMouseDown, resetWidths } = useColumnResize(COL_DEFS, 'invoice-items-col-widths');
+
+    const { data, setData, post, put, transform, processing, errors } = useForm({
         client_id: initialData?.client_id ?? null as number | null,
         issue_date: initialData?.issue_date ?? new Date().toISOString().slice(0, 10),
         due_date: initialData?.due_date ?? '',
@@ -244,9 +373,21 @@ export function InvoiceForm({
         data.issue_date,
     );
 
+    /* Saat klien invoice berubah, isi otomatis item yang kliennya masih kosong */
+    const handleClientChange = (v: string | number | null) => {
+        const newClientId = v ? Number(v) : null;
+        setData((prev) => ({
+            ...prev,
+            client_id: newClientId,
+            items: prev.items.map((item) =>
+                item.client_id === null ? { ...item, client_id: newClientId } : item,
+            ),
+        }));
+    };
+
     /* ── calculations ── */
     const itemTotals = data.items.map((item) => {
-        const qty = parseFloat(item.quantity) || 0;
+        const qty = parseQty(item.quantity);
         return Math.round(item.unit_price * qty);
     });
     const subtotal = itemTotals.reduce((a, b) => a + b, 0);
@@ -287,9 +428,14 @@ export function InvoiceForm({
     /* ── submit ── */
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+        // Normalize quantity strings (e.g. "5.000,25" → "5000.25") before sending to backend
+        transform((d) => ({
+            ...d,
+            items: d.items.map((item) => ({ ...item, quantity: String(parseQty(item.quantity)) })),
+        }));
         const options = {
             onSuccess: () => toast.success(isEdit ? 'Invoice berhasil diperbarui.' : 'Invoice berhasil dibuat.'),
-            onError: () => toast.error('Gagal menyimpan invoice. Periksa kembali form Anda.'),
+            onError: (errs) => toastErrors(errs, isEdit ? 'UpdateInvoice' : 'CreateInvoice'),
         };
         if (method === 'put') put(submitUrl, options);
         else post(submitUrl, options);
@@ -302,14 +448,14 @@ export function InvoiceForm({
 
     return (
         <form onSubmit={handleSubmit}>
-            <div className="grid grid-cols-1 xl:grid-cols-5 gap-6 items-start">
+            <div className="grid grid-cols-1 xl:grid-cols-4 gap-6 items-start">
 
                 {/* ── LEFT COLUMN (4/5) ── */}
-                <div className="xl:col-span-4 space-y-6">
+                <div className="xl:col-span-3 space-y-6">
 
                     {/* Card 1: Detail Invoice */}
                     <div className="bg-white dark:bg-dark-700 rounded-xl border border-secondary-200 dark:border-dark-600 overflow-hidden">
-                        <div className="px-6 py-4 border-b border-secondary-200 dark:border-dark-600 flex items-center gap-3">
+                        <div className="px-4 sm:px-6 py-4 border-b border-secondary-200 dark:border-dark-600 flex items-center gap-3">
                             <div className="w-8 h-8 bg-primary-50 dark:bg-primary-900/20 rounded-lg flex items-center justify-center shrink-0">
                                 <FileText className="w-4 h-4 text-primary-600 dark:text-primary-400" />
                             </div>
@@ -318,7 +464,7 @@ export function InvoiceForm({
                                 <p className="text-xs text-dark-500 dark:text-dark-400">Informasi dasar invoice</p>
                             </div>
                         </div>
-                        <div className="p-6 space-y-5">
+                        <div className="p-4 sm:p-6 space-y-5">
                             {/* Invoice number preview */}
                             <div className="flex items-center gap-3 p-4 rounded-xl border border-primary-200 dark:border-primary-800 bg-primary-50 dark:bg-primary-900/20">
                                 <FileText className="w-5 h-5 text-primary-600 dark:text-primary-400 shrink-0" />
@@ -337,13 +483,13 @@ export function InvoiceForm({
                                 <Combobox
                                     options={clientOptions}
                                     value={data.client_id}
-                                    onChange={(v) => setData('client_id', v ? Number(v) : null)}
+                                    onChange={handleClientChange}
                                     placeholder="Pilih klien..."
                                     label="Klien *"
                                     hint={selectedClient?.email ?? undefined}
                                     error={errors.client_id}
                                 />
-                                <div className="grid grid-cols-2 gap-3">
+                                <div className="grid grid-cols-2 sm:grid-cols-2 gap-3">
                                     <DatePicker
                                         label="Tgl Invoice *"
                                         value={data.issue_date ? new Date(data.issue_date + 'T00:00:00') : null}
@@ -364,191 +510,207 @@ export function InvoiceForm({
 
                     {/* Card 2: Invoice Items */}
                     <div className="bg-white dark:bg-dark-700 rounded-xl border border-secondary-200 dark:border-dark-600 overflow-hidden">
-                        <div className="px-6 py-4 border-b border-secondary-200 dark:border-dark-600 flex items-center justify-between">
-                            <div className="flex items-center gap-3">
+                        <div className="px-4 sm:px-6 py-4 border-b border-secondary-200 dark:border-dark-600 flex flex-wrap items-center justify-between gap-3">
+                            <div className="flex items-center gap-3 min-w-0">
                                 <div className="w-8 h-8 bg-blue-50 dark:bg-blue-900/20 rounded-lg flex items-center justify-center shrink-0">
                                     <List className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                                 </div>
-                                <div>
+                                <div className="min-w-0">
                                     <h2 className="text-sm font-semibold text-dark-900 dark:text-dark-50">Item Invoice</h2>
                                     <p className="text-xs text-dark-500 dark:text-dark-400 flex items-center gap-1">
                                         <Info className="w-3 h-3 shrink-0" />
-                                        Tiap item bisa ditujukan ke klien berbeda
+                                        <span className="hidden sm:inline">Tiap item bisa ditujukan ke klien berbeda</span>
+                                        <span className="sm:hidden">Klien per item bisa berbeda</span>
                                     </p>
                                 </div>
                             </div>
-                            <Button type="button" variant="outline" size="sm" onClick={addItem}>
-                                <Plus className="w-3.5 h-3.5 mr-1" /> Tambah Item
-                            </Button>
+                            <div className="flex items-center gap-2 shrink-0">
+                                <button
+                                    type="button"
+                                    onClick={resetWidths}
+                                    className="hidden sm:block text-xs text-dark-400 dark:text-dark-500 hover:text-dark-600 dark:hover:text-dark-300 transition-colors"
+                                    title="Reset lebar kolom ke default"
+                                >
+                                    Reset kolom
+                                </button>
+                                <Button type="button" variant="outline" size="sm" onClick={addItem}>
+                                    <Plus className="w-3.5 h-3.5 mr-1" /> Tambah Item
+                                </Button>
+                            </div>
                         </div>
 
                         {errors.items && (
-                            <p className="px-6 pt-3 text-xs text-red-600 dark:text-red-400">{errors.items}</p>
+                            <p className="px-4 sm:px-6 pt-3 text-xs text-red-600 dark:text-red-400">{errors.items}</p>
                         )}
 
                         <div className="overflow-x-auto">
-                        {/* min-w ensures single-row layout; scrolls on narrow viewports */}
-                        <div style={{ minWidth: '820px' }}>
-
-                            {/* Header */}
-                            <div className="grid bg-secondary-50 dark:bg-dark-800 border-b border-secondary-200 dark:border-dark-600"
-                                style={{ gridTemplateColumns: '32px 2fr 3fr 1fr 1.5fr 2fr 2fr 40px 2fr 36px' }}>
-                                <div className="px-2 py-2.5 text-xs font-semibold text-dark-400 dark:text-dark-500 text-center">#</div>
-                                <div className="px-2 py-2.5 text-xs font-semibold text-dark-600 dark:text-dark-400">Klien</div>
-                                <div className="px-2 py-2.5 text-xs font-semibold text-dark-600 dark:text-dark-400">Nama Layanan</div>
-                                <div className="px-2 py-2.5 text-xs font-semibold text-dark-600 dark:text-dark-400 text-right">Qty</div>
-                                <div className="px-2 py-2.5 text-xs font-semibold text-dark-600 dark:text-dark-400">Satuan</div>
-                                <div className="px-2 py-2.5 text-xs font-semibold text-dark-600 dark:text-dark-400 text-right">Harga Sat.</div>
-                                <div className="px-2 py-2.5 text-xs font-semibold text-dark-600 dark:text-dark-400 text-right">HPP</div>
-                                <div className="px-2 py-2.5 text-xs font-semibold text-dark-600 dark:text-dark-400 text-center" title="Titipan Pajak (PPh)">PPh</div>
-                                <div className="px-2 py-2.5 text-xs font-semibold text-dark-600 dark:text-dark-400 text-right">Subtotal</div>
-                                <div />
-                            </div>
-
-                            {/* Rows */}
-                            {data.items.map((item, idx) => (
-                                <div
-                                    key={idx}
-                                    className={cn(
-                                        'grid border-b border-secondary-200 dark:border-dark-600 last:border-0',
-                                        'hover:bg-secondary-50/50 dark:hover:bg-dark-800/30 transition-colors group',
-                                        item.is_tax_deposit && 'bg-amber-50/40 dark:bg-amber-900/5',
-                                    )}
-                                    style={{ gridTemplateColumns: '32px 2fr 3fr 1fr 1.5fr 2fr 2fr 40px 2fr 36px' }}
-                                >
-                                    {/* Row number */}
-                                    <div className="flex items-center justify-center px-1 py-1.5">
-                                        <span className="text-xs font-mono text-dark-400 dark:text-dark-500">{idx + 1}</span>
-                                    </div>
-
-                                    {/* Client (per-item) */}
-                                    <div className="flex items-center px-1 py-1.5">
-                                        <Combobox
-                                            options={[
-                                                { value: -1, label: '— default —' },
-                                                ...clientOptions,
-                                            ]}
-                                            value={item.client_id ?? -1}
-                                            onChange={(v) => {
-                                                const val = v ? Number(v) : null;
-                                                updateItem(idx, 'client_id', val === -1 ? null : val);
-                                            }}
-                                            placeholder="Default"
-                                            className="w-full [&_button]:h-8 [&_button]:text-xs [&_button]:px-2 [&_button]:rounded-md [&_button]:ring-0 [&_button]:shadow-none"
-                                        />
-                                    </div>
-
-                                    {/* Service name + lookup */}
-                                    <div className="flex items-center gap-0.5 px-1 py-1.5">
-                                        <div className="flex-1 min-w-0">
-                                            <Input
-                                                value={item.service_name}
-                                                onChange={(e) => handleServiceNameChange(idx, e.target.value)}
-                                                placeholder="Nama layanan..."
-                                                error={errors[`items.${idx}.service_name` as keyof typeof errors]}
-                                                className={cellCls}
-                                            />
-                                        </div>
-                                        <ServiceLookup
-                                            services={services}
-                                            onSelect={(svc) => updateItemFields(idx, { service_name: svc.name, unit_price: svc.price })}
-                                        />
-                                    </div>
-
-                                    {/* Qty */}
-                                    <div className="flex items-center px-1 py-1.5">
-                                        <Input
-                                            type="number"
-                                            value={item.quantity}
-                                            onChange={(e) => updateItem(idx, 'quantity', e.target.value)}
-                                            min="0.001"
-                                            step="any"
-                                            placeholder="1"
-                                            className={cn(cellCls, 'text-right')}
-                                        />
-                                    </div>
-
-                                    {/* Unit */}
-                                    <div className="flex items-center px-1 py-1.5">
-                                        <Input
-                                            list={`unit-list-${idx}`}
-                                            value={item.unit}
-                                            onChange={(e) => updateItem(idx, 'unit', e.target.value)}
-                                            placeholder="satuan"
-                                            className={cellCls}
-                                        />
-                                        <datalist id={`unit-list-${idx}`}>
-                                            {COMMON_UNITS.map((u) => (
-                                                <option key={u} value={u} />
-                                            ))}
-                                        </datalist>
-                                    </div>
-
-                                    {/* Unit price */}
-                                    <div className="flex items-center px-1 py-1.5">
-                                        <CurrencyCell value={item.unit_price} onChange={(v) => updateItem(idx, 'unit_price', v)} />
-                                    </div>
-
-                                    {/* COGS / HPP */}
-                                    <div className="flex items-center px-1 py-1.5">
-                                        <CurrencyCell value={item.cogs_amount} onChange={(v) => updateItem(idx, 'cogs_amount', v)} />
-                                    </div>
-
-                                    {/* PPh toggle */}
-                                    <div className="flex items-center justify-center px-1 py-1.5">
-                                        <button
-                                            type="button"
-                                            onClick={() => updateItem(idx, 'is_tax_deposit', !item.is_tax_deposit)}
-                                            title={item.is_tax_deposit ? 'Titipan pajak: aktif' : 'Titipan pajak: nonaktif'}
+                            <table className="table-fixed text-xs w-full" style={{ minWidth: Object.values(widths).reduce((a, b) => a + b, 0) }}>
+                                <thead>
+                                    <tr className="bg-secondary-50 dark:bg-dark-800 border-b border-secondary-200 dark:border-dark-600">
+                                        <ResizableTh width={widths.no} onResizeStart={(e) => onMouseDown('no', e)} className="px-2 py-2.5 text-xs font-semibold text-dark-400 dark:text-dark-500 text-left">#</ResizableTh>
+                                        <ResizableTh width={widths.client} onResizeStart={(e) => onMouseDown('client', e)} className="px-2 py-2.5 text-xs font-semibold text-dark-600 dark:text-dark-400 text-left">Klien</ResizableTh>
+                                        <ResizableTh width={widths.service} onResizeStart={(e) => onMouseDown('service', e)} className="px-2 py-2.5 text-xs font-semibold text-dark-600 dark:text-dark-400 text-left">Nama Layanan</ResizableTh>
+                                        <ResizableTh width={widths.qty} onResizeStart={(e) => onMouseDown('qty', e)} className="px-2 py-2.5 text-xs font-semibold text-dark-600 dark:text-dark-400 text-left">
+                                            <TooltipProvider delayDuration={0}>
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <span className="inline-flex items-center gap-1 cursor-default">
+                                                            Qty
+                                                            <Info className="w-3 h-3 text-primary-400 dark:text-primary-500" />
+                                                        </span>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent side="top" className="max-w-48 text-center leading-relaxed">
+                                                        Gunakan titik atau koma sebagai pemisah desimal.<br />
+                                                        Contoh: <span className="font-mono">1.5</span>, <span className="font-mono">5.000,25</span>
+                                                    </TooltipContent>
+                                                </Tooltip>
+                                            </TooltipProvider>
+                                        </ResizableTh>
+                                        <ResizableTh width={widths.unit} onResizeStart={(e) => onMouseDown('unit', e)} className="px-2 py-2.5 text-xs font-semibold text-dark-600 dark:text-dark-400 text-left">Satuan</ResizableTh>
+                                        <ResizableTh width={widths.price} onResizeStart={(e) => onMouseDown('price', e)} className="px-2 py-2.5 text-xs font-semibold text-dark-600 dark:text-dark-400 text-left">Harga Sat.</ResizableTh>
+                                        <ResizableTh width={widths.hpp} onResizeStart={(e) => onMouseDown('hpp', e)} className="px-2 py-2.5 text-xs font-semibold text-dark-600 dark:text-dark-400 text-left">HPP</ResizableTh>
+                                        <ResizableTh width={widths.pph} onResizeStart={(e) => onMouseDown('pph', e)} className="px-2 py-2.5 text-xs font-semibold text-dark-600 dark:text-dark-400 text-left" title="Titipan Pajak (PPh)">PPh</ResizableTh>
+                                        <ResizableTh width={widths.subtotal} onResizeStart={(e) => onMouseDown('subtotal', e)} className="px-2 py-2.5 text-xs font-semibold text-dark-600 dark:text-dark-400 text-left">Subtotal</ResizableTh>
+                                        <th style={{ width: widths.del, minWidth: widths.del }} />
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-secondary-200 dark:divide-dark-600">
+                                    {data.items.map((item, idx) => (
+                                        <tr
+                                            key={idx}
                                             className={cn(
-                                                'h-5 w-5 rounded flex items-center justify-center border text-xs font-bold transition-colors',
-                                                item.is_tax_deposit
-                                                    ? 'bg-amber-500 border-amber-500 text-white'
-                                                    : 'border-secondary-300 dark:border-dark-600 text-transparent hover:border-amber-400',
+                                                'hover:bg-secondary-50/50 dark:hover:bg-dark-800/30 transition-colors group',
+                                                item.is_tax_deposit && 'bg-amber-50/40 dark:bg-amber-900/5',
                                             )}
                                         >
-                                            ✓
-                                        </button>
-                                    </div>
+                                            {/* # */}
+                                            <td className="px-1 py-1.5 text-center overflow-hidden">
+                                                <span className="font-mono text-dark-400 dark:text-dark-500">{idx + 1}</span>
+                                            </td>
 
-                                    {/* Line total */}
-                                    <div className="flex items-center justify-end px-2 py-1.5">
-                                        <span className="text-xs font-semibold text-dark-900 dark:text-dark-50 tabular-nums whitespace-nowrap">
-                                            {formatCurrency(itemTotals[idx])}
-                                        </span>
-                                    </div>
+                                            {/* Klien */}
+                                            <td className="px-1 py-1.5 overflow-hidden">
+                                                <Combobox
+                                                    options={clientOptions}
+                                                    value={item.client_id}
+                                                    onChange={(v) => updateItem(idx, 'client_id', v ? Number(v) : null)}
+                                                    placeholder="Pilih klien..."
+                                                    clearable
+                                                    popoverWidth="w-56"
+                                                    className="w-full [&_button]:h-8 [&_button]:text-xs [&_button]:px-2 [&_button]:rounded-md [&_button]:ring-0 [&_button]:shadow-none"
+                                                />
+                                            </td>
 
-                                    {/* Delete */}
-                                    <div className="flex items-center justify-center px-1 py-1.5">
-                                        {data.items.length > 1 && (
-                                            <button
-                                                type="button"
-                                                onClick={() => removeItem(idx)}
-                                                className="h-6 w-6 rounded flex items-center justify-center text-dark-300 dark:text-dark-600 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 opacity-0 group-hover:opacity-100 transition-all"
-                                            >
-                                                <Trash2 className="w-3.5 h-3.5" />
-                                            </button>
-                                        )}
-                                    </div>
-                                </div>
-                            ))}
+                                            {/* Nama Layanan */}
+                                            <td className="px-1 py-1.5 overflow-hidden">
+                                                <div className="flex items-center gap-0.5">
+                                                    <div className="flex-1 min-w-0">
+                                                        <Input
+                                                            value={item.service_name}
+                                                            onChange={(e) => handleServiceNameChange(idx, e.target.value)}
+                                                            placeholder="Nama layanan..."
+                                                            error={errors[`items.${idx}.service_name` as keyof typeof errors]}
+                                                            className={cellCls}
+                                                        />
+                                                    </div>
+                                                    <ServiceLookup
+                                                        services={services}
+                                                        onSelect={(svc) => updateItemFields(idx, { service_name: svc.name, unit_price: svc.price })}
+                                                    />
+                                                </div>
+                                            </td>
 
-                            {/* Footer: subtotal row */}
-                            <div className="grid bg-secondary-50/60 dark:bg-dark-800/60 border-t border-secondary-200 dark:border-dark-600"
-                                style={{ gridTemplateColumns: '32px 2fr 3fr 1fr 1.5fr 2fr 2fr 40px 2fr 36px' }}>
-                                <div className="col-span-8 px-3 py-2 text-xs text-dark-500 dark:text-dark-400 flex items-center gap-1">
-                                    <span className="font-medium text-dark-700 dark:text-dark-300">{data.items.length} item</span>
-                                    <span>·</span>
-                                    <span>HPP total:</span>
-                                    <span className="font-medium text-dark-700 dark:text-dark-300">{formatCurrency(totalCogs)}</span>
-                                </div>
-                                <div className="px-2 py-2 text-xs font-bold text-dark-900 dark:text-dark-50 text-right tabular-nums">
-                                    {formatCurrency(subtotal)}
-                                </div>
-                                <div />
-                            </div>
+                                            {/* Qty */}
+                                            <td className="px-1 py-1.5 overflow-hidden">
+                                                <Input
+                                                    type="text"
+                                                    inputMode="decimal"
+                                                    value={item.quantity}
+                                                    onChange={(e) => updateItem(idx, 'quantity', e.target.value)}
+                                                    placeholder="1"
+                                                    className={cellCls}
+                                                />
+                                            </td>
+
+                                            {/* Satuan */}
+                                            <td className="px-1 py-1.5 overflow-hidden">
+                                                <Input
+                                                    list={`unit-list-${idx}`}
+                                                    value={item.unit}
+                                                    onChange={(e) => updateItem(idx, 'unit', e.target.value)}
+                                                    placeholder="satuan"
+                                                    className={cellCls}
+                                                />
+                                                <datalist id={`unit-list-${idx}`}>
+                                                    {COMMON_UNITS.map((u) => <option key={u} value={u} />)}
+                                                </datalist>
+                                            </td>
+
+                                            {/* Harga Sat. */}
+                                            <td className="px-1 py-1.5 overflow-hidden">
+                                                <CurrencyCell value={item.unit_price} onChange={(v) => updateItem(idx, 'unit_price', v)} />
+                                            </td>
+
+                                            {/* HPP */}
+                                            <td className="px-1 py-1.5 overflow-hidden">
+                                                <CurrencyCell value={item.cogs_amount} onChange={(v) => updateItem(idx, 'cogs_amount', v)} />
+                                            </td>
+
+                                            {/* PPh */}
+                                            <td className="px-1 py-1.5 text-center overflow-hidden">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => updateItem(idx, 'is_tax_deposit', !item.is_tax_deposit)}
+                                                    title={item.is_tax_deposit ? 'Titipan pajak: aktif' : 'Titipan pajak: nonaktif'}
+                                                    className={cn(
+                                                        'h-5 w-5 rounded inline-flex items-center justify-center border text-xs font-bold transition-colors',
+                                                        item.is_tax_deposit
+                                                            ? 'bg-amber-500 border-amber-500 text-white'
+                                                            : 'border-secondary-300 dark:border-dark-600 text-transparent hover:border-amber-400',
+                                                    )}
+                                                >
+                                                    ✓
+                                                </button>
+                                            </td>
+
+                                            {/* Subtotal */}
+                                            <td className="px-2 py-1.5 text-right overflow-hidden">
+                                                <span className="font-semibold text-dark-900 dark:text-dark-50 tabular-nums truncate block">
+                                                    {formatCurrency(itemTotals[idx])}
+                                                </span>
+                                            </td>
+
+                                            {/* Hapus */}
+                                            <td className="px-1 py-1.5 text-center overflow-hidden">
+                                                {data.items.length > 1 && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => removeItem(idx)}
+                                                        className="h-6 w-6 rounded inline-flex items-center justify-center text-dark-300 dark:text-dark-600 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 opacity-0 group-hover:opacity-100 transition-all"
+                                                    >
+                                                        <Trash2 className="w-3.5 h-3.5" />
+                                                    </button>
+                                                )}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                                <tfoot>
+                                    <tr className="bg-secondary-50/60 dark:bg-dark-800/60 border-t border-secondary-200 dark:border-dark-600">
+                                        <td colSpan={8} className="px-3 py-2 text-xs text-dark-500 dark:text-dark-400 overflow-hidden">
+                                            <span className="font-medium text-dark-700 dark:text-dark-300">{data.items.length} item</span>
+                                            <span className="mx-1">·</span>
+                                            <span>HPP total:</span>
+                                            <span className="font-medium text-dark-700 dark:text-dark-300 ml-1">{formatCurrency(totalCogs)}</span>
+                                        </td>
+                                        <td className="px-2 py-2 text-xs font-bold text-dark-900 dark:text-dark-50 text-right overflow-hidden">
+                                            <span className="tabular-nums truncate block">{formatCurrency(subtotal)}</span>
+                                        </td>
+                                        <td />
+                                    </tr>
+                                </tfoot>
+                            </table>
                         </div>
-                    </div>
                 </div>
             </div>
 
@@ -573,7 +735,7 @@ export function InvoiceForm({
                             {discountAmount > 0 && (
                                 <div className="flex items-center justify-between px-4 py-3">
                                     <span className="text-xs text-dark-500 dark:text-dark-400">
-                                        Diskon{data.discount_type === 'percentage' ? ` (${data.discount_value}%)` : ''}
+                                        Diskon{data.discount_type === 'percentage' && data.discount_value > 0 ? ` (${data.discount_value}%)` : ''}
                                     </span>
                                     <span className="text-xs font-semibold text-red-500 tabular-nums">− {formatCurrency(discountAmount)}</span>
                                 </div>
@@ -582,7 +744,7 @@ export function InvoiceForm({
                             <div className="px-4 py-4 bg-secondary-50 dark:bg-dark-900/40">
                                 <div className="flex items-baseline justify-between gap-2">
                                     <span className="text-xs font-semibold text-dark-600 dark:text-dark-400 uppercase tracking-wide">Total</span>
-                                    <span className="text-2xl font-bold text-primary-600 dark:text-primary-400 tabular-nums">{formatCurrency(totalAmount)}</span>
+                                    <span className="text-lg font-bold text-primary-600 dark:text-primary-400 tabular-nums">{formatCurrency(totalAmount)}</span>
                                 </div>
                             </div>
 
@@ -643,12 +805,11 @@ export function InvoiceForm({
                                     ) : (
                                         <div className="relative">
                                             <Input
-                                                type="number"
-                                                value={data.discount_value}
-                                                onChange={(e) => setData('discount_value', parseFloat(e.target.value) || 0)}
-                                                min={0}
-                                                max={100}
-                                                step={0.01}
+                                                type="text"
+                                                inputMode="decimal"
+                                                value={data.discount_value === 0 ? '' : String(data.discount_value)}
+                                                onChange={(e) => setData('discount_value', parseFloat(e.target.value.replace(',', '.')) || 0)}
+                                                placeholder="0"
                                                 className="pr-8"
                                             />
                                             <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-dark-500 dark:text-dark-400">%</span>
@@ -712,10 +873,10 @@ function CreateInvoicePage({ clients, services, nextSeq, companyInitials }: Prop
                             <ArrowLeft className="w-4 h-4 text-dark-600 dark:text-dark-400" />
                         </button>
                         <div>
-                            <h1 className="text-4xl font-bold bg-linear-to-r from-gray-900 via-blue-800 to-indigo-800 dark:from-white dark:via-blue-200 dark:to-indigo-200 bg-clip-text text-transparent">
+                            <h1 className="text-2xl sm:text-4xl font-bold bg-linear-to-r from-gray-900 via-blue-800 to-indigo-800 dark:from-white dark:via-blue-200 dark:to-indigo-200 bg-clip-text text-transparent">
                                 Buat Invoice
                             </h1>
-                            <p className="text-gray-600 dark:text-zinc-400 text-lg">
+                            <p className="text-gray-600 dark:text-zinc-400 text-sm sm:text-lg">
                                 Invoice baru akan disimpan sebagai draft
                             </p>
                         </div>

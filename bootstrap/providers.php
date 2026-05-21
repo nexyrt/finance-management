@@ -1,6 +1,11 @@
 <?php
 
+use App\Providers\AppServiceProvider;
+use App\Providers\ViewServiceProvider;
+use Laravel\Wayfinder\WayfinderServiceProvider;
+
 return [
-    App\Providers\AppServiceProvider::class,
-    App\Providers\ViewServiceProvider::class,
+    AppServiceProvider::class,
+    ViewServiceProvider::class,
+    WayfinderServiceProvider::class,
 ];

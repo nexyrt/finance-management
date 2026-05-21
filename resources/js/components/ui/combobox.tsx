@@ -10,7 +10,8 @@ export interface ComboboxOption {
     description?: string;
 }
 
-interface ComboboxProps {
+interface ComboboxSingleProps {
+    multiple?: false;
     options: ComboboxOption[];
     value?: string | number | null;
     onChange: (value: string | number | null) => void;
@@ -23,7 +24,27 @@ interface ComboboxProps {
     clearable?: boolean;
     className?: string;
     emptyText?: string;
+    popoverWidth?: string;
 }
+
+interface ComboboxMultipleProps {
+    multiple: true;
+    options: ComboboxOption[];
+    value?: (string | number)[];
+    onChange: (value: (string | number)[]) => void;
+    placeholder?: string;
+    searchPlaceholder?: string;
+    label?: string;
+    hint?: string;
+    error?: string;
+    disabled?: boolean;
+    clearable?: boolean;
+    className?: string;
+    emptyText?: string;
+    popoverWidth?: string;
+}
+
+type ComboboxProps = ComboboxSingleProps | ComboboxMultipleProps;
 
 export function Combobox({
     options,
@@ -38,12 +59,33 @@ export function Combobox({
     clearable = true,
     className,
     emptyText = 'Tidak ada data.',
-}: ComboboxProps) {
+    multiple = false,
+    popoverWidth,
+}: ComboboxProps & { multiple?: boolean }) {
     const [open, setOpen] = React.useState(false);
     const [search, setSearch] = React.useState('');
     const inputId = React.useId();
 
-    const selected = options.find((o) => o.value === value);
+    /* ── single helpers ── */
+    const singleValue = !multiple ? (value as string | number | null | undefined) : null;
+    const selected = !multiple ? options.find((o) => o.value === singleValue) : null;
+
+    /* ── multiple helpers ── */
+    const multiValue = multiple ? ((value as (string | number)[] | undefined) ?? []) : [];
+    const selectedMultiple = multiple ? options.filter((o) => multiValue.includes(o.value)) : [];
+
+    const hasValue = multiple ? multiValue.length > 0 : !!selected;
+
+    const isSelected = (opt: ComboboxOption) =>
+        multiple ? multiValue.includes(opt.value) : opt.value === singleValue;
+
+    const toggleMultiple = (optValue: string | number) => {
+        const current = multiValue;
+        const next = current.includes(optValue)
+            ? current.filter((v) => v !== optValue)
+            : [...current, optValue];
+        (onChange as (v: (string | number)[]) => void)(next);
+    };
 
     const filtered = search
         ? options.filter(
@@ -52,6 +94,22 @@ export function Combobox({
                   (o.description?.toLowerCase().includes(search.toLowerCase()) ?? false),
           )
         : options;
+
+    /* trigger display label */
+    const triggerContent = multiple
+        ? multiValue.length === 0
+            ? <span className="text-dark-400 dark:text-dark-500 truncate">{placeholder}</span>
+            : multiValue.length === 1
+              ? <span className="text-dark-900 dark:text-dark-50 truncate">{selectedMultiple[0]?.label}</span>
+              : <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                    <span className="inline-flex items-center px-1.5 py-0.5 rounded-md text-xs font-medium bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300 shrink-0">
+                        {multiValue.length}
+                    </span>
+                    <span className="text-dark-900 dark:text-dark-50 truncate text-sm">
+                        {selectedMultiple.map((o) => o.label).join(', ')}
+                    </span>
+                </div>
+        : <span className="truncate">{selected ? selected.label : placeholder}</span>;
 
     return (
         <div className={cn('w-full', className)}>
@@ -63,7 +121,7 @@ export function Combobox({
                     {label}
                 </label>
             )}
-            <Popover open={open} onOpenChange={setOpen}>
+            <Popover open={open} onOpenChange={(o) => { setOpen(o); if (!o) setSearch(''); }}>
                 <PopoverTrigger asChild>
                     <button
                         id={inputId}
@@ -79,25 +137,33 @@ export function Combobox({
                                   : 'border-secondary-200 dark:border-dark-600 hover:border-secondary-300 dark:hover:border-dark-500',
                             'focus-visible:outline-none',
                             'disabled:cursor-not-allowed disabled:bg-secondary-50 dark:disabled:bg-dark-700 disabled:opacity-60',
-                            selected
+                            hasValue
                                 ? 'text-dark-900 dark:text-dark-50'
                                 : 'text-dark-400 dark:text-dark-500',
                         )}
                     >
-                        <span className="truncate">{selected ? selected.label : placeholder}</span>
+                        <div className="flex-1 min-w-0 flex items-center">{triggerContent}</div>
                         <div className="flex items-center gap-0.5 shrink-0 ml-2">
-                            {clearable && selected && !disabled && (
+                            {clearable && hasValue && !disabled && (
                                 <span
                                     role="button"
                                     tabIndex={0}
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                        onChange(null);
+                                        if (multiple) {
+                                            (onChange as (v: (string | number)[]) => void)([]);
+                                        } else {
+                                            (onChange as (v: string | number | null) => void)(null);
+                                        }
                                     }}
                                     onKeyDown={(e) => {
                                         if (e.key === 'Enter') {
                                             e.stopPropagation();
-                                            onChange(null);
+                                            if (multiple) {
+                                                (onChange as (v: (string | number)[]) => void)([]);
+                                            } else {
+                                                (onChange as (v: string | number | null) => void)(null);
+                                            }
                                         }
                                     }}
                                     className="rounded-md p-1 text-dark-400 hover:text-dark-700 dark:hover:text-dark-200 transition-colors"
@@ -114,7 +180,7 @@ export function Combobox({
                         </div>
                     </button>
                 </PopoverTrigger>
-                <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 overflow-hidden" align="start">
+                <PopoverContent className={cn('p-0 overflow-hidden min-w-(--radix-popover-trigger-width)', popoverWidth ?? 'w-(--radix-popover-trigger-width)')} align="start">
                     <CommandPrimitive shouldFilter={false}>
                         <div className="flex items-center px-3 border-b border-secondary-100 dark:border-dark-600">
                             <Search className="h-3.5 w-3.5 shrink-0 text-dark-400 mr-2.5" />
@@ -136,24 +202,30 @@ export function Combobox({
                                     key={option.value}
                                     value={String(option.value)}
                                     onSelect={() => {
-                                        onChange(option.value);
-                                        setOpen(false);
-                                        setSearch('');
+                                        if (multiple) {
+                                            toggleMultiple(option.value);
+                                        } else {
+                                            (onChange as (v: string | number | null) => void)(option.value);
+                                            setOpen(false);
+                                            setSearch('');
+                                        }
                                     }}
                                     className={cn(
                                         'flex cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm outline-none transition-colors',
-                                        option.value === value
+                                        isSelected(option)
                                             ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300'
                                             : 'text-dark-700 dark:text-dark-300 hover:bg-zinc-50 dark:hover:bg-dark-600 aria-selected:bg-zinc-50 dark:aria-selected:bg-dark-600',
                                     )}
                                 >
                                     <div
                                         className={cn(
-                                            'h-4 w-4 shrink-0 flex items-center justify-center',
-                                            option.value === value ? 'text-primary-600 dark:text-primary-400' : 'text-transparent',
+                                            'h-4 w-4 shrink-0 flex items-center justify-center rounded',
+                                            isSelected(option)
+                                                ? 'bg-primary-600 dark:bg-primary-500 text-white'
+                                                : 'border border-secondary-300 dark:border-dark-500 text-transparent',
                                         )}
                                     >
-                                        <Check className="h-3.5 w-3.5" />
+                                        <Check className="h-3 w-3" />
                                     </div>
                                     <div className="min-w-0">
                                         <div className="truncate">{option.label}</div>
@@ -166,6 +238,20 @@ export function Combobox({
                                 </CommandPrimitive.Item>
                             ))}
                         </CommandPrimitive.List>
+                        {multiple && multiValue.length > 0 && (
+                            <div className="border-t border-secondary-100 dark:border-dark-600 p-1.5">
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        (onChange as (v: (string | number)[]) => void)([]);
+                                        setOpen(false);
+                                    }}
+                                    className="w-full px-2.5 py-1.5 text-xs font-medium text-dark-500 dark:text-dark-400 hover:bg-zinc-50 dark:hover:bg-dark-600 rounded-lg transition-colors text-left"
+                                >
+                                    Hapus semua pilihan ({multiValue.length})
+                                </button>
+                            </div>
+                        )}
                     </CommandPrimitive>
                 </PopoverContent>
             </Popover>
