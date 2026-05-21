@@ -3,7 +3,7 @@
 > **Dokumen ini adalah panduan kerja untuk Claude Code.**
 > Dibuat: 2026-05-11 | Branch aktif: `feature/inertia-react-migration`
 > Update dokumen ini setiap kali fase selesai.
-> **Terakhir diupdate: 2026-05-21 — Fase 14 selesai: Testing (76 tests, SQLite compat fixes, new controller tests).**
+> **Terakhir diupdate: 2026-05-21 — Fase 15 selesai: Cleanup & Deployment Prep (delete Livewire/TallStackUI files, npm run build ✅).**
 
 ---
 
@@ -62,7 +62,7 @@ git show main:path/to/file.php
 | 12 | Backend Refactoring (Controllers + Form Requests) | ✅ Selesai (2026-05-21) |
 | 13 | PDF Integration | ✅ Selesai (2026-05-21) |
 | 14 | Testing | ✅ Selesai (2026-05-21) |
-| 15 | Cleanup & Deployment Prep | ⬜ Belum Dimulai |
+| 15 | Cleanup & Deployment Prep | ✅ Selesai (2026-05-21) |
 
 **Legend:** ⬜ Belum Dimulai | 🔄 Sedang Dikerjakan | ✅ Selesai
 
@@ -752,19 +752,23 @@ Route::get('/templates/{template}/edit', [RecurringInvoiceController::class, 'ed
 
 ---
 
-## Fase 15 — Cleanup & Deployment Prep
+## Fase 15 — Cleanup & Deployment Prep ✅ SELESAI (2026-05-21)
 
 ### Cleanup
-- [ ] Hapus semua file `app/Livewire/**/*.php`
-- [ ] Hapus semua file `resources/views/livewire/**/*.blade.php`
-- [ ] Hapus `resources/views/components/layouts/app.blade.php` (ganti dengan `app.blade.php` Inertia)
-- [ ] Hapus `resources/js/app.js` (entry Livewire)
-- [ ] Update `.env.example`
-- [ ] Jalankan `composer dump-autoload`
-- [ ] Jalankan `php artisan view:clear && config:clear && cache:clear`
+- [x] Hapus semua file `app/Livewire/**/*.php` (~110 file)
+- [x] Hapus semua file `resources/views/livewire/**/*.blade.php` (~100 file)
+- [x] Hapus `resources/views/components/layouts/` (layouts Livewire lama)
+- [x] Hapus `resources/views/components/form/` (form components Livewire lama)
+- [x] Hapus `resources/views/components/ui/` (TallStackUI helper components)
+- [x] Hapus `resources/views/partials/head.blade.php` (hanya dipakai layout lama)
+- [x] Hapus `resources/js/app.js` (entry Livewire — window globals tidak diperlukan React)
+- [x] Update `vite.config.js` — hapus `app.js` dari input, hapus livewire-toaster content
+- [x] Update `.env.example` — APP_LOCALE=id, APP_FAKER_LOCALE=id_ID
+- [x] Jalankan `composer dump-autoload`
+- [x] Jalankan `php artisan view:clear && config:clear && cache:clear && route:clear`
 
 ### Deployment
-- [ ] Build assets: `npm run build`
+- [x] Build assets: `npm run build` — ✅ sukses (3000+ modules, no errors)
 - [ ] Merge `feature/inertia-react-migration` → `main`
 
 **Cara merge:**

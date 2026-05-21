@@ -17,7 +17,6 @@ export default defineConfig(({ mode }) => {
             laravel({
                 input: [
                     'resources/css/app.css',
-                    'resources/js/app.js',
                     'resources/js/inertia.tsx',
                 ],
                 refresh: true,
@@ -25,9 +24,6 @@ export default defineConfig(({ mode }) => {
             react(),
             wayfinder(),
             tailwindcss(),
-        ],
-        content: [
-            './vendor/masmerise/livewire-toaster/resources/views/*.blade.php',
         ],
         server: {
             host: '127.0.0.1',
