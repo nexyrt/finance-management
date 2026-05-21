@@ -298,13 +298,13 @@ export default function TransactionCategoriesIndex() {
                 {/* Table */}
                 <div className="rounded-xl border border-secondary-200 dark:border-dark-600 bg-white dark:bg-dark-700 overflow-hidden">
                     <table className="w-full text-sm">
-                        <thead>
-                            <tr className="border-b border-secondary-200 dark:border-dark-600 bg-zinc-50 dark:bg-dark-800">
-                                <th className="px-4 py-3 text-left font-medium text-dark-600 dark:text-dark-400">Tipe</th>
-                                <th className="px-4 py-3 text-left font-medium text-dark-600 dark:text-dark-400">Nama</th>
-                                <th className="px-4 py-3 text-left font-medium text-dark-600 dark:text-dark-400">Parent</th>
-                                <th className="px-4 py-3 text-left font-medium text-dark-600 dark:text-dark-400">Digunakan</th>
-                                <th className="px-4 py-3 text-right font-medium text-dark-600 dark:text-dark-400">Aksi</th>
+                        <thead className="bg-secondary-50/60 dark:bg-dark-800/60 border-b border-secondary-200 dark:border-dark-600">
+                            <tr>
+                                <th className="px-3 py-3 text-left text-xs font-semibold text-dark-500 dark:text-dark-400">Tipe</th>
+                                <th className="px-3 py-3 text-left text-xs font-semibold text-dark-500 dark:text-dark-400">Nama</th>
+                                <th className="px-3 py-3 text-left text-xs font-semibold text-dark-500 dark:text-dark-400">Parent</th>
+                                <th className="px-3 py-3 text-left text-xs font-semibold text-dark-500 dark:text-dark-400">Digunakan</th>
+                                <th className="px-3 py-3 text-right text-xs font-semibold text-dark-500 dark:text-dark-400">Aksi</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-secondary-100 dark:divide-dark-600">
@@ -319,11 +319,11 @@ export default function TransactionCategoriesIndex() {
                                 categories.data.map((cat) => {
                                     const cfg = TYPE_CONFIG[cat.type];
                                     return (
-                                        <tr key={cat.id} className="hover:bg-zinc-50 dark:hover:bg-dark-800 transition-colors">
-                                            <td className="px-4 py-3">
+                                        <tr key={cat.id} className="hover:bg-secondary-50/80 dark:hover:bg-dark-800/50 transition-colors">
+                                            <td className="px-3 py-3 align-middle">
                                                 <Badge variant={cfg?.color ?? 'blue'}>{cfg?.label ?? cat.type}</Badge>
                                             </td>
-                                            <td className="px-4 py-3 font-medium text-dark-900 dark:text-dark-50">
+                                            <td className="px-3 py-3 align-middle font-medium text-dark-900 dark:text-dark-50">
                                                 {cat.parent_label && (
                                                     <span className="text-dark-400 dark:text-dark-500 font-normal mr-1">↳</span>
                                                 )}
@@ -332,17 +332,17 @@ export default function TransactionCategoriesIndex() {
                                                     <span className="ml-2 text-xs text-dark-400 dark:text-dark-500">({cat.children_count} sub)</span>
                                                 )}
                                             </td>
-                                            <td className="px-4 py-3 text-dark-500 dark:text-dark-400">
+                                            <td className="px-3 py-3 align-middle text-dark-500 dark:text-dark-400">
                                                 {cat.parent_label ?? <span className="text-xs text-dark-300 dark:text-dark-600">—</span>}
                                             </td>
-                                            <td className="px-4 py-3 text-dark-600 dark:text-dark-400">
+                                            <td className="px-3 py-3 align-middle text-dark-600 dark:text-dark-400">
                                                 {cat.transactions_count > 0 ? (
                                                     <Badge variant="green">{cat.transactions_count} transaksi</Badge>
                                                 ) : (
                                                     <span className="text-xs text-dark-300 dark:text-dark-600">Belum digunakan</span>
                                                 )}
                                             </td>
-                                            <td className="px-4 py-3">
+                                            <td className="px-3 py-3 align-middle">
                                                 <div className="flex items-center justify-end gap-1">
                                                     <Button variant="ghost" size="icon-sm" icon={<Pencil className="h-3.5 w-3.5" />} onClick={() => openEdit(cat)} />
                                                     <Button

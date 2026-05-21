@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Controllers\Admin\PermissionController;
+use App\Http\Controllers\Admin\RoleController;
+use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\BankAccountController;
 use App\Http\Controllers\BankTransactionController;
 use App\Http\Controllers\CashFlowController;
@@ -14,14 +17,12 @@ use App\Http\Controllers\ReceivableController;
 use App\Http\Controllers\RecurringInvoiceController;
 use App\Http\Controllers\ReimbursementController;
 use App\Http\Controllers\ServiceController;
+use App\Http\Controllers\Settings\CompanyController;
+use App\Http\Controllers\Settings\PasswordController as SettingsPasswordController;
+use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\TransactionCategoryController;
 use App\Livewire\Feedbacks\Index as FeedbacksIndex;
-use App\Livewire\Permissions\Index as PermissionsIndex;
-use App\Livewire\Settings\CompanyProfileSettings;
-use App\Livewire\Settings\Password;
-use App\Livewire\Settings\Profile;
 use App\Livewire\TestingPage;
-use App\Livewire\Users\Index as UsersIndex;
 use App\Models\BankAccount;
 use App\Models\Client;
 use App\Models\Invoice;
@@ -393,27 +394,66 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     // ------------------------------------------------------------------------
-    // ADMINISTRATION - PERMISSIONS
+    // ADMINISTRATION - PERMISSIONS & ROLES
     // ------------------------------------------------------------------------
-    Route::get('/permissions', PermissionsIndex::class)
-        ->middleware('can:view permissions')
-        ->name('permissions.index');
+    Route::prefix('admin')->name('admin.')->group(function () {
+        Route::middleware('can:view permissions')->group(function () {
+            Route::get('/permissions', [PermissionController::class, 'index'])->name('permissions.index');
+            Route::post('/permissions/toggle', [PermissionController::class, 'togglePermission'])
+                ->middleware('can:manage permissions')
+                ->name('permissions.toggle');
+            Route::post('/permissions/sync-module', [PermissionController::class, 'syncModule'])
+                ->middleware('can:manage permissions')
+                ->name('permissions.sync-module');
+            Route::post('/permissions/sync-all', [PermissionController::class, 'syncAll'])
+                ->middleware('can:manage permissions')
+                ->name('permissions.sync-all');
+            Route::delete('/permissions/{permission}', [PermissionController::class, 'destroy'])
+                ->middleware('can:manage permissions')
+                ->name('permissions.destroy');
 
-    // ------------------------------------------------------------------------
-    // ADMINISTRATION - USERS
-    // ------------------------------------------------------------------------
-    Route::get('/admin/users', UsersIndex::class)
-        ->middleware('can:manage users')
-        ->name('admin.users');
+            Route::post('/roles', [RoleController::class, 'store'])
+                ->middleware('can:manage permissions')
+                ->name('roles.store');
+            Route::put('/roles/{role}', [RoleController::class, 'update'])
+                ->middleware('can:manage permissions')
+                ->name('roles.update');
+            Route::delete('/roles/{role}', [RoleController::class, 'destroy'])
+                ->middleware('can:manage permissions')
+                ->name('roles.destroy');
+        });
+
+        // ------------------------------------------------------------------------
+        // ADMINISTRATION - USERS
+        // ------------------------------------------------------------------------
+        Route::middleware('can:manage users')->group(function () {
+            Route::get('/users', [UserController::class, 'index'])->name('users.index');
+            Route::post('/users', [UserController::class, 'store'])->name('users.store');
+            Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
+            Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
+            Route::post('/users/bulk-delete', [UserController::class, 'bulkDestroy'])->name('users.bulk-destroy');
+        });
+    });
+
+    // Legacy redirect to support old "admin.users" route name from sidebar
+    Route::get('/permissions', fn () => redirect()->route('admin.permissions.index'));
 
     // ------------------------------------------------------------------------
     // SETTINGS
     // ------------------------------------------------------------------------
     Route::prefix('settings')->name('settings.')->group(function () {
         Route::redirect('/', '/settings/profile');
-        Route::get('/profile', Profile::class)->name('profile');
-        Route::get('/password', Password::class)->name('password');
-        Route::get('/company', CompanyProfileSettings::class)->name('company');
+
+        Route::get('/profile', [ProfileController::class, 'edit'])->name('profile');
+        Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+        Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+        Route::get('/password', [SettingsPasswordController::class, 'edit'])->name('password');
+        Route::put('/password', [SettingsPasswordController::class, 'update'])->name('password.update');
+
+        Route::get('/company', [CompanyController::class, 'edit'])->name('company');
+        Route::post('/company', [CompanyController::class, 'update'])->name('company.update');
+        Route::delete('/company/assets/{asset}', [CompanyController::class, 'deleteAsset'])->name('company.delete-asset');
     });
 
     // ------------------------------------------------------------------------

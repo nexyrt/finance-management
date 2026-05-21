@@ -425,20 +425,25 @@ export default function ReimbursementsIndex({
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-secondary-100 dark:divide-dark-600">
-                                    {rows.map((row) => (
+                                    {rows.map((row) => {
+                                        const isSelected = selected.includes(row.id);
+                                        return (
                                         <tr
                                             key={row.id}
                                             onClick={() => setDetailRow(row)}
                                             className={cn(
                                                 'transition-colors cursor-pointer',
-                                                selected.includes(row.id)
+                                                isSelected
                                                     ? 'bg-primary-50/50 dark:bg-primary-900/10'
                                                     : 'hover:bg-secondary-50/80 dark:hover:bg-dark-800/50',
                                             )}
                                         >
-                                            <td className="px-4 py-3 align-middle" onClick={(e) => e.stopPropagation()}>
+                                            <td
+                                                className="px-4 py-3 align-middle"
+                                                onClick={(e) => e.stopPropagation()}
+                                            >
                                                 <Checkbox
-                                                    checked={selected.includes(row.id)}
+                                                    checked={isSelected}
                                                     onCheckedChange={() => toggleOne(row.id)}
                                                 />
                                             </td>
@@ -451,17 +456,19 @@ export default function ReimbursementsIndex({
                                                 <div className="font-medium text-dark-900 dark:text-dark-50 truncate max-w-56">
                                                     {row.title}
                                                 </div>
-                                                <div className="text-xs text-dark-400 dark:text-dark-500 mt-0.5">
-                                                    {row.category_label}
-                                                </div>
+                                                {row.category_label && (
+                                                    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-medium bg-secondary-100 dark:bg-dark-600 text-dark-500 dark:text-dark-400 border border-secondary-200 dark:border-dark-500 mt-0.5">
+                                                        {row.category_label}
+                                                    </span>
+                                                )}
                                                 {row.attachment_url && (
-                                                    <div className="inline-flex items-center gap-1 mt-0.5 text-xs text-primary-500">
+                                                    <span className="inline-flex items-center gap-1 mt-0.5 ml-1 text-xs text-primary-500">
                                                         <Paperclip className="w-3 h-3" />
-                                                    </div>
+                                                    </span>
                                                 )}
                                             </td>
-                                            <td className="px-3 py-3 align-middle hidden lg:table-cell text-sm text-dark-600 dark:text-dark-400">
-                                                {formatDate(row.expense_date)}
+                                            <td className="px-3 py-3 align-middle hidden lg:table-cell">
+                                                <span className="text-sm tabular-nums text-dark-600 dark:text-dark-400">{formatDate(row.expense_date)}</span>
                                             </td>
                                             <td className="px-3 py-3 align-middle text-right">
                                                 <span className="font-semibold text-dark-900 dark:text-dark-50 tabular-nums">
@@ -517,7 +524,7 @@ export default function ReimbursementsIndex({
                                                 </div>
                                             </td>
                                         </tr>
-                                    ))}
+                                    ); })}
                                 </tbody>
                             </table>
                         </div>
@@ -942,17 +949,20 @@ function Field({ label, value }: { label: string; value: React.ReactNode }) {
 }
 
 function StatCard({ label, value, sub, color }: { label: string; value: string | number; sub?: string; color: string }) {
-    const colorMap: Record<string, string> = {
-        blue: 'text-blue-600 dark:text-blue-400',
-        yellow: 'text-yellow-600 dark:text-yellow-400',
-        green: 'text-green-600 dark:text-green-400',
-        purple: 'text-purple-600 dark:text-purple-400',
+    const accentMap: Record<string, string> = {
+        blue: 'bg-blue-500',
+        yellow: 'bg-yellow-500',
+        green: 'bg-green-500',
+        purple: 'bg-purple-500',
     };
     return (
-        <div className="bg-white dark:bg-dark-700 rounded-xl border border-secondary-200 dark:border-dark-600 px-4 py-3">
-            <p className="text-xs text-dark-500 dark:text-dark-400">{label}</p>
-            <p className={cn('text-xl font-bold tabular-nums mt-0.5', colorMap[color] ?? '')}>{value}</p>
-            {sub && <p className="text-xs text-dark-400 dark:text-dark-500">{sub}</p>}
+        <div className="rounded-xl border border-secondary-200 dark:border-dark-600 overflow-hidden bg-white dark:bg-dark-700 hover:shadow-md transition-shadow">
+            <div className={cn('h-1', accentMap[color] ?? 'bg-primary-500')} />
+            <div className="p-5">
+                <p className="text-xs font-semibold uppercase tracking-wider text-dark-500 dark:text-dark-400 leading-none mb-3">{label}</p>
+                <p className="text-2xl font-bold tabular-nums leading-none text-dark-900 dark:text-dark-50">{value}</p>
+                {sub && <p className="text-xs text-dark-500 dark:text-dark-400 mt-2">{sub}</p>}
+            </div>
         </div>
     );
 }

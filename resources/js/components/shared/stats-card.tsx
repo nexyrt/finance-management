@@ -11,69 +11,47 @@ interface StatsCardProps {
 }
 
 const colorMap = {
-    blue: {
-        bg: 'bg-blue-50 dark:bg-blue-900/20',
-        icon: 'text-blue-600 dark:text-blue-400',
-    },
-    green: {
-        bg: 'bg-green-50 dark:bg-green-900/20',
-        icon: 'text-green-600 dark:text-green-400',
-    },
-    emerald: {
-        bg: 'bg-emerald-50 dark:bg-emerald-900/20',
-        icon: 'text-emerald-600 dark:text-emerald-400',
-    },
-    purple: {
-        bg: 'bg-purple-50 dark:bg-purple-900/20',
-        icon: 'text-purple-600 dark:text-purple-400',
-    },
-    red: {
-        bg: 'bg-red-50 dark:bg-red-900/20',
-        icon: 'text-red-600 dark:text-red-400',
-    },
-    yellow: {
-        bg: 'bg-yellow-50 dark:bg-yellow-900/20',
-        icon: 'text-yellow-600 dark:text-yellow-400',
-    },
-    orange: {
-        bg: 'bg-orange-50 dark:bg-orange-900/20',
-        icon: 'text-orange-600 dark:text-orange-400',
-    },
-    indigo: {
-        bg: 'bg-indigo-50 dark:bg-indigo-900/20',
-        icon: 'text-indigo-600 dark:text-indigo-400',
-    },
+    blue:    { accent: 'bg-blue-500',    icon: 'text-blue-500' },
+    green:   { accent: 'bg-green-500',   icon: 'text-green-500' },
+    emerald: { accent: 'bg-emerald-500', icon: 'text-emerald-500' },
+    purple:  { accent: 'bg-purple-500',  icon: 'text-purple-500' },
+    red:     { accent: 'bg-red-500',     icon: 'text-red-500' },
+    yellow:  { accent: 'bg-yellow-500',  icon: 'text-yellow-500' },
+    orange:  { accent: 'bg-orange-500',  icon: 'text-orange-500' },
+    indigo:  { accent: 'bg-indigo-500',  icon: 'text-indigo-500' },
 };
 
 export function StatsCard({ label, value, icon, color = 'blue', className, inModal = false }: StatsCardProps) {
     const colors = colorMap[color];
 
-    const inner = (
-        <div className="flex items-center gap-4">
-            <div
-                className={cn(
-                    'h-12 w-12 rounded-xl flex items-center justify-center shrink-0',
-                    colors.bg,
-                )}
-            >
-                <span className={cn('w-6 h-6', colors.icon)}>{icon}</span>
+    const content = (
+        <>
+            <div className={cn('h-1', colors.accent)} />
+            <div className={inModal ? 'p-4' : 'p-5'}>
+                <div className="flex items-start justify-between mb-3">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-dark-500 dark:text-dark-400 leading-none">
+                        {label}
+                    </p>
+                    <span className={cn('[&_svg]:w-5 [&_svg]:h-5 shrink-0', colors.icon)}>
+                        {icon}
+                    </span>
+                </div>
+                <p className="text-2xl font-bold tabular-nums leading-none text-dark-900 dark:text-dark-50">
+                    {value}
+                </p>
             </div>
-            <div>
-                <p className="text-sm text-dark-600 dark:text-dark-400">{label}</p>
-                <p className="text-2xl font-bold text-dark-900 dark:text-dark-50">{value}</p>
-            </div>
-        </div>
+        </>
     );
 
     if (inModal) {
         return (
             <div
                 className={cn(
-                    'p-4 border border-secondary-200 dark:border-dark-600 rounded-xl',
+                    'rounded-xl border border-secondary-200 dark:border-dark-600 overflow-hidden bg-white dark:bg-dark-700',
                     className,
                 )}
             >
-                {inner}
+                {content}
             </div>
         );
     }
@@ -81,13 +59,12 @@ export function StatsCard({ label, value, icon, color = 'blue', className, inMod
     return (
         <div
             className={cn(
-                'p-4 rounded-xl bg-white dark:bg-dark-700',
-                'border border-secondary-200 dark:border-dark-600',
-                'shadow-sm hover:shadow-lg transition-shadow',
+                'rounded-xl border border-secondary-200 dark:border-dark-600 overflow-hidden',
+                'bg-white dark:bg-dark-700 hover:shadow-md transition-shadow',
                 className,
             )}
         >
-            {inner}
+            {content}
         </div>
     );
 }

@@ -1,0 +1,139 @@
+<?php
+
+namespace App\Http\Controllers\Settings;
+
+use App\Http\Controllers\Controller;
+use App\Models\CompanyProfile;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Inertia\Inertia;
+use Inertia\Response;
+
+class CompanyController extends Controller
+{
+    public function edit(): Response
+    {
+        $company = CompanyProfile::first();
+
+        return Inertia::render('settings/company', [
+            'company' => $company ? [
+                'id' => $company->id,
+                'name' => $company->name,
+                'address' => $company->address,
+                'email' => $company->email,
+                'phone' => $company->phone,
+                'is_pkp' => (bool) $company->is_pkp,
+                'npwp' => $company->npwp,
+                'ppn_rate' => $company->ppn_rate,
+                'finance_manager_name' => $company->finance_manager_name,
+                'finance_manager_position' => $company->finance_manager_position,
+                'bank_accounts' => $company->bank_accounts ?? [],
+                'logo_path' => $company->logo_path,
+                'letter_head_path' => $company->letter_head_path,
+                'signature_path' => $company->signature_path,
+                'stamp_path' => $company->stamp_path,
+                'logo_url' => $this->fileUrl($company->logo_path),
+                'letter_head_url' => $this->fileUrl($company->letter_head_path),
+                'signature_url' => $this->fileUrl($company->signature_path),
+                'stamp_url' => $this->fileUrl($company->stamp_path),
+            ] : null,
+        ]);
+    }
+
+    public function update(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'address' => ['required', 'string'],
+            'email' => ['required', 'email'],
+            'phone' => ['required', 'string'],
+            'is_pkp' => ['nullable', 'boolean'],
+            'npwp' => ['nullable', 'string'],
+            'ppn_rate' => ['required', 'numeric', 'min:0', 'max:100'],
+            'finance_manager_name' => ['required', 'string'],
+            'finance_manager_position' => ['required', 'string'],
+            'logo' => ['nullable', 'image', 'max:2048'],
+            'letter_head' => ['nullable', 'image', 'max:2048'],
+            'signature' => ['nullable', 'image', 'max:2048'],
+            'stamp' => ['nullable', 'image', 'max:2048'],
+        ]);
+
+        $company = CompanyProfile::firstOrNew();
+        $company->fill([
+            'name' => $validated['name'],
+            'address' => $validated['address'],
+            'email' => $validated['email'],
+            'phone' => $validated['phone'],
+            'is_pkp' => (bool) ($validated['is_pkp'] ?? false),
+            'npwp' => $validated['npwp'] ?? null,
+            'ppn_rate' => $validated['ppn_rate'],
+            'finance_manager_name' => $validated['finance_manager_name'],
+            'finance_manager_position' => $validated['finance_manager_position'],
+        ]);
+
+        $ts = time();
+
+        if ($request->hasFile('logo')) {
+            $this->replaceFile($company, 'logo_path', $request->file('logo'), "logo-{$ts}");
+        }
+        if ($request->hasFile('letter_head')) {
+            $this->replaceFile($company, 'letter_head_path', $request->file('letter_head'), "letter-head-{$ts}");
+        }
+        if ($request->hasFile('signature')) {
+            $this->replaceFile($company, 'signature_path', $request->file('signature'), "pdf-signature-{$ts}");
+        }
+        if ($request->hasFile('stamp')) {
+            $this->replaceFile($company, 'stamp_path', $request->file('stamp'), "kisantra-stamp-{$ts}");
+        }
+
+        $company->save();
+
+        return redirect()->back()->with('success', 'Profil perusahaan berhasil diperbarui.');
+    }
+
+    public function deleteAsset(Request $request, string $asset): RedirectResponse
+    {
+        $validAssets = ['logo', 'letter_head', 'signature', 'stamp'];
+        abort_unless(in_array($asset, $validAssets, true), 404);
+
+        $company = CompanyProfile::first();
+        if (! $company) {
+            return redirect()->back();
+        }
+
+        $column = "{$asset}_path";
+        $path = $company->{$column};
+
+        if ($path && Storage::disk('public')->exists($path)) {
+            Storage::disk('public')->delete($path);
+        }
+
+        $company->{$column} = null;
+        $company->save();
+
+        return redirect()->back()->with('success', 'File berhasil dihapus.');
+    }
+
+    private function replaceFile(CompanyProfile $company, string $column, $file, string $baseName): void
+    {
+        if ($company->{$column} && Storage::disk('public')->exists($company->{$column})) {
+            Storage::disk('public')->delete($company->{$column});
+        }
+        $ext = $file->getClientOriginalExtension() ?: 'png';
+        $company->{$column} = $file->storeAs('images', "{$baseName}.{$ext}", 'public');
+    }
+
+    private function fileUrl(?string $path): ?string
+    {
+        if (! $path) {
+            return null;
+        }
+        $url = asset('storage/'.$path);
+        if (Storage::disk('public')->exists($path)) {
+            $url .= '?v='.filemtime(storage_path('app/public/'.$path));
+        }
+
+        return $url;
+    }
+}

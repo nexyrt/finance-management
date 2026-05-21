@@ -35,6 +35,14 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog';
 import {
+    Sheet,
+    SheetBody,
+    SheetContent,
+    SheetFooter,
+    SheetHeader,
+    SheetTitle,
+} from '@/components/ui/sheet';
+import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
@@ -437,58 +445,32 @@ function InvoiceDrawer({
 
     return (
         <>
-            {/* Backdrop */}
-            <div
-                className={cn(
-                    'fixed inset-0 z-40 bg-black/40 backdrop-blur-sm transition-opacity duration-300',
-                    open ? 'opacity-100' : 'opacity-0 pointer-events-none',
-                )}
-                onClick={onClose}
-            />
-
-            {/* Panel */}
-            <div
-                className={cn(
-                    'fixed inset-y-0 right-0 z-50 w-full max-w-3xl',
-                    'bg-white dark:bg-dark-700',
-                    'shadow-2xl border-l border-secondary-200 dark:border-dark-600',
-                    'flex flex-col',
-                    'transition-transform duration-300 ease-in-out',
-                    open ? 'translate-x-0' : 'translate-x-full',
-                )}
-            >
-                {/* Header */}
-                <div className="flex items-center justify-between px-6 py-4 border-b border-secondary-200 dark:border-dark-600 shrink-0">
-                    <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center">
-                            <FileText className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+            <Sheet open={open} onOpenChange={(o) => !o && onClose()}>
+                <SheetContent size="3xl">
+                    <SheetHeader>
+                        <div className="flex items-center gap-3 pr-6">
+                            <div className="h-10 w-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center shrink-0">
+                                <FileText className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                            </div>
+                            <div className="min-w-0">
+                                <SheetTitle className="text-lg font-bold pr-0">
+                                    {detail?.invoice_number ?? (loading ? '...' : 'Invoice Draft')}
+                                </SheetTitle>
+                                {detail && (
+                                    <div className="flex items-center gap-2 mt-0.5">
+                                        <Badge variant={STATUS_VARIANT[detail.status] ?? 'zinc'}>
+                                            {STATUS_LABEL[detail.status] ?? detail.status}
+                                        </Badge>
+                                        <span className="text-xs text-dark-500 dark:text-dark-400">
+                                            {detail.client.name}
+                                        </span>
+                                    </div>
+                                )}
+                            </div>
                         </div>
-                        <div>
-                            <h2 className="text-lg font-bold text-dark-900 dark:text-dark-50">
-                                {detail?.invoice_number ?? (loading ? '...' : 'Invoice Draft')}
-                            </h2>
-                            {detail && (
-                                <div className="flex items-center gap-2 mt-0.5">
-                                    <Badge variant={STATUS_VARIANT[detail.status] ?? 'zinc'}>
-                                        {STATUS_LABEL[detail.status] ?? detail.status}
-                                    </Badge>
-                                    <span className="text-xs text-dark-500 dark:text-dark-400">
-                                        {detail.client.name}
-                                    </span>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                    <button
-                        onClick={onClose}
-                        className="h-8 w-8 rounded-lg flex items-center justify-center hover:bg-zinc-100 dark:hover:bg-dark-600 transition-colors"
-                    >
-                        <X className="w-4 h-4 text-dark-600 dark:text-dark-400" />
-                    </button>
-                </div>
+                    </SheetHeader>
 
-                {/* Body */}
-                <div className="flex-1 overflow-y-auto px-6 py-5 space-y-6">
+                    <SheetBody className="space-y-6">
                     {loading && (
                         <div className="flex items-center justify-center py-12">
                             <div className="h-8 w-8 rounded-full border-2 border-primary-600 border-t-transparent animate-spin" />
@@ -763,12 +745,10 @@ function InvoiceDrawer({
                             )}
                         </>
                     )}
-                </div>
+                    </SheetBody>
 
-                {/* Footer actions */}
-                {detail && (
-                    <div className="px-6 py-4 border-t border-secondary-200 dark:border-dark-600 bg-white dark:bg-dark-700 shrink-0">
-                        <div className="flex flex-wrap items-center gap-2">
+                    {detail && (
+                        <SheetFooter className="flex-wrap">
                             {detail.status === 'draft' && (
                                 <Button
                                     size="sm"
@@ -816,10 +796,10 @@ function InvoiceDrawer({
                             >
                                 Hapus
                             </Button>
-                        </div>
-                    </div>
-                )}
-            </div>
+                        </SheetFooter>
+                    )}
+                </SheetContent>
+            </Sheet>
 
             {/* Send modal */}
             <Dialog open={sendOpen} onOpenChange={setSendOpen}>

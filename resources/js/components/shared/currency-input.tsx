@@ -54,7 +54,7 @@ export function CurrencyInput({
     };
 
     return (
-        <div className="w-full">
+        <div className="w-full min-w-0">
             {label && (
                 <label
                     htmlFor={inputId}

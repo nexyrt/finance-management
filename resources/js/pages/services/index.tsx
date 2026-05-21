@@ -275,13 +275,13 @@ export default function ServicesIndex() {
                 {/* Table */}
                 <div className="rounded-xl border border-secondary-200 dark:border-dark-600 bg-white dark:bg-dark-700 overflow-hidden">
                     <table className="w-full text-sm">
-                        <thead>
-                            <tr className="border-b border-secondary-200 dark:border-dark-600 bg-zinc-50 dark:bg-dark-800">
-                                <th className="px-4 py-3 text-left font-medium text-dark-600 dark:text-dark-400">Nama Layanan</th>
-                                <th className="px-4 py-3 text-left font-medium text-dark-600 dark:text-dark-400">Kategori</th>
-                                <th className="px-4 py-3 text-left font-medium text-dark-600 dark:text-dark-400">Harga</th>
-                                <th className="px-4 py-3 text-left font-medium text-dark-600 dark:text-dark-400">Dibuat</th>
-                                <th className="px-4 py-3 text-right font-medium text-dark-600 dark:text-dark-400">Aksi</th>
+                        <thead className="bg-secondary-50/60 dark:bg-dark-800/60 border-b border-secondary-200 dark:border-dark-600">
+                            <tr>
+                                <th className="px-3 py-3 text-left text-xs font-semibold text-dark-500 dark:text-dark-400">Nama Layanan</th>
+                                <th className="px-3 py-3 text-left text-xs font-semibold text-dark-500 dark:text-dark-400">Kategori</th>
+                                <th className="px-3 py-3 text-left text-xs font-semibold text-dark-500 dark:text-dark-400">Harga</th>
+                                <th className="px-3 py-3 text-left text-xs font-semibold text-dark-500 dark:text-dark-400">Dibuat</th>
+                                <th className="px-3 py-3 text-right text-xs font-semibold text-dark-500 dark:text-dark-400">Aksi</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-secondary-100 dark:divide-dark-600">
@@ -294,18 +294,18 @@ export default function ServicesIndex() {
                                 </tr>
                             ) : (
                                 services.data.map((s) => (
-                                    <tr key={s.id} className="hover:bg-zinc-50 dark:hover:bg-dark-800 transition-colors">
-                                        <td className="px-4 py-3 font-medium text-dark-900 dark:text-dark-50">{s.name}</td>
-                                        <td className="px-4 py-3">
+                                    <tr key={s.id} className="hover:bg-secondary-50/80 dark:hover:bg-dark-800/50 transition-colors">
+                                        <td className="px-3 py-3 align-middle font-medium text-dark-900 dark:text-dark-50">{s.name}</td>
+                                        <td className="px-3 py-3 align-middle">
                                             <Badge variant={TYPE_COLORS[s.type] ?? 'blue'}>{s.type}</Badge>
                                         </td>
-                                        <td className="px-4 py-3 text-dark-900 dark:text-dark-50 font-medium">
+                                        <td className="px-3 py-3 align-middle text-dark-900 dark:text-dark-50 font-medium">
                                             {formatCurrency(s.price)}
                                         </td>
-                                        <td className="px-4 py-3 text-dark-500 dark:text-dark-400 text-xs">
+                                        <td className="px-3 py-3 align-middle text-dark-500 dark:text-dark-400 text-xs">
                                             {s.created_at}
                                         </td>
-                                        <td className="px-4 py-3">
+                                        <td className="px-3 py-3 align-middle">
                                             <div className="flex items-center justify-end gap-1">
                                                 <Button variant="ghost" size="icon-sm" icon={<Pencil className="h-3.5 w-3.5" />} onClick={() => openEdit(s)} />
                                                 <Button variant="ghost" size="icon-sm" icon={<Trash2 className="h-3.5 w-3.5 text-red-500" />} onClick={() => setDeleteTarget(s)} />

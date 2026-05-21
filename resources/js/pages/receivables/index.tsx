@@ -43,6 +43,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { CurrencyInput } from '@/components/shared/currency-input';
 import { EmptyState } from '@/components/shared/empty-state';
+import { FileUpload } from '@/components/shared/file-upload';
 import { PageHeader } from '@/components/shared/page-header';
 import { Pagination } from '@/components/shared/pagination';
 import { StatsCard } from '@/components/shared/stats-card';
@@ -277,44 +278,44 @@ export default function ReceivablesIndex({
                     <div className="overflow-hidden rounded-xl border border-secondary-200 bg-white dark:border-dark-600 dark:bg-dark-700">
                         <div className="overflow-x-auto">
                             <table className="w-full text-sm">
-                                <thead>
-                                    <tr className="border-b border-secondary-200 bg-secondary-50 dark:border-dark-600 dark:bg-dark-800">
-                                        <th className="px-4 py-3 text-left font-semibold text-dark-700 dark:text-dark-200">Nomor</th>
-                                        <th className="px-4 py-3 text-left font-semibold text-dark-700 dark:text-dark-200">Tipe</th>
-                                        <th className="px-4 py-3 text-left font-semibold text-dark-700 dark:text-dark-200">Peminjam</th>
-                                        <th className="px-4 py-3 text-right font-semibold text-dark-700 dark:text-dark-200">Pokok</th>
-                                        <th className="px-4 py-3 text-center font-semibold text-dark-700 dark:text-dark-200">Cicilan</th>
-                                        <th className="px-4 py-3 text-left font-semibold text-dark-700 dark:text-dark-200">Tanggal</th>
-                                        <th className="px-4 py-3 text-right font-semibold text-dark-700 dark:text-dark-200">Sisa Pokok</th>
-                                        <th className="px-4 py-3 text-center font-semibold text-dark-700 dark:text-dark-200">Status</th>
-                                        <th className="px-4 py-3 text-right font-semibold text-dark-700 dark:text-dark-200">Aksi</th>
+                                <thead className="bg-secondary-50/60 dark:bg-dark-800/60 border-b border-secondary-200 dark:border-dark-600">
+                                    <tr>
+                                        <th className="px-3 py-3 text-left text-xs font-semibold text-dark-500 dark:text-dark-400">Nomor</th>
+                                        <th className="px-3 py-3 text-left text-xs font-semibold text-dark-500 dark:text-dark-400">Tipe</th>
+                                        <th className="px-3 py-3 text-left text-xs font-semibold text-dark-500 dark:text-dark-400">Peminjam</th>
+                                        <th className="px-3 py-3 text-right text-xs font-semibold text-dark-500 dark:text-dark-400">Pokok</th>
+                                        <th className="px-3 py-3 text-center text-xs font-semibold text-dark-500 dark:text-dark-400">Cicilan</th>
+                                        <th className="px-3 py-3 text-left text-xs font-semibold text-dark-500 dark:text-dark-400">Tanggal</th>
+                                        <th className="px-3 py-3 text-right text-xs font-semibold text-dark-500 dark:text-dark-400">Sisa Pokok</th>
+                                        <th className="px-3 py-3 text-center text-xs font-semibold text-dark-500 dark:text-dark-400">Status</th>
+                                        <th className="px-3 py-3 text-right text-xs font-semibold text-dark-500 dark:text-dark-400">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-secondary-100 dark:divide-dark-600">
                                     {rows.map((row) => (
                                         <tr
                                             key={row.id}
-                                            className="cursor-pointer transition-colors hover:bg-secondary-50 dark:hover:bg-dark-800"
+                                            className="cursor-pointer transition-colors hover:bg-secondary-50/80 dark:hover:bg-dark-800/50"
                                             onClick={() => setDetailRow(row)}
                                         >
-                                            <td className="px-4 py-3 font-mono text-xs font-medium text-primary-600 dark:text-primary-400">
+                                            <td className="px-3 py-3 align-middle font-mono text-xs font-medium text-primary-600 dark:text-primary-400">
                                                 {row.receivable_number}
                                             </td>
-                                            <td className="px-4 py-3">{typeBadge(row.type)}</td>
-                                            <td className="px-4 py-3 font-medium text-dark-900 dark:text-dark-50">
+                                            <td className="px-3 py-3 align-middle">{typeBadge(row.type)}</td>
+                                            <td className="px-3 py-3 align-middle font-medium text-dark-900 dark:text-dark-50">
                                                 {row.debtor_name ?? '—'}
                                             </td>
-                                            <td className="px-4 py-3 text-right text-dark-900 dark:text-dark-50">
+                                            <td className="px-3 py-3 align-middle text-right text-dark-900 dark:text-dark-50">
                                                 {formatCurrency(row.principal_amount)}
                                             </td>
-                                            <td className="px-4 py-3 text-center text-dark-600 dark:text-dark-300">
+                                            <td className="px-3 py-3 align-middle text-center text-dark-600 dark:text-dark-400">
                                                 {row.installment_months}× {formatCurrency(row.installment_amount)}
                                             </td>
-                                            <td className="px-4 py-3 text-dark-600 dark:text-dark-300">
+                                            <td className="px-3 py-3 align-middle text-dark-600 dark:text-dark-400">
                                                 {formatDate(row.loan_date)}
                                             </td>
                                             <td className={cn(
-                                                'px-4 py-3 text-right font-medium',
+                                                'px-3 py-3 align-middle text-right font-medium',
                                                 row.remaining_principal > 0
                                                     ? 'text-orange-600 dark:text-orange-400'
                                                     : 'text-emerald-600 dark:text-emerald-400',
@@ -323,8 +324,8 @@ export default function ReceivablesIndex({
                                                     ? (row.remaining_principal > 0 ? formatCurrency(row.remaining_principal) : 'Lunas')
                                                     : '—'}
                                             </td>
-                                            <td className="px-4 py-3 text-center">{statusBadge(row.status)}</td>
-                                            <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                                            <td className="px-3 py-3 align-middle text-center">{statusBadge(row.status)}</td>
+                                            <td className="px-3 py-3 align-middle" onClick={(e) => e.stopPropagation()}>
                                                 <div className="flex items-center justify-end gap-1">
                                                     {row.can_submit && (
                                                         <Button
@@ -727,27 +728,15 @@ function ReceivableForm({ mode, row, nextReceivableNumber, employeeOptions, comp
                         placeholder="Catatan tambahan (opsional)"
                         rows={2}
                     />
-                    <div>
-                        <Label className="mb-1.5 block text-sm font-medium">Dokumen Kontrak</Label>
-                        {isEdit && row?.contract_attachment_url && !data.remove_attachment && (
-                            <div className="mb-2 flex items-center gap-2 rounded-lg border border-secondary-200 bg-secondary-50 p-2.5 dark:border-dark-600 dark:bg-dark-800">
-                                <FileText className="h-4 w-4 shrink-0 text-primary-600" />
-                                <a href={row.contract_attachment_url} target="_blank" rel="noreferrer" className="flex-1 truncate text-sm text-primary-600 hover:underline">
-                                    {row.contract_attachment_name ?? 'Lihat kontrak'}
-                                </a>
-                                <button type="button" onClick={() => setData('remove_attachment', true)} className="text-red-500 hover:text-red-700">
-                                    <X className="h-3.5 w-3.5" />
-                                </button>
-                            </div>
-                        )}
-                        <input
-                            type="file"
-                            accept=".pdf,.jpg,.jpeg,.png"
-                            onChange={(e) => setData('contract_attachment', e.target.files?.[0] ?? null)}
-                            className="block w-full text-sm text-dark-600 file:mr-3 file:rounded-lg file:border-0 file:bg-primary-50 file:px-3 file:py-1.5 file:text-xs file:font-medium file:text-primary-700 hover:file:bg-primary-100 dark:text-dark-300"
-                        />
-                        {errors.contract_attachment && <p className="mt-1 text-xs text-red-500">{errors.contract_attachment}</p>}
-                    </div>
+                    <FileUpload
+                        label="Dokumen Kontrak"
+                        value={data.contract_attachment}
+                        onChange={(f) => setData('contract_attachment', f)}
+                        error={errors.contract_attachment}
+                        existingFileName={isEdit && row?.contract_attachment_url && !data.remove_attachment ? (row.contract_attachment_name ?? 'Lihat kontrak') : null}
+                        existingFileUrl={isEdit && row?.contract_attachment_url && !data.remove_attachment ? row.contract_attachment_url : null}
+                        onRemoveExisting={() => setData('remove_attachment', true)}
+                    />
                 </div>
             </SheetBody>
             <SheetFooter>

@@ -1,7 +1,10 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../wayfinder'
+import profile937a89 from './profile'
+import password9cfa90 from './password'
+import company890735 from './company'
 /**
-* @see \App\Livewire\Settings\Profile::__invoke
- * @see app/Livewire/Settings/Profile.php:7
+* @see \App\Http\Controllers\Settings\ProfileController::profile
+ * @see app/Http/Controllers/Settings/ProfileController.php:17
  * @route '/settings/profile'
  */
 export const profile = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -15,8 +18,8 @@ profile.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see \App\Livewire\Settings\Profile::__invoke
- * @see app/Livewire/Settings/Profile.php:7
+* @see \App\Http\Controllers\Settings\ProfileController::profile
+ * @see app/Http/Controllers/Settings/ProfileController.php:17
  * @route '/settings/profile'
  */
 profile.url = (options?: RouteQueryOptions) => {
@@ -24,8 +27,8 @@ profile.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see \App\Livewire\Settings\Profile::__invoke
- * @see app/Livewire/Settings/Profile.php:7
+* @see \App\Http\Controllers\Settings\ProfileController::profile
+ * @see app/Http/Controllers/Settings/ProfileController.php:17
  * @route '/settings/profile'
  */
 profile.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -33,8 +36,8 @@ profile.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     method: 'get',
 })
 /**
-* @see \App\Livewire\Settings\Profile::__invoke
- * @see app/Livewire/Settings/Profile.php:7
+* @see \App\Http\Controllers\Settings\ProfileController::profile
+ * @see app/Http/Controllers/Settings/ProfileController.php:17
  * @route '/settings/profile'
  */
 profile.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -43,8 +46,8 @@ profile.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see \App\Livewire\Settings\Password::__invoke
- * @see app/Livewire/Settings/Password.php:7
+* @see \App\Http\Controllers\Settings\PasswordController::password
+ * @see app/Http/Controllers/Settings/PasswordController.php:16
  * @route '/settings/password'
  */
 export const password = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -58,8 +61,8 @@ password.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see \App\Livewire\Settings\Password::__invoke
- * @see app/Livewire/Settings/Password.php:7
+* @see \App\Http\Controllers\Settings\PasswordController::password
+ * @see app/Http/Controllers/Settings/PasswordController.php:16
  * @route '/settings/password'
  */
 password.url = (options?: RouteQueryOptions) => {
@@ -67,8 +70,8 @@ password.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see \App\Livewire\Settings\Password::__invoke
- * @see app/Livewire/Settings/Password.php:7
+* @see \App\Http\Controllers\Settings\PasswordController::password
+ * @see app/Http/Controllers/Settings/PasswordController.php:16
  * @route '/settings/password'
  */
 password.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -76,8 +79,8 @@ password.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     method: 'get',
 })
 /**
-* @see \App\Livewire\Settings\Password::__invoke
- * @see app/Livewire/Settings/Password.php:7
+* @see \App\Http\Controllers\Settings\PasswordController::password
+ * @see app/Http/Controllers/Settings/PasswordController.php:16
  * @route '/settings/password'
  */
 password.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -86,8 +89,8 @@ password.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see \App\Livewire\Settings\CompanyProfileSettings::__invoke
- * @see app/Livewire/Settings/CompanyProfileSettings.php:7
+* @see \App\Http\Controllers\Settings\CompanyController::company
+ * @see app/Http/Controllers/Settings/CompanyController.php:15
  * @route '/settings/company'
  */
 export const company = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -101,8 +104,8 @@ company.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see \App\Livewire\Settings\CompanyProfileSettings::__invoke
- * @see app/Livewire/Settings/CompanyProfileSettings.php:7
+* @see \App\Http\Controllers\Settings\CompanyController::company
+ * @see app/Http/Controllers/Settings/CompanyController.php:15
  * @route '/settings/company'
  */
 company.url = (options?: RouteQueryOptions) => {
@@ -110,8 +113,8 @@ company.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see \App\Livewire\Settings\CompanyProfileSettings::__invoke
- * @see app/Livewire/Settings/CompanyProfileSettings.php:7
+* @see \App\Http\Controllers\Settings\CompanyController::company
+ * @see app/Http/Controllers/Settings/CompanyController.php:15
  * @route '/settings/company'
  */
 company.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -119,8 +122,8 @@ company.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     method: 'get',
 })
 /**
-* @see \App\Livewire\Settings\CompanyProfileSettings::__invoke
- * @see app/Livewire/Settings/CompanyProfileSettings.php:7
+* @see \App\Http\Controllers\Settings\CompanyController::company
+ * @see app/Http/Controllers/Settings/CompanyController.php:15
  * @route '/settings/company'
  */
 company.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -128,9 +131,9 @@ company.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     method: 'head',
 })
 const settings = {
-    profile: Object.assign(profile, profile),
-password: Object.assign(password, password),
-company: Object.assign(company, company),
+    profile: Object.assign(profile, profile937a89),
+password: Object.assign(password, password9cfa90),
+company: Object.assign(company, company890735),
 }
 
 export default settings

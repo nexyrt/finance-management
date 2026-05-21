@@ -3,7 +3,7 @@
 > **Dokumen ini adalah panduan kerja untuk Claude Code.**
 > Dibuat: 2026-05-11 | Branch aktif: `feature/inertia-react-migration`
 > Update dokumen ini setiap kali fase selesai.
-> **Terakhir diupdate: 2026-05-20 — Fase 9 selesai: Loans + Receivables.**
+> **Terakhir diupdate: 2026-05-21 — Fase 10 selesai: Users + Permissions/Roles + Settings.**
 
 ---
 
@@ -57,7 +57,7 @@ git show main:path/to/file.php
 | 7 | Banking (Accounts + Cash Flow + Transactions) | ✅ Selesai (2026-05-20) |
 | 8 | Operations (Reimbursements + Fund Requests) | ✅ Selesai (2026-05-20) |
 | 9 | Finance (Loans + Receivables) | ✅ Selesai (2026-05-20) |
-| 10 | Admin (Users + Permissions + Settings) | ⬜ Belum Dimulai |
+| 10 | Admin (Users + Permissions + Settings) | ✅ Selesai (2026-05-21) |
 | 11 | Utility Components & Dashboard | ⬜ Belum Dimulai |
 | 12 | Backend Refactoring (Controllers + Form Requests) | ⬜ Belum Dimulai |
 | 13 | PDF Integration | ⬜ Belum Dimulai |
@@ -525,43 +525,78 @@ Route::get('/templates/{template}/edit', [RecurringInvoiceController::class, 'ed
 
 ---
 
-## Fase 10 — Admin
+## Fase 10 — Admin ✅ SELESAI (2026-05-21)
 
-### Users
+### Users ✅
 **Route:** `/admin/users`
-**Livewire source:** `app/Livewire/Users/`
+**Controller:** `app/Http/Controllers/Admin/UserController.php`
+**Page:** `resources/js/pages/users/index.tsx`
 
 | Component | Status |
 |-----------|--------|
-| Index | ⬜ |
-| Create | ⬜ |
-| Edit | ⬜ |
-| Delete | ⬜ |
+| Index (stats + filter + table + bulk actions) | ✅ |
+| Create (Dialog 2-column: Akun + Peran/Password) | ✅ |
+| Edit (Dialog, password opsional) | ✅ |
+| Delete (ConfirmDialog, blok hapus diri sendiri) | ✅ |
+| BulkDelete (floating bar) | ✅ |
 
-### Permissions & Roles
-**Route:** `/permissions`
-**Livewire source:** `app/Livewire/Permissions/`, `app/Livewire/Roles/`
+**Implementasi:**
+- Stats: total, active, admins, finance_managers (StatsCard h-1 accent)
+- Filter: peran (Combobox), status (Combobox), search (debounced 350ms)
+- Tabel: avatar gradient + initials, role badge dengan ikon, status badge, kontak phone
+- Form Dialog: 2-column grid (Akun + Peran/Password), show/hide password toggle
+- Bulk action floating bar dengan auto-exclude user saat ini
+- Permission gate: `manage users`
+
+### Permissions & Roles ✅
+**Route:** `/admin/permissions`
+**Controllers:** `app/Http/Controllers/Admin/PermissionController.php`, `app/Http/Controllers/Admin/RoleController.php`
+**Page:** `resources/js/pages/permissions/index.tsx`
 
 | Component | Status |
 |-----------|--------|
-| Index | ⬜ |
-| Delete Permission | ⬜ |
-| Create Role | ⬜ |
-| Update Role | ⬜ |
-| Delete Role | ⬜ |
+| Index (stats + master-detail role sidebar + permission panel) | ✅ |
+| Toggle Permission (per role) | ✅ |
+| Sync Module (grant/revoke per modul) | ✅ |
+| Sync All (grant/revoke semua permission) | ✅ |
+| Delete Permission | ✅ |
+| Create Role (Dialog dengan icon picker 37 lucide icons) | ✅ |
+| Update Role (Dialog) | ✅ |
+| Delete Role (dengan auto-reassign user ke fallback role) | ✅ |
+
+**Implementasi:**
+- 3 stats cards: Total Peran, Total Permission, Modul
+- Master-detail: sidebar kiri (3 cols) untuk role list, panel kanan (9 cols) untuk permissions
+- Permission panel grouped by modul dengan sticky header, search realtime, per-module grant/revoke
+- Icon picker 37 lucide icons (dengan backward-compat alias untuk heroicon names lama)
+- Role tidak bisa hapus: 'admin', 'staff' (default), peran sendiri
+- Permission cache di-reset (Spatie\Permission\PermissionRegistrar) setiap perubahan
+- Permission gate: `view permissions` untuk view, `manage permissions` untuk write
 
 **Roles:** `admin`, `finance manager`, `staff`
 
-### Settings
-**Route:** `/settings/*`
-**Livewire source:** `app/Livewire/Settings/`
+### Settings ✅
+**Route:** `/settings/profile`, `/settings/password`, `/settings/company`
+**Controllers:** `Settings/ProfileController`, `Settings/PasswordController`, `Settings/CompanyController`
+**Pages:** `resources/js/pages/settings/{profile,password,company}.tsx`
+**Layout:** `resources/js/layouts/settings-layout.tsx` (shared sidebar nav + card content)
 
 | Component | Status |
 |-----------|--------|
-| Profile | ⬜ |
-| Password | ⬜ |
-| CompanyProfileSettings (logo, signature, stamp) | ⬜ |
-| DeleteUserForm | ⬜ |
+| Profile (nama + email + email verification + delete account) | ✅ |
+| Password (current + new + confirm dengan show/hide toggle) | ✅ |
+| Company (identitas + manager + PKP/NPWP + 4 visual assets) | ✅ |
+| Delete Account (Dialog dengan konfirmasi password) | ✅ |
+
+**Implementasi:**
+- SettingsLayout: sidebar kiri 60w (Profile/Password/Company) + content card kanan
+- Profile: form sederhana + warning email belum terverifikasi + section Hapus Akun (Dialog merah)
+- Password: 3 field dengan toggle show/hide, validasi `current_password` rule Laravel
+- Company: 4 FormSection (Identitas, Manager, PKP & Pajak, Aset Visual)
+- Aset Visual grid 2×2: logo, kop surat, signature, stamp dengan preview Dialog & delete confirm
+- File upload kustom (hidden input + label dengan icon Upload, ganti file label dinamis)
+- Conditional PKP fields (NPWP + tarif PPN) muncul ketika checkbox PKP aktif
+- Hint regenerasi favicon di bawah form ketika logo sudah ada
 
 ---
 

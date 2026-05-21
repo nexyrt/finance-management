@@ -1310,24 +1310,24 @@ export default function RecurringInvoicesIndex({
                         ) : (
                             <div className="rounded-xl border border-secondary-200 dark:border-dark-600 overflow-hidden">
                                 <table className="w-full text-sm">
-                                    <thead>
-                                        <tr className="bg-secondary-50 dark:bg-dark-800 border-b border-secondary-200 dark:border-dark-600">
+                                    <thead className="bg-secondary-50/60 dark:bg-dark-800/60 border-b border-secondary-200 dark:border-dark-600">
+                                        <tr>
                                             <th className="w-10 px-4 py-3">
                                                 <Checkbox
                                                     checked={allDraftSelected}
                                                     onCheckedChange={toggleSelectAll}
                                                 />
                                             </th>
-                                            <th className="px-4 py-3 text-left text-xs font-semibold text-dark-500 dark:text-dark-400 uppercase tracking-wide">Klien / Template</th>
-                                            <th className="px-4 py-3 text-left text-xs font-semibold text-dark-500 dark:text-dark-400 uppercase tracking-wide hidden sm:table-cell">Tanggal</th>
-                                            <th className="px-4 py-3 text-right text-xs font-semibold text-dark-500 dark:text-dark-400 uppercase tracking-wide">Total</th>
-                                            <th className="px-4 py-3 text-center text-xs font-semibold text-dark-500 dark:text-dark-400 uppercase tracking-wide">Status</th>
-                                            <th className="px-4 py-3 text-right text-xs font-semibold text-dark-500 dark:text-dark-400 uppercase tracking-wide">Aksi</th>
+                                            <th className="px-3 py-3 text-left text-xs font-semibold text-dark-500 dark:text-dark-400">Klien / Template</th>
+                                            <th className="px-3 py-3 text-left text-xs font-semibold text-dark-500 dark:text-dark-400 hidden sm:table-cell">Tanggal</th>
+                                            <th className="px-3 py-3 text-right text-xs font-semibold text-dark-500 dark:text-dark-400">Total</th>
+                                            <th className="px-3 py-3 text-center text-xs font-semibold text-dark-500 dark:text-dark-400">Status</th>
+                                            <th className="px-3 py-3 text-right text-xs font-semibold text-dark-500 dark:text-dark-400">Aksi</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-secondary-100 dark:divide-dark-600">
                                         {monthly.invoices.map((inv) => (
-                                            <tr key={inv.id} className="hover:bg-secondary-50 dark:hover:bg-dark-800/50 transition-colors">
+                                            <tr key={inv.id} className="hover:bg-secondary-50/80 dark:hover:bg-dark-800/50 transition-colors">
                                                 <td className="px-4 py-3">
                                                     {inv.status === 'draft' && (
                                                         <Checkbox
@@ -1483,18 +1483,18 @@ export default function RecurringInvoicesIndex({
                                         ) : (
                                             <div className="overflow-x-auto">
                                                 <table className="w-full text-sm">
-                                                    <thead>
-                                                        <tr className="border-b border-secondary-200 dark:border-dark-600">
-                                                            <th className="pb-2 text-left text-xs text-dark-500 dark:text-dark-400">Template</th>
-                                                            <th className="pb-2 text-right text-xs text-dark-500 dark:text-dark-400">Revenue</th>
-                                                            <th className="pb-2 text-right text-xs text-dark-500 dark:text-dark-400 hidden sm:table-cell">Inv</th>
-                                                            <th className="pb-2 text-right text-xs text-dark-500 dark:text-dark-400 hidden md:table-cell">Sukses</th>
-                                                            <th className="pb-2 text-right text-xs text-dark-500 dark:text-dark-400 hidden md:table-cell">Margin</th>
+                                                    <thead className="bg-secondary-50/60 dark:bg-dark-800/60 border-b border-secondary-200 dark:border-dark-600">
+                                                        <tr>
+                                                            <th className="px-3 py-3 text-left text-xs font-semibold text-dark-500 dark:text-dark-400">Template</th>
+                                                            <th className="px-3 py-3 text-right text-xs font-semibold text-dark-500 dark:text-dark-400">Revenue</th>
+                                                            <th className="px-3 py-3 text-right text-xs font-semibold text-dark-500 dark:text-dark-400 hidden sm:table-cell">Inv</th>
+                                                            <th className="px-3 py-3 text-right text-xs font-semibold text-dark-500 dark:text-dark-400 hidden md:table-cell">Sukses</th>
+                                                            <th className="px-3 py-3 text-right text-xs font-semibold text-dark-500 dark:text-dark-400 hidden md:table-cell">Margin</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody className="divide-y divide-secondary-100 dark:divide-dark-600">
                                                         {analytics.template_stats.map((ts, i) => (
-                                                            <tr key={i} className="hover:bg-secondary-50 dark:hover:bg-dark-800/50">
+                                                            <tr key={i} className="hover:bg-secondary-50/80 dark:hover:bg-dark-800/50">
                                                                 <td className="py-2.5">
                                                                     <div className="font-medium text-dark-900 dark:text-dark-50 truncate max-w-[180px]">{ts.name}</div>
                                                                     <div className="text-xs text-dark-500 dark:text-dark-400">{ts.client}</div>

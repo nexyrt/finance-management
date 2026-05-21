@@ -192,11 +192,10 @@ const NAV: NavSection[] = [
             },
             {
                 label: 'Izin & Peran',
-                href: '/permissions',
+                href: '/admin/permissions',
                 icon: <Shield className="w-4 h-4 shrink-0" />,
                 permission: 'view permissions',
-                matchPrefix: '/permissions',
-                comingSoon: true,
+                matchPrefix: '/admin/permissions',
             },
             {
                 label: 'Pengguna',
@@ -204,7 +203,6 @@ const NAV: NavSection[] = [
                 icon: <UserCog className="w-4 h-4 shrink-0" />,
                 permission: 'manage users',
                 matchPrefix: '/admin/users',
-                comingSoon: true,
             },
         ],
     },
