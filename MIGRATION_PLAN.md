@@ -3,7 +3,7 @@
 > **Dokumen ini adalah panduan kerja untuk Claude Code.**
 > Dibuat: 2026-05-11 | Branch aktif: `feature/inertia-react-migration`
 > Update dokumen ini setiap kali fase selesai.
-> **Terakhir diupdate: 2026-05-21 — Fase 12 selesai: Backend Refactoring (44 Form Requests, cleanup AppServiceProvider/app.css/app.js, hapus Livewire/TallStackUI/Quill packages).**
+> **Terakhir diupdate: 2026-05-21 — Fase 13 selesai: PDF Integration (preview inline + auto-download, fix view cache Livewire).**
 
 ---
 
@@ -60,7 +60,7 @@ git show main:path/to/file.php
 | 10 | Admin (Users + Permissions + Settings) | ✅ Selesai (2026-05-21) |
 | 11 | Utility Components & Dashboard | ✅ Selesai (2026-05-21) |
 | 12 | Backend Refactoring (Controllers + Form Requests) | ✅ Selesai (2026-05-21) |
-| 13 | PDF Integration | ⬜ Belum Dimulai |
+| 13 | PDF Integration | ✅ Selesai (2026-05-21) |
 | 14 | Testing | ⬜ Belum Dimulai |
 | 15 | Cleanup & Deployment Prep | ⬜ Belum Dimulai |
 
@@ -718,14 +718,15 @@ Route::get('/templates/{template}/edit', [RecurringInvoiceController::class, 'ed
 
 ---
 
-## Fase 13 — PDF Integration
+## Fase 13 — PDF Integration ✅ SELESAI (2026-05-21)
 
 **Tujuan:** Pastikan PDF generation tetap berfungsi dengan setup baru.
 
-- [ ] `InvoicePrintService` tetap digunakan (sudah server-side, tidak perlu diubah)
-- [ ] Route `GET /invoice/{invoice}/download` tetap ada (tidak perlu Livewire)
-- [ ] Template Blade PDF (`resources/views/pdf/`) tidak diubah — DomPDF render server-side
-- [ ] Test PDF download dari React page via direct link
+- [x] `InvoicePrintService` tetap digunakan (sudah server-side, tidak perlu diubah)
+- [x] Route `GET /invoice/{invoice}/download` + `preview` tetap ada di `web.php`
+- [x] Template Blade PDF (`resources/views/pdf/`) tidak diubah — DomPDF render server-side
+- [x] Tombol PDF di InvoiceDrawer + dropdown tabel: preview inline di tab baru + auto-download via `window.location.href`
+- [x] Fix: clear view cache setelah hapus Livewire (`php artisan view:clear`) agar `wayfinder:generate` tidak gagal
 
 ---
 

@@ -782,7 +782,7 @@ function InvoiceDrawer({
                                     size="sm"
                                     variant="outline"
                                     icon={<Download className="w-3.5 h-3.5" />}
-                                    onClick={() => window.open(`/invoice/${detail.id}/download`, '_blank')}
+                                    onClick={() => openPdf(detail.id)}
                                 >
                                     PDF
                                 </Button>
@@ -1064,6 +1064,11 @@ function InvoicesPage({ invoices, stats, clients, rollbackableIds, filters }: Pr
     const [deleteId, setDeleteId] = React.useState<number | null>(null);
     const [deleteOpen, setDeleteOpen] = React.useState(false);
     const [deleteLoading, setDeleteLoading] = React.useState(false);
+
+    const openPdf = (invoiceId: number) => {
+        window.open(`/invoice/${invoiceId}/preview`, '_blank');
+        window.location.href = `/invoice/${invoiceId}/download`;
+    };
 
     const currentFilters = {
         search: filters.search ?? '',
@@ -1621,7 +1626,7 @@ function InvoicesPage({ invoices, stats, clients, rollbackableIds, filters }: Pr
                                                                 Edit
                                                             </DropdownMenuItem>
                                                             {inv.invoice_number && (
-                                                                <DropdownMenuItem onClick={() => window.open(`/invoice/${inv.id}/download`, '_blank')}>
+                                                                <DropdownMenuItem onClick={() => openPdf(inv.id)}>
                                                                     <Download className="w-4 h-4" />
                                                                     Download PDF
                                                                 </DropdownMenuItem>
