@@ -287,9 +287,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // ------------------------------------------------------------------------
     Route::middleware('can:view categories')->group(function () {
         Route::get('/transaction-categories', [TransactionCategoryController::class, 'index'])->name('transaction-categories.index');
-        Route::post('/transaction-categories', [TransactionCategoryController::class, 'store'])->middleware('can:create categories')->name('transaction-categories.store');
-        Route::put('/transaction-categories/{transactionCategory}', [TransactionCategoryController::class, 'update'])->middleware('can:edit categories')->name('transaction-categories.update');
-        Route::delete('/transaction-categories/{transactionCategory}', [TransactionCategoryController::class, 'destroy'])->middleware('can:delete categories')->name('transaction-categories.destroy');
+        Route::post('/transaction-categories', [TransactionCategoryController::class, 'store'])->middleware('can:manage categories')->name('transaction-categories.store');
+        Route::put('/transaction-categories/{transactionCategory}', [TransactionCategoryController::class, 'update'])->middleware('can:manage categories')->name('transaction-categories.update');
+        Route::delete('/transaction-categories/{transactionCategory}', [TransactionCategoryController::class, 'destroy'])->middleware('can:manage categories')->name('transaction-categories.destroy');
     });
 
     // ------------------------------------------------------------------------

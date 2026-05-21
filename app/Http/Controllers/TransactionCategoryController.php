@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreTransactionCategoryRequest;
 use App\Http\Requests\UpdateTransactionCategoryRequest;
 use App\Models\TransactionCategory;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -70,9 +71,18 @@ class TransactionCategoryController extends Controller
         ]);
     }
 
-    public function store(StoreTransactionCategoryRequest $request): RedirectResponse
+    public function store(StoreTransactionCategoryRequest $request): RedirectResponse|JsonResponse
     {
-        TransactionCategory::create($request->validated());
+        $category = TransactionCategory::create($request->validated());
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'id' => $category->id,
+                'label' => $category->label,
+                'type' => $category->type,
+                'parent_id' => $category->parent_id,
+            ], 201);
+        }
 
         return redirect()->back()->with('success', 'Kategori berhasil ditambahkan.');
     }

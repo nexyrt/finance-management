@@ -1,6 +1,6 @@
 import { useForm } from '@inertiajs/react';
 import axios from 'axios';
-import { ArrowDownLeft, ArrowUpRight } from 'lucide-react';
+import { ArrowDownLeft, ArrowUpRight, Plus } from 'lucide-react';
 import * as React from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -17,6 +17,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { CurrencyInput } from '@/components/shared/currency-input';
 import { FileUpload } from '@/components/shared/file-upload';
+import { QuickAddCategoryDialog, type QuickAddCategoryResult } from '@/components/shared/quick-add-category-dialog';
 import * as bankTransactionsRoutes from '@/routes/bank-transactions';
 import type { AccountListItem, CategoryOption } from '../types';
 
@@ -47,6 +48,25 @@ function todayIso() {
 export function TransactionFormDialog({ open, onOpenChange, accountId, accounts, type }: Props) {
     const isIncome = type === 'credit';
     const [categories, setCategories] = React.useState<CategoryOption[]>([]);
+    const [quickAddOpen, setQuickAddOpen] = React.useState(false);
+
+    const handleCategoryAdded = ({ id, formattedLabel, parentId, isGroup }: QuickAddCategoryResult) => {
+        const newOption: CategoryOption = { value: id, label: formattedLabel, disabled: isGroup || undefined };
+        setCategories((prev) => {
+            if (isGroup || !parentId) return [...prev, newOption];
+            const parentIdx = prev.findIndex((o) => o.value === parentId);
+            if (parentIdx === -1) return [...prev, newOption];
+            let insertIdx = parentIdx + 1;
+            while (insertIdx < prev.length && !prev[insertIdx].disabled) {
+                insertIdx++;
+            }
+            const result = [...prev];
+            result.splice(insertIdx, 0, newOption);
+            return result;
+        });
+        if (!isGroup) setData('category_id', id);
+        setQuickAddOpen(false);
+    };
 
     const { data, setData, post, processing, errors, reset, clearErrors } = useForm<FormShape>({
         bank_account_id: accountId,
@@ -162,14 +182,28 @@ export function TransactionFormDialog({ open, onOpenChange, accountId, accounts,
                                 error={errors.bank_account_id}
                             />
 
-                            <Combobox
-                                label="Kategori *"
-                                options={categoryOptions}
-                                value={data.category_id ?? undefined}
-                                onChange={(v) => setData('category_id', v ? Number(v) : null)}
-                                placeholder="Pilih kategori"
-                                error={errors.category_id}
-                            />
+                            <div>
+                                <div className="flex items-center justify-between mb-1.5">
+                                    <label className="text-sm font-medium text-dark-900 dark:text-dark-300">
+                                        Kategori *
+                                    </label>
+                                    <button
+                                        type="button"
+                                        onClick={() => setQuickAddOpen(true)}
+                                        className="inline-flex items-center gap-1 text-xs font-medium text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 transition-colors"
+                                    >
+                                        <Plus className="w-3 h-3" />
+                                        Tambah
+                                    </button>
+                                </div>
+                                <Combobox
+                                    options={categoryOptions}
+                                    value={data.category_id ?? undefined}
+                                    onChange={(v) => setData('category_id', v ? Number(v) : null)}
+                                    placeholder="Pilih kategori"
+                                    error={errors.category_id}
+                                />
+                            </div>
 
                             <CurrencyInput
                                 label="Jumlah *"
@@ -220,6 +254,16 @@ export function TransactionFormDialog({ open, onOpenChange, accountId, accounts,
                         </div>
                     </div>
                 </form>
+
+                <QuickAddCategoryDialog
+                    open={quickAddOpen}
+                    onOpenChange={setQuickAddOpen}
+                    type={isIncome ? 'income' : 'expense'}
+                    parentOptions={categoryOptions
+                        .filter((o) => o.disabled)
+                        .map((o) => ({ value: o.value, label: o.label }))}
+                    onAdded={handleCategoryAdded}
+                />
 
                 <DialogFooter>
                     <Button

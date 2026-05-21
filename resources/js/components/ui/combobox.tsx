@@ -8,6 +8,7 @@ export interface ComboboxOption {
     value: string | number;
     label: string;
     description?: string;
+    disabled?: boolean;
 }
 
 interface ComboboxSingleProps {
@@ -87,13 +88,21 @@ export function Combobox({
         (onChange as (v: (string | number)[]) => void)(next);
     };
 
-    const filtered = search
-        ? options.filter(
-              (o) =>
-                  o.label.toLowerCase().includes(search.toLowerCase()) ||
-                  (o.description?.toLowerCase().includes(search.toLowerCase()) ?? false),
-          )
-        : options;
+    const filtered = React.useMemo(() => {
+        if (!search) return options;
+        const q = search.toLowerCase();
+        const result: ComboboxOption[] = [];
+        let pendingHeader: ComboboxOption | null = null;
+        for (const opt of options) {
+            if (opt.disabled) {
+                pendingHeader = opt;
+            } else if (opt.label.toLowerCase().includes(q) || (opt.description?.toLowerCase().includes(q) ?? false)) {
+                if (pendingHeader) { result.push(pendingHeader); pendingHeader = null; }
+                result.push(opt);
+            }
+        }
+        return result;
+    }, [search, options]);
 
     /* trigger display label */
     const triggerContent = multiple
@@ -197,7 +206,15 @@ export function Combobox({
                                     {emptyText}
                                 </p>
                             )}
-                            {filtered.map((option) => (
+                            {filtered.map((option) =>
+                                option.disabled ? (
+                                    <div
+                                        key={option.value}
+                                        className="px-2.5 pt-3 pb-1 text-xs font-semibold uppercase tracking-wider text-dark-400 dark:text-dark-500 select-none"
+                                    >
+                                        {option.label}
+                                    </div>
+                                ) : (
                                 <CommandPrimitive.Item
                                     key={option.value}
                                     value={String(option.value)}
@@ -236,7 +253,8 @@ export function Combobox({
                                         )}
                                     </div>
                                 </CommandPrimitive.Item>
-                            ))}
+                                )
+                            )}
                         </CommandPrimitive.List>
                         {multiple && multiValue.length > 0 && (
                             <div className="border-t border-secondary-100 dark:border-dark-600 p-1.5">

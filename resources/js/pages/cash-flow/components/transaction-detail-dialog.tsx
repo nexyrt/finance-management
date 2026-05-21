@@ -7,6 +7,7 @@ import {
     Building2,
     FileText,
     Paperclip,
+    Plus,
 } from 'lucide-react';
 import * as React from 'react';
 import { toast } from 'sonner';
@@ -24,6 +25,7 @@ import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { CurrencyInput } from '@/components/shared/currency-input';
 import { FileUpload } from '@/components/shared/file-upload';
+import { QuickAddCategoryDialog, type QuickAddCategoryResult } from '@/components/shared/quick-add-category-dialog';
 import * as bankTransactionsRoutes from '@/routes/bank-transactions';
 import { cn, formatCurrency, formatDate } from '@/lib/utils';
 import type { FilterOption } from '../types';
@@ -95,6 +97,28 @@ interface EditForm {
 /* ─── Main component ─────────────────────────────────────────── */
 
 export function TransactionDetailDialog({ open, onOpenChange, data, categoryOptions }: Props) {
+    const [localCategoryOptions, setLocalCategoryOptions] = React.useState<FilterOption[]>(categoryOptions);
+
+    React.useEffect(() => {
+        setLocalCategoryOptions(categoryOptions);
+    }, [categoryOptions]);
+
+    const handleCategoryAdded = ({ id, formattedLabel, parentId, isGroup }: QuickAddCategoryResult) => {
+        const option: FilterOption = { value: id, label: formattedLabel, disabled: isGroup || undefined };
+        setLocalCategoryOptions((prev) => {
+            if (isGroup || !parentId) return [...prev, option];
+            const parentIdx = prev.findIndex((o) => o.value === parentId);
+            if (parentIdx === -1) return [...prev, option];
+            let insertIdx = parentIdx + 1;
+            while (insertIdx < prev.length && !prev[insertIdx].disabled) {
+                insertIdx++;
+            }
+            const result = [...prev];
+            result.splice(insertIdx, 0, option);
+            return result;
+        });
+    };
+
     const { data: form, setData, put, processing, errors, clearErrors } = useForm<EditForm>({
         amount: 0,
         date: '',
@@ -159,7 +183,8 @@ export function TransactionDetailDialog({ open, onOpenChange, data, categoryOpti
                         setData={setData}
                         errors={errors}
                         processing={processing}
-                        categoryOptions={categoryOptions}
+                        categoryOptions={localCategoryOptions}
+                        onCategoryAdded={handleCategoryAdded}
                         onSubmit={handleSubmit}
                         onClose={() => onOpenChange(false)}
                     />
@@ -190,11 +215,14 @@ interface TransactionEditProps {
     errors: Partial<Record<keyof EditForm, string>>;
     processing: boolean;
     categoryOptions: FilterOption[];
+    onCategoryAdded: (result: QuickAddCategoryResult) => void;
     onSubmit: (e: React.FormEvent) => void;
     onClose: () => void;
 }
 
-function TransactionEditContent({ data, form, setData, errors, processing, categoryOptions, onSubmit, onClose }: TransactionEditProps) {
+function TransactionEditContent({ data, form, setData, errors, processing, categoryOptions, onCategoryAdded, onSubmit, onClose }: TransactionEditProps) {
+    const [quickAddOpen, setQuickAddOpen] = React.useState(false);
+
     const isIncome = data.kind === 'income';
     const accentRing = isIncome
         ? 'bg-green-50 dark:bg-green-900/20'
@@ -202,6 +230,12 @@ function TransactionEditContent({ data, form, setData, errors, processing, categ
     const accentIcon = isIncome
         ? 'text-green-600 dark:text-green-400'
         : 'text-red-600 dark:text-red-400';
+
+    const handleCategoryAdded = (result: QuickAddCategoryResult) => {
+        onCategoryAdded(result);
+        if (!result.isGroup) setData('category_id', result.id);
+        setQuickAddOpen(false);
+    };
 
     return (
         <>
@@ -238,14 +272,28 @@ function TransactionEditContent({ data, form, setData, errors, processing, categ
                         onChange={(d) => setData('date', d ? d.toISOString().slice(0, 10) : '')}
                         error={errors.date}
                     />
-                    <Combobox
-                        label="Kategori *"
-                        options={categoryOptions}
-                        value={form.category_id ?? undefined}
-                        onChange={(v) => setData('category_id', v ? Number(v) : null)}
-                        placeholder="Pilih kategori"
-                        error={errors.category_id}
-                    />
+                    <div>
+                        <div className="flex items-center justify-between mb-1.5">
+                            <label className="text-sm font-medium text-dark-900 dark:text-dark-300">
+                                Kategori *
+                            </label>
+                            <button
+                                type="button"
+                                onClick={() => setQuickAddOpen(true)}
+                                className="inline-flex items-center gap-1 text-xs font-medium text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 transition-colors"
+                            >
+                                <Plus className="w-3 h-3" />
+                                Tambah
+                            </button>
+                        </div>
+                        <Combobox
+                            options={categoryOptions}
+                            value={form.category_id ?? undefined}
+                            onChange={(v) => setData('category_id', v ? Number(v) : null)}
+                            placeholder="Pilih kategori"
+                            error={errors.category_id}
+                        />
+                    </div>
                     <Input
                         label="Referensi"
                         value={form.reference_number}
@@ -278,8 +326,18 @@ function TransactionEditContent({ data, form, setData, errors, processing, categ
                 </div>
             </form>
 
+            <QuickAddCategoryDialog
+                open={quickAddOpen}
+                onOpenChange={setQuickAddOpen}
+                type={data.kind as 'income' | 'expense'}
+                parentOptions={categoryOptions
+                    .filter((o) => o.disabled)
+                    .map((o) => ({ value: o.value, label: o.label }))}
+                onAdded={handleCategoryAdded}
+            />
+
             <DialogFooter>
-                <Button variant="zinc" size="md" onClick={onClose} disabled={processing}>
+                <Button type="button" variant="zinc" size="md" onClick={onClose} disabled={processing}>
                     Batal
                 </Button>
                 <Button
