@@ -279,6 +279,10 @@ function InvoiceDrawer({
 
     const sendForm = useForm({ invoice_number: '' });
 
+    const openPdf = (invoiceId: number) => {
+        window.open(`/invoice/${invoiceId}/download`, '_blank');
+    };
+
     const fetchDetail = React.useCallback((id: number) => {
         setLoading(true);
         fetch(`/invoices/${id}`, {
@@ -1090,8 +1094,7 @@ function InvoicesPage({ invoices, stats, clients, rollbackableIds, filters }: Pr
     const [deleteLoading, setDeleteLoading] = React.useState(false);
 
     const openPdf = (invoiceId: number) => {
-        window.open(`/invoice/${invoiceId}/preview`, '_blank');
-        window.location.href = `/invoice/${invoiceId}/download`;
+        window.open(`/invoice/${invoiceId}/download`, '_blank');
     };
 
     const currentFilters = {
