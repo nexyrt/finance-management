@@ -10,7 +10,6 @@ import {
     Receipt,
     Stamp,
     Trash2,
-    Upload,
     UserCog,
 } from 'lucide-react';
 import * as React from 'react';
@@ -26,6 +25,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
+import { FileUpload } from '@/components/shared/file-upload';
 import { FormSection } from '@/components/shared/form-section';
 import { AppLayout } from '@/layouts/app-layout';
 import { SettingsLayout } from '@/layouts/settings-layout';
@@ -295,24 +295,13 @@ export default function CompanySettings() {
                                             </div>
                                         )}
 
-                                        <label className="block">
-                                            <div className={cn(
-                                                'flex items-center justify-center gap-2 h-10 rounded-lg border border-dashed cursor-pointer transition-colors text-xs font-medium',
-                                                file
-                                                    ? 'border-primary-400 dark:border-primary-600 bg-primary-50/50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300'
-                                                    : 'border-secondary-300 dark:border-dark-600 text-dark-600 dark:text-dark-400 hover:border-primary-400 dark:hover:border-primary-600',
-                                            )}>
-                                                <Upload className="w-4 h-4" />
-                                                {file ? file.name : currentUrl ? 'Ganti file' : 'Pilih file'}
-                                                <input
-                                                    type="file"
-                                                    accept="image/jpeg,image/jpg,image/png"
-                                                    className="hidden"
-                                                    onChange={(e) => setData(key, e.target.files?.[0] ?? null)}
-                                                />
-                                            </div>
-                                        </label>
-                                        {errors[key] && <p className="text-xs text-red-600 dark:text-red-400">{errors[key]}</p>}
+                                        <FileUpload
+                                            value={file}
+                                            onChange={(f) => setData(key, f)}
+                                            accept={['.jpg', '.jpeg', '.png']}
+                                            maxSizeMb={2}
+                                            error={errors[key]}
+                                        />
                                     </div>
                                 );
                             })}

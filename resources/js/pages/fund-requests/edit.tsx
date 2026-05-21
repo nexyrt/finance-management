@@ -1,5 +1,5 @@
 import { Head, router, useForm } from '@inertiajs/react';
-import { ArrowLeft, Paperclip, Plus, Trash2, X } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Combobox } from '@/components/ui/combobox';
@@ -7,6 +7,7 @@ import { DatePicker } from '@/components/ui/date-picker';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { CurrencyInput } from '@/components/shared/currency-input';
+import { FileUpload } from '@/components/shared/file-upload';
 import { FormSection } from '@/components/shared/form-section';
 import { PageHeader } from '@/components/shared/page-header';
 import { AppLayout } from '@/layouts/app-layout';
@@ -148,27 +149,17 @@ export default function FundRequestsEdit({ fundRequest, categories }: Props) {
 
                         {/* Attachment */}
                         <div className="sm:col-span-2">
-                            <label className="block text-sm font-medium text-dark-700 dark:text-dark-300 mb-1.5">
-                                Lampiran <span className="text-dark-400 dark:text-dark-500 font-normal">(maks 5MB)</span>
-                            </label>
-                            {hasExistingAttachment ? (
-                                <div className="flex items-center gap-2 p-2.5 rounded-lg border border-secondary-200 dark:border-dark-600 bg-secondary-50 dark:bg-dark-800">
-                                    <Paperclip className="w-4 h-4 text-dark-400 shrink-0" />
-                                    <span className="text-sm text-dark-700 dark:text-dark-300 truncate flex-1">
-                                        {fundRequest.attachment_name}
-                                    </span>
-                                    <button type="button" onClick={() => setData('remove_attachment', true)} className="text-dark-400 hover:text-red-500 transition-colors">
-                                        <X className="w-4 h-4" />
-                                    </button>
-                                </div>
-                            ) : (
-                                <input
-                                    type="file"
-                                    accept="image/jpeg,image/png,application/pdf"
-                                    onChange={(e) => setData('attachment', e.target.files?.[0] ?? null)}
-                                    className="block w-full text-sm text-dark-700 dark:text-dark-300 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-primary-50 file:text-primary-700 dark:file:bg-primary-900/20 dark:file:text-primary-300 hover:file:bg-primary-100 cursor-pointer"
-                                />
-                            )}
+                            <FileUpload
+                                label="Lampiran (opsional)"
+                                value={data.attachment}
+                                onChange={(file) => setData('attachment', file)}
+                                accept={['.jpg', '.jpeg', '.png', '.pdf']}
+                                maxSizeMb={5}
+                                error={errors.attachment}
+                                existingFileName={hasExistingAttachment ? fundRequest.attachment_name : null}
+                                existingFileUrl={hasExistingAttachment ? fundRequest.attachment_url : null}
+                                onRemoveExisting={() => setData('remove_attachment', true)}
+                            />
                         </div>
                     </div>
                 </div>

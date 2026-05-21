@@ -42,10 +42,12 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
+import { SegmentedControl, type SegmentedOption } from '@/components/ui/segmented-control';
 import { Tabs } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { EmptyState } from '@/components/shared/empty-state';
+import { FileUpload } from '@/components/shared/file-upload';
 import { FormSection } from '@/components/shared/form-section';
 import { PageHeader } from '@/components/shared/page-header';
 import { Pagination } from '@/components/shared/pagination';
@@ -146,6 +148,19 @@ const STATUS_META: Record<string, { label: string; variant: 'yellow' | 'blue' | 
     resolved: { label: 'Selesai', variant: 'green', icon: CheckCircle2 },
     closed: { label: 'Ditutup', variant: 'zinc', icon: XCircle },
 };
+
+const FEEDBACK_TYPE_OPTIONS: SegmentedOption<'bug' | 'feature' | 'feedback'>[] = [
+    { value: 'bug', label: 'Bug', icon: <Bug className="w-5 h-5" />, activeClassName: 'bg-red-50 dark:bg-red-900/20 border-red-500 text-red-600 dark:text-red-400' },
+    { value: 'feature', label: 'Fitur', icon: <Lightbulb className="w-5 h-5" />, activeClassName: 'bg-blue-50 dark:bg-blue-900/20 border-blue-500 text-blue-600 dark:text-blue-400' },
+    { value: 'feedback', label: 'Feedback', icon: <MessageCircle className="w-5 h-5" />, activeClassName: 'bg-zinc-100 dark:bg-dark-700 border-zinc-400 dark:border-dark-500 text-zinc-700 dark:text-zinc-300' },
+];
+
+const FEEDBACK_PRIORITY_OPTIONS: SegmentedOption<'low' | 'medium' | 'high' | 'critical'>[] = [
+    { value: 'low', label: 'Rendah', activeClassName: 'bg-zinc-100 dark:bg-dark-700 border-zinc-300 dark:border-dark-500 text-zinc-700 dark:text-zinc-300' },
+    { value: 'medium', label: 'Sedang', activeClassName: 'bg-blue-50 dark:bg-blue-900/20 border-blue-500 text-blue-700 dark:text-blue-300' },
+    { value: 'high', label: 'Tinggi', activeClassName: 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-500 text-yellow-700 dark:text-yellow-300' },
+    { value: 'critical', label: 'Kritis', activeClassName: 'bg-red-50 dark:bg-red-900/20 border-red-500 text-red-700 dark:text-red-300' },
+];
 
 /* ─────────────────────────────────── helpers ─── */
 
@@ -264,32 +279,15 @@ function FeedbackFormDialog({
 
                     <div className="px-6 py-4 max-h-[70vh] overflow-y-auto space-y-5">
                         <FormSection title="Detail Feedback" description="Jelaskan masalah, fitur, atau saran Anda">
-                            <div className="space-y-1.5">
-                                <label className="block text-sm font-medium text-dark-900 dark:text-dark-300">Tipe *</label>
-                                <div className="grid grid-cols-3 gap-2">
-                                    {(['bug', 'feature', 'feedback'] as const).map((t) => {
-                                        const meta = TYPE_META[t];
-                                        const Icon = meta.icon;
-                                        const selected = data.type === t;
-                                        return (
-                                            <button
-                                                key={t}
-                                                type="button"
-                                                onClick={() => setData('type', t)}
-                                                className={cn(
-                                                    'flex flex-col items-center gap-1.5 p-3 rounded-xl border transition-colors',
-                                                    selected
-                                                        ? `${meta.bg} border-current ${meta.text}`
-                                                        : 'border-secondary-200 dark:border-dark-600 text-dark-500 dark:text-dark-400 hover:border-primary-300 dark:hover:border-primary-700',
-                                                )}
-                                            >
-                                                <Icon className="w-5 h-5" />
-                                                <span className="text-xs font-semibold">{meta.label}</span>
-                                            </button>
-                                        );
-                                    })}
-                                </div>
-                            </div>
+                            <SegmentedControl
+                                label="Tipe *"
+                                layout="stack"
+                                columns={3}
+                                value={data.type}
+                                onChange={(v) => setData('type', v)}
+                                options={FEEDBACK_TYPE_OPTIONS}
+                                error={errors.type}
+                            />
 
                             <Input
                                 label="Judul *"
@@ -309,58 +307,26 @@ function FeedbackFormDialog({
                                 placeholder="Jelaskan secara detail..."
                             />
 
-                            <div className="space-y-1.5">
-                                <label className="block text-sm font-medium text-dark-900 dark:text-dark-300">Prioritas *</label>
-                                <div className="grid grid-cols-4 gap-2">
-                                    {(['low', 'medium', 'high', 'critical'] as const).map((p) => {
-                                        const meta = PRIORITY_META[p];
-                                        const selected = data.priority === p;
-                                        const colorMap: Record<string, string> = {
-                                            zinc: 'bg-zinc-100 dark:bg-dark-700 border-zinc-300 dark:border-dark-500 text-zinc-700 dark:text-zinc-300',
-                                            blue: 'bg-blue-50 dark:bg-blue-900/20 border-blue-500 text-blue-700 dark:text-blue-300',
-                                            yellow: 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-500 text-yellow-700 dark:text-yellow-300',
-                                            red: 'bg-red-50 dark:bg-red-900/20 border-red-500 text-red-700 dark:text-red-300',
-                                        };
-                                        return (
-                                            <button
-                                                key={p}
-                                                type="button"
-                                                onClick={() => setData('priority', p)}
-                                                className={cn(
-                                                    'h-9 rounded-lg border text-xs font-medium transition-colors',
-                                                    selected
-                                                        ? colorMap[meta.variant]
-                                                        : 'border-secondary-200 dark:border-dark-600 text-dark-500 dark:text-dark-400 hover:bg-secondary-50 dark:hover:bg-dark-700',
-                                                )}
-                                            >
-                                                {meta.label}
-                                            </button>
-                                        );
-                                    })}
-                                </div>
-                            </div>
+                            <SegmentedControl
+                                label="Prioritas *"
+                                layout="inline"
+                                columns={4}
+                                value={data.priority}
+                                onChange={(v) => setData('priority', v)}
+                                options={FEEDBACK_PRIORITY_OPTIONS}
+                                error={errors.priority}
+                            />
                         </FormSection>
 
                         {mode === 'create' && (
-                            <FormSection title="Lampiran (opsional)" description="Sertakan screenshot atau dokumen pendukung (max 5MB)">
-                                <label className="block">
-                                    <div className={cn(
-                                        'flex items-center justify-center gap-2 h-10 rounded-lg border border-dashed cursor-pointer transition-colors text-xs font-medium',
-                                        data.attachment
-                                            ? 'border-primary-400 dark:border-primary-600 bg-primary-50/50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300'
-                                            : 'border-secondary-300 dark:border-dark-600 text-dark-600 dark:text-dark-400 hover:border-primary-400 dark:hover:border-primary-600',
-                                    )}>
-                                        <Paperclip className="w-4 h-4" />
-                                        {data.attachment ? data.attachment.name : 'Pilih file (JPG, PNG, PDF)'}
-                                        <input
-                                            type="file"
-                                            accept="image/jpeg,image/jpg,image/png,application/pdf"
-                                            className="hidden"
-                                            onChange={(e) => setData('attachment', e.target.files?.[0] ?? null)}
-                                        />
-                                    </div>
-                                </label>
-                                {errors.attachment && <p className="text-xs text-red-600 dark:text-red-400">{errors.attachment}</p>}
+                            <FormSection title="Lampiran (opsional)" description="Sertakan screenshot atau dokumen pendukung">
+                                <FileUpload
+                                    value={data.attachment}
+                                    onChange={(file) => setData('attachment', file)}
+                                    accept={['.jpg', '.jpeg', '.png', '.pdf']}
+                                    maxSizeMb={5}
+                                    error={errors.attachment}
+                                />
                             </FormSection>
                         )}
                     </div>
@@ -920,7 +886,7 @@ export default function FeedbacksIndex() {
                                         </div>
                                         <div className="flex items-center justify-between pt-2 border-t border-secondary-100 dark:border-dark-600">
                                             <div className="flex items-center gap-2 min-w-0">
-                                                <div className="h-7 w-7 rounded-full bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center text-white font-semibold text-[10px] shrink-0">
+                                                <div className="h-7 w-7 rounded-full bg-linear-to-br from-primary-500 to-primary-700 flex items-center justify-center text-white font-semibold text-[10px] shrink-0">
                                                     {item.user?.initials ?? '?'}
                                                 </div>
                                                 <div className="min-w-0">

@@ -528,6 +528,7 @@ Semua komponen sudah dikustomisasi penuh sesuai Archipelago design system. Refer
 | `Textarea` | `@/components/ui/textarea` | `<textarea>` biasa | Props: `label`, `hint`, `error`. |
 | `Checkbox` | `@/components/ui/checkbox` | `<input type="checkbox">` | `primary-600` checked state. |
 | `Switch` | `@/components/ui/switch` | Toggle HTML manual | `primary-600` on, `dark-600` off. |
+| `SegmentedControl` | `@/components/ui/segmented-control` | **Tombol pilihan segmented/radio manual** | Pilihan eksklusif berbentuk grup tombol (mis. tipe/prioritas/status). Props: `options` (`{value,label,icon?,activeClassName?}`), `value`, `onChange`, `columns`, `layout` (`stack`\|`inline`), `label`, `error`. Generic atas tipe value. |
 | `Label` | `@/components/ui/label` | `<label>` manual | `dark-900 dark:text-dark-300`. |
 | `Combobox` | `@/components/ui/combobox` | **`<select>` — WAJIB** | Searchable dropdown via `cmdk`. Props: `options`, `value`, `onChange`, `placeholder`, `searchPlaceholder`, `emptyText`. |
 | `DatePicker` | `@/components/ui/date-picker` | **`<input type="date">` — WAJIB** | Indonesian locale, `primary-600` selected, react-day-picker v10. Single: `value`, `onChange`. Range: tambah `mode="range"`, `value={from,to}`, `placeholderTo`. |
@@ -564,9 +565,12 @@ Pilihan dari daftar (select)   → Combobox       ← JANGAN <select> HTML
 Pilihan tanggal (single)       → DatePicker     ← JANGAN <input type="date">
 Pilihan rentang tanggal        → DatePicker mode="range"
 Toggle on/off                  → Switch
+Pilihan eksklusif (radio/segment) → SegmentedControl  ← JANGAN tombol custom
 Yes/No checkbox                → Checkbox
 Label standalone               → Label
 Teks area panjang              → Textarea
+Upload file/lampiran           → FileUpload      ← JANGAN <input type="file">
+Preview/pilih gambar           → FileUpload
 Tombol aksi                    → Button (pilih variant sesuai context)
 Status/kategori label          → Badge (pilih variant warna sesuai status)
 Header halaman                 → PageHeader

@@ -1,5 +1,5 @@
 import { useForm } from '@inertiajs/react';
-import { Bug, Lightbulb, MessageCircle, MessageSquare, Paperclip, Send, X } from 'lucide-react';
+import { Bug, Lightbulb, MessageCircle, MessageSquare, Send } from 'lucide-react';
 import * as React from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -11,15 +11,24 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { SegmentedControl, type SegmentedOption } from '@/components/ui/segmented-control';
 import { Textarea } from '@/components/ui/textarea';
+import { FileUpload } from '@/components/shared/file-upload';
 import { FormSection } from '@/components/shared/form-section';
 import { cn } from '@/lib/utils';
 
-const TYPES = [
-    { value: 'bug', label: 'Bug', icon: Bug, bg: 'bg-red-50 dark:bg-red-900/20', text: 'text-red-600 dark:text-red-400' },
-    { value: 'feature', label: 'Fitur', icon: Lightbulb, bg: 'bg-blue-50 dark:bg-blue-900/20', text: 'text-blue-600 dark:text-blue-400' },
-    { value: 'feedback', label: 'Saran', icon: MessageCircle, bg: 'bg-zinc-100 dark:bg-dark-700', text: 'text-zinc-700 dark:text-zinc-300' },
-] as const;
+const TYPE_OPTIONS: SegmentedOption<'bug' | 'feature' | 'feedback'>[] = [
+    { value: 'bug', label: 'Bug', icon: <Bug className="w-5 h-5" />, activeClassName: 'bg-red-50 dark:bg-red-900/20 border-red-500 text-red-600 dark:text-red-400' },
+    { value: 'feature', label: 'Fitur', icon: <Lightbulb className="w-5 h-5" />, activeClassName: 'bg-blue-50 dark:bg-blue-900/20 border-blue-500 text-blue-600 dark:text-blue-400' },
+    { value: 'feedback', label: 'Saran', icon: <MessageCircle className="w-5 h-5" />, activeClassName: 'bg-zinc-100 dark:bg-dark-700 border-zinc-400 dark:border-dark-500 text-zinc-700 dark:text-zinc-300' },
+];
+
+const PRIORITY_OPTIONS: SegmentedOption<'low' | 'medium' | 'high' | 'critical'>[] = [
+    { value: 'low', label: 'Rendah', activeClassName: 'bg-zinc-100 dark:bg-dark-700 border-zinc-300 dark:border-dark-500 text-zinc-700 dark:text-zinc-300' },
+    { value: 'medium', label: 'Sedang', activeClassName: 'bg-blue-50 dark:bg-blue-900/20 border-blue-500 text-blue-700 dark:text-blue-300' },
+    { value: 'high', label: 'Tinggi', activeClassName: 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-500 text-yellow-700 dark:text-yellow-300' },
+    { value: 'critical', label: 'Kritis', activeClassName: 'bg-red-50 dark:bg-red-900/20 border-red-500 text-red-700 dark:text-red-300' },
+];
 
 interface FormData {
     title: string;
@@ -81,7 +90,7 @@ export function FloatingFeedbackButton() {
                 <span
                     className={cn(
                         'overflow-hidden whitespace-nowrap transition-all duration-300 text-sm font-semibold',
-                        hovered ? 'max-w-[8rem] opacity-100' : 'max-w-0 opacity-0',
+                        hovered ? 'max-w-32 opacity-100' : 'max-w-0 opacity-0',
                     )}
                 >
                     Feedback
@@ -109,31 +118,15 @@ export function FloatingFeedbackButton() {
 
                         <div className="px-6 py-4 max-h-[60vh] overflow-y-auto space-y-5">
                             <FormSection title="Detail" description="Apa yang ingin Anda sampaikan?">
-                                <div className="space-y-1.5">
-                                    <label className="block text-sm font-medium text-dark-900 dark:text-dark-300">Tipe *</label>
-                                    <div className="grid grid-cols-3 gap-2">
-                                        {TYPES.map((t) => {
-                                            const Icon = t.icon;
-                                            const selected = data.type === t.value;
-                                            return (
-                                                <button
-                                                    key={t.value}
-                                                    type="button"
-                                                    onClick={() => setData('type', t.value)}
-                                                    className={cn(
-                                                        'flex flex-col items-center gap-1.5 p-3 rounded-xl border transition-colors',
-                                                        selected
-                                                            ? `${t.bg} border-current ${t.text}`
-                                                            : 'border-secondary-200 dark:border-dark-600 text-dark-500 dark:text-dark-400 hover:border-primary-300 dark:hover:border-primary-700',
-                                                    )}
-                                                >
-                                                    <Icon className="w-5 h-5" />
-                                                    <span className="text-xs font-semibold">{t.label}</span>
-                                                </button>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
+                                <SegmentedControl
+                                    label="Tipe *"
+                                    layout="stack"
+                                    columns={3}
+                                    value={data.type}
+                                    onChange={(v) => setData('type', v)}
+                                    options={TYPE_OPTIONS}
+                                    error={errors.type}
+                                />
 
                                 <Input
                                     label="Judul *"
@@ -153,62 +146,25 @@ export function FloatingFeedbackButton() {
                                     placeholder="Jelaskan lebih detail..."
                                 />
 
-                                <div className="space-y-1.5">
-                                    <label className="block text-sm font-medium text-dark-900 dark:text-dark-300">Prioritas *</label>
-                                    <div className="grid grid-cols-4 gap-2">
-                                        {(['low', 'medium', 'high', 'critical'] as const).map((p) => {
-                                            const labels: Record<typeof p, string> = {
-                                                low: 'Rendah',
-                                                medium: 'Sedang',
-                                                high: 'Tinggi',
-                                                critical: 'Kritis',
-                                            };
-                                            const colorMap: Record<typeof p, string> = {
-                                                low: 'bg-zinc-100 dark:bg-dark-700 border-zinc-300 dark:border-dark-500 text-zinc-700 dark:text-zinc-300',
-                                                medium: 'bg-blue-50 dark:bg-blue-900/20 border-blue-500 text-blue-700 dark:text-blue-300',
-                                                high: 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-500 text-yellow-700 dark:text-yellow-300',
-                                                critical: 'bg-red-50 dark:bg-red-900/20 border-red-500 text-red-700 dark:text-red-300',
-                                            };
-                                            const selected = data.priority === p;
-                                            return (
-                                                <button
-                                                    key={p}
-                                                    type="button"
-                                                    onClick={() => setData('priority', p)}
-                                                    className={cn(
-                                                        'h-9 rounded-lg border text-xs font-medium transition-colors',
-                                                        selected
-                                                            ? colorMap[p]
-                                                            : 'border-secondary-200 dark:border-dark-600 text-dark-500 dark:text-dark-400 hover:bg-secondary-50 dark:hover:bg-dark-700',
-                                                    )}
-                                                >
-                                                    {labels[p]}
-                                                </button>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
+                                <SegmentedControl
+                                    label="Prioritas *"
+                                    layout="inline"
+                                    columns={4}
+                                    value={data.priority}
+                                    onChange={(v) => setData('priority', v)}
+                                    options={PRIORITY_OPTIONS}
+                                    error={errors.priority}
+                                />
                             </FormSection>
 
-                            <FormSection title="Lampiran (opsional)" description="Screenshot atau dokumen pendukung — max 5MB">
-                                <label className="block">
-                                    <div className={cn(
-                                        'flex items-center justify-center gap-2 h-10 rounded-lg border border-dashed cursor-pointer transition-colors text-xs font-medium',
-                                        data.attachment
-                                            ? 'border-primary-400 dark:border-primary-600 bg-primary-50/50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300'
-                                            : 'border-secondary-300 dark:border-dark-600 text-dark-600 dark:text-dark-400 hover:border-primary-400 dark:hover:border-primary-600',
-                                    )}>
-                                        <Paperclip className="w-4 h-4" />
-                                        {data.attachment ? data.attachment.name : 'Pilih file (JPG, PNG, PDF)'}
-                                        <input
-                                            type="file"
-                                            accept="image/jpeg,image/jpg,image/png,application/pdf"
-                                            className="hidden"
-                                            onChange={(e) => setData('attachment', e.target.files?.[0] ?? null)}
-                                        />
-                                    </div>
-                                </label>
-                                {errors.attachment && <p className="text-xs text-red-600 dark:text-red-400">{errors.attachment}</p>}
+                            <FormSection title="Lampiran (opsional)" description="Screenshot atau dokumen pendukung">
+                                <FileUpload
+                                    value={data.attachment}
+                                    onChange={(file) => setData('attachment', file)}
+                                    accept={['.jpg', '.jpeg', '.png', '.pdf']}
+                                    maxSizeMb={5}
+                                    error={errors.attachment}
+                                />
                             </FormSection>
                         </div>
 

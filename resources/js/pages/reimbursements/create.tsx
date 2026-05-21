@@ -6,6 +6,7 @@ import { DatePicker } from '@/components/ui/date-picker';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { CurrencyInput } from '@/components/shared/currency-input';
+import { FileUpload } from '@/components/shared/file-upload';
 import { FormSection } from '@/components/shared/form-section';
 import { PageHeader } from '@/components/shared/page-header';
 import { AppLayout } from '@/layouts/app-layout';
@@ -99,18 +100,14 @@ export default function ReimbursementsCreate() {
                             error={errors.category}
                             placeholder="Pilih kategori biaya"
                         />
-                        <div>
-                            <label className="block text-sm font-medium text-dark-700 dark:text-dark-300 mb-1.5">
-                                Lampiran <span className="text-dark-400 dark:text-dark-500 font-normal">(opsional, maks 5MB)</span>
-                            </label>
-                            <input
-                                type="file"
-                                accept="image/jpeg,image/png,application/pdf"
-                                onChange={(e) => setData('attachment', e.target.files?.[0] ?? null)}
-                                className="block w-full text-sm text-dark-700 dark:text-dark-300 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-primary-50 file:text-primary-700 dark:file:bg-primary-900/20 dark:file:text-primary-300 hover:file:bg-primary-100 dark:hover:file:bg-primary-900/30 cursor-pointer"
-                            />
-                            {errors.attachment && <p className="text-xs text-red-500 mt-1">{errors.attachment}</p>}
-                        </div>
+                        <FileUpload
+                            label="Lampiran (opsional)"
+                            value={data.attachment}
+                            onChange={(file) => setData('attachment', file)}
+                            accept={['.jpg', '.jpeg', '.png', '.pdf']}
+                            maxSizeMb={5}
+                            error={errors.attachment}
+                        />
                     </div>
 
                     <div className="flex items-center justify-between pt-2 border-t border-secondary-200 dark:border-dark-600">
