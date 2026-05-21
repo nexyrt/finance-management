@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\BankAccountController::index
- * @see app/Http/Controllers/BankAccountController.php:17
+ * @see app/Http/Controllers/BankAccountController.php:18
  * @route '/bank-accounts'
  */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\BankAccountController::index
- * @see app/Http/Controllers/BankAccountController.php:17
+ * @see app/Http/Controllers/BankAccountController.php:18
  * @route '/bank-accounts'
  */
 index.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\BankAccountController::index
- * @see app/Http/Controllers/BankAccountController.php:17
+ * @see app/Http/Controllers/BankAccountController.php:18
  * @route '/bank-accounts'
  */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -34,7 +34,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\BankAccountController::index
- * @see app/Http/Controllers/BankAccountController.php:17
+ * @see app/Http/Controllers/BankAccountController.php:18
  * @route '/bank-accounts'
  */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -44,7 +44,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\BankAccountController::store
- * @see app/Http/Controllers/BankAccountController.php:89
+ * @see app/Http/Controllers/BankAccountController.php:84
  * @route '/bank-accounts'
  */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -59,7 +59,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\BankAccountController::store
- * @see app/Http/Controllers/BankAccountController.php:89
+ * @see app/Http/Controllers/BankAccountController.php:84
  * @route '/bank-accounts'
  */
 store.url = (options?: RouteQueryOptions) => {
@@ -68,7 +68,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\BankAccountController::store
- * @see app/Http/Controllers/BankAccountController.php:89
+ * @see app/Http/Controllers/BankAccountController.php:84
  * @route '/bank-accounts'
  */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -78,7 +78,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\BankAccountController::update
- * @see app/Http/Controllers/BankAccountController.php:112
+ * @see app/Http/Controllers/BankAccountController.php:101
  * @route '/bank-accounts/{bankAccount}'
  */
 export const update = (args: { bankAccount: number | { id: number } } | [bankAccount: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -93,7 +93,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\BankAccountController::update
- * @see app/Http/Controllers/BankAccountController.php:112
+ * @see app/Http/Controllers/BankAccountController.php:101
  * @route '/bank-accounts/{bankAccount}'
  */
 update.url = (args: { bankAccount: number | { id: number } } | [bankAccount: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -126,7 +126,7 @@ update.url = (args: { bankAccount: number | { id: number } } | [bankAccount: num
 
 /**
 * @see \App\Http\Controllers\BankAccountController::update
- * @see app/Http/Controllers/BankAccountController.php:112
+ * @see app/Http/Controllers/BankAccountController.php:101
  * @route '/bank-accounts/{bankAccount}'
  */
 update.put = (args: { bankAccount: number | { id: number } } | [bankAccount: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -136,7 +136,7 @@ update.put = (args: { bankAccount: number | { id: number } } | [bankAccount: num
 
 /**
 * @see \App\Http\Controllers\BankAccountController::destroy
- * @see app/Http/Controllers/BankAccountController.php:133
+ * @see app/Http/Controllers/BankAccountController.php:116
  * @route '/bank-accounts/{bankAccount}'
  */
 export const destroy = (args: { bankAccount: number | { id: number } } | [bankAccount: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -151,7 +151,7 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\BankAccountController::destroy
- * @see app/Http/Controllers/BankAccountController.php:133
+ * @see app/Http/Controllers/BankAccountController.php:116
  * @route '/bank-accounts/{bankAccount}'
  */
 destroy.url = (args: { bankAccount: number | { id: number } } | [bankAccount: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -184,7 +184,7 @@ destroy.url = (args: { bankAccount: number | { id: number } } | [bankAccount: nu
 
 /**
 * @see \App\Http\Controllers\BankAccountController::destroy
- * @see app/Http/Controllers/BankAccountController.php:133
+ * @see app/Http/Controllers/BankAccountController.php:116
  * @route '/bank-accounts/{bankAccount}'
  */
 destroy.delete = (args: { bankAccount: number | { id: number } } | [bankAccount: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({

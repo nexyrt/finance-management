@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\ClientController::index
- * @see app/Http/Controllers/ClientController.php:13
+ * @see app/Http/Controllers/ClientController.php:15
  * @route '/clients'
  */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\ClientController::index
- * @see app/Http/Controllers/ClientController.php:13
+ * @see app/Http/Controllers/ClientController.php:15
  * @route '/clients'
  */
 index.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\ClientController::index
- * @see app/Http/Controllers/ClientController.php:13
+ * @see app/Http/Controllers/ClientController.php:15
  * @route '/clients'
  */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -34,7 +34,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\ClientController::index
- * @see app/Http/Controllers/ClientController.php:13
+ * @see app/Http/Controllers/ClientController.php:15
  * @route '/clients'
  */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -44,7 +44,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\ClientController::store
- * @see app/Http/Controllers/ClientController.php:74
+ * @see app/Http/Controllers/ClientController.php:76
  * @route '/clients'
  */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -59,7 +59,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\ClientController::store
- * @see app/Http/Controllers/ClientController.php:74
+ * @see app/Http/Controllers/ClientController.php:76
  * @route '/clients'
  */
 store.url = (options?: RouteQueryOptions) => {
@@ -68,7 +68,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\ClientController::store
- * @see app/Http/Controllers/ClientController.php:74
+ * @see app/Http/Controllers/ClientController.php:76
  * @route '/clients'
  */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -78,7 +78,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\ClientController::update
- * @see app/Http/Controllers/ClientController.php:96
+ * @see app/Http/Controllers/ClientController.php:85
  * @route '/clients/{client}'
  */
 export const update = (args: { client: number | { id: number } } | [client: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -93,7 +93,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\ClientController::update
- * @see app/Http/Controllers/ClientController.php:96
+ * @see app/Http/Controllers/ClientController.php:85
  * @route '/clients/{client}'
  */
 update.url = (args: { client: number | { id: number } } | [client: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -126,7 +126,7 @@ update.url = (args: { client: number | { id: number } } | [client: number | { id
 
 /**
 * @see \App\Http\Controllers\ClientController::update
- * @see app/Http/Controllers/ClientController.php:96
+ * @see app/Http/Controllers/ClientController.php:85
  * @route '/clients/{client}'
  */
 update.put = (args: { client: number | { id: number } } | [client: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -136,7 +136,7 @@ update.put = (args: { client: number | { id: number } } | [client: number | { id
 
 /**
 * @see \App\Http\Controllers\ClientController::destroy
- * @see app/Http/Controllers/ClientController.php:118
+ * @see app/Http/Controllers/ClientController.php:94
  * @route '/clients/{client}'
  */
 export const destroy = (args: { client: number | { id: number } } | [client: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -151,7 +151,7 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\ClientController::destroy
- * @see app/Http/Controllers/ClientController.php:118
+ * @see app/Http/Controllers/ClientController.php:94
  * @route '/clients/{client}'
  */
 destroy.url = (args: { client: number | { id: number } } | [client: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -184,7 +184,7 @@ destroy.url = (args: { client: number | { id: number } } | [client: number | { i
 
 /**
 * @see \App\Http\Controllers\ClientController::destroy
- * @see app/Http/Controllers/ClientController.php:118
+ * @see app/Http/Controllers/ClientController.php:94
  * @route '/clients/{client}'
  */
 destroy.delete = (args: { client: number | { id: number } } | [client: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({

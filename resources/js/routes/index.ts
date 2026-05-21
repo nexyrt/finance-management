@@ -132,7 +132,7 @@ dashboard.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\ClientController::clients
- * @see app/Http/Controllers/ClientController.php:13
+ * @see app/Http/Controllers/ClientController.php:15
  * @route '/clients'
  */
 export const clients = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -147,7 +147,7 @@ clients.definition = {
 
 /**
 * @see \App\Http\Controllers\ClientController::clients
- * @see app/Http/Controllers/ClientController.php:13
+ * @see app/Http/Controllers/ClientController.php:15
  * @route '/clients'
  */
 clients.url = (options?: RouteQueryOptions) => {
@@ -156,7 +156,7 @@ clients.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\ClientController::clients
- * @see app/Http/Controllers/ClientController.php:13
+ * @see app/Http/Controllers/ClientController.php:15
  * @route '/clients'
  */
 clients.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -165,7 +165,7 @@ clients.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\ClientController::clients
- * @see app/Http/Controllers/ClientController.php:13
+ * @see app/Http/Controllers/ClientController.php:15
  * @route '/clients'
  */
 clients.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -175,7 +175,7 @@ clients.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\ServiceController::services
- * @see app/Http/Controllers/ServiceController.php:20
+ * @see app/Http/Controllers/ServiceController.php:22
  * @route '/services'
  */
 export const services = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -190,7 +190,7 @@ services.definition = {
 
 /**
 * @see \App\Http\Controllers\ServiceController::services
- * @see app/Http/Controllers/ServiceController.php:20
+ * @see app/Http/Controllers/ServiceController.php:22
  * @route '/services'
  */
 services.url = (options?: RouteQueryOptions) => {
@@ -199,7 +199,7 @@ services.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\ServiceController::services
- * @see app/Http/Controllers/ServiceController.php:20
+ * @see app/Http/Controllers/ServiceController.php:22
  * @route '/services'
  */
 services.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -208,54 +208,11 @@ services.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\ServiceController::services
- * @see app/Http/Controllers/ServiceController.php:20
+ * @see app/Http/Controllers/ServiceController.php:22
  * @route '/services'
  */
 services.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: services.url(options),
-    method: 'head',
-})
-
-/**
-* @see \App\Livewire\TestingPage::__invoke
- * @see app/Livewire/TestingPage.php:7
- * @route '/test'
- */
-export const test = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: test.url(options),
-    method: 'get',
-})
-
-test.definition = {
-    methods: ["get","head"],
-    url: '/test',
-} satisfies RouteDefinition<["get","head"]>
-
-/**
-* @see \App\Livewire\TestingPage::__invoke
- * @see app/Livewire/TestingPage.php:7
- * @route '/test'
- */
-test.url = (options?: RouteQueryOptions) => {
-    return test.definition.url + queryParams(options)
-}
-
-/**
-* @see \App\Livewire\TestingPage::__invoke
- * @see app/Livewire/TestingPage.php:7
- * @route '/test'
- */
-test.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: test.url(options),
-    method: 'get',
-})
-/**
-* @see \App\Livewire\TestingPage::__invoke
- * @see app/Livewire/TestingPage.php:7
- * @route '/test'
- */
-test.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
-    url: test.url(options),
     method: 'head',
 })
 

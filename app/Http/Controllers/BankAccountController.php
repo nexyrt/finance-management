@@ -10,7 +10,6 @@ use App\Models\Payment;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -24,24 +23,18 @@ class BankAccountController extends Controller
         // Load accounts with eager relationships for balance + trend calculation
         $accounts = BankAccount::with(['transactions', 'payments'])->get();
 
-        // Batch trend calculation: one query for current vs last month credits per account
-        $accountIds = $accounts->pluck('id');
-        $thisMonth = now()->month;
-        $lastMonth = now()->subMonth()->month;
+        // Batch trend calculation using already-loaded transactions (cross-database compatible)
+        $thisMonthKey = now()->format('Y-n');
+        $lastMonthKey = now()->subMonth()->format('Y-n');
 
-        $trends = DB::table('bank_transactions')
-            ->whereIn('bank_account_id', $accountIds)
-            ->where('transaction_type', 'credit')
-            ->whereIn(DB::raw('MONTH(transaction_date)'), [$thisMonth, $lastMonth])
-            ->selectRaw('bank_account_id, MONTH(transaction_date) as m, SUM(amount) as total')
-            ->groupBy('bank_account_id', DB::raw('MONTH(transaction_date)'))
-            ->get()
-            ->groupBy('bank_account_id');
-
-        $accountsData = $accounts->map(function (BankAccount $account) use ($trends, $thisMonth, $lastMonth) {
-            $accountTrends = $trends->get($account->id, collect());
-            $thisMonthTotal = $accountTrends->firstWhere('m', $thisMonth)?->total ?? 0;
-            $lastMonthTotal = $accountTrends->firstWhere('m', $lastMonth)?->total ?? 0;
+        $accountsData = $accounts->map(function (BankAccount $account) use ($thisMonthKey, $lastMonthKey) {
+            $credits = $account->transactions->where('transaction_type', 'credit');
+            $thisMonthTotal = $credits
+                ->filter(fn ($t) => date('Y-n', strtotime($t->transaction_date)) === $thisMonthKey)
+                ->sum('amount');
+            $lastMonthTotal = $credits
+                ->filter(fn ($t) => date('Y-n', strtotime($t->transaction_date)) === $lastMonthKey)
+                ->sum('amount');
 
             return [
                 'id' => $account->id,
@@ -96,7 +89,7 @@ class BankAccountController extends Controller
             'account_name' => $validated['account_name'],
             'account_number' => $validated['account_number'],
             'bank_name' => $validated['bank_name'],
-            'branch' => $validated['branch'] ?: null,
+            'branch' => ($validated['branch'] ?? null) ?: null,
             'initial_balance' => $validated['initial_balance'],
         ]);
 
@@ -113,7 +106,7 @@ class BankAccountController extends Controller
             'account_name' => $validated['account_name'],
             'account_number' => $validated['account_number'],
             'bank_name' => $validated['bank_name'],
-            'branch' => $validated['branch'] ?: null,
+            'branch' => ($validated['branch'] ?? null) ?: null,
             'initial_balance' => $validated['initial_balance'],
         ]);
 
@@ -185,22 +178,18 @@ class BankAccountController extends Controller
 
         $paymentsByMonth = Payment::where('bank_account_id', $accountId)
             ->whereBetween('payment_date', [$globalStart, $globalEnd])
-            ->selectRaw('YEAR(payment_date) as y, MONTH(payment_date) as m, SUM(amount) as total')
-            ->groupByRaw('YEAR(payment_date), MONTH(payment_date)')
-            ->get()
-            ->keyBy(fn ($row) => $row->y.'-'.$row->m);
+            ->get(['payment_date', 'amount'])
+            ->groupBy(fn ($row) => date('Y', strtotime($row->payment_date)).'-'.(int) date('n', strtotime($row->payment_date)))
+            ->map(fn ($rows) => (object) ['total' => $rows->sum('amount')]);
 
         $trxByMonth = BankTransaction::where('bank_account_id', $accountId)
             ->whereBetween('transaction_date', [$globalStart, $globalEnd])
-            ->selectRaw("
-                YEAR(transaction_date) as y,
-                MONTH(transaction_date) as m,
-                SUM(CASE WHEN transaction_type = 'credit' THEN amount ELSE 0 END) as credit_total,
-                SUM(CASE WHEN transaction_type = 'debit' THEN amount ELSE 0 END) as debit_total
-            ")
-            ->groupByRaw('YEAR(transaction_date), MONTH(transaction_date)')
-            ->get()
-            ->keyBy(fn ($row) => $row->y.'-'.$row->m);
+            ->get(['transaction_date', 'transaction_type', 'amount'])
+            ->groupBy(fn ($row) => date('Y', strtotime($row->transaction_date)).'-'.(int) date('n', strtotime($row->transaction_date)))
+            ->map(fn ($rows) => (object) [
+                'credit_total' => $rows->where('transaction_type', 'credit')->sum('amount'),
+                'debit_total' => $rows->where('transaction_type', 'debit')->sum('amount'),
+            ]);
 
         $chartMonths = [];
         for ($i = 0; $i < 12; $i++) {

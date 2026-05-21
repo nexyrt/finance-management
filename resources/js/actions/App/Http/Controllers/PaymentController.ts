@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\PaymentController::store
- * @see app/Http/Controllers/PaymentController.php:13
+ * @see app/Http/Controllers/PaymentController.php:14
  * @route '/invoices/{invoice}/payments'
  */
 export const store = (args: { invoice: number | { id: number } } | [invoice: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -16,7 +16,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\PaymentController::store
- * @see app/Http/Controllers/PaymentController.php:13
+ * @see app/Http/Controllers/PaymentController.php:14
  * @route '/invoices/{invoice}/payments'
  */
 store.url = (args: { invoice: number | { id: number } } | [invoice: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -49,7 +49,7 @@ store.url = (args: { invoice: number | { id: number } } | [invoice: number | { i
 
 /**
 * @see \App\Http\Controllers\PaymentController::store
- * @see app/Http/Controllers/PaymentController.php:13
+ * @see app/Http/Controllers/PaymentController.php:14
  * @route '/invoices/{invoice}/payments'
  */
 store.post = (args: { invoice: number | { id: number } } | [invoice: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -59,7 +59,7 @@ store.post = (args: { invoice: number | { id: number } } | [invoice: number | { 
 
 /**
 * @see \App\Http\Controllers\PaymentController::update
- * @see app/Http/Controllers/PaymentController.php:53
+ * @see app/Http/Controllers/PaymentController.php:47
  * @route '/payments/{payment}'
  */
 export const update = (args: { payment: number | { id: number } } | [payment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -74,7 +74,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\PaymentController::update
- * @see app/Http/Controllers/PaymentController.php:53
+ * @see app/Http/Controllers/PaymentController.php:47
  * @route '/payments/{payment}'
  */
 update.url = (args: { payment: number | { id: number } } | [payment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -107,7 +107,7 @@ update.url = (args: { payment: number | { id: number } } | [payment: number | { 
 
 /**
 * @see \App\Http\Controllers\PaymentController::update
- * @see app/Http/Controllers/PaymentController.php:53
+ * @see app/Http/Controllers/PaymentController.php:47
  * @route '/payments/{payment}'
  */
 update.post = (args: { payment: number | { id: number } } | [payment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -117,7 +117,7 @@ update.post = (args: { payment: number | { id: number } } | [payment: number | {
 
 /**
 * @see \App\Http\Controllers\PaymentController::destroy
- * @see app/Http/Controllers/PaymentController.php:97
+ * @see app/Http/Controllers/PaymentController.php:83
  * @route '/payments/{payment}'
  */
 export const destroy = (args: { payment: number | { id: number } } | [payment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -132,7 +132,7 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\PaymentController::destroy
- * @see app/Http/Controllers/PaymentController.php:97
+ * @see app/Http/Controllers/PaymentController.php:83
  * @route '/payments/{payment}'
  */
 destroy.url = (args: { payment: number | { id: number } } | [payment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -165,7 +165,7 @@ destroy.url = (args: { payment: number | { id: number } } | [payment: number | {
 
 /**
 * @see \App\Http\Controllers\PaymentController::destroy
- * @see app/Http/Controllers/PaymentController.php:97
+ * @see app/Http/Controllers/PaymentController.php:83
  * @route '/payments/{payment}'
  */
 destroy.delete = (args: { payment: number | { id: number } } | [payment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({

@@ -3,7 +3,7 @@ import templates from './templates'
 import monthly from './monthly'
 /**
 * @see \App\Http\Controllers\RecurringInvoiceController::index
- * @see app/Http/Controllers/RecurringInvoiceController.php:18
+ * @see app/Http/Controllers/RecurringInvoiceController.php:23
  * @route '/recurring-invoices'
  */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -18,7 +18,7 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\RecurringInvoiceController::index
- * @see app/Http/Controllers/RecurringInvoiceController.php:18
+ * @see app/Http/Controllers/RecurringInvoiceController.php:23
  * @route '/recurring-invoices'
  */
 index.url = (options?: RouteQueryOptions) => {
@@ -27,7 +27,7 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\RecurringInvoiceController::index
- * @see app/Http/Controllers/RecurringInvoiceController.php:18
+ * @see app/Http/Controllers/RecurringInvoiceController.php:23
  * @route '/recurring-invoices'
  */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -36,7 +36,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\RecurringInvoiceController::index
- * @see app/Http/Controllers/RecurringInvoiceController.php:18
+ * @see app/Http/Controllers/RecurringInvoiceController.php:23
  * @route '/recurring-invoices'
  */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\ReceivableController::index
- * @see app/Http/Controllers/ReceivableController.php:21
+ * @see app/Http/Controllers/ReceivableController.php:25
  * @route '/receivables'
  */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\ReceivableController::index
- * @see app/Http/Controllers/ReceivableController.php:21
+ * @see app/Http/Controllers/ReceivableController.php:25
  * @route '/receivables'
  */
 index.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\ReceivableController::index
- * @see app/Http/Controllers/ReceivableController.php:21
+ * @see app/Http/Controllers/ReceivableController.php:25
  * @route '/receivables'
  */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -34,7 +34,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\ReceivableController::index
- * @see app/Http/Controllers/ReceivableController.php:21
+ * @see app/Http/Controllers/ReceivableController.php:25
  * @route '/receivables'
  */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -44,7 +44,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\ReceivableController::store
- * @see app/Http/Controllers/ReceivableController.php:142
+ * @see app/Http/Controllers/ReceivableController.php:146
  * @route '/receivables'
  */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -59,7 +59,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\ReceivableController::store
- * @see app/Http/Controllers/ReceivableController.php:142
+ * @see app/Http/Controllers/ReceivableController.php:146
  * @route '/receivables'
  */
 store.url = (options?: RouteQueryOptions) => {
@@ -68,7 +68,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\ReceivableController::store
- * @see app/Http/Controllers/ReceivableController.php:142
+ * @see app/Http/Controllers/ReceivableController.php:146
  * @route '/receivables'
  */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -78,7 +78,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\ReceivableController::update
- * @see app/Http/Controllers/ReceivableController.php:203
+ * @see app/Http/Controllers/ReceivableController.php:194
  * @route '/receivables/{receivable}'
  */
 export const update = (args: { receivable: number | { id: number } } | [receivable: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -93,7 +93,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\ReceivableController::update
- * @see app/Http/Controllers/ReceivableController.php:203
+ * @see app/Http/Controllers/ReceivableController.php:194
  * @route '/receivables/{receivable}'
  */
 update.url = (args: { receivable: number | { id: number } } | [receivable: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -126,7 +126,7 @@ update.url = (args: { receivable: number | { id: number } } | [receivable: numbe
 
 /**
 * @see \App\Http\Controllers\ReceivableController::update
- * @see app/Http/Controllers/ReceivableController.php:203
+ * @see app/Http/Controllers/ReceivableController.php:194
  * @route '/receivables/{receivable}'
  */
 update.put = (args: { receivable: number | { id: number } } | [receivable: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -136,7 +136,7 @@ update.put = (args: { receivable: number | { id: number } } | [receivable: numbe
 
 /**
 * @see \App\Http\Controllers\ReceivableController::destroy
- * @see app/Http/Controllers/ReceivableController.php:277
+ * @see app/Http/Controllers/ReceivableController.php:254
  * @route '/receivables/{receivable}'
  */
 export const destroy = (args: { receivable: number | { id: number } } | [receivable: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -151,7 +151,7 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\ReceivableController::destroy
- * @see app/Http/Controllers/ReceivableController.php:277
+ * @see app/Http/Controllers/ReceivableController.php:254
  * @route '/receivables/{receivable}'
  */
 destroy.url = (args: { receivable: number | { id: number } } | [receivable: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -184,7 +184,7 @@ destroy.url = (args: { receivable: number | { id: number } } | [receivable: numb
 
 /**
 * @see \App\Http\Controllers\ReceivableController::destroy
- * @see app/Http/Controllers/ReceivableController.php:277
+ * @see app/Http/Controllers/ReceivableController.php:254
  * @route '/receivables/{receivable}'
  */
 destroy.delete = (args: { receivable: number | { id: number } } | [receivable: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -194,7 +194,7 @@ destroy.delete = (args: { receivable: number | { id: number } } | [receivable: n
 
 /**
 * @see \App\Http\Controllers\ReceivableController::submit
- * @see app/Http/Controllers/ReceivableController.php:291
+ * @see app/Http/Controllers/ReceivableController.php:268
  * @route '/receivables/{receivable}/submit'
  */
 export const submit = (args: { receivable: number | { id: number } } | [receivable: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -209,7 +209,7 @@ submit.definition = {
 
 /**
 * @see \App\Http\Controllers\ReceivableController::submit
- * @see app/Http/Controllers/ReceivableController.php:291
+ * @see app/Http/Controllers/ReceivableController.php:268
  * @route '/receivables/{receivable}/submit'
  */
 submit.url = (args: { receivable: number | { id: number } } | [receivable: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -242,7 +242,7 @@ submit.url = (args: { receivable: number | { id: number } } | [receivable: numbe
 
 /**
 * @see \App\Http\Controllers\ReceivableController::submit
- * @see app/Http/Controllers/ReceivableController.php:291
+ * @see app/Http/Controllers/ReceivableController.php:268
  * @route '/receivables/{receivable}/submit'
  */
 submit.post = (args: { receivable: number | { id: number } } | [receivable: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -252,7 +252,7 @@ submit.post = (args: { receivable: number | { id: number } } | [receivable: numb
 
 /**
 * @see \App\Http\Controllers\ReceivableController::approve
- * @see app/Http/Controllers/ReceivableController.php:300
+ * @see app/Http/Controllers/ReceivableController.php:277
  * @route '/receivables/{receivable}/approve'
  */
 export const approve = (args: { receivable: number | { id: number } } | [receivable: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -267,7 +267,7 @@ approve.definition = {
 
 /**
 * @see \App\Http\Controllers\ReceivableController::approve
- * @see app/Http/Controllers/ReceivableController.php:300
+ * @see app/Http/Controllers/ReceivableController.php:277
  * @route '/receivables/{receivable}/approve'
  */
 approve.url = (args: { receivable: number | { id: number } } | [receivable: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -300,7 +300,7 @@ approve.url = (args: { receivable: number | { id: number } } | [receivable: numb
 
 /**
 * @see \App\Http\Controllers\ReceivableController::approve
- * @see app/Http/Controllers/ReceivableController.php:300
+ * @see app/Http/Controllers/ReceivableController.php:277
  * @route '/receivables/{receivable}/approve'
  */
 approve.post = (args: { receivable: number | { id: number } } | [receivable: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -310,7 +310,7 @@ approve.post = (args: { receivable: number | { id: number } } | [receivable: num
 
 /**
 * @see \App\Http\Controllers\ReceivableController::pay
- * @see app/Http/Controllers/ReceivableController.php:348
+ * @see app/Http/Controllers/ReceivableController.php:319
  * @route '/receivables/{receivable}/pay'
  */
 export const pay = (args: { receivable: number | { id: number } } | [receivable: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -325,7 +325,7 @@ pay.definition = {
 
 /**
 * @see \App\Http\Controllers\ReceivableController::pay
- * @see app/Http/Controllers/ReceivableController.php:348
+ * @see app/Http/Controllers/ReceivableController.php:319
  * @route '/receivables/{receivable}/pay'
  */
 pay.url = (args: { receivable: number | { id: number } } | [receivable: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -358,7 +358,7 @@ pay.url = (args: { receivable: number | { id: number } } | [receivable: number |
 
 /**
 * @see \App\Http\Controllers\ReceivableController::pay
- * @see app/Http/Controllers/ReceivableController.php:348
+ * @see app/Http/Controllers/ReceivableController.php:319
  * @route '/receivables/{receivable}/pay'
  */
 pay.post = (args: { receivable: number | { id: number } } | [receivable: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({

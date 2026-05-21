@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\ServiceController::index
- * @see app/Http/Controllers/ServiceController.php:20
+ * @see app/Http/Controllers/ServiceController.php:22
  * @route '/services'
  */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\ServiceController::index
- * @see app/Http/Controllers/ServiceController.php:20
+ * @see app/Http/Controllers/ServiceController.php:22
  * @route '/services'
  */
 index.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\ServiceController::index
- * @see app/Http/Controllers/ServiceController.php:20
+ * @see app/Http/Controllers/ServiceController.php:22
  * @route '/services'
  */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -34,7 +34,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\ServiceController::index
- * @see app/Http/Controllers/ServiceController.php:20
+ * @see app/Http/Controllers/ServiceController.php:22
  * @route '/services'
  */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -44,7 +44,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\ServiceController::store
- * @see app/Http/Controllers/ServiceController.php:70
+ * @see app/Http/Controllers/ServiceController.php:72
  * @route '/services'
  */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -59,7 +59,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\ServiceController::store
- * @see app/Http/Controllers/ServiceController.php:70
+ * @see app/Http/Controllers/ServiceController.php:72
  * @route '/services'
  */
 store.url = (options?: RouteQueryOptions) => {
@@ -68,7 +68,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\ServiceController::store
- * @see app/Http/Controllers/ServiceController.php:70
+ * @see app/Http/Controllers/ServiceController.php:72
  * @route '/services'
  */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -78,7 +78,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\ServiceController::update
- * @see app/Http/Controllers/ServiceController.php:83
+ * @see app/Http/Controllers/ServiceController.php:79
  * @route '/services/{service}'
  */
 export const update = (args: { service: number | { id: number } } | [service: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -93,7 +93,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\ServiceController::update
- * @see app/Http/Controllers/ServiceController.php:83
+ * @see app/Http/Controllers/ServiceController.php:79
  * @route '/services/{service}'
  */
 update.url = (args: { service: number | { id: number } } | [service: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -126,7 +126,7 @@ update.url = (args: { service: number | { id: number } } | [service: number | { 
 
 /**
 * @see \App\Http\Controllers\ServiceController::update
- * @see app/Http/Controllers/ServiceController.php:83
+ * @see app/Http/Controllers/ServiceController.php:79
  * @route '/services/{service}'
  */
 update.put = (args: { service: number | { id: number } } | [service: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -136,7 +136,7 @@ update.put = (args: { service: number | { id: number } } | [service: number | { 
 
 /**
 * @see \App\Http\Controllers\ServiceController::destroy
- * @see app/Http/Controllers/ServiceController.php:96
+ * @see app/Http/Controllers/ServiceController.php:86
  * @route '/services/{service}'
  */
 export const destroy = (args: { service: number | { id: number } } | [service: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -151,7 +151,7 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\ServiceController::destroy
- * @see app/Http/Controllers/ServiceController.php:96
+ * @see app/Http/Controllers/ServiceController.php:86
  * @route '/services/{service}'
  */
 destroy.url = (args: { service: number | { id: number } } | [service: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -184,7 +184,7 @@ destroy.url = (args: { service: number | { id: number } } | [service: number | {
 
 /**
 * @see \App\Http\Controllers\ServiceController::destroy
- * @see app/Http/Controllers/ServiceController.php:96
+ * @see app/Http/Controllers/ServiceController.php:86
  * @route '/services/{service}'
  */
 destroy.delete = (args: { service: number | { id: number } } | [service: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({

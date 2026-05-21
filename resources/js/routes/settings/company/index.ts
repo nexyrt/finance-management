@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\Settings\CompanyController::update
- * @see app/Http/Controllers/Settings/CompanyController.php:44
+ * @see app/Http/Controllers/Settings/CompanyController.php:45
  * @route '/settings/company'
  */
 export const update = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -16,7 +16,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\Settings\CompanyController::update
- * @see app/Http/Controllers/Settings/CompanyController.php:44
+ * @see app/Http/Controllers/Settings/CompanyController.php:45
  * @route '/settings/company'
  */
 update.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ update.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Settings\CompanyController::update
- * @see app/Http/Controllers/Settings/CompanyController.php:44
+ * @see app/Http/Controllers/Settings/CompanyController.php:45
  * @route '/settings/company'
  */
 update.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -35,7 +35,7 @@ update.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\Settings\CompanyController::deleteAsset
- * @see app/Http/Controllers/Settings/CompanyController.php:95
+ * @see app/Http/Controllers/Settings/CompanyController.php:82
  * @route '/settings/company/assets/{asset}'
  */
 export const deleteAsset = (args: { asset: string | number } | [asset: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -50,7 +50,7 @@ deleteAsset.definition = {
 
 /**
 * @see \App\Http\Controllers\Settings\CompanyController::deleteAsset
- * @see app/Http/Controllers/Settings/CompanyController.php:95
+ * @see app/Http/Controllers/Settings/CompanyController.php:82
  * @route '/settings/company/assets/{asset}'
  */
 deleteAsset.url = (args: { asset: string | number } | [asset: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -78,7 +78,7 @@ deleteAsset.url = (args: { asset: string | number } | [asset: string | number ] 
 
 /**
 * @see \App\Http\Controllers\Settings\CompanyController::deleteAsset
- * @see app/Http/Controllers/Settings/CompanyController.php:95
+ * @see app/Http/Controllers/Settings/CompanyController.php:82
  * @route '/settings/company/assets/{asset}'
  */
 deleteAsset.delete = (args: { asset: string | number } | [asset: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({

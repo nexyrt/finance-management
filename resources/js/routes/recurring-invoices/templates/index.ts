@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\RecurringInvoiceController::create
- * @see app/Http/Controllers/RecurringInvoiceController.php:112
+ * @see app/Http/Controllers/RecurringInvoiceController.php:117
  * @route '/recurring-invoices/templates/create'
  */
 export const create = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ create.definition = {
 
 /**
 * @see \App\Http\Controllers\RecurringInvoiceController::create
- * @see app/Http/Controllers/RecurringInvoiceController.php:112
+ * @see app/Http/Controllers/RecurringInvoiceController.php:117
  * @route '/recurring-invoices/templates/create'
  */
 create.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ create.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\RecurringInvoiceController::create
- * @see app/Http/Controllers/RecurringInvoiceController.php:112
+ * @see app/Http/Controllers/RecurringInvoiceController.php:117
  * @route '/recurring-invoices/templates/create'
  */
 create.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -34,7 +34,7 @@ create.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\RecurringInvoiceController::create
- * @see app/Http/Controllers/RecurringInvoiceController.php:112
+ * @see app/Http/Controllers/RecurringInvoiceController.php:117
  * @route '/recurring-invoices/templates/create'
  */
 create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -44,7 +44,7 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\RecurringInvoiceController::edit
- * @see app/Http/Controllers/RecurringInvoiceController.php:120
+ * @see app/Http/Controllers/RecurringInvoiceController.php:125
  * @route '/recurring-invoices/templates/{template}/edit'
  */
 export const edit = (args: { template: number | { id: number } } | [template: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -59,7 +59,7 @@ edit.definition = {
 
 /**
 * @see \App\Http\Controllers\RecurringInvoiceController::edit
- * @see app/Http/Controllers/RecurringInvoiceController.php:120
+ * @see app/Http/Controllers/RecurringInvoiceController.php:125
  * @route '/recurring-invoices/templates/{template}/edit'
  */
 edit.url = (args: { template: number | { id: number } } | [template: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -92,7 +92,7 @@ edit.url = (args: { template: number | { id: number } } | [template: number | { 
 
 /**
 * @see \App\Http\Controllers\RecurringInvoiceController::edit
- * @see app/Http/Controllers/RecurringInvoiceController.php:120
+ * @see app/Http/Controllers/RecurringInvoiceController.php:125
  * @route '/recurring-invoices/templates/{template}/edit'
  */
 edit.get = (args: { template: number | { id: number } } | [template: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -101,7 +101,7 @@ edit.get = (args: { template: number | { id: number } } | [template: number | { 
 })
 /**
 * @see \App\Http\Controllers\RecurringInvoiceController::edit
- * @see app/Http/Controllers/RecurringInvoiceController.php:120
+ * @see app/Http/Controllers/RecurringInvoiceController.php:125
  * @route '/recurring-invoices/templates/{template}/edit'
  */
 edit.head = (args: { template: number | { id: number } } | [template: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -111,7 +111,7 @@ edit.head = (args: { template: number | { id: number } } | [template: number | {
 
 /**
 * @see \App\Http\Controllers\RecurringInvoiceController::store
- * @see app/Http/Controllers/RecurringInvoiceController.php:131
+ * @see app/Http/Controllers/RecurringInvoiceController.php:136
  * @route '/recurring-invoices/templates'
  */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -126,7 +126,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\RecurringInvoiceController::store
- * @see app/Http/Controllers/RecurringInvoiceController.php:131
+ * @see app/Http/Controllers/RecurringInvoiceController.php:136
  * @route '/recurring-invoices/templates'
  */
 store.url = (options?: RouteQueryOptions) => {
@@ -135,7 +135,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\RecurringInvoiceController::store
- * @see app/Http/Controllers/RecurringInvoiceController.php:131
+ * @see app/Http/Controllers/RecurringInvoiceController.php:136
  * @route '/recurring-invoices/templates'
  */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -145,7 +145,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\RecurringInvoiceController::update
- * @see app/Http/Controllers/RecurringInvoiceController.php:190
+ * @see app/Http/Controllers/RecurringInvoiceController.php:178
  * @route '/recurring-invoices/templates/{template}'
  */
 export const update = (args: { template: number | { id: number } } | [template: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -160,7 +160,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\RecurringInvoiceController::update
- * @see app/Http/Controllers/RecurringInvoiceController.php:190
+ * @see app/Http/Controllers/RecurringInvoiceController.php:178
  * @route '/recurring-invoices/templates/{template}'
  */
 update.url = (args: { template: number | { id: number } } | [template: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -193,7 +193,7 @@ update.url = (args: { template: number | { id: number } } | [template: number | 
 
 /**
 * @see \App\Http\Controllers\RecurringInvoiceController::update
- * @see app/Http/Controllers/RecurringInvoiceController.php:190
+ * @see app/Http/Controllers/RecurringInvoiceController.php:178
  * @route '/recurring-invoices/templates/{template}'
  */
 update.put = (args: { template: number | { id: number } } | [template: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -203,7 +203,7 @@ update.put = (args: { template: number | { id: number } } | [template: number | 
 
 /**
 * @see \App\Http\Controllers\RecurringInvoiceController::destroy
- * @see app/Http/Controllers/RecurringInvoiceController.php:247
+ * @see app/Http/Controllers/RecurringInvoiceController.php:218
  * @route '/recurring-invoices/templates/{template}'
  */
 export const destroy = (args: { template: number | { id: number } } | [template: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -218,7 +218,7 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\RecurringInvoiceController::destroy
- * @see app/Http/Controllers/RecurringInvoiceController.php:247
+ * @see app/Http/Controllers/RecurringInvoiceController.php:218
  * @route '/recurring-invoices/templates/{template}'
  */
 destroy.url = (args: { template: number | { id: number } } | [template: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -251,7 +251,7 @@ destroy.url = (args: { template: number | { id: number } } | [template: number |
 
 /**
 * @see \App\Http\Controllers\RecurringInvoiceController::destroy
- * @see app/Http/Controllers/RecurringInvoiceController.php:247
+ * @see app/Http/Controllers/RecurringInvoiceController.php:218
  * @route '/recurring-invoices/templates/{template}'
  */
 destroy.delete = (args: { template: number | { id: number } } | [template: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -261,7 +261,7 @@ destroy.delete = (args: { template: number | { id: number } } | [template: numbe
 
 /**
 * @see \App\Http\Controllers\RecurringInvoiceController::restore
- * @see app/Http/Controllers/RecurringInvoiceController.php:263
+ * @see app/Http/Controllers/RecurringInvoiceController.php:234
  * @route '/recurring-invoices/templates/{template}/restore'
  */
 export const restore = (args: { template: number | { id: number } } | [template: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -276,7 +276,7 @@ restore.definition = {
 
 /**
 * @see \App\Http\Controllers\RecurringInvoiceController::restore
- * @see app/Http/Controllers/RecurringInvoiceController.php:263
+ * @see app/Http/Controllers/RecurringInvoiceController.php:234
  * @route '/recurring-invoices/templates/{template}/restore'
  */
 restore.url = (args: { template: number | { id: number } } | [template: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -309,7 +309,7 @@ restore.url = (args: { template: number | { id: number } } | [template: number |
 
 /**
 * @see \App\Http\Controllers\RecurringInvoiceController::restore
- * @see app/Http/Controllers/RecurringInvoiceController.php:263
+ * @see app/Http/Controllers/RecurringInvoiceController.php:234
  * @route '/recurring-invoices/templates/{template}/restore'
  */
 restore.post = (args: { template: number | { id: number } } | [template: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({

@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../wayfinder'
 /**
 * @see \App\Http\Controllers\LoanController::index
- * @see app/Http/Controllers/LoanController.php:19
+ * @see app/Http/Controllers/LoanController.php:22
  * @route '/loans'
  */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\LoanController::index
- * @see app/Http/Controllers/LoanController.php:19
+ * @see app/Http/Controllers/LoanController.php:22
  * @route '/loans'
  */
 index.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\LoanController::index
- * @see app/Http/Controllers/LoanController.php:19
+ * @see app/Http/Controllers/LoanController.php:22
  * @route '/loans'
  */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -34,7 +34,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\LoanController::index
- * @see app/Http/Controllers/LoanController.php:19
+ * @see app/Http/Controllers/LoanController.php:22
  * @route '/loans'
  */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -44,7 +44,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\LoanController::store
- * @see app/Http/Controllers/LoanController.php:105
+ * @see app/Http/Controllers/LoanController.php:108
  * @route '/loans'
  */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -59,7 +59,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\LoanController::store
- * @see app/Http/Controllers/LoanController.php:105
+ * @see app/Http/Controllers/LoanController.php:108
  * @route '/loans'
  */
 store.url = (options?: RouteQueryOptions) => {
@@ -68,7 +68,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\LoanController::store
- * @see app/Http/Controllers/LoanController.php:105
+ * @see app/Http/Controllers/LoanController.php:108
  * @route '/loans'
  */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -78,7 +78,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\LoanController::update
- * @see app/Http/Controllers/LoanController.php:159
+ * @see app/Http/Controllers/LoanController.php:149
  * @route '/loans/{loan}'
  */
 export const update = (args: { loan: number | { id: number } } | [loan: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -93,7 +93,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\LoanController::update
- * @see app/Http/Controllers/LoanController.php:159
+ * @see app/Http/Controllers/LoanController.php:149
  * @route '/loans/{loan}'
  */
 update.url = (args: { loan: number | { id: number } } | [loan: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -126,7 +126,7 @@ update.url = (args: { loan: number | { id: number } } | [loan: number | { id: nu
 
 /**
 * @see \App\Http\Controllers\LoanController::update
- * @see app/Http/Controllers/LoanController.php:159
+ * @see app/Http/Controllers/LoanController.php:149
  * @route '/loans/{loan}'
  */
 update.put = (args: { loan: number | { id: number } } | [loan: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -136,7 +136,7 @@ update.put = (args: { loan: number | { id: number } } | [loan: number | { id: nu
 
 /**
 * @see \App\Http\Controllers\LoanController::destroy
- * @see app/Http/Controllers/LoanController.php:207
+ * @see app/Http/Controllers/LoanController.php:185
  * @route '/loans/{loan}'
  */
 export const destroy = (args: { loan: number | { id: number } } | [loan: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -151,7 +151,7 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\LoanController::destroy
- * @see app/Http/Controllers/LoanController.php:207
+ * @see app/Http/Controllers/LoanController.php:185
  * @route '/loans/{loan}'
  */
 destroy.url = (args: { loan: number | { id: number } } | [loan: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -184,7 +184,7 @@ destroy.url = (args: { loan: number | { id: number } } | [loan: number | { id: n
 
 /**
 * @see \App\Http\Controllers\LoanController::destroy
- * @see app/Http/Controllers/LoanController.php:207
+ * @see app/Http/Controllers/LoanController.php:185
  * @route '/loans/{loan}'
  */
 destroy.delete = (args: { loan: number | { id: number } } | [loan: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -194,7 +194,7 @@ destroy.delete = (args: { loan: number | { id: number } } | [loan: number | { id
 
 /**
 * @see \App\Http\Controllers\LoanController::pay
- * @see app/Http/Controllers/LoanController.php:220
+ * @see app/Http/Controllers/LoanController.php:198
  * @route '/loans/{loan}/pay'
  */
 export const pay = (args: { loan: number | { id: number } } | [loan: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -209,7 +209,7 @@ pay.definition = {
 
 /**
 * @see \App\Http\Controllers\LoanController::pay
- * @see app/Http/Controllers/LoanController.php:220
+ * @see app/Http/Controllers/LoanController.php:198
  * @route '/loans/{loan}/pay'
  */
 pay.url = (args: { loan: number | { id: number } } | [loan: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -242,7 +242,7 @@ pay.url = (args: { loan: number | { id: number } } | [loan: number | { id: numbe
 
 /**
 * @see \App\Http\Controllers\LoanController::pay
- * @see app/Http/Controllers/LoanController.php:220
+ * @see app/Http/Controllers/LoanController.php:198
  * @route '/loans/{loan}/pay'
  */
 pay.post = (args: { loan: number | { id: number } } | [loan: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({

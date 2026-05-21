@@ -123,11 +123,16 @@ class Invoice extends Model
 
     public static function getMaxSequenceFromDb(\DateTimeInterface $date): int
     {
-        return (int) static::whereYear('issue_date', $date->format('Y'))
+        $invoiceNumbers = static::whereYear('issue_date', $date->format('Y'))
             ->whereMonth('issue_date', $date->format('m'))
             ->where('invoice_number', 'LIKE', '%/INV/%')
-            ->selectRaw("MAX(CAST(SUBSTRING_INDEX(invoice_number, '/INV/', 1) AS UNSIGNED)) as max_seq")
-            ->value('max_seq') ?? 0;
+            ->pluck('invoice_number');
+
+        if ($invoiceNumbers->isEmpty()) {
+            return 0;
+        }
+
+        return (int) $invoiceNumbers->map(fn ($num) => (int) explode('/INV/', $num)[0])->max();
     }
 
     public static function isInvoiceLatestInMonth(self $invoice): bool

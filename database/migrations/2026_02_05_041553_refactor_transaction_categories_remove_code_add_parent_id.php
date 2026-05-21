@@ -1,9 +1,9 @@
 <?php
 
+use App\Models\TransactionCategory;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
-use App\Models\TransactionCategory;
 
 return new class extends Migration
 {
@@ -37,13 +37,15 @@ return new class extends Migration
         // Step 3: Add foreign key constraint
         Schema::table('transaction_categories', function (Blueprint $table) {
             $table->foreign('parent_id')
-                  ->references('id')
-                  ->on('transaction_categories')
-                  ->onDelete('cascade');
+                ->references('id')
+                ->on('transaction_categories')
+                ->onDelete('cascade');
         });
 
-        // Step 4: Drop old columns (code and parent_code)
+        // Step 4: Drop indexes then columns (SQLite requires dropping indexes first)
         Schema::table('transaction_categories', function (Blueprint $table) {
+            $table->dropUnique('transaction_categories_code_unique');
+            $table->dropIndex('transaction_categories_parent_code_index');
             $table->dropColumn(['code', 'parent_code']);
         });
     }
@@ -65,7 +67,7 @@ return new class extends Migration
         // Step 2: Regenerate codes (simple auto-increment based)
         $categories = TransactionCategory::orderBy('id')->get();
         foreach ($categories as $index => $category) {
-            $code = 'CAT-' . str_pad($index + 1, 4, '0', STR_PAD_LEFT);
+            $code = 'CAT-'.str_pad($index + 1, 4, '0', STR_PAD_LEFT);
             $category->update(['code' => $code]);
         }
 

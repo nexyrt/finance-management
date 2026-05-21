@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\FeedbackController::index
- * @see app/Http/Controllers/FeedbackController.php:17
+ * @see app/Http/Controllers/FeedbackController.php:21
  * @route '/feedbacks'
  */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\FeedbackController::index
- * @see app/Http/Controllers/FeedbackController.php:17
+ * @see app/Http/Controllers/FeedbackController.php:21
  * @route '/feedbacks'
  */
 index.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\FeedbackController::index
- * @see app/Http/Controllers/FeedbackController.php:17
+ * @see app/Http/Controllers/FeedbackController.php:21
  * @route '/feedbacks'
  */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -34,7 +34,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\FeedbackController::index
- * @see app/Http/Controllers/FeedbackController.php:17
+ * @see app/Http/Controllers/FeedbackController.php:21
  * @route '/feedbacks'
  */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -44,7 +44,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\FeedbackController::store
- * @see app/Http/Controllers/FeedbackController.php:78
+ * @see app/Http/Controllers/FeedbackController.php:82
  * @route '/feedbacks'
  */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -59,7 +59,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\FeedbackController::store
- * @see app/Http/Controllers/FeedbackController.php:78
+ * @see app/Http/Controllers/FeedbackController.php:82
  * @route '/feedbacks'
  */
 store.url = (options?: RouteQueryOptions) => {
@@ -68,7 +68,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\FeedbackController::store
- * @see app/Http/Controllers/FeedbackController.php:78
+ * @see app/Http/Controllers/FeedbackController.php:82
  * @route '/feedbacks'
  */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -78,7 +78,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\FeedbackController::update
- * @see app/Http/Controllers/FeedbackController.php:117
+ * @see app/Http/Controllers/FeedbackController.php:114
  * @route '/feedbacks/{feedback}'
  */
 export const update = (args: { feedback: number | { id: number } } | [feedback: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -93,7 +93,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\FeedbackController::update
- * @see app/Http/Controllers/FeedbackController.php:117
+ * @see app/Http/Controllers/FeedbackController.php:114
  * @route '/feedbacks/{feedback}'
  */
 update.url = (args: { feedback: number | { id: number } } | [feedback: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -126,7 +126,7 @@ update.url = (args: { feedback: number | { id: number } } | [feedback: number | 
 
 /**
 * @see \App\Http\Controllers\FeedbackController::update
- * @see app/Http/Controllers/FeedbackController.php:117
+ * @see app/Http/Controllers/FeedbackController.php:114
  * @route '/feedbacks/{feedback}'
  */
 update.put = (args: { feedback: number | { id: number } } | [feedback: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -136,7 +136,7 @@ update.put = (args: { feedback: number | { id: number } } | [feedback: number | 
 
 /**
 * @see \App\Http\Controllers\FeedbackController::destroy
- * @see app/Http/Controllers/FeedbackController.php:133
+ * @see app/Http/Controllers/FeedbackController.php:125
  * @route '/feedbacks/{feedback}'
  */
 export const destroy = (args: { feedback: number | { id: number } } | [feedback: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -151,7 +151,7 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\FeedbackController::destroy
- * @see app/Http/Controllers/FeedbackController.php:133
+ * @see app/Http/Controllers/FeedbackController.php:125
  * @route '/feedbacks/{feedback}'
  */
 destroy.url = (args: { feedback: number | { id: number } } | [feedback: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -184,7 +184,7 @@ destroy.url = (args: { feedback: number | { id: number } } | [feedback: number |
 
 /**
 * @see \App\Http\Controllers\FeedbackController::destroy
- * @see app/Http/Controllers/FeedbackController.php:133
+ * @see app/Http/Controllers/FeedbackController.php:125
  * @route '/feedbacks/{feedback}'
  */
 destroy.delete = (args: { feedback: number | { id: number } } | [feedback: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -194,7 +194,7 @@ destroy.delete = (args: { feedback: number | { id: number } } | [feedback: numbe
 
 /**
 * @see \App\Http\Controllers\FeedbackController::respond
- * @see app/Http/Controllers/FeedbackController.php:146
+ * @see app/Http/Controllers/FeedbackController.php:138
  * @route '/feedbacks/{feedback}/respond'
  */
 export const respond = (args: { feedback: number | { id: number } } | [feedback: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -209,7 +209,7 @@ respond.definition = {
 
 /**
 * @see \App\Http\Controllers\FeedbackController::respond
- * @see app/Http/Controllers/FeedbackController.php:146
+ * @see app/Http/Controllers/FeedbackController.php:138
  * @route '/feedbacks/{feedback}/respond'
  */
 respond.url = (args: { feedback: number | { id: number } } | [feedback: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -242,7 +242,7 @@ respond.url = (args: { feedback: number | { id: number } } | [feedback: number |
 
 /**
 * @see \App\Http\Controllers\FeedbackController::respond
- * @see app/Http/Controllers/FeedbackController.php:146
+ * @see app/Http/Controllers/FeedbackController.php:138
  * @route '/feedbacks/{feedback}/respond'
  */
 respond.post = (args: { feedback: number | { id: number } } | [feedback: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -252,7 +252,7 @@ respond.post = (args: { feedback: number | { id: number } } | [feedback: number 
 
 /**
 * @see \App\Http\Controllers\FeedbackController::changeStatus
- * @see app/Http/Controllers/FeedbackController.php:169
+ * @see app/Http/Controllers/FeedbackController.php:158
  * @route '/feedbacks/{feedback}/status'
  */
 export const changeStatus = (args: { feedback: number | { id: number } } | [feedback: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -267,7 +267,7 @@ changeStatus.definition = {
 
 /**
 * @see \App\Http\Controllers\FeedbackController::changeStatus
- * @see app/Http/Controllers/FeedbackController.php:169
+ * @see app/Http/Controllers/FeedbackController.php:158
  * @route '/feedbacks/{feedback}/status'
  */
 changeStatus.url = (args: { feedback: number | { id: number } } | [feedback: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -300,7 +300,7 @@ changeStatus.url = (args: { feedback: number | { id: number } } | [feedback: num
 
 /**
 * @see \App\Http\Controllers\FeedbackController::changeStatus
- * @see app/Http/Controllers/FeedbackController.php:169
+ * @see app/Http/Controllers/FeedbackController.php:158
  * @route '/feedbacks/{feedback}/status'
  */
 changeStatus.post = (args: { feedback: number | { id: number } } | [feedback: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({

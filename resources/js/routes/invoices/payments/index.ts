@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\PaymentController::store
- * @see app/Http/Controllers/PaymentController.php:13
+ * @see app/Http/Controllers/PaymentController.php:14
  * @route '/invoices/{invoice}/payments'
  */
 export const store = (args: { invoice: number | { id: number } } | [invoice: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -16,7 +16,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\PaymentController::store
- * @see app/Http/Controllers/PaymentController.php:13
+ * @see app/Http/Controllers/PaymentController.php:14
  * @route '/invoices/{invoice}/payments'
  */
 store.url = (args: { invoice: number | { id: number } } | [invoice: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -49,7 +49,7 @@ store.url = (args: { invoice: number | { id: number } } | [invoice: number | { i
 
 /**
 * @see \App\Http\Controllers\PaymentController::store
- * @see app/Http/Controllers/PaymentController.php:13
+ * @see app/Http/Controllers/PaymentController.php:14
  * @route '/invoices/{invoice}/payments'
  */
 store.post = (args: { invoice: number | { id: number } } | [invoice: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({

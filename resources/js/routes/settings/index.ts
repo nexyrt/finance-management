@@ -90,7 +90,7 @@ password.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\Settings\CompanyController::company
- * @see app/Http/Controllers/Settings/CompanyController.php:15
+ * @see app/Http/Controllers/Settings/CompanyController.php:16
  * @route '/settings/company'
  */
 export const company = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -105,7 +105,7 @@ company.definition = {
 
 /**
 * @see \App\Http\Controllers\Settings\CompanyController::company
- * @see app/Http/Controllers/Settings/CompanyController.php:15
+ * @see app/Http/Controllers/Settings/CompanyController.php:16
  * @route '/settings/company'
  */
 company.url = (options?: RouteQueryOptions) => {
@@ -114,7 +114,7 @@ company.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Settings\CompanyController::company
- * @see app/Http/Controllers/Settings/CompanyController.php:15
+ * @see app/Http/Controllers/Settings/CompanyController.php:16
  * @route '/settings/company'
  */
 company.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -123,7 +123,7 @@ company.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\Settings\CompanyController::company
- * @see app/Http/Controllers/Settings/CompanyController.php:15
+ * @see app/Http/Controllers/Settings/CompanyController.php:16
  * @route '/settings/company'
  */
 company.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

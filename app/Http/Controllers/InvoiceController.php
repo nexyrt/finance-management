@@ -122,23 +122,15 @@ class InvoiceController extends Controller
             ->get(['id', 'name'])
             ->map(fn ($c) => ['label' => $c->name, 'value' => $c->id]);
 
-        // Rollback-eligible invoice IDs (max seq per year-month for sent invoices)
-        $maxSeqPerMonth = DB::table('invoices')
+        // Rollback-eligible invoice IDs: highest sequence per year-month among sent invoices
+        $rollbackableIds = Invoice::where('status', 'sent')
             ->whereNotNull('invoice_number')
             ->where('invoice_number', 'LIKE', '%/INV/%')
-            ->selectRaw("YEAR(issue_date) as yr, MONTH(issue_date) as mo, MAX(CAST(SUBSTRING_INDEX(invoice_number, '/INV/', 1) AS UNSIGNED)) as max_seq")
-            ->groupBy(DB::raw('YEAR(issue_date)'), DB::raw('MONTH(issue_date)'));
-
-        $rollbackableIds = DB::table('invoices')
-            ->where('invoices.status', 'sent')
-            ->whereNotNull('invoices.invoice_number')
-            ->where('invoices.invoice_number', 'LIKE', '%/INV/%')
-            ->joinSub($maxSeqPerMonth, 'mx', function ($join) {
-                $join->whereRaw('YEAR(invoices.issue_date) = mx.yr')
-                    ->whereRaw('MONTH(invoices.issue_date) = mx.mo')
-                    ->whereRaw("CAST(SUBSTRING_INDEX(invoices.invoice_number, '/INV/', 1) AS UNSIGNED) = mx.max_seq");
-            })
-            ->pluck('invoices.id')
+            ->get(['id', 'invoice_number', 'issue_date'])
+            ->groupBy(fn ($inv) => date('Y-m', strtotime($inv->issue_date)))
+            ->map(fn ($group) => $group->sortByDesc(fn ($inv) => (int) explode('/INV/', $inv->invoice_number)[0])->first())
+            ->pluck('id')
+            ->values()
             ->all();
 
         return Inertia::render('invoices/index', [
