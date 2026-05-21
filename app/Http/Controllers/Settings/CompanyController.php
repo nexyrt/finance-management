@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Settings;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Settings\UpdateCompanyRequest;
 use App\Models\CompanyProfile;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -41,23 +42,9 @@ class CompanyController extends Controller
         ]);
     }
 
-    public function update(Request $request): RedirectResponse
+    public function update(UpdateCompanyRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'address' => ['required', 'string'],
-            'email' => ['required', 'email'],
-            'phone' => ['required', 'string'],
-            'is_pkp' => ['nullable', 'boolean'],
-            'npwp' => ['nullable', 'string'],
-            'ppn_rate' => ['required', 'numeric', 'min:0', 'max:100'],
-            'finance_manager_name' => ['required', 'string'],
-            'finance_manager_position' => ['required', 'string'],
-            'logo' => ['nullable', 'image', 'max:2048'],
-            'letter_head' => ['nullable', 'image', 'max:2048'],
-            'signature' => ['nullable', 'image', 'max:2048'],
-            'stamp' => ['nullable', 'image', 'max:2048'],
-        ]);
+        $validated = $request->validated();
 
         $company = CompanyProfile::firstOrNew();
         $company->fill([

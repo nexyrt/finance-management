@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\SendInvoiceRequest;
+use App\Http\Requests\StoreInvoiceRequest;
+use App\Http\Requests\UpdateInvoiceRequest;
 use App\Models\Client;
 use App\Models\CompanyProfile;
 use App\Models\Invoice;
@@ -235,24 +238,9 @@ class InvoiceController extends Controller
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(StoreInvoiceRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'client_id' => ['required', 'exists:clients,id'],
-            'issue_date' => ['required', 'date'],
-            'due_date' => ['required', 'date', 'after_or_equal:issue_date'],
-            'items' => ['required', 'array', 'min:1'],
-            'items.*.client_id' => ['nullable', 'exists:clients,id'],
-            'items.*.service_name' => ['required', 'string', 'max:255'],
-            'items.*.quantity' => ['required', 'numeric', 'min:0.001'],
-            'items.*.unit' => ['nullable', 'string', 'max:20'],
-            'items.*.unit_price' => ['required', 'integer', 'min:0'],
-            'items.*.cogs_amount' => ['nullable', 'integer', 'min:0'],
-            'items.*.is_tax_deposit' => ['boolean'],
-            'discount_type' => ['nullable', 'in:fixed,percentage'],
-            'discount_value' => ['nullable', 'numeric', 'min:0'],
-            'discount_reason' => ['nullable', 'string', 'max:255'],
-        ]);
+        $validated = $request->validated();
 
         DB::transaction(function () use ($validated) {
             $subtotal = 0;
@@ -345,24 +333,9 @@ class InvoiceController extends Controller
         ]);
     }
 
-    public function update(Request $request, Invoice $invoice): RedirectResponse
+    public function update(UpdateInvoiceRequest $request, Invoice $invoice): RedirectResponse
     {
-        $validated = $request->validate([
-            'client_id' => ['required', 'exists:clients,id'],
-            'issue_date' => ['required', 'date'],
-            'due_date' => ['required', 'date', 'after_or_equal:issue_date'],
-            'items' => ['required', 'array', 'min:1'],
-            'items.*.client_id' => ['nullable', 'exists:clients,id'],
-            'items.*.service_name' => ['required', 'string', 'max:255'],
-            'items.*.quantity' => ['required', 'numeric', 'min:0.001'],
-            'items.*.unit' => ['nullable', 'string', 'max:20'],
-            'items.*.unit_price' => ['required', 'integer', 'min:0'],
-            'items.*.cogs_amount' => ['nullable', 'integer', 'min:0'],
-            'items.*.is_tax_deposit' => ['boolean'],
-            'discount_type' => ['nullable', 'in:fixed,percentage'],
-            'discount_value' => ['nullable', 'numeric', 'min:0'],
-            'discount_reason' => ['nullable', 'string', 'max:255'],
-        ]);
+        $validated = $request->validated();
 
         DB::transaction(function () use ($validated, $invoice) {
             $subtotal = 0;
@@ -428,11 +401,8 @@ class InvoiceController extends Controller
         return redirect()->back()->with('success', 'Invoice berhasil dihapus.');
     }
 
-    public function send(Request $request, Invoice $invoice): RedirectResponse
+    public function send(SendInvoiceRequest $request, Invoice $invoice): RedirectResponse
     {
-        $request->validate([
-            'invoice_number' => ['required', 'string', 'max:100', "unique:invoices,invoice_number,{$invoice->id}"],
-        ]);
 
         if ($invoice->status !== 'draft') {
             return redirect()->back()->with('error', 'Hanya invoice draft yang dapat dikirim.');

@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreClientRequest;
+use App\Http\Requests\UpdateClientRequest;
 use App\Models\Client;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -71,44 +73,18 @@ class ClientController extends Controller
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(StoreClientRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'type' => ['required', 'in:individual,company'],
-            'email' => ['nullable', 'email', 'unique:clients,email'],
-            'NPWP' => ['nullable', 'string', 'max:20'],
-            'KPP' => ['nullable', 'string', 'max:20'],
-            'EFIN' => ['nullable', 'string', 'max:20'],
-            'status' => ['required', 'in:Active,Inactive'],
-            'account_representative' => ['nullable', 'string', 'max:255'],
-            'ar_phone_number' => ['nullable', 'string', 'max:20'],
-            'person_in_charge' => ['nullable', 'string', 'max:255'],
-            'address' => ['nullable', 'string'],
-        ]);
-
+        $validated = $request->validated();
         $nullable = array_map(fn ($v) => $v ?: null, $validated);
         Client::create(array_merge($nullable, ['name' => $validated['name'], 'type' => $validated['type'], 'status' => $validated['status']]));
 
         return redirect()->back()->with('success', 'Klien berhasil ditambahkan.');
     }
 
-    public function update(Request $request, Client $client): RedirectResponse
+    public function update(UpdateClientRequest $request, Client $client): RedirectResponse
     {
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'type' => ['required', 'in:individual,company'],
-            'email' => ['nullable', 'email', "unique:clients,email,{$client->id}"],
-            'NPWP' => ['nullable', 'string', 'max:20'],
-            'KPP' => ['nullable', 'string', 'max:20'],
-            'EFIN' => ['nullable', 'string', 'max:20'],
-            'status' => ['required', 'in:Active,Inactive'],
-            'account_representative' => ['nullable', 'string', 'max:255'],
-            'ar_phone_number' => ['nullable', 'string', 'max:20'],
-            'person_in_charge' => ['nullable', 'string', 'max:255'],
-            'address' => ['nullable', 'string'],
-        ]);
-
+        $validated = $request->validated();
         $nullable = array_map(fn ($v) => $v ?: null, $validated);
         $client->update(array_merge($nullable, ['name' => $validated['name'], 'type' => $validated['type'], 'status' => $validated['status']]));
 

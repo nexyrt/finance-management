@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreServiceRequest;
+use App\Http\Requests\UpdateServiceRequest;
 use App\Models\Service;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -67,28 +69,16 @@ class ServiceController extends Controller
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(StoreServiceRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'type' => ['required', 'in:'.implode(',', self::TYPES)],
-            'price' => ['required', 'integer', 'min:0'],
-        ]);
-
-        Service::create($validated);
+        Service::create($request->validated());
 
         return redirect()->back()->with('success', 'Layanan berhasil ditambahkan.');
     }
 
-    public function update(Request $request, Service $service): RedirectResponse
+    public function update(UpdateServiceRequest $request, Service $service): RedirectResponse
     {
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'type' => ['required', 'in:'.implode(',', self::TYPES)],
-            'price' => ['required', 'integer', 'min:0'],
-        ]);
-
-        $service->update($validated);
+        $service->update($request->validated());
 
         return redirect()->back()->with('success', 'Layanan berhasil diperbarui.');
     }

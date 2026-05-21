@@ -17,8 +17,8 @@ export default defineConfig(({ mode }) => {
             laravel({
                 input: [
                     'resources/css/app.css',
-                    'resources/js/app.js',       // Livewire entry (tetap sampai Fase 15)
-                    'resources/js/inertia.tsx',  // Inertia/React entry
+                    'resources/js/app.js',
+                    'resources/js/inertia.tsx',
                 ],
                 refresh: true,
             }),

@@ -3,12 +3,14 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\BulkDestroyUserRequest;
+use App\Http\Requests\Admin\StoreUserRequest;
+use App\Http\Requests\Admin\UpdateUserRequest;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 use Spatie\Permission\Models\Role;
@@ -80,18 +82,11 @@ class UserController extends Controller
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(StoreUserRequest $request): RedirectResponse
     {
         $this->authorize('manage users');
 
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users', 'email')],
-            'phone_number' => ['nullable', 'string', 'max:20'],
-            'status' => ['required', 'in:active,inactive'],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
-            'role' => ['required', 'exists:roles,name'],
-        ]);
+        $validated = $request->validated();
 
         $user = User::create([
             'name' => $validated['name'],
@@ -107,18 +102,11 @@ class UserController extends Controller
         return redirect()->back()->with('success', 'Pengguna berhasil ditambahkan.');
     }
 
-    public function update(Request $request, User $user): RedirectResponse
+    public function update(UpdateUserRequest $request, User $user): RedirectResponse
     {
         $this->authorize('manage users');
 
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
-            'phone_number' => ['nullable', 'string', 'max:20'],
-            'status' => ['required', 'in:active,inactive'],
-            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
-            'role' => ['required', 'exists:roles,name'],
-        ]);
+        $validated = $request->validated();
 
         $user->update([
             'name' => $validated['name'],
@@ -149,14 +137,11 @@ class UserController extends Controller
         return redirect()->back()->with('success', 'Pengguna berhasil dihapus.');
     }
 
-    public function bulkDestroy(Request $request): RedirectResponse
+    public function bulkDestroy(BulkDestroyUserRequest $request): RedirectResponse
     {
         $this->authorize('manage users');
 
-        $validated = $request->validate([
-            'ids' => ['required', 'array'],
-            'ids.*' => ['integer', 'exists:users,id'],
-        ]);
+        $validated = $request->validated();
 
         $ids = array_diff($validated['ids'], [auth()->id()]);
         $count = count($ids);

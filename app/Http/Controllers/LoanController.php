@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\PayLoanRequest;
+use App\Http\Requests\StoreLoanRequest;
+use App\Http\Requests\UpdateLoanRequest;
 use App\Models\BankAccount;
 use App\Models\BankTransaction;
 use App\Models\Loan;
@@ -102,22 +105,9 @@ class LoanController extends Controller
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(StoreLoanRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'loan_number' => ['required', 'string', 'unique:loans,loan_number'],
-            'lender_name' => ['required', 'string', 'max:255'],
-            'principal_amount' => ['required', 'integer', 'min:1'],
-            'interest_type' => ['required', 'in:fixed,percentage'],
-            'interest_amount' => ['nullable', 'integer', 'min:0'],
-            'interest_rate' => ['nullable', 'numeric', 'min:0', 'max:100'],
-            'term_months' => ['required', 'integer', 'min:1'],
-            'start_date' => ['required', 'date'],
-            'maturity_date' => ['required', 'date', 'after:start_date'],
-            'purpose' => ['nullable', 'string'],
-            'contract_attachment' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
-            'bank_account_id' => ['required', 'exists:bank_accounts,id'],
-        ]);
+        $validated = $request->validated();
 
         $attachmentPath = null;
         if ($request->hasFile('contract_attachment')) {
@@ -156,23 +146,11 @@ class LoanController extends Controller
         return back()->with('success', 'Pinjaman berhasil dibuat');
     }
 
-    public function update(Request $request, Loan $loan): RedirectResponse
+    public function update(UpdateLoanRequest $request, Loan $loan): RedirectResponse
     {
         abort_if($loan->status !== 'active', 403, 'Pinjaman yang sudah lunas tidak dapat diedit');
 
-        $validated = $request->validate([
-            'lender_name' => ['required', 'string', 'max:255'],
-            'principal_amount' => ['required', 'integer', 'min:1'],
-            'interest_type' => ['required', 'in:fixed,percentage'],
-            'interest_amount' => ['nullable', 'integer', 'min:0'],
-            'interest_rate' => ['nullable', 'numeric', 'min:0', 'max:100'],
-            'term_months' => ['required', 'integer', 'min:1'],
-            'start_date' => ['required', 'date'],
-            'maturity_date' => ['required', 'date', 'after:start_date'],
-            'purpose' => ['nullable', 'string'],
-            'contract_attachment' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
-            'remove_attachment' => ['nullable', 'boolean'],
-        ]);
+        $validated = $request->validated();
 
         $attachmentPath = $loan->contract_attachment;
 
@@ -217,7 +195,7 @@ class LoanController extends Controller
         return back()->with('success', 'Pinjaman berhasil dihapus');
     }
 
-    public function pay(Request $request, Loan $loan): RedirectResponse
+    public function pay(PayLoanRequest $request, Loan $loan): RedirectResponse
     {
         abort_if($loan->status !== 'active', 403, 'Pinjaman ini tidak dapat dibayar');
 
@@ -230,14 +208,7 @@ class LoanController extends Controller
         $paidInterest = (int) $loan->payments()->sum('interest_paid');
         $remainingInterest = $totalInterest - $paidInterest;
 
-        $validated = $request->validate([
-            'bank_account_id' => ['required', 'exists:bank_accounts,id'],
-            'payment_date' => ['required', 'date', 'before_or_equal:today'],
-            'principal_paid' => ['nullable', 'integer', 'min:0', 'max:'.$remainingPrincipal],
-            'interest_paid' => ['nullable', 'integer', 'min:0', 'max:'.max(0, $remainingInterest)],
-            'reference_number' => ['nullable', 'string', 'max:255'],
-            'notes' => ['nullable', 'string'],
-        ]);
+        $validated = $request->validated();
 
         $principalPaid = (int) ($validated['principal_paid'] ?? 0);
         $interestPaid = (int) ($validated['interest_paid'] ?? 0);

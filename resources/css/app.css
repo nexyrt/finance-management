@@ -1,14 +1,10 @@
 @import 'tailwindcss';
-@import '../../vendor/tallstackui/tallstackui/css/v4.css';
 
 @plugin '@tailwindcss/forms';
 
 @source '../views';
 @source '../../app/Providers/*.php';
-@source '../../app/TallStackUi/*.php';
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
-@source '../../vendor/tallstackui/tallstackui/**/*.php';
-@source '../../vendor/tallstackui/tallstackui/**/*.blade.php';
 
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -17,7 +13,7 @@
     --font-heading: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
 
     /* =========================================================================
-       TallStackUI Custom Colors - Professional Blue Theme
+       Archipelago Design System - Professional Blue Theme
        ========================================================================= */
 
     /* PRIMARY COLOR - Professional Blue (#2563EB) */
@@ -86,7 +82,7 @@
     --color-sidebar-accent-foreground: #18181b;
 }
 
-/* Dark mode is handled by Tailwind's dark: variant and TallStackUI automatically */
+/* Dark mode is handled by Tailwind's dark: variant */
 
 /* Rounded bars CSS */
 .rounded-bars .toastui-chart-series-bar rect,
@@ -102,8 +98,6 @@
     ry: 10;
     transition: all 0.2s ease;
 }
-
-[x-cloak] { display: none !important; }
 
 /* Pointer cursor for all interactive elements */
 button:not(:disabled),

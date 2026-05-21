@@ -2,6 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\PayReimbursementRequest;
+use App\Http\Requests\ReviewReimbursementRequest;
+use App\Http\Requests\StoreReimbursementRequest;
+use App\Http\Requests\UpdateReimbursementRequest;
 use App\Models\BankAccount;
 use App\Models\BankTransaction;
 use App\Models\Reimbursement;
@@ -148,17 +152,9 @@ class ReimbursementController extends Controller
         return Inertia::render('reimbursements/create');
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(StoreReimbursementRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'title' => ['required', 'string', 'max:255'],
-            'description' => ['nullable', 'string', 'max:1000'],
-            'amount' => ['required', 'integer', 'min:1'],
-            'expense_date' => ['required', 'date'],
-            'category' => ['required', 'string', 'in:transport,meals,office_supplies,communication,accommodation,medical,other'],
-            'attachment' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
-            'action' => ['required', 'in:draft,submit'],
-        ]);
+        $validated = $request->validated();
 
         $attachmentPath = null;
         $attachmentName = null;
@@ -220,7 +216,7 @@ class ReimbursementController extends Controller
         ]);
     }
 
-    public function update(Request $request, Reimbursement $reimbursement): RedirectResponse
+    public function update(UpdateReimbursementRequest $request, Reimbursement $reimbursement): RedirectResponse
     {
         if ($reimbursement->user_id !== auth()->id()) {
             abort(403);
@@ -230,16 +226,7 @@ class ReimbursementController extends Controller
             return back()->with('error', 'Reimbursement tidak dapat diedit');
         }
 
-        $validated = $request->validate([
-            'title' => ['required', 'string', 'max:255'],
-            'description' => ['nullable', 'string', 'max:1000'],
-            'amount' => ['required', 'integer', 'min:1'],
-            'expense_date' => ['required', 'date'],
-            'category' => ['required', 'string', 'in:transport,meals,office_supplies,communication,accommodation,medical,other'],
-            'attachment' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
-            'remove_attachment' => ['nullable', 'boolean'],
-            'action' => ['required', 'in:draft,submit'],
-        ]);
+        $validated = $request->validated();
 
         DB::transaction(function () use ($validated, $request, $reimbursement) {
             $attachmentPath = $reimbursement->attachment_path;
@@ -307,7 +294,7 @@ class ReimbursementController extends Controller
         return back()->with('success', 'Reimbursement berhasil diajukan untuk persetujuan');
     }
 
-    public function review(Request $request, Reimbursement $reimbursement): RedirectResponse
+    public function review(ReviewReimbursementRequest $request, Reimbursement $reimbursement): RedirectResponse
     {
         abort_if(! auth()->user()->can('approve reimbursements'), 403);
 
@@ -315,11 +302,7 @@ class ReimbursementController extends Controller
             return back()->with('error', 'Reimbursement tidak dapat ditinjau');
         }
 
-        $validated = $request->validate([
-            'action' => ['required', 'in:approve,reject'],
-            'review_notes' => ['nullable', 'string', 'max:500'],
-            'category_id' => ['required_if:action,approve', 'nullable', 'exists:transaction_categories,id'],
-        ]);
+        $validated = $request->validated();
 
         if ($validated['action'] === 'approve') {
             $reimbursement->update(['category_id' => $validated['category_id']]);
@@ -333,7 +316,7 @@ class ReimbursementController extends Controller
         return back()->with('success', 'Reimbursement ditolak');
     }
 
-    public function pay(Request $request, Reimbursement $reimbursement): RedirectResponse
+    public function pay(PayReimbursementRequest $request, Reimbursement $reimbursement): RedirectResponse
     {
         abort_if(! auth()->user()->can('pay reimbursements'), 403);
 
@@ -341,12 +324,7 @@ class ReimbursementController extends Controller
             return back()->with('error', 'Reimbursement tidak dapat dibayar');
         }
 
-        $validated = $request->validate([
-            'bank_account_id' => ['required', 'exists:bank_accounts,id'],
-            'payment_date' => ['required', 'date', 'before_or_equal:today'],
-            'payment_amount' => ['required', 'integer', 'min:1', 'max:'.$reimbursement->amount_remaining],
-            'reference_notes' => ['nullable', 'string', 'max:255'],
-        ]);
+        $validated = $request->validated();
 
         DB::transaction(function () use ($reimbursement, $validated) {
             $isFullPayment = $validated['payment_amount'] >= $reimbursement->amount_remaining;

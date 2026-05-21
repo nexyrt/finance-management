@@ -2,24 +2,18 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StorePaymentRequest;
+use App\Http\Requests\UpdatePaymentRequest;
 use App\Models\Invoice;
 use App\Models\Payment;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
 class PaymentController extends Controller
 {
-    public function store(Request $request, Invoice $invoice): JsonResponse
+    public function store(StorePaymentRequest $request, Invoice $invoice): JsonResponse
     {
-        $validated = $request->validate([
-            'amount' => ['required', 'integer', 'min:1'],
-            'payment_date' => ['required', 'date'],
-            'payment_method' => ['required', 'in:cash,bank_transfer'],
-            'bank_account_id' => ['nullable', 'exists:bank_accounts,id'],
-            'reference_number' => ['nullable', 'string', 'max:100'],
-            'attachment' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
-        ]);
+        $validated = $request->validated();
 
         if (in_array($invoice->status, ['draft', 'paid'])) {
             return response()->json(['message' => 'Invoice tidak dapat menerima pembayaran.'], 422);
@@ -50,17 +44,9 @@ class PaymentController extends Controller
         return response()->json($this->formatPayment($payment->fresh(['bankAccount'])));
     }
 
-    public function update(Request $request, Payment $payment): JsonResponse
+    public function update(UpdatePaymentRequest $request, Payment $payment): JsonResponse
     {
-        $validated = $request->validate([
-            'amount' => ['required', 'integer', 'min:1'],
-            'payment_date' => ['required', 'date'],
-            'payment_method' => ['required', 'in:cash,bank_transfer'],
-            'bank_account_id' => ['nullable', 'exists:bank_accounts,id'],
-            'reference_number' => ['nullable', 'string', 'max:100'],
-            'attachment' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
-            'remove_attachment' => ['nullable', 'boolean'],
-        ]);
+        $validated = $request->validated();
 
         $attachmentPath = $payment->attachment_path;
         $attachmentName = $payment->attachment_name;

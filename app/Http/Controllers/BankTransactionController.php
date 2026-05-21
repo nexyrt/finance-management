@@ -2,6 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\BulkDestroyBankTransactionRequest;
+use App\Http\Requests\StoreBankTransactionRequest;
+use App\Http\Requests\TransferBankTransactionRequest;
+use App\Http\Requests\UpdateBankTransactionRequest;
 use App\Models\BankTransaction;
 use App\Models\Payment;
 use Illuminate\Http\JsonResponse;
@@ -147,18 +151,9 @@ class BankTransactionController extends Controller
     /**
      * Create a transaction (income or expense).
      */
-    public function store(Request $request): RedirectResponse
+    public function store(StoreBankTransactionRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'bank_account_id' => ['required', 'exists:bank_accounts,id'],
-            'category_id' => ['required', 'exists:transaction_categories,id'],
-            'amount' => ['required', 'integer', 'min:1'],
-            'transaction_date' => ['required', 'date'],
-            'transaction_type' => ['required', 'in:credit,debit'],
-            'description' => ['required', 'string', 'max:255'],
-            'reference_number' => ['nullable', 'string', 'max:255'],
-            'attachment' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
-        ]);
+        $validated = $request->validated();
 
         $data = [
             'bank_account_id' => $validated['bank_account_id'],
@@ -189,27 +184,12 @@ class BankTransactionController extends Controller
     /**
      * Update a transaction. For TRF transfers, syncs description + date to the paired transaction.
      */
-    public function update(Request $request, BankTransaction $bankTransaction): RedirectResponse
+    public function update(UpdateBankTransactionRequest $request, BankTransaction $bankTransaction): RedirectResponse
     {
         $isTransfer = $bankTransaction->reference_number
             && str_starts_with($bankTransaction->reference_number, 'TRF');
 
-        $rules = [
-            'transaction_date' => ['required', 'date'],
-            'description' => ['required', 'string', 'max:255'],
-        ];
-
-        if (! $isTransfer) {
-            $rules = array_merge($rules, [
-                'amount' => ['required', 'integer', 'min:1'],
-                'category_id' => ['required', 'exists:transaction_categories,id'],
-                'reference_number' => ['nullable', 'string', 'max:255'],
-                'attachment' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
-                'remove_attachment' => ['nullable', 'boolean'],
-            ]);
-        }
-
-        $validated = $request->validate($rules);
+        $validated = $request->validated();
 
         $data = [
             'transaction_date' => $validated['transaction_date'],
@@ -270,12 +250,9 @@ class BankTransactionController extends Controller
     /**
      * Bulk-delete transactions. Handles transfer pairs.
      */
-    public function bulkDestroy(Request $request): RedirectResponse
+    public function bulkDestroy(BulkDestroyBankTransactionRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'ids' => ['required', 'array', 'min:1'],
-            'ids.*' => ['integer', 'exists:bank_transactions,id'],
-        ]);
+        $validated = $request->validated();
 
         $transactions = BankTransaction::whereIn('id', $validated['ids'])->get();
 
@@ -305,18 +282,9 @@ class BankTransactionController extends Controller
     /**
      * Transfer between two accounts. Creates a debit + credit pair sharing a TRF reference.
      */
-    public function transfer(Request $request): RedirectResponse
+    public function transfer(TransferBankTransactionRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'from_account_id' => ['required', 'exists:bank_accounts,id', 'different:to_account_id'],
-            'to_account_id' => ['required', 'exists:bank_accounts,id'],
-            'category_id' => ['required', 'exists:transaction_categories,id'],
-            'amount' => ['required', 'integer', 'min:1'],
-            'admin_fee' => ['required', 'integer', 'min:0'],
-            'description' => ['required', 'string', 'max:255'],
-            'transfer_date' => ['required', 'date'],
-            'attachment' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
-        ]);
+        $validated = $request->validated();
 
         $refNumber = 'TRF'.time();
         $totalDebit = $validated['amount'] + $validated['admin_fee'];

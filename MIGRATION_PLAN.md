@@ -3,7 +3,7 @@
 > **Dokumen ini adalah panduan kerja untuk Claude Code.**
 > Dibuat: 2026-05-11 | Branch aktif: `feature/inertia-react-migration`
 > Update dokumen ini setiap kali fase selesai.
-> **Terakhir diupdate: 2026-05-21 — Fase 11 selesai: Notifications + Feedbacks + FloatingFeedbackButton.**
+> **Terakhir diupdate: 2026-05-21 — Fase 12 selesai: Backend Refactoring (44 Form Requests, cleanup AppServiceProvider/app.css/app.js, hapus Livewire/TallStackUI/Quill packages).**
 
 ---
 
@@ -59,7 +59,7 @@ git show main:path/to/file.php
 | 9 | Finance (Loans + Receivables) | ✅ Selesai (2026-05-20) |
 | 10 | Admin (Users + Permissions + Settings) | ✅ Selesai (2026-05-21) |
 | 11 | Utility Components & Dashboard | ✅ Selesai (2026-05-21) |
-| 12 | Backend Refactoring (Controllers + Form Requests) | ⬜ Belum Dimulai |
+| 12 | Backend Refactoring (Controllers + Form Requests) | ✅ Selesai (2026-05-21) |
 | 13 | PDF Integration | ⬜ Belum Dimulai |
 | 14 | Testing | ⬜ Belum Dimulai |
 | 15 | Cleanup & Deployment Prep | ⬜ Belum Dimulai |
@@ -493,33 +493,33 @@ Route::get('/templates/{template}/edit', [RecurringInvoiceController::class, 'ed
 
 ---
 
-## Fase 9 — Finance
+## Fase 9 — Finance ✅ SELESAI (2026-05-20)
 
-### Loans
+### Loans ✅
 **Route:** `/loans`
-**Livewire source:** `app/Livewire/Loans/`
+**Controller:** `app/Http/Controllers/LoanController.php`
 
 | Component | Status |
 |-----------|--------|
-| Index | ⬜ |
-| Create | ⬜ |
-| Update | ⬜ |
-| Delete | ⬜ |
-| PayLoan | ⬜ |
+| Index | ✅ |
+| Create | ✅ |
+| Update | ✅ |
+| Delete | ✅ |
+| PayLoan | ✅ |
 
-### Receivables
+### Receivables ✅
 **Route:** `/receivables`
-**Livewire source:** `app/Livewire/Receivables/`
+**Controller:** `app/Http/Controllers/ReceivableController.php`
 
 | Component | Status |
 |-----------|--------|
-| Index | ⬜ |
-| Create | ⬜ |
-| Update | ⬜ |
-| Delete | ⬜ |
-| Submit | ⬜ |
-| Approve | ⬜ |
-| PayReceivable | ⬜ |
+| Index | ✅ |
+| Create | ✅ |
+| Update | ✅ |
+| Delete | ✅ |
+| Submit | ✅ |
+| Approve | ✅ |
+| PayReceivable | ✅ |
 
 **Penting:** Debtor adalah polymorphic — bisa User ATAU Client.
 
@@ -676,19 +676,22 @@ Route::get('/templates/{template}/edit', [RecurringInvoiceController::class, 'ed
 
 ---
 
-## Fase 12 — Backend Refactoring
+## Fase 12 — Backend Refactoring ✅ SELESAI (2026-05-21)
 
 **Tujuan:** Ganti semua Livewire component logic ke controllers + Form Requests.
 
 ### Checklist
-- [ ] Buat ~80 Form Request classes (saat ini 0 Form Request — semua inline di Livewire)
-- [ ] Buat controller untuk setiap module (gunakan `php artisan make:controller`)
-- [ ] Update `routes/web.php` — ganti route Livewire ke Inertia controller routes
-- [ ] Hapus Livewire dari `composer.json`: `livewire/livewire`, `livewire/volt`
-- [ ] Hapus TallStackUI: `tallstackui/tallstackui`
-- [ ] Hapus dari `package.json`: `alpinejs`, `flowbite`, `daisyui`, `quill`
-- [ ] Update `resources/css/app.css` — hapus TallStackUI, DaisyUI, Alpine imports
-- [ ] Update `app/Providers/AppServiceProvider.php` — hapus TallStackUI personalization
+- [x] Buat 44 Form Request classes (StoreX, UpdateX, + action-specific: Review, Pay, Approve, Disburse, Respond, ChangeStatus, BulkDestroy, Transfer)
+- [x] Semua controllers sudah menggunakan Form Requests (`$request->validated()` menggantikan inline validate)
+- [x] Update `routes/web.php` — hapus TestingPage Livewire route (satu-satunya sisa)
+- [x] Hapus Livewire dari `composer.json`: `livewire/livewire`, `livewire/volt`, `dasundev/livewire-quill-text-editor`
+- [x] Hapus TallStackUI: `tallstackui/tallstackui` (+ `spatie/laravel-package-tools` dependency)
+- [x] Hapus dari `package.json`: `alpinejs`, `flowbite`, `flowbite-typography`, `daisyui`, `quill`, `@toast-ui/chart`
+- [x] Update `resources/css/app.css` — hapus TallStackUI import + @source entries + `[x-cloak]`
+- [x] Update `app/Providers/AppServiceProvider.php` — hapus TallStackUI personalization block
+- [x] Update `resources/js/app.js` — strip Quill/Livewire/TallStackUI upload dead code
+- [x] Jalankan PHP Pint untuk format semua file baru
+- [x] `npm run build` sukses — 3484 modules transformed, no errors
 
 ### Controller Mapping
 

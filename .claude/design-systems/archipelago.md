@@ -543,3 +543,92 @@ Accent bar colors per semantic role:
 // Neutral create
 <Button>Buat Invoice</Button> {/* uses default primary */}
 ```
+
+---
+
+## React Component Catalog Compliance (MANDATORY)
+
+**CRITICAL RULE — enforce before writing any JSX form control:**
+
+Before writing ANY interactive element in a React page or component, check the catalog in `CLAUDE.md` → section "React Component Catalog". If a catalog component covers the use case, **use it — no exceptions**. Only write raw HTML or a custom component when the catalog has no equivalent AND after noting the gap to the user.
+
+This rule exists because:
+- All catalog components are pre-styled to Archipelago tokens (colors, radii, dark mode, error states).
+- Writing raw HTML duplicates styling work and risks inconsistency across pages.
+- A past incident produced `<input type="file">` and custom segmented buttons across 9 forms that all had catalog equivalents (`FileUpload`, `SegmentedControl`).
+
+### Mandatory Substitution Table
+
+| If you want to render… | ✅ Use (catalog) | ❌ Never use |
+|------------------------|-----------------|-------------|
+| Text / number input | `Input` | `<input>` raw |
+| Multi-line text | `Textarea` | `<textarea>` raw |
+| Rupiah / currency amount | `CurrencyInput` | `Input`, `<input>` |
+| Dropdown / select from list | `Combobox` | `<select>`, `Select` (shadcn primitive) |
+| Date single | `DatePicker` | `<input type="date">`, plain calendar |
+| Date range | `DatePicker mode="range"` | two separate DatePickers |
+| On/off toggle | `Switch` | `<input type="checkbox">` styled manually |
+| Yes/no checkbox | `Checkbox` | `<input type="checkbox">` raw |
+| File / attachment upload | `FileUpload` | `<input type="file">`, custom drag-zone |
+| Exclusive choice (radio/segment) | `SegmentedControl` | custom `<button>` group, radio inputs |
+| Confirm destructive action | `ConfirmDialog` | `window.confirm()`, inline warning text |
+| Page header (title + description) | `PageHeader` | raw `<h1>` + `<p>` |
+| Stats card (main page) | `StatsCard` | custom card div |
+| Stats card (inside modal) | `StatsCard inModal={true}` | custom card div |
+| Form section heading | `FormSection` | raw `<h4>` divider |
+| Data table | `DataTable` | raw `<table>` |
+| Empty state | `EmptyState` | custom conditional JSX |
+| Pagination | `Pagination` | custom prev/next buttons |
+| Tab navigation | `Tabs` + `TabsPanel` | custom pill buttons |
+| Modal / dialog | `Dialog` + subcomponents | `<div>` overlay, `AlertDialog` raw |
+| Dropdown menu | `DropdownMenu` + subcomponents | custom positioned menus |
+| Tooltip | `TooltipProvider` + `Tooltip` | `title=""` attribute |
+| Status label / tag | `Badge` (pick variant) | custom `<span>` with hardcoded colors |
+| Action button | `Button` (pick variant) | `<button>` raw |
+
+### SegmentedControl — when to use
+
+`SegmentedControl` is the catalog component for any exclusive-choice UI (functionally equivalent to radio buttons):
+- `layout="stack"` — icon stacked above label, taller card; use for form fields where choices have semantic meaning (feedback type, priority level, transaction direction).
+- `layout="inline"` — single row, compact; use for compact in-line selectors (priority inline, status quick-select).
+- `columns` prop (2–6) sets the grid width.
+- `activeClassName` per option lets each choice have its own color (e.g. `bg-red-500` for "Bug" type).
+
+```tsx
+// Example — feedback type picker (stack, 3 cols, per-option color)
+const TYPE_OPTIONS: SegmentedOption<FeedbackType>[] = [
+    { value: 'bug', label: 'Bug Report', icon: <Bug className="w-4 h-4" />, activeClassName: 'bg-red-500 ...' },
+    { value: 'feature', label: 'Fitur Baru', icon: <Lightbulb className="w-4 h-4" />, activeClassName: 'bg-blue-500 ...' },
+    { value: 'improvement', label: 'Perbaikan', icon: <Wrench className="w-4 h-4" />, activeClassName: 'bg-amber-500 ...' },
+];
+<SegmentedControl options={TYPE_OPTIONS} value={data.type} onChange={(v) => setData('type', v)} columns={3} layout="stack" label="Tipe *" error={errors.type} />
+```
+
+### FileUpload — when to use
+
+`FileUpload` (`@/components/shared/file-upload`) replaces every file input across the app:
+- New form (no existing file): `<FileUpload value={data.file} onChange={(f) => setData('file', f)} accept={[...]} maxSizeMb={5} />`
+- Edit form (existing file already saved): add `existingFileName`, `existingFileUrl`, `onRemoveExisting` props so the user can see and optionally replace the current file.
+
+```tsx
+// Edit form with existing attachment
+<FileUpload
+    value={data.attachment}
+    onChange={(file) => setData('attachment', file)}
+    accept={['.jpg', '.jpeg', '.png', '.pdf']}
+    maxSizeMb={5}
+    error={errors.attachment}
+    existingFileName={hasExisting ? row.attachment_name : null}
+    existingFileUrl={hasExisting ? row.attachment_url : null}
+    onRemoveExisting={() => setData('remove_attachment', true)}
+/>
+```
+
+### When the catalog has no equivalent
+
+If no catalog component covers the use case:
+1. Do **not** silently write a custom component inline.
+2. Note the gap to the user: "There is no catalog component for X — should I create a reusable `ComponentName` in `@/components/ui/` before using it here?"
+3. If the user agrees, create a properly styled, reusable component and add it to the CLAUDE.md catalog table before using it on any page.
+
+This prevents one-off custom UI from accumulating across the codebase.

@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreTransactionCategoryRequest;
+use App\Http\Requests\UpdateTransactionCategoryRequest;
 use App\Models\TransactionCategory;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -68,28 +70,16 @@ class TransactionCategoryController extends Controller
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(StoreTransactionCategoryRequest $request): RedirectResponse
     {
-        $request->validate([
-            'type' => ['required', 'in:income,expense,adjustment,transfer'],
-            'label' => ['required', 'string', 'max:255'],
-            'parent_id' => ['nullable', 'exists:transaction_categories,id'],
-        ]);
-
-        TransactionCategory::create($request->only('type', 'label', 'parent_id'));
+        TransactionCategory::create($request->validated());
 
         return redirect()->back()->with('success', 'Kategori berhasil ditambahkan.');
     }
 
-    public function update(Request $request, TransactionCategory $transactionCategory): RedirectResponse
+    public function update(UpdateTransactionCategoryRequest $request, TransactionCategory $transactionCategory): RedirectResponse
     {
-        $request->validate([
-            'type' => ['required', 'in:income,expense,adjustment,transfer'],
-            'label' => ['required', 'string', 'max:255'],
-            'parent_id' => ['nullable', 'exists:transaction_categories,id'],
-        ]);
-
-        $transactionCategory->update($request->only('type', 'label', 'parent_id'));
+        $transactionCategory->update($request->validated());
 
         return redirect()->back()->with('success', 'Kategori berhasil diperbarui.');
     }

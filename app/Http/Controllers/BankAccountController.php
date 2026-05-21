@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreBankAccountRequest;
+use App\Http\Requests\UpdateBankAccountRequest;
 use App\Models\BankAccount;
 use App\Models\BankTransaction;
 use App\Models\Payment;
@@ -86,15 +88,9 @@ class BankAccountController extends Controller
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(StoreBankAccountRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'account_name' => ['required', 'string', 'max:255'],
-            'account_number' => ['required', 'string', 'max:255', 'unique:bank_accounts,account_number'],
-            'bank_name' => ['required', 'string', 'max:255'],
-            'branch' => ['nullable', 'string', 'max:255'],
-            'initial_balance' => ['required', 'integer', 'min:0'],
-        ]);
+        $validated = $request->validated();
 
         $account = BankAccount::create([
             'account_name' => $validated['account_name'],
@@ -109,15 +105,9 @@ class BankAccountController extends Controller
             ->with('success', __('pages.account_created_successfully'));
     }
 
-    public function update(Request $request, BankAccount $bankAccount): RedirectResponse
+    public function update(UpdateBankAccountRequest $request, BankAccount $bankAccount): RedirectResponse
     {
-        $validated = $request->validate([
-            'account_name' => ['required', 'string', 'max:255'],
-            'account_number' => ['required', 'string', 'max:255', "unique:bank_accounts,account_number,{$bankAccount->id}"],
-            'bank_name' => ['required', 'string', 'max:255'],
-            'branch' => ['nullable', 'string', 'max:255'],
-            'initial_balance' => ['required', 'integer', 'min:0'],
-        ]);
+        $validated = $request->validated();
 
         $bankAccount->update([
             'account_name' => $validated['account_name'],

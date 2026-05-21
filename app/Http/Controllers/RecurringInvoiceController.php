@@ -2,6 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreMonthlyRequest;
+use App\Http\Requests\StoreTemplateRequest;
+use App\Http\Requests\UpdateMonthlyRequest;
+use App\Http\Requests\UpdateTemplateRequest;
 use App\Models\Client;
 use App\Models\RecurringInvoice;
 use App\Models\RecurringTemplate;
@@ -9,6 +13,7 @@ use App\Models\Service;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -82,7 +87,7 @@ class RecurringInvoiceController extends Controller
             ->get()
             ->map(fn ($t) => [
                 'id' => $t->id,
-                'label' => $t->client->name . ' — ' . $t->template_name,
+                'label' => $t->client->name.' — '.$t->template_name,
                 'frequency' => $t->frequency,
                 'invoice_template' => $t->invoice_template,
             ]);
@@ -128,26 +133,9 @@ class RecurringInvoiceController extends Controller
 
     // ── Template CRUD ─────────────────────────────────────────────────────────
 
-    public function storeTemplate(Request $request)
+    public function storeTemplate(StoreTemplateRequest $request)
     {
-        $data = $request->validate([
-            'template_name' => 'required|string|max:255',
-            'client_id' => 'required|exists:clients,id',
-            'start_date' => 'required|date',
-            'end_date' => 'required|date|after:start_date',
-            'frequency' => 'required|in:monthly,quarterly,semi_annual,annual',
-            'items' => 'required|array|min:1',
-            'items.*.client_id' => 'required|exists:clients,id',
-            'items.*.service_name' => 'required|string|max:255',
-            'items.*.quantity' => 'required|integer|min:1',
-            'items.*.unit' => 'nullable|string|max:50',
-            'items.*.unit_price' => 'required|integer|min:0',
-            'items.*.cogs_amount' => 'nullable|integer|min:0',
-            'items.*.is_tax_deposit' => 'nullable|boolean',
-            'discount_type' => 'in:fixed,percentage',
-            'discount_value' => 'nullable|numeric|min:0',
-            'discount_reason' => 'nullable|string|max:500',
-        ]);
+        $data = $request->validated();
 
         try {
             DB::beginTransaction();
@@ -177,36 +165,19 @@ class RecurringInvoiceController extends Controller
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
-            \Log::error('Failed to create recurring template: ' . $e->getMessage());
+            \Log::error('Failed to create recurring template: '.$e->getMessage());
 
             if ($request->hasHeader('X-Inertia')) {
-                return back()->withErrors(['general' => 'Gagal membuat template: ' . $e->getMessage()]);
+                return back()->withErrors(['general' => 'Gagal membuat template: '.$e->getMessage()]);
             }
 
-            return response()->json(['message' => 'Gagal membuat template: ' . $e->getMessage()], 500);
+            return response()->json(['message' => 'Gagal membuat template: '.$e->getMessage()], 500);
         }
     }
 
-    public function updateTemplate(Request $request, RecurringTemplate $template)
+    public function updateTemplate(UpdateTemplateRequest $request, RecurringTemplate $template)
     {
-        $data = $request->validate([
-            'template_name' => 'required|string|max:255',
-            'client_id' => 'required|exists:clients,id',
-            'start_date' => 'required|date',
-            'end_date' => 'required|date|after:start_date',
-            'frequency' => 'required|in:monthly,quarterly,semi_annual,annual',
-            'items' => 'required|array|min:1',
-            'items.*.client_id' => 'required|exists:clients,id',
-            'items.*.service_name' => 'required|string|max:255',
-            'items.*.quantity' => 'required|integer|min:1',
-            'items.*.unit' => 'nullable|string|max:50',
-            'items.*.unit_price' => 'required|integer|min:0',
-            'items.*.cogs_amount' => 'nullable|integer|min:0',
-            'items.*.is_tax_deposit' => 'nullable|boolean',
-            'discount_type' => 'in:fixed,percentage',
-            'discount_value' => 'nullable|numeric|min:0',
-            'discount_reason' => 'nullable|string|max:500',
-        ]);
+        $data = $request->validated();
 
         try {
             DB::beginTransaction();
@@ -237,10 +208,10 @@ class RecurringInvoiceController extends Controller
             DB::rollBack();
 
             if ($request->hasHeader('X-Inertia')) {
-                return back()->withErrors(['general' => 'Gagal memperbarui template: ' . $e->getMessage()]);
+                return back()->withErrors(['general' => 'Gagal memperbarui template: '.$e->getMessage()]);
             }
 
-            return response()->json(['message' => 'Gagal memperbarui template: ' . $e->getMessage()], 500);
+            return response()->json(['message' => 'Gagal memperbarui template: '.$e->getMessage()], 500);
         }
     }
 
@@ -250,11 +221,11 @@ class RecurringInvoiceController extends Controller
 
         if ($hasPublished) {
             $template->update(['status' => 'archived']);
-            $message = "Template diarsipkan (memiliki invoice terpublish).";
+            $message = 'Template diarsipkan (memiliki invoice terpublish).';
         } else {
             $template->recurringInvoices()->delete();
             $template->delete();
-            $message = "Template berhasil dihapus.";
+            $message = 'Template berhasil dihapus.';
         }
 
         return response()->json(['message' => $message, 'archived' => $hasPublished]);
@@ -323,24 +294,9 @@ class RecurringInvoiceController extends Controller
         ]);
     }
 
-    public function storeMonthly(Request $request): JsonResponse
+    public function storeMonthly(StoreMonthlyRequest $request): JsonResponse
     {
-        $data = $request->validate([
-            'template_id' => 'required|exists:recurring_templates,id',
-            'scheduled_date' => 'required|date',
-            'issue_date' => 'nullable|date',
-            'due_date' => 'nullable|date',
-            'items' => 'required|array|min:1',
-            'items.*.client_id' => 'required|exists:clients,id',
-            'items.*.service_name' => 'required|string|max:255',
-            'items.*.quantity' => 'required|integer|min:1',
-            'items.*.unit_price' => 'required|integer|min:0',
-            'items.*.cogs_amount' => 'nullable|integer|min:0',
-            'items.*.is_tax_deposit' => 'nullable|boolean',
-            'discount_type' => 'in:fixed,percentage',
-            'discount_value' => 'nullable|numeric|min:0',
-            'discount_reason' => 'nullable|string|max:500',
-        ]);
+        $data = $request->validated();
 
         $scheduledDate = Carbon::parse($data['scheduled_date']);
 
@@ -384,27 +340,13 @@ class RecurringInvoiceController extends Controller
         }
     }
 
-    public function updateMonthly(Request $request, RecurringInvoice $invoice): JsonResponse
+    public function updateMonthly(UpdateMonthlyRequest $request, RecurringInvoice $invoice): JsonResponse
     {
         if ($invoice->status === 'published') {
             return response()->json(['message' => 'Invoice yang sudah dipublish tidak dapat diubah.'], 422);
         }
 
-        $data = $request->validate([
-            'scheduled_date' => 'required|date',
-            'issue_date' => 'nullable|date',
-            'due_date' => 'nullable|date',
-            'items' => 'required|array|min:1',
-            'items.*.client_id' => 'required|exists:clients,id',
-            'items.*.service_name' => 'required|string|max:255',
-            'items.*.quantity' => 'required|integer|min:1',
-            'items.*.unit_price' => 'required|integer|min:0',
-            'items.*.cogs_amount' => 'nullable|integer|min:0',
-            'items.*.is_tax_deposit' => 'nullable|boolean',
-            'discount_type' => 'in:fixed,percentage',
-            'discount_value' => 'nullable|numeric|min:0',
-            'discount_reason' => 'nullable|string|max:500',
-        ]);
+        $data = $request->validated();
 
         try {
             DB::beginTransaction();
@@ -467,7 +409,7 @@ class RecurringInvoiceController extends Controller
                 'message' => "Invoice dipublish sebagai #{$published->invoice_number}.",
             ]);
         } catch (\Exception $e) {
-            return response()->json(['message' => 'Gagal mempublish invoice: ' . $e->getMessage()], 500);
+            return response()->json(['message' => 'Gagal mempublish invoice: '.$e->getMessage()], 500);
         }
     }
 
@@ -508,7 +450,7 @@ class RecurringInvoiceController extends Controller
                 $invoice->publish();
                 $published++;
             } catch (\Exception $e) {
-                \Log::error("Failed to bulk publish recurring invoice {$invoice->id}: " . $e->getMessage());
+                \Log::error("Failed to bulk publish recurring invoice {$invoice->id}: ".$e->getMessage());
             }
         }
 
@@ -520,7 +462,7 @@ class RecurringInvoiceController extends Controller
 
     // ── Helpers ───────────────────────────────────────────────────────────────
 
-    private function getClientOptions(): \Illuminate\Support\Collection
+    private function getClientOptions(): Collection
     {
         return Client::where('status', 'active')
             ->orderBy('name')
@@ -533,7 +475,7 @@ class RecurringInvoiceController extends Controller
             ]);
     }
 
-    private function getServiceOptions(): \Illuminate\Support\Collection
+    private function getServiceOptions(): Collection
     {
         return Service::orderBy('name')
             ->get(['id', 'name', 'price', 'type'])
@@ -689,7 +631,7 @@ class RecurringInvoiceController extends Controller
         ];
     }
 
-    private function computeMonthlyStats(\Illuminate\Support\Collection $invoices): array
+    private function computeMonthlyStats(Collection $invoices): array
     {
         $totalRevenue = $invoices->sum(fn ($inv) => $inv->invoice_data['total_amount'] ?? 0);
         $totalCogs = $invoices->sum(fn ($inv) => collect($inv->invoice_data['items'] ?? [])->sum('cogs_amount'));

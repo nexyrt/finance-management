@@ -2,6 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\DisburseFundRequestRequest;
+use App\Http\Requests\ReviewFundRequestRequest;
+use App\Http\Requests\StoreFundRequestRequest;
+use App\Http\Requests\UpdateFundRequestRequest;
 use App\Models\BankAccount;
 use App\Models\BankTransaction;
 use App\Models\FundRequest;
@@ -202,23 +206,9 @@ class FundRequestController extends Controller
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(StoreFundRequestRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'request_number' => ['required', 'string', 'max:50', 'unique:fund_requests,request_number'],
-            'title' => ['required', 'string', 'max:255'],
-            'purpose' => ['required', 'string'],
-            'priority' => ['required', 'in:low,medium,high,urgent'],
-            'needed_by_date' => ['required', 'date', 'after_or_equal:today'],
-            'attachment' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
-            'items' => ['required', 'array', 'min:1'],
-            'items.*.description' => ['required', 'string', 'max:255'],
-            'items.*.category_id' => ['required', 'exists:transaction_categories,id'],
-            'items.*.quantity' => ['required', 'integer', 'min:1'],
-            'items.*.unit_price' => ['required', 'integer', 'min:1'],
-            'items.*.notes' => ['nullable', 'string'],
-            'action' => ['required', 'in:draft,submit'],
-        ]);
+        $validated = $request->validated();
 
         $attachmentPath = null;
         $attachmentName = null;
@@ -310,7 +300,7 @@ class FundRequestController extends Controller
         ]);
     }
 
-    public function update(Request $request, FundRequest $fundRequest): RedirectResponse
+    public function update(UpdateFundRequestRequest $request, FundRequest $fundRequest): RedirectResponse
     {
         if ($fundRequest->user_id !== auth()->id() && ! auth()->user()->hasRole('admin')) {
             abort(403);
@@ -320,21 +310,7 @@ class FundRequestController extends Controller
             return back()->with('error', 'Permintaan dana tidak dapat diedit');
         }
 
-        $validated = $request->validate([
-            'title' => ['required', 'string', 'max:255'],
-            'purpose' => ['required', 'string'],
-            'priority' => ['required', 'in:low,medium,high,urgent'],
-            'needed_by_date' => ['required', 'date', 'after_or_equal:today'],
-            'attachment' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
-            'remove_attachment' => ['nullable', 'boolean'],
-            'items' => ['required', 'array', 'min:1'],
-            'items.*.description' => ['required', 'string', 'max:255'],
-            'items.*.category_id' => ['required', 'exists:transaction_categories,id'],
-            'items.*.quantity' => ['required', 'integer', 'min:1'],
-            'items.*.unit_price' => ['required', 'integer', 'min:1'],
-            'items.*.notes' => ['nullable', 'string'],
-            'action' => ['required', 'in:draft,submit'],
-        ]);
+        $validated = $request->validated();
 
         DB::transaction(function () use ($validated, $request, $fundRequest) {
             $attachmentPath = $fundRequest->attachment_path;
@@ -415,7 +391,7 @@ class FundRequestController extends Controller
         return back()->with('success', 'Permintaan dana berhasil diajukan untuk persetujuan');
     }
 
-    public function review(Request $request, FundRequest $fundRequest): RedirectResponse
+    public function review(ReviewFundRequestRequest $request, FundRequest $fundRequest): RedirectResponse
     {
         abort_if(! auth()->user()->can('approve fund requests'), 403);
 
@@ -423,10 +399,7 @@ class FundRequestController extends Controller
             return back()->with('error', 'Permintaan dana tidak dapat ditinjau');
         }
 
-        $validated = $request->validate([
-            'action' => ['required', 'in:approve,reject'],
-            'review_notes' => ['nullable', 'string', 'max:500'],
-        ]);
+        $validated = $request->validated();
 
         if ($validated['action'] === 'approve') {
             $fundRequest->approve(auth()->id(), $validated['review_notes']);
@@ -439,7 +412,7 @@ class FundRequestController extends Controller
         return back()->with('success', 'Permintaan dana ditolak');
     }
 
-    public function disburse(Request $request, FundRequest $fundRequest): RedirectResponse
+    public function disburse(DisburseFundRequestRequest $request, FundRequest $fundRequest): RedirectResponse
     {
         abort_if(! auth()->user()->can('disburse fund requests'), 403);
 
@@ -447,11 +420,7 @@ class FundRequestController extends Controller
             return back()->with('error', 'Permintaan dana tidak dapat dicairkan');
         }
 
-        $validated = $request->validate([
-            'bank_account_id' => ['required', 'exists:bank_accounts,id'],
-            'disbursement_date' => ['required', 'date', 'before_or_equal:today'],
-            'disbursement_notes' => ['nullable', 'string', 'max:500'],
-        ]);
+        $validated = $request->validated();
 
         $fundRequest->load('items');
 

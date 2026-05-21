@@ -23,7 +23,6 @@ use App\Http\Controllers\Settings\CompanyController;
 use App\Http\Controllers\Settings\PasswordController as SettingsPasswordController;
 use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\TransactionCategoryController;
-use App\Livewire\TestingPage;
 use App\Models\BankAccount;
 use App\Models\Client;
 use App\Models\Invoice;
@@ -484,11 +483,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // ------------------------------------------------------------------------
     // API ENDPOINTS
     // ------------------------------------------------------------------------
-
-    // ------------------------------------------------------------------------
-    // TESTING (Local Only)
-    // ------------------------------------------------------------------------
-    Route::get('/test', TestingPage::class)->name('test');
 
 });
 

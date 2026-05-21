@@ -2,6 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ChangeStatusFeedbackRequest;
+use App\Http\Requests\RespondFeedbackRequest;
+use App\Http\Requests\StoreFeedbackRequest;
+use App\Http\Requests\UpdateFeedbackRequest;
 use App\Models\AppNotification;
 use App\Models\Feedback;
 use App\Models\User;
@@ -75,16 +79,9 @@ class FeedbackController extends Controller
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(StoreFeedbackRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'title' => ['required', 'string', 'max:255'],
-            'description' => ['required', 'string', 'max:5000'],
-            'type' => ['required', 'in:bug,feature,feedback'],
-            'priority' => ['required', 'in:low,medium,high,critical'],
-            'page_url' => ['nullable', 'string', 'max:500'],
-            'attachment' => ['nullable', 'file', 'max:5120', 'mimes:jpg,jpeg,png,pdf'],
-        ]);
+        $validated = $request->validated();
 
         DB::transaction(function () use ($validated, $request) {
             $attachmentPath = null;
@@ -114,16 +111,11 @@ class FeedbackController extends Controller
         return redirect()->back()->with('success', 'Feedback berhasil dikirim. Terima kasih atas masukannya.');
     }
 
-    public function update(Request $request, Feedback $feedback): RedirectResponse
+    public function update(UpdateFeedbackRequest $request, Feedback $feedback): RedirectResponse
     {
         abort_unless($feedback->user_id === auth()->id() && $feedback->canEdit(), 403);
 
-        $validated = $request->validate([
-            'title' => ['required', 'string', 'max:255'],
-            'description' => ['required', 'string', 'max:5000'],
-            'type' => ['required', 'in:bug,feature,feedback'],
-            'priority' => ['required', 'in:low,medium,high,critical'],
-        ]);
+        $validated = $request->validated();
 
         $feedback->update($validated);
 
@@ -143,15 +135,12 @@ class FeedbackController extends Controller
         return redirect()->back()->with('success', 'Feedback berhasil dihapus.');
     }
 
-    public function respond(Request $request, Feedback $feedback): RedirectResponse
+    public function respond(RespondFeedbackRequest $request, Feedback $feedback): RedirectResponse
     {
         abort_unless(auth()->user()->can('respond feedbacks'), 403);
         abort_unless($feedback->canRespond(), 403);
 
-        $validated = $request->validate([
-            'response' => ['required', 'string', 'max:5000'],
-            'status' => ['required', 'in:in_progress,resolved,closed'],
-        ]);
+        $validated = $request->validated();
 
         $feedback->respond(auth()->id(), $validated['response'], $validated['status']);
 
@@ -166,13 +155,11 @@ class FeedbackController extends Controller
         return redirect()->back()->with('success', 'Tanggapan berhasil dikirim.');
     }
 
-    public function changeStatus(Request $request, Feedback $feedback): RedirectResponse
+    public function changeStatus(ChangeStatusFeedbackRequest $request, Feedback $feedback): RedirectResponse
     {
         abort_unless(auth()->user()->can('manage feedbacks'), 403);
 
-        $validated = $request->validate([
-            'status' => ['required', 'in:open,in_progress,resolved,closed'],
-        ]);
+        $validated = $request->validated();
 
         $feedback->changeStatus($validated['status']);
 

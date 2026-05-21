@@ -2,6 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ApproveReceivableRequest;
+use App\Http\Requests\PayReceivableRequest;
+use App\Http\Requests\StoreReceivableRequest;
+use App\Http\Requests\UpdateReceivableRequest;
 use App\Models\BankAccount;
 use App\Models\BankTransaction;
 use App\Models\Client;
@@ -139,22 +143,9 @@ class ReceivableController extends Controller
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(StoreReceivableRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'type' => ['required', 'in:employee_loan,company_loan'],
-            'debtor_id' => ['required', 'integer'],
-            'principal_amount' => ['required', 'integer', 'min:1'],
-            'interest_type' => ['required', 'in:fixed,percentage'],
-            'interest_amount' => ['nullable', 'integer', 'min:0'],
-            'interest_rate' => ['nullable', 'numeric', 'min:0', 'max:100'],
-            'installment_months' => ['required', 'integer', 'min:1'],
-            'loan_date' => ['required', 'date'],
-            'purpose' => ['required', 'string', 'max:255'],
-            'notes' => ['nullable', 'string'],
-            'disbursement_account' => ['required', 'string', 'max:255'],
-            'contract_attachment' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
-        ]);
+        $validated = $request->validated();
 
         $attachmentPath = null;
         $attachmentName = null;
@@ -200,25 +191,11 @@ class ReceivableController extends Controller
         return back()->with('success', 'Piutang berhasil dibuat');
     }
 
-    public function update(Request $request, Receivable $receivable): RedirectResponse
+    public function update(UpdateReceivableRequest $request, Receivable $receivable): RedirectResponse
     {
         abort_if(! in_array($receivable->status, ['draft', 'rejected']), 403, 'Piutang ini tidak dapat diedit');
 
-        $validated = $request->validate([
-            'type' => ['required', 'in:employee_loan,company_loan'],
-            'debtor_id' => ['required', 'integer'],
-            'principal_amount' => ['required', 'integer', 'min:1'],
-            'interest_type' => ['required', 'in:fixed,percentage'],
-            'interest_amount' => ['nullable', 'integer', 'min:0'],
-            'interest_rate' => ['nullable', 'numeric', 'min:0', 'max:100'],
-            'installment_months' => ['required', 'integer', 'min:1'],
-            'loan_date' => ['required', 'date'],
-            'purpose' => ['required', 'string', 'max:255'],
-            'notes' => ['nullable', 'string'],
-            'disbursement_account' => ['required', 'string', 'max:255'],
-            'contract_attachment' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
-            'remove_attachment' => ['nullable', 'boolean'],
-        ]);
+        $validated = $request->validated();
 
         $attachmentPath = $receivable->contract_attachment_path;
         $attachmentName = $receivable->contract_attachment_name;
@@ -297,16 +274,12 @@ class ReceivableController extends Controller
         return back()->with('success', 'Piutang berhasil diajukan untuk persetujuan');
     }
 
-    public function approve(Request $request, Receivable $receivable): RedirectResponse
+    public function approve(ApproveReceivableRequest $request, Receivable $receivable): RedirectResponse
     {
         abort_if(! auth()->user()->can('approve receivables'), 403);
         abort_if($receivable->status !== 'pending_approval', 403, 'Piutang ini tidak dapat diproses');
 
-        $validated = $request->validate([
-            'action' => ['required', 'in:approve,reject'],
-            'bank_account_id' => ['required_if:action,approve', 'nullable', 'exists:bank_accounts,id'],
-            'notes' => ['nullable', 'string', 'max:500'],
-        ]);
+        $validated = $request->validated();
 
         if ($validated['action'] === 'approve') {
             DB::transaction(function () use ($receivable, $validated) {
@@ -333,8 +306,6 @@ class ReceivableController extends Controller
             return back()->with('success', 'Piutang berhasil disetujui');
         }
 
-        $this->validate($request, ['notes' => ['required', 'string', 'max:500']]);
-
         $receivable->update([
             'status' => 'rejected',
             'approved_by' => auth()->id(),
@@ -345,7 +316,7 @@ class ReceivableController extends Controller
         return back()->with('success', 'Piutang telah ditolak');
     }
 
-    public function pay(Request $request, Receivable $receivable): RedirectResponse
+    public function pay(PayReceivableRequest $request, Receivable $receivable): RedirectResponse
     {
         abort_if(! auth()->user()->can('pay receivables'), 403);
         abort_if($receivable->status !== 'active', 403, 'Piutang ini tidak dapat dibayar');
@@ -357,19 +328,7 @@ class ReceivableController extends Controller
         $paidInterest = (int) $receivable->payments()->sum('interest_paid');
         $remainingInterest = $totalInterest - $paidInterest;
 
-        $validated = $request->validate([
-            'bank_account_id' => ['nullable', 'exists:bank_accounts,id'],
-            'payment_date' => ['required', 'date', 'before_or_equal:today'],
-            'principal_paid' => ['nullable', 'integer', 'min:0', 'max:'.$remainingPrincipal],
-            'interest_paid' => ['nullable', 'integer', 'min:0', 'max:'.max(0, $remainingInterest)],
-            'payment_method' => ['required', 'in:cash,payroll_deduction,bank_transfer'],
-            'reference_number' => ['nullable', 'string', 'max:255'],
-            'notes' => ['nullable', 'string'],
-        ]);
-
-        if ($validated['payment_method'] === 'bank_transfer') {
-            $request->validate(['bank_account_id' => ['required', 'exists:bank_accounts,id']]);
-        }
+        $validated = $request->validated();
 
         $principalPaid = (int) ($validated['principal_paid'] ?? 0);
         $interestPaid = (int) ($validated['interest_paid'] ?? 0);
