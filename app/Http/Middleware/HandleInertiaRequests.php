@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\AppNotification;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -50,6 +51,32 @@ class HandleInertiaRequests extends Middleware
                 'warning' => session('warning'),
                 'info' => session('info'),
             ],
+            'notifications' => fn () => $user ? $this->getNotifications($user->id) : null,
+        ];
+    }
+
+    private function getNotifications(int $userId): array
+    {
+        $recent = AppNotification::forUser($userId)
+            ->recent()
+            ->orderByDesc('created_at')
+            ->limit(10)
+            ->get()
+            ->map(fn (AppNotification $n) => [
+                'id' => $n->id,
+                'type' => $n->type,
+                'title' => $n->title,
+                'message' => $n->message,
+                'data' => $n->data,
+                'read_at' => $n->read_at?->toIso8601String(),
+                'created_at' => $n->created_at?->toIso8601String(),
+                'icon' => $n->icon,
+                'color' => $n->color,
+            ]);
+
+        return [
+            'recent' => $recent->values()->toArray(),
+            'unread_count' => AppNotification::forUser($userId)->unread()->count(),
         ];
     }
 }

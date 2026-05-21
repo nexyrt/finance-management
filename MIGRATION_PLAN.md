@@ -3,7 +3,7 @@
 > **Dokumen ini adalah panduan kerja untuk Claude Code.**
 > Dibuat: 2026-05-11 | Branch aktif: `feature/inertia-react-migration`
 > Update dokumen ini setiap kali fase selesai.
-> **Terakhir diupdate: 2026-05-21 — Fase 10 selesai: Users + Permissions/Roles + Settings.**
+> **Terakhir diupdate: 2026-05-21 — Fase 11 selesai: Notifications + Feedbacks + FloatingFeedbackButton.**
 
 ---
 
@@ -58,7 +58,7 @@ git show main:path/to/file.php
 | 8 | Operations (Reimbursements + Fund Requests) | ✅ Selesai (2026-05-20) |
 | 9 | Finance (Loans + Receivables) | ✅ Selesai (2026-05-20) |
 | 10 | Admin (Users + Permissions + Settings) | ✅ Selesai (2026-05-21) |
-| 11 | Utility Components & Dashboard | ⬜ Belum Dimulai |
+| 11 | Utility Components & Dashboard | ✅ Selesai (2026-05-21) |
 | 12 | Backend Refactoring (Controllers + Form Requests) | ⬜ Belum Dimulai |
 | 13 | PDF Integration | ⬜ Belum Dimulai |
 | 14 | Testing | ⬜ Belum Dimulai |
@@ -600,28 +600,79 @@ Route::get('/templates/{template}/edit', [RecurringInvoiceController::class, 'ed
 
 ---
 
-## Fase 11 — Utility Components & Dashboard
+## Fase 11 — Utility Components & Dashboard ✅ SELESAI (2026-05-21)
 
-| Component | Status |
-|-----------|--------|
-| Dashboard (stats + charts) | ⬜ |
-| Notification Bell | ⬜ |
-| Notification Drawer | ⬜ |
-| LanguageSwitcher (id/en/zh) | ⬜ |
-| FloatingFeedbackButton | ⬜ |
+| Component | Status | Catatan |
+|-----------|--------|---------|
+| Dashboard (stats + charts) | ✅ | Sudah lengkap sejak Fase awal (DashboardController + ApexCharts) |
+| Notification Bell | ✅ | Popover dengan list recent + counter badge |
+| Notification Drawer | ✅ | Sheet fullscreen kanan dengan load-more pagination |
+| LanguageSwitcher (id/en/zh) | ✅ | Sudah ada di header.tsx sejak Fase 2 |
+| FloatingFeedbackButton | ✅ | FAB primary di bottom-right dengan dialog kompak |
 
-### Feedbacks
+### Notifications ✅
+**Routes:** `/notifications`, `/notifications/{id}/read`, `/notifications/mark-all-read`
+**Controller:** `app/Http/Controllers/NotificationController.php`
+**Components:**
+- `resources/js/components/notifications/notification-bell.tsx` — Popover, badge counter, recent list (max 10), mark-all-read, link to drawer
+- `resources/js/components/notifications/notification-drawer.tsx` — Sheet kanan, full list dengan load-more via fetch JSON
+
+**Implementasi:**
+- Shared props: `notifications.recent` (10 terbaru) + `notifications.unread_count` di-share lewat `HandleInertiaRequests`
+- Icon map: lucide icons per `AppNotification.type` (feedback_submitted/responded/status_changed, invoice_*, payment_deleted)
+- Color map: blue/green/yellow/red/gray dengan bg + text variants
+- Time ago helper: format relatif Indonesia (baru saja / 5m / 3j / 2h)
+- Bell counter: `min-w-4 h-4` red badge, max display "99+"
+- Wired ke header.tsx menggantikan stub Bell button
+
+### Feedbacks ✅
 **Route:** `/feedbacks`
-**Livewire source:** `app/Livewire/Feedbacks/`
+**Controller:** `app/Http/Controllers/FeedbackController.php`
+**Page:** `resources/js/pages/feedbacks/index.tsx`
 
 | Component | Status |
 |-----------|--------|
-| Index (tabs: AllFeedbacks / MyFeedbacks) | ⬜ |
-| Create | ⬜ |
-| Update | ⬜ |
-| Delete | ⬜ |
-| Show | ⬜ |
-| Respond | ⬜ |
+| Index (tabs Semua / Saya untuk admin, stats, filter, card grid) | ✅ |
+| Create (Dialog dengan type/priority/attachment) | ✅ |
+| Update (Dialog dengan pre-fill, hanya saat status open) | ✅ |
+| Delete (ConfirmDialog) | ✅ |
+| Show (Dialog detail + admin response + status change menu) | ✅ |
+| Respond (Dialog separate untuk admin/respond) | ✅ |
+| Change Status (DropdownMenu inline di show dialog) | ✅ |
+
+**Implementasi:**
+- 4 stats cards: Total, Terbuka, Diproses, Selesai (StatsCard h-1 accent)
+- Tabs (Semua/Saya) hanya tampil untuk admin yang punya `manage feedbacks`
+- Card grid `md:2 xl:3` — accent bar atas per type (bug=red, feature=blue, feedback=zinc)
+- Type icons: Bug, Lightbulb, MessageCircle
+- Priority badges: zinc/blue/yellow/red
+- Status badges: yellow (open), blue (in_progress, animate-spin), green (resolved), zinc (closed)
+- Show dialog mencakup deskripsi full + URL halaman + lampiran link + admin response block (biru) + action buttons (status menu, edit, delete, respond)
+- Inertia partial reload `?show={id}` untuk load detail (lazy load via showFeedback prop)
+- File upload via FormData (`forceFormData: true`), accept: JPG/PNG/PDF max 5MB
+
+### FloatingFeedbackButton ✅
+**Component:** `resources/js/components/floating-feedback-button.tsx`
+**Lokasi:** Wired di `app-layout.tsx` (z-40, bottom-6 right-6)
+
+**Implementasi:**
+- FAB primary dengan icon MessageSquare, label "Feedback" muncul saat hover (smooth expand)
+- Auto-fill `page_url` dengan `window.location.pathname` saat dibuka
+- Form: 3-type picker (Bug/Fitur/Saran) + Judul + Deskripsi + 4-priority picker + attachment
+- Notifikasi admin otomatis dikirim ke users dengan role admin/finance manager via `AppNotification::notify()`
+
+### LanguageSwitcher ✅
+**Lokasi:** `resources/js/layouts/header.tsx` (sudah ada sejak Fase 2)
+- Dropdown 3 opsi: id (🇮🇩), en (🇬🇧), zh (🇨🇳)
+- POST ke `/language` route untuk update session + user preference
+
+### Dashboard ✅
+**Lokasi:** `resources/js/pages/dashboard.tsx` + `app/Http/Controllers/DashboardController.php` (sudah ada)
+- Financial overview cards (Pemasukan/Profit/Outstanding/HPP/PP 0,5%/Saldo)
+- Stats bulan ini (income, expenses, net)
+- Charts: Cash flow bar (6 bulan) + Expenses by category donut (ApexCharts)
+- 4-column quick lists: Bank Accounts, Reimbursements, Fund Requests, Invoices
+- Recent Transactions grid 4-col
 
 ---
 

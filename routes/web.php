@@ -9,9 +9,11 @@ use App\Http\Controllers\CashFlowController;
 use App\Http\Controllers\CashFlowExportController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\FundRequestController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\LoanController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ReceivableController;
 use App\Http\Controllers\RecurringInvoiceController;
@@ -21,7 +23,6 @@ use App\Http\Controllers\Settings\CompanyController;
 use App\Http\Controllers\Settings\PasswordController as SettingsPasswordController;
 use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\TransactionCategoryController;
-use App\Livewire\Feedbacks\Index as FeedbacksIndex;
 use App\Livewire\TestingPage;
 use App\Models\BankAccount;
 use App\Models\Client;
@@ -368,9 +369,33 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // ------------------------------------------------------------------------
     // FEEDBACKS
     // ------------------------------------------------------------------------
-    Route::get('/feedbacks', FeedbacksIndex::class)
-        ->middleware('can:view feedbacks')
-        ->name('feedbacks.index');
+    Route::middleware('can:view feedbacks')->group(function () {
+        Route::get('/feedbacks', [FeedbackController::class, 'index'])->name('feedbacks.index');
+        Route::post('/feedbacks', [FeedbackController::class, 'store'])
+            ->middleware('can:create feedbacks')
+            ->name('feedbacks.store');
+        Route::put('/feedbacks/{feedback}', [FeedbackController::class, 'update'])
+            ->middleware('can:edit feedbacks')
+            ->name('feedbacks.update');
+        Route::delete('/feedbacks/{feedback}', [FeedbackController::class, 'destroy'])
+            ->middleware('can:delete feedbacks')
+            ->name('feedbacks.destroy');
+        Route::post('/feedbacks/{feedback}/respond', [FeedbackController::class, 'respond'])
+            ->middleware('can:respond feedbacks')
+            ->name('feedbacks.respond');
+        Route::post('/feedbacks/{feedback}/status', [FeedbackController::class, 'changeStatus'])
+            ->middleware('can:manage feedbacks')
+            ->name('feedbacks.status');
+    });
+
+    // ------------------------------------------------------------------------
+    // NOTIFICATIONS
+    // ------------------------------------------------------------------------
+    Route::prefix('notifications')->name('notifications.')->group(function () {
+        Route::get('/', [NotificationController::class, 'index'])->name('index');
+        Route::post('/{notification}/read', [NotificationController::class, 'markAsRead'])->name('read');
+        Route::post('/mark-all-read', [NotificationController::class, 'markAllAsRead'])->name('mark-all-read');
+    });
 
     // ------------------------------------------------------------------------
     // DEBT & RECEIVABLES

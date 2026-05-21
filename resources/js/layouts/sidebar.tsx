@@ -188,7 +188,6 @@ const NAV: NavSection[] = [
                 icon: <MessageSquare className="w-4 h-4 shrink-0" />,
                 permission: 'view feedbacks',
                 matchPrefix: '/feedbacks',
-                comingSoon: true,
             },
             {
                 label: 'Izin & Peran',

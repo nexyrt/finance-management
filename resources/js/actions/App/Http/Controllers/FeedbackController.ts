@@ -1,4 +1,4 @@
-import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../wayfinder'
+import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\FeedbackController::index
  * @see app/Http/Controllers/FeedbackController.php:17
@@ -251,26 +251,26 @@ respond.post = (args: { feedback: number | { id: number } } | [feedback: number 
 })
 
 /**
-* @see \App\Http\Controllers\FeedbackController::status
+* @see \App\Http\Controllers\FeedbackController::changeStatus
  * @see app/Http/Controllers/FeedbackController.php:169
  * @route '/feedbacks/{feedback}/status'
  */
-export const status = (args: { feedback: number | { id: number } } | [feedback: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
-    url: status.url(args, options),
+export const changeStatus = (args: { feedback: number | { id: number } } | [feedback: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: changeStatus.url(args, options),
     method: 'post',
 })
 
-status.definition = {
+changeStatus.definition = {
     methods: ["post"],
     url: '/feedbacks/{feedback}/status',
 } satisfies RouteDefinition<["post"]>
 
 /**
-* @see \App\Http\Controllers\FeedbackController::status
+* @see \App\Http\Controllers\FeedbackController::changeStatus
  * @see app/Http/Controllers/FeedbackController.php:169
  * @route '/feedbacks/{feedback}/status'
  */
-status.url = (args: { feedback: number | { id: number } } | [feedback: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
+changeStatus.url = (args: { feedback: number | { id: number } } | [feedback: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { feedback: args }
     }
@@ -293,27 +293,20 @@ status.url = (args: { feedback: number | { id: number } } | [feedback: number | 
                 : args.feedback,
                 }
 
-    return status.definition.url
+    return changeStatus.definition.url
             .replace('{feedback}', parsedArgs.feedback.toString())
             .replace(/\/+$/, '') + queryParams(options)
 }
 
 /**
-* @see \App\Http\Controllers\FeedbackController::status
+* @see \App\Http\Controllers\FeedbackController::changeStatus
  * @see app/Http/Controllers/FeedbackController.php:169
  * @route '/feedbacks/{feedback}/status'
  */
-status.post = (args: { feedback: number | { id: number } } | [feedback: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
-    url: status.url(args, options),
+changeStatus.post = (args: { feedback: number | { id: number } } | [feedback: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: changeStatus.url(args, options),
     method: 'post',
 })
-const feedbacks = {
-    index: Object.assign(index, index),
-store: Object.assign(store, store),
-update: Object.assign(update, update),
-destroy: Object.assign(destroy, destroy),
-respond: Object.assign(respond, respond),
-status: Object.assign(status, status),
-}
+const FeedbackController = { index, store, update, destroy, respond, changeStatus }
 
-export default feedbacks
+export default FeedbackController

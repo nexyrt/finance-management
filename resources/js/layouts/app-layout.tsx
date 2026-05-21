@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { Toaster } from 'sonner';
+import { FloatingFeedbackButton } from '@/components/floating-feedback-button';
 import { Sidebar } from './sidebar';
 import { Header } from './header';
 
@@ -61,6 +62,8 @@ export function AppLayout({ children }: AppLayoutProps) {
                     <div className="p-4 md:p-6 max-w-[1600px] mx-auto">{children}</div>
                 </main>
             </div>
+
+            <FloatingFeedbackButton />
 
             <Toaster richColors position="top-right" />
         </div>

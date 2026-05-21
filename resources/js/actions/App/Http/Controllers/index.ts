@@ -11,6 +11,8 @@ import CashFlowController from './CashFlowController'
 import TransactionCategoryController from './TransactionCategoryController'
 import ReimbursementController from './ReimbursementController'
 import FundRequestController from './FundRequestController'
+import FeedbackController from './FeedbackController'
+import NotificationController from './NotificationController'
 import LoanController from './LoanController'
 import ReceivableController from './ReceivableController'
 import Admin from './Admin'
@@ -30,6 +32,8 @@ CashFlowController: Object.assign(CashFlowController, CashFlowController),
 TransactionCategoryController: Object.assign(TransactionCategoryController, TransactionCategoryController),
 ReimbursementController: Object.assign(ReimbursementController, ReimbursementController),
 FundRequestController: Object.assign(FundRequestController, FundRequestController),
+FeedbackController: Object.assign(FeedbackController, FeedbackController),
+NotificationController: Object.assign(NotificationController, NotificationController),
 LoanController: Object.assign(LoanController, LoanController),
 ReceivableController: Object.assign(ReceivableController, ReceivableController),
 Admin: Object.assign(Admin, Admin),

@@ -1,6 +1,8 @@
 import { router, usePage } from '@inertiajs/react';
-import { Bell, Menu, Moon, Sun } from 'lucide-react';
+import { Menu, Moon, Sun } from 'lucide-react';
 import * as React from 'react';
+import { NotificationBell } from '@/components/notifications/notification-bell';
+import { NotificationDrawer } from '@/components/notifications/notification-drawer';
 import { cn } from '@/lib/utils';
 import type { SharedProps } from '@/types';
 
@@ -122,6 +124,7 @@ export function Header({ onMenuClick, darkMode, onToggleDark }: HeaderProps) {
     const { locale } = usePage<SharedProps>().props;
     const currentUrl = usePage().url;
     const breadcrumbs = getBreadcrumbs(currentUrl);
+    const [drawerOpen, setDrawerOpen] = React.useState(false);
 
     return (
         <header className="h-14 shrink-0 flex items-center gap-3 px-4 md:px-6 bg-white/80 dark:bg-dark-900/80 backdrop-blur-[12px] border-b border-gray-100 dark:border-white/[0.06]">
@@ -201,11 +204,10 @@ export function Header({ onMenuClick, darkMode, onToggleDark }: HeaderProps) {
                     {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
                 </button>
 
-                {/* Notification bell — wired in Phase 11 */}
-                <button className="relative p-2 rounded-lg text-gray-500 dark:text-zinc-400 hover:bg-gray-100 dark:hover:bg-white/[0.06] transition-colors">
-                    <Bell className="w-4 h-4" />
-                </button>
+                <NotificationBell onOpenDrawer={() => setDrawerOpen(true)} />
             </div>
+
+            <NotificationDrawer open={drawerOpen} onOpenChange={setDrawerOpen} />
         </header>
     );
 }
