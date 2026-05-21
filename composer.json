@@ -11,18 +11,17 @@
     "require": {
         "php": "^8.2",
         "barryvdh/laravel-dompdf": "^3.1",
-        "dasundev/livewire-quill-text-editor": "^1.0",
         "google-gemini-php/laravel": "^2.0",
+        "inertiajs/inertia-laravel": "^3.1",
         "intervention/image-laravel": "^1.5",
         "laravel/framework": "^12.0",
         "laravel/tinker": "^2.10.1",
-        "livewire/livewire": "^3.6",
-        "livewire/volt": "^1.7.0",
+        "laravel/wayfinder": "^0.1.18",
         "maatwebsite/excel": "^3.1",
         "ngekoding/terbilang": "^1.0",
+        "predis/predis": "^3.4",
         "spatie/laravel-permission": "^6.21",
-        "stichoza/google-translate-php": "^5.3",
-        "tallstackui/tallstackui": "^2.0"
+        "stichoza/google-translate-php": "^5.3"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
@@ -67,7 +66,7 @@
         ],
         "dev": [
             "Composer\\Config::disableProcessTimeout",
-            "npx concurrently -c \"#93c5fd,#c4b5fd,#fdba74\" \"php artisan serve\" \"php artisan queue:listen --tries=1\" \"npm run dev\" --names='server,queue,vite'"
+            "npx concurrently -c \"#93c5fd,#c4b5fd,#fdba74\" \"php artisan serve --no-reload\" \"php artisan queue:listen --tries=1\" \"npm run dev\" --names='server,queue,vite'"
         ],
         "dev:network": [
             "Composer\\Config::disableProcessTimeout",

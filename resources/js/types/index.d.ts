@@ -1,0 +1,44 @@
+export interface User {
+    id: number;
+    name: string;
+    email: string;
+    avatar?: string | null;
+}
+
+export interface Auth {
+    user: User | null;
+    permissions: string[];
+    roles: string[];
+}
+
+export interface Flash {
+    success?: string | null;
+    error?: string | null;
+    warning?: string | null;
+    info?: string | null;
+}
+
+export interface NotificationItem {
+    id: number;
+    type: string;
+    title: string;
+    message: string;
+    data: Record<string, unknown> | null;
+    read_at: string | null;
+    created_at: string;
+    icon: string;
+    color: string;
+}
+
+export interface SharedNotifications {
+    recent: NotificationItem[];
+    unread_count: number;
+}
+
+export type SharedProps = {
+    auth: Auth;
+    locale: string;
+    flash: Flash;
+    notifications: SharedNotifications | null;
+    [key: string]: unknown;
+};

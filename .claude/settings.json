@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Test-Path \"d:\\\\Laravel\\\\finance-management\\\\app\\\\Livewire\\\\BankAccounts\\\\Create.php\")",
+      "Bash(Test-Path \"d:\\\\Laravel\\\\finance-management\\\\app\\\\Livewire\\\\Accounts\\\\Create.php\")",
+      "Bash(./vendor/bin/pint app/Http/Controllers/BankAccountController.php --format agent)",
+      "PowerShell(netstat -ano)",
+      "Bash(rm d:/Laravel/finance-management/*.png d:/Laravel/finance-management/*.jpg d:/Laravel/finance-management/*.jpeg d:/Laravel/finance-management/*.webp d:/Laravel/finance-management/*.gif 2>/dev/null; echo \"Done\")"
+    ],
+    "additionalDirectories": [
+      "d:\\Laravel\\finance-management"
+    ]
+  }
+}

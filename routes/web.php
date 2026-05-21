@@ -1,34 +1,32 @@
 <?php
 
+use App\Http\Controllers\Admin\PermissionController;
+use App\Http\Controllers\Admin\RoleController;
+use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\BankAccountController;
+use App\Http\Controllers\BankTransactionController;
+use App\Http\Controllers\CashFlowController;
 use App\Http\Controllers\CashFlowExportController;
-use App\Livewire\Accounts\Index as AccountsIndex;
-use App\Livewire\CashFlow\ExpensesPage as CashFlowExpenses;
-use App\Livewire\CashFlow\Income as CashFlowIncome;
-use App\Livewire\CashFlow\Transfers as CashFlowTransfers;
-use App\Livewire\Clients\Index as ClientsIndex;
-use App\Livewire\Dashboard;
-use App\Livewire\Feedbacks\Index as FeedbacksIndex;
-use App\Livewire\FundRequests\Index as FundRequestsIndex;
-use App\Livewire\Invoices\Create as InvoicesCreate;
-use App\Livewire\Invoices\Edit as InvoicesEdit;
-use App\Livewire\Invoices\Index as InvoicesIndex;
-use App\Livewire\Loans\Index as LoansIndex;
-use App\Livewire\Permissions\Index as PermissionsIndex;
-use App\Livewire\Receivables\Index as ReceivablesIndex;
-use App\Livewire\RecurringInvoices\CreateTemplate as RecurringInvoicesCreateTemplate;
-use App\Livewire\RecurringInvoices\EditTemplate as RecurringInvoicesEditTemplate;
-use App\Livewire\RecurringInvoices\Index as RecurringInvoicesIndex;
-use App\Livewire\RecurringInvoices\Monthly\CreateInvoice as RecurringInvoicesMonthlyCreate;
-use App\Livewire\RecurringInvoices\Monthly\EditInvoice as RecurringInvoicesMonthlyEdit;
-use App\Livewire\Reimbursements\Index as ReimbursementIndex;
-use App\Livewire\Services\Index as ServicesIndex;
-use App\Livewire\Settings\CompanyProfileSettings;
-use App\Livewire\Settings\Password;
-use App\Livewire\Settings\Profile;
-use App\Livewire\TestingPage;
-use App\Livewire\TransactionsCategories\Index as TransactionsCategoriesIndex;
-use App\Livewire\Users\Index as UsersIndex;
+use App\Http\Controllers\ClientController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\FeedbackController;
+use App\Http\Controllers\FundRequestController;
+use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\LoanController;
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\ReceivableController;
+use App\Http\Controllers\RecurringInvoiceController;
+use App\Http\Controllers\ReimbursementController;
+use App\Http\Controllers\ServiceController;
+use App\Http\Controllers\Settings\CompanyController;
+use App\Http\Controllers\Settings\PasswordController as SettingsPasswordController;
+use App\Http\Controllers\Settings\ProfileController;
+use App\Http\Controllers\TransactionCategoryController;
+use App\Models\BankAccount;
+use App\Models\Client;
 use App\Models\Invoice;
+use App\Models\TransactionCategory;
 use App\Services\FundRequestExportService;
 use App\Services\InvoicePrintService;
 use Illuminate\Http\Request;
@@ -45,7 +43,7 @@ Route::redirect('/', '/login')->name('home');
 // ============================================================================
 
 Route::get('/api/transaction-categories', function (Request $request) {
-    $type = $request->get('type');
+    $type = $request->input('type');
 
     $categoryTypes = match ($type) {
         'credit' => ['income', 'adjustment', 'transfer'],
@@ -57,7 +55,7 @@ Route::get('/api/transaction-categories', function (Request $request) {
         default => ['income', 'expense', 'adjustment', 'transfer'],
     };
 
-    return \App\Models\TransactionCategory::whereNull('parent_id')
+    return TransactionCategory::whereNull('parent_id')
         ->whereIn('type', $categoryTypes)
         ->with('children')
         ->orderBy('type')
@@ -76,7 +74,7 @@ Route::get('/api/transaction-categories', function (Request $request) {
 })->name('api.transaction-categories');
 
 Route::get('/api/bank-accounts', function () {
-    return \App\Models\BankAccount::orderBy('bank_name')
+    return BankAccount::orderBy('bank_name')
         ->orderBy('account_name')
         ->get()
         ->map(fn ($account) => [
@@ -86,7 +84,7 @@ Route::get('/api/bank-accounts', function () {
 })->name('api.bank-accounts');
 
 Route::get('/api/clients', function () {
-    return \App\Models\Client::orderBy('name')
+    return Client::orderBy('name')
         ->get(['id', 'name'])
         ->map(fn ($client) => [
             'label' => $client->name,
@@ -99,34 +97,44 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // ------------------------------------------------------------------------
     // DASHBOARD
     // ------------------------------------------------------------------------
-    Route::get('/dashboard', Dashboard::class)->name('dashboard');
+    Route::get('/dashboard', DashboardController::class)->name('dashboard');
 
     // ------------------------------------------------------------------------
     // CLIENTS & SERVICES
     // ------------------------------------------------------------------------
-    Route::get('/clients', ClientsIndex::class)
-        ->middleware('can:view clients')
-        ->name('clients');
+    Route::middleware('can:view clients')->group(function () {
+        Route::get('/clients', [ClientController::class, 'index'])->name('clients');
+        Route::post('/clients', [ClientController::class, 'store'])->middleware('can:create clients')->name('clients.store');
+        Route::put('/clients/{client}', [ClientController::class, 'update'])->middleware('can:edit clients')->name('clients.update');
+        Route::delete('/clients/{client}', [ClientController::class, 'destroy'])->middleware('can:delete clients')->name('clients.destroy');
+    });
 
-    Route::get('/services', ServicesIndex::class)
-        ->middleware('can:view services')
-        ->name('services');
+    Route::middleware('can:view services')->group(function () {
+        Route::get('/services', [ServiceController::class, 'index'])->name('services');
+        Route::post('/services', [ServiceController::class, 'store'])->middleware('can:create services')->name('services.store');
+        Route::put('/services/{service}', [ServiceController::class, 'update'])->middleware('can:edit services')->name('services.update');
+        Route::delete('/services/{service}', [ServiceController::class, 'destroy'])->middleware('can:delete services')->name('services.destroy');
+    });
 
     // ------------------------------------------------------------------------
     // FINANCE - INVOICES
     // ------------------------------------------------------------------------
-    Route::prefix('invoices')->name('invoices.')->group(function () {
-        Route::get('/', InvoicesIndex::class)
-            ->middleware('can:view invoices')
-            ->name('index');
+    Route::prefix('invoices')->name('invoices.')->middleware('can:view invoices')->group(function () {
+        Route::get('/', [InvoiceController::class, 'index'])->name('index');
+        Route::get('/create', [InvoiceController::class, 'create'])->middleware('can:create invoices')->name('create');
+        Route::post('/', [InvoiceController::class, 'store'])->middleware('can:create invoices')->name('store');
+        Route::get('/{invoice}', [InvoiceController::class, 'show'])->name('show');
+        Route::get('/{invoice}/edit', [InvoiceController::class, 'edit'])->middleware('can:edit invoices')->name('edit');
+        Route::put('/{invoice}', [InvoiceController::class, 'update'])->middleware('can:edit invoices')->name('update');
+        Route::delete('/{invoice}', [InvoiceController::class, 'destroy'])->middleware('can:delete invoices')->name('destroy');
+        Route::post('/{invoice}/send', [InvoiceController::class, 'send'])->name('send');
+        Route::post('/{invoice}/rollback', [InvoiceController::class, 'rollback'])->name('rollback');
+        Route::post('/{invoice}/payments', [PaymentController::class, 'store'])->middleware('can:create invoices')->name('payments.store');
+    });
 
-        Route::get('/create', InvoicesCreate::class)
-            ->middleware('can:create invoices')
-            ->name('create');
-
-        Route::get('/{invoice}/edit', InvoicesEdit::class)
-            ->middleware('can:edit invoices')
-            ->name('edit');
+    Route::prefix('payments')->name('payments.')->middleware('can:edit invoices')->group(function () {
+        Route::post('/{payment}', [PaymentController::class, 'update'])->name('update');
+        Route::delete('/{payment}', [PaymentController::class, 'destroy'])->name('destroy');
     });
 
     // Invoice PDF Operations
@@ -167,33 +175,91 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // FINANCE - RECURRING INVOICES
     // ------------------------------------------------------------------------
     Route::prefix('recurring-invoices')->name('recurring-invoices.')->group(function () {
-        Route::get('/', RecurringInvoicesIndex::class)
+        Route::get('/', [RecurringInvoiceController::class, 'index'])
             ->middleware('can:view recurring-invoices')
             ->name('index');
 
-        Route::get('/template/create', RecurringInvoicesCreateTemplate::class)
+        // Templates
+        Route::get('/templates/create', [RecurringInvoiceController::class, 'createTemplate'])
             ->middleware('can:create recurring-invoices')
-            ->name('template.create');
-
-        Route::get('/template/{template}/edit', RecurringInvoicesEditTemplate::class)
+            ->name('templates.create');
+        Route::get('/templates/{template}/edit', [RecurringInvoiceController::class, 'editTemplate'])
             ->middleware('can:edit recurring-invoices')
-            ->name('template.edit');
-
-        Route::get('/monthly/create', RecurringInvoicesMonthlyCreate::class)
+            ->name('templates.edit');
+        Route::post('/templates', [RecurringInvoiceController::class, 'storeTemplate'])
             ->middleware('can:create recurring-invoices')
-            ->name('monthly.create');
-
-        Route::get('/monthly/{invoice}/edit', RecurringInvoicesMonthlyEdit::class)
+            ->name('templates.store');
+        Route::put('/templates/{template}', [RecurringInvoiceController::class, 'updateTemplate'])
             ->middleware('can:edit recurring-invoices')
-            ->name('monthly.edit');
+            ->name('templates.update');
+        Route::delete('/templates/{template}', [RecurringInvoiceController::class, 'destroyTemplate'])
+            ->middleware('can:edit recurring-invoices')
+            ->name('templates.destroy');
+        Route::post('/templates/{template}/restore', [RecurringInvoiceController::class, 'restoreTemplate'])
+            ->middleware('can:edit recurring-invoices')
+            ->name('templates.restore');
+
+        // Monthly invoices
+        Route::post('/monthly/generate', [RecurringInvoiceController::class, 'generateMonthly'])
+            ->middleware('can:create recurring-invoices')
+            ->name('monthly.generate');
+        Route::post('/monthly', [RecurringInvoiceController::class, 'storeMonthly'])
+            ->middleware('can:create recurring-invoices')
+            ->name('monthly.store');
+        Route::put('/monthly/{invoice}', [RecurringInvoiceController::class, 'updateMonthly'])
+            ->middleware('can:edit recurring-invoices')
+            ->name('monthly.update');
+        Route::delete('/monthly/{invoice}', [RecurringInvoiceController::class, 'destroyMonthly'])
+            ->middleware('can:edit recurring-invoices')
+            ->name('monthly.destroy');
+        Route::post('/monthly/{invoice}/publish', [RecurringInvoiceController::class, 'publishMonthly'])
+            ->middleware('can:edit recurring-invoices')
+            ->name('monthly.publish');
+        Route::post('/monthly/bulk-destroy', [RecurringInvoiceController::class, 'bulkDestroyMonthly'])
+            ->middleware('can:edit recurring-invoices')
+            ->name('monthly.bulk-destroy');
+        Route::post('/monthly/bulk-publish', [RecurringInvoiceController::class, 'bulkPublishMonthly'])
+            ->middleware('can:edit recurring-invoices')
+            ->name('monthly.bulk-publish');
     });
 
     // ------------------------------------------------------------------------
     // FINANCE - BANK & CASH FLOW
     // ------------------------------------------------------------------------
-    Route::get('/bank-accounts', AccountsIndex::class)
-        ->middleware('can:view bank-accounts')
-        ->name('bank-accounts.index');
+    Route::middleware('can:view bank-accounts')->group(function () {
+        Route::get('/bank-accounts', [BankAccountController::class, 'index'])->name('bank-accounts.index');
+        Route::post('/bank-accounts', [BankAccountController::class, 'store'])
+            ->middleware('can:create bank-accounts')
+            ->name('bank-accounts.store');
+        Route::put('/bank-accounts/{bankAccount}', [BankAccountController::class, 'update'])
+            ->middleware('can:edit bank-accounts')
+            ->name('bank-accounts.update');
+        Route::delete('/bank-accounts/{bankAccount}', [BankAccountController::class, 'destroy'])
+            ->middleware('can:delete bank-accounts')
+            ->name('bank-accounts.destroy');
+
+        // Transactions for the selected account (JSON endpoints)
+        Route::get('/bank-accounts/transactions', [BankTransactionController::class, 'indexTransactions'])
+            ->name('bank-accounts.transactions');
+        Route::get('/bank-accounts/payments', [BankTransactionController::class, 'indexPayments'])
+            ->name('bank-accounts.payments');
+
+        Route::post('/bank-transactions', [BankTransactionController::class, 'store'])
+            ->middleware('can:create transactions')
+            ->name('bank-transactions.store');
+        Route::put('/bank-transactions/{bankTransaction}', [BankTransactionController::class, 'update'])
+            ->middleware('can:edit transactions')
+            ->name('bank-transactions.update');
+        Route::delete('/bank-transactions/{bankTransaction}', [BankTransactionController::class, 'destroy'])
+            ->middleware('can:delete transactions')
+            ->name('bank-transactions.destroy');
+        Route::post('/bank-transactions/bulk-delete', [BankTransactionController::class, 'bulkDestroy'])
+            ->middleware('can:delete transactions')
+            ->name('bank-transactions.bulk-destroy');
+        Route::post('/bank-transactions/transfer', [BankTransactionController::class, 'transfer'])
+            ->middleware('can:create transactions')
+            ->name('bank-transactions.transfer');
+    });
 
     Route::get('/bank-account/export/pdf', [CashFlowExportController::class, 'exportPdf'])
         ->middleware('can:view bank-accounts')
@@ -205,9 +271,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::prefix('cash-flow')->name('cash-flow.')->middleware('can:view cash-flow')->group(function () {
         Route::get('/', fn () => redirect()->route('cash-flow.income'))->name('index');
-        Route::get('/income', CashFlowIncome::class)->name('income');
-        Route::get('/expenses', CashFlowExpenses::class)->name('expenses');
-        Route::get('/transfers', CashFlowTransfers::class)->name('transfers');
+        Route::get('/income', [CashFlowController::class, 'income'])->name('income');
+        Route::get('/expenses', [CashFlowController::class, 'expenses'])->name('expenses');
+        Route::get('/transfers', [CashFlowController::class, 'transfers'])->name('transfers');
+        Route::post('/bulk-delete', [CashFlowController::class, 'bulkDestroy'])
+            ->middleware('can:delete transactions')
+            ->name('bulk-destroy');
 
         Route::get('/export/pdf', [CashFlowExportController::class, 'exportPdf'])->name('export.pdf');
         Route::get('/export/pdf/preview', [CashFlowExportController::class, 'previewPdf'])->name('export.pdf.preview');
@@ -216,23 +285,42 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // ------------------------------------------------------------------------
     // CATEGORIES
     // ------------------------------------------------------------------------
-    Route::get('/transaction-categories', TransactionsCategoriesIndex::class)
-        ->middleware('can:view categories')
-        ->name('transaction-categories.index');
+    Route::middleware('can:view categories')->group(function () {
+        Route::get('/transaction-categories', [TransactionCategoryController::class, 'index'])->name('transaction-categories.index');
+        Route::post('/transaction-categories', [TransactionCategoryController::class, 'store'])->middleware('can:create categories')->name('transaction-categories.store');
+        Route::put('/transaction-categories/{transactionCategory}', [TransactionCategoryController::class, 'update'])->middleware('can:edit categories')->name('transaction-categories.update');
+        Route::delete('/transaction-categories/{transactionCategory}', [TransactionCategoryController::class, 'destroy'])->middleware('can:delete categories')->name('transaction-categories.destroy');
+    });
 
     // ------------------------------------------------------------------------
     // REIMBURSEMENTS
     // ------------------------------------------------------------------------
-    Route::get('/reimbursements', ReimbursementIndex::class)
-        ->middleware('can:view reimbursements')
-        ->name('reimbursements.index');
+    Route::middleware('can:view reimbursements')->group(function () {
+        Route::get('/reimbursements', [ReimbursementController::class, 'index'])->name('reimbursements.index');
+        Route::get('/reimbursements/create', [ReimbursementController::class, 'create'])->middleware('can:create reimbursements')->name('reimbursements.create');
+        Route::post('/reimbursements', [ReimbursementController::class, 'store'])->middleware('can:create reimbursements')->name('reimbursements.store');
+        Route::get('/reimbursements/{reimbursement}/edit', [ReimbursementController::class, 'edit'])->middleware('can:edit reimbursements')->name('reimbursements.edit');
+        Route::put('/reimbursements/{reimbursement}', [ReimbursementController::class, 'update'])->middleware('can:edit reimbursements')->name('reimbursements.update');
+        Route::delete('/reimbursements/{reimbursement}', [ReimbursementController::class, 'destroy'])->middleware('can:delete reimbursements')->name('reimbursements.destroy');
+        Route::post('/reimbursements/{reimbursement}/submit', [ReimbursementController::class, 'submit'])->name('reimbursements.submit');
+        Route::post('/reimbursements/{reimbursement}/review', [ReimbursementController::class, 'review'])->middleware('can:approve reimbursements')->name('reimbursements.review');
+        Route::post('/reimbursements/{reimbursement}/pay', [ReimbursementController::class, 'pay'])->middleware('can:pay reimbursements')->name('reimbursements.pay');
+    });
 
     // ------------------------------------------------------------------------
     // FUND REQUESTS
     // ------------------------------------------------------------------------
-    Route::get('/fund-requests', FundRequestsIndex::class)
-        ->middleware('can:view fund requests')
-        ->name('fund-requests.index');
+    Route::middleware('can:view fund requests')->group(function () {
+        Route::get('/fund-requests', [FundRequestController::class, 'index'])->name('fund-requests.index');
+        Route::get('/fund-requests/create', [FundRequestController::class, 'create'])->middleware('can:create fund requests')->name('fund-requests.create');
+        Route::post('/fund-requests', [FundRequestController::class, 'store'])->middleware('can:create fund requests')->name('fund-requests.store');
+        Route::get('/fund-requests/{fundRequest}/edit', [FundRequestController::class, 'edit'])->middleware('can:edit fund requests')->name('fund-requests.edit');
+        Route::put('/fund-requests/{fundRequest}', [FundRequestController::class, 'update'])->middleware('can:edit fund requests')->name('fund-requests.update');
+        Route::delete('/fund-requests/{fundRequest}', [FundRequestController::class, 'destroy'])->middleware('can:delete fund requests')->name('fund-requests.destroy');
+        Route::post('/fund-requests/{fundRequest}/submit', [FundRequestController::class, 'submit'])->name('fund-requests.submit');
+        Route::post('/fund-requests/{fundRequest}/review', [FundRequestController::class, 'review'])->middleware('can:approve fund requests')->name('fund-requests.review');
+        Route::post('/fund-requests/{fundRequest}/disburse', [FundRequestController::class, 'disburse'])->middleware('can:disburse fund requests')->name('fund-requests.disburse');
+    });
 
     Route::get('/fund-requests/export/pdf', function (Request $request) {
         $filters = [
@@ -280,54 +368,136 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // ------------------------------------------------------------------------
     // FEEDBACKS
     // ------------------------------------------------------------------------
-    Route::get('/feedbacks', FeedbacksIndex::class)
-        ->middleware('can:view feedbacks')
-        ->name('feedbacks.index');
+    Route::middleware('can:view feedbacks')->group(function () {
+        Route::get('/feedbacks', [FeedbackController::class, 'index'])->name('feedbacks.index');
+        Route::post('/feedbacks', [FeedbackController::class, 'store'])
+            ->middleware('can:create feedbacks')
+            ->name('feedbacks.store');
+        Route::put('/feedbacks/{feedback}', [FeedbackController::class, 'update'])
+            ->middleware('can:edit feedbacks')
+            ->name('feedbacks.update');
+        Route::delete('/feedbacks/{feedback}', [FeedbackController::class, 'destroy'])
+            ->middleware('can:delete feedbacks')
+            ->name('feedbacks.destroy');
+        Route::post('/feedbacks/{feedback}/respond', [FeedbackController::class, 'respond'])
+            ->middleware('can:respond feedbacks')
+            ->name('feedbacks.respond');
+        Route::post('/feedbacks/{feedback}/status', [FeedbackController::class, 'changeStatus'])
+            ->middleware('can:manage feedbacks')
+            ->name('feedbacks.status');
+    });
+
+    // ------------------------------------------------------------------------
+    // NOTIFICATIONS
+    // ------------------------------------------------------------------------
+    Route::prefix('notifications')->name('notifications.')->group(function () {
+        Route::get('/', [NotificationController::class, 'index'])->name('index');
+        Route::post('/{notification}/read', [NotificationController::class, 'markAsRead'])->name('read');
+        Route::post('/mark-all-read', [NotificationController::class, 'markAllAsRead'])->name('mark-all-read');
+    });
 
     // ------------------------------------------------------------------------
     // DEBT & RECEIVABLES
     // ------------------------------------------------------------------------
-    Route::get('/loans', LoansIndex::class)
-        ->middleware('can:view loans')
-        ->name('loans.index');
+    Route::middleware('can:view loans')->group(function () {
+        Route::get('/loans', [LoanController::class, 'index'])->name('loans.index');
+        Route::post('/loans', [LoanController::class, 'store'])->middleware('can:create loans')->name('loans.store');
+        Route::put('/loans/{loan}', [LoanController::class, 'update'])->middleware('can:edit loans')->name('loans.update');
+        Route::delete('/loans/{loan}', [LoanController::class, 'destroy'])->middleware('can:delete loans')->name('loans.destroy');
+        Route::post('/loans/{loan}/pay', [LoanController::class, 'pay'])->middleware('can:pay loans')->name('loans.pay');
+    });
 
-    Route::get('/receivables', ReceivablesIndex::class)
-        ->middleware('can:view receivables')
-        ->name('receivables.index');
+    Route::middleware('can:view receivables')->group(function () {
+        Route::get('/receivables', [ReceivableController::class, 'index'])->name('receivables.index');
+        Route::post('/receivables', [ReceivableController::class, 'store'])->middleware('can:create receivables')->name('receivables.store');
+        Route::put('/receivables/{receivable}', [ReceivableController::class, 'update'])->middleware('can:edit receivables')->name('receivables.update');
+        Route::delete('/receivables/{receivable}', [ReceivableController::class, 'destroy'])->middleware('can:delete receivables')->name('receivables.destroy');
+        Route::post('/receivables/{receivable}/submit', [ReceivableController::class, 'submit'])->name('receivables.submit');
+        Route::post('/receivables/{receivable}/approve', [ReceivableController::class, 'approve'])->middleware('can:approve receivables')->name('receivables.approve');
+        Route::post('/receivables/{receivable}/pay', [ReceivableController::class, 'pay'])->middleware('can:pay receivables')->name('receivables.pay');
+    });
 
     // ------------------------------------------------------------------------
-    // ADMINISTRATION - PERMISSIONS
+    // ADMINISTRATION - PERMISSIONS & ROLES
     // ------------------------------------------------------------------------
-    Route::get('/permissions', PermissionsIndex::class)
-        ->middleware('can:view permissions')
-        ->name('permissions.index');
+    Route::prefix('admin')->name('admin.')->group(function () {
+        Route::middleware('can:view permissions')->group(function () {
+            Route::get('/permissions', [PermissionController::class, 'index'])->name('permissions.index');
+            Route::post('/permissions/toggle', [PermissionController::class, 'togglePermission'])
+                ->middleware('can:manage permissions')
+                ->name('permissions.toggle');
+            Route::post('/permissions/sync-module', [PermissionController::class, 'syncModule'])
+                ->middleware('can:manage permissions')
+                ->name('permissions.sync-module');
+            Route::post('/permissions/sync-all', [PermissionController::class, 'syncAll'])
+                ->middleware('can:manage permissions')
+                ->name('permissions.sync-all');
+            Route::delete('/permissions/{permission}', [PermissionController::class, 'destroy'])
+                ->middleware('can:manage permissions')
+                ->name('permissions.destroy');
 
-    // ------------------------------------------------------------------------
-    // ADMINISTRATION - USERS
-    // ------------------------------------------------------------------------
-    Route::get('/admin/users', UsersIndex::class)
-        ->middleware('can:manage users')
-        ->name('admin.users');
+            Route::post('/roles', [RoleController::class, 'store'])
+                ->middleware('can:manage permissions')
+                ->name('roles.store');
+            Route::put('/roles/{role}', [RoleController::class, 'update'])
+                ->middleware('can:manage permissions')
+                ->name('roles.update');
+            Route::delete('/roles/{role}', [RoleController::class, 'destroy'])
+                ->middleware('can:manage permissions')
+                ->name('roles.destroy');
+        });
+
+        // ------------------------------------------------------------------------
+        // ADMINISTRATION - USERS
+        // ------------------------------------------------------------------------
+        Route::middleware('can:manage users')->group(function () {
+            Route::get('/users', [UserController::class, 'index'])->name('users.index');
+            Route::post('/users', [UserController::class, 'store'])->name('users.store');
+            Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
+            Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
+            Route::post('/users/bulk-delete', [UserController::class, 'bulkDestroy'])->name('users.bulk-destroy');
+        });
+    });
+
+    // Legacy redirect to support old "admin.users" route name from sidebar
+    Route::get('/permissions', fn () => redirect()->route('admin.permissions.index'));
 
     // ------------------------------------------------------------------------
     // SETTINGS
     // ------------------------------------------------------------------------
     Route::prefix('settings')->name('settings.')->group(function () {
         Route::redirect('/', '/settings/profile');
-        Route::get('/profile', Profile::class)->name('profile');
-        Route::get('/password', Password::class)->name('password');
-        Route::get('/company', CompanyProfileSettings::class)->name('company');
+
+        Route::get('/profile', [ProfileController::class, 'edit'])->name('profile');
+        Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+        Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+        Route::get('/password', [SettingsPasswordController::class, 'edit'])->name('password');
+        Route::put('/password', [SettingsPasswordController::class, 'update'])->name('password.update');
+
+        Route::get('/company', [CompanyController::class, 'edit'])->name('company');
+        Route::post('/company', [CompanyController::class, 'update'])->name('company.update');
+        Route::delete('/company/assets/{asset}', [CompanyController::class, 'deleteAsset'])->name('company.delete-asset');
     });
 
     // ------------------------------------------------------------------------
     // API ENDPOINTS
     // ------------------------------------------------------------------------
 
-    // ------------------------------------------------------------------------
-    // TESTING (Local Only)
-    // ------------------------------------------------------------------------
-    Route::get('/test', TestingPage::class)->name('test');
-
 });
+
+// Language switching (used by React AppLayout)
+Route::post('/language', function (Request $request) {
+    $locale = $request->input('locale');
+    $available = config('app.available_locales', ['id', 'en', 'zh']);
+    if (in_array($locale, $available)) {
+        session(['locale' => $locale]);
+        if (auth()->check()) {
+            auth()->user()->update(['locale' => $locale]);
+        }
+    }
+
+    return redirect()->back();
+})->middleware('web')->name('language.switch');
 
 require __DIR__.'/auth.php';
