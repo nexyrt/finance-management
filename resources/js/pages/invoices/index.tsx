@@ -4,12 +4,12 @@ import {
     Banknote,
     CheckCircle2,
     CreditCard,
-    Download,
     Eye,
     FileText,
     MoreHorizontal,
     Pencil,
     Plus,
+    Printer,
     RotateCcw,
     Search,
     Send,
@@ -58,6 +58,7 @@ import {
     TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { AttachmentPreviewButton } from '@/components/shared/file-preview-dialog';
+import { PrintInvoiceDialog } from './components/print-invoice-dialog';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { CurrencyInput } from '@/components/shared/currency-input';
 import { EmptyState } from '@/components/shared/empty-state';
@@ -279,9 +280,7 @@ function InvoiceDrawer({
 
     const sendForm = useForm({ invoice_number: '' });
 
-    const openPdf = (invoiceId: number) => {
-        window.open(`/invoice/${invoiceId}/preview`, '_blank');
-    };
+    const [printOpen, setPrintOpen] = React.useState(false);
 
     const fetchDetail = React.useCallback((id: number) => {
         setLoading(true);
@@ -808,10 +807,10 @@ function InvoiceDrawer({
                                 <Button
                                     size="sm"
                                     variant="outline"
-                                    icon={<Download className="w-3.5 h-3.5" />}
-                                    onClick={() => openPdf(detail.id)}
+                                    icon={<Printer className="w-3.5 h-3.5" />}
+                                    onClick={() => setPrintOpen(true)}
                                 >
-                                    PDF
+                                    Cetak
                                 </Button>
                             )}
                             <Button
@@ -827,6 +826,18 @@ function InvoiceDrawer({
                     )}
                 </SheetContent>
             </Sheet>
+
+            {/* Print options modal */}
+            {detail && (
+                <PrintInvoiceDialog
+                    open={printOpen}
+                    onOpenChange={setPrintOpen}
+                    invoiceId={detail.id}
+                    invoiceNumber={detail.invoice_number}
+                    totalAmount={detail.total_amount}
+                    amountPaid={detail.amount_paid}
+                />
+            )}
 
             {/* Send modal */}
             <Dialog open={sendOpen} onOpenChange={setSendOpen}>
@@ -1090,9 +1101,8 @@ function InvoicesPage({ invoices, stats, clients, rollbackableIds, filters }: Pr
     const [deleteOpen, setDeleteOpen] = React.useState(false);
     const [deleteLoading, setDeleteLoading] = React.useState(false);
 
-    const openPdf = (invoiceId: number) => {
-        window.open(`/invoice/${invoiceId}/download`, '_blank');
-    };
+    const [printRow, setPrintRow] = React.useState<InvoiceRow | null>(null);
+    const [printOpen, setPrintOpen] = React.useState(false);
 
     const currentFilters = {
         search: filters.search ?? '',
@@ -1657,9 +1667,14 @@ function InvoicesPage({ invoices, stats, clients, rollbackableIds, filters }: Pr
                                                                 Edit
                                                             </DropdownMenuItem>
                                                             {inv.invoice_number && (
-                                                                <DropdownMenuItem onClick={() => openPdf(inv.id)}>
-                                                                    <Download className="w-4 h-4" />
-                                                                    Download PDF
+                                                                <DropdownMenuItem
+                                                                    onClick={() => {
+                                                                        setPrintRow(inv);
+                                                                        setPrintOpen(true);
+                                                                    }}
+                                                                >
+                                                                    <Printer className="w-4 h-4" />
+                                                                    Cetak PDF
                                                                 </DropdownMenuItem>
                                                             )}
                                                             <DropdownMenuSeparator />
@@ -1710,6 +1725,21 @@ function InvoicesPage({ invoices, stats, clients, rollbackableIds, filters }: Pr
                 invoiceId={selectedId}
                 rollbackableIds={rollbackableIds}
             />
+
+            {/* Print options modal (table row) */}
+            {printRow && (
+                <PrintInvoiceDialog
+                    open={printOpen}
+                    onOpenChange={(o) => {
+                        setPrintOpen(o);
+                        if (!o) setPrintRow(null);
+                    }}
+                    invoiceId={printRow.id}
+                    invoiceNumber={printRow.invoice_number}
+                    totalAmount={printRow.total_amount}
+                    amountPaid={printRow.amount_paid}
+                />
+            )}
 
             {/* Delete confirm (table row) */}
             <ConfirmDialog
