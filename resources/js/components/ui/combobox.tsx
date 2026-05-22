@@ -200,7 +200,10 @@ export function Combobox({
                                 className="flex h-9 w-full bg-transparent py-2 text-sm text-dark-900 dark:text-dark-300 placeholder:text-dark-400 outline-none focus:outline-none focus:ring-0 border-0"
                             />
                         </div>
-                        <CommandPrimitive.List className="max-h-60 overflow-y-auto p-1.5">
+                        <CommandPrimitive.List
+                            className="max-h-60 overflow-y-auto p-1.5"
+                            onWheel={(e) => e.stopPropagation()}
+                        >
                             {filtered.length === 0 && (
                                 <p className="py-8 text-center text-sm text-dark-400 dark:text-dark-500">
                                     {emptyText}
