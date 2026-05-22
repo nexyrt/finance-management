@@ -1,9 +1,7 @@
 import { Head, router, useForm } from '@inertiajs/react';
 import {
     ArrowUpDown,
-    Banknote,
     CheckCircle2,
-    CreditCard,
     Eye,
     FileText,
     MoreHorizontal,
@@ -684,22 +682,12 @@ function InvoiceDrawer({
                                                 className="flex items-start justify-between p-3 rounded-xl border border-secondary-200 dark:border-dark-600 bg-secondary-50 dark:bg-dark-800"
                                             >
                                                 <div className="flex items-start gap-3 min-w-0">
-                                                    <div className={cn(
-                                                        'h-8 w-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5',
-                                                        p.payment_method === 'cash'
-                                                            ? 'bg-green-50 dark:bg-green-900/20'
-                                                            : 'bg-blue-50 dark:bg-blue-900/20',
-                                                    )}>
-                                                        {p.payment_method === 'cash'
-                                                            ? <Banknote className="w-4 h-4 text-green-600 dark:text-green-400" />
-                                                            : <CreditCard className="w-4 h-4 text-blue-600 dark:text-blue-400" />}
+                                                    <div className="h-8 w-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5 bg-blue-50 dark:bg-blue-900/20">
+                                                        <Wallet className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                                                     </div>
                                                     <div className="min-w-0">
                                                         <p className="text-sm font-medium text-dark-900 dark:text-dark-50">
                                                             {formatDate(p.payment_date)}
-                                                            <span className="ml-2 text-xs font-normal text-dark-500 dark:text-dark-400">
-                                                                {p.payment_method === 'cash' ? 'Tunai' : 'Transfer'}
-                                                            </span>
                                                         </p>
                                                         {p.bank_account_name && (
                                                             <p className="text-xs text-dark-500 dark:text-dark-400 truncate">{p.bank_account_name}</p>
@@ -927,42 +915,15 @@ function InvoiceDrawer({
                                 error={paymentErrors.payment_date}
                             />
 
-                            {/* Payment method toggle */}
-                            <div>
-                                <label className="block text-sm font-medium text-dark-900 dark:text-dark-300 mb-2">
-                                    Metode Pembayaran *
-                                </label>
-                                <div className="inline-flex items-center gap-1 p-1 bg-zinc-100 dark:bg-dark-800 rounded-xl border border-zinc-200 dark:border-dark-600">
-                                    {(['bank_transfer', 'cash'] as const).map((method) => (
-                                        <button
-                                            key={method}
-                                            type="button"
-                                            onClick={() => setPaymentForm((f) => ({ ...f, payment_method: method }))}
-                                            className={cn(
-                                                'flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200',
-                                                paymentForm.payment_method === method
-                                                    ? 'bg-white dark:bg-dark-700 text-dark-900 dark:text-dark-50 shadow-sm border border-zinc-200 dark:border-dark-600'
-                                                    : 'text-dark-500 dark:text-dark-400 hover:text-dark-800 dark:hover:text-dark-200',
-                                            )}
-                                        >
-                                            {method === 'cash'
-                                                ? <><Banknote className="w-4 h-4" /> Tunai</>
-                                                : <><CreditCard className="w-4 h-4" /> Transfer</>}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-
-                            {paymentForm.payment_method === 'bank_transfer' && (
-                                <Combobox
-                                    label="Rekening Bank"
-                                    options={bankAccounts}
-                                    value={paymentForm.bank_account_id}
-                                    onChange={(v) => setPaymentForm((f) => ({ ...f, bank_account_id: v != null ? Number(v) : null }))}
-                                    placeholder="Pilih rekening..."
-                                    error={paymentErrors.bank_account_id}
-                                />
-                            )}
+                            <Combobox
+                                label="Rekening Tujuan *"
+                                options={bankAccounts}
+                                value={paymentForm.bank_account_id}
+                                onChange={(v) => setPaymentForm((f) => ({ ...f, bank_account_id: v != null ? Number(v) : null }))}
+                                placeholder="Pilih rekening..."
+                                hint="Untuk pembayaran tunai, pilih rekening kas."
+                                error={paymentErrors.bank_account_id}
+                            />
 
                             <Input
                                 label="Nomor Referensi"
