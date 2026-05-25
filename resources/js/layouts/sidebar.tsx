@@ -5,6 +5,7 @@ import {
     Building2,
     ChevronLeft,
     CreditCard,
+    FileBarChart,
     FileText,
     FolderOpen,
     LayoutDashboard,
@@ -175,6 +176,19 @@ const NAV: NavSection[] = [
                 icon: <Wallet className="w-4 h-4 shrink-0" />,
                 permission: 'view receivables',
                 matchPrefix: '/receivables',
+            },
+        ],
+    },
+    {
+        title: 'Laporan',
+        anyPermission: ['view profit-loss'],
+        items: [
+            {
+                label: 'Laba Rugi',
+                href: '/reports/profit-loss',
+                icon: <FileBarChart className="w-4 h-4 shrink-0" />,
+                permission: 'view profit-loss',
+                matchPrefix: '/reports/profit-loss',
             },
         ],
     },

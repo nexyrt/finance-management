@@ -15,6 +15,7 @@ use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\LoanController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\ProfitLossReportController;
 use App\Http\Controllers\ReceivableController;
 use App\Http\Controllers\RecurringInvoiceController;
 use App\Http\Controllers\ReimbursementController;
@@ -385,6 +386,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/feedbacks/{feedback}/status', [FeedbackController::class, 'changeStatus'])
             ->middleware('can:manage feedbacks')
             ->name('feedbacks.status');
+    });
+
+    // ------------------------------------------------------------------------
+    // REPORTS
+    // ------------------------------------------------------------------------
+    Route::middleware('can:view profit-loss')->group(function () {
+        Route::get('/reports/profit-loss', [ProfitLossReportController::class, 'index'])->name('reports.profit-loss');
     });
 
     // ------------------------------------------------------------------------

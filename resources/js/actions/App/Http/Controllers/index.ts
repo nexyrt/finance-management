@@ -12,6 +12,7 @@ import TransactionCategoryController from './TransactionCategoryController'
 import ReimbursementController from './ReimbursementController'
 import FundRequestController from './FundRequestController'
 import FeedbackController from './FeedbackController'
+import ProfitLossReportController from './ProfitLossReportController'
 import NotificationController from './NotificationController'
 import LoanController from './LoanController'
 import ReceivableController from './ReceivableController'
@@ -33,6 +34,7 @@ TransactionCategoryController: Object.assign(TransactionCategoryController, Tran
 ReimbursementController: Object.assign(ReimbursementController, ReimbursementController),
 FundRequestController: Object.assign(FundRequestController, FundRequestController),
 FeedbackController: Object.assign(FeedbackController, FeedbackController),
+ProfitLossReportController: Object.assign(ProfitLossReportController, ProfitLossReportController),
 NotificationController: Object.assign(NotificationController, NotificationController),
 LoanController: Object.assign(LoanController, LoanController),
 ReceivableController: Object.assign(ReceivableController, ReceivableController),
