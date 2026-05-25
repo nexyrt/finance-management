@@ -64,6 +64,7 @@ import { FileUpload } from '@/components/shared/file-upload';
 import { PageHeader } from '@/components/shared/page-header';
 import { Pagination } from '@/components/shared/pagination';
 import { AppLayout } from '@/layouts/app-layout';
+import { format as formatDateFns } from 'date-fns';
 import { cn, formatCurrency, formatDate } from '@/lib/utils';
 import type { SharedProps } from '@/types';
 
@@ -910,8 +911,8 @@ function InvoiceDrawer({
 
                             <DatePicker
                                 label="Tanggal Pembayaran *"
-                                value={paymentForm.payment_date || null}
-                                onChange={(v) => setPaymentForm((f) => ({ ...f, payment_date: v ?? '' }))}
+                                value={paymentForm.payment_date ? new Date(paymentForm.payment_date + 'T00:00:00') : null}
+                                onChange={(v) => setPaymentForm((f) => ({ ...f, payment_date: v ? formatDateFns(v, 'yyyy-MM-dd') : '' }))}
                                 error={paymentErrors.payment_date}
                             />
 
