@@ -7,6 +7,7 @@ use App\Models\BankTransaction;
 use App\Models\TransactionCategory;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Inertia\Testing\AssertableInertia;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
@@ -119,6 +120,23 @@ class TransactionCategoryControllerTest extends TestCase
             ])
             ->assertStatus(422)
             ->assertJsonValidationErrors('pl_group');
+    }
+
+    public function test_index_reports_unclassified_count_and_filter(): void
+    {
+        TransactionCategory::create(['type' => 'expense', 'label' => 'Tanpa Grup']);
+        TransactionCategory::create(['type' => 'expense', 'label' => 'Dengan Grup', 'pl_group' => 'opex']);
+
+        $this->actingAs($this->admin)
+            ->get('/transaction-categories')
+            ->assertInertia(fn (AssertableInertia $page) => $page->where('stats.unclassified', 1));
+
+        $this->actingAs($this->admin)
+            ->get('/transaction-categories?pl_status=unclassified')
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->has('categories.data', 1)
+                ->where('categories.data.0.label', 'Tanpa Grup')
+            );
     }
 
     public function test_update_modifies_pl_group(): void

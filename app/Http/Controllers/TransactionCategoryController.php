@@ -17,6 +17,7 @@ class TransactionCategoryController extends Controller
     {
         $search = $request->input('search');
         $type = $request->input('type');
+        $plStatus = $request->input('pl_status');
         $perPage = (int) $request->input('per_page', 10);
         $sort = $request->input('sort', 'type');
         $direction = $request->input('direction', 'asc');
@@ -25,6 +26,8 @@ class TransactionCategoryController extends Controller
             ->withCount(['transactions', 'children'])
             ->when($search, fn ($q) => $q->where('label', 'like', "%{$search}%"))
             ->when($type, fn ($q) => $q->where('type', $type))
+            ->when($plStatus === 'unclassified', fn ($q) => $q->whereIn('type', ['income', 'expense'])->whereNull('pl_group'))
+            ->when($plStatus === 'classified', fn ($q) => $q->whereNotNull('pl_group'))
             ->orderBy($sort, $direction)
             ->paginate($perPage)
             ->withQueryString()
@@ -45,7 +48,7 @@ class TransactionCategoryController extends Controller
             'total' => $all->count(),
             'parents' => $all->whereNull('parent_id')->count(),
             'children' => $all->whereNotNull('parent_id')->count(),
-            'with_transactions' => $all->where('transactions_count', '>', 0)->count(),
+            'unclassified' => $all->whereIn('type', ['income', 'expense'])->whereNull('pl_group')->count(),
         ];
 
         $parentOptions = TransactionCategory::whereNull('parent_id')
@@ -65,6 +68,7 @@ class TransactionCategoryController extends Controller
             'filters' => [
                 'search' => $search,
                 'type' => $type,
+                'pl_status' => $plStatus,
                 'per_page' => $perPage,
                 'sort' => $sort,
                 'direction' => $direction,

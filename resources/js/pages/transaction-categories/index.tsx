@@ -1,7 +1,6 @@
 import { Head, router, useForm, usePage } from '@inertiajs/react';
 import { toast } from 'sonner';
 import {
-    ChevronRight,
     FolderOpen,
     FolderTree,
     GitBranch,
@@ -9,6 +8,7 @@ import {
     Pencil,
     Plus,
     Search,
+    TriangleAlert,
     Trash2,
     X,
 } from 'lucide-react';
@@ -63,12 +63,13 @@ interface Stats {
     total: number;
     parents: number;
     children: number;
-    with_transactions: number;
+    unclassified: number;
 }
 
 interface Filters {
     search?: string;
     type?: string;
+    pl_status?: string;
     per_page?: number;
 }
 
@@ -208,6 +209,7 @@ export default function TransactionCategoriesIndex() {
 
     const [search, setSearch] = React.useState(filters.search ?? '');
     const [typeFilter, setTypeFilter] = React.useState(filters.type ?? '');
+    const [plStatus, setPlStatus] = React.useState(filters.pl_status ?? '');
 
     const [createOpen, setCreateOpen] = React.useState(false);
     const [editTarget, setEditTarget] = React.useState<Category | null>(null);
@@ -218,14 +220,20 @@ export default function TransactionCategoriesIndex() {
     React.useEffect(() => {
         if (!isMounted.current) { isMounted.current = true; return; }
         const t = setTimeout(() => {
-            router.get('/transaction-categories', { search: search || undefined, type: typeFilter || undefined, per_page: filters.per_page }, { preserveState: true, replace: true });
+            router.get('/transaction-categories', { search: search || undefined, type: typeFilter || undefined, pl_status: plStatus || undefined, per_page: filters.per_page }, { preserveState: true, replace: true });
         }, 300);
         return () => clearTimeout(t);
     }, [search]);
 
     function handleTypeFilter(val: string) {
         setTypeFilter(val);
-        router.get('/transaction-categories', { search: search || undefined, type: val || undefined, per_page: filters.per_page }, { preserveState: true, replace: true });
+        router.get('/transaction-categories', { search: search || undefined, type: val || undefined, pl_status: plStatus || undefined, per_page: filters.per_page }, { preserveState: true, replace: true });
+    }
+
+    function toggleUnclassified() {
+        const next = plStatus === 'unclassified' ? '' : 'unclassified';
+        setPlStatus(next);
+        router.get('/transaction-categories', { search: search || undefined, type: typeFilter || undefined, pl_status: next || undefined, per_page: filters.per_page }, { preserveState: true, replace: true });
     }
 
     /* ── Create form ── */
@@ -292,7 +300,7 @@ export default function TransactionCategoriesIndex() {
                     <StatsCard label="Total Kategori" value={stats.total} icon={<Layers className="w-6 h-6" />} color="blue" />
                     <StatsCard label="Kategori Utama" value={stats.parents} icon={<FolderOpen className="w-6 h-6" />} color="green" />
                     <StatsCard label="Sub Kategori" value={stats.children} icon={<GitBranch className="w-6 h-6" />} color="purple" />
-                    <StatsCard label="Aktif Digunakan" value={stats.with_transactions} icon={<ChevronRight className="w-6 h-6" />} color="yellow" />
+                    <StatsCard label="Belum Diklasifikasi" value={stats.unclassified} icon={<TriangleAlert className="w-6 h-6" />} color={stats.unclassified > 0 ? 'red' : 'green'} />
                 </div>
 
                 {/* Filters */}
@@ -319,6 +327,16 @@ export default function TransactionCategoriesIndex() {
                             placeholder="Semua Tipe"
                         />
                     </div>
+
+                    <Button
+                        variant={plStatus === 'unclassified' ? 'red' : 'outline'}
+                        size="sm"
+                        icon={<TriangleAlert className="h-4 w-4" />}
+                        onClick={toggleUnclassified}
+                        className="shrink-0"
+                    >
+                        Belum diklasifikasi
+                    </Button>
 
                     <span className="text-sm text-dark-500 dark:text-dark-400 shrink-0 pb-0.5">
                         {categories.from ?? 0}–{categories.to ?? 0} dari {categories.total}
