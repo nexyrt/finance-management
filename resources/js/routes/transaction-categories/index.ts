@@ -44,7 +44,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\TransactionCategoryController::store
- * @see app/Http/Controllers/TransactionCategoryController.php:74
+ * @see app/Http/Controllers/TransactionCategoryController.php:75
  * @route '/transaction-categories'
  */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -59,7 +59,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\TransactionCategoryController::store
- * @see app/Http/Controllers/TransactionCategoryController.php:74
+ * @see app/Http/Controllers/TransactionCategoryController.php:75
  * @route '/transaction-categories'
  */
 store.url = (options?: RouteQueryOptions) => {
@@ -68,7 +68,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\TransactionCategoryController::store
- * @see app/Http/Controllers/TransactionCategoryController.php:74
+ * @see app/Http/Controllers/TransactionCategoryController.php:75
  * @route '/transaction-categories'
  */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -78,7 +78,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\TransactionCategoryController::update
- * @see app/Http/Controllers/TransactionCategoryController.php:90
+ * @see app/Http/Controllers/TransactionCategoryController.php:91
  * @route '/transaction-categories/{transactionCategory}'
  */
 export const update = (args: { transactionCategory: number | { id: number } } | [transactionCategory: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -93,7 +93,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\TransactionCategoryController::update
- * @see app/Http/Controllers/TransactionCategoryController.php:90
+ * @see app/Http/Controllers/TransactionCategoryController.php:91
  * @route '/transaction-categories/{transactionCategory}'
  */
 update.url = (args: { transactionCategory: number | { id: number } } | [transactionCategory: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -126,7 +126,7 @@ update.url = (args: { transactionCategory: number | { id: number } } | [transact
 
 /**
 * @see \App\Http\Controllers\TransactionCategoryController::update
- * @see app/Http/Controllers/TransactionCategoryController.php:90
+ * @see app/Http/Controllers/TransactionCategoryController.php:91
  * @route '/transaction-categories/{transactionCategory}'
  */
 update.put = (args: { transactionCategory: number | { id: number } } | [transactionCategory: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -136,7 +136,7 @@ update.put = (args: { transactionCategory: number | { id: number } } | [transact
 
 /**
 * @see \App\Http\Controllers\TransactionCategoryController::destroy
- * @see app/Http/Controllers/TransactionCategoryController.php:97
+ * @see app/Http/Controllers/TransactionCategoryController.php:98
  * @route '/transaction-categories/{transactionCategory}'
  */
 export const destroy = (args: { transactionCategory: number | { id: number } } | [transactionCategory: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -151,7 +151,7 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\TransactionCategoryController::destroy
- * @see app/Http/Controllers/TransactionCategoryController.php:97
+ * @see app/Http/Controllers/TransactionCategoryController.php:98
  * @route '/transaction-categories/{transactionCategory}'
  */
 destroy.url = (args: { transactionCategory: number | { id: number } } | [transactionCategory: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -184,7 +184,7 @@ destroy.url = (args: { transactionCategory: number | { id: number } } | [transac
 
 /**
 * @see \App\Http\Controllers\TransactionCategoryController::destroy
- * @see app/Http/Controllers/TransactionCategoryController.php:97
+ * @see app/Http/Controllers/TransactionCategoryController.php:98
  * @route '/transaction-categories/{transactionCategory}'
  */
 destroy.delete = (args: { transactionCategory: number | { id: number } } | [transactionCategory: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({

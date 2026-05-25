@@ -31,6 +31,7 @@ class TransactionCategoryController extends Controller
             ->through(fn (TransactionCategory $cat) => [
                 'id' => $cat->id,
                 'type' => $cat->type,
+                'pl_group' => $cat->pl_group,
                 'label' => $cat->label,
                 'parent_id' => $cat->parent_id,
                 'parent_label' => $cat->parent?->label,

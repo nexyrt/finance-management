@@ -95,6 +95,48 @@ class TransactionCategoryControllerTest extends TestCase
         $this->assertDatabaseMissing('transaction_categories', ['label' => 'Forbidden Category']);
     }
 
+    public function test_store_saves_pl_group(): void
+    {
+        $this->actingAs($this->admin)->post('/transaction-categories', [
+            'type' => 'expense',
+            'pl_group' => 'cogs',
+            'label' => 'HPP Jasa',
+        ]);
+
+        $this->assertDatabaseHas('transaction_categories', [
+            'label' => 'HPP Jasa',
+            'pl_group' => 'cogs',
+        ]);
+    }
+
+    public function test_store_rejects_invalid_pl_group(): void
+    {
+        $this->actingAs($this->admin)
+            ->postJson('/transaction-categories', [
+                'type' => 'expense',
+                'pl_group' => 'not_a_real_group',
+                'label' => 'Kategori Salah',
+            ])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors('pl_group');
+    }
+
+    public function test_update_modifies_pl_group(): void
+    {
+        $category = TransactionCategory::create(['type' => 'expense', 'label' => 'Beban', 'pl_group' => 'opex']);
+
+        $this->actingAs($this->admin)->put("/transaction-categories/{$category->id}", [
+            'type' => 'expense',
+            'pl_group' => 'tax',
+            'label' => 'Beban',
+        ]);
+
+        $this->assertDatabaseHas('transaction_categories', [
+            'id' => $category->id,
+            'pl_group' => 'tax',
+        ]);
+    }
+
     public function test_update_modifies_category(): void
     {
         $category = TransactionCategory::create(['type' => 'expense', 'label' => 'Lama']);

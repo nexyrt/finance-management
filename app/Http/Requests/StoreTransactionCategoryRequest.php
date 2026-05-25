@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests;
 
+use App\Models\TransactionCategory;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreTransactionCategoryRequest extends FormRequest
 {
@@ -15,6 +17,7 @@ class StoreTransactionCategoryRequest extends FormRequest
     {
         return [
             'type' => ['required', 'in:income,expense,adjustment,transfer'],
+            'pl_group' => ['nullable', Rule::in(TransactionCategory::PL_GROUPS)],
             'label' => ['required', 'string', 'max:255'],
             'parent_id' => ['nullable', 'exists:transaction_categories,id'],
         ];

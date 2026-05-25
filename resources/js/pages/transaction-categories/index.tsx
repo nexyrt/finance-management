@@ -35,6 +35,7 @@ import type { SharedProps } from '@/types';
 interface Category {
     id: number;
     type: string;
+    pl_group: string | null;
     label: string;
     parent_id: number | null;
     parent_label: string | null;
@@ -87,14 +88,26 @@ const TYPE_CONFIG: Record<string, { label: string; color: 'green' | 'red' | 'blu
     transfer: { label: 'Transfer', color: 'purple' },
 };
 
+/** Maps a category to a Laba Rugi (P&L) line. Only relevant for income/expense. */
+const PL_GROUP_CONFIG: Record<string, { label: string; type: 'income' | 'expense' }> = {
+    revenue: { label: 'Pendapatan Usaha', type: 'income' },
+    other_income: { label: 'Pendapatan Lain', type: 'income' },
+    cogs: { label: 'Harga Pokok (HPP)', type: 'expense' },
+    opex: { label: 'Beban Operasional', type: 'expense' },
+    other_expense: { label: 'Beban Lain', type: 'expense' },
+    tax: { label: 'Pajak', type: 'expense' },
+};
+
 /* ─────────────────────────────────── category form ─── */
+
+type CategoryFormField = 'type' | 'pl_group' | 'label' | 'parent_id';
 
 interface CategoryFormProps {
     form: {
-        data: { type: string; label: string; parent_id: string };
-        errors: Partial<Record<'type' | 'label' | 'parent_id', string>>;
+        data: { type: string; pl_group: string; label: string; parent_id: string };
+        errors: Partial<Record<CategoryFormField, string>>;
         processing: boolean;
-        setData(key: 'type' | 'label' | 'parent_id', value: string): void;
+        setData(key: CategoryFormField, value: string): void;
     };
     parentOptions: ParentOption[];
     onCancel: () => void;
@@ -104,6 +117,9 @@ interface CategoryFormProps {
 
 function CategoryForm({ form, parentOptions, onCancel, title, submitLabel }: CategoryFormProps) {
     const availableParents = parentOptions.filter((p) => p.type === form.data.type);
+    const plGroupOptions = Object.entries(PL_GROUP_CONFIG)
+        .filter(([, cfg]) => cfg.type === form.data.type)
+        .map(([val, cfg]) => ({ value: val, label: cfg.label }));
 
     return (
         <>
@@ -127,7 +143,7 @@ function CategoryForm({ form, parentOptions, onCancel, title, submitLabel }: Cat
                             <button
                                 key={val}
                                 type="button"
-                                onClick={() => { form.setData('type', val); form.setData('parent_id', ''); }}
+                                onClick={() => { form.setData('type', val); form.setData('parent_id', ''); form.setData('pl_group', ''); }}
                                 className={cn(
                                     'h-9 rounded-lg border text-sm font-medium transition-colors',
                                     form.data.type === val
@@ -149,6 +165,17 @@ function CategoryForm({ form, parentOptions, onCancel, title, submitLabel }: Cat
                     error={form.errors.label}
                     placeholder="Contoh: Gaji Karyawan"
                 />
+
+                {plGroupOptions.length > 0 && (
+                    <Combobox
+                        label="Grup Laba Rugi (opsional)"
+                        options={plGroupOptions}
+                        value={form.data.pl_group || null}
+                        onChange={(v) => form.setData('pl_group', v != null ? String(v) : '')}
+                        placeholder="Belum diklasifikasi"
+                        error={form.errors.pl_group}
+                    />
+                )}
 
                 {availableParents.length > 0 && (
                     <Combobox
@@ -202,7 +229,7 @@ export default function TransactionCategoriesIndex() {
     }
 
     /* ── Create form ── */
-    const createForm = useForm({ type: '', label: '', parent_id: '' });
+    const createForm = useForm({ type: '', pl_group: '', label: '', parent_id: '' });
 
     function submitCreate(e: React.FormEvent) {
         e.preventDefault();
@@ -213,10 +240,10 @@ export default function TransactionCategoriesIndex() {
     }
 
     /* ── Edit form ── */
-    const editForm = useForm({ type: '', label: '', parent_id: '' });
+    const editForm = useForm({ type: '', pl_group: '', label: '', parent_id: '' });
 
     function openEdit(cat: Category) {
-        editForm.setData({ type: cat.type, label: cat.label, parent_id: cat.parent_id ? String(cat.parent_id) : '' });
+        editForm.setData({ type: cat.type, pl_group: cat.pl_group ?? '', label: cat.label, parent_id: cat.parent_id ? String(cat.parent_id) : '' });
         setEditTarget(cat);
     }
 
@@ -306,6 +333,7 @@ export default function TransactionCategoriesIndex() {
                                 <th className="px-3 py-3 text-left text-xs font-semibold text-dark-500 dark:text-dark-400">Tipe</th>
                                 <th className="px-3 py-3 text-left text-xs font-semibold text-dark-500 dark:text-dark-400">Nama</th>
                                 <th className="px-3 py-3 text-left text-xs font-semibold text-dark-500 dark:text-dark-400">Parent</th>
+                                <th className="px-3 py-3 text-left text-xs font-semibold text-dark-500 dark:text-dark-400">Grup L/R</th>
                                 <th className="px-3 py-3 text-left text-xs font-semibold text-dark-500 dark:text-dark-400">Digunakan</th>
                                 <th className="px-3 py-3 text-right text-xs font-semibold text-dark-500 dark:text-dark-400">Aksi</th>
                             </tr>
@@ -313,7 +341,7 @@ export default function TransactionCategoriesIndex() {
                         <tbody className="divide-y divide-secondary-100 dark:divide-dark-600">
                             {categories.data.length === 0 ? (
                                 <tr>
-                                    <td colSpan={5} className="px-4 py-12 text-center text-dark-400 dark:text-dark-500">
+                                    <td colSpan={6} className="px-4 py-12 text-center text-dark-400 dark:text-dark-500">
                                         <FolderTree className="h-8 w-8 mx-auto mb-2 opacity-40" />
                                         <p>Belum ada kategori</p>
                                     </td>
@@ -337,6 +365,13 @@ export default function TransactionCategoriesIndex() {
                                             </td>
                                             <td className="px-3 py-3 align-middle text-dark-500 dark:text-dark-400">
                                                 {cat.parent_label ?? <span className="text-xs text-dark-300 dark:text-dark-600">—</span>}
+                                            </td>
+                                            <td className="px-3 py-3 align-middle">
+                                                {cat.pl_group ? (
+                                                    <Badge variant="zinc">{PL_GROUP_CONFIG[cat.pl_group]?.label ?? cat.pl_group}</Badge>
+                                                ) : (
+                                                    <span className="text-xs text-dark-300 dark:text-dark-600">—</span>
+                                                )}
                                             </td>
                                             <td className="px-3 py-3 align-middle text-dark-600 dark:text-dark-400">
                                                 {cat.transactions_count > 0 ? (

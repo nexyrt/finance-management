@@ -4,15 +4,25 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class TransactionCategory extends Model
 {
     use HasFactory;
 
+    /**
+     * Valid Profit & Loss groups a category can map to.
+     * Only meaningful for type=income / type=expense; financing & transfer
+     * are excluded from the P&L by their type.
+     *
+     * @var list<string>
+     */
+    public const PL_GROUPS = ['revenue', 'cogs', 'opex', 'other_income', 'other_expense', 'tax'];
+
     protected $fillable = [
         'type',
+        'pl_group',
         'label',
         'parent_id',
     ];
@@ -84,7 +94,7 @@ class TransactionCategory extends Model
         }
 
         if ($this->relationLoaded('parent') && $this->parent) {
-            return $this->parent->label . ' → ' . $this->label;
+            return $this->parent->label.' → '.$this->label;
         }
 
         return $this->label;
