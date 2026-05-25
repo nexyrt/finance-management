@@ -113,4 +113,54 @@ class ProfitLossReportControllerTest extends TestCase
                 ->where('report.net_profit', -25_000)
             );
     }
+
+    public function test_unclassified_type_map_is_passed_to_view(): void
+    {
+        // Two unclassified categories with transactions in period — one income, one expense.
+        $bank = BankAccount::factory()->create(['initial_balance' => 0]);
+        $catIncome = TransactionCategory::create(['type' => 'income', 'label' => 'Belum Klas Income']);
+        $catExpense = TransactionCategory::create(['type' => 'expense', 'label' => 'Belum Klas Expense']);
+
+        BankTransaction::create([
+            'bank_account_id' => $bank->id,
+            'category_id' => $catIncome->id,
+            'amount' => 5_000,
+            'transaction_type' => 'credit',
+            'transaction_date' => '2026-01-10',
+            'description' => 'in',
+        ]);
+        BankTransaction::create([
+            'bank_account_id' => $bank->id,
+            'category_id' => $catExpense->id,
+            'amount' => 3_000,
+            'transaction_type' => 'debit',
+            'transaction_date' => '2026-01-10',
+            'description' => 'out',
+        ]);
+
+        $this->actingAs($this->admin)
+            ->get('/reports/profit-loss?start_date=2026-01-01&end_date=2026-01-31')
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->where('unclassifiedTypes.'.$catIncome->id, 'income')
+                ->where('unclassifiedTypes.'.$catExpense->id, 'expense')
+            );
+    }
+
+    public function test_pdf_download_returns_pdf_attachment(): void
+    {
+        $response = $this->actingAs($this->admin)
+            ->get('/reports/profit-loss/pdf?start_date=2026-01-01&end_date=2026-01-31');
+
+        $response->assertOk();
+        $response->assertHeader('content-type', 'application/pdf');
+        $this->assertStringContainsString('attachment', $response->headers->get('content-disposition') ?? '');
+        $this->assertStringContainsString('laporan-laba-rugi-2026-01-01-2026-01-31.pdf', $response->headers->get('content-disposition') ?? '');
+    }
+
+    public function test_pdf_requires_view_profit_loss_permission(): void
+    {
+        $this->actingAs($this->staff)
+            ->get('/reports/profit-loss/pdf')
+            ->assertForbidden();
+    }
 }

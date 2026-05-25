@@ -290,6 +290,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/transaction-categories', [TransactionCategoryController::class, 'index'])->name('transaction-categories.index');
         Route::post('/transaction-categories', [TransactionCategoryController::class, 'store'])->middleware('can:manage categories')->name('transaction-categories.store');
         Route::put('/transaction-categories/{transactionCategory}', [TransactionCategoryController::class, 'update'])->middleware('can:manage categories')->name('transaction-categories.update');
+        Route::patch('/transaction-categories/{transactionCategory}/pl-group', [TransactionCategoryController::class, 'updatePlGroup'])->middleware('can:manage categories')->name('transaction-categories.pl-group');
         Route::delete('/transaction-categories/{transactionCategory}', [TransactionCategoryController::class, 'destroy'])->middleware('can:manage categories')->name('transaction-categories.destroy');
     });
 
@@ -393,6 +394,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // ------------------------------------------------------------------------
     Route::middleware('can:view profit-loss')->group(function () {
         Route::get('/reports/profit-loss', [ProfitLossReportController::class, 'index'])->name('reports.profit-loss');
+        Route::get('/reports/profit-loss/pdf', [ProfitLossReportController::class, 'downloadPdf'])->name('reports.profit-loss.pdf');
     });
 
     // ------------------------------------------------------------------------

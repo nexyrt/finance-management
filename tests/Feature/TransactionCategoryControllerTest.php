@@ -139,6 +139,59 @@ class TransactionCategoryControllerTest extends TestCase
             );
     }
 
+    public function test_pl_group_patch_endpoint_updates_only_pl_group(): void
+    {
+        $category = TransactionCategory::create(['type' => 'expense', 'label' => 'Beban']);
+
+        $this->actingAs($this->admin)
+            ->patch("/transaction-categories/{$category->id}/pl-group", ['pl_group' => 'opex'])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('transaction_categories', [
+            'id' => $category->id,
+            'pl_group' => 'opex',
+            'label' => 'Beban', // unchanged
+            'type' => 'expense', // unchanged
+        ]);
+    }
+
+    public function test_pl_group_patch_can_clear_pl_group_with_null(): void
+    {
+        $category = TransactionCategory::create(['type' => 'expense', 'pl_group' => 'opex', 'label' => 'Beban']);
+
+        $this->actingAs($this->admin)
+            ->patch("/transaction-categories/{$category->id}/pl-group", ['pl_group' => null]);
+
+        $this->assertDatabaseHas('transaction_categories', [
+            'id' => $category->id,
+            'pl_group' => null,
+        ]);
+    }
+
+    public function test_pl_group_patch_rejects_invalid_value(): void
+    {
+        $category = TransactionCategory::create(['type' => 'expense', 'label' => 'Beban']);
+
+        $this->actingAs($this->admin)
+            ->patchJson("/transaction-categories/{$category->id}/pl-group", ['pl_group' => 'nonsense'])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors('pl_group');
+    }
+
+    public function test_pl_group_patch_requires_manage_categories_permission(): void
+    {
+        $category = TransactionCategory::create(['type' => 'expense', 'label' => 'Beban']);
+
+        $this->actingAs($this->viewer)
+            ->patch("/transaction-categories/{$category->id}/pl-group", ['pl_group' => 'opex'])
+            ->assertForbidden();
+
+        $this->assertDatabaseHas('transaction_categories', [
+            'id' => $category->id,
+            'pl_group' => null,
+        ]);
+    }
+
     public function test_update_modifies_pl_group(): void
     {
         $category = TransactionCategory::create(['type' => 'expense', 'label' => 'Beban', 'pl_group' => 'opex']);

@@ -1,7 +1,8 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../wayfinder'
+import profitLossF3bc4a from './profit-loss'
 /**
 * @see \App\Http\Controllers\ProfitLossReportController::profitLoss
- * @see app/Http/Controllers/ProfitLossReportController.php:14
+ * @see app/Http/Controllers/ProfitLossReportController.php:17
  * @route '/reports/profit-loss'
  */
 export const profitLoss = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +17,7 @@ profitLoss.definition = {
 
 /**
 * @see \App\Http\Controllers\ProfitLossReportController::profitLoss
- * @see app/Http/Controllers/ProfitLossReportController.php:14
+ * @see app/Http/Controllers/ProfitLossReportController.php:17
  * @route '/reports/profit-loss'
  */
 profitLoss.url = (options?: RouteQueryOptions) => {
@@ -25,7 +26,7 @@ profitLoss.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\ProfitLossReportController::profitLoss
- * @see app/Http/Controllers/ProfitLossReportController.php:14
+ * @see app/Http/Controllers/ProfitLossReportController.php:17
  * @route '/reports/profit-loss'
  */
 profitLoss.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -34,7 +35,7 @@ profitLoss.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\ProfitLossReportController::profitLoss
- * @see app/Http/Controllers/ProfitLossReportController.php:14
+ * @see app/Http/Controllers/ProfitLossReportController.php:17
  * @route '/reports/profit-loss'
  */
 profitLoss.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -42,7 +43,7 @@ profitLoss.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     method: 'head',
 })
 const reports = {
-    profitLoss: Object.assign(profitLoss, profitLoss),
+    profitLoss: Object.assign(profitLoss, profitLossF3bc4a),
 }
 
 export default reports

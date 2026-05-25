@@ -8,6 +8,7 @@ use App\Models\TransactionCategory;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -97,6 +98,21 @@ class TransactionCategoryController extends Controller
         $transactionCategory->update($request->validated());
 
         return redirect()->back()->with('success', 'Kategori berhasil diperbarui.');
+    }
+
+    /**
+     * Lightweight endpoint to update only the pl_group of a category.
+     * Used by the Profit & Loss page side panel for inline classification.
+     */
+    public function updatePlGroup(Request $request, TransactionCategory $transactionCategory): RedirectResponse
+    {
+        $validated = $request->validate([
+            'pl_group' => ['nullable', Rule::in(TransactionCategory::PL_GROUPS)],
+        ]);
+
+        $transactionCategory->update(['pl_group' => $validated['pl_group'] ?? null]);
+
+        return back();
     }
 
     public function destroy(TransactionCategory $transactionCategory): RedirectResponse
