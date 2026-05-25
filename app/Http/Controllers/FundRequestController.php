@@ -402,12 +402,12 @@ class FundRequestController extends Controller
         $validated = $request->validated();
 
         if ($validated['action'] === 'approve') {
-            $fundRequest->approve(auth()->id(), $validated['review_notes']);
+            $fundRequest->approve(auth()->id(), $validated['review_notes'] ?? null);
 
             return back()->with('success', 'Permintaan dana berhasil disetujui');
         }
 
-        $fundRequest->reject(auth()->id(), $validated['review_notes']);
+        $fundRequest->reject(auth()->id(), $validated['review_notes'] ?? null);
 
         return back()->with('success', 'Permintaan dana ditolak');
     }

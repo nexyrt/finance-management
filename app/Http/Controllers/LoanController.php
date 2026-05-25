@@ -126,7 +126,7 @@ class LoanController extends Controller
                 'start_date' => $validated['start_date'],
                 'maturity_date' => $validated['maturity_date'],
                 'status' => 'active',
-                'purpose' => $validated['purpose'],
+                'purpose' => $validated['purpose'] ?? null,
                 'contract_attachment' => $attachmentPath,
             ]);
 
@@ -175,7 +175,7 @@ class LoanController extends Controller
             'term_months' => $validated['term_months'],
             'start_date' => $validated['start_date'],
             'maturity_date' => $validated['maturity_date'],
-            'purpose' => $validated['purpose'],
+            'purpose' => $validated['purpose'] ?? null,
             'contract_attachment' => $attachmentPath,
         ]);
 
@@ -225,8 +225,8 @@ class LoanController extends Controller
                 'principal_paid' => $principalPaid,
                 'interest_paid' => $interestPaid,
                 'total_paid' => $principalPaid + $interestPaid,
-                'reference_number' => $validated['reference_number'],
-                'notes' => $validated['notes'],
+                'reference_number' => $validated['reference_number'] ?? null,
+                'notes' => $validated['notes'] ?? null,
             ]);
 
             if ($principalPaid > 0) {
@@ -237,7 +237,7 @@ class LoanController extends Controller
                     'transaction_type' => 'debit',
                     'transaction_date' => $validated['payment_date'],
                     'description' => "Pembayaran pokok pinjaman - {$loan->lender_name}",
-                    'reference_number' => $validated['reference_number'],
+                    'reference_number' => $validated['reference_number'] ?? null,
                     'category_id' => $category?->id,
                 ]);
             }
@@ -250,7 +250,7 @@ class LoanController extends Controller
                     'transaction_type' => 'debit',
                     'transaction_date' => $validated['payment_date'],
                     'description' => "Pembayaran bunga pinjaman - {$loan->lender_name}",
-                    'reference_number' => $validated['reference_number'],
+                    'reference_number' => $validated['reference_number'] ?? null,
                     'category_id' => $category?->id,
                 ]);
             }
