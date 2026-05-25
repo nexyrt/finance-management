@@ -306,12 +306,12 @@ class ReimbursementController extends Controller
 
         if ($validated['action'] === 'approve') {
             $reimbursement->update(['category_id' => $validated['category_id']]);
-            $reimbursement->approve(auth()->id(), $validated['review_notes']);
+            $reimbursement->approve(auth()->id(), $validated['review_notes'] ?? null);
 
             return back()->with('success', 'Reimbursement berhasil disetujui');
         }
 
-        $reimbursement->reject(auth()->id(), $validated['review_notes']);
+        $reimbursement->reject(auth()->id(), $validated['review_notes'] ?? null);
 
         return back()->with('success', 'Reimbursement ditolak');
     }
