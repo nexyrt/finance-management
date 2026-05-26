@@ -350,7 +350,7 @@ export function TransactionsTab({ accountId, refreshKey }: Props) {
                                         <td className="px-3 py-3 align-middle">
                                             <button
                                                 onClick={() => setDeleteId(row.id)}
-                                                className="p-1.5 rounded-lg text-dark-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors opacity-0 group-hover:opacity-100"
+                                                className="p-1.5 rounded-lg text-dark-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                                                 title="Hapus"
                                             >
                                                 <Trash2 className="w-3.5 h-3.5" />

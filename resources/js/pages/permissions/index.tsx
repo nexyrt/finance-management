@@ -488,7 +488,7 @@ export default function PermissionsIndex() {
                                             </button>
 
                                             {canManagePermissions && (
-                                                <div className="absolute top-2 right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <div className="absolute top-2 right-2 flex items-center gap-1">
                                                     <Button
                                                         variant="ghost"
                                                         size="icon-sm"
@@ -634,7 +634,7 @@ export default function PermissionsIndex() {
                                                                         <button
                                                                             type="button"
                                                                             onClick={() => setDeletingPermission(permission)}
-                                                                            className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-md hover:bg-red-600"
+                                                                            className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-red-500 text-white flex items-center justify-center shadow-md hover:bg-red-600 transition-colors"
                                                                             title="Hapus permission"
                                                                         >
                                                                             <X className="w-3 h-3" />

@@ -303,7 +303,7 @@ export function TemplateForm({
                                     className="hidden sm:block text-xs text-dark-400 dark:text-dark-500 hover:text-dark-600 dark:hover:text-dark-300 transition-colors"
                                     title="Reset lebar kolom ke default"
                                 >
-                                    Reset kolom
+                                    Reset Ukuran Kolom
                                 </button>
                                 <Button type="button" variant="outline" size="sm" onClick={addItem}>
                                     <Plus className="w-3.5 h-3.5 mr-1" /> Tambah Item
@@ -431,7 +431,7 @@ export function TemplateForm({
                                                     <button
                                                         type="button"
                                                         onClick={() => removeItem(idx)}
-                                                        className="h-6 w-6 rounded inline-flex items-center justify-center text-dark-300 dark:text-dark-600 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 opacity-0 group-hover:opacity-100 transition-all"
+                                                        className="h-6 w-6 rounded inline-flex items-center justify-center text-dark-400 dark:text-dark-500 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                                                     >
                                                         <Trash2 className="w-3.5 h-3.5" />
                                                     </button>

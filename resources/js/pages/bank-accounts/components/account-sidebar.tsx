@@ -141,7 +141,7 @@ function AccountItem({ account, active, onSelect }: AccountItemProps) {
                         'w-3.5 h-3.5 transition-transform',
                         active
                             ? 'text-primary-500 translate-x-0.5'
-                            : 'text-dark-300 dark:text-dark-500 opacity-0 group-hover:opacity-100',
+                            : 'text-dark-300 dark:text-dark-500',
                     )}
                 />
             </div>
