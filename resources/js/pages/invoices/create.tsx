@@ -348,7 +348,7 @@ export function InvoiceForm({
         { key: 'unit',     defaultWidth: 80,  minWidth: 48  },
         { key: 'price',    defaultWidth: 112, minWidth: 64  },
         { key: 'hpp',      defaultWidth: 112, minWidth: 64  },
-        { key: 'pph',      defaultWidth: 40,  minWidth: 40  },
+        { key: 'pph',      defaultWidth: 80,  minWidth: 64  },
         { key: 'subtotal', defaultWidth: 112, minWidth: 64  },
         { key: 'del',      defaultWidth: 36,  minWidth: 36  },
     ];
