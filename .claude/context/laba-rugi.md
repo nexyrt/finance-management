@@ -40,6 +40,29 @@
 - Begitu dana **dicairkan (disbursed)** → langsung masuk kolom beban di P&L.
 - **Bukan** diperlakukan sebagai uang muka (advance) yang baru jadi beban setelah dipertanggungjawabkan.
 
+### 5. TITIPAN PAJAK KLIEN (`is_tax_deposit`) — passthrough, dikecualikan dari P&L (dikonfirmasi 2026-05-26)
+
+Perusahaan ini konsultan pajak. Klien sering **menitipkan uang pajaknya lewat invoice** (PPN, PPh unifikasi/21/final, denda, dll. — istilahnya generic **"titipan pajak"**, bukan PPh saja) supaya konsultan yang menyetorkan ke kas negara atas nama klien. Item invoice yang `is_tax_deposit=true` adalah passthrough:
+
+- **Tidak masuk pendapatan** konsultan (net efek ke P&L = nol)
+- **Tidak masuk beban** konsultan saat disetor
+
+Alokasi pembayaran: **"titipan dulu"** — setiap uang masuk menutup titipan dulu sampai lunas, baru sisanya jadi pendapatan jasa. Setelah itu cost-recovery HPP berlaku seperti biasa pada porsi pendapatan jasa.
+
+Rumus per invoice:
+```
+paid_through_X     = SUM(payments dgn payment_date <= X)
+revenue_through_X  = MAX(0, paid_through_X − total_titipan)
+cogs_through_X     = MIN(revenue_through_X, total_cogs)
+```
+
+**Setor titipan ke negara** dicatat sebagai transaksi keluar dengan **kategori `type=financing`** (mis. "Titipan Pajak Klien") agar otomatis dikecualikan dari P&L.
+
+**Catatan terminologi:**
+- "Titipan Pajak Klien" = passthrough (is_tax_deposit di invoice). Tidak masuk P&L.
+- "Pajak Perusahaan" = kewajiban pajak perusahaan sendiri (PPh Badan / PPh Final / PPN terutang). MASUK ke baris Pajak Perusahaan di P&L via kategori dengan `pl_group=tax`.
+- "PPh" sebagai istilah dihindari di UI titipan karena bisa rancu — titipan bukan cuma PPh.
+
 ### 4. Timing HPP invoice = METODE "TUTUP MODAL DULU" (cost recovery)
 - Setiap uang masuk dipakai **menutup modal (HPP) dulu** sampai modal tertutup penuh. Baru setelah itu, sisa uang dihitung sebagai laba.
 - **Rumus:**
