@@ -1,481 +1,157 @@
-# Archipelago
+# Archipelago Design System
 
-> Extracted from: live site (finance management application)
-> Sources: DevTools computed styles + CSS custom properties + visual screenshot analysis
-> Values marked † are inferred; all others are verified via DevTools or visual inspection.
+This document is the single visual language for this application. Apply it to every page you build or redesign — match these tokens, layouts, and component patterns exactly. **Never invent a new color, spacing value, radius, or layout when one already exists here**; cross-app consistency matters more than local cleverness. Exact values (hex, px) are canonical; values marked † are inferred.
 
 ## Essence
 
-A disciplined, professional financial interface built for clarity under pressure — every element earns its place. The design speaks in clean whites and deep darks anchored by a confident primary blue, communicating institutional trust without coldness. Two modes, one system: light is crisp and airy like a freshly printed ledger; dark is deep and focused like a lit workstation at night. Layout thinking is contextual — lists use tables, summaries use card grids, details use full-width slide-overs.
+A disciplined, professional financial interface built for clarity under pressure — every element earns its place. Speak in clean whites and deep darks anchored by a confident primary blue: institutional trust without coldness. Treat the two modes as one system — light is crisp and airy like a freshly printed ledger; dark is deep and focused like a lit workstation at night. **Let content type drive layout**: lists become tables, summaries become card grids, details become full-width slide-overs.
 
----
+## Color
 
-## Color Palette
+**Anchor the interface to one confident primary blue, and let gray do everything else.** Blue is a signal, not decoration — reserve it for active states, primary CTAs, and focus rings so it stays meaningful. Keep passive UI pure gray.
 
-### Primary Brand (Blue)
+Use these blues for primary actions and active states:
+- `primary-600` (`#2563eb`) — primary CTA buttons; active nav text (light)
+- `primary-500` (`#3b82f6`) — active nav background (dark); income chart fill
+- `primary-50` (`#eff6ff`) — active nav background (light); subtle tinted fills
+- `primary-100`–`primary-400` (`#dbeafe`, `#bfdbfe`, `#93c5fd`, `#60a5fa`) — hover fills, icon-container backgrounds, accent borders, muted icons, in ascending strength
+- `primary-700`/`primary-800` (`#1d4ed8`†, `#1e40af`†) — button hover and pressed states
 
-| Token | Hex | Usage |
-|-------|-----|-------|
-| `primary-50` | `#eff6ff` | Active nav bg (light), light tint backgrounds |
-| `primary-100` | `#dbeafe` | Hover states, subtle fills |
-| `primary-200` | `#bfdbfe` | Icon bg containers |
-| `primary-300` | `#93c5fd` | Accent borders, highlights |
-| `primary-400` | `#60a5fa` | Icon color in muted contexts |
-| `primary-500` | `#3b82f6` | Active nav bg (dark), chart fill (income) |
-| `primary-600` | `#2563eb` | Primary CTA button, active nav text (light) |
-| `primary-700` | `#1d4ed8` | Hover on primary button† |
-| `primary-800` | `#1e40af` | Pressed/active state† |
+**In light mode, build on white and separate with borders, not shadows.** Page background is `#f9fafb`; sidebar, header, cards, and modals are all pure white (`#ffffff`). Input wrappers are white with a gray ring.
 
-### Backgrounds — Light Mode
+**In dark mode, climb a 10-stop zinc scale where each surface layer owns exactly one stop.** Never hardcode a dark hex — always use the `dark-*` class:
+- `dark-950` (`#09090a`) — body / main content
+- `dark-900` (`#0f0f11`) — sidebar, secondary surfaces
+- `dark-800` (`#141414`) — input field backgrounds
+- `dark-700` (`#1a1a1d`) — cards, modals, slide-overs, dropdowns
+- `dark-600` (`#3f3f46`) — borders, item hover background, disabled background
+- `dark-500` (`#71717a`) — dividers
+- `dark-400` (`#a1a1aa`) — icons, placeholders, muted labels
+- `dark-300` (`#e4e4e7`) — primary body text
+- `dark-200` (`#f4f4f5`) — headings, prominent text
+- `dark-50` (`#fafafa`) — highest-contrast text on dark surfaces
 
-| Token | Value | Usage |
-|-------|-------|-------|
-| `bg-page` | `oklch(0.985 0.002 247.839)` ≈ `#f9fafb` | Page/main content area |
-| `bg-sidebar` | `rgb(255, 255, 255)` | Sidebar panel (white with right border) |
-| `bg-header` | `rgb(255, 255, 255)` | Top header bar |
-| `bg-card` | `rgb(255, 255, 255)` | Cards, content panels |
-| `bg-modal` | `rgb(255, 255, 255)` | Modal + slide-over panels |
-| `bg-input` | transparent over white wrapper | Form inputs (ring wrapper is white) |
+**Set text in a three-level hierarchy.** Body and table data use gray-900 (`#111827`) in light / `dark-200` (`#f4f4f5`) in dark. Labels, captions, and table headers drop to gray-600 / `dark-400`. Placeholders and hints are the quietest: gray-500† / `dark-500`. **Render every page `<h1>` as a clipped gradient** — `from-gray-900 via-blue-800 to-indigo-800` in light, `from-white via-blue-200 to-indigo-200` in dark. Sidebar section labels (`DATA MASTER`, `KEUANGAN`, …) are uppercase, small, gray, and non-interactive.
 
-### Backgrounds — Dark Mode
+**Encode status with semantic badge colors** (solid background + tinted-50 text): Terkirim/sent → blue-600; Jatuh Tempo/overdue → red-600; Lunas/paid & Aktif/active → green-600; Sebagian/partial → yellow-600†; Draft → zinc-600 on white.
 
-| Token | Hex | Variable | Usage |
-|-------|-----|----------|-------|
-| `dark-950` | `#09090a` | `--color-dark-950` | Body, main content area |
-| `dark-900` | `#0f0f11` | `--color-dark-900` | Sidebar, secondary surfaces |
-| `dark-800` | `#141414` | `--color-dark-800` | Input field backgrounds |
-| `dark-700` | `#1a1a1d` | `--color-dark-700` | Cards, modals, slide-overs, dropdowns |
-| `dark-600` | `#3f3f46` | `--color-dark-600` | Borders, hover bg items, disabled bg |
-| `dark-500` | `#71717a` | `--color-dark-500` | Dividers (`border-t`) |
-| `dark-400` | `#a1a1aa` | `--color-dark-400` | Icons, placeholder text, muted labels |
-| `dark-300` | `#e4e4e7` | `--color-dark-300` | Primary body text |
-| `dark-200` | `#f4f4f5` | `--color-dark-200` | Headings, prominent text |
-| `dark-50`  | `#fafafa` | `--color-dark-50`  | Highest-contrast text on dark surfaces |
+**Charts speak their own dialect:** income/Pemasukan in green-500 (`#22c55e`†), expense/Pengeluaran in red-500 (`#ef4444`†), grid lines at white/10%† in dark. The Livewire progress bar is intentionally cyan (`#2299dd`), distinct from primary blue.
 
-### Text
-
-| Token | Light Value | Dark Value | Usage |
-|-------|-------------|------------|-------|
-| `text-primary` | gray-900 ≈ `#111827` | `#f4f4f5` (dark-200) | Body content, table data |
-| `text-secondary` | `oklch(0.446 0.03 256.802)` ≈ gray-600 | `#a1a1aa` (dark-400) | Labels, captions, table headers |
-| `text-muted` | gray-500† | `#71717a` (dark-500) | Placeholder, hint text |
-| `text-heading` | gradient gray-900→blue-800→indigo-800 | gradient white→blue-200→indigo-200 | Page `<h1>` (gradient bg-clip) |
-| `text-nav-section` | gray-400 uppercase† | dark-500 uppercase† | Sidebar section labels (DATA MASTER, KEUANGAN, etc.) |
-
-### Semantic Colors (Status Badges)
-
-| Role | bg | text | Observed in |
-|------|----|------|-------------|
-| Terkirim (Sent) | `oklch(0.488 0.243 264.376)` ≈ blue-600 | blue-50 | Invoice table |
-| Jatuh Tempo (Overdue) | `oklch(0.505 0.213 27.518)` ≈ red-600 | red-50 | Invoice table |
-| Lunas (Paid) | `oklch(0.527 0.154 150.069)` ≈ green-600 | green-50 | Invoice table |
-| Aktif (Active) | green-600† | green-50† | Recurring invoice cards |
-| Draft | zinc-600 | white | Invoice table† |
-| Sebagian (Partial) | yellow-600† | yellow-50† | Invoice table† |
-
-### Chart Colors (visual)
-
-| Role | Color | Usage |
-|------|-------|-------|
-| Income / Pemasukan | `#22c55e`† (green-500) | Area chart line + fill |
-| Expense / Pengeluaran | `#ef4444`† (red-500) | Area chart line + fill |
-| Chart grid lines (dark) | white/10%† | Horizontal tick lines |
-
-### Borders
-
-| Context | Light | Dark |
-|---------|-------|------|
-| Card border | zinc-200 ≈ `#e4e4e7` | `white/8%` (`oklab ... / 0.08`) |
-| Dropdown border | gray-100 | `white/8%` |
-| Slide-over backdrop | `gray-400/75%` | `black/30%` |
-| Header bg (dark) | — | semi-transparent dark + backdrop-blur |
-| Sidebar right border | gray-200† | dark-600† |
-
----
+**Borders stay subtle:** cards use zinc-200 (`#e4e4e7`) in light / `white/8%` in dark; dropdowns use gray-100 / `white/8%`; the slide-over backdrop is `gray-400/75%` light / `black/30%` dark.
 
 ## Typography
 
-### Families
+**Set headings in Plus Jakarta Sans and everything else in Inter.** Headings and display text use `--font-heading` (Plus Jakarta Sans) at weights 600/700/800; body and UI use `--font-sans` (Inter) at 400/500/600/700. Reach for system mono† (400) only when monospace is genuinely needed.
 
-| Role | Family | Variable | Weights Used |
-|------|--------|----------|-------------|
-| Heading / Display | Plus Jakarta Sans | `--font-heading` | 600, 700, 800 |
-| Body / UI | Inter | `--font-sans` | 400, 500, 600, 700 |
-| Mono | system mono† | — | 400 |
+Match size and weight to the role:
+- Page title `<h1>` — 36px / 700, with the clipped gradient (see Color)
+- Widget title — 20px† / 700 — chart titles, card section headers
+- Modal & panel title — 18px / 600 — slide-over headers, modal subtitles
+- Body — 16px / 400 — button labels, general prose
+- Label — 14px / 600 — form field labels, table column headers
+- Small / nav — 14px / 400–500 — table data, nav item text
+- Nav section — 11px† / 600, uppercase — sidebar group labels
+- Badge / micro — 12px / 700 — status badges, frequency tags
 
-### Scale
+Treat a few cases specially:
+- Currency values: `font-bold text-2xl` inside stat cards; `font-semibold` inside tables.
+- Negative values (e.g. Laba Kotor when negative): apply `text-red-500` to the value itself, never the whole card.
+- Subtitles sit directly under the h1 in 16px regular, muted gray.
 
-| Level | Size | Weight | Usage |
-|-------|------|--------|-------|
-| Page Title (h1) | 36px | 700 | Main page headings with gradient clip |
-| Widget Title | 20px† | 700 | Chart titles, card section headers |
-| Modal/Panel Title | 18px | 600 | Slide-over headers, modal subtitles |
-| Body | 16px | 400 | Button labels, general prose |
-| Label | 14px | 600 | Form field labels, table col headers |
-| Small / Nav | 14px | 400–500 | Table data, nav item text |
-| Nav Section | 11px† | 600 | Uppercase sidebar section labels |
-| Badge / Micro | 12px | 700 | Status badges, frequency tags |
+## Spacing & Layout
 
-### Notable Treatments
+**Build every spacing value on a 4px base:** `space-1` 4px (icon–text gap), `space-2` 8px (badge padding, inline gaps), `space-3` 12px (card sub-element padding), `space-4` 16px (modal padding, field gaps), `space-6` 24px (section separation, stats-grid gap), `space-8` 32px (major layout separation).
 
-- **Page h1**: gradient `bg-clip-text text-transparent from-gray-900 via-blue-800 to-indigo-800` (light) / `from-white via-blue-200 to-indigo-200` (dark). 36px, bold.
-- **Sidebar section labels**: `DATA MASTER`, `KEUANGAN`, `ARUS KAS`, `OPERASIONAL`, `HUTANG & PIUTANG`, `ADMINISTRASI` — uppercase, small, gray, not interactive.
-- **Currency values**: large numbers (e.g. `Rp 136,4jt`, `Rp 103.500.000`) use `font-bold text-2xl` in stat cards; `font-semibold` in tables.
-- **Negative values** (e.g. Laba Kotor merah): `text-red-500` applied to the value itself, not the card.
-- **Muted subtitles**: appear directly under h1, 16px regular, gray (`text-muted-foreground` equivalent).
-
----
-
-## Spacing
-
-### Base Unit
-
-4px — all spacing is a multiple of 4px.
-
-### Scale
-
-| Token | Value | Common Usage |
-|-------|-------|-------------|
-| `space-1` | 4px | Tight icon-text gap |
-| `space-2` | 8px | Badge padding (2px 8px), inline element gaps |
-| `space-3` | 12px | Card internal padding for sub-elements |
-| `space-4` | 16px | Form modal padding, field gaps |
-| `space-6` | 24px | Section separation, stats card gap |
-| `space-8` | 32px | Major layout separation |
-
-### Layout
-
-- Sidebar width: `224px` fixed, collapsible (with chevron toggle button)
-- Header height: `~64px`†
-- Page content padding: `~24px` horizontal and vertical†
+Hold to these layout dimensions:
+- Sidebar: 224px fixed, collapsible via a chevron toggle
+- Header: ~64px tall†; page content padding ~24px on both axes†
 - Stats grid: `grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4`
-- Recurring cards grid: `grid-cols-3 gap-4`† (3-column on desktop)
-- Table search bar width: `w-64` (256px)
-- Form modal max-widths: `max-w-xl` (576px) for full forms with 2-col layout
-- Slide-over panel (detail view): full-viewport-height, ~80% viewport width†
-
----
+- Card grids (e.g. recurring): three columns on desktop, `gap-4`†
+- Table search input: `w-64` (256px)
+- Form modal: `max-w-xl` (576px) for full two-column forms
+- Detail slide-over: full viewport height, ~80% viewport width†
 
 ## Elevation
 
-### Border Radii
+**Use a binary radius system — no middle ground.** Apply `rounded-xl` (12px) to every container: cards, modals, slide-overs, dropdowns, icon containers. Apply `rounded-md` (6px) to every component: buttons, inputs, badges, frequency tags. The remaining stops are rare — `rounded-sm` (4px) for checkboxes and small tags†, and `rounded-lg` (8px) only for the active nav-item highlight.
 
-| Token | Value | Variable | Applied To |
-|-------|-------|----------|-----------|
-| `radius-sm` | 4px | `--radius-sm` | Checkboxes, small tags† |
-| `radius-md` | 6px | `--radius-md` | Buttons, inputs, badges, frequency tags |
-| `radius-lg` | 8px | `--radius-lg` | Navigation active item highlight |
-| `radius-xl` | 12px | `--radius-xl` | Cards, modals, slide-overs, dropdowns, icon containers |
+**Lift surfaces sparingly:** cards rest on `shadow-sm` and rise to `shadow-md` on hover (`hover:shadow-md transition-shadow`); modals and slide-overs use a strong `shadow-xl`; the sidebar and header carry no shadow — separate them with a border only.
 
-**Rule:** `rounded-xl` (12px) for every container. `rounded-md` (6px) for every component. Binary system — no middle ground.
+## Page Layout Patterns
 
-### Shadows
+The application uses distinct layout strategies depending on content type. Pick the one that fits the content, and build it as described.
 
-| Level | Applied To | Class |
-|-------|-----------|-------|
-| `shadow-sm` | Cards default | baseline lift |
-| `shadow-md` | Cards on hover | `hover:shadow-md transition-shadow` |
-| `shadow-xl` | Modals, slide-overs | strong elevation |
-| none | Sidebar, header | separated by border only |
+**List pages (e.g. Invoices).** Build top to bottom. Start with a `PageHeader`: gradient h1 plus a muted subtitle on the left, primary action button on the right. Below it, lay out the stats row as `grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4` and render each metric with `StatsCard` (1px colored top accent bar, uppercase tracked label, icon top-right, large value, one line of sub-text, hover tooltip). Next show a status pipeline bar — proportional `h-2 rounded-full` horizontal segments sized to each status count, clickable to filter — followed by underline-style status tabs with a per-status badge count. Then wrap the filter toolbar, table, and pagination in a single `Card`: toolbar in the header (`border-b`), table in the body, pagination in the footer (`border-t`, rendered only when `last_page > 1`). The toolbar holds a `Combobox` for client, a date-mode pill toggle, a `DatePicker` (`month` or `range`), a search `Input`, and a reset button carrying a `Badge` count. Make every table row fully clickable (`cursor-pointer`, `onClick → openDrawer`) and stop propagation on the actions cell. Render the client column as `Avatar` + `AvatarFallback` initials + name + type; the amount column as the value plus an inline progress bar for `partially_paid`; and the action column as a `DropdownMenu` behind a `MoreHorizontal` trigger (Lihat Detail / Edit / Cetak PDF / Hapus).
 
----
+**Card-grid pages (e.g. Recurring Invoices).** Use this for collections of similar items. Give the header a gradient h1 + subtitle alongside summary badges (e.g. "14 aktif", "Rp 253,9jt"), then a pill/segment tab bar (Template | Bulanan | Analitik). Lay items out in a three-column desktop grid where each card is `rounded-xl`, bordered, on white / `dark-700`, showing client name, amount, date meta, and action buttons. Place a status badge top-right (e.g. a green "aktif" pill) and express date info as colored pills (orange for the next due date).
 
-## Page Layout Patterns (Visual)
+**Master-detail split (e.g. Bank Accounts).** Split the screen into two panes. The left pane is a scrollable account list (icon, name, bank name, balance) with a "Tambah Baru" affordance and a summary box (Total Saldo, Pemasukan, Pengeluaran, Arus Bersih); highlight the active account with a blue accent†. The right pane shows the selected account in full: name plus Pengeluaran/Pemasukan actions, period summary stats, two side-by-side charts (line + donut), then a transaction table.
 
-This is a critical section missing from DevTools-only analysis. The application uses **three distinct layout strategies** depending on content type:
+**Slide-over detail (e.g. Invoice Detail).** Detail views are not centered modals — open a full-height right-side slide-over over a dimmed backdrop. Lead with three stat boxes (Tanggal Invoice / Jatuh Tempo / Laba Kotor), embed the line-items table in the body, then a payment/total block and a "Catat Pembayaran" action. Include a meta sidebar within the panel for Informasi Bisnis, Faktur (linked files), and a Timeline.
 
-### 1. Table Layout — Lists (Invoices)
-
-```
-┌─────────────────────────────────────────────────────┐
-│ H1 Title + subtitle           [Action Button]        │
-├──────────────┬──────────────┬───────────────────────┤
-│  Stat Card   │  Stat Card   │  Stat Card  Stat Card  │
-├──────────────┴──────────────┴───────────────────────┤
-│ ████████▓▓▓▒▒▒░░░  ← Status pipeline bar            │
-│ ● Draft (n)  ● Terkirim (n)  ● Sebagian (n)  ● Lunas│
-├──────────────────────────────────────────────────────┤
-│ [Semua] [Draft n] [Terkirim n] [Sebagian n] [Lunas n]│  ← underline tabs
-├──────────────────────────────────────────────────────┤
-│ ┌──────────────────── Card ───────────────────────┐  │
-│ │ [Klien ▼] [Periode: Bulan|Rentang] [🔍 Cari...]│  │  ← filter toolbar (border-b)
-│ ├─────────────────────────────────────────────────┤  │
-│ │ Table (NO, Klien+Avatar, Tgl, Jatuh Tempo,      │  │
-│ │        Jumlah+progress, Status, ⋯ Aksi)        │  │  ← clickable rows
-│ ├─────────────────────────────────────────────────┤  │
-│ │ [Pagination]                       n–m dari tot │  │  ← conditional footer (border-t)
-│ └─────────────────────────────────────────────────┘  │
-└──────────────────────────────────────────────────────┘
-```
-
-- Stats: 4 cards, each with `h-1` colored top accent bar + uppercase tracked label + icon (top-right) + large value + sub-text line 3 + `Tooltip` on hover
-- Status pipeline bar: proportional `h-2 rounded-full` horizontal segments per status count, clickable to filter
-- Status tabs: `variant="underline"` with badge count per status
-- Unified table card: filter toolbar inside `Card` header (`border-b`), table in body, pagination in footer (`border-t`, conditional on `last_page > 1`)
-- Filter toolbar: `Combobox` for client, date mode toggle (pill), `DatePicker` (`mode="month"` or `mode="range"`), `Input` for search, reset button with `Badge` count
-- Table rows: fully clickable (`onClick → openDrawer`), `cursor-pointer`, actions cell stops propagation
-- Client column: `Avatar` + `AvatarFallback` (initials) + name + type
-- Amount column: value + inline progress bar for `partially_paid` status
-- Action column: `DropdownMenu` with `MoreHorizontal` trigger (Lihat Detail / Edit / Download PDF / Hapus)
-
-### 2. Card Grid Layout — Templates (Recurring Invoices)
-
-```
-┌─────────────────────────────────────────────────────┐
-│ H1 Title + subtitle    [14 aktif]  [Rp 253,9jt]    │
-│ [Template | Bulanan | Analitik] tab bar              │
-├───────────────┬───────────────┬─────────────────────┤
-│  ┌──────────┐ │  ┌──────────┐ │  ┌──────────┐      │
-│  │ Card     │ │  │ Card     │ │  │ Card     │      │
-│  │ Client   │ │  │ Client   │ │  │ Client   │      │
-│  │ Rp 2jt  │ │  │ Rp 2jt  │ │  │ Rp 2jt  │      │
-│  │ [aktif] │ │  │ [aktif] │ │  │ [aktif] │      │
-│  │ [Lihat] │ │  │ [Lihat] │ │  │ [Lihat] │      │
-│  └──────────┘ │  └──────────┘ │  └──────────┘      │
-└───────────────┴───────────────┴─────────────────────┘
-```
-
-- Each card: rounded-xl, border, white/dark-700 bg, client name, amount, date meta, action buttons
-- Status badge top-right of card: `aktif` (green pill)
-- Date info: colored pills/tags (orange for next due date, etc.)
-- Tab bar: custom pill/segment style (not default tabs)
-
-### 3. Master-Detail Split Layout — Bank Accounts
-
-```
-┌─────────────────────────────────────────────────────┐
-│ H1 Title + subtitle         [Panduan] [Buat]        │
-├──────────────────┬──────────────────────────────────┤
-│ Account List     │ Detail Panel (selected account)  │
-│ ─────────────── │ ────────────────────────────────  │
-│ • Account A  Rp │ Account Name  [Pengeluaran][Pemasukan]│
-│ • Account B  Rp │                                   │
-│ • Account C  Rp │ Period: Mar 2026                  │
-│ • Account D  Rp │ [Pemasukan] [Pengeluaran] [Arus]  │
-│ • Account E  Rp │                                   │
-│ ─────────────── │ [Line Chart] [Donut Chart]        │
-│ + Tambah Baru   │                                   │
-│                  │ [Transaction Table]               │
-│ Summary Box:    │                                   │
-│ Total Saldo     │                                   │
-│ Pemasukan       │                                   │
-│ Pengeluaran     │                                   │
-│ Arus Bersih     │                                   │
-└──────────────────┴──────────────────────────────────┘
-```
-
-- Left panel: scrollable list of account items (icon, name, bank name, balance)
-- Active account: highlighted with blue accent†
-- Right panel: full detail with period summary stats, two charts side-by-side, transaction table
-
-### 4. Slide-Over / Drawer — Invoice Detail
-
-The invoice detail is **not a centered modal** — it's a full-height right-side panel:
-
-```
-┌──────────────────────────────────────────────────┐
-│ [Dimmed backdrop]  ┌────────────────────────────┐│
-│                    │ Invoice No. [badge] [PDF]  ││
-│                    │ Client name                ││
-│                    │                            ││
-│                    │ [Date] [Due] [Laba Kotor]  ││
-│                    │                            ││
-│                    │ LINE ITEMS TABLE           ││
-│                    │                            ││
-│                    │ ─────────────────────────  ││
-│                    │ PAYMENT / TOTAL            ││
-│                    │                            ││
-│                    │ [Catat Pembayaran btn]     ││
-│                    │                            ││
-│                    │ SIDEBAR (meta + timeline)  ││
-│                    └────────────────────────────┘│
-└──────────────────────────────────────────────────┘
-```
-
-- Three stat boxes at top of slide-over: Tanggal Invoice / Jatuh Tempo (red bg†) / Laba Kotor
-- Line items table is embedded inside the panel
-- Right meta sidebar within the panel: Informasi Bisnis, Faktur (linked files), Timeline
-
-### 5. Form Modals — Transaction Creation
-
-```
-┌──────────────────────────────────────────────┐
-│ [Icon] Title                                 │
-│        Short description                     │
-├──────────────────────┬───────────────────────┤
-│ Detail Transaksi     │ Keterangan            │
-│ ─────────────────   │ ──────────────────    │
-│ Rekening Sumber *   │ Deskripsi             │
-│ [select ▼]          │ [textarea]            │
-│                      │                       │
-│ Kategori            │ Nomor Referensi       │
-│ [select ▼]          │ [input]               │
-│                      │                       │
-│ Jumlah *            │ Bank Transaksi        │
-│ [Rp input]          │ [input]               │
-│                      │                       │
-│ Tanggal *           │ [File upload zone]    │
-│ [date picker]        │ Klik atau drag & drop │
-├──────────────────────┴───────────────────────┤
-│                         [Batal] [Simpan X]   │
-└──────────────────────────────────────────────┘
-```
-
-- Modal header has icon + title + description (3-element cluster)
-- Two-column body: left = required fields, right = optional/supporting info
-- File upload zone: dashed border†, drag & drop area in right column
-- Footer: `Batal` (zinc) left-of / `Simpan Pengeluaran` (red) or `Simpan Pemasukan` (green) — color signals intent
-
----
+**Form modals (e.g. Transaction Creation).** Open with a header cluster of icon + title + short description. Split the body into two columns: required fields on the left (source account, category, amount, date), optional and supporting info on the right (description, reference number, transaction bank, file upload zone). Put Batal (zinc) on the left of the footer and a semantic submit on the right — green "Simpan Pemasukan" for income, red "Simpan Pengeluaran" for expense — so color signals intent before the user reads.
 
 ## Interactive States
 
-### Buttons — Primary (Blue)
+**Primary buttons** sit at `#2563eb` with white text, 6px radius, 42px tall, 8px×16px padding; darken to `#1d4ed8`† on hover over 200ms; show a 3px primary ring on focus; and drop opacity with `cursor: not-allowed` when disabled.
 
-| State | Visual Treatment |
-|-------|-----------------|
-| Default | `bg: #2563eb`, text: white, radius: 6px, height: 42px, padding: 8px 16px |
-| Hover | bg darkens to `#1d4ed8`†, transition 200ms |
-| Focus | 3px outline ring in primary color |
-| Disabled | opacity reduced†, cursor: not-allowed† |
+**Choose button color by intent** — all variants share a 1px transparent border, 6px radius, 42px height, and 16px text:
+- Blue (`primary-600`) — neutral default CTA ("Buat Invoice", "Catat Pembayaran")
+- Green (green-500) — income / positive save ("Simpan Pemasukan")
+- Red† (red-600) — expense / destructive save ("Simpan Pengeluaran")
+- Zinc (zinc-500) — cancel / secondary ("Batal")
 
-### Buttons — Semantic Variants
+**Form inputs** wrap a transparent field (6px radius, 6px×12px padding, 14px text) under a label (14px / 600):
+- Default: white bg + `ring-1` gray-300 (light) / `dark-800` bg + `ring` dark-600 (dark)
+- Focus: `ring-2` primary-600 (light) / primary-500 (dark)
+- Error†: `ring-2` red-500 (light) / red-400 (dark)
 
-| Variant | bg | Usage | Observed in |
-|---------|-----|-------|-------------|
-| Green | `oklch(0.723 0.219 149.579)` ≈ green-500 | Income/positive save | "Simpan Pemasukan" |
-| Red† | red-600 | Expense/danger save | "Simpan Pengeluaran" |
-| Zinc | `oklch(0.552 0.016 285.938)` ≈ zinc-500 | Cancel, secondary | "Batal" in all forms |
-| Blue | primary-600 | Default CTA | "Buat Invoice", "Catat Pembayaran" |
+**Navigation links** stay quiet until active:
+- Default: no background; text gray-600† (light) / `dark-400` (dark)
+- Hover: bg gray-50† / `dark-600`; text gray-900† / `dark-200`
+- Active: the entire row fills — `primary-50` bg + `primary-600` text at 8px radius (light); a solid `primary-500` row with near-white text (dark, much more prominent)
 
-All buttons: `border: 1px solid transparent`, radius 6px, height 42px, font-size 16px.
+**Use two distinct tab bars by purpose.** For switching content modes (Templates / Bulanan / Analitik), use the pill/segment bar: container `bg-zinc-100 dark:bg-dark-700 rounded-xl border p-1`; active tab `bg-white dark:bg-dark-800 shadow-sm border rounded-lg`; inactive muted with a subtle hover. For status filtering on list pages (Semua / Draft / Terkirim / …), use the underline bar: container `flex items-center border-b`; active tab `border-b-2 -mb-px border-primary-600 dark:border-primary-400 text-primary-700`; inactive `border-transparent text-dark-500`; active badge `bg-primary-100 dark:bg-primary-900/30 text-primary-700`, inactive badge `bg-zinc-100 dark:bg-dark-700 text-dark-500`.
 
-### Form Inputs
-
-| State | Light | Dark |
-|-------|-------|------|
-| Default | wrapper: `bg-white`, `ring-1 gray-300` | wrapper: `bg-dark-800` (#141414), `ring dark-600` |
-| Focus | `ring-2 primary-600` | `ring-2 primary-500` |
-| Error† | `ring-2 red-500` | `ring-2 red-400` |
-
-Input internals: transparent bg, radius 6px, padding `6px 12px`, font-size 14px, label above (14px/600).
-
-### Navigation Links
-
-| State | Light | Dark |
-|-------|-------|------|
-| Default | no bg, text gray-600† | no bg, text dark-400 (`#a1a1aa`) |
-| Hover | bg gray-50†, text gray-900† | bg dark-600 (`#3f3f46`), text dark-200 |
-| Active | **full row** bg primary-50 (`#eff6ff`), text primary-600, radius 8px | **full row** bg primary-500 (`#3b82f6`), text near-white |
-
-Note: in light mode the active nav item has a tinted blue-50 background that fills the entire row width. In dark mode it becomes a solid blue-500 row — much more prominent.
-
-### Tab Bar — Pill/Segment style
-
-```
-[inactive tab] [ACTIVE TAB] [inactive tab]
-```
-
-Container: `bg-zinc-100 dark:bg-dark-700 rounded-xl border p-1`
-Active: `bg-white dark:bg-dark-800 shadow-sm border rounded-lg`
-Inactive: text muted, hover bg-zinc-50/dark-600
-
-Use for: switching between content modes (Templates / Bulanan / Analitik, etc.)
-
-### Tab Bar — Underline style
-
-```
-[Semua] [Draft 4] [Terkirim 2] [Sebagian 1] [Lunas 12]
-────────────────────────────────────────────────────────
-```
-
-Container: `flex items-center border-b border-secondary-200 dark:border-dark-600`
-Active tab: `border-b-2 -mb-px border-primary-600 dark:border-primary-400 text-primary-700`
-Inactive tab: `border-transparent text-dark-500`, hover `text-dark-800 hover:border-dark-200`
-Badge (active): `bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300`
-Badge (inactive): `bg-zinc-100 dark:bg-dark-700 text-dark-500`
-
-Use for: status filtering on list pages (all / draft / sent / paid, etc.)
-
-### Date Mode Toggle (Bulan / Rentang)
-
-```
-[Bulan] [Rentang]
-```
-
-A pill-style switcher (smaller scale than full tab bar) placed inline above a `DatePicker`:
-- Container: `inline-flex p-0.5 bg-zinc-100 dark:bg-dark-700 rounded-lg border`
-- Active: `bg-white dark:bg-dark-800 shadow-sm border rounded-md text-xs`
-- Inactive: `text-dark-500 text-xs`, hover text-dark-700
-- Drives `period_mode` URL param (`month` | `range`); switching navigates and preserves all other filters
-
----
+**For the month/range switch**, place a smaller pill toggle inline above the `DatePicker`: container `inline-flex p-0.5 bg-zinc-100 dark:bg-dark-700 rounded-lg border`; active `bg-white dark:bg-dark-800 shadow-sm rounded-md text-xs`; inactive `text-dark-500 text-xs`. It drives the `period_mode` URL param (`month` | `range`) and must preserve all other filters when switched.
 
 ## Motion
 
-### Philosophy
+**Keep motion snappy and functional — transitions confirm state, they never entertain.** Stay in the 100–300ms range with Material-style easing and avoid theatrical entrances. Use three timings:
+- Fast — 150ms `ease-out` — tab reveals, shadow changes
+- Base — 200ms `cubic-bezier(0.4, 0, 0.2, 1)` — button hover, nav hover, card shadow
+- Modal — 300ms `cubic-bezier(0.4, 0, 0.2, 1)` — slide-over open/close, backdrop fade
 
-Snappy and functional — transitions confirm state, never entertain. 100–300ms range, Material-style easing. No theatrical entrance animations.
-
-### Timing Scale
-
-| Name | Duration | Easing | Used For |
-|------|----------|--------|---------|
-| `fast` | 150ms | `ease-out` | Tab reveal (x-transition), shadow |
-| `base` | 200ms | `cubic-bezier(0.4, 0, 0.2, 1)` | Button hover, nav hover, card shadow |
-| `modal` | 300ms | `cubic-bezier(0.4, 0, 0.2, 1)` | Slide-over open/close, backdrop fade |
-
-### Patterns
-
-- **Slide-over/Modal enter**: `transform transition-all`, slides + fades. Backdrop `transition-opacity`.
-- **Tab content**: `ease-out duration-150`, `opacity-0 translate-y-1` → `opacity-100 translate-y-0`.
-- **Card hover**: `hover:shadow-md transition-shadow` — shadow lifts, no movement.
-- **Livewire progress bar**: cyan `#2299dd` (not primary blue — intentionally distinct).
-
----
+Apply these patterns: slide-overs and modals enter with `transform transition-all` (slide + fade) while the backdrop runs `transition-opacity`; tab content reveals with `ease-out duration-150` from `opacity-0 translate-y-1` to `opacity-100 translate-y-0`; cards lift on hover via `hover:shadow-md transition-shadow` with no positional movement.
 
 ## Design Principles
 
-1. **Layout follows content type** — lists get tables; collections of similar items get card grids; detail views get slide-over drawers. No one-size-fits-all layout.
-
-2. **Dual-mode parity** — 10-stop `dark-*` scale (`#09090a` → `#fafafa`) with semantic stop assignments. Each surface layer has its own token: body / sidebar / card / input / border.
-
-3. **Two radii, always** — `rounded-xl` (12px) for containers; `rounded-md` (6px) for components. Enforced without exception.
-
-4. **Blue as a signal** — primary blue only for active states, CTAs, and focus. Passive UI is pure gray. Makes blue instantly meaningful.
-
-5. **Color encodes intent in forms** — the submit button color is semantic: green = income action, red = expense action, blue = neutral create. Users understand the direction before reading.
-
----
+- **Layout follows content type** — lists get tables, collections of similar items get card grids, detail views get slide-over drawers. There is no one-size-fits-all layout.
+- **Dual-mode parity** — every surface layer maps to its own stop on the 10-step `dark-*` scale (`#09090a` → `#fafafa`): body / sidebar / card / input / border.
+- **Two radii, always** — `rounded-xl` for containers, `rounded-md` for components, enforced without exception.
+- **Blue is a signal** — use primary blue only for active states, CTAs, and focus; keep passive UI pure gray so blue stays instantly meaningful.
+- **Color encodes intent in forms** — the submit button's color states the direction before the user reads it: green = income, red = expense, blue = neutral create.
 
 ## Implementation Notes
 
-**CSS custom property naming (verified):**
-- `--color-primary-{50-800}` — blue scale in hex
-- `--color-dark-{50-950}` — gray scale in hex
-- `--font-heading` — `"Plus Jakarta Sans", ui-sans-serif, ...`
-- `--font-sans` — `"Inter", ui-sans-serif, ...`
-- `--radius-{sm|md|lg|xl}` — 4px / 6px / 8px / 12px
+**CSS custom properties (verified naming):** `--color-primary-{50–800}` (blue scale, hex), `--color-dark-{50–950}` (gray scale, hex), `--font-heading` (`"Plus Jakarta Sans", …`), `--font-sans` (`"Inter", …`), `--radius-{sm|md|lg|xl}` (4 / 6 / 8 / 12px).
 
-**Stack:** Laravel + Livewire 3 + TallStackUI (production). Migration branch: Inertia.js + React 18 + shadcn/ui. Tokens unchanged.
+**Stack:** Laravel + Livewire 3 + TallStackUI in production; the migration branch is Inertia.js + React 18 + shadcn/ui. Tokens are identical across both.
 
-**Dark mode:** `class` strategy on `<html>`. Toggled via header button (moon icon), persisted to `localStorage`.
+**Dark mode** uses the `class` strategy on `<html>`, toggled by the header moon button and persisted to `localStorage`.
 
-**Tailwind v4:** Computed colors return OKLCH/OKLab. Custom props return hex. Use class names, not computed values, in new code.
+**Tailwind v4 note:** computed colors come back as OKLCH/OKLab while custom properties return hex. Always reference class names in new code, never computed values.
 
-**shadcn/ui token mapping (React migration):**
+**Map Archipelago tokens to shadcn/ui** when working in React:
+- `bg-card` ← `bg-white dark:bg-dark-700`
+- `bg-background` ← `bg-gray-50 dark:bg-dark-950`
+- `text-foreground` ← `text-dark-900 dark:text-dark-50`
+- `text-muted-foreground` ← `text-dark-600 dark:text-dark-400`
+- `border` ← `border-zinc-200 dark:border-white/8`
+- `primary` ← `primary-600` / `primary-500` (dark)
+- Override shadcn's default `rounded-md` to `rounded-xl` for containers
 
-| Archipelago | shadcn/ui |
-|------------|-----------|
-| `bg-white dark:bg-dark-700` | `bg-card` |
-| `bg-gray-50 dark:bg-dark-950` | `bg-background` |
-| `text-dark-900 dark:text-dark-50` | `text-foreground` |
-| `text-dark-600 dark:text-dark-400` | `text-muted-foreground` |
-| `border-zinc-200 dark:border-white/8` | `border` |
-| `primary-600` / `primary-500` (dark) | `primary` |
-| `rounded-xl` | override shadcn default (`rounded-md`) to `rounded-xl` |
-
-**Global cursor pointer (app.css):**
+**Cursor is global** — `app.css` already sets `cursor: pointer` on buttons, links, `[role="button"]`, `label[for]`, and `summary`. Do not add `cursor-pointer` to individual elements.
 ```css
 button:not(:disabled),
 a,
@@ -485,22 +161,19 @@ summary {
     cursor: pointer;
 }
 ```
-Applied globally — do not add `cursor-pointer` individually to every element.
 
-**Clickable table rows:** Add `onClick` + `cursor-pointer` to `<tr>`. Add `onClick={(e) => e.stopPropagation()}` to the actions cell to prevent row click from firing when the dropdown is used.
+**Make table rows clickable** by adding `onClick` + `cursor-pointer` to the `<tr>`, and `onClick={(e) => e.stopPropagation()}` to the actions cell so the row click doesn't fire when the dropdown is used.
 
-**Icon library:** Heroicons in Blade → `lucide-react` or `@heroicons/react` in React.
+**Icons:** Heroicons in Blade; `lucide-react` (or `@heroicons/react`) in React.
 
-**Gradient heading (React):**
+**Render the gradient page heading like this:**
 ```tsx
 <h1 className="text-4xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-indigo-800 dark:from-white dark:via-blue-200 dark:to-indigo-200 bg-clip-text text-transparent">
   Page Title
 </h1>
 ```
 
-**Stats card (React/shadcn) — current pattern:**
-
-Three-row vertical layout with colored top accent bar and tooltip.
+**Build stat cards** as a three-row vertical layout with a colored top accent bar and a tooltip, and wrap the grid in `<TooltipProvider delayDuration={300}>`:
 ```tsx
 <Tooltip>
   <TooltipTrigger asChild>
@@ -524,76 +197,50 @@ Three-row vertical layout with colored top accent bar and tooltip.
 </Tooltip>
 ```
 
-Wrap grid in `<TooltipProvider delayDuration={300}>`.
+Pick the accent + icon color by role: revenue/total → `bg-blue-500` / `text-blue-500`; profit/positive → `bg-emerald-500` (red if negative) / `text-emerald-500`; payments received → `bg-green-500` / `text-green-500`; count/quantity → `bg-purple-500` / `text-purple-500`.
 
-Accent bar colors per semantic role:
-| Role | Accent | Icon color |
-|------|--------|-----------|
-| Revenue / total | `bg-blue-500` | `text-blue-500` |
-| Profit / positive metric | `bg-emerald-500` (red if negative) | `text-emerald-500` |
-| Payments received | `bg-green-500` | `text-green-500` |
-| Count / quantity | `bg-purple-500` | `text-purple-500` |
-
-**Form modal submit button — semantic color by action:**
+**Color the form submit button by action:**
 ```tsx
 // Income action
 <Button className="bg-green-500 hover:bg-green-600 text-white">Simpan Pemasukan</Button>
-// Expense action  
+// Expense action
 <Button className="bg-red-600 hover:bg-red-700 text-white">Simpan Pengeluaran</Button>
 // Neutral create
 <Button>Buat Invoice</Button> {/* uses default primary */}
 ```
 
----
-
 ## React Component Catalog Compliance (MANDATORY)
 
-**CRITICAL RULE — enforce before writing any JSX form control:**
+**CRITICAL — check this before writing any interactive element in a React page.** Before you render a form control or UI primitive, consult the catalog in `CLAUDE.md` → "React Component Catalog". If a catalog component covers the case, **use it — no exceptions.** Write raw HTML or a custom component only when the catalog has no equivalent, and only after telling the user about the gap.
 
-Before writing ANY interactive element in a React page or component, check the catalog in `CLAUDE.md` → section "React Component Catalog". If a catalog component covers the use case, **use it — no exceptions**. Only write raw HTML or a custom component when the catalog has no equivalent AND after noting the gap to the user.
+This rule exists because every catalog component is pre-styled to Archipelago tokens (colors, radii, dark mode, error states); writing raw HTML duplicates that work and drifts out of sync. A past incident shipped `<input type="file">` and custom segmented buttons across nine forms that all had catalog equivalents (`FileUpload`, `SegmentedControl`).
 
-This rule exists because:
-- All catalog components are pre-styled to Archipelago tokens (colors, radii, dark mode, error states).
-- Writing raw HTML duplicates styling work and risks inconsistency across pages.
-- A past incident produced `<input type="file">` and custom segmented buttons across 9 forms that all had catalog equivalents (`FileUpload`, `SegmentedControl`).
+**Always substitute the catalog component for the raw element:**
+- Text / number input → `Input`, never raw `<input>`
+- Multi-line text → `Textarea`, never raw `<textarea>`
+- Rupiah / currency → `CurrencyInput`, never `Input` or `<input>`
+- Select from a list → `Combobox`, never `<select>` or shadcn's `Select` primitive
+- Single date → `DatePicker`, never `<input type="date">`
+- Date range → `DatePicker mode="range"`, never two separate pickers
+- On/off toggle → `Switch`, never a hand-styled checkbox
+- Yes / no checkbox → `Checkbox`, never raw `<input type="checkbox">`
+- File / attachment → `FileUpload`, never `<input type="file">` or a custom drop zone
+- Exclusive choice (radio / segment) → `SegmentedControl`, never a custom button group
+- Destructive confirm → `ConfirmDialog`, never `window.confirm()` or inline warnings
+- Page header → `PageHeader`, never raw `<h1>` + `<p>`
+- Stats card → `StatsCard` (`inModal` when inside a modal), never a custom card div
+- Form section heading → `FormSection`, never a raw `<h4>` divider
+- Data table → `DataTable`, never a raw `<table>`
+- Empty state → `EmptyState`, never custom conditional JSX
+- Pagination → `Pagination`, never custom prev / next buttons
+- Tabs → `Tabs` + `TabsPanel`, never custom pill buttons
+- Modal → `Dialog` + subcomponents, never a `<div>` overlay or raw `AlertDialog`
+- Dropdown menu → `DropdownMenu` + subcomponents, never hand-positioned menus
+- Tooltip → `TooltipProvider` + `Tooltip`, never the `title=""` attribute
+- Status label → `Badge` (pick the variant), never a `<span>` with hardcoded colors
+- Action button → `Button` (pick the variant), never raw `<button>`
 
-### Mandatory Substitution Table
-
-| If you want to render… | ✅ Use (catalog) | ❌ Never use |
-|------------------------|-----------------|-------------|
-| Text / number input | `Input` | `<input>` raw |
-| Multi-line text | `Textarea` | `<textarea>` raw |
-| Rupiah / currency amount | `CurrencyInput` | `Input`, `<input>` |
-| Dropdown / select from list | `Combobox` | `<select>`, `Select` (shadcn primitive) |
-| Date single | `DatePicker` | `<input type="date">`, plain calendar |
-| Date range | `DatePicker mode="range"` | two separate DatePickers |
-| On/off toggle | `Switch` | `<input type="checkbox">` styled manually |
-| Yes/no checkbox | `Checkbox` | `<input type="checkbox">` raw |
-| File / attachment upload | `FileUpload` | `<input type="file">`, custom drag-zone |
-| Exclusive choice (radio/segment) | `SegmentedControl` | custom `<button>` group, radio inputs |
-| Confirm destructive action | `ConfirmDialog` | `window.confirm()`, inline warning text |
-| Page header (title + description) | `PageHeader` | raw `<h1>` + `<p>` |
-| Stats card (main page) | `StatsCard` | custom card div |
-| Stats card (inside modal) | `StatsCard inModal={true}` | custom card div |
-| Form section heading | `FormSection` | raw `<h4>` divider |
-| Data table | `DataTable` | raw `<table>` |
-| Empty state | `EmptyState` | custom conditional JSX |
-| Pagination | `Pagination` | custom prev/next buttons |
-| Tab navigation | `Tabs` + `TabsPanel` | custom pill buttons |
-| Modal / dialog | `Dialog` + subcomponents | `<div>` overlay, `AlertDialog` raw |
-| Dropdown menu | `DropdownMenu` + subcomponents | custom positioned menus |
-| Tooltip | `TooltipProvider` + `Tooltip` | `title=""` attribute |
-| Status label / tag | `Badge` (pick variant) | custom `<span>` with hardcoded colors |
-| Action button | `Button` (pick variant) | `<button>` raw |
-
-### SegmentedControl — when to use
-
-`SegmentedControl` is the catalog component for any exclusive-choice UI (functionally equivalent to radio buttons):
-- `layout="stack"` — icon stacked above label, taller card; use for form fields where choices have semantic meaning (feedback type, priority level, transaction direction).
-- `layout="inline"` — single row, compact; use for compact in-line selectors (priority inline, status quick-select).
-- `columns` prop (2–6) sets the grid width.
-- `activeClassName` per option lets each choice have its own color (e.g. `bg-red-500` for "Bug" type).
-
+**Reach for `SegmentedControl` for any exclusive choice** (the radio-button replacement): use `layout="stack"` (icon above label, taller card) for form fields whose choices carry meaning (feedback type, priority, transaction direction); use `layout="inline"` (compact single row) for in-line selectors; set width with `columns` (2–6); and give each option its own color via `activeClassName`.
 ```tsx
 // Example — feedback type picker (stack, 3 cols, per-option color)
 const TYPE_OPTIONS: SegmentedOption<FeedbackType>[] = [
@@ -604,12 +251,7 @@ const TYPE_OPTIONS: SegmentedOption<FeedbackType>[] = [
 <SegmentedControl options={TYPE_OPTIONS} value={data.type} onChange={(v) => setData('type', v)} columns={3} layout="stack" label="Tipe *" error={errors.type} />
 ```
 
-### FileUpload — when to use
-
-`FileUpload` (`@/components/shared/file-upload`) replaces every file input across the app:
-- New form (no existing file): `<FileUpload value={data.file} onChange={(f) => setData('file', f)} accept={[...]} maxSizeMb={5} />`
-- Edit form (existing file already saved): add `existingFileName`, `existingFileUrl`, `onRemoveExisting` props so the user can see and optionally replace the current file.
-
+**Reach for `FileUpload` (`@/components/shared/file-upload`) for every file input.** In a new form pass `value` / `onChange` / `accept` / `maxSizeMb`; in an edit form also pass `existingFileName`, `existingFileUrl`, and `onRemoveExisting` so the saved file is visible and replaceable.
 ```tsx
 // Edit form with existing attachment
 <FileUpload
@@ -624,11 +266,4 @@ const TYPE_OPTIONS: SegmentedOption<FeedbackType>[] = [
 />
 ```
 
-### When the catalog has no equivalent
-
-If no catalog component covers the use case:
-1. Do **not** silently write a custom component inline.
-2. Note the gap to the user: "There is no catalog component for X — should I create a reusable `ComponentName` in `@/components/ui/` before using it here?"
-3. If the user agrees, create a properly styled, reusable component and add it to the CLAUDE.md catalog table before using it on any page.
-
-This prevents one-off custom UI from accumulating across the codebase.
+**When the catalog has no equivalent:** do not silently write custom inline UI. Tell the user ("There is no catalog component for X — should I create a reusable `ComponentName` in `@/components/ui/` first?"), and if they agree, build a properly styled, reusable component and add it to the CLAUDE.md catalog before using it anywhere. This keeps one-off UI from accumulating across the codebase.
