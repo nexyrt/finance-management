@@ -74,6 +74,39 @@ class ProfitLossServiceTest extends TestCase
         return $invoice;
     }
 
+    /**
+     * Helper: invoice with a regular item (with cogs) PLUS a tax-deposit item
+     * representing client tax money held in trust. total_amount = jasa + titipan.
+     */
+    private function makeInvoiceWithTitipan(int $jasaAmount, int $jasaCogs, int $titipan, string $issueDate = '2026-01-01'): Invoice
+    {
+        $invoice = Invoice::factory()->create([
+            'total_amount' => $jasaAmount + $titipan,
+            'issue_date' => $issueDate,
+            'status' => 'partially_paid',
+        ]);
+
+        InvoiceItem::factory()->create([
+            'invoice_id' => $invoice->id,
+            'quantity' => 1,
+            'unit_price' => $jasaAmount,
+            'amount' => $jasaAmount,
+            'cogs_amount' => $jasaCogs,
+            'is_tax_deposit' => false,
+        ]);
+
+        InvoiceItem::factory()->create([
+            'invoice_id' => $invoice->id,
+            'quantity' => 1,
+            'unit_price' => $titipan,
+            'amount' => $titipan,
+            'cogs_amount' => 0,
+            'is_tax_deposit' => true,
+        ]);
+
+        return $invoice;
+    }
+
     private function makePayment(Invoice $invoice, int $amount, string $paymentDate): Payment
     {
         return Payment::factory()->create([
@@ -262,6 +295,70 @@ class ProfitLossServiceTest extends TestCase
         $this->assertSame(0, $report['unclassified']['income']['total']);
         $this->assertSame(0, $report['unclassified']['expense']['total']);
         $this->assertSame(0, $report['net_profit']);
+    }
+
+    public function test_titipan_excluded_from_revenue_when_invoice_fully_paid(): void
+    {
+        // Konsultan pajak: invoice Rp 100.5jt (jasa Rp 100jt + titipan Rp 500rb), modal Rp 60jt
+        $invoice = $this->makeInvoiceWithTitipan(jasaAmount: 100_000_000, jasaCogs: 60_000_000, titipan: 500_000);
+        $this->makePayment($invoice, 100_500_000, '2026-01-15');
+
+        $report = $this->service->generate(Carbon::parse('2026-01-01'), Carbon::parse('2026-01-31'));
+
+        $this->assertSame(100_000_000, $report['revenue']['invoice'], 'Titipan Rp 500rb harus dikecualikan dari pendapatan');
+        $this->assertSame(60_000_000, $report['cogs']['invoice']);
+        $this->assertSame(40_000_000, $report['gross_profit']);
+    }
+
+    public function test_titipan_dulu_partial_payment_covers_titipan_first(): void
+    {
+        // Invoice Rp 100.5jt (jasa 100jt + titipan 500rb), modal 60jt
+        // Bayar Rp 300rb di bulan ini → semua nutup titipan, belum mulai recognize jasa
+        $invoice = $this->makeInvoiceWithTitipan(100_000_000, 60_000_000, 500_000);
+        $this->makePayment($invoice, 300_000, '2026-01-15');
+
+        $report = $this->service->generate(Carbon::parse('2026-01-01'), Carbon::parse('2026-01-31'));
+
+        $this->assertSame(0, $report['revenue']['invoice'], 'Pembayaran 300rb masih nutup titipan, belum ada pendapatan');
+        $this->assertSame(0, $report['cogs']['invoice']);
+        $this->assertSame(0, $report['gross_profit']);
+    }
+
+    public function test_titipan_dulu_across_period_boundary(): void
+    {
+        // Invoice 100.5jt (jasa 100jt + titipan 500rb), modal 60jt
+        // Jan: bayar 1jt → titipan lunas (500rb), sisa 500rb jadi pendapatan; cost-recovery: HPP 500rb diakui, laba 0
+        // Feb: bayar 99.5jt → semua pendapatan; HPP 59.5jt sisanya diakui, lalu 40jt laba kotor
+        $invoice = $this->makeInvoiceWithTitipan(100_000_000, 60_000_000, 500_000);
+        $this->makePayment($invoice, 1_000_000, '2026-01-15');
+        $this->makePayment($invoice, 99_500_000, '2026-02-15');
+
+        $jan = $this->service->generate(Carbon::parse('2026-01-01'), Carbon::parse('2026-01-31'));
+        $this->assertSame(500_000, $jan['revenue']['invoice']);
+        $this->assertSame(500_000, $jan['cogs']['invoice']);
+        $this->assertSame(0, $jan['gross_profit']);
+
+        $feb = $this->service->generate(Carbon::parse('2026-02-01'), Carbon::parse('2026-02-28'));
+        $this->assertSame(99_500_000, $feb['revenue']['invoice']);
+        $this->assertSame(59_500_000, $feb['cogs']['invoice']);
+        $this->assertSame(40_000_000, $feb['gross_profit']);
+
+        // Sanity check across both months — total revenue = jasa only, never the titipan
+        $this->assertSame(100_000_000, $jan['revenue']['invoice'] + $feb['revenue']['invoice']);
+        $this->assertSame(40_000_000, $jan['gross_profit'] + $feb['gross_profit']);
+    }
+
+    public function test_invoice_with_only_titipan_recognizes_nothing(): void
+    {
+        // Edge case: invoice yang isinya cuma titipan klien (jasa = 0)
+        $invoice = $this->makeInvoiceWithTitipan(jasaAmount: 0, jasaCogs: 0, titipan: 500_000);
+        $this->makePayment($invoice, 500_000, '2026-01-15');
+
+        $report = $this->service->generate(Carbon::parse('2026-01-01'), Carbon::parse('2026-01-31'));
+
+        $this->assertSame(0, $report['revenue']['invoice']);
+        $this->assertSame(0, $report['cogs']['invoice']);
+        $this->assertSame(0, $report['gross_profit']);
     }
 
     public function test_by_category_breakdown_includes_label_and_amount(): void

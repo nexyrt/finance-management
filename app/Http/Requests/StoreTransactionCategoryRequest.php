@@ -16,7 +16,7 @@ class StoreTransactionCategoryRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'type' => ['required', 'in:income,expense,adjustment,transfer'],
+            'type' => ['required', 'in:income,expense,financing,transfer,adjustment'],
             'pl_group' => ['nullable', Rule::in(TransactionCategory::PL_GROUPS)],
             'label' => ['required', 'string', 'max:255'],
             'parent_id' => ['nullable', 'exists:transaction_categories,id'],

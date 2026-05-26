@@ -13,13 +13,19 @@ use Illuminate\Support\Facades\DB;
  *
  * Policy (final, see .claude/context/laba-rugi.md):
  *  - Cash basis: revenue recognized when payment received.
- *  - Cost-recovery HPP timing: payments first cover invoice COGS until it is
- *    fully recovered, then the remainder is profit. HPP recognized to date
- *    for an invoice = MIN(paid_to_date, total_cogs).
+ *  - "Titipan dulu" allocation: incoming payments first cover any client tax
+ *    deposit (invoice_items.is_tax_deposit=true) before being recognized as
+ *    revenue. The tax-deposit portion is a passthrough — money the consultant
+ *    holds in trust to remit to the tax authority on the client's behalf —
+ *    and never appears in the P&L on the inflow side.
+ *  - Cost-recovery HPP timing: the post-titipan revenue portion first covers
+ *    invoice COGS until it is fully recovered, then the remainder is profit.
  *  - HPP also accepts MANUAL transactions (pl_group=cogs) for non-invoice
  *    sales. Anti-double-count rule is a data-entry discipline.
  *  - Categories drive expense/non-invoice income classification via pl_group.
- *  - financing/transfer category types are excluded entirely.
+ *  - financing/transfer category types are excluded entirely (this is where
+ *    tax-deposit disbursements should be categorized — e.g. "Titipan Pajak
+ *    Klien" with type=financing).
  *  - Unclassified income/expense surface in a separate bucket — they are NOT
  *    rolled into totals, so the user is forced to classify rather than
  *    silently mis-categorize.
@@ -33,11 +39,13 @@ class ProfitLossService
      */
     public function generate(Carbon $start, Carbon $end): array
     {
-        $invoiceRevenue = $this->revenueFromInvoices($start, $end);
+        $invoiceContrib = $this->invoiceContributions($start, $end);
+        $invoiceRevenue = $invoiceContrib['revenue'];
+        $invoiceCogs = $invoiceContrib['cogs'];
+
         $nonInvoiceRevenue = $this->transactionsByGroup('revenue', 'credit', $start, $end);
         $revenueTotal = $invoiceRevenue + $nonInvoiceRevenue['total'];
 
-        $invoiceCogs = $this->cogsFromInvoices($start, $end);
         $manualCogs = $this->transactionsByGroup('cogs', 'debit', $start, $end);
         $cogsTotal = $invoiceCogs + $manualCogs['total'];
 
@@ -86,23 +94,27 @@ class ProfitLossService
     }
 
     /**
-     * Cash revenue from invoices: sum of Payment.amount within the period.
-     */
-    private function revenueFromInvoices(Carbon $start, Carbon $end): int
-    {
-        return (int) Payment::whereBetween('payment_date', [$start->toDateString(), $end->toDateString()])
-            ->sum('amount');
-    }
-
-    /**
-     * Invoice COGS recognized in the period using the cost-recovery method:
-     * For each invoice, contribution = MIN(paid_through_end, total_cogs) − MIN(paid_through_start_prev, total_cogs).
+     * Per-invoice contribution to revenue and cost recovery in [start, end].
      *
-     * Only invoices that received at least one payment in [start, end] can
-     * contribute; invoices fully paid before the period have already had
-     * all their HPP recognized in earlier periods (delta = 0).
+     * Algorithm (see laba-rugi.md):
+     *   For each invoice that received a payment in the period:
+     *     paid_e     = SUM(payments WHERE payment_date <= end)
+     *     paid_s     = SUM(payments WHERE payment_date <  start)
+     *     titipan    = SUM(items WHERE is_tax_deposit=true).amount
+     *     revenue_e  = MAX(0, paid_e − titipan)        // titipan-dulu
+     *     revenue_s  = MAX(0, paid_s − titipan)
+     *     cogs_e     = MIN(revenue_e, total_cogs)      // cost-recovery
+     *     cogs_s     = MIN(revenue_s, total_cogs)
+     *     +revenue_in_period = revenue_e − revenue_s
+     *     +cogs_in_period    = cogs_e    − cogs_s
+     *
+     * Invoices fully paid before the period contribute 0 (deltas collapse).
+     * Invoices with no titipan reduce to the simple cost-recovery formula
+     * (revenue_e == paid_e), so behavior is backward compatible.
+     *
+     * @return array{revenue: int, cogs: int}
      */
-    private function cogsFromInvoices(Carbon $start, Carbon $end): int
+    private function invoiceContributions(Carbon $start, Carbon $end): array
     {
         $invoiceIds = Payment::query()
             ->whereBetween('payment_date', [$start->toDateString(), $end->toDateString()])
@@ -110,17 +122,17 @@ class ProfitLossService
             ->pluck('invoice_id');
 
         if ($invoiceIds->isEmpty()) {
-            return 0;
+            return ['revenue' => 0, 'cogs' => 0];
         }
 
         $invoices = Invoice::query()->whereIn('id', $invoiceIds)->with('items')->get();
 
-        $total = 0;
+        $totalRevenue = 0;
+        $totalCogs = 0;
+
         foreach ($invoices as $invoice) {
-            $totalCogs = (int) $invoice->total_cogs;
-            if ($totalCogs <= 0) {
-                continue;
-            }
+            $taxDeposit = (int) $invoice->items->where('is_tax_deposit', true)->sum('amount');
+            $invoiceCogs = (int) $invoice->total_cogs;
 
             $paidThroughEnd = (int) Payment::where('invoice_id', $invoice->id)
                 ->where('payment_date', '<=', $end->toDateString())
@@ -130,10 +142,18 @@ class ProfitLossService
                 ->where('payment_date', '<', $start->toDateString())
                 ->sum('amount');
 
-            $total += min($paidThroughEnd, $totalCogs) - min($paidThroughStartPrev, $totalCogs);
+            // "Titipan dulu": cover the client tax deposit before recognizing revenue.
+            $revenueThroughEnd = max(0, $paidThroughEnd - $taxDeposit);
+            $revenueThroughStartPrev = max(0, $paidThroughStartPrev - $taxDeposit);
+
+            $totalRevenue += $revenueThroughEnd - $revenueThroughStartPrev;
+
+            if ($invoiceCogs > 0) {
+                $totalCogs += min($revenueThroughEnd, $invoiceCogs) - min($revenueThroughStartPrev, $invoiceCogs);
+            }
         }
 
-        return $total;
+        return ['revenue' => $totalRevenue, 'cogs' => $totalCogs];
     }
 
     /**

@@ -58,7 +58,7 @@ const PL_GROUP_OPTIONS: Record<'income' | 'expense', { value: string; label: str
         { value: 'cogs', label: 'Harga Pokok (HPP)' },
         { value: 'opex', label: 'Beban Operasional' },
         { value: 'other_expense', label: 'Beban Lain' },
-        { value: 'tax', label: 'Pajak' },
+        { value: 'tax', label: 'Pajak Perusahaan' },
     ],
 };
 
@@ -233,11 +233,11 @@ function PdfDocument({ report, company }: { report: Report; company: Props['comp
 
                 {report.tax.total > 0 && (
                     <>
-                        <DocSectionTitle>Pajak</DocSectionTitle>
+                        <DocSectionTitle>Pajak Perusahaan</DocSectionTitle>
                         {report.tax.by_category.map((r) => (
                             <DocRow key={`tax-${r.category_id}`} indent label={r.category_label} amount={r.amount} />
                         ))}
-                        <DocRow label="Total Pajak" amount={report.tax.total} weight="medium" rule="top" />
+                        <DocRow label="Total Pajak Perusahaan" amount={report.tax.total} weight="medium" rule="top" />
                     </>
                 )}
 

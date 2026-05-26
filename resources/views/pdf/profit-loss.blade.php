@@ -157,9 +157,9 @@
             <td class="amount">{{ $rp($report['pre_tax_profit']) }}</td>
         </tr>
 
-        {{-- PAJAK --}}
+        {{-- PAJAK PERUSAHAAN --}}
         @if ($report['tax']['total'] > 0)
-            <tr><td colspan="2"><div class="section-title">Pajak</div></td></tr>
+            <tr><td colspan="2"><div class="section-title">Pajak Perusahaan</div></td></tr>
             @foreach ($report['tax']['by_category'] as $row)
                 <tr>
                     <td class="label indent">{{ $row['category_label'] }}</td>
@@ -167,7 +167,7 @@
                 </tr>
             @endforeach
             <tr class="subtotal">
-                <td class="label">Total Pajak</td>
+                <td class="label">Total Pajak Perusahaan</td>
                 <td class="amount">{{ $rp($report['tax']['total']) }}</td>
             </tr>
         @endif

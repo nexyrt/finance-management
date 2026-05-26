@@ -82,11 +82,12 @@ interface Props extends SharedProps {
 
 /* ─────────────────────────────────── helpers ─── */
 
-const TYPE_CONFIG: Record<string, { label: string; color: 'green' | 'red' | 'blue' | 'purple' }> = {
+const TYPE_CONFIG: Record<string, { label: string; color: 'green' | 'red' | 'blue' | 'purple' | 'orange' }> = {
     income: { label: 'Pemasukan', color: 'green' },
     expense: { label: 'Pengeluaran', color: 'red' },
-    adjustment: { label: 'Penyesuaian', color: 'blue' },
+    financing: { label: 'Pendanaan', color: 'orange' },
     transfer: { label: 'Transfer', color: 'purple' },
+    adjustment: { label: 'Penyesuaian', color: 'blue' },
 };
 
 /** Maps a category to a Laba Rugi (P&L) line. Only relevant for income/expense. */
@@ -96,7 +97,7 @@ const PL_GROUP_CONFIG: Record<string, { label: string; type: 'income' | 'expense
     cogs: { label: 'Harga Pokok (HPP)', type: 'expense' },
     opex: { label: 'Beban Operasional', type: 'expense' },
     other_expense: { label: 'Beban Lain', type: 'expense' },
-    tax: { label: 'Pajak', type: 'expense' },
+    tax: { label: 'Pajak Perusahaan', type: 'expense' },
 };
 
 /* ─────────────────────────────────── category form ─── */

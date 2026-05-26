@@ -609,7 +609,7 @@ function InvoiceDrawer({
                                                     <td className="px-3 py-2.5">
                                                         <div className="font-medium text-dark-900 dark:text-dark-50">{item.service_name}</div>
                                                         {item.is_tax_deposit && (
-                                                            <span className="text-xs text-yellow-600 dark:text-yellow-400">PPh / Titipan Pajak</span>
+                                                            <span className="text-xs text-yellow-600 dark:text-yellow-400">Titipan Pajak Klien</span>
                                                         )}
                                                     </td>
                                                     <td className="px-3 py-2.5 text-right text-dark-600 dark:text-dark-400">
