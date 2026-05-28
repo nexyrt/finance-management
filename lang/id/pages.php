@@ -484,11 +484,16 @@ return [
 
     // Bank Accounts - Sidebar & Layout
     'monthly_summary' => 'Ringkasan Bulanan',
+    'overall_summary' => 'Ringkasan Total',
     'income_vs_expense' => 'Pemasukan vs Pengeluaran',
     'category_breakdown' => 'Kategori Pengeluaran',
     'this_month_expenses' => 'Pengeluaran bulan ini',
     'expenses_period' => 'Pengeluaran :period',
+    'expenses_all_time' => 'Pengeluaran Semua Waktu',
     'stats_period' => 'Periode: :period',
+    'all_time' => 'Semua Waktu',
+    'all_months' => 'Semua Bulan',
+    'reset_to_auto' => 'Reset ke otomatis',
     'no_category_data' => 'Belum ada data kategori',
     'trending_up' => 'Naik',
     'trending_down' => 'Turun',
@@ -672,6 +677,7 @@ return [
     'bulk_delete_confirm_title' => 'Hapus :count transaksi?',
     'bulk_delete_confirm_message' => 'Data transaksi yang dihapus tidak dapat dikembalikan.',
     'bulk_delete_success' => ':count transaksi berhasil dihapus',
+    'transaction_updated_successfully' => 'Transaksi berhasil diperbarui',
 
     // Transactions - Bulk Actions
     'bulk_selected' => ' transaksi dipilih',

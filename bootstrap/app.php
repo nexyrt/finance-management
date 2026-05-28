@@ -17,9 +17,10 @@ return Application::configure(basePath: dirname(__DIR__))
             'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
         ]);
 
-        // Add SetLocale middleware to web group
+        // Add SetLocale and HandleInertiaRequests to web group
         $middleware->web(append: [
             \App\Http\Middleware\SetLocale::class,
+            \App\Http\Middleware\HandleInertiaRequests::class,
         ]);
     })
     // bootstrap/app.php

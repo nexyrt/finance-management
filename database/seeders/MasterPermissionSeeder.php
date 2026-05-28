@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
+use Spatie\Permission\PermissionRegistrar;
 
 class MasterPermissionSeeder extends Seeder
 {
@@ -15,7 +16,7 @@ class MasterPermissionSeeder extends Seeder
     public function run(): void
     {
         // Clear cache
-        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+        app()[PermissionRegistrar::class]->forgetCachedPermissions();
 
         $this->command->info('🚀 Starting Master Permission Seeder...');
         $this->command->newLine();
@@ -169,6 +170,9 @@ class MasterPermissionSeeder extends Seeder
             'delete feedbacks',
             'respond feedbacks',
             'manage feedbacks',
+
+            // Reports
+            'view profit-loss',
         ];
 
         $newCount = 0;
@@ -297,6 +301,9 @@ class MasterPermissionSeeder extends Seeder
             'delete feedbacks',
             'respond feedbacks',
             'manage feedbacks',
+
+            // Reports
+            'view profit-loss',
         ];
 
         $financeManager->syncPermissions($financeManagerPermissions);

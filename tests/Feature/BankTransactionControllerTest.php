@@ -1,0 +1,206 @@
+<?php
+
+namespace Tests\Feature;
+
+use App\Models\BankAccount;
+use App\Models\BankTransaction;
+use App\Models\TransactionCategory;
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\PermissionRegistrar;
+use Tests\TestCase;
+
+class BankTransactionControllerTest extends TestCase
+{
+    use RefreshDatabase;
+
+    protected User $admin;
+
+    protected BankAccount $account;
+
+    protected TransactionCategory $category;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        app()[PermissionRegistrar::class]->forgetCachedPermissions();
+
+        $permissions = [
+            'view bank-accounts', 'create transactions', 'edit transactions', 'delete transactions',
+        ];
+        foreach ($permissions as $perm) {
+            Permission::firstOrCreate(['name' => $perm]);
+        }
+
+        $adminRole = Role::firstOrCreate(['name' => 'admin']);
+        $adminRole->syncPermissions($permissions);
+
+        $this->admin = User::factory()->create();
+        $this->admin->assignRole('admin');
+
+        $this->account = BankAccount::factory()->create(['initial_balance' => 0]);
+        $this->category = TransactionCategory::create(['type' => 'income', 'label' => 'Pendapatan']);
+    }
+
+    public function test_store_credit_transaction_increases_balance(): void
+    {
+        $initial = $this->account->balance;
+
+        $this->actingAs($this->admin)->post('/bank-transactions', [
+            'bank_account_id' => $this->account->id,
+            'category_id' => $this->category->id,
+            'amount' => 1000000,
+            'transaction_date' => '2026-03-10',
+            'transaction_type' => 'credit',
+            'description' => 'Penerimaan pembayaran klien',
+        ]);
+
+        $this->assertDatabaseHas('bank_transactions', [
+            'bank_account_id' => $this->account->id,
+            'amount' => 1000000,
+            'transaction_type' => 'credit',
+        ]);
+
+        $this->assertSame($initial + 1000000, $this->account->fresh()->balance);
+    }
+
+    public function test_store_debit_transaction_decreases_balance(): void
+    {
+        $creditCat = TransactionCategory::create(['type' => 'expense', 'label' => 'Pengeluaran']);
+        $this->account->transactions()->create([
+            'category_id' => $creditCat->id,
+            'amount' => 2000000,
+            'transaction_date' => '2026-03-01',
+            'transaction_type' => 'credit',
+            'description' => 'Saldo awal',
+        ]);
+
+        $balanceBefore = $this->account->fresh()->balance;
+
+        $this->actingAs($this->admin)->post('/bank-transactions', [
+            'bank_account_id' => $this->account->id,
+            'category_id' => $creditCat->id,
+            'amount' => 500000,
+            'transaction_date' => '2026-03-10',
+            'transaction_type' => 'debit',
+            'description' => 'Biaya operasional',
+        ]);
+
+        $this->assertSame($balanceBefore - 500000, $this->account->fresh()->balance);
+    }
+
+    public function test_store_requires_create_transactions_permission(): void
+    {
+        $noPermUser = User::factory()->create();
+
+        $this->actingAs($noPermUser)->post('/bank-transactions', [
+            'bank_account_id' => $this->account->id,
+            'category_id' => $this->category->id,
+            'amount' => 100000,
+            'transaction_date' => '2026-03-10',
+            'transaction_type' => 'credit',
+            'description' => 'Unauthorized',
+        ])->assertForbidden();
+
+        $this->assertDatabaseMissing('bank_transactions', ['description' => 'Unauthorized']);
+    }
+
+    public function test_store_validates_required_fields(): void
+    {
+        $this->actingAs($this->admin)
+            ->postJson('/bank-transactions', [])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['bank_account_id', 'category_id', 'amount', 'transaction_date', 'transaction_type', 'description']);
+    }
+
+    public function test_destroy_deletes_transaction(): void
+    {
+        $tx = BankTransaction::factory()->create([
+            'bank_account_id' => $this->account->id,
+            'transaction_type' => 'credit',
+        ]);
+
+        $this->actingAs($this->admin)->delete("/bank-transactions/{$tx->id}");
+
+        $this->assertDatabaseMissing('bank_transactions', ['id' => $tx->id]);
+    }
+
+    public function test_transfer_creates_debit_and_credit_pair(): void
+    {
+        $fromAccount = BankAccount::factory()->create(['initial_balance' => 0]);
+        $toAccount = BankAccount::factory()->create(['initial_balance' => 0]);
+        $transferCat = TransactionCategory::create(['type' => 'transfer', 'label' => 'Transfer Internal']);
+
+        $fromAccount->transactions()->create([
+            'category_id' => $transferCat->id,
+            'amount' => 5000000,
+            'transaction_date' => '2026-03-01',
+            'transaction_type' => 'credit',
+            'description' => 'Saldo awal from',
+        ]);
+
+        $fromBefore = $fromAccount->fresh()->balance;
+        $toBefore = $toAccount->fresh()->balance;
+
+        $this->actingAs($this->admin)->post('/bank-transactions/transfer', [
+            'from_account_id' => $fromAccount->id,
+            'to_account_id' => $toAccount->id,
+            'category_id' => $transferCat->id,
+            'amount' => 1000000,
+            'admin_fee' => 10000,
+            'description' => 'Transfer ke kas',
+            'transfer_date' => '2026-03-10',
+        ]);
+
+        $this->assertSame($fromBefore - 1010000, $fromAccount->fresh()->balance);
+        $this->assertSame($toBefore + 1000000, $toAccount->fresh()->balance);
+
+        $this->assertDatabaseHas('bank_transactions', [
+            'bank_account_id' => $fromAccount->id,
+            'amount' => 1010000,
+            'transaction_type' => 'debit',
+        ]);
+
+        $this->assertDatabaseHas('bank_transactions', [
+            'bank_account_id' => $toAccount->id,
+            'amount' => 1000000,
+            'transaction_type' => 'credit',
+        ]);
+    }
+
+    public function test_transfer_requires_different_accounts(): void
+    {
+        $cat = TransactionCategory::create(['type' => 'transfer', 'label' => 'TRF']);
+
+        $this->actingAs($this->admin)
+            ->postJson('/bank-transactions/transfer', [
+                'from_account_id' => $this->account->id,
+                'to_account_id' => $this->account->id,
+                'category_id' => $cat->id,
+                'amount' => 100000,
+                'admin_fee' => 0,
+                'description' => 'Same account transfer',
+                'transfer_date' => '2026-03-10',
+            ])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors('from_account_id');
+    }
+
+    public function test_bulk_destroy_deletes_multiple_transactions(): void
+    {
+        $tx1 = BankTransaction::factory()->create(['bank_account_id' => $this->account->id]);
+        $tx2 = BankTransaction::factory()->create(['bank_account_id' => $this->account->id]);
+        $tx3 = BankTransaction::factory()->create(['bank_account_id' => $this->account->id]);
+
+        $this->actingAs($this->admin)->post('/bank-transactions/bulk-delete', [
+            'ids' => [$tx1->id, $tx2->id],
+        ]);
+
+        $this->assertDatabaseMissing('bank_transactions', ['id' => $tx1->id]);
+        $this->assertDatabaseMissing('bank_transactions', ['id' => $tx2->id]);
+        $this->assertDatabaseHas('bank_transactions', ['id' => $tx3->id]);
+    }
+}

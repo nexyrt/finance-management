@@ -1,9 +1,12 @@
-import {
-    defineConfig,
-    loadEnv
-} from 'vite';
+import { defineConfig, loadEnv } from 'vite';
 import laravel from 'laravel-vite-plugin';
-import tailwindcss from "@tailwindcss/vite";
+import tailwindcss from '@tailwindcss/vite';
+import react from '@vitejs/plugin-react';
+import { wayfinder } from '@laravel/vite-plugin-wayfinder';
+import { fileURLToPath } from 'url';
+import path from 'path';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig(({ mode }) => {
     const env = loadEnv(mode, process.cwd(), '');
@@ -12,25 +15,26 @@ export default defineConfig(({ mode }) => {
     return {
         plugins: [
             laravel({
-                input: ['resources/css/app.css', 'resources/js/app.js'],
+                input: [
+                    'resources/css/app.css',
+                    'resources/js/inertia.tsx',
+                ],
+                refresh: true,
             }),
+            react(),
+            wayfinder(),
             tailwindcss(),
         ],
-        content: [
-            './vendor/masmerise/livewire-toaster/resources/views/*.blade.php',
-        ],
-        // server: {
-        //     cors: true,
-        //     host: '0.0.0.0',
-        //     hmr: {
-        //         host: hmrHost || 'localhost',
-        //     },
-        //     ...(hmrHost ? {
-        //         origin: `http://${hmrHost}:5173`,
-        //     } : {}),
-        // },
+        server: {
+            host: '127.0.0.1',
+        },
         build: {
             chunkSizeWarningLimit: 1500,
+        },
+        resolve: {
+            alias: {
+                '@': path.resolve(__dirname, './resources/js'),
+            },
         },
     };
 });
