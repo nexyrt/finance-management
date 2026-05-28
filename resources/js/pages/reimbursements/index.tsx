@@ -2,7 +2,6 @@ import { Head, router, useForm } from '@inertiajs/react';
 import {
     CheckCircle,
     Clock,
-
     Edit,
     FileText,
     Filter,
@@ -19,6 +18,13 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Combobox } from '@/components/ui/combobox';
 import { DatePicker } from '@/components/ui/date-picker';
+import {
+    Dialog,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import {
     Sheet,
@@ -41,14 +47,6 @@ import { Pagination } from '@/components/shared/pagination';
 import { AppLayout } from '@/layouts/app-layout';
 import { cn, formatCurrency, formatDate } from '@/lib/utils';
 import * as reimbursementRoutes from '@/routes/reimbursements';
-import {
-    Dialog,
-    DialogContent,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-} from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
 import type {
     FilterOption,
     PaginationMeta,
@@ -125,7 +123,7 @@ export default function ReimbursementsIndex({
     // Pay dialog
     const [payRow, setPayRow] = React.useState<ReimbursementRow | null>(null);
     const [payBankAccountId, setPayBankAccountId] = React.useState<number | null>(null);
-    const [payDate, setPayDate] = React.useState(new Date().toISOString().slice(0, 10));
+    const [payDate, setPayDate] = React.useState<Date | null>(new Date());
     const [payAmount, setPayAmount] = React.useState(0);
     const [payNotes, setPayNotes] = React.useState('');
     const [payProcessing, setPayProcessing] = React.useState(false);
@@ -239,7 +237,7 @@ export default function ReimbursementsIndex({
             reimbursementRoutes.pay.url({ reimbursement: payRow.id }),
             {
                 bank_account_id: payBankAccountId,
-                payment_date: payDate,
+                payment_date: payDate ? payDate.toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10),
                 payment_amount: payAmount,
                 reference_notes: payNotes || undefined,
             },
@@ -250,6 +248,7 @@ export default function ReimbursementsIndex({
                     setPayRow(null);
                     setDetailRow(null);
                     setPayBankAccountId(null);
+                    setPayAmount(0);
                     setPayNotes('');
                 },
                 onError: () => toast.error('Gagal memproses pembayaran'),
@@ -261,7 +260,7 @@ export default function ReimbursementsIndex({
     const openPayDialog = (row: ReimbursementRow) => {
         setPayRow(row);
         setPayAmount(row.amount_remaining);
-        setPayDate(new Date().toISOString().slice(0, 10));
+        setPayDate(new Date());
         setPayBankAccountId(null);
         setPayNotes('');
     };
@@ -662,6 +661,7 @@ export default function ReimbursementsIndex({
                                 value={reviewCategoryId}
                                 onChange={(v) => setReviewCategoryId(v ? Number(v) : null)}
                                 placeholder="Pilih kategori untuk akuntansi"
+                                clearable={false}
                             />
                         )}
                         <Textarea
@@ -707,16 +707,15 @@ export default function ReimbursementsIndex({
                             value={payBankAccountId}
                             onChange={(v) => setPayBankAccountId(v ? Number(v) : null)}
                             placeholder="Pilih rekening"
+                            clearable={false}
                         />
-                        <div>
-                            <Label>Tanggal Pembayaran *</Label>
-                            <Input
-                                type="date"
-                                value={payDate}
-                                onChange={(e) => setPayDate(e.target.value)}
-                                max={new Date().toISOString().slice(0, 10)}
-                            />
-                        </div>
+                        <DatePicker
+                            label="Tanggal Pembayaran *"
+                            value={payDate}
+                            onChange={setPayDate}
+                            maxDate={new Date()}
+                            clearable={false}
+                        />
                         <CurrencyInput
                             label="Jumlah Pembayaran *"
                             value={payAmount}
@@ -735,7 +734,7 @@ export default function ReimbursementsIndex({
                             variant="green"
                             size="sm"
                             onClick={handlePay}
-                            disabled={payProcessing || !payBankAccountId || payAmount <= 0}
+                            disabled={payProcessing || !payBankAccountId || payAmount <= 0 || !payDate}
                         >
                             Proses Pembayaran
                         </Button>

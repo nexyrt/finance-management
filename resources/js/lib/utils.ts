@@ -14,6 +14,18 @@ export function parseCurrency(value: string): number {
     return parseInt(value.replace(/[^0-9]/g, ''), 10) || 0;
 }
 
+/**
+ * Convert a Date object to "YYYY-MM-DD" using LOCAL timezone.
+ * Fixes the UTC offset bug where toISOString() shifts the date back 1 day
+ * for timezones east of UTC (e.g. WIB = UTC+7).
+ */
+export function toLocalIso(date: Date): string {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+}
+
 export function formatDate(dateString: string, locale = 'id-ID'): string {
     return new Date(dateString).toLocaleDateString(locale, {
         day: '2-digit',

@@ -216,7 +216,14 @@
       "Skill(frontend-design)",
       "Skill(frontend-design:*)",
       "Bash(Get-ChildItem -Path \"d:\\\\Laravel\\\\finance-management\\\\app\\\\Livewire\" -Recurse -Name)",
-      "Bash(Select-Object -First 20)"
+      "Bash(Select-Object -First 20)",
+      "Bash(findstr \":80 \\\\|:8000 \\\\|:8080 \")",
+      "Bash(findstr LISTENING)",
+      "Read(//c/Users/Lenovo/AppData/Local/Temp/**)",
+      "Bash(./vendor/bin/pint app/Http/Controllers/ReimbursementController.php --format agent)"
+    ],
+    "additionalDirectories": [
+      "C:\\Users\\Lenovo\\AppData\\Local\\Temp"
     ]
   },
   "enableAllProjectMcpServers": true,

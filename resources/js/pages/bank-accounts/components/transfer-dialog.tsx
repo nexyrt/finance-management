@@ -16,6 +16,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { CurrencyInput } from '@/components/shared/currency-input';
 import { FileUpload } from '@/components/shared/file-upload';
+import { toLocalIso } from '@/lib/utils';
 import * as bankTransactionsRoutes from '@/routes/bank-transactions';
 import type { AccountListItem, CategoryOption } from '../types';
 
@@ -39,7 +40,7 @@ interface FormShape {
 }
 
 function todayIso() {
-    return new Date().toISOString().slice(0, 10);
+    return toLocalIso(new Date());
 }
 
 export function TransferDialog({ open, onOpenChange, accounts, fromAccountId }: Props) {
@@ -180,8 +181,9 @@ export function TransferDialog({ open, onOpenChange, accounts, fromAccountId }: 
                             <DatePicker
                                 mode="single"
                                 label="Tanggal *"
-                                value={data.transfer_date ? new Date(data.transfer_date) : null}
-                                onChange={(d) => setData('transfer_date', d ? d.toISOString().slice(0, 10) : '')}
+                                value={data.transfer_date ? new Date(data.transfer_date + 'T00:00:00') : null}
+                                onChange={(d) => setData('transfer_date', d ? toLocalIso(d) : '')}
+                                clearable={false}
                                 error={errors.transfer_date}
                             />
                         </div>

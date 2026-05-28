@@ -85,6 +85,11 @@ exportPdfc0e77c6c9234ceadf550c4a94b783a03.head = (options?: RouteQueryOptions): 
     method: 'head',
 })
 
+/**
+* Multiple routes resolve to \App\Http\Controllers\CashFlowExportController::exportPdf, so this export is a
+* dictionary keyed by URI rather than a callable. Call a specific route with `exportPdf['<uri>'](...)`,
+* or import the route by name from your generated `routes/` directory.
+*/
 export const exportPdf = {
     '/bank-account/export/pdf': exportPdf5c3245070552335381f3c23fab34af06,
     '/cash-flow/export/pdf': exportPdfc0e77c6c9234ceadf550c4a94b783a03,
@@ -176,6 +181,11 @@ previewPdf30b141321f62b9f10d739606bd67f5d9.head = (options?: RouteQueryOptions):
     method: 'head',
 })
 
+/**
+* Multiple routes resolve to \App\Http\Controllers\CashFlowExportController::previewPdf, so this export is a
+* dictionary keyed by URI rather than a callable. Call a specific route with `previewPdf['<uri>'](...)`,
+* or import the route by name from your generated `routes/` directory.
+*/
 export const previewPdf = {
     '/bank-account/export/pdf/preview': previewPdfd6236da67381a26ae3e1ccb60107fb18,
     '/cash-flow/export/pdf/preview': previewPdf30b141321f62b9f10d739606bd67f5d9,

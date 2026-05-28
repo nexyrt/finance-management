@@ -99,7 +99,7 @@ SheetBody.displayName = 'SheetBody';
 const SheetFooter = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
     <div
         className={cn(
-            'flex items-center justify-between gap-3 px-6 py-4 border-t border-secondary-200 dark:border-dark-600 shrink-0',
+            'flex items-center justify-end gap-3 px-6 py-4 border-t border-secondary-200 dark:border-dark-600 shrink-0',
             className,
         )}
         {...props}

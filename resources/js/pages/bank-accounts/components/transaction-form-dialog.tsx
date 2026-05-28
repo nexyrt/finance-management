@@ -18,6 +18,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { CurrencyInput } from '@/components/shared/currency-input';
 import { FileUpload } from '@/components/shared/file-upload';
 import { QuickAddCategoryDialog, type QuickAddCategoryResult } from '@/components/shared/quick-add-category-dialog';
+import { toLocalIso } from '@/lib/utils';
 import * as bankTransactionsRoutes from '@/routes/bank-transactions';
 import type { AccountListItem, CategoryOption } from '../types';
 
@@ -41,8 +42,17 @@ interface FormShape {
     attachment: File | null;
 }
 
-function todayIso() {
-    return new Date().toISOString().slice(0, 10);
+function emptyForm(accountId: number, type: 'credit' | 'debit'): FormShape {
+    return {
+        bank_account_id: accountId,
+        category_id: null,
+        amount: 0,
+        transaction_date: toLocalIso(new Date()),
+        transaction_type: type,
+        description: '',
+        reference_number: '',
+        attachment: null,
+    };
 }
 
 export function TransactionFormDialog({ open, onOpenChange, accountId, accounts, type }: Props) {
@@ -68,29 +78,14 @@ export function TransactionFormDialog({ open, onOpenChange, accountId, accounts,
         setQuickAddOpen(false);
     };
 
-    const { data, setData, post, processing, errors, reset, clearErrors } = useForm<FormShape>({
-        bank_account_id: accountId,
-        category_id: null,
-        amount: 0,
-        transaction_date: todayIso(),
-        transaction_type: type,
-        description: '',
-        reference_number: '',
-        attachment: null,
-    });
+    const { data, setData, post, processing, errors, clearErrors } = useForm<FormShape>(
+        emptyForm(accountId, type),
+    );
 
+    // Reset form when dialog opens, or when accountId/type changes while open
     React.useEffect(() => {
         if (open) {
-            setData({
-                bank_account_id: accountId,
-                category_id: null,
-                amount: 0,
-                transaction_date: todayIso(),
-                transaction_type: type,
-                description: '',
-                reference_number: '',
-                attachment: null,
-            });
+            setData(emptyForm(accountId, type));
             clearErrors();
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -116,15 +111,16 @@ export function TransactionFormDialog({ open, onOpenChange, accountId, accounts,
         disabled: c.disabled,
     }));
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         post(bankTransactionsRoutes.store.url(), {
             forceFormData: true,
             preserveScroll: true,
             onSuccess: () => {
                 toast.success(isIncome ? 'Pemasukan berhasil dicatat' : 'Pengeluaran berhasil dicatat');
-                onOpenChange(false);
-                reset();
+                // Jangan tutup modal — reset field saja agar bisa input berikutnya
+                setData(emptyForm(accountId, type));
+                clearErrors();
             },
             onError: () => {
                 toast.error('Periksa kembali isian form');
@@ -179,6 +175,7 @@ export function TransactionFormDialog({ open, onOpenChange, accountId, accounts,
                                 value={data.bank_account_id}
                                 onChange={(v) => setData('bank_account_id', Number(v))}
                                 placeholder="Pilih rekening"
+                                clearable={false}
                                 error={errors.bank_account_id}
                             />
 
@@ -215,8 +212,9 @@ export function TransactionFormDialog({ open, onOpenChange, accountId, accounts,
                             <DatePicker
                                 mode="single"
                                 label="Tanggal *"
-                                value={data.transaction_date ? new Date(data.transaction_date) : null}
-                                onChange={(d) => setData('transaction_date', d ? d.toISOString().slice(0, 10) : '')}
+                                value={data.transaction_date ? new Date(data.transaction_date + 'T00:00:00') : null}
+                                onChange={(d) => setData('transaction_date', d ? toLocalIso(d) : '')}
+                                clearable={false}
                                 error={errors.transaction_date}
                             />
                         </div>
@@ -273,7 +271,7 @@ export function TransactionFormDialog({ open, onOpenChange, accountId, accounts,
                         disabled={processing}
                         className="w-full sm:w-auto order-2 sm:order-1"
                     >
-                        Batal
+                        Tutup
                     </Button>
                     <Button
                         type="submit"

@@ -337,7 +337,7 @@ class ReimbursementController extends Controller
                 'transaction_type' => 'debit',
                 'category_id' => $reimbursement->category_id,
                 'description' => "{$paymentType} Reimbursement: {$reimbursement->title} - {$reimbursement->user->name}",
-                'reference_number' => $validated['reference_notes'],
+                'reference_number' => $validated['reference_notes'] ?? null,
             ]);
 
             $reimbursement->recordPayment(
@@ -345,7 +345,7 @@ class ReimbursementController extends Controller
                 bankTransactionId: $transaction->id,
                 payerId: auth()->id(),
                 paymentDate: $validated['payment_date'],
-                notes: $validated['reference_notes']
+                notes: $validated['reference_notes'] ?? null
             );
         });
 
