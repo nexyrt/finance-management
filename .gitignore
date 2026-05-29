@@ -25,5 +25,12 @@ public/run-migration.php
 composer.lock
 /resources/js/ziggy.js
 
+# Wayfinder generated route/action helpers — regenerated on every
+# `npm run build`/`npm run dev` by the @laravel/vite-plugin-wayfinder
+# plugin. Tracking them caused recurring `git pull` conflicts on deploy.
+/resources/js/actions/
+/resources/js/routes/
+/resources/js/wayfinder/
+
 # Playwright MCP output (snapshots, screenshots, logs)
 /.playwright-mcp/
