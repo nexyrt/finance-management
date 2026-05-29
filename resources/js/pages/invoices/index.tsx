@@ -1,8 +1,11 @@
 import { Head, router, useForm } from '@inertiajs/react';
 import {
+    AlertCircle,
     ArrowUpDown,
     CheckCircle2,
+    Download,
     Eye,
+    FileSpreadsheet,
     FileText,
     MoreHorizontal,
     Pencil,
@@ -100,6 +103,7 @@ interface Stats {
     total_cogs: number;
     gross_profit: number;
     paid_this_month: number;
+    total_outstanding: number;
     draft_count: number;
     sent_count: number;
     partially_paid_count: number;
@@ -1028,11 +1032,11 @@ const STATS_CONFIG = [
         icon: <CheckCircle2 className="w-5 h-5" />,
     },
     {
-        key: 'count',
-        label: 'Total Invoice',
-        accent: 'bg-purple-500',
-        iconCn: 'text-purple-500 dark:text-purple-400',
-        icon: <FileText className="w-5 h-5" />,
+        key: 'outstanding',
+        label: 'Outstanding',
+        accent: 'bg-amber-500',
+        iconCn: 'text-amber-500 dark:text-amber-400',
+        icon: <AlertCircle className="w-5 h-5" />,
     },
 ] as const;
 
@@ -1094,6 +1098,25 @@ function InvoicesPage({ invoices, stats, clients, rollbackableIds, filters }: Pr
             preserveScroll: true,
             replace: true,
         });
+    };
+
+    /* Build an export URL carrying the active filters so the recap matches the listing. */
+    const buildExportUrl = (format: 'excel' | 'pdf'): string => {
+        const params = new URLSearchParams();
+        if (currentFilters.search) params.set('search', currentFilters.search);
+        if (currentFilters.status) params.set('status', currentFilters.status);
+        if (currentFilters.period_mode) params.set('period_mode', currentFilters.period_mode);
+        if (currentFilters.period_mode === 'range') {
+            if (currentFilters.date_from) params.set('date_from', currentFilters.date_from);
+            if (currentFilters.date_to) params.set('date_to', currentFilters.date_to);
+        } else if (currentFilters.month) {
+            params.set('month', currentFilters.month);
+        }
+        (currentFilters.client_ids ?? []).forEach((id) => params.append('client_ids[]', String(id)));
+        if (currentFilters.sort) params.set('sort', currentFilters.sort);
+        if (currentFilters.direction) params.set('direction', currentFilters.direction);
+        const qs = params.toString();
+        return `/invoices/export/${format}${qs ? `?${qs}` : ''}`;
     };
 
     const handleSearchSubmit = (e: React.FormEvent) => {
@@ -1174,14 +1197,37 @@ function InvoicesPage({ invoices, stats, clients, rollbackableIds, filters }: Pr
                     title="Invoice"
                     description="Kelola semua invoice dan pembayaran klien"
                     action={
-                        <Button
-                            variant="primary"
-                            size="md"
-                            icon={<Plus className="w-4 h-4" />}
-                            onClick={() => router.get('/invoices/create')}
-                        >
-                            Buat Invoice
-                        </Button>
+                        <div className="flex items-center gap-2">
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="outline" size="md" icon={<Download className="w-4 h-4" />}>
+                                        Export
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuItem asChild>
+                                        <a href={buildExportUrl('excel')}>
+                                            <FileSpreadsheet className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                                            Export Excel
+                                        </a>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem asChild>
+                                        <a href={buildExportUrl('pdf')}>
+                                            <FileText className="w-4 h-4 text-red-600 dark:text-red-400" />
+                                            Export PDF
+                                        </a>
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                            <Button
+                                variant="primary"
+                                size="md"
+                                icon={<Plus className="w-4 h-4" />}
+                                onClick={() => router.get('/invoices/create')}
+                            >
+                                Buat Invoice
+                            </Button>
+                        </div>
                     }
                 />
 
@@ -1269,7 +1315,7 @@ function InvoicesPage({ invoices, stats, clients, rollbackableIds, filters }: Pr
                             </TooltipContent>
                         </Tooltip>
 
-                        {/* Total Invoice */}
+                        {/* Outstanding */}
                         <Tooltip>
                             <TooltipTrigger asChild>
                                 <Card className="hover:shadow-md transition-all duration-200 overflow-hidden cursor-default">
@@ -1282,16 +1328,16 @@ function InvoicesPage({ invoices, stats, clients, rollbackableIds, filters }: Pr
                                             <span className={STATS_CONFIG[3].iconCn + ' shrink-0'}>{STATS_CONFIG[3].icon}</span>
                                         </div>
                                         <p className="text-xl font-bold text-dark-900 dark:text-dark-50 leading-none">
-                                            {stats.invoice_count}
+                                            {formatCurrency(stats.total_outstanding)}
                                         </p>
                                         <p className="text-xs text-dark-500 dark:text-dark-400 mt-2">
-                                            {invoices.total} sesuai filter aktif
+                                            {stats.sent_count + stats.partially_paid_count} invoice belum lunas
                                         </p>
                                     </CardContent>
                                 </Card>
                             </TooltipTrigger>
                             <TooltipContent side="bottom" className="max-w-56 text-center">
-                                Jumlah seluruh invoice dalam sistem. Angka di bawah menunjukkan invoice yang sesuai dengan filter aktif saat ini.
+                                Total tagihan yang belum dibayar — sisa dari invoice berstatus Terkirim &amp; Sebagian. Inilah uang yang masih harus ditagih.
                             </TooltipContent>
                         </Tooltip>
 

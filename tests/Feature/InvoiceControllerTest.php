@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Client;
 use App\Models\Invoice;
+use App\Models\Payment;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Permission;
@@ -71,6 +72,56 @@ class InvoiceControllerTest extends TestCase
     public function test_create_page_requires_create_invoices_permission(): void
     {
         $this->actingAs($this->viewer)->get('/invoices/create')->assertForbidden();
+    }
+
+    public function test_index_reports_total_outstanding(): void
+    {
+        // sent invoice 1,000,000 with a 400,000 payment → 600,000 outstanding
+        $invoice = Invoice::factory()->sent()->create([
+            'billed_to_id' => $this->client->id,
+            'total_amount' => 1_000_000,
+        ]);
+        Payment::factory()->create([
+            'invoice_id' => $invoice->id,
+            'amount' => 400_000,
+        ]);
+
+        // paid invoice should NOT count toward outstanding
+        Invoice::factory()->paid()->create([
+            'billed_to_id' => $this->client->id,
+            'total_amount' => 500_000,
+        ]);
+
+        $this->actingAs($this->admin)
+            ->get('/invoices')
+            ->assertInertia(fn ($page) => $page->where('stats.total_outstanding', 600_000));
+    }
+
+    public function test_export_excel_downloads_spreadsheet(): void
+    {
+        Invoice::factory()->sent()->create(['billed_to_id' => $this->client->id, 'total_amount' => 1_000_000]);
+
+        $response = $this->actingAs($this->admin)->get('/invoices/export/excel?period_mode=range');
+
+        $response->assertOk();
+        $this->assertStringContainsString('rekap-invoice-', $response->headers->get('content-disposition') ?? '');
+    }
+
+    public function test_export_pdf_downloads_pdf(): void
+    {
+        Invoice::factory()->sent()->create(['billed_to_id' => $this->client->id, 'total_amount' => 1_000_000]);
+
+        $response = $this->actingAs($this->admin)->get('/invoices/export/pdf?period_mode=range');
+
+        $response->assertOk();
+        $response->assertHeader('content-type', 'application/pdf');
+    }
+
+    public function test_export_requires_view_invoices_permission(): void
+    {
+        $noPermUser = User::factory()->create();
+        $this->actingAs($noPermUser)->get('/invoices/export/excel')->assertForbidden();
+        $this->actingAs($noPermUser)->get('/invoices/export/pdf')->assertForbidden();
     }
 
     public function test_store_creates_draft_invoice(): void

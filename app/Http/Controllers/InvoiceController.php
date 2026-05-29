@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\InvoiceRecapExport;
 use App\Http\Requests\SendInvoiceRequest;
 use App\Http\Requests\StoreInvoiceRequest;
 use App\Http\Requests\UpdateInvoiceRequest;
@@ -9,13 +10,20 @@ use App\Models\Client;
 use App\Models\CompanyProfile;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
+use App\Models\Payment;
 use App\Models\Service;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response as HttpResponse;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class InvoiceController extends Controller
 {
@@ -106,12 +114,21 @@ class InvoiceController extends Controller
         $totalRevenue = (int) $basicStats->total_revenue;
         $totalCogs = (int) $itemStats->total_cogs;
 
+        // Outstanding = total_amount of unpaid invoices minus total payments on them
+        $outstandingRaw = DB::table('invoices')
+            ->whereIn('status', ['sent', 'partially_paid'])
+            ->selectRaw('COALESCE(SUM(total_amount), 0) as total_billed')
+            ->first();
+        $paidOnOutstanding = (int) Payment::whereHas('invoice', fn ($q) => $q->whereIn('status', ['sent', 'partially_paid']))->sum('amount');
+        $totalOutstanding = max(0, (int) $outstandingRaw->total_billed - $paidOnOutstanding);
+
         $stats = [
             'invoice_count' => (int) $basicStats->invoice_count,
             'total_revenue' => $totalRevenue,
             'total_cogs' => $totalCogs,
             'gross_profit' => $totalRevenue - $totalCogs,
             'paid_this_month' => $paidThisMonth,
+            'total_outstanding' => $totalOutstanding,
             'draft_count' => Invoice::where('status', 'draft')->count(),
             'sent_count' => Invoice::where('status', 'sent')->count(),
             'partially_paid_count' => Invoice::where('status', 'partially_paid')->count(),
@@ -151,6 +168,106 @@ class InvoiceController extends Controller
                 'direction' => $direction,
             ],
         ]);
+    }
+
+    /**
+     * Build the recap dataset (filtered invoice rows + summary) shared by the
+     * Excel and PDF exports. Honours the same filters as the index listing.
+     *
+     * @return array{rows: Collection<int, array<string, mixed>>, summary: array<string, mixed>, period: string}
+     */
+    private function buildRecapData(Request $request): array
+    {
+        $search = $request->input('search');
+        $status = $request->input('status');
+        $clientIds = array_filter((array) $request->input('client_ids', []), fn ($v) => $v !== '' && $v !== null);
+        $periodMode = $request->input('period_mode', 'month');
+        $month = $request->input('month', $periodMode === 'range' ? null : now()->format('Y-m'));
+        $dateFrom = $request->input('date_from');
+        $dateTo = $request->input('date_to');
+        $sort = $request->input('sort', 'issue_date');
+        $direction = $request->input('direction', 'desc');
+
+        $query = Invoice::query()
+            ->join('clients', 'invoices.billed_to_id', '=', 'clients.id')
+            ->leftJoin(
+                DB::raw('(SELECT invoice_id, COALESCE(SUM(amount), 0) as amount_paid FROM payments GROUP BY invoice_id) as p'),
+                'invoices.id', '=', 'p.invoice_id'
+            )
+            ->select([
+                'invoices.*',
+                'clients.name as client_name',
+                DB::raw('COALESCE(p.amount_paid, 0) as amount_paid'),
+            ])
+            ->when($search, fn ($q) => $q->where(function ($query) use ($search) {
+                $query->where('invoices.invoice_number', 'like', "%{$search}%")
+                    ->orWhere('clients.name', 'like', "%{$search}%");
+            }))
+            ->when($status, fn ($q) => $q->where('invoices.status', $status))
+            ->when($clientIds, fn ($q) => $q->whereIn('invoices.billed_to_id', $clientIds))
+            ->when($periodMode === 'range' && $dateFrom, fn ($q) => $q->whereDate('invoices.issue_date', '>=', $dateFrom))
+            ->when($periodMode === 'range' && $dateTo, fn ($q) => $q->whereDate('invoices.issue_date', '<=', $dateTo))
+            ->when($periodMode !== 'range' && $month, fn ($q) => $q
+                ->whereYear('invoices.issue_date', substr($month, 0, 4))
+                ->whereMonth('invoices.issue_date', substr($month, 5, 2))
+            );
+
+        match ($sort) {
+            'client_name' => $query->orderBy('clients.name', $direction),
+            default => $query->orderBy("invoices.{$sort}", $direction),
+        };
+
+        $rows = $query->get()->map(fn ($invoice) => [
+            'invoice_number' => $invoice->invoice_number,
+            'client_name' => $invoice->client_name,
+            'issue_date' => $invoice->issue_date?->format('Y-m-d'),
+            'due_date' => $invoice->due_date?->format('Y-m-d'),
+            'total_amount' => (int) $invoice->total_amount,
+            'amount_paid' => (int) $invoice->amount_paid,
+            'amount_remaining' => (int) $invoice->total_amount - (int) $invoice->amount_paid,
+            'status' => $invoice->status,
+        ]);
+
+        $summary = [
+            'count' => $rows->count(),
+            'total_amount' => $rows->sum('total_amount'),
+            'total_paid' => $rows->sum('amount_paid'),
+            'total_outstanding' => $rows->sum('amount_remaining'),
+        ];
+
+        // Human-readable period label for the report header.
+        if ($periodMode === 'range') {
+            $period = trim(($dateFrom ?? '…').' s/d '.($dateTo ?? '…'));
+        } else {
+            $period = $month
+                ? Carbon::parse($month.'-01')->isoFormat('MMMM Y')
+                : 'Semua Periode';
+        }
+
+        return ['rows' => $rows, 'summary' => $summary, 'period' => $period];
+    }
+
+    public function exportExcel(Request $request): BinaryFileResponse
+    {
+        $data = $this->buildRecapData($request);
+        $filename = 'rekap-invoice-'.now()->format('Ymd-His').'.xlsx';
+
+        return Excel::download(new InvoiceRecapExport($data['rows'], $data['summary'], $data['period']), $filename);
+    }
+
+    public function exportPdf(Request $request): HttpResponse
+    {
+        $data = $this->buildRecapData($request);
+        $company = CompanyProfile::first();
+
+        $pdf = Pdf::loadView('pdf.invoice-recap', [
+            'rows' => $data['rows'],
+            'summary' => $data['summary'],
+            'period' => $data['period'],
+            'company' => $company,
+        ])->setPaper('a4', 'landscape');
+
+        return $pdf->download('rekap-invoice-'.now()->format('Ymd-His').'.pdf');
     }
 
     public function show(Invoice $invoice): JsonResponse

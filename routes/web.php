@@ -123,6 +123,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::prefix('invoices')->name('invoices.')->middleware('can:view invoices')->group(function () {
         Route::get('/', [InvoiceController::class, 'index'])->name('index');
         Route::get('/create', [InvoiceController::class, 'create'])->middleware('can:create invoices')->name('create');
+        Route::get('/export/excel', [InvoiceController::class, 'exportExcel'])->name('export.excel');
+        Route::get('/export/pdf', [InvoiceController::class, 'exportPdf'])->name('export.pdf');
         Route::post('/', [InvoiceController::class, 'store'])->middleware('can:create invoices')->name('store');
         Route::get('/{invoice}', [InvoiceController::class, 'show'])->name('show');
         Route::get('/{invoice}/edit', [InvoiceController::class, 'edit'])->middleware('can:edit invoices')->name('edit');
