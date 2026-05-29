@@ -5,18 +5,21 @@ namespace App\Exports;
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\WithColumnWidths;
-use Maatwebsite\Excel\Concerns\WithStyles;
+use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Concerns\WithTitle;
+use Maatwebsite\Excel\Events\AfterSheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 /**
- * Invoice recap (rekap) export — a single sheet with a period header,
- * the filtered invoice rows, and a totals footer. Mirrors the on-screen
- * listing so the user gets the same data they filtered.
+ * Invoice recap (rekap) export — a single polished sheet: a title block,
+ * the filtered invoice rows, and a totals footer. Money is stored as real
+ * numbers with an accounting format so the user can sort/sum natively.
+ * Mirrors the on-screen listing so the export matches the active filters.
  */
-class InvoiceRecapExport implements FromArray, WithColumnWidths, WithStyles, WithTitle
+class InvoiceRecapExport implements FromArray, WithColumnWidths, WithEvents, WithTitle
 {
     private const STATUS_LABELS = [
         'draft' => 'Draft',
@@ -24,6 +27,21 @@ class InvoiceRecapExport implements FromArray, WithColumnWidths, WithStyles, Wit
         'partially_paid' => 'Sebagian',
         'paid' => 'Lunas',
     ];
+
+    /** Accounting-style Rupiah format: right-aligned, negatives in parentheses, zero as dash. */
+    private const RP_FORMAT = '_("Rp"* #,##0_);_("Rp"* \(#,##0\);_("Rp"* "-"_);_(@_)';
+
+    private const LAST_COL = 'H';
+
+    /** 1-based sheet row where the table header sits (after the title block). */
+    private int $headerRow = 5;
+
+    /** First and last data rows (1-based), filled in array(). */
+    private int $firstDataRow = 6;
+
+    private int $lastDataRow = 6;
+
+    private int $totalRow = 7;
 
     /**
      * @param  Collection<int, array<string, mixed>>  $rows
@@ -42,14 +60,14 @@ class InvoiceRecapExport implements FromArray, WithColumnWidths, WithStyles, Wit
 
     public function array(): array
     {
-        $rp = fn ($v) => 'Rp '.number_format((int) $v, 0, ',', '.');
-
         $grid = [];
         $grid[] = ['REKAP INVOICE', '', '', '', '', '', '', ''];
         $grid[] = ['Periode: '.$this->period, '', '', '', '', '', '', ''];
         $grid[] = ['Dicetak: '.now()->isoFormat('D MMMM Y HH:mm').' WIB', '', '', '', '', '', '', ''];
         $grid[] = ['', '', '', '', '', '', '', ''];
         $grid[] = ['No. Invoice', 'Klien', 'Tgl Invoice', 'Jatuh Tempo', 'Status', 'Total', 'Terbayar', 'Sisa'];
+
+        $this->firstDataRow = count($grid) + 1;
 
         foreach ($this->rows as $row) {
             $grid[] = [
@@ -58,19 +76,21 @@ class InvoiceRecapExport implements FromArray, WithColumnWidths, WithStyles, Wit
                 $row['issue_date'],
                 $row['due_date'],
                 self::STATUS_LABELS[$row['status']] ?? $row['status'],
-                $rp($row['total_amount']),
-                $rp($row['amount_paid']),
-                $rp($row['amount_remaining']),
+                (int) $row['total_amount'],
+                (int) $row['amount_paid'],
+                (int) $row['amount_remaining'],
             ];
         }
 
-        $grid[] = ['', '', '', '', '', '', '', ''];
+        $this->lastDataRow = max($this->firstDataRow, count($grid));
+
         $grid[] = [
             'TOTAL ('.$this->summary['count'].' invoice)', '', '', '', '',
-            $rp($this->summary['total_amount']),
-            $rp($this->summary['total_paid']),
-            $rp($this->summary['total_outstanding']),
+            (int) $this->summary['total_amount'],
+            (int) $this->summary['total_paid'],
+            (int) $this->summary['total_outstanding'],
         ];
+        $this->totalRow = count($grid);
 
         return $grid;
     }
@@ -78,27 +98,86 @@ class InvoiceRecapExport implements FromArray, WithColumnWidths, WithStyles, Wit
     public function columnWidths(): array
     {
         return [
-            'A' => 22, 'B' => 30, 'C' => 14, 'D' => 14,
-            'E' => 12, 'F' => 20, 'G' => 20, 'H' => 20,
+            'A' => 24, 'B' => 32, 'C' => 14, 'D' => 14,
+            'E' => 12, 'F' => 18, 'G' => 18, 'H' => 18,
         ];
     }
 
-    public function styles(Worksheet $sheet): array
+    public function registerEvents(): array
     {
-        $headerRow = 5;
-        $totalRow = $sheet->getHighestRow();
+        return [
+            AfterSheet::class => function (AfterSheet $event) {
+                $sheet = $event->sheet->getDelegate();
+                $this->styleSheet($sheet);
+            },
+        ];
+    }
 
-        $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
-        $sheet->getStyle("A{$headerRow}:H{$headerRow}")->getFont()->setBold(true);
-        $sheet->getStyle("A{$headerRow}:H{$headerRow}")->getFill()
-            ->setFillType(Fill::FILL_SOLID)
-            ->getStartColor()->setRGB('E2E8F0');
-        $sheet->getStyle("A{$totalRow}:H{$totalRow}")->getFont()->setBold(true);
+    private function styleSheet(Worksheet $sheet): void
+    {
+        $last = self::LAST_COL;
+        $header = $this->headerRow;
+        $first = $this->firstDataRow;
+        $lastData = $this->lastDataRow;
+        $total = $this->totalRow;
+        $hasRows = $this->rows->isNotEmpty();
 
-        // Right-align the three money columns for all data rows.
-        $sheet->getStyle("F{$headerRow}:H{$totalRow}")
-            ->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+        // ── Title block ──
+        $sheet->mergeCells("A1:{$last}1");
+        $sheet->mergeCells("A2:{$last}2");
+        $sheet->mergeCells("A3:{$last}3");
+        $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(16);
+        $sheet->getStyle('A2')->getFont()->setSize(10);
+        $sheet->getStyle('A3')->getFont()->setSize(9)->getColor()->setRGB('64748B');
+        $sheet->getRowDimension(1)->setRowHeight(24);
 
-        return [];
+        // ── Header row ──
+        $headerRange = "A{$header}:{$last}{$header}";
+        $sheet->getStyle($headerRange)->getFont()->setBold(true)->getColor()->setRGB('FFFFFF');
+        $sheet->getStyle($headerRange)->getFill()
+            ->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('0F172A');
+        $sheet->getStyle($headerRange)->getAlignment()
+            ->setVertical(Alignment::VERTICAL_CENTER)->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        $sheet->getRowDimension($header)->setRowHeight(20);
+        // Left-align the two text columns in the header for readability.
+        $sheet->getStyle("A{$header}:B{$header}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
+
+        // ── Data body ──
+        if ($hasRows) {
+            $bodyRange = "A{$first}:{$last}{$lastData}";
+
+            // Money columns as accounting numbers.
+            $sheet->getStyle("F{$first}:H{$lastData}")->getNumberFormat()->setFormatCode(self::RP_FORMAT);
+            // Center dates + status.
+            $sheet->getStyle("C{$first}:E{$lastData}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+            // Zebra striping on even data rows.
+            for ($r = $first; $r <= $lastData; $r++) {
+                if (($r - $first) % 2 === 1) {
+                    $sheet->getStyle("A{$r}:{$last}{$r}")->getFill()
+                        ->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('F1F5F9');
+                }
+            }
+
+            // Thin borders around the whole body.
+            $sheet->getStyle($bodyRange)->getBorders()->getAllBorders()
+                ->setBorderStyle(Border::BORDER_THIN)->getColor()->setRGB('CBD5E1');
+        }
+
+        // ── Totals row ──
+        $totalRange = "A{$total}:{$last}{$total}";
+        $sheet->getStyle($totalRange)->getFont()->setBold(true);
+        $sheet->getStyle($totalRange)->getFill()
+            ->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('E2E8F0');
+        $sheet->getStyle("F{$total}:H{$total}")->getNumberFormat()->setFormatCode(self::RP_FORMAT);
+        $sheet->mergeCells("A{$total}:E{$total}");
+        $sheet->getStyle("A{$total}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+        $sheet->getStyle($totalRange)->getBorders()->getTop()
+            ->setBorderStyle(Border::BORDER_DOUBLE)->getColor()->setRGB('0F172A');
+
+        // ── Sheet-level niceties ──
+        $sheet->freezePane("A{$first}");                 // keep title + header visible while scrolling
+        $sheet->setAutoFilter("A{$header}:{$last}{$lastData}");
+        $sheet->setSelectedCell('A1');
     }
 }

@@ -6,11 +6,11 @@
 
     $rp = fn ($v) => 'Rp '.number_format((int) $v, 0, ',', '.');
 
-    $statusLabels = [
-        'draft' => 'Draft',
-        'sent' => 'Terkirim',
-        'partially_paid' => 'Sebagian',
-        'paid' => 'Lunas',
+    $status = [
+        'draft' => ['label' => 'Draft', 'bg' => '#f1f5f9', 'fg' => '#475569'],
+        'sent' => ['label' => 'Terkirim', 'bg' => '#dbeafe', 'fg' => '#1d4ed8'],
+        'partially_paid' => ['label' => 'Sebagian', 'bg' => '#fef3c7', 'fg' => '#b45309'],
+        'paid' => ['label' => 'Lunas', 'bg' => '#dcfce7', 'fg' => '#15803d'],
     ];
 @endphp
 <!DOCTYPE html>
@@ -19,101 +19,175 @@
     <meta charset="utf-8">
     <title>Rekap Invoice — {{ $period }}</title>
     <style>
-        @page { margin: 14mm 12mm; }
+        @page { margin: 14mm 12mm 18mm 12mm; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            font-family: Arial, Helvetica, sans-serif;
+            font-family: 'Helvetica', Arial, sans-serif;
             font-size: 9pt;
             color: #1e293b;
+            line-height: 1.4;
         }
 
-        .header {
-            text-align: center;
-            border-bottom: 2px solid #0f172a;
-            padding-bottom: 10px;
-            margin-bottom: 14px;
+        /* ── Header ── */
+        .head-tbl { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
+        .head-tbl td { vertical-align: middle; }
+        .company { font-size: 13pt; font-weight: bold; color: #0f172a; text-transform: uppercase; letter-spacing: 0.5px; }
+        .company-meta { font-size: 8pt; color: #64748b; margin-top: 2px; }
+        .doc-tag {
+            text-align: right; font-size: 15pt; font-weight: bold; color: #0f172a;
+            letter-spacing: 2px; text-transform: uppercase;
         }
-        .header .company { font-size: 13pt; font-weight: bold; text-transform: uppercase; }
-        .header .meta { font-size: 8.5pt; color: #475569; margin-top: 3px; }
+        .doc-period { text-align: right; font-size: 8.5pt; color: #64748b; margin-top: 2px; font-style: italic; }
+        .rule { height: 2px; background: #0f172a; margin-bottom: 14px; }
 
-        .title-block { text-align: center; margin-bottom: 12px; }
-        .title-block h1 { font-size: 13pt; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
-        .title-block .period { font-size: 9.5pt; color: #475569; margin-top: 3px; font-style: italic; }
+        /* ── Summary strip ── */
+        .summary { width: 100%; border-collapse: separate; border-spacing: 6px 0; margin-bottom: 14px; }
+        .summary td {
+            width: 25%; border: 1px solid #e2e8f0; border-radius: 6px;
+            padding: 8px 10px; background: #f8fafc;
+        }
+        .sum-label { font-size: 7.5pt; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
+        .sum-value { font-size: 11pt; font-weight: bold; color: #0f172a; margin-top: 3px; }
+        .sum-value.out { color: #b45309; }
+        .sum-value.paid { color: #15803d; }
 
-        table { width: 100%; border-collapse: collapse; }
-        thead { background-color: #e2e8f0; }
-        th, td { border: 1px solid #94a3b8; padding: 5px 7px; font-size: 8.5pt; }
-        th { font-weight: bold; text-align: center; }
-        td.center { text-align: center; }
-        td.right { text-align: right; font-variant-numeric: tabular-nums; }
+        /* ── Table ── */
+        table.data { width: 100%; border-collapse: collapse; }
+        table.data thead th {
+            background: #0f172a; color: #fff; font-size: 8pt; font-weight: bold;
+            text-transform: uppercase; letter-spacing: 0.3px;
+            padding: 7px 8px; text-align: left; border: none;
+        }
+        table.data thead th.c { text-align: center; }
+        table.data thead th.r { text-align: right; }
+        table.data tbody td {
+            padding: 6px 8px; font-size: 8.5pt; border-bottom: 1px solid #e2e8f0;
+        }
+        table.data tbody tr.even td { background: #f8fafc; }
+        td.c { text-align: center; }
+        td.r { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+        td.muted { color: #94a3b8; }
+        .inv-no { font-weight: bold; color: #0f172a; }
 
-        tfoot td, tr.total td { font-weight: bold; background-color: #f1f5f9; }
+        .badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            font-size: 7.5pt; font-weight: bold;
+        }
 
-        .footer-meta { margin-top: 14px; font-size: 8pt; color: #64748b; text-align: right; }
+        /* ── Totals ── */
+        table.data tfoot td {
+            padding: 9px 8px; font-size: 9pt; font-weight: bold;
+            border-top: 2px solid #0f172a; background: #f1f5f9;
+        }
+        table.data tfoot td.r { text-align: right; }
+
+        .empty { text-align: center; padding: 24px; color: #94a3b8; font-style: italic; }
+
+        /* ── Page footer ── */
+        .pg-foot {
+            position: fixed; bottom: -10mm; left: 0; right: 0;
+            font-size: 7.5pt; color: #94a3b8;
+        }
+        .pg-foot .l { float: left; }
+        .pg-foot .r { float: right; }
+        .pg-foot:after { content: ""; display: block; clear: both; }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <div class="company">{{ $company->name ?? 'Perusahaan' }}</div>
-        @if ($company)
-            <div class="meta">
-                @if ($company->address) {{ $company->address }} @endif
-                @if ($company->npwp) &nbsp;·&nbsp; NPWP: {{ $company->npwp }} @endif
-            </div>
-        @endif
+    {{-- Repeating page footer --}}
+    <div class="pg-foot">
+        <span class="l">{{ $company->name ?? '' }} — Rekap Invoice</span>
+        <span class="r">Dicetak {{ now()->isoFormat('D MMM Y HH:mm') }} WIB</span>
     </div>
 
-    <div class="title-block">
-        <h1>Rekap Invoice</h1>
-        <div class="period">Periode: {{ $period }}</div>
-    </div>
+    {{-- Header --}}
+    <table class="head-tbl">
+        <tr>
+            <td style="width:55%;">
+                <div class="company">{{ $company->name ?? 'Perusahaan' }}</div>
+                @if ($company && ($company->address || $company->npwp))
+                    <div class="company-meta">
+                        @if ($company->address){{ $company->address }}@endif
+                        @if ($company->npwp) &nbsp;·&nbsp; NPWP: {{ $company->npwp }}@endif
+                    </div>
+                @endif
+            </td>
+            <td style="width:45%;">
+                <div class="doc-tag">Rekap Invoice</div>
+                <div class="doc-period">{{ $period }}</div>
+            </td>
+        </tr>
+    </table>
+    <div class="rule"></div>
 
-    <table>
+    {{-- Summary strip --}}
+    <table class="summary">
+        <tr>
+            <td>
+                <div class="sum-label">Jumlah Invoice</div>
+                <div class="sum-value">{{ number_format($summary['count'], 0, ',', '.') }}</div>
+            </td>
+            <td>
+                <div class="sum-label">Total Tagihan</div>
+                <div class="sum-value">{{ $rp($summary['total_amount']) }}</div>
+            </td>
+            <td>
+                <div class="sum-label">Terbayar</div>
+                <div class="sum-value paid">{{ $rp($summary['total_paid']) }}</div>
+            </td>
+            <td>
+                <div class="sum-label">Outstanding</div>
+                <div class="sum-value out">{{ $rp($summary['total_outstanding']) }}</div>
+            </td>
+        </tr>
+    </table>
+
+    {{-- Table --}}
+    <table class="data">
         <thead>
             <tr>
-                <th style="width:4%;">No</th>
-                <th style="width:17%;">No. Invoice</th>
-                <th style="width:23%;">Klien</th>
-                <th style="width:11%;">Tgl Invoice</th>
-                <th style="width:11%;">Jatuh Tempo</th>
-                <th style="width:9%;">Status</th>
-                <th>Total</th>
-                <th>Terbayar</th>
-                <th>Sisa</th>
+                <th class="c" style="width:4%;">No</th>
+                <th style="width:16%;">No. Invoice</th>
+                <th style="width:22%;">Klien</th>
+                <th class="c" style="width:11%;">Tgl Invoice</th>
+                <th class="c" style="width:11%;">Jatuh Tempo</th>
+                <th class="c" style="width:9%;">Status</th>
+                <th class="r">Total</th>
+                <th class="r">Terbayar</th>
+                <th class="r">Sisa</th>
             </tr>
         </thead>
         <tbody>
             @forelse ($rows as $i => $row)
-                <tr>
-                    <td class="center">{{ $i + 1 }}</td>
-                    <td>{{ $row['invoice_number'] ?? '(draft)' }}</td>
+                @php $st = $status[$row['status']] ?? ['label' => $row['status'], 'bg' => '#f1f5f9', 'fg' => '#475569']; @endphp
+                <tr class="{{ $i % 2 === 1 ? 'even' : '' }}">
+                    <td class="c muted">{{ $i + 1 }}</td>
+                    <td class="inv-no">{{ $row['invoice_number'] ?? '(draft)' }}</td>
                     <td>{{ $row['client_name'] }}</td>
-                    <td class="center">{{ $row['issue_date'] }}</td>
-                    <td class="center">{{ $row['due_date'] }}</td>
-                    <td class="center">{{ $statusLabels[$row['status']] ?? $row['status'] }}</td>
-                    <td class="right">{{ $rp($row['total_amount']) }}</td>
-                    <td class="right">{{ $rp($row['amount_paid']) }}</td>
-                    <td class="right">{{ $rp($row['amount_remaining']) }}</td>
+                    <td class="c">{{ $row['issue_date'] }}</td>
+                    <td class="c">{{ $row['due_date'] }}</td>
+                    <td class="c">
+                        <span class="badge" style="background:{{ $st['bg'] }};color:{{ $st['fg'] }};">{{ $st['label'] }}</span>
+                    </td>
+                    <td class="r">{{ $rp($row['total_amount']) }}</td>
+                    <td class="r">{{ $rp($row['amount_paid']) }}</td>
+                    <td class="r">{{ $rp($row['amount_remaining']) }}</td>
                 </tr>
             @empty
-                <tr><td colspan="9" class="center" style="padding:16px;color:#94a3b8;font-style:italic;">Tidak ada invoice pada periode/filter ini.</td></tr>
+                <tr><td colspan="9" class="empty">Tidak ada invoice pada periode/filter ini.</td></tr>
             @endforelse
         </tbody>
         <tfoot>
-            <tr class="total">
-                <td colspan="6" class="right">TOTAL ({{ $summary['count'] }} invoice)</td>
-                <td class="right">{{ $rp($summary['total_amount']) }}</td>
-                <td class="right">{{ $rp($summary['total_paid']) }}</td>
-                <td class="right">{{ $rp($summary['total_outstanding']) }}</td>
+            <tr>
+                <td colspan="6" class="r">TOTAL ({{ $summary['count'] }} invoice)</td>
+                <td class="r">{{ $rp($summary['total_amount']) }}</td>
+                <td class="r">{{ $rp($summary['total_paid']) }}</td>
+                <td class="r">{{ $rp($summary['total_outstanding']) }}</td>
             </tr>
         </tfoot>
     </table>
-
-    <div class="footer-meta">
-        Dicetak: {{ now()->isoFormat('D MMMM Y HH:mm') }} WIB
-    </div>
 
 </body>
 </html>
