@@ -1109,8 +1109,11 @@ function InvoicesPage({ invoices, stats, clients, rollbackableIds, filters }: Pr
         if (currentFilters.period_mode === 'range') {
             if (currentFilters.date_from) params.set('date_from', currentFilters.date_from);
             if (currentFilters.date_to) params.set('date_to', currentFilters.date_to);
-        } else if (currentFilters.month) {
-            params.set('month', currentFilters.month);
+        } else {
+            // Always send month — even empty ("Semua") — so the backend does NOT
+            // fall back to its current-month default, which would make the export
+            // diverge from the on-screen listing (e.g. show 0 when "Semua" shows all).
+            params.set('month', currentFilters.month ?? '');
         }
         (currentFilters.client_ids ?? []).forEach((id) => params.append('client_ids[]', String(id)));
         if (currentFilters.sort) params.set('sort', currentFilters.sort);

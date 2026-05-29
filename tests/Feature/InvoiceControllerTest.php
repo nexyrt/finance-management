@@ -2,11 +2,14 @@
 
 namespace Tests\Feature;
 
+use App\Exports\InvoiceRecapExport;
 use App\Models\Client;
 use App\Models\Invoice;
 use App\Models\Payment;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Maatwebsite\Excel\Facades\Excel;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
@@ -122,6 +125,73 @@ class InvoiceControllerTest extends TestCase
         $noPermUser = User::factory()->create();
         $this->actingAs($noPermUser)->get('/invoices/export/excel')->assertForbidden();
         $this->actingAs($noPermUser)->get('/invoices/export/pdf')->assertForbidden();
+    }
+
+    public function test_export_includes_all_invoices_when_month_is_empty(): void
+    {
+        // "Semua" period: month='' must NOT fall back to the current-month default,
+        // otherwise the export is empty while the listing shows everything.
+        Invoice::factory()->paid()->create([
+            'billed_to_id' => $this->client->id,
+            'issue_date' => now()->subMonths(3)->toDateString(),
+            'total_amount' => 1_000_000,
+        ]);
+        Invoice::factory()->sent()->create([
+            'billed_to_id' => $this->client->id,
+            'issue_date' => now()->subMonths(2)->toDateString(),
+            'total_amount' => 2_000_000,
+        ]);
+
+        $this->travelTo(Carbon::parse('2026-05-01 10:00:00'));
+        Excel::fake();
+
+        $this->actingAs($this->admin)
+            ->get('/invoices/export/excel?period_mode=month&month=')
+            ->assertOk();
+
+        Excel::assertDownloaded(
+            'rekap-invoice-20260501-100000.xlsx',
+            fn (InvoiceRecapExport $export) => str_contains(
+                collect($export->array())->flatten()->implode('|'),
+                'TOTAL (2 invoice)'
+            )
+        );
+    }
+
+    public function test_export_excel_respects_active_filters(): void
+    {
+        // Freeze time so the timestamped filename is deterministic.
+        $this->travelTo(Carbon::parse('2026-05-01 10:00:00'));
+
+        Invoice::factory()->paid()->create([
+            'billed_to_id' => $this->client->id,
+            'invoice_number' => 'INV/PAID/KSN/05.26',
+            'issue_date' => '2026-05-10',
+            'total_amount' => 1_000_000,
+        ]);
+        Invoice::factory()->sent()->create([
+            'billed_to_id' => $this->client->id,
+            'invoice_number' => 'INV/SENT/KSN/05.26',
+            'issue_date' => '2026-05-12',
+            'total_amount' => 2_000_000,
+        ]);
+
+        Excel::fake();
+
+        $this->actingAs($this->admin)
+            ->get('/invoices/export/excel?period_mode=range&status=paid')
+            ->assertOk();
+
+        Excel::assertDownloaded(
+            'rekap-invoice-20260501-100000.xlsx',
+            function (InvoiceRecapExport $export) {
+                $flat = collect($export->array())->flatten()->implode('|');
+
+                // The paid invoice is included; the sent one is filtered out.
+                return str_contains($flat, 'INV/PAID/KSN/05.26')
+                    && ! str_contains($flat, 'INV/SENT/KSN/05.26');
+            }
+        );
     }
 
     public function test_store_creates_draft_invoice(): void
