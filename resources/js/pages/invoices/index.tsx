@@ -1391,26 +1391,30 @@ function InvoicesPage({ invoices, stats, clients, rollbackableIds, filters }: Pr
                             />
                         </div>
 
-                        {/* Periode — Bulan + Rentang Tanggal (rentang meng-override bulan) */}
-                        <div className="flex flex-col gap-1.5 w-full lg:w-64 shrink-0">
-                            <DatePicker
-                                mode="month"
-                                label="Bulan"
-                                value={currentFilters.month || null}
-                                onChange={(v) => navigate({ month: v ?? '' })}
-                                placeholder="Pilih bulan..."
-                                disabled={hasRange}
-                                hint={hasRange ? 'Diabaikan — rentang tanggal sedang aktif' : undefined}
-                            />
-                            <DatePicker
-                                mode="range"
-                                label="Rentang Tanggal"
-                                value={dateRange}
-                                onChange={handleDateRangeChange}
-                                placeholder="Tanggal mulai..."
-                                placeholderTo="Tanggal akhir..."
-                                clearable
-                            />
+                        {/* Periode — Bulan + Rentang Tanggal berdampingan (rentang meng-override bulan) */}
+                        <div className="flex flex-col sm:flex-row sm:items-start gap-3 w-full lg:w-auto shrink-0">
+                            <div className="w-full sm:w-40 shrink-0">
+                                <DatePicker
+                                    mode="month"
+                                    label="Bulan"
+                                    value={currentFilters.month || null}
+                                    onChange={(v) => navigate({ month: v ?? '' })}
+                                    placeholder="Pilih bulan..."
+                                    disabled={hasRange}
+                                    hint={hasRange ? 'Diabaikan — rentang aktif' : undefined}
+                                />
+                            </div>
+                            <div className="w-full sm:w-60 shrink-0">
+                                <DatePicker
+                                    mode="range"
+                                    label="Rentang Tanggal"
+                                    value={dateRange}
+                                    onChange={handleDateRangeChange}
+                                    placeholder="Tanggal mulai..."
+                                    placeholderTo="Tanggal akhir..."
+                                    clearable
+                                />
+                            </div>
                         </div>
 
                         {/* Search + controls */}
