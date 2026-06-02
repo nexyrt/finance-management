@@ -82,6 +82,7 @@ class InvoiceControllerTest extends TestCase
         // sent invoice 1,000,000 with a 400,000 payment → 600,000 outstanding
         $invoice = Invoice::factory()->sent()->create([
             'billed_to_id' => $this->client->id,
+            'issue_date' => now()->startOfMonth()->toDateString(),
             'total_amount' => 1_000_000,
         ]);
         Payment::factory()->create([
@@ -92,12 +93,33 @@ class InvoiceControllerTest extends TestCase
         // paid invoice should NOT count toward outstanding
         Invoice::factory()->paid()->create([
             'billed_to_id' => $this->client->id,
+            'issue_date' => now()->startOfMonth()->toDateString(),
             'total_amount' => 500_000,
         ]);
 
+        // Default filter is the current month, so put both invoices there.
         $this->actingAs($this->admin)
             ->get('/invoices')
             ->assertInertia(fn ($page) => $page->where('stats.total_outstanding', 600_000));
+    }
+
+    public function test_total_outstanding_respects_period_filter(): void
+    {
+        // Unpaid invoice in January only.
+        Invoice::factory()->sent()->create([
+            'billed_to_id' => $this->client->id,
+            'issue_date' => '2026-01-15',
+            'total_amount' => 1_000_000,
+        ]);
+
+        // January → counted; March → 0.
+        $this->actingAs($this->admin)
+            ->get('/invoices?month=2026-01')
+            ->assertInertia(fn ($page) => $page->where('stats.total_outstanding', 1_000_000));
+
+        $this->actingAs($this->admin)
+            ->get('/invoices?month=2026-03')
+            ->assertInertia(fn ($page) => $page->where('stats.total_outstanding', 0));
     }
 
     public function test_status_tab_counts_respect_active_period(): void

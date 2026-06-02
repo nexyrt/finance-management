@@ -81,10 +81,24 @@ class InvoiceController extends Controller
                 'faktur' => $invoice->faktur,
             ]);
 
-        // Stats (exclude drafts from revenue calculations, match Listing.php behaviour)
-        $statsQuery = Invoice::query()->whereNotIn('status', ['draft']);
-        $this->applyPeriodFilter($statsQuery, $month, $dateFrom, $dateTo);
-        $statsIds = $statsQuery->pluck('id');
+        // All stat cards + tab counts share one filtered scope: the active
+        // period + client + search (NOT status — the tabs switch status). Each
+        // call returns a fresh query so the aggregates don't interfere.
+        $filtered = function () use ($search, $clientIds, $month, $dateFrom, $dateTo) {
+            $q = Invoice::query()
+                ->join('clients', 'invoices.billed_to_id', '=', 'clients.id')
+                ->when($search, fn ($qq) => $qq->where(function ($w) use ($search) {
+                    $w->where('invoices.invoice_number', 'like', "%{$search}%")
+                        ->orWhere('clients.name', 'like', "%{$search}%");
+                }))
+                ->when($clientIds, fn ($qq) => $qq->whereIn('invoices.billed_to_id', $clientIds));
+            $this->applyPeriodFilter($q, $month, $dateFrom, $dateTo, 'invoices.issue_date');
+
+            return $q;
+        };
+
+        // Revenue/profit/count exclude drafts (match Listing.php behaviour).
+        $statsIds = $filtered()->whereNotIn('invoices.status', ['draft'])->pluck('invoices.id');
 
         $basicStats = DB::table('invoices')
             ->whereIn('id', $statsIds)
@@ -104,26 +118,14 @@ class InvoiceController extends Controller
         $totalRevenue = (int) $basicStats->total_revenue;
         $totalCogs = (int) $itemStats->total_cogs;
 
-        // Outstanding = total_amount of unpaid invoices minus total payments on them
-        $outstandingRaw = DB::table('invoices')
-            ->whereIn('status', ['sent', 'partially_paid'])
-            ->selectRaw('COALESCE(SUM(total_amount), 0) as total_billed')
-            ->first();
-        $paidOnOutstanding = (int) Payment::whereHas('invoice', fn ($q) => $q->whereIn('status', ['sent', 'partially_paid']))->sum('amount');
-        $totalOutstanding = max(0, (int) $outstandingRaw->total_billed - $paidOnOutstanding);
+        // Outstanding within the active filters: billed minus paid on unpaid invoices.
+        $outstandingIds = $filtered()->whereIn('invoices.status', ['sent', 'partially_paid'])->pluck('invoices.id');
+        $billed = (int) Invoice::whereIn('id', $outstandingIds)->sum('total_amount');
+        $paidOnOutstanding = (int) Payment::whereIn('invoice_id', $outstandingIds)->sum('amount');
+        $totalOutstanding = max(0, $billed - $paidOnOutstanding);
 
-        // Per-status tab counts, relative to the active filters EXCEPT status
-        // (the tabs themselves switch status, so each tab shows its own count
-        // within the current period/client/search scope).
-        $statusBase = Invoice::query()
-            ->join('clients', 'invoices.billed_to_id', '=', 'clients.id')
-            ->when($search, fn ($q) => $q->where(function ($qq) use ($search) {
-                $qq->where('invoices.invoice_number', 'like', "%{$search}%")
-                    ->orWhere('clients.name', 'like', "%{$search}%");
-            }))
-            ->when($clientIds, fn ($q) => $q->whereIn('invoices.billed_to_id', $clientIds));
-        $this->applyPeriodFilter($statusBase, $month, $dateFrom, $dateTo, 'invoices.issue_date');
-        $statusCounts = $statusBase
+        // Per-status tab counts within the same filtered scope.
+        $statusCounts = $filtered()
             ->selectRaw('invoices.status as status, COUNT(*) as c')
             ->groupBy('invoices.status')
             ->pluck('c', 'status');
