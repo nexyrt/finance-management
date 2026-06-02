@@ -49,7 +49,6 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
-import { SegmentedControl } from '@/components/ui/segmented-control';
 import { Switch } from '@/components/ui/switch';
 import { Tabs } from '@/components/ui/tabs';
 import type { TabItem } from '@/components/ui/tabs';
@@ -123,7 +122,6 @@ interface Filters {
     month?: string;
     date_from?: string | null;
     date_to?: string | null;
-    period_mode?: 'month' | 'range';
     per_page?: number;
     sort?: string;
     direction?: string;
@@ -1005,7 +1003,6 @@ function InvoiceDrawer({
 
 const DEFAULT_MONTH = new Date().toISOString().slice(0, 7);
 
-type DateMode = 'month' | 'range';
 
 /* Colored accent config for stats cards */
 const STATS_CONFIG = [
@@ -1078,14 +1075,13 @@ function InvoicesPage({ invoices, stats, clients, rollbackableIds, filters }: Pr
         month: filters.month ?? '',
         date_from: filters.date_from ?? '',
         date_to: filters.date_to ?? '',
-        period_mode: filters.period_mode ?? 'month',
         sort: filters.sort ?? 'issue_date',
         direction: filters.direction ?? 'desc',
         per_page: filters.per_page ?? 25,
     };
 
-    /* derive date mode from URL — survives tab navigation / remount */
-    const dateMode: DateMode = currentFilters.period_mode === 'range' ? 'range' : 'month';
+    /* A date range, when set, overrides the month filter (both fields stay visible). */
+    const hasRange = !!currentFilters.date_from || !!currentFilters.date_to;
     const dateRange = {
         from: currentFilters.date_from ? new Date(currentFilters.date_from) : null,
         to: currentFilters.date_to ? new Date(currentFilters.date_to) : null,
@@ -1106,16 +1102,11 @@ function InvoicesPage({ invoices, stats, clients, rollbackableIds, filters }: Pr
         const params = new URLSearchParams();
         if (currentFilters.search) params.set('search', currentFilters.search);
         if (currentFilters.status) params.set('status', currentFilters.status);
-        if (currentFilters.period_mode) params.set('period_mode', currentFilters.period_mode);
-        if (currentFilters.period_mode === 'range') {
-            if (currentFilters.date_from) params.set('date_from', currentFilters.date_from);
-            if (currentFilters.date_to) params.set('date_to', currentFilters.date_to);
-        } else {
-            // Always send month — even empty ("Semua") — so the backend does NOT
-            // fall back to its current-month default, which would make the export
-            // diverge from the on-screen listing (e.g. show 0 when "Semua" shows all).
-            params.set('month', currentFilters.month ?? '');
-        }
+        // Always send month (even empty = "Semua") + the range. The backend lets
+        // the range override the month, matching the on-screen listing exactly.
+        params.set('month', currentFilters.month ?? '');
+        if (currentFilters.date_from) params.set('date_from', currentFilters.date_from);
+        if (currentFilters.date_to) params.set('date_to', currentFilters.date_to);
         (currentFilters.client_ids ?? []).forEach((id) => params.append('client_ids[]', String(id)));
         if (currentFilters.sort) params.set('sort', currentFilters.sort);
         if (currentFilters.direction) params.set('direction', currentFilters.direction);
@@ -1135,18 +1126,8 @@ function InvoicesPage({ invoices, stats, clients, rollbackableIds, filters }: Pr
         });
     };
 
-    const handleSwitchToMonth = () => {
-        navigate({ period_mode: 'month', month: DEFAULT_MONTH, date_from: '', date_to: '' });
-    };
-
-    const handleSwitchToRange = () => {
-        navigate({ period_mode: 'range', month: '', date_from: '', date_to: '' });
-    };
-
     const handleDateRangeChange = (range: { from: Date | null; to: Date | null }) => {
         navigate({
-            period_mode: 'range',
-            month: '',
             date_from: range.from ? range.from.toISOString().slice(0, 10) : '',
             date_to: range.to ? range.to.toISOString().slice(0, 10) : '',
         });
@@ -1154,7 +1135,7 @@ function InvoicesPage({ invoices, stats, clients, rollbackableIds, filters }: Pr
 
     const handleResetFilters = () => {
         setSearch('');
-        navigate({ search: '', status: '', client_ids: [], period_mode: 'month', month: DEFAULT_MONTH, date_from: '', date_to: '' });
+        navigate({ search: '', status: '', client_ids: [], month: DEFAULT_MONTH, date_from: '', date_to: '' });
     };
 
     const handleDeleteFromTable = () => {
@@ -1178,9 +1159,7 @@ function InvoicesPage({ invoices, stats, clients, rollbackableIds, filters }: Pr
         !!currentFilters.status,
         currentFilters.client_ids.length > 0,
         !!currentFilters.search,
-        dateMode === 'month'
-            ? currentFilters.month && currentFilters.month !== DEFAULT_MONTH
-            : !!currentFilters.date_from || !!currentFilters.date_to,
+        hasRange || (currentFilters.month && currentFilters.month !== DEFAULT_MONTH),
     ].filter(Boolean).length;
 
     const tabItems: TabItem[] = [
@@ -1412,33 +1391,26 @@ function InvoicesPage({ invoices, stats, clients, rollbackableIds, filters }: Pr
                             />
                         </div>
 
-                        {/* Periode */}
+                        {/* Periode — Bulan + Rentang Tanggal (rentang meng-override bulan) */}
                         <div className="flex flex-col gap-1.5 w-full lg:w-64 shrink-0">
-                            <SegmentedControl<DateMode>
-                                label="Periode"
-                                options={[
-                                    { value: 'month', label: 'Bulan' },
-                                    { value: 'range', label: 'Rentang' },
-                                ]}
-                                value={dateMode}
-                                onChange={(v) => (v === 'month' ? handleSwitchToMonth() : handleSwitchToRange())}
+                            <DatePicker
+                                mode="month"
+                                label="Bulan"
+                                value={currentFilters.month || null}
+                                onChange={(v) => navigate({ month: v ?? '' })}
+                                placeholder="Pilih bulan..."
+                                disabled={hasRange}
+                                hint={hasRange ? 'Diabaikan — rentang tanggal sedang aktif' : undefined}
                             />
-                            {dateMode === 'month' ? (
-                                <DatePicker
-                                    mode="month"
-                                    value={currentFilters.month || null}
-                                    onChange={(v) => navigate({ month: v ?? '', date_from: '', date_to: '' })}
-                                    placeholder="Pilih bulan..."
-                                />
-                            ) : (
-                                <DatePicker
-                                    mode="range"
-                                    value={dateRange}
-                                    onChange={handleDateRangeChange}
-                                    placeholder="Tanggal mulai..."
-                                    placeholderTo="Tanggal akhir..."
-                                />
-                            )}
+                            <DatePicker
+                                mode="range"
+                                label="Rentang Tanggal"
+                                value={dateRange}
+                                onChange={handleDateRangeChange}
+                                placeholder="Tanggal mulai..."
+                                placeholderTo="Tanggal akhir..."
+                                clearable
+                            />
                         </div>
 
                         {/* Search + controls */}

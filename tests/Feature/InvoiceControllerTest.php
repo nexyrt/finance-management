@@ -158,6 +158,41 @@ class InvoiceControllerTest extends TestCase
         );
     }
 
+    public function test_date_range_overrides_month_in_export(): void
+    {
+        $this->travelTo(Carbon::parse('2026-05-01 10:00:00'));
+
+        Invoice::factory()->sent()->create([
+            'billed_to_id' => $this->client->id,
+            'invoice_number' => 'INV/MAR/KSN',
+            'issue_date' => '2026-03-10',
+            'total_amount' => 1_000_000,
+        ]);
+        Invoice::factory()->sent()->create([
+            'billed_to_id' => $this->client->id,
+            'invoice_number' => 'INV/MAY/KSN',
+            'issue_date' => '2026-05-10',
+            'total_amount' => 2_000_000,
+        ]);
+
+        Excel::fake();
+
+        // month=May is set, but a March range is also set → the range must win.
+        $this->actingAs($this->admin)
+            ->get('/invoices/export/excel?month=2026-05&date_from=2026-03-01&date_to=2026-03-31')
+            ->assertOk();
+
+        Excel::assertDownloaded(
+            'rekap-invoice-20260501-100000.xlsx',
+            function (InvoiceRecapExport $export) {
+                $flat = collect($export->array())->flatten()->implode('|');
+
+                return str_contains($flat, 'INV/MAR/KSN')
+                    && ! str_contains($flat, 'INV/MAY/KSN');
+            }
+        );
+    }
+
     public function test_export_excel_respects_active_filters(): void
     {
         // Freeze time so the timestamped filename is deterministic.

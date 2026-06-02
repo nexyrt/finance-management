@@ -14,6 +14,7 @@ use App\Models\Payment;
 use App\Models\Service;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -32,8 +33,7 @@ class InvoiceController extends Controller
         $search = $request->input('search');
         $status = $request->input('status');
         $clientIds = array_filter((array) $request->input('client_ids', []), fn ($v) => $v !== '' && $v !== null);
-        $periodMode = $request->input('period_mode', 'month');
-        $month = $request->input('month', $periodMode === 'range' ? null : now()->format('Y-m'));
+        $month = $request->input('month', now()->format('Y-m'));
         $dateFrom = $request->input('date_from');
         $dateTo = $request->input('date_to');
         $perPage = (int) $request->input('per_page', 25);
@@ -57,13 +57,9 @@ class InvoiceController extends Controller
                     ->orWhere('clients.name', 'like', "%{$search}%");
             }))
             ->when($status, fn ($q) => $q->where('invoices.status', $status))
-            ->when($clientIds, fn ($q) => $q->whereIn('invoices.billed_to_id', $clientIds))
-            ->when($periodMode === 'range' && $dateFrom, fn ($q) => $q->whereDate('invoices.issue_date', '>=', $dateFrom))
-            ->when($periodMode === 'range' && $dateTo, fn ($q) => $q->whereDate('invoices.issue_date', '<=', $dateTo))
-            ->when($periodMode !== 'range' && $month, fn ($q) => $q
-                ->whereYear('invoices.issue_date', substr($month, 0, 4))
-                ->whereMonth('invoices.issue_date', substr($month, 5, 2))
-            );
+            ->when($clientIds, fn ($q) => $q->whereIn('invoices.billed_to_id', $clientIds));
+
+        $this->applyPeriodFilter($query, $month, $dateFrom, $dateTo, 'invoices.issue_date');
 
         match ($sort) {
             'client_name' => $query->orderBy('clients.name', $direction),
@@ -86,15 +82,9 @@ class InvoiceController extends Controller
             ]);
 
         // Stats (exclude drafts from revenue calculations, match Listing.php behaviour)
-        $statsIds = Invoice::query()
-            ->whereNotIn('status', ['draft'])
-            ->when($periodMode === 'range' && $dateFrom, fn ($q) => $q->whereDate('issue_date', '>=', $dateFrom))
-            ->when($periodMode === 'range' && $dateTo, fn ($q) => $q->whereDate('issue_date', '<=', $dateTo))
-            ->when($periodMode !== 'range' && $month, fn ($q) => $q
-                ->whereYear('issue_date', substr($month, 0, 4))
-                ->whereMonth('issue_date', substr($month, 5, 2))
-            )
-            ->pluck('id');
+        $statsQuery = Invoice::query()->whereNotIn('status', ['draft']);
+        $this->applyPeriodFilter($statsQuery, $month, $dateFrom, $dateTo);
+        $statsIds = $statsQuery->pluck('id');
 
         $basicStats = DB::table('invoices')
             ->whereIn('id', $statsIds)
@@ -162,12 +152,29 @@ class InvoiceController extends Controller
                 'month' => $month,
                 'date_from' => $dateFrom,
                 'date_to' => $dateTo,
-                'period_mode' => $periodMode,
                 'per_page' => $perPage,
                 'sort' => $sort,
                 'direction' => $direction,
             ],
         ]);
+    }
+
+    /**
+     * Apply the issue-date period filter. A date range (date_from/date_to)
+     * takes precedence over the month filter when either bound is present,
+     * so a range silently overrides a month value that is still set.
+     *
+     * @param  Builder<Invoice>  $query
+     */
+    private function applyPeriodFilter($query, ?string $month, ?string $dateFrom, ?string $dateTo, string $column = 'issue_date'): void
+    {
+        if (filled($dateFrom) || filled($dateTo)) {
+            $query->when(filled($dateFrom), fn ($q) => $q->whereDate($column, '>=', $dateFrom))
+                ->when(filled($dateTo), fn ($q) => $q->whereDate($column, '<=', $dateTo));
+        } elseif (filled($month)) {
+            $query->whereYear($column, substr($month, 0, 4))
+                ->whereMonth($column, substr($month, 5, 2));
+        }
     }
 
     /**
@@ -181,8 +188,7 @@ class InvoiceController extends Controller
         $search = $request->input('search');
         $status = $request->input('status');
         $clientIds = array_filter((array) $request->input('client_ids', []), fn ($v) => $v !== '' && $v !== null);
-        $periodMode = $request->input('period_mode', 'month');
-        $month = $request->input('month', $periodMode === 'range' ? null : now()->format('Y-m'));
+        $month = $request->input('month', now()->format('Y-m'));
         $dateFrom = $request->input('date_from');
         $dateTo = $request->input('date_to');
         $sort = $request->input('sort', 'issue_date');
@@ -204,13 +210,9 @@ class InvoiceController extends Controller
                     ->orWhere('clients.name', 'like', "%{$search}%");
             }))
             ->when($status, fn ($q) => $q->where('invoices.status', $status))
-            ->when($clientIds, fn ($q) => $q->whereIn('invoices.billed_to_id', $clientIds))
-            ->when($periodMode === 'range' && $dateFrom, fn ($q) => $q->whereDate('invoices.issue_date', '>=', $dateFrom))
-            ->when($periodMode === 'range' && $dateTo, fn ($q) => $q->whereDate('invoices.issue_date', '<=', $dateTo))
-            ->when($periodMode !== 'range' && $month, fn ($q) => $q
-                ->whereYear('invoices.issue_date', substr($month, 0, 4))
-                ->whereMonth('invoices.issue_date', substr($month, 5, 2))
-            );
+            ->when($clientIds, fn ($q) => $q->whereIn('invoices.billed_to_id', $clientIds));
+
+        $this->applyPeriodFilter($query, $month, $dateFrom, $dateTo, 'invoices.issue_date');
 
         match ($sort) {
             'client_name' => $query->orderBy('clients.name', $direction),
@@ -235,9 +237,10 @@ class InvoiceController extends Controller
             'total_outstanding' => $rows->sum('amount_remaining'),
         ];
 
-        // Human-readable period label for the report header.
-        if ($periodMode === 'range') {
-            $period = trim(($dateFrom ?? '…').' s/d '.($dateTo ?? '…'));
+        // Human-readable period label for the report header. A date range
+        // overrides the month, matching the listing's filter precedence.
+        if (filled($dateFrom) || filled($dateTo)) {
+            $period = trim(($dateFrom ?: '…').' s/d '.($dateTo ?: '…'));
         } else {
             $period = $month
                 ? Carbon::parse($month.'-01')->isoFormat('MMMM Y')
