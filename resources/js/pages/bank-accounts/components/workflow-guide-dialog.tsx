@@ -25,6 +25,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
+import { Tabs } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 
 interface Props {
@@ -64,23 +65,16 @@ export function WorkflowGuideDialog({ open, onOpenChange }: Props) {
 
                 <div className="px-6 py-5 space-y-5">
                     {/* Tab strip */}
-                    <div className="inline-flex w-full items-center gap-1 p-1 bg-zinc-100 dark:bg-dark-700 rounded-xl border border-zinc-200 dark:border-dark-600">
-                        {TAB_DEFS.map(({ key, label, icon: Icon }) => (
-                            <button
-                                key={key}
-                                onClick={() => setTab(key)}
-                                className={cn(
-                                    'flex flex-1 items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200',
-                                    tab === key
-                                        ? 'bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 shadow-sm border border-zinc-200 dark:border-dark-600'
-                                        : 'text-dark-500 dark:text-dark-400 hover:text-dark-800 dark:hover:text-dark-200',
-                                )}
-                            >
-                                <Icon className="w-3.5 h-3.5 shrink-0" />
-                                <span>{label}</span>
-                            </button>
-                        ))}
-                    </div>
+                    <Tabs
+                        fullWidth
+                        items={TAB_DEFS.map(({ key, label, icon: Icon }) => ({
+                            value: key,
+                            label,
+                            icon: <Icon className="h-4 w-4" />,
+                        }))}
+                        value={tab}
+                        onChange={(v) => setTab(v as TabKey)}
+                    />
 
                     {/* Tab content */}
                     {tab === 'accounts' && <AccountsTab />}

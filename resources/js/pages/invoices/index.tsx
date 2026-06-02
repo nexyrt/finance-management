@@ -49,6 +49,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
+import { SegmentedControl } from '@/components/ui/segmented-control';
 import { Switch } from '@/components/ui/switch';
 import { Tabs } from '@/components/ui/tabs';
 import type { TabItem } from '@/components/ui/tabs';
@@ -1413,37 +1414,15 @@ function InvoicesPage({ invoices, stats, clients, rollbackableIds, filters }: Pr
 
                         {/* Periode */}
                         <div className="flex flex-col gap-1.5 w-full lg:w-64 shrink-0">
-                            <div className="flex items-center justify-between">
-                                <label className="text-sm font-medium text-dark-900 dark:text-dark-300">
-                                    Periode
-                                </label>
-                                <div className="inline-flex items-center p-0.5 bg-zinc-100 dark:bg-dark-700 rounded-lg border border-zinc-200 dark:border-dark-600">
-                                    <button
-                                        type="button"
-                                        onClick={handleSwitchToMonth}
-                                        className={cn(
-                                            'px-2.5 py-1 rounded-md text-xs font-medium transition-colors',
-                                            dateMode === 'month'
-                                                ? 'bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 shadow-sm border border-zinc-200 dark:border-dark-600'
-                                                : 'text-dark-500 dark:text-dark-400 hover:text-dark-700 dark:hover:text-dark-200',
-                                        )}
-                                    >
-                                        Bulan
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={handleSwitchToRange}
-                                        className={cn(
-                                            'px-2.5 py-1 rounded-md text-xs font-medium transition-colors',
-                                            dateMode === 'range'
-                                                ? 'bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 shadow-sm border border-zinc-200 dark:border-dark-600'
-                                                : 'text-dark-500 dark:text-dark-400 hover:text-dark-700 dark:hover:text-dark-200',
-                                        )}
-                                    >
-                                        Rentang
-                                    </button>
-                                </div>
-                            </div>
+                            <SegmentedControl<DateMode>
+                                label="Periode"
+                                options={[
+                                    { value: 'month', label: 'Bulan' },
+                                    { value: 'range', label: 'Rentang' },
+                                ]}
+                                value={dateMode}
+                                onChange={(v) => (v === 'month' ? handleSwitchToMonth() : handleSwitchToRange())}
+                            />
                             {dateMode === 'month' ? (
                                 <DatePicker
                                     mode="month"

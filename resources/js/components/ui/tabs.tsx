@@ -15,6 +15,8 @@ interface TabsProps {
     className?: string;
     storageKey?: string;
     variant?: 'pill' | 'underline';
+    /** Pill variant only: stretch the bar to full width with equal-width tabs. */
+    fullWidth?: boolean;
 }
 
 interface Indicator {
@@ -108,7 +110,7 @@ function Badge({ active, children, variant }: { active: boolean; children: React
     );
 }
 
-function Tabs({ items, value, onChange, className, variant = 'pill' }: TabsProps) {
+function Tabs({ items, value, onChange, className, variant = 'pill', fullWidth = false }: TabsProps) {
     const activeIndex = Math.max(0, items.findIndex((i) => i.value === value));
     const { containerRef, btnRefs, indicator } = useTabIndicator(activeIndex, [value, items.length]);
 
@@ -165,7 +167,8 @@ function Tabs({ items, value, onChange, className, variant = 'pill' }: TabsProps
         <div
             ref={containerRef}
             className={cn(
-                'relative inline-flex items-center gap-1 rounded-xl bg-zinc-100 p-1 ring-1 ring-inset ring-zinc-200 dark:bg-dark-700 dark:ring-dark-600',
+                'relative items-center gap-1 rounded-xl bg-zinc-100 p-1 ring-1 ring-inset ring-zinc-200 dark:bg-dark-700 dark:ring-dark-600',
+                fullWidth ? 'flex w-full' : 'inline-flex',
                 className,
             )}
         >
@@ -192,6 +195,7 @@ function Tabs({ items, value, onChange, className, variant = 'pill' }: TabsProps
                         onClick={() => onChange(item.value)}
                         className={cn(
                             'relative z-10 flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors duration-200',
+                            fullWidth && 'flex-1 justify-center',
                             active
                                 ? 'text-dark-900 dark:text-dark-50'
                                 : 'text-dark-500 dark:text-dark-400 hover:text-dark-800 dark:hover:text-dark-200',

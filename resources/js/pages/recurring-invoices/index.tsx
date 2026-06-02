@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
+import { Tabs } from '@/components/ui/tabs';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { CurrencyInput } from '@/components/shared/currency-input';
@@ -421,22 +422,14 @@ function InvoiceSummary({ items, summary, onSummaryChange }: InvoiceSummaryProps
             <div className="space-y-2">
                 <Label className="text-xs text-dark-500 dark:text-dark-400">Diskon</Label>
                 <div className="flex gap-2">
-                    <div className="inline-flex items-center gap-1 p-0.5 bg-secondary-100 dark:bg-dark-700 rounded-lg border border-secondary-200 dark:border-dark-600">
-                        {(['fixed', 'percentage'] as const).map((t) => (
-                            <button
-                                key={t}
-                                type="button"
-                                onClick={() => onSummaryChange({ ...summary, discount_type: t })}
-                                className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${
-                                    summary.discount_type === t
-                                        ? 'bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 shadow-sm'
-                                        : 'text-dark-500 dark:text-dark-400'
-                                }`}
-                            >
-                                {t === 'fixed' ? 'Nominal' : 'Persen'}
-                            </button>
-                        ))}
-                    </div>
+                    <Tabs
+                        items={[
+                            { value: 'fixed', label: 'Nominal' },
+                            { value: 'percentage', label: 'Persen' },
+                        ]}
+                        value={summary.discount_type}
+                        onChange={(v) => onSummaryChange({ ...summary, discount_type: v as 'fixed' | 'percentage' })}
+                    />
                     {summary.discount_type === 'fixed' ? (
                         <CurrencyInput
                             value={summary.discount_value}
@@ -1194,26 +1187,15 @@ export default function RecurringInvoicesIndex({
                 />
 
                 {/* ── Tabs ── */}
-                <div className="inline-flex items-center gap-1 p-1 bg-secondary-100 dark:bg-dark-700 rounded-xl border border-secondary-200 dark:border-dark-600">
-                    {[
-                        { key: 'templates', label: 'Templates', icon: Repeat2 },
-                        { key: 'monthly', label: 'Bulanan', icon: Calendar },
-                        { key: 'analytics', label: 'Analitik', icon: BarChart3 },
-                    ].map(({ key, label, icon: Icon }) => (
-                        <button
-                            key={key}
-                            onClick={() => setActiveTab(key)}
-                            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                                activeTab === key
-                                    ? 'bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 shadow-sm border border-secondary-200 dark:border-dark-600'
-                                    : 'text-dark-500 dark:text-dark-400 hover:text-dark-800 dark:hover:text-dark-200 hover:bg-secondary-50 dark:hover:bg-dark-600'
-                            }`}
-                        >
-                            <Icon className="w-4 h-4 shrink-0" />
-                            <span>{label}</span>
-                        </button>
-                    ))}
-                </div>
+                <Tabs
+                    items={[
+                        { value: 'templates', label: 'Templates', icon: <Repeat2 className="h-4 w-4" /> },
+                        { value: 'monthly', label: 'Bulanan', icon: <Calendar className="h-4 w-4" /> },
+                        { value: 'analytics', label: 'Analitik', icon: <BarChart3 className="h-4 w-4" /> },
+                    ]}
+                    value={activeTab}
+                    onChange={setActiveTab}
+                />
 
                 {/* ═══════════════════════════════════════════════════════════
                     TEMPLATES TAB
@@ -1237,21 +1219,15 @@ export default function RecurringInvoicesIndex({
                                 icon={<span className="text-dark-400">🔍</span>}
                                 className="w-full sm:w-72"
                             />
-                            <div className="inline-flex items-center gap-1 p-0.5 bg-secondary-100 dark:bg-dark-700 rounded-lg border border-secondary-200 dark:border-dark-600">
-                                {(['all', 'active', 'archived'] as const).map((s) => (
-                                    <button
-                                        key={s}
-                                        onClick={() => setTemplateStatusFilter(s)}
-                                        className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
-                                            templateStatusFilter === s
-                                                ? 'bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 shadow-sm'
-                                                : 'text-dark-500 dark:text-dark-400 hover:text-dark-700'
-                                        }`}
-                                    >
-                                        {s === 'all' ? 'Semua' : s === 'active' ? 'Aktif' : 'Diarsipkan'}
-                                    </button>
-                                ))}
-                            </div>
+                            <Tabs
+                                items={[
+                                    { value: 'all', label: 'Semua' },
+                                    { value: 'active', label: 'Aktif' },
+                                    { value: 'archived', label: 'Diarsipkan' },
+                                ]}
+                                value={templateStatusFilter}
+                                onChange={(v) => setTemplateStatusFilter(v as 'all' | 'active' | 'archived')}
+                            />
                         </div>
 
                         {/* Template cards */}
@@ -1361,15 +1337,15 @@ export default function RecurringInvoicesIndex({
                                     placeholder="Filter template"
                                     className="w-52"
                                 />
-                                <div className="inline-flex items-center gap-1 p-0.5 bg-secondary-100 dark:bg-dark-700 rounded-lg border border-secondary-200 dark:border-dark-600">
-                                    {(['all', 'draft', 'published'] as const).map((s) => (
-                                        <button key={s} onClick={() => navigateMonthly(monthly.month, monthly.year, undefined, s)}
-                                            className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${monthly.status_filter === s ? 'bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 shadow-sm' : 'text-dark-500 dark:text-dark-400'}`}
-                                        >
-                                            {s === 'all' ? 'Semua' : s === 'draft' ? 'Draft' : 'Published'}
-                                        </button>
-                                    ))}
-                                </div>
+                                <Tabs
+                                    items={[
+                                        { value: 'all', label: 'Semua' },
+                                        { value: 'draft', label: 'Draft' },
+                                        { value: 'published', label: 'Published' },
+                                    ]}
+                                    value={monthly.status_filter}
+                                    onChange={(s) => navigateMonthly(monthly.month, monthly.year, undefined, s)}
+                                />
                             </div>
                         </div>
 
@@ -1510,15 +1486,14 @@ export default function RecurringInvoicesIndex({
                                 placeholder="Tahun"
                                 className="w-32"
                             />
-                            <div className="inline-flex items-center gap-1 p-0.5 bg-secondary-100 dark:bg-dark-700 rounded-lg border border-secondary-200 dark:border-dark-600">
-                                {(['monthly', 'quarterly'] as const).map((p) => (
-                                    <button key={p} onClick={() => { setAnalyticsPeriod(p); navigateAnalytics(analyticsYear, p); }}
-                                        className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${analyticsPeriod === p ? 'bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 shadow-sm' : 'text-dark-500 dark:text-dark-400'}`}
-                                    >
-                                        {p === 'monthly' ? 'Bulanan' : 'Triwulanan'}
-                                    </button>
-                                ))}
-                            </div>
+                            <Tabs
+                                items={[
+                                    { value: 'monthly', label: 'Bulanan' },
+                                    { value: 'quarterly', label: 'Triwulanan' },
+                                ]}
+                                value={analyticsPeriod}
+                                onChange={(p) => { setAnalyticsPeriod(p as 'monthly' | 'quarterly'); navigateAnalytics(analyticsYear, p as 'monthly' | 'quarterly'); }}
+                            />
                         </div>
 
                         {/* KPI metrics */}
