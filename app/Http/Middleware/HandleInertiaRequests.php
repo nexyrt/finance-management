@@ -3,6 +3,9 @@
 namespace App\Http\Middleware;
 
 use App\Models\AppNotification;
+use App\Models\FundRequest;
+use App\Models\Reimbursement;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -52,6 +55,38 @@ class HandleInertiaRequests extends Middleware
                 'info' => session('info'),
             ],
             'notifications' => fn () => $user ? $this->getNotifications($user->id) : null,
+            'actionCounts' => fn () => $user ? $this->getActionCounts($user) : null,
+        ];
+    }
+
+    /**
+     * Sidebar badge counts: how many items the current user still needs to act
+     * on — review (pending) plus disburse/pay (approved). Permission-aware, so a
+     * user who can't review/disburse never sees those counts.
+     *
+     * @return array{reimbursements: int, fund_requests: int}
+     */
+    private function getActionCounts(User $user): array
+    {
+        $reimbursements = 0;
+        if ($user->can('approve reimbursements')) {
+            $reimbursements += Reimbursement::where('status', 'pending')->count();
+        }
+        if ($user->can('pay reimbursements')) {
+            $reimbursements += Reimbursement::where('status', 'approved')->count();
+        }
+
+        $fundRequests = 0;
+        if ($user->can('approve fund requests')) {
+            $fundRequests += FundRequest::where('status', 'pending')->count();
+        }
+        if ($user->can('disburse fund requests')) {
+            $fundRequests += FundRequest::where('status', 'approved')->count();
+        }
+
+        return [
+            'reimbursements' => $reimbursements,
+            'fund_requests' => $fundRequests,
         ];
     }
 

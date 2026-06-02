@@ -40,5 +40,6 @@ export type SharedProps = {
     locale: string;
     flash: Flash;
     notifications: SharedNotifications | null;
+    actionCounts: { reimbursements: number; fund_requests: number } | null;
     [key: string]: unknown;
 };

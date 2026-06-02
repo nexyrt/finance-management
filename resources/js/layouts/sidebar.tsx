@@ -38,6 +38,8 @@ interface NavItem {
     permission?: string;
     matchPrefix?: string;
     comingSoon?: boolean;
+    /** Key into the shared actionCounts prop for a "needs action" badge. */
+    badgeKey?: 'reimbursements' | 'fund_requests';
 }
 
 interface NavSection {
@@ -149,6 +151,7 @@ const NAV: NavSection[] = [
                 icon: <Receipt className="w-4 h-4 shrink-0" />,
                 permission: 'view fund requests',
                 matchPrefix: '/fund-requests',
+                badgeKey: 'fund_requests',
             },
             {
                 label: 'Reimbursement',
@@ -156,6 +159,7 @@ const NAV: NavSection[] = [
                 icon: <ArrowLeftRight className="w-4 h-4 shrink-0" />,
                 permission: 'view reimbursements',
                 matchPrefix: '/reimbursements',
+                badgeKey: 'reimbursements',
             },
         ],
     },
@@ -226,11 +230,13 @@ function NavLink({
     collapsed,
     currentUrl,
     onClick,
+    badge = 0,
 }: {
     item: NavItem;
     collapsed: boolean;
     currentUrl: string;
     onClick: () => void;
+    badge?: number;
 }) {
     const isActive =
         !item.comingSoon &&
@@ -272,14 +278,25 @@ function NavLink({
                 collapsed && 'justify-center px-2',
             )}
         >
-            {item.icon}
-            {!collapsed && <span>{item.label}</span>}
+            <span className="relative shrink-0">
+                {item.icon}
+                {/* Collapsed: a dot on the icon hints there are items to act on. */}
+                {collapsed && badge > 0 && (
+                    <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-red-500 ring-2 ring-white dark:ring-dark-900" />
+                )}
+            </span>
+            {!collapsed && <span className="flex-1 truncate">{item.label}</span>}
+            {!collapsed && badge > 0 && (
+                <span className="ml-auto inline-flex min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 py-px text-[0.6875rem] font-bold leading-tight text-white">
+                    {badge > 99 ? '99+' : badge}
+                </span>
+            )}
         </Link>
     );
 }
 
 export function Sidebar({ open, collapsed, onClose, onToggleCollapse }: SidebarProps) {
-    const { auth } = usePage<SharedProps>().props;
+    const { auth, actionCounts } = usePage<SharedProps>().props;
     const permissions = auth.permissions;
     const user = auth.user;
     const currentUrl = usePage().url;
@@ -369,6 +386,7 @@ export function Sidebar({ open, collapsed, onClose, onToggleCollapse }: SidebarP
                                     collapsed={collapsed}
                                     currentUrl={currentUrl}
                                     onClick={onClose}
+                                    badge={item.badgeKey ? actionCounts?.[item.badgeKey] ?? 0 : 0}
                                 />
                             ))}
                         </div>
