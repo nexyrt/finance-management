@@ -100,6 +100,29 @@ class InvoiceControllerTest extends TestCase
             ->assertInertia(fn ($page) => $page->where('stats.total_outstanding', 600_000));
     }
 
+    public function test_status_tab_counts_respect_active_period(): void
+    {
+        Invoice::factory()->paid()->create(['billed_to_id' => $this->client->id, 'issue_date' => '2026-01-10', 'total_amount' => 1_000_000]);
+        Invoice::factory()->paid()->create(['billed_to_id' => $this->client->id, 'issue_date' => '2026-01-20', 'total_amount' => 1_000_000]);
+        Invoice::factory()->sent()->create(['billed_to_id' => $this->client->id, 'issue_date' => '2026-03-05', 'total_amount' => 2_000_000]);
+
+        // January → 2 paid, 0 sent.
+        $this->actingAs($this->admin)
+            ->get('/invoices?month=2026-01')
+            ->assertInertia(fn ($page) => $page
+                ->where('stats.paid_count', 2)
+                ->where('stats.sent_count', 0)
+            );
+
+        // All periods → 2 paid, 1 sent.
+        $this->actingAs($this->admin)
+            ->get('/invoices?month=')
+            ->assertInertia(fn ($page) => $page
+                ->where('stats.paid_count', 2)
+                ->where('stats.sent_count', 1)
+            );
+    }
+
     public function test_export_excel_downloads_spreadsheet(): void
     {
         Invoice::factory()->sent()->create(['billed_to_id' => $this->client->id, 'total_amount' => 1_000_000]);

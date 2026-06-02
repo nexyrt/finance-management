@@ -369,21 +369,19 @@ export function DatePicker(props: DatePickerProps) {
         </span>
     );
 
-    /* clear */
-    const handleClear = React.useCallback(
-        (e: React.MouseEvent | React.KeyboardEvent) => {
-            e.stopPropagation();
-            if (isMonth) {
-                (props as DatePickerMonthProps).onChange(null);
-            } else if (isRange) {
-                (props as DatePickerRangeProps).onChange({ from: null, to: null });
-            } else {
-                (props as DatePickerSingleProps).onChange(null);
-            }
-        },
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        [isMonth, isRange],
-    );
+    /* clear — plain function so it always calls the latest props.onChange
+       (a useCallback memoized on [isMonth, isRange] would capture a stale
+       onChange from the first render, dropping other filters on clear). */
+    const handleClear = (e: React.MouseEvent | React.KeyboardEvent) => {
+        e.stopPropagation();
+        if (isMonth) {
+            (props as DatePickerMonthProps).onChange(null);
+        } else if (isRange) {
+            (props as DatePickerRangeProps).onChange({ from: null, to: null });
+        } else {
+            (props as DatePickerSingleProps).onChange(null);
+        }
+    };
 
     /* stable MonthCaption component for day/range modes */
     const MonthCaptionComponent = React.useMemo(() => {

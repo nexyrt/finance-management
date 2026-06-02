@@ -112,6 +112,22 @@ class InvoiceController extends Controller
         $paidOnOutstanding = (int) Payment::whereHas('invoice', fn ($q) => $q->whereIn('status', ['sent', 'partially_paid']))->sum('amount');
         $totalOutstanding = max(0, (int) $outstandingRaw->total_billed - $paidOnOutstanding);
 
+        // Per-status tab counts, relative to the active filters EXCEPT status
+        // (the tabs themselves switch status, so each tab shows its own count
+        // within the current period/client/search scope).
+        $statusBase = Invoice::query()
+            ->join('clients', 'invoices.billed_to_id', '=', 'clients.id')
+            ->when($search, fn ($q) => $q->where(function ($qq) use ($search) {
+                $qq->where('invoices.invoice_number', 'like', "%{$search}%")
+                    ->orWhere('clients.name', 'like', "%{$search}%");
+            }))
+            ->when($clientIds, fn ($q) => $q->whereIn('invoices.billed_to_id', $clientIds));
+        $this->applyPeriodFilter($statusBase, $month, $dateFrom, $dateTo, 'invoices.issue_date');
+        $statusCounts = $statusBase
+            ->selectRaw('invoices.status as status, COUNT(*) as c')
+            ->groupBy('invoices.status')
+            ->pluck('c', 'status');
+
         $stats = [
             'invoice_count' => (int) $basicStats->invoice_count,
             'total_revenue' => $totalRevenue,
@@ -119,10 +135,10 @@ class InvoiceController extends Controller
             'gross_profit' => $totalRevenue - $totalCogs,
             'paid_this_month' => $paidThisMonth,
             'total_outstanding' => $totalOutstanding,
-            'draft_count' => Invoice::where('status', 'draft')->count(),
-            'sent_count' => Invoice::where('status', 'sent')->count(),
-            'partially_paid_count' => Invoice::where('status', 'partially_paid')->count(),
-            'paid_count' => Invoice::where('status', 'paid')->count(),
+            'draft_count' => (int) ($statusCounts['draft'] ?? 0),
+            'sent_count' => (int) ($statusCounts['sent'] ?? 0),
+            'partially_paid_count' => (int) ($statusCounts['partially_paid'] ?? 0),
+            'paid_count' => (int) ($statusCounts['paid'] ?? 0),
         ];
 
         $clients = Client::orderBy('name')
