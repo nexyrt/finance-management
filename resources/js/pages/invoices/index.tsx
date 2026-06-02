@@ -1394,15 +1394,34 @@ function InvoicesPage({ invoices, stats, clients, rollbackableIds, filters }: Pr
                         {/* Periode — Bulan + Rentang Tanggal berdampingan (rentang meng-override bulan) */}
                         <div className="flex flex-col sm:flex-row sm:items-start gap-3 w-full lg:w-auto shrink-0">
                             <div className="w-full sm:w-40 shrink-0">
-                                <DatePicker
-                                    mode="month"
-                                    label="Bulan"
-                                    value={currentFilters.month || null}
-                                    onChange={(v) => navigate({ month: v ?? '' })}
-                                    placeholder="Pilih bulan..."
-                                    disabled={hasRange}
-                                    hint={hasRange ? 'Diabaikan — rentang aktif' : undefined}
-                                />
+                                {hasRange ? (
+                                    <TooltipProvider delayDuration={150}>
+                                        <Tooltip>
+                                            <TooltipTrigger asChild>
+                                                {/* wrapper receives hover even though the inner field is disabled */}
+                                                <div>
+                                                    <DatePicker
+                                                        mode="month"
+                                                        label="Bulan"
+                                                        value={currentFilters.month || null}
+                                                        onChange={(v) => navigate({ month: v ?? '' })}
+                                                        placeholder="Pilih bulan..."
+                                                        disabled
+                                                    />
+                                                </div>
+                                            </TooltipTrigger>
+                                            <TooltipContent>Diabaikan — rentang tanggal sedang aktif</TooltipContent>
+                                        </Tooltip>
+                                    </TooltipProvider>
+                                ) : (
+                                    <DatePicker
+                                        mode="month"
+                                        label="Bulan"
+                                        value={currentFilters.month || null}
+                                        onChange={(v) => navigate({ month: v ?? '' })}
+                                        placeholder="Pilih bulan..."
+                                    />
+                                )}
                             </div>
                             <div className="w-full sm:w-60 shrink-0">
                                 <DatePicker
