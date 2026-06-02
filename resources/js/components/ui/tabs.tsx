@@ -18,35 +18,72 @@ interface TabsProps {
 }
 
 interface Indicator {
+    /** Distance from the container's left padding edge to the active button. */
     left: number;
-    width: number;
+    /** Distance from the active button to the container's right padding edge. */
+    right: number;
+    /** Travel direction since the last change: 1 = right, -1 = left, 0 = none. */
+    dir: number;
     ready: boolean;
 }
 
+const STRETCH_DURATION = 320;
+const STRETCH_DELAY = 130;
+const STRETCH_EASE = 'cubic-bezier(0.32, 0.72, 0, 1)';
+
 /**
- * Measures the active tab button and returns a {left,width} indicator that the
- * caller animates. The container uses `ring` (not `border`) so the active
- * button's offsetLeft is measured from the same origin as the absolutely
- * positioned indicator — keeping the slide pixel-perfect.
+ * Builds the "stretch & settle" (liquid) transition: the leading edge moves
+ * immediately while the trailing edge follows after a delay, so the indicator
+ * elongates toward the destination and then contracts onto it.
+ */
+function stretchTransition(dir: number): string {
+    const lead = `${STRETCH_DURATION}ms ${STRETCH_EASE}`;
+    const trail = `${STRETCH_DURATION}ms ${STRETCH_EASE} ${STRETCH_DELAY}ms`;
+    if (dir > 0) {
+        // Moving right: the right edge leads, the left edge trails.
+        return `right ${lead}, left ${trail}`;
+    }
+    if (dir < 0) {
+        // Moving left: the left edge leads, the right edge trails.
+        return `left ${lead}, right ${trail}`;
+    }
+    return `left ${lead}, right ${lead}`;
+}
+
+/**
+ * Measures the active tab button as {left,right} offsets within the container
+ * and tracks travel direction. The container uses `ring` (not `border`) so the
+ * button's offsetLeft shares the indicator's origin — keeping it pixel-perfect.
  */
 function useTabIndicator(activeIndex: number, deps: React.DependencyList) {
     const containerRef = React.useRef<HTMLDivElement>(null);
     const btnRefs = React.useRef<(HTMLButtonElement | null)[]>([]);
-    const [indicator, setIndicator] = React.useState<Indicator>({ left: 0, width: 0, ready: false });
+    const prevIndex = React.useRef(activeIndex);
+    const [indicator, setIndicator] = React.useState<Indicator>({ left: 0, right: 0, dir: 0, ready: false });
 
     React.useLayoutEffect(() => {
-        const measure = () => {
+        const measure = (withDirection: boolean) => {
+            const container = containerRef.current;
             const btn = btnRefs.current[activeIndex];
-            if (!btn) return;
-            setIndicator({ left: btn.offsetLeft, width: btn.offsetWidth, ready: true });
+            if (!container || !btn) return;
+            const dir = withDirection
+                ? Math.sign(activeIndex - prevIndex.current)
+                : 0;
+            setIndicator({
+                left: btn.offsetLeft,
+                right: container.clientWidth - btn.offsetLeft - btn.offsetWidth,
+                dir,
+                ready: true,
+            });
         };
 
-        measure();
+        measure(true);
+        prevIndex.current = activeIndex;
 
-        // Re-measure when the container resizes (responsive reflow, font load, etc.).
+        // Re-measure on resize without re-triggering the stretch (dir = 0 → plain settle).
         const container = containerRef.current;
         if (!container || typeof ResizeObserver === 'undefined') return;
-        const ro = new ResizeObserver(measure);
+        const ro = new ResizeObserver(() => measure(false));
         ro.observe(container);
         return () => ro.disconnect();
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -85,14 +122,18 @@ function Tabs({ items, value, onChange, className, variant = 'pill' }: TabsProps
                     className,
                 )}
             >
-                {/* sliding underline */}
+                {/* sliding underline (liquid stretch) */}
                 <span
                     aria-hidden
                     className={cn(
                         '-bottom-px absolute h-0.5 rounded-full bg-primary-600 dark:bg-primary-400',
-                        indicator.ready ? 'opacity-100 transition-[transform,width] duration-300 ease-out' : 'opacity-0',
+                        indicator.ready ? 'opacity-100' : 'opacity-0',
                     )}
-                    style={{ width: indicator.width, transform: `translateX(${indicator.left}px)`, left: 0 }}
+                    style={{
+                        left: indicator.left,
+                        right: indicator.right,
+                        transition: indicator.ready ? stretchTransition(indicator.dir) : 'none',
+                    }}
                 />
                 {items.map((item, i) => {
                     const active = value === item.value;
@@ -128,14 +169,18 @@ function Tabs({ items, value, onChange, className, variant = 'pill' }: TabsProps
                 className,
             )}
         >
-            {/* sliding thumb */}
+            {/* sliding thumb (liquid stretch) */}
             <span
                 aria-hidden
                 className={cn(
                     'absolute top-1 bottom-1 rounded-lg bg-white shadow-sm ring-1 ring-zinc-200/80 dark:bg-dark-900 dark:ring-dark-500',
-                    indicator.ready ? 'opacity-100 transition-[transform,width] duration-300 ease-out' : 'opacity-0',
+                    indicator.ready ? 'opacity-100' : 'opacity-0',
                 )}
-                style={{ width: indicator.width, transform: `translateX(${indicator.left}px)`, left: 0 }}
+                style={{
+                    left: indicator.left,
+                    right: indicator.right,
+                    transition: indicator.ready ? stretchTransition(indicator.dir) : 'none',
+                }}
             />
             {items.map((item, i) => {
                 const active = value === item.value;
