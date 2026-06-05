@@ -31,7 +31,10 @@ class InvoiceRecapExport implements FromArray, WithColumnWidths, WithEvents, Wit
     /** Accounting-style Rupiah format: right-aligned, negatives in parentheses, zero as dash. */
     private const RP_FORMAT = '_("Rp"* #,##0_);_("Rp"* \(#,##0\);_("Rp"* "-"_);_(@_)';
 
-    private const LAST_COL = 'H';
+    private const LAST_COL = 'K';
+
+    /** Columns that hold money (accounting format + right aligned). */
+    private const MONEY_RANGE = 'F:K';
 
     /** 1-based sheet row where the table header sits (after the title block). */
     private int $headerRow = 5;
@@ -60,12 +63,13 @@ class InvoiceRecapExport implements FromArray, WithColumnWidths, WithEvents, Wit
 
     public function array(): array
     {
+        $blank = array_fill(0, 11, '');
         $grid = [];
-        $grid[] = ['REKAP INVOICE', '', '', '', '', '', '', ''];
-        $grid[] = ['Periode: '.$this->period, '', '', '', '', '', '', ''];
-        $grid[] = ['Dicetak: '.now()->isoFormat('D MMMM Y HH:mm').' WIB', '', '', '', '', '', '', ''];
-        $grid[] = ['', '', '', '', '', '', '', ''];
-        $grid[] = ['No. Invoice', 'Klien', 'Tgl Invoice', 'Jatuh Tempo', 'Status', 'Total', 'Terbayar', 'Sisa'];
+        $grid[] = ['REKAP INVOICE'] + $blank;
+        $grid[] = ['Periode: '.$this->period] + $blank;
+        $grid[] = ['Dicetak: '.now()->isoFormat('D MMMM Y HH:mm').' WIB'] + $blank;
+        $grid[] = $blank;
+        $grid[] = ['No. Invoice', 'Klien', 'Tgl Invoice', 'Jatuh Tempo', 'Status', 'Omzet', 'HPP', 'Profit', 'PPh Final 0,5%', 'Terbayar', 'Sisa'];
 
         $this->firstDataRow = count($grid) + 1;
 
@@ -77,6 +81,9 @@ class InvoiceRecapExport implements FromArray, WithColumnWidths, WithEvents, Wit
                 $row['due_date'],
                 self::STATUS_LABELS[$row['status']] ?? $row['status'],
                 (int) $row['total_amount'],
+                (int) $row['hpp'],
+                (int) $row['profit'],
+                (int) $row['pph_final'],
                 (int) $row['amount_paid'],
                 (int) $row['amount_remaining'],
             ];
@@ -87,6 +94,9 @@ class InvoiceRecapExport implements FromArray, WithColumnWidths, WithEvents, Wit
         $grid[] = [
             'TOTAL ('.$this->summary['count'].' invoice)', '', '', '', '',
             (int) $this->summary['total_amount'],
+            (int) $this->summary['total_hpp'],
+            (int) $this->summary['total_profit'],
+            (int) $this->summary['total_pph_final'],
             (int) $this->summary['total_paid'],
             (int) $this->summary['total_outstanding'],
         ];
@@ -98,8 +108,8 @@ class InvoiceRecapExport implements FromArray, WithColumnWidths, WithEvents, Wit
     public function columnWidths(): array
     {
         return [
-            'A' => 24, 'B' => 32, 'C' => 14, 'D' => 14,
-            'E' => 12, 'F' => 18, 'G' => 18, 'H' => 18,
+            'A' => 20, 'B' => 28, 'C' => 13, 'D' => 13, 'E' => 11, 'F' => 16,
+            'G' => 15, 'H' => 16, 'I' => 16, 'J' => 16, 'K' => 16,
         ];
     }
 
@@ -147,7 +157,8 @@ class InvoiceRecapExport implements FromArray, WithColumnWidths, WithEvents, Wit
             $bodyRange = "A{$first}:{$last}{$lastData}";
 
             // Money columns as accounting numbers.
-            $sheet->getStyle("F{$first}:H{$lastData}")->getNumberFormat()->setFormatCode(self::RP_FORMAT);
+            [$mFrom, $mTo] = explode(':', self::MONEY_RANGE);
+            $sheet->getStyle("{$mFrom}{$first}:{$mTo}{$lastData}")->getNumberFormat()->setFormatCode(self::RP_FORMAT);
             // Center dates + status.
             $sheet->getStyle("C{$first}:E{$lastData}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
@@ -169,7 +180,8 @@ class InvoiceRecapExport implements FromArray, WithColumnWidths, WithEvents, Wit
         $sheet->getStyle($totalRange)->getFont()->setBold(true);
         $sheet->getStyle($totalRange)->getFill()
             ->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('E2E8F0');
-        $sheet->getStyle("F{$total}:H{$total}")->getNumberFormat()->setFormatCode(self::RP_FORMAT);
+        [$mFromT, $mToT] = explode(':', self::MONEY_RANGE);
+        $sheet->getStyle("{$mFromT}{$total}:{$mToT}{$total}")->getNumberFormat()->setFormatCode(self::RP_FORMAT);
         $sheet->mergeCells("A{$total}:E{$total}");
         $sheet->getStyle("A{$total}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
         $sheet->getStyle($totalRange)->getBorders()->getTop()

@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Exports\InvoiceRecapExport;
 use App\Models\Client;
 use App\Models\Invoice;
+use App\Models\InvoiceItem;
 use App\Models\Payment;
 use App\Models\User;
 use Carbon\Carbon;
@@ -200,6 +201,43 @@ class InvoiceControllerTest extends TestCase
                 collect($export->array())->flatten()->implode('|'),
                 'TOTAL (2 invoice)'
             )
+        );
+    }
+
+    public function test_export_includes_hpp_profit_and_pph_final(): void
+    {
+        $this->travelTo(Carbon::parse('2026-05-01 10:00:00'));
+
+        $invoice = Invoice::factory()->sent()->create([
+            'billed_to_id' => $this->client->id,
+            'issue_date' => '2026-05-10',
+            'total_amount' => 10_000_000,
+        ]);
+        InvoiceItem::factory()->create([
+            'invoice_id' => $invoice->id,
+            'quantity' => 1,
+            'unit_price' => 10_000_000,
+            'amount' => 10_000_000,
+            'cogs_amount' => 6_000_000,
+        ]);
+
+        Excel::fake();
+
+        $this->actingAs($this->admin)
+            ->get('/invoices/export/excel?month=2026-05')
+            ->assertOk();
+
+        Excel::assertDownloaded(
+            'rekap-invoice-20260501-100000.xlsx',
+            function (InvoiceRecapExport $export) {
+                $flat = collect($export->array())->flatten();
+
+                // Omzet 10jt, HPP 6jt, Profit 4jt (10−6), PPh Final 50rb (0,5% × 10jt).
+                return $flat->contains(10_000_000)
+                    && $flat->contains(6_000_000)
+                    && $flat->contains(4_000_000)
+                    && $flat->contains(50_000);
+            }
         );
     }
 

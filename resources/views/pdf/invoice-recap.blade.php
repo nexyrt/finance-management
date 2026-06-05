@@ -5,6 +5,8 @@
     /** @var \App\Models\CompanyProfile|null $company */
 
     $rp = fn ($v) => 'Rp '.number_format((int) $v, 0, ',', '.');
+    // Compact (no "Rp") for the dense 12-column table body.
+    $n = fn ($v) => number_format((int) $v, 0, ',', '.');
 
     $status = [
         'draft' => ['label' => 'Draft', 'bg' => '#f1f5f9', 'fg' => '#475569'],
@@ -42,27 +44,29 @@
         .rule { height: 2px; background: #0f172a; margin-bottom: 14px; }
 
         /* ── Summary strip ── */
-        .summary { width: 100%; border-collapse: separate; border-spacing: 6px 0; margin-bottom: 14px; }
+        .summary { width: 100%; border-collapse: separate; border-spacing: 5px 0; margin-bottom: 14px; }
         .summary td {
-            width: 25%; border: 1px solid #e2e8f0; border-radius: 6px;
-            padding: 8px 10px; background: #f8fafc;
+            width: 16.66%; border: 1px solid #e2e8f0; border-radius: 6px;
+            padding: 7px 9px; background: #f8fafc;
         }
-        .sum-label { font-size: 7.5pt; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
-        .sum-value { font-size: 11pt; font-weight: bold; color: #0f172a; margin-top: 3px; }
+        .sum-label { font-size: 7pt; color: #64748b; text-transform: uppercase; letter-spacing: 0.3px; }
+        .sum-value { font-size: 9.5pt; font-weight: bold; color: #0f172a; margin-top: 3px; }
         .sum-value.out { color: #b45309; }
         .sum-value.paid { color: #15803d; }
+        .sum-value.profit { color: #15803d; }
+        .sum-value.tax { color: #b45309; }
 
         /* ── Table ── */
         table.data { width: 100%; border-collapse: collapse; }
         table.data thead th {
-            background: #0f172a; color: #fff; font-size: 8pt; font-weight: bold;
-            text-transform: uppercase; letter-spacing: 0.3px;
-            padding: 7px 8px; text-align: left; border: none;
+            background: #0f172a; color: #fff; font-size: 7pt; font-weight: bold;
+            text-transform: uppercase; letter-spacing: 0.2px;
+            padding: 6px 5px; text-align: left; border: none;
         }
         table.data thead th.c { text-align: center; }
         table.data thead th.r { text-align: right; }
         table.data tbody td {
-            padding: 6px 8px; font-size: 8.5pt; border-bottom: 1px solid #e2e8f0;
+            padding: 5px 5px; font-size: 7.5pt; border-bottom: 1px solid #e2e8f0;
         }
         table.data tbody tr.even td { background: #f8fafc; }
         td.c { text-align: center; }
@@ -77,10 +81,10 @@
 
         /* ── Totals ── */
         table.data tfoot td {
-            padding: 9px 8px; font-size: 9pt; font-weight: bold;
+            padding: 7px 5px; font-size: 7.5pt; font-weight: bold;
             border-top: 2px solid #0f172a; background: #f1f5f9;
         }
-        table.data tfoot td.r { text-align: right; }
+        table.data tfoot td.r { text-align: right; white-space: nowrap; }
 
         .empty { text-align: center; padding: 24px; color: #94a3b8; font-style: italic; }
 
@@ -130,12 +134,20 @@
                 <div class="sum-value">{{ number_format($summary['count'], 0, ',', '.') }}</div>
             </td>
             <td>
-                <div class="sum-label">Total Tagihan</div>
+                <div class="sum-label">Omzet</div>
                 <div class="sum-value">{{ $rp($summary['total_amount']) }}</div>
             </td>
             <td>
-                <div class="sum-label">Terbayar</div>
-                <div class="sum-value paid">{{ $rp($summary['total_paid']) }}</div>
+                <div class="sum-label">HPP</div>
+                <div class="sum-value">{{ $rp($summary['total_hpp']) }}</div>
+            </td>
+            <td>
+                <div class="sum-label">Profit</div>
+                <div class="sum-value profit">{{ $rp($summary['total_profit']) }}</div>
+            </td>
+            <td>
+                <div class="sum-label">PPh Final 0,5%</div>
+                <div class="sum-value tax">{{ $rp($summary['total_pph_final']) }}</div>
             </td>
             <td>
                 <div class="sum-label">Outstanding</div>
@@ -144,17 +156,22 @@
         </tr>
     </table>
 
+    <div style="font-size:7pt;color:#94a3b8;margin-bottom:6px;">Semua nilai dalam Rupiah. Profit = Omzet - HPP &middot; PPh Final = 0,5% x Omzet (PP 55/2022).</div>
+
     {{-- Table --}}
     <table class="data">
         <thead>
             <tr>
-                <th class="c" style="width:4%;">No</th>
-                <th style="width:16%;">No. Invoice</th>
-                <th style="width:22%;">Klien</th>
-                <th class="c" style="width:11%;">Tgl Invoice</th>
-                <th class="c" style="width:11%;">Jatuh Tempo</th>
-                <th class="c" style="width:9%;">Status</th>
-                <th class="r">Total</th>
+                <th class="c" style="width:3%;">No</th>
+                <th style="width:13%;">No. Invoice</th>
+                <th style="width:15%;">Klien</th>
+                <th class="c" style="width:8%;">Tgl Invoice</th>
+                <th class="c" style="width:8%;">Jatuh Tempo</th>
+                <th class="c" style="width:7%;">Status</th>
+                <th class="r">Omzet</th>
+                <th class="r">HPP</th>
+                <th class="r">Profit</th>
+                <th class="r">PPh 0,5%</th>
                 <th class="r">Terbayar</th>
                 <th class="r">Sisa</th>
             </tr>
@@ -171,20 +188,26 @@
                     <td class="c">
                         <span class="badge" style="background:{{ $st['bg'] }};color:{{ $st['fg'] }};">{{ $st['label'] }}</span>
                     </td>
-                    <td class="r">{{ $rp($row['total_amount']) }}</td>
-                    <td class="r">{{ $rp($row['amount_paid']) }}</td>
-                    <td class="r">{{ $rp($row['amount_remaining']) }}</td>
+                    <td class="r">{{ $n($row['total_amount']) }}</td>
+                    <td class="r">{{ $n($row['hpp']) }}</td>
+                    <td class="r" style="color:#15803d;">{{ $n($row['profit']) }}</td>
+                    <td class="r" style="color:#b45309;">{{ $n($row['pph_final']) }}</td>
+                    <td class="r">{{ $n($row['amount_paid']) }}</td>
+                    <td class="r">{{ $n($row['amount_remaining']) }}</td>
                 </tr>
             @empty
-                <tr><td colspan="9" class="empty">Tidak ada invoice pada periode/filter ini.</td></tr>
+                <tr><td colspan="12" class="empty">Tidak ada invoice pada periode/filter ini.</td></tr>
             @endforelse
         </tbody>
         <tfoot>
             <tr>
                 <td colspan="6" class="r">TOTAL ({{ $summary['count'] }} invoice)</td>
-                <td class="r">{{ $rp($summary['total_amount']) }}</td>
-                <td class="r">{{ $rp($summary['total_paid']) }}</td>
-                <td class="r">{{ $rp($summary['total_outstanding']) }}</td>
+                <td class="r">{{ $n($summary['total_amount']) }}</td>
+                <td class="r">{{ $n($summary['total_hpp']) }}</td>
+                <td class="r" style="color:#15803d;">{{ $n($summary['total_profit']) }}</td>
+                <td class="r" style="color:#b45309;">{{ $n($summary['total_pph_final']) }}</td>
+                <td class="r">{{ $n($summary['total_paid']) }}</td>
+                <td class="r">{{ $n($summary['total_outstanding']) }}</td>
             </tr>
         </tfoot>
     </table>

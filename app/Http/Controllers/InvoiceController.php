@@ -218,10 +218,15 @@ class InvoiceController extends Controller
                 DB::raw('(SELECT invoice_id, COALESCE(SUM(amount), 0) as amount_paid FROM payments GROUP BY invoice_id) as p'),
                 'invoices.id', '=', 'p.invoice_id'
             )
+            ->leftJoin(
+                DB::raw('(SELECT invoice_id, COALESCE(SUM(cogs_amount), 0) as total_cogs FROM invoice_items GROUP BY invoice_id) as ic'),
+                'invoices.id', '=', 'ic.invoice_id'
+            )
             ->select([
                 'invoices.*',
                 'clients.name as client_name',
                 DB::raw('COALESCE(p.amount_paid, 0) as amount_paid'),
+                DB::raw('COALESCE(ic.total_cogs, 0) as total_cogs'),
             ])
             ->when($search, fn ($q) => $q->where(function ($query) use ($search) {
                 $query->where('invoices.invoice_number', 'like', "%{$search}%")
@@ -237,20 +242,31 @@ class InvoiceController extends Controller
             default => $query->orderBy("invoices.{$sort}", $direction),
         };
 
-        $rows = $query->get()->map(fn ($invoice) => [
-            'invoice_number' => $invoice->invoice_number,
-            'client_name' => $invoice->client_name,
-            'issue_date' => $invoice->issue_date?->format('Y-m-d'),
-            'due_date' => $invoice->due_date?->format('Y-m-d'),
-            'total_amount' => (int) $invoice->total_amount,
-            'amount_paid' => (int) $invoice->amount_paid,
-            'amount_remaining' => (int) $invoice->total_amount - (int) $invoice->amount_paid,
-            'status' => $invoice->status,
-        ]);
+        $rows = $query->get()->map(function ($invoice) {
+            $omzet = (int) $invoice->total_amount;
+            $hpp = (int) $invoice->total_cogs;
+
+            return [
+                'invoice_number' => $invoice->invoice_number,
+                'client_name' => $invoice->client_name,
+                'issue_date' => $invoice->issue_date?->format('Y-m-d'),
+                'due_date' => $invoice->due_date?->format('Y-m-d'),
+                'total_amount' => $omzet,
+                'hpp' => $hpp,
+                'profit' => $omzet - $hpp,            // gross profit = omzet − HPP
+                'pph_final' => (int) round($omzet * 0.005), // PP 55/2022 final: 0,5% × omzet
+                'amount_paid' => (int) $invoice->amount_paid,
+                'amount_remaining' => $omzet - (int) $invoice->amount_paid,
+                'status' => $invoice->status,
+            ];
+        });
 
         $summary = [
             'count' => $rows->count(),
             'total_amount' => $rows->sum('total_amount'),
+            'total_hpp' => $rows->sum('hpp'),
+            'total_profit' => $rows->sum('profit'),
+            'total_pph_final' => $rows->sum('pph_final'),
             'total_paid' => $rows->sum('amount_paid'),
             'total_outstanding' => $rows->sum('amount_remaining'),
         ];
