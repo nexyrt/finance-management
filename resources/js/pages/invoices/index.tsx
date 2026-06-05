@@ -102,7 +102,7 @@ interface Stats {
     total_revenue: number;
     total_cogs: number;
     gross_profit: number;
-    paid_this_month: number;
+    total_paid: number;
     total_outstanding: number;
     draft_count: number;
     sent_count: number;
@@ -1023,8 +1023,8 @@ const STATS_CONFIG = [
         icon: <TrendingUp className="w-5 h-5" />,
     },
     {
-        key: 'paid_month',
-        label: 'Dibayar Bulan Ini',
+        key: 'paid',
+        label: 'Terbayar',
         accent: 'bg-green-500',
         iconCn: 'text-green-500 dark:text-green-400',
         icon: <CheckCircle2 className="w-5 h-5" />,
@@ -1272,7 +1272,7 @@ function InvoicesPage({ invoices, stats, clients, rollbackableIds, filters }: Pr
                             </TooltipContent>
                         </Tooltip>
 
-                        {/* Dibayar Bulan Ini */}
+                        {/* Terbayar */}
                         <Tooltip>
                             <TooltipTrigger asChild>
                                 <Card className="hover:shadow-md transition-all duration-200 overflow-hidden cursor-default">
@@ -1285,16 +1285,16 @@ function InvoicesPage({ invoices, stats, clients, rollbackableIds, filters }: Pr
                                             <span className={STATS_CONFIG[2].iconCn + ' shrink-0'}>{STATS_CONFIG[2].icon}</span>
                                         </div>
                                         <p className="text-xl font-bold text-dark-900 dark:text-dark-50 leading-none">
-                                            {formatCurrency(stats.paid_this_month)}
+                                            {formatCurrency(stats.total_paid)}
                                         </p>
                                         <p className="text-xs text-dark-500 dark:text-dark-400 mt-2">
-                                            Bulan kalender berjalan
+                                            Pembayaran pada invoice periode ini
                                         </p>
                                     </CardContent>
                                 </Card>
                             </TooltipTrigger>
                             <TooltipContent side="bottom" className="max-w-56 text-center">
-                                Total pembayaran yang masuk pada bulan ini berdasarkan tanggal pembayaran, tidak terpengaruh oleh filter periode yang dipilih
+                                Total pembayaran yang masuk pada invoice yang sesuai filter aktif (periode/klien/pencarian), tidak termasuk draft &amp; cancelled
                             </TooltipContent>
                         </Tooltip>
 

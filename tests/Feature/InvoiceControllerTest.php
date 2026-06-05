@@ -104,6 +104,40 @@ class InvoiceControllerTest extends TestCase
             ->assertInertia(fn ($page) => $page->where('stats.total_outstanding', 600_000));
     }
 
+    public function test_total_paid_follows_period_and_excludes_draft(): void
+    {
+        // Paid invoice in January with two payments.
+        $jan = Invoice::factory()->paid()->create([
+            'billed_to_id' => $this->client->id,
+            'issue_date' => '2026-01-10',
+            'total_amount' => 1_000_000,
+        ]);
+        Payment::factory()->create(['invoice_id' => $jan->id, 'amount' => 600_000, 'payment_date' => '2026-02-01']);
+        Payment::factory()->create(['invoice_id' => $jan->id, 'amount' => 400_000, 'payment_date' => '2026-03-01']);
+
+        // March invoice with a payment — must NOT count when filtering January.
+        $mar = Invoice::factory()->paid()->create([
+            'billed_to_id' => $this->client->id,
+            'issue_date' => '2026-03-15',
+            'total_amount' => 500_000,
+        ]);
+        Payment::factory()->create(['invoice_id' => $mar->id, 'amount' => 500_000, 'payment_date' => '2026-03-20']);
+
+        // Draft invoice with a payment in January — excluded.
+        $draft = Invoice::factory()->draft()->create([
+            'billed_to_id' => $this->client->id,
+            'issue_date' => '2026-01-12',
+            'total_amount' => 9_000_000,
+        ]);
+        Payment::factory()->create(['invoice_id' => $draft->id, 'amount' => 9_000_000, 'payment_date' => '2026-01-15']);
+
+        // January filter → only the January invoice's payments (1jt), regardless
+        // of when paid; the March invoice and the draft are excluded.
+        $this->actingAs($this->admin)
+            ->get('/invoices?month=2026-01')
+            ->assertInertia(fn ($page) => $page->where('stats.total_paid', 1_000_000));
+    }
+
     public function test_total_outstanding_respects_period_filter(): void
     {
         // Unpaid invoice in January only.

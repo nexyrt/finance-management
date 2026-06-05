@@ -110,10 +110,9 @@ class InvoiceController extends Controller
             ->selectRaw('COALESCE(SUM(CASE WHEN is_tax_deposit = 0 THEN cogs_amount ELSE 0 END), 0) as total_cogs')
             ->first();
 
-        $paidThisMonth = (int) DB::table('payments')
-            ->whereMonth('payment_date', now()->month)
-            ->whereYear('payment_date', now()->year)
-            ->sum('amount');
+        // Total payments received on the filtered invoices (follows the active
+        // period/client/search scope, excludes draft & cancelled).
+        $totalPaid = (int) Payment::whereIn('invoice_id', $statsIds)->sum('amount');
 
         $totalRevenue = (int) $basicStats->total_revenue;
         $totalCogs = (int) $itemStats->total_cogs;
@@ -135,7 +134,7 @@ class InvoiceController extends Controller
             'total_revenue' => $totalRevenue,
             'total_cogs' => $totalCogs,
             'gross_profit' => $totalRevenue - $totalCogs,
-            'paid_this_month' => $paidThisMonth,
+            'total_paid' => $totalPaid,
             'total_outstanding' => $totalOutstanding,
             'draft_count' => (int) ($statusCounts['draft'] ?? 0),
             'sent_count' => (int) ($statusCounts['sent'] ?? 0),
