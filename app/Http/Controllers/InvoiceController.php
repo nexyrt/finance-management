@@ -98,7 +98,7 @@ class InvoiceController extends Controller
         };
 
         // Revenue/profit/count exclude drafts (match Listing.php behaviour).
-        $statsIds = $filtered()->whereNotIn('invoices.status', ['draft'])->pluck('invoices.id');
+        $statsIds = $filtered()->whereNotIn('invoices.status', ['draft', 'cancelled'])->pluck('invoices.id');
 
         $basicStats = DB::table('invoices')
             ->whereIn('id', $statsIds)
@@ -233,7 +233,10 @@ class InvoiceController extends Controller
                     ->orWhere('clients.name', 'like', "%{$search}%");
             }))
             ->when($status, fn ($q) => $q->where('invoices.status', $status))
-            ->when($clientIds, fn ($q) => $q->whereIn('invoices.billed_to_id', $clientIds));
+            ->when($clientIds, fn ($q) => $q->whereIn('invoices.billed_to_id', $clientIds))
+            // Draft & cancelled invoices are not realised revenue, so they never
+            // count toward the recap's omzet / HPP / profit / PPh figures.
+            ->whereNotIn('invoices.status', ['draft', 'cancelled']);
 
         $this->applyPeriodFilter($query, $month, $dateFrom, $dateTo, 'invoices.issue_date');
 

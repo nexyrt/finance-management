@@ -204,6 +204,48 @@ class InvoiceControllerTest extends TestCase
         );
     }
 
+    public function test_export_excludes_draft_and_cancelled_from_omzet(): void
+    {
+        $this->travelTo(Carbon::parse('2026-05-01 10:00:00'));
+
+        // Only this realised invoice should count.
+        Invoice::factory()->paid()->create([
+            'billed_to_id' => $this->client->id,
+            'issue_date' => '2026-05-10',
+            'total_amount' => 5_000_000,
+        ]);
+        // Draft + cancelled in the same period must be excluded.
+        Invoice::factory()->draft()->create([
+            'billed_to_id' => $this->client->id,
+            'issue_date' => '2026-05-11',
+            'total_amount' => 9_000_000,
+        ]);
+        Invoice::factory()->create([
+            'billed_to_id' => $this->client->id,
+            'status' => 'cancelled',
+            'issue_date' => '2026-05-12',
+            'total_amount' => 7_000_000,
+        ]);
+
+        Excel::fake();
+
+        $this->actingAs($this->admin)
+            ->get('/invoices/export/excel?month=2026-05')
+            ->assertOk();
+
+        Excel::assertDownloaded(
+            'rekap-invoice-20260501-100000.xlsx',
+            function (InvoiceRecapExport $export) {
+                $flat = collect($export->array())->flatten()->implode('|');
+
+                // 1 invoice, omzet 5jt (draft 9jt + cancelled 7jt excluded).
+                return str_contains($flat, 'TOTAL (1 invoice)')
+                    && ! str_contains($flat, '9000000')
+                    && ! str_contains($flat, '7000000');
+            }
+        );
+    }
+
     public function test_export_includes_hpp_profit_and_pph_final(): void
     {
         $this->travelTo(Carbon::parse('2026-05-01 10:00:00'));
