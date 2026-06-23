@@ -23,7 +23,7 @@
             @if ($el['type'] === 'text')
                 <div class="el text" style="left: {{ $el['x'] }}px; top: {{ $el['y'] }}px; font-size: {{ $el['fontSize'] ?? 14 }}px; font-weight: {{ ($el['bold'] ?? false) ? 700 : 400 }}; color: {{ $el['color'] ?? '#0f172a' }};">{{ $el['content'] }}</div>
             @elseif ($el['type'] === 'image' && ! empty($el['src']))
-                <img class="el" style="left: {{ $el['x'] }}px; top: {{ $el['y'] }}px; width: {{ $el['width'] ?? 160 }}px;" src="{{ $el['src'] }}">
+                <img class="el" style="left: {{ $el['x'] }}px; top: {{ $el['y'] }}px; width: {{ $el['width'] ?? 160 }}px;@isset($el['height']) height: {{ $el['height'] }}px;@endisset" src="{{ $el['src'] }}">
             @endif
         @endforeach
     </div>

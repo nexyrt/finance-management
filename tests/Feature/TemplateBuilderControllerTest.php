@@ -87,6 +87,24 @@ class TemplateBuilderControllerTest extends TestCase
         $this->assertStringContainsString('application/pdf', (string) $response->headers->get('content-type'));
     }
 
+    public function test_pdf_renders_with_off_canvas_elements(): void
+    {
+        $user = User::factory()->create();
+        // Negatif (lewat kiri/atas) & jauh melewati kanan/bawah → harus tetap 1 dokumen, tak crash.
+        PdfTemplate::query()->create([
+            'name' => 'Sandbox',
+            'layout' => [
+                ['id' => 1, 'type' => 'text', 'x' => -100, 'y' => -50, 'content' => 'Bleed kiri-atas', 'fontSize' => 14, 'bold' => false, 'color' => '#000000'],
+                ['id' => 2, 'type' => 'text', 'x' => 700, 'y' => 1100, 'content' => 'Bleed kanan-bawah', 'fontSize' => 14, 'bold' => false, 'color' => '#000000'],
+            ],
+        ]);
+
+        $response = $this->actingAs($user)->get('/template-builder-test/pdf');
+
+        $response->assertOk();
+        $this->assertStringContainsString('application/pdf', (string) $response->headers->get('content-type'));
+    }
+
     public function test_routes_require_authentication(): void
     {
         $this->get('/template-builder-test')->assertRedirect('/login');

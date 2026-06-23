@@ -3,7 +3,7 @@ import { router } from '@inertiajs/react';
 import { toast } from 'sonner';
 import { AppLayout } from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
-import { Type, Image as ImageIcon, Trash2, ZoomIn, ZoomOut, Bold as BoldIcon, GripVertical, Copy, Undo2, Redo2, Eye, Pencil, Plus, Save, FileDown } from 'lucide-react';
+import { Type, Image as ImageIcon, Trash2, ZoomIn, ZoomOut, Bold as BoldIcon, GripVertical, Copy, Undo2, Redo2, Eye, Pencil, Plus, Save, FileDown, Lock, Unlock, RotateCcw } from 'lucide-react';
 
 // ponytail: sandbox throwaway. Drag native (tanpa lib), koordinat px @96dpi.
 // Belum: resize, mm, binding tabel, simpan, PDF. Align teks ditunda sampai teks punya kotak lebar.
@@ -35,7 +35,7 @@ const resolve = (text: string) =>
     });
 
 type Text = { id: number; type: 'text'; x: number; y: number; content: string; fontSize: number; bold: boolean; color: string };
-type Img = { id: number; type: 'image'; x: number; y: number; src: string; width: number };
+type Img = { id: number; type: 'image'; x: number; y: number; src: string; width: number; height?: number; lockAspect?: boolean };
 type El = Text | Img;
 
 export default function TemplateBuilderTest({ layout = [] }: { layout?: El[] }) {
@@ -105,8 +105,10 @@ export default function TemplateBuilderTest({ layout = [] }: { layout?: El[] }) 
                 moved = true;
                 snapshot(); // satu entri undo per sesi drag
             }
-            const x = Math.max(0, Math.min(A4.w, (ev.clientX - rect.left) / zoom - dx));
-            const y = Math.max(0, Math.min(A4.h, (ev.clientY - rect.top) / zoom - dy));
+            // Bebas (boleh negatif/melewati tepi). Kanvas hanya area tampil/ekspor;
+            // bagian di luar di-clip oleh kertas (lihat overflow-hidden).
+            const x = Math.round((ev.clientX - rect.left) / zoom - dx);
+            const y = Math.round((ev.clientY - rect.top) / zoom - dy);
             update(el.id, { x, y });
         };
         const up = () => {
@@ -117,14 +119,21 @@ export default function TemplateBuilderTest({ layout = [] }: { layout?: El[] }) 
         window.addEventListener('pointerup', up);
     };
 
-    // Resize gambar via handle sudut. Tinggi gambar auto → hanya lebar yang diatur.
-    // Handle barat (nw/sw) menahan tepi kanan (ubah x & width); timur (ne/se) menahan tepi kiri.
+    // Resize gambar via handle sudut (2D). Sudut seberang jadi jangkar yang diam.
+    // Lock aktif → digerakkan oleh lebar, tinggi ikut rasio saat ini; lock nonaktif → bebas.
     const startResize = (e: React.PointerEvent, el: Img, corner: 'nw' | 'ne' | 'sw' | 'se') => {
         e.stopPropagation();
         setSelectedId(el.id);
         const rect = paperRef.current!.getBoundingClientRect();
+        const w0 = el.width;
+        const h0 = el.height ?? w0;
+        const ratio = w0 / h0;
+        const left0 = el.x;
+        const top0 = el.y;
+        const right0 = el.x + w0;
+        const bottom0 = el.y + h0;
         const west = corner === 'nw' || corner === 'sw';
-        const rightEdge = el.x + el.width;
+        const north = corner === 'nw' || corner === 'ne';
         let resized = false;
         const move = (ev: PointerEvent) => {
             if (!resized) {
@@ -132,12 +141,15 @@ export default function TemplateBuilderTest({ layout = [] }: { layout?: El[] }) 
                 snapshot();
             }
             const px = (ev.clientX - rect.left) / zoom;
-            if (west) {
-                const x = Math.min(rightEdge - 20, Math.max(0, px));
-                update(el.id, { x, width: rightEdge - x });
-            } else {
-                update(el.id, { width: Math.max(20, Math.min(A4.w - el.x, px - el.x)) });
+            const py = (ev.clientY - rect.top) / zoom;
+            let newW = Math.max(20, west ? right0 - px : px - left0);
+            let newH = Math.max(20, north ? bottom0 - py : py - top0);
+            if (el.lockAspect) {
+                newH = newW / ratio; // tinggi mengikuti lebar agar rasio tetap
             }
+            const newX = west ? right0 - newW : left0;
+            const newY = north ? bottom0 - newH : top0;
+            update(el.id, { x: Math.round(newX), y: Math.round(newY), width: Math.round(newW), height: Math.round(newH) });
         };
         const up = () => {
             window.removeEventListener('pointermove', move);
@@ -156,12 +168,40 @@ export default function TemplateBuilderTest({ layout = [] }: { layout?: El[] }) 
     const addImage = (file: File, x = 80, y = 280) => {
         const reader = new FileReader();
         reader.onload = () => {
-            snapshot();
-            const id = nextId.current++;
-            setEls((p) => [...p, { id, type: 'image', x, y, src: reader.result as string, width: 160 }]);
-            setSelectedId(id);
+            const src = reader.result as string;
+            const probe = new Image();
+            probe.onload = () => {
+                snapshot();
+                const id = nextId.current++;
+                const width = 160;
+                const height = Math.round(width * (probe.naturalHeight / probe.naturalWidth)); // jaga rasio asli saat dibuat
+                setEls((p) => [...p, { id, type: 'image', x, y, src, width, height, lockAspect: true }]);
+                setSelectedId(id);
+            };
+            probe.src = src;
         };
         reader.readAsDataURL(file); // base64 → ikut tersimpan & ter-render di PDF
+    };
+
+    // Ubah lebar/tinggi gambar dari Inspector; saat lock, sisi lain ikut rasio saat ini.
+    const setImgSize = (el: Img, dim: 'width' | 'height', v: number) => {
+        if (el.lockAspect && el.height) {
+            const r = el.width / el.height;
+            if (dim === 'width') update(el.id, { width: v, height: Math.max(1, Math.round(v / r)) });
+            else update(el.id, { width: Math.max(1, Math.round(v * r)), height: v });
+        } else {
+            update(el.id, dim === 'width' ? { width: v } : { height: v });
+        }
+    };
+
+    // Reset ke ukuran asli gambar — dibaca dari natural size runtime, tanpa simpan di DB.
+    const resetImage = (el: Img) => {
+        const probe = new Image();
+        probe.onload = () => {
+            snapshot();
+            update(el.id, { width: probe.naturalWidth, height: probe.naturalHeight });
+        };
+        probe.src = el.src;
     };
 
     const save = () => {
@@ -365,6 +405,19 @@ export default function TemplateBuilderTest({ layout = [] }: { layout?: El[] }) 
         zoomAnchor.current = null;
     }, [zoom]);
 
+    // Lengkapi tinggi + lock untuk gambar lama (layout tersimpan dulu hanya punya lebar).
+    React.useEffect(() => {
+        els.filter((e): e is Img => e.type === 'image' && e.height == null).forEach((el) => {
+            const probe = new Image();
+            probe.onload = () => {
+                const height = Math.round(el.width * (probe.naturalHeight / probe.naturalWidth));
+                setEls((p) => p.map((e) => (e.id === el.id ? { ...e, height, lockAspect: (e as Img).lockAspect ?? true } : e)));
+            };
+            probe.src = el.src;
+        });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [els]);
+
     return (
         <div className="flex h-[calc(100vh-7rem)] rounded-xl border border-secondary-200 dark:border-dark-600 overflow-hidden bg-white dark:bg-dark-800">
             {/* ── KIRI: Layers (docked) ── */}
@@ -453,7 +506,7 @@ export default function TemplateBuilderTest({ layout = [] }: { layout?: El[] }) 
                             }}
                             onDragLeave={() => setDragOver(false)}
                             onDrop={onDrop}
-                            className={`relative bg-white shadow-xl origin-top-left ${dragOver ? 'ring-2 ring-primary-500' : ''}`}
+                            className={`relative overflow-hidden bg-white shadow-xl origin-top-left ${dragOver ? 'ring-2 ring-primary-500' : ''}`}
                             style={{ width: A4.w, height: A4.h, transform: `scale(${zoom})` }}
                         >
                             {els.map((el) => {
@@ -470,7 +523,13 @@ export default function TemplateBuilderTest({ layout = [] }: { layout?: El[] }) 
                                             startDrag(e, el);
                                         }}
                                         className={`absolute select-none ${isEditing ? 'cursor-text' : 'cursor-move'} ${isSel && !preview ? 'outline-2 outline-primary-500' : ''}`}
-                                        style={{ left: el.x, top: el.y, touchAction: 'none' }}
+                                        style={{
+                                            left: el.x,
+                                            top: el.y,
+                                            touchAction: 'none',
+                                            // Lebar eksplisit utk gambar → wrapper tak shrink-to-fit saat dekat tepi kanan.
+                                            ...(el.type === 'image' ? { width: el.width, height: el.height } : {}),
+                                        }}
                                     >
                                         {el.type === 'text' ? (
                                             preview ? (
@@ -495,7 +554,14 @@ export default function TemplateBuilderTest({ layout = [] }: { layout?: El[] }) 
                                                 />
                                             )
                                         ) : (
-                                            <img src={el.src} alt="" draggable={false} style={{ width: el.width }} className="pointer-events-none block" />
+                                            <img
+                                                src={el.src}
+                                                alt=""
+                                                draggable={false}
+                                                // w/h penuh dari wrapper; maxWidth:none mematahkan preflight `img{max-width:100%}`.
+                                                style={{ width: '100%', height: '100%', maxWidth: 'none' }}
+                                                className="pointer-events-none block"
+                                            />
                                         )}
 
                                         {/* Resize handle sudut (gambar terpilih) */}
@@ -504,14 +570,14 @@ export default function TemplateBuilderTest({ layout = [] }: { layout?: El[] }) 
                                                 <span
                                                     key={corner}
                                                     onPointerDown={(e) => startResize(e, el, corner)}
-                                                    className={`absolute h-2.5 w-2.5 rounded-sm border border-primary-500 bg-white ${
+                                                    className={`absolute z-10 h-2.5 w-2.5 rounded-sm border border-primary-500 bg-white ${
                                                         corner === 'nw'
-                                                            ? '-left-1.5 -top-1.5 cursor-nwse-resize'
+                                                            ? 'left-0 top-0 -translate-x-full -translate-y-full cursor-nwse-resize'
                                                             : corner === 'ne'
-                                                              ? '-right-1.5 -top-1.5 cursor-nesw-resize'
+                                                              ? 'right-0 top-0 translate-x-full -translate-y-full cursor-nesw-resize'
                                                               : corner === 'sw'
-                                                                ? '-left-1.5 -bottom-1.5 cursor-nesw-resize'
-                                                                : '-right-1.5 -bottom-1.5 cursor-nwse-resize'
+                                                                ? 'left-0 bottom-0 -translate-x-full translate-y-full cursor-nesw-resize'
+                                                                : 'right-0 bottom-0 translate-x-full translate-y-full cursor-nwse-resize'
                                                     }`}
                                                 />
                                             ))}
@@ -688,8 +754,31 @@ export default function TemplateBuilderTest({ layout = [] }: { layout?: El[] }) 
                         {selected.type === 'image' && (
                             <Section title="Gambar">
                                 <Row label="Lebar">
-                                    <NumField value={selected.width} onChange={(v) => update(selected.id, { width: v })} />
+                                    <NumField value={selected.width} onChange={(v) => setImgSize(selected, 'width', v)} />
                                 </Row>
+                                <Row label="Tinggi">
+                                    <NumField value={Math.round(selected.height ?? 0)} onChange={(v) => setImgSize(selected, 'height', v)} />
+                                </Row>
+                                <Row label="Rasio">
+                                    <button
+                                        onClick={() => {
+                                            snapshot();
+                                            update(selected.id, { lockAspect: !(selected as Img).lockAspect });
+                                        }}
+                                        className={`flex items-center gap-2 h-8 w-full rounded-lg border px-2.5 text-sm transition-colors ${
+                                            selected.lockAspect
+                                                ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300'
+                                                : 'border-secondary-200 dark:border-dark-600 text-dark-500 dark:text-dark-400 hover:bg-zinc-50 dark:hover:bg-dark-700'
+                                        }`}
+                                        title="Kunci rasio lebar : tinggi"
+                                    >
+                                        {selected.lockAspect ? <Lock className="w-4 h-4" /> : <Unlock className="w-4 h-4" />}
+                                        {selected.lockAspect ? 'Terkunci' : 'Bebas'}
+                                    </button>
+                                </Row>
+                                <Button variant="zinc" size="sm" className="w-full" onClick={() => resetImage(selected)}>
+                                    <RotateCcw className="w-4 h-4" /> Reset ke ukuran asli
+                                </Button>
                                 <Button variant="zinc" size="sm" className="w-full" onClick={() => fileRef.current?.click()}>
                                     <ImageIcon className="w-4 h-4" /> Ganti gambar
                                 </Button>
