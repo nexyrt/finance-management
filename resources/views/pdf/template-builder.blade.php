@@ -30,6 +30,118 @@
     // If there are NO below-zone elements the below-zone container is omitted.
     // ──────────────────────────────────────────────────────────────────────────
 
+    // ── Font map (mirrored from FONT_MAP in edit.tsx) ────────────────────────
+    // Maps the friendly label → DomPDF-safe CSS font-family value.
+    $fontFamilyMap = [
+        'Helvetica / Arial' => "'Helvetica', Arial, sans-serif",
+        'Times New Roman'   => "'Times New Roman', Times, serif",
+        'Courier'           => "'Courier New', Courier, monospace",
+        'DejaVu Sans'       => "'DejaVu Sans', sans-serif",
+    ];
+
+    /**
+     * Build inline CSS for a text element (Sprint 5a).
+     * If el['width'] is NOT set → legacy mode (nowrap, line-height:1).
+     * If el['width'] IS set → box mode (wraps, all new props apply).
+     */
+    $textStyle = function (array $el) use ($fontFamilyMap): string {
+        $hasBox = array_key_exists('width', $el) && $el['width'] !== null;
+
+        $fontFamily   = $fontFamilyMap[$el['fontFamily'] ?? ''] ?? "'Helvetica', Arial, sans-serif";
+        $fontSize     = (int) ($el['fontSize'] ?? 14);
+        $fontWeight   = ($el['bold'] ?? false) ? 700 : 400;
+        $fontStyle    = ($el['italic'] ?? false) ? 'italic' : 'normal';
+        $color        = $el['color'] ?? '#0f172a';
+        $lineHeight   = $hasBox ? ($el['lineHeight'] ?? 1.2) : 1;
+        $letterSpacing = ($el['letterSpacing'] ?? 0);
+
+        // text-decoration: combine underline + line-through
+        $decorations = [];
+        if ($el['underline'] ?? false) { $decorations[] = 'underline'; }
+        if ($el['strikethrough'] ?? false) { $decorations[] = 'line-through'; }
+        $textDecoration = count($decorations) ? implode(' ', $decorations) : 'none';
+
+        $textAlign    = $el['align'] ?? 'left';
+
+        $style  = "font-family: {$fontFamily}; font-size: {$fontSize}px; font-weight: {$fontWeight}; ";
+        $style .= "font-style: {$fontStyle}; color: {$color}; text-decoration: {$textDecoration}; ";
+        $style .= "text-align: {$textAlign}; line-height: {$lineHeight}; ";
+        if ($letterSpacing) { $style .= "letter-spacing: {$letterSpacing}px; "; }
+
+        $highlight = $el['highlight'] ?? null;
+        if ($highlight) { $style .= "background-color: {$highlight}; "; }
+
+        if ($hasBox) {
+            $width    = (int) $el['width'];
+            $padding  = (int) ($el['padding'] ?? 0);
+            $bw       = (int) ($el['borderWidth'] ?? 0);
+            $bc       = $el['borderColor'] ?? '#000000';
+            $fill     = $el['fill'] ?? null;
+
+            $style .= "width: {$width}px; box-sizing: border-box; ";
+            if ($padding > 0)       { $style .= "padding: {$padding}px; "; }
+            if ($bw > 0)            { $style .= "border: {$bw}px solid {$bc}; "; }
+            if ($fill)              { $style .= "background-color: {$fill}; "; }
+            if (isset($el['height'])) {
+                $height = (int) $el['height'];
+                $style .= "height: {$height}px; overflow: hidden; ";
+                // vertical-align in DomPDF: achieved via display:table-cell
+                // ponytail note: DomPDF does not support flex; we use padding-top approximation
+                // for valign=middle/bottom since display:table-cell is also unreliable.
+                // We use the same padding-top trick that DomPDF handles best.
+                $valign = $el['valign'] ?? 'top';
+                if ($valign === 'middle' || $valign === 'bottom') {
+                    // Approximate line count: height / (fontSize * lineHeight)
+                    $lineH     = max(1, (float) ($el['lineHeight'] ?? 1.2));
+                    $linePixels = $fontSize * $lineH;
+                    // Rough single-line height; if content wraps this won't be pixel-perfect but
+                    // is the best DomPDF-safe approach without JS.
+                    $paddingTop = $valign === 'middle'
+                        ? max(0, round(($height - $linePixels) / 2))
+                        : max(0, round($height - $linePixels));
+                    $paddingTop = min($paddingTop, $height - $fontSize); // clamp
+                    if ($paddingTop > 0 && $padding === 0) {
+                        $style .= "padding-top: {$paddingTop}px; ";
+                    }
+                }
+            }
+            $style .= "white-space: pre-wrap; word-break: break-word; ";
+        } else {
+            $style .= "white-space: nowrap; ";
+        }
+
+        return $style;
+    };
+
+    /**
+     * Build inline CSS for an image element (Sprint 5a).
+     */
+    $imgStyle = function (array $el, int $relTop = -1, bool $absolute = true): string {
+        $x      = (int) ($el['x'] ?? 0);
+        $top    = $relTop >= 0 ? $relTop : (int) ($el['y'] ?? 0);
+        $width  = (int) ($el['width'] ?? 160);
+        $height = isset($el['height']) ? (int) $el['height'] : null;
+
+        $style  = $absolute ? "position: absolute; left: {$x}px; top: {$top}px; " : '';
+        $style .= "width: {$width}px; ";
+        if ($height !== null) { $style .= "height: {$height}px; "; }
+
+        $opacity = $el['opacity'] ?? 100;
+        if ($opacity < 100) {
+            $opacityVal = round($opacity / 100, 2);
+            $style .= "opacity: {$opacityVal}; ";
+        }
+
+        $bw = (int) ($el['borderWidth'] ?? 0);
+        $bc = $el['borderColor'] ?? '#000000';
+        if ($bw > 0) { $style .= "border: {$bw}px solid {$bc}; box-sizing: border-box; "; }
+
+        $radius = (int) ($el['borderRadius'] ?? 0);
+        if ($radius > 0) { $style .= "border-radius: {$radius}px; "; }
+
+        return $style;
+    };
+
     /** @var array|null $tableEl */
     $tableEl = collect($elements)->first(fn($el) => ($el['type'] ?? '') === 'table');
 
@@ -69,8 +181,13 @@
                     $bw = (int) (($el['border'] ?? [])['width'] ?? 1);
                     $elHeight = $rows * 24 + $bw * ($rows + 1);
                 } else {
-                    // text
-                    $elHeight = (int) round(($el['fontSize'] ?? 14) * 1.4);
+                    // text: use explicit height if set (box mode), else fontSize*lineHeight estimate
+                    if (isset($el['height'])) {
+                        $elHeight = (int) $el['height'];
+                    } else {
+                        $lh = (float) ($el['lineHeight'] ?? 1.4);
+                        $elHeight = (int) round(($el['fontSize'] ?? 14) * $lh);
+                    }
                 }
                 return max($max, $relTop + $elHeight);
             }, 0);
@@ -118,6 +235,18 @@
             vertical-align: middle;
             overflow: hidden;
             padding: 2px 4px;
+        }
+
+        /* ── Text box (Sprint 5a) ── */
+        .text-box {
+            overflow: hidden;
+            box-sizing: border-box;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        .text-legacy {
+            white-space: nowrap;
+            line-height: 1;
         }
 
         /* ── Items table ── */
@@ -170,11 +299,12 @@
 >
     @foreach ($headerEls as $el)
         @if ($el['type'] === 'text')
-            <div class="el text"
-                 style="left: {{ $el['x'] }}px; top: {{ $el['y'] }}px; font-size: {{ $el['fontSize'] ?? 14 }}px; font-weight: {{ ($el['bold'] ?? false) ? 700 : 400 }}; color: {{ $el['color'] ?? '#0f172a' }};">{{ $el['content'] }}</div>
+            @php $hasBox = array_key_exists('width', $el) && $el['width'] !== null; @endphp
+            <div class="el {{ $hasBox ? 'text-box' : 'text text-legacy' }}"
+                 style="left: {{ $el['x'] }}px; top: {{ $el['y'] }}px; {{ $textStyle($el) }}">{{ $el['content'] }}</div>
         @elseif ($el['type'] === 'image' && ! empty($el['src']))
             <img class="el"
-                 style="left: {{ $el['x'] }}px; top: {{ $el['y'] }}px; width: {{ $el['width'] ?? 160 }}px;@isset($el['height']) height: {{ $el['height'] }}px;@endisset"
+                 style="{{ $imgStyle($el) }}"
                  src="{{ $el['src'] }}">
         @elseif ($el['type'] === 'grid')
             @php
@@ -293,11 +423,12 @@
                     $relTop = (int) ($el['y'] ?? 0) - $tableY;
                 @endphp
                 @if ($el['type'] === 'text')
-                    <div class="el text"
-                         style="left: {{ $el['x'] }}px; top: {{ $relTop }}px; font-size: {{ $el['fontSize'] ?? 14 }}px; font-weight: {{ ($el['bold'] ?? false) ? 700 : 400 }}; color: {{ $el['color'] ?? '#0f172a' }};">{{ $el['content'] }}</div>
+                    @php $hasBox = array_key_exists('width', $el) && $el['width'] !== null; @endphp
+                    <div class="el {{ $hasBox ? 'text-box' : 'text text-legacy' }}"
+                         style="left: {{ $el['x'] }}px; top: {{ $relTop }}px; {{ $textStyle($el) }}">{{ $el['content'] }}</div>
                 @elseif ($el['type'] === 'image' && ! empty($el['src']))
                     <img class="el"
-                         style="left: {{ $el['x'] }}px; top: {{ $relTop }}px; width: {{ $el['width'] ?? 160 }}px;@isset($el['height']) height: {{ $el['height'] }}px;@endisset"
+                         style="{{ $imgStyle($el, $relTop) }}"
                          src="{{ $el['src'] }}">
                 @elseif ($el['type'] === 'grid')
                     @php

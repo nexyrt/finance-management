@@ -101,14 +101,21 @@ Sandbox di `GET /template-builder-test` (`resources/js/pages/template-builder-te
 - **Tests:** render PDF tabel ber-merge + border kustom.
 - **Risiko:** **batas DomPDF** untuk border/merge kompleks bisa **memajukan keputusan naik engine** — bila fidelity gagal, eskalasi ke user sebelum memaksakan.
 
-### Sprint 5 — Properti elemen kaya (Word/Excel-like)
-**Goal:** properti teks & gambar selengkap target (lihat "Target Properti Elemen").
-- **Teks (ala Word):** font-family, italic/underline/strikethrough, highlight, rata h+v, line-height, letter-spacing, padding, border/fill, format token.
-- **Gambar:** opacity, border, radius sudut, rotasi, crop/object-fit.
-- **(opsional bila murah)** elemen **shape/garis/divider**.
-- Panel properti dirapikan dgn **`/design-taste-frontend`** (kelompok properti rapi & intuitif, dirancang agar bisa tumbuh).
-- **Acceptance:** layout invoice kaya bisa dibuat (label rata, nominal rata kanan, judul ber-highlight, dst.); editor=PDF.
-- **Tests:** snapshot nilai + cek render properti kunci di PDF.
+### Sprint 5 — Properti elemen kaya (Word/Excel-like) — DIPECAH 5a/5b/5c
+**Keputusan terkunci (2026-06-24):** font = daftar aman DomPDF **+ upload font kustom**; **rotasi DILEWATI** (DomPDF tak render andal → langgar WYSIWYG); **shape Garis/Divider + Kotak DITAMBAHKAN**. Panel properti dirapikan dgn **`/design-taste-frontend`**.
+
+**5a — Properti teks & gambar (font kurасi):**
+- Teks (ala Word): **font-family** (daftar aman: Helvetica/Arial, Times New Roman, Courier, DejaVu Sans), bold/italic/underline/strikethrough, warna, highlight, rata **h + v**, line-height, letter-spacing, padding, border/fill. **TANPA rotasi.**
+- Gambar: opacity, border, radius sudut, object-fit/crop. **TANPA rotasi.**
+- Pastikan tiap properti tercermin sama di editor & PDF (DomPDF-safe). Acceptance: layout kaya (label rata, nominal rata kanan, judul highlight); editor=PDF.
+
+**5b — Upload font kustom:**
+- Upload `.ttf` → simpan + **registrasi ke DomPDF** (agar render di PDF) + **`@font-face` di browser** (agar render di editor) → muncul di font picker. Editor=PDF wajib.
+
+**5c — Elemen shape:**
+- **Garis/Divider** + **Kotak** (border/fill, posisi/ukuran). Murah di DomPDF. Ikut model 3-zona seperti elemen lain.
+
+- **Tests (tiap slice):** snapshot nilai + cek render properti/shape/font kunci di PDF; editor=PDF; no regresi.
 
 ### Sprint 6 — Integrasi alur cetak invoice
 **Goal:** end-user mencetak invoice memakai template builder.

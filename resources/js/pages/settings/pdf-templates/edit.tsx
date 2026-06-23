@@ -12,9 +12,16 @@ import {
     ZoomIn,
     ZoomOut,
     Bold as BoldIcon,
+    Italic,
+    Underline,
+    Strikethrough,
     AlignLeft,
     AlignCenter,
     AlignRight,
+    AlignJustify,
+    AlignStartVertical,
+    AlignCenterVertical,
+    AlignEndVertical,
     GripVertical,
     Copy,
     Undo2,
@@ -38,18 +45,56 @@ import type { SharedProps } from '@/types';
 // ponytail: koordinat px @96dpi. A4 = 794x1123.
 const A4 = { w: 794, h: 1123 };
 
+// ── Font map (ONE source of truth — editor CSS stack + DomPDF family name) ──────
+// DomPDF-safe fonts only (Sprint 5b adds custom upload).
+export const FONT_MAP = [
+    { label: 'Helvetica / Arial',  cssFontStack: 'Helvetica, Arial, sans-serif',     dompdfFamily: 'Helvetica' },
+    { label: 'Times New Roman',    cssFontStack: '"Times New Roman", Times, serif',   dompdfFamily: 'Times New Roman' },
+    { label: 'Courier',            cssFontStack: '"Courier New", Courier, monospace', dompdfFamily: 'Courier' },
+    { label: 'DejaVu Sans',        cssFontStack: '"DejaVu Sans", sans-serif',         dompdfFamily: 'DejaVu Sans' },
+] as const;
+
+export type FontLabel = typeof FONT_MAP[number]['label'];
+
+/** Return the browser CSS font-family for a given label (fallback: Helvetica). */
+export function fontCssStack(label: FontLabel | string | undefined): string {
+    return FONT_MAP.find((f) => f.label === label)?.cssFontStack ?? 'Helvetica, Arial, sans-serif';
+}
+
 // ── Types ────────────────────────────────────────────────────────────────────
 
 type Text = {
     id: number; type: 'text';
     x: number; y: number;
     content: string; fontSize: number; bold: boolean; color: string;
+    // Sprint 5a additions (all optional → backward-compat with legacy text)
+    fontFamily?: FontLabel;
+    italic?: boolean;
+    underline?: boolean;
+    strikethrough?: boolean;
+    highlight?: string | null;       // box background / highlight color; null = none
+    align?: 'left' | 'center' | 'right' | 'justify';
+    valign?: 'top' | 'middle' | 'bottom';
+    lineHeight?: number;             // e.g. 1.4
+    letterSpacing?: number;          // px
+    padding?: number;                // px uniform
+    borderWidth?: number;            // px; 0/undefined = no border
+    borderColor?: string;
+    fill?: string | null;            // box background fill; null = none
+    // Box model: if width is undefined → legacy (auto-width, nowrap). If set → text box.
+    width?: number;
+    height?: number;                 // optional; if set, valign applies
 };
 
 type Img = {
     id: number; type: 'image';
     x: number; y: number;
     src: string; width: number; height?: number; lockAspect?: boolean;
+    // Sprint 5a additions
+    opacity?: number;                // 0–100
+    borderWidth?: number;
+    borderColor?: string;
+    borderRadius?: number;           // px
 };
 
 /** One column in the table element — stored in layout JSON. */
@@ -289,6 +334,38 @@ export default function PdfTemplateEdit() {
         window.addEventListener('pointerup', up);
     };
 
+    /** Resize handle for a text box (SE corner: width + height). */
+    const startTextResize = (
+        e: React.PointerEvent,
+        el: Text,
+        axis: 'width' | 'height' | 'both',
+    ) => {
+        e.stopPropagation();
+        const rect = paperRef.current!.getBoundingClientRect();
+        const x0 = el.x;
+        const w0 = el.width ?? 200;
+        const h0 = el.height;
+        let resized = false;
+        const move = (ev: PointerEvent) => {
+            if (!resized) { resized = true; snapshot(); }
+            const patch: Partial<Text> = {};
+            if (axis === 'width' || axis === 'both') {
+                patch.width = Math.max(40, Math.round((ev.clientX - rect.left) / zoom - x0));
+            }
+            if ((axis === 'height' || axis === 'both') && h0 !== undefined) {
+                const top0 = el.y;
+                patch.height = Math.max(20, Math.round((ev.clientY - rect.top) / zoom - top0));
+            }
+            update(el.id, patch);
+        };
+        const up = () => {
+            window.removeEventListener('pointermove', move);
+            window.removeEventListener('pointerup', up);
+        };
+        window.addEventListener('pointermove', move);
+        window.addEventListener('pointerup', up);
+    };
+
     /** Horizontal resize handle for the table (right edge). */
     const startTableResize = (e: React.PointerEvent, el: TableEl) => {
         e.stopPropagation();
@@ -346,7 +423,14 @@ export default function PdfTemplateEdit() {
     const addText = (x = 80, y = 200, content = 'Teks baru') => {
         snapshot();
         const id = nextId.current++;
-        setEls((p) => [...p, { id, type: 'text', x, y, content, fontSize: 14, bold: false, color: '#0f172a' }]);
+        setEls((p) => [...p, {
+            id, type: 'text', x, y, content,
+            fontSize: 14, bold: false, color: '#0f172a',
+            fontFamily: 'Helvetica / Arial',
+            italic: false, underline: false, strikethrough: false,
+            align: 'left', lineHeight: 1.2, letterSpacing: 0,
+            padding: 0, width: 200,
+        }]);
         setSelectedId(id);
     };
 
@@ -956,24 +1040,52 @@ export default function PdfTemplateEdit() {
                                             );
                                         }
 
-                                        return (
-                                            <div
-                                                key={el.id}
-                                                onPointerDown={(e) => {
-                                                    if (isEditing) { e.stopPropagation(); return; }
-                                                    startDrag(e, el);
-                                                }}
-                                                className={`absolute select-none ${isEditing ? 'cursor-text' : 'cursor-move'} ${isSel && !preview ? 'outline-2 outline-primary-500' : ''}`}
-                                                style={{
-                                                    left: el.x, top: el.y, touchAction: 'none',
-                                                    ...(el.type === 'image' ? { width: el.width, height: el.height } : {}),
-                                                }}
-                                            >
-                                                {el.type === 'text' ? (
-                                                    preview ? (
+                                        if (el.type === 'text') {
+                                            const hasBox = el.width !== undefined;
+                                            const boxStyle: React.CSSProperties = hasBox ? {
+                                                width: el.width,
+                                                ...(el.height !== undefined ? { height: el.height } : {}),
+                                                padding: el.padding ?? 0,
+                                                border: (el.borderWidth && el.borderWidth > 0)
+                                                    ? `${el.borderWidth}px solid ${el.borderColor ?? '#000000'}`
+                                                    : undefined,
+                                                backgroundColor: el.fill ?? undefined,
+                                                boxSizing: 'border-box',
+                                                overflow: 'hidden',
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                justifyContent: el.valign === 'bottom' ? 'flex-end' : el.valign === 'middle' ? 'center' : 'flex-start',
+                                            } : {};
+                                            return (
+                                                <div
+                                                    key={el.id}
+                                                    onPointerDown={(e) => {
+                                                        if (isEditing) { e.stopPropagation(); return; }
+                                                        startDrag(e, el);
+                                                    }}
+                                                    className={`absolute select-none ${isEditing ? 'cursor-text' : 'cursor-move'} ${isSel && !preview ? 'outline-2 outline-primary-500' : ''}`}
+                                                    style={{ left: el.x, top: el.y, touchAction: 'none', ...boxStyle }}
+                                                >
+                                                    {preview ? (
                                                         <span
-                                                            className="whitespace-nowrap leading-none"
-                                                            style={{ fontSize: el.fontSize, fontWeight: el.bold ? 700 : 400, color: el.color }}
+                                                            style={{
+                                                                fontSize: el.fontSize,
+                                                                fontWeight: el.bold ? 700 : 400,
+                                                                color: el.color,
+                                                                fontFamily: fontCssStack(el.fontFamily),
+                                                                fontStyle: el.italic ? 'italic' : 'normal',
+                                                                textDecoration: [
+                                                                    el.underline ? 'underline' : '',
+                                                                    el.strikethrough ? 'line-through' : '',
+                                                                ].filter(Boolean).join(' ') || 'none',
+                                                                backgroundColor: el.highlight ?? undefined,
+                                                                textAlign: el.align ?? 'left',
+                                                                lineHeight: el.lineHeight ?? 1.2,
+                                                                letterSpacing: el.letterSpacing ? `${el.letterSpacing}px` : undefined,
+                                                                ...(hasBox
+                                                                    ? { whiteSpace: 'pre-wrap', wordBreak: 'break-word', display: 'block', width: '100%' }
+                                                                    : { whiteSpace: 'nowrap' }),
+                                                            }}
                                                         >
                                                             {resolve(el.content)}
                                                         </span>
@@ -987,18 +1099,60 @@ export default function PdfTemplateEdit() {
                                                                 setEditingId(null);
                                                             }}
                                                         />
-                                                    )
-                                                ) : (
-                                                    <img
-                                                        src={el.src}
-                                                        alt=""
-                                                        draggable={false}
-                                                        style={{ width: '100%', height: '100%', maxWidth: 'none' }}
-                                                        className="pointer-events-none block"
-                                                    />
-                                                )}
+                                                    )}
+                                                    {/* Text box resize handle — SE corner (width+height) and E handle (width only) */}
+                                                    {isSel && !preview && hasBox && (
+                                                        <>
+                                                            {/* E handle — width only */}
+                                                            <span
+                                                                onPointerDown={(e) => startTextResize(e, el, 'width')}
+                                                                className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-full z-10 h-5 w-2 cursor-ew-resize flex items-center justify-center"
+                                                                title="Ubah lebar"
+                                                            >
+                                                                <span className="w-1 h-4 rounded-sm bg-primary-500 opacity-70" />
+                                                            </span>
+                                                            {/* SE handle — width+height (only if height is set) */}
+                                                            {el.height !== undefined && (
+                                                                <span
+                                                                    onPointerDown={(e) => startTextResize(e, el, 'both')}
+                                                                    className="absolute right-0 bottom-0 translate-x-full translate-y-full z-10 h-2.5 w-2.5 rounded-sm border border-primary-500 bg-white cursor-nwse-resize"
+                                                                    title="Ubah lebar & tinggi"
+                                                                />
+                                                            )}
+                                                        </>
+                                                    )}
+                                                </div>
+                                            );
+                                        }
 
-                                                {isSel && !preview && el.type === 'image' &&
+                                        return (
+                                            <div
+                                                key={el.id}
+                                                onPointerDown={(e) => {
+                                                    if (isEditing) { e.stopPropagation(); return; }
+                                                    startDrag(e, el);
+                                                }}
+                                                className={`absolute select-none ${isEditing ? 'cursor-text' : 'cursor-move'} ${isSel && !preview ? 'outline-2 outline-primary-500' : ''}`}
+                                                style={{
+                                                    left: el.x, top: el.y, touchAction: 'none',
+                                                    width: el.width, height: el.height,
+                                                    opacity: el.opacity !== undefined ? el.opacity / 100 : undefined,
+                                                    border: (el.borderWidth && el.borderWidth > 0)
+                                                        ? `${el.borderWidth}px solid ${el.borderColor ?? '#000000'}`
+                                                        : undefined,
+                                                    borderRadius: el.borderRadius ? `${el.borderRadius}px` : undefined,
+                                                    overflow: 'hidden',
+                                                    boxSizing: 'border-box',
+                                                }}
+                                            >
+                                                <img
+                                                    src={el.src}
+                                                    alt=""
+                                                    draggable={false}
+                                                    style={{ width: '100%', height: '100%', maxWidth: 'none' }}
+                                                    className="pointer-events-none block"
+                                                />
+                                                {isSel && !preview &&
                                                     (['nw', 'ne', 'sw', 'se'] as const).map((corner) => (
                                                         <span
                                                             key={corner}
@@ -1121,93 +1275,88 @@ export default function PdfTemplateEdit() {
                         >
                             {/* ── Text Inspector ── */}
                             {selected.type === 'text' && (
-                                <>
-                                    <Section title="Konten">
-                                        <textarea
-                                            ref={contentRef}
-                                            value={selected.content}
-                                            onChange={(e) => update(selected.id, { content: e.target.value })}
-                                            rows={2}
-                                            className={`${inputCn} h-auto py-1.5 font-mono text-xs leading-relaxed`}
-                                        />
-                                        <div className="relative">
-                                            <Button variant="zinc" size="sm" className="w-full" onClick={() => setFieldMenu((o) => !o)}>
-                                                <Plus className="w-4 h-4" /> Sisipkan field
-                                            </Button>
-                                            {fieldMenu && (
-                                                <div className="absolute z-20 left-0 right-0 mt-1 max-h-56 overflow-auto rounded-lg border border-secondary-200 dark:border-dark-600 bg-white dark:bg-dark-700 shadow-lg p-1">
-                                                    {tokenCatalog.map((t) => (
-                                                        <button
-                                                            key={t.path}
-                                                            onClick={() => { insertToken(t.path); setFieldMenu(false); }}
-                                                            className="w-full text-left px-2 py-1.5 rounded-md hover:bg-zinc-50 dark:hover:bg-dark-600"
-                                                        >
-                                                            <div className="text-xs font-mono text-primary-600 dark:text-primary-400">{`{{${t.path}}}`}</div>
-                                                            <div className="text-[11px] text-dark-400 dark:text-dark-500 truncate">
-                                                                {sampleData[t.path] ?? t.label}
-                                                            </div>
-                                                        </button>
-                                                    ))}
-                                                </div>
-                                            )}
-                                        </div>
-                                        <p className="text-[11px] text-dark-400 dark:text-dark-500">
-                                            Token diganti data asli saat <strong>Preview</strong> / cetak.
-                                        </p>
-                                    </Section>
-                                    <Section title="Tampilan">
-                                        <Row label="Ukuran">
-                                            <NumField value={selected.fontSize} onChange={(v) => update(selected.id, { fontSize: v })} />
-                                        </Row>
-                                        <Row label="Warna">
-                                            <Swatch value={selected.color} onChange={(v) => update(selected.id, { color: v })} />
-                                        </Row>
-                                        <Row label="Tebal">
-                                            <button
-                                                onClick={() => { snapshot(); update(selected.id, { bold: !(selected as Text).bold }); }}
-                                                className={`grid place-items-center h-8 w-8 rounded-lg border transition-colors ${
-                                                    (selected as Text).bold
-                                                        ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-300'
-                                                        : 'border-secondary-200 dark:border-dark-600 text-dark-500 dark:text-dark-400 hover:bg-zinc-50 dark:hover:bg-dark-700'
-                                                }`}
-                                                title="Bold"
-                                            >
-                                                <BoldIcon className="w-4 h-4" />
-                                            </button>
-                                        </Row>
-                                    </Section>
-                                </>
+                                <TextInspector
+                                    el={selected as Text}
+                                    contentRef={contentRef}
+                                    tokenCatalog={tokenCatalog}
+                                    sampleData={sampleData}
+                                    fieldMenu={fieldMenu}
+                                    setFieldMenu={setFieldMenu}
+                                    onInsertToken={insertToken}
+                                    onUpdate={(patch) => update(selected.id, patch)}
+                                    onSnapshot={snapshot}
+                                />
                             )}
 
                             {/* ── Image Inspector ── */}
                             {selected.type === 'image' && (
-                                <Section title="Gambar">
-                                    <Row label="Lebar">
-                                        <NumField value={selected.width} onChange={(v) => setImgSize(selected, 'width', v)} />
-                                    </Row>
-                                    <Row label="Tinggi">
-                                        <NumField value={Math.round((selected as Img).height ?? 0)} onChange={(v) => setImgSize(selected as Img, 'height', v)} />
-                                    </Row>
-                                    <Row label="Rasio">
-                                        <button
-                                            onClick={() => { snapshot(); update(selected.id, { lockAspect: !(selected as Img).lockAspect }); }}
-                                            className={`flex items-center gap-2 h-8 w-full rounded-lg border px-2.5 text-sm transition-colors ${
-                                                (selected as Img).lockAspect
-                                                    ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300'
-                                                    : 'border-secondary-200 dark:border-dark-600 text-dark-500 dark:text-dark-400 hover:bg-zinc-50 dark:hover:bg-dark-700'
-                                            }`}
-                                        >
-                                            {(selected as Img).lockAspect ? <Lock className="w-4 h-4" /> : <Unlock className="w-4 h-4" />}
-                                            {(selected as Img).lockAspect ? 'Terkunci' : 'Bebas'}
-                                        </button>
-                                    </Row>
-                                    <Button variant="zinc" size="sm" className="w-full" onClick={() => resetImage(selected as Img)}>
-                                        <RotateCcw className="w-4 h-4" /> Reset ke ukuran asli
-                                    </Button>
-                                    <Button variant="zinc" size="sm" className="w-full" onClick={() => fileRef.current?.click()}>
-                                        <ImageIcon className="w-4 h-4" /> Ganti gambar
-                                    </Button>
-                                </Section>
+                                <>
+                                    <Section title="Ukuran">
+                                        <Row label="Lebar">
+                                            <NumField value={selected.width} onChange={(v) => setImgSize(selected, 'width', v)} />
+                                        </Row>
+                                        <Row label="Tinggi">
+                                            <NumField value={Math.round((selected as Img).height ?? 0)} onChange={(v) => setImgSize(selected as Img, 'height', v)} />
+                                        </Row>
+                                        <Row label="Rasio">
+                                            <button
+                                                onClick={() => { snapshot(); update(selected.id, { lockAspect: !(selected as Img).lockAspect }); }}
+                                                className={`flex items-center gap-2 h-8 w-full rounded-lg border px-2.5 text-sm transition-colors ${
+                                                    (selected as Img).lockAspect
+                                                        ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300'
+                                                        : 'border-secondary-200 dark:border-dark-600 text-dark-500 dark:text-dark-400 hover:bg-zinc-50 dark:hover:bg-dark-700'
+                                                }`}
+                                            >
+                                                {(selected as Img).lockAspect ? <Lock className="w-4 h-4" /> : <Unlock className="w-4 h-4" />}
+                                                {(selected as Img).lockAspect ? 'Terkunci' : 'Bebas'}
+                                            </button>
+                                        </Row>
+                                        <Button variant="zinc" size="sm" className="w-full" onClick={() => resetImage(selected as Img)}>
+                                            <RotateCcw className="w-4 h-4" /> Reset ke ukuran asli
+                                        </Button>
+                                        <Button variant="zinc" size="sm" className="w-full" onClick={() => fileRef.current?.click()}>
+                                            <ImageIcon className="w-4 h-4" /> Ganti gambar
+                                        </Button>
+                                    </Section>
+                                    <Section title="Tampilan">
+                                        <Row label="Opasitas">
+                                            <div className="flex items-center gap-2">
+                                                <input
+                                                    type="range"
+                                                    min={0} max={100} step={1}
+                                                    value={(selected as Img).opacity ?? 100}
+                                                    onChange={(e) => update(selected.id, { opacity: +e.target.value })}
+                                                    className="flex-1 accent-primary-600"
+                                                />
+                                                <span className="text-xs tabular-nums w-8 text-right text-dark-500 dark:text-dark-400">
+                                                    {(selected as Img).opacity ?? 100}%
+                                                </span>
+                                            </div>
+                                        </Row>
+                                        <Row label="Radius">
+                                            <NumField
+                                                value={(selected as Img).borderRadius ?? 0}
+                                                onChange={(v) => update(selected.id, { borderRadius: Math.max(0, v) })}
+                                                unit="px"
+                                            />
+                                        </Row>
+                                        <Row label="Border">
+                                            <NumField
+                                                value={(selected as Img).borderWidth ?? 0}
+                                                onChange={(v) => update(selected.id, { borderWidth: Math.max(0, v) })}
+                                                unit="px"
+                                            />
+                                        </Row>
+                                        {((selected as Img).borderWidth ?? 0) > 0 && (
+                                            <Row label="Warna border">
+                                                <Swatch
+                                                    value={(selected as Img).borderColor ?? '#000000'}
+                                                    onChange={(v) => update(selected.id, { borderColor: v })}
+                                                />
+                                            </Row>
+                                        )}
+                                    </Section>
+                                </>
                             )}
 
                             {/* ── Table Inspector ── */}
@@ -1268,6 +1417,277 @@ export default function PdfTemplateEdit() {
                 </aside>
             </div>
         </div>
+    );
+}
+
+// ── Text Inspector ────────────────────────────────────────────────────────────
+
+function TextInspector({
+    el,
+    contentRef,
+    tokenCatalog,
+    sampleData,
+    fieldMenu,
+    setFieldMenu,
+    onInsertToken,
+    onUpdate,
+    onSnapshot,
+}: {
+    el: Text;
+    contentRef: React.RefObject<HTMLTextAreaElement | null>;
+    tokenCatalog: { path: string; label: string }[];
+    sampleData: Record<string, string>;
+    fieldMenu: boolean;
+    setFieldMenu: (v: boolean | ((o: boolean) => boolean)) => void;
+    onInsertToken: (path: string) => void;
+    onUpdate: (patch: Partial<Text>) => void;
+    onSnapshot: () => void;
+}) {
+    const hasBox = el.width !== undefined;
+
+    const toggleBtn = (active: boolean, onClick: () => void, title: string, children: React.ReactNode) => (
+        <button
+            onClick={() => { onSnapshot(); onClick(); }}
+            title={title}
+            className={`grid place-items-center h-8 w-8 rounded-lg border transition-colors ${
+                active
+                    ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-300'
+                    : 'border-secondary-200 dark:border-dark-600 text-dark-500 dark:text-dark-400 hover:bg-zinc-50 dark:hover:bg-dark-700'
+            }`}
+        >
+            {children}
+        </button>
+    );
+
+    return (
+        <>
+            {/* ── Konten ── */}
+            <Section title="Konten">
+                <textarea
+                    ref={contentRef}
+                    value={el.content}
+                    onChange={(e) => onUpdate({ content: e.target.value })}
+                    rows={2}
+                    className={`${inputCn} h-auto py-1.5 font-mono text-xs leading-relaxed`}
+                />
+                <div className="relative">
+                    <Button variant="zinc" size="sm" className="w-full" onClick={() => setFieldMenu((o) => !o)}>
+                        <Plus className="w-4 h-4" /> Sisipkan field
+                    </Button>
+                    {fieldMenu && (
+                        <div className="absolute z-20 left-0 right-0 mt-1 max-h-56 overflow-auto rounded-lg border border-secondary-200 dark:border-dark-600 bg-white dark:bg-dark-700 shadow-lg p-1">
+                            {tokenCatalog.map((t) => (
+                                <button
+                                    key={t.path}
+                                    onClick={() => { onInsertToken(t.path); setFieldMenu(false); }}
+                                    className="w-full text-left px-2 py-1.5 rounded-md hover:bg-zinc-50 dark:hover:bg-dark-600"
+                                >
+                                    <div className="text-xs font-mono text-primary-600 dark:text-primary-400">{`{{${t.path}}}`}</div>
+                                    <div className="text-[11px] text-dark-400 dark:text-dark-500 truncate">
+                                        {sampleData[t.path] ?? t.label}
+                                    </div>
+                                </button>
+                            ))}
+                        </div>
+                    )}
+                </div>
+                <p className="text-[11px] text-dark-400 dark:text-dark-500">
+                    Token diganti data asli saat <strong>Preview</strong> / cetak.
+                </p>
+            </Section>
+
+            {/* ── Font ── */}
+            <Section title="Font">
+                {/* Font family */}
+                <Row label="Jenis">
+                    <select
+                        value={el.fontFamily ?? 'Helvetica / Arial'}
+                        onChange={(e) => onUpdate({ fontFamily: e.target.value as FontLabel })}
+                        className={`${inputCn} pr-2`}
+                    >
+                        {FONT_MAP.map((f) => (
+                            <option key={f.label} value={f.label} style={{ fontFamily: f.cssFontStack }}>
+                                {f.label}
+                            </option>
+                        ))}
+                    </select>
+                </Row>
+                {/* Size + color */}
+                <Row label="Ukuran">
+                    <NumField value={el.fontSize} onChange={(v) => onUpdate({ fontSize: Math.max(4, v) })} unit="px" />
+                </Row>
+                <Row label="Warna teks">
+                    <Swatch value={el.color} onChange={(v) => onUpdate({ color: v })} />
+                </Row>
+                {/* Style toggles: B I U S */}
+                <Row label="Gaya">
+                    <div className="flex gap-1">
+                        {toggleBtn(el.bold, () => onUpdate({ bold: !el.bold }), 'Tebal (Bold)', <BoldIcon className="w-4 h-4" />)}
+                        {toggleBtn(el.italic ?? false, () => onUpdate({ italic: !el.italic }), 'Miring (Italic)', <Italic className="w-4 h-4" />)}
+                        {toggleBtn(el.underline ?? false, () => onUpdate({ underline: !el.underline }), 'Garis bawah', <Underline className="w-4 h-4" />)}
+                        {toggleBtn(el.strikethrough ?? false, () => onUpdate({ strikethrough: !el.strikethrough }), 'Garis tengah', <Strikethrough className="w-4 h-4" />)}
+                    </div>
+                </Row>
+                {/* Highlight */}
+                <Row label="Sorot">
+                    <div className="flex items-center gap-2">
+                        <input
+                            type="checkbox"
+                            checked={!!el.highlight}
+                            onChange={(e) => onUpdate({ highlight: e.target.checked ? '#fef08a' : null })}
+                            className="accent-primary-600"
+                        />
+                        {el.highlight && (
+                            <Swatch value={el.highlight} onChange={(v) => onUpdate({ highlight: v })} />
+                        )}
+                        {!el.highlight && (
+                            <span className="text-xs text-dark-400 dark:text-dark-500">Tidak aktif</span>
+                        )}
+                    </div>
+                </Row>
+            </Section>
+
+            {/* ── Paragraf ── */}
+            <Section title="Paragraf">
+                {/* H-align */}
+                <Row label="Rata H">
+                    <div className="flex gap-1">
+                        {([
+                            { value: 'left',    icon: <AlignLeft className="w-3.5 h-3.5" />,    title: 'Kiri' },
+                            { value: 'center',  icon: <AlignCenter className="w-3.5 h-3.5" />,  title: 'Tengah' },
+                            { value: 'right',   icon: <AlignRight className="w-3.5 h-3.5" />,   title: 'Kanan' },
+                            { value: 'justify', icon: <AlignJustify className="w-3.5 h-3.5" />, title: 'Rata penuh' },
+                        ] as const).map(({ value, icon, title }) => (
+                            <button
+                                key={value}
+                                onClick={() => onUpdate({ align: value })}
+                                title={title}
+                                className={`flex-1 grid place-items-center h-8 rounded-lg border transition-colors ${
+                                    (el.align ?? 'left') === value
+                                        ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-300'
+                                        : 'border-secondary-200 dark:border-dark-600 text-dark-500 dark:text-dark-400 hover:bg-zinc-50 dark:hover:bg-dark-700'
+                                }`}
+                            >
+                                {icon}
+                            </button>
+                        ))}
+                    </div>
+                </Row>
+                {/* V-align (only meaningful when height is set) */}
+                <Row label="Rata V">
+                    <div className="flex gap-1">
+                        {([
+                            { value: 'top',    icon: <AlignStartVertical className="w-3.5 h-3.5" />,  title: 'Atas' },
+                            { value: 'middle', icon: <AlignCenterVertical className="w-3.5 h-3.5" />, title: 'Tengah' },
+                            { value: 'bottom', icon: <AlignEndVertical className="w-3.5 h-3.5" />,   title: 'Bawah' },
+                        ] as const).map(({ value, icon, title }) => (
+                            <button
+                                key={value}
+                                onClick={() => onUpdate({ valign: value })}
+                                title={title}
+                                className={`flex-1 grid place-items-center h-8 rounded-lg border transition-colors ${
+                                    (el.valign ?? 'top') === value
+                                        ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-300'
+                                        : 'border-secondary-200 dark:border-dark-600 text-dark-500 dark:text-dark-400 hover:bg-zinc-50 dark:hover:bg-dark-700'
+                                }`}
+                            >
+                                {icon}
+                            </button>
+                        ))}
+                    </div>
+                </Row>
+                <Row label="Line-height">
+                    <div className="relative">
+                        <input
+                            type="number" step={0.1} min={0.5} max={5}
+                            value={el.lineHeight ?? 1.2}
+                            onChange={(e) => onUpdate({ lineHeight: Math.max(0.5, +e.target.value) })}
+                            className={`${inputCn} pr-8`}
+                        />
+                        <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[11px] text-dark-400 dark:text-dark-500 pointer-events-none">×</span>
+                    </div>
+                </Row>
+                <Row label="Spasi huruf">
+                    <NumField value={el.letterSpacing ?? 0} onChange={(v) => onUpdate({ letterSpacing: v })} unit="px" />
+                </Row>
+            </Section>
+
+            {/* ── Kotak ── */}
+            <Section title="Kotak">
+                <Row label="Lebar">
+                    <div className="flex items-center gap-2">
+                        <input
+                            type="checkbox"
+                            checked={hasBox}
+                            onChange={(e) => {
+                                onSnapshot();
+                                onUpdate(e.target.checked ? { width: 200 } : { width: undefined, height: undefined });
+                            }}
+                            className="accent-primary-600 shrink-0"
+                            title="Aktifkan mode kotak teks"
+                        />
+                        {hasBox ? (
+                            <NumField value={el.width!} onChange={(v) => onUpdate({ width: Math.max(20, v) })} unit="px" />
+                        ) : (
+                            <span className="text-xs text-dark-400 dark:text-dark-500">Otomatis (lebar mengikuti teks)</span>
+                        )}
+                    </div>
+                </Row>
+                {hasBox && (
+                    <>
+                        <Row label="Tinggi">
+                            <div className="flex items-center gap-2">
+                                <input
+                                    type="checkbox"
+                                    checked={el.height !== undefined}
+                                    onChange={(e) => {
+                                        onSnapshot();
+                                        onUpdate({ height: e.target.checked ? 40 : undefined });
+                                    }}
+                                    className="accent-primary-600 shrink-0"
+                                />
+                                {el.height !== undefined ? (
+                                    <NumField value={el.height} onChange={(v) => onUpdate({ height: Math.max(10, v) })} unit="px" />
+                                ) : (
+                                    <span className="text-xs text-dark-400 dark:text-dark-500">Otomatis</span>
+                                )}
+                            </div>
+                        </Row>
+                        <Row label="Padding">
+                            <NumField value={el.padding ?? 0} onChange={(v) => onUpdate({ padding: Math.max(0, v) })} unit="px" />
+                        </Row>
+                        <Row label="Border">
+                            <NumField
+                                value={el.borderWidth ?? 0}
+                                onChange={(v) => onUpdate({ borderWidth: Math.max(0, v) })}
+                                unit="px"
+                            />
+                        </Row>
+                        {(el.borderWidth ?? 0) > 0 && (
+                            <Row label="Warna border">
+                                <Swatch value={el.borderColor ?? '#000000'} onChange={(v) => onUpdate({ borderColor: v })} />
+                            </Row>
+                        )}
+                        <Row label="Isi kotak">
+                            <div className="flex items-center gap-2">
+                                <input
+                                    type="checkbox"
+                                    checked={!!el.fill}
+                                    onChange={(e) => onUpdate({ fill: e.target.checked ? '#ffffff' : null })}
+                                    className="accent-primary-600"
+                                />
+                                {el.fill && (
+                                    <Swatch value={el.fill} onChange={(v) => onUpdate({ fill: v })} />
+                                )}
+                                {!el.fill && (
+                                    <span className="text-xs text-dark-400 dark:text-dark-500">Transparan</span>
+                                )}
+                            </div>
+                        </Row>
+                    </>
+                )}
+            </Section>
+        </>
     );
 }
 
@@ -1967,6 +2387,8 @@ function EditableText({
     el, editing, onStartEdit, onCommit,
 }: { el: Text; editing: boolean; onStartEdit: () => void; onCommit: (v: string) => void }) {
     const ref = React.useRef<HTMLSpanElement>(null);
+    const hasBox = el.width !== undefined;
+
     React.useEffect(() => {
         if (!editing || !ref.current) return;
         const node = ref.current;
@@ -1980,6 +2402,26 @@ function EditableText({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [editing]);
 
+    const textStyle: React.CSSProperties = {
+        fontSize: el.fontSize,
+        fontWeight: el.bold ? 700 : 400,
+        color: el.color,
+        fontFamily: fontCssStack(el.fontFamily),
+        fontStyle: el.italic ? 'italic' : 'normal',
+        textDecoration: [
+            el.underline ? 'underline' : '',
+            el.strikethrough ? 'line-through' : '',
+        ].filter(Boolean).join(' ') || 'none',
+        backgroundColor: el.highlight ?? undefined,
+        textAlign: el.align ?? 'left',
+        lineHeight: el.lineHeight ?? 1.2,
+        letterSpacing: el.letterSpacing ? `${el.letterSpacing}px` : undefined,
+        ...(hasBox
+            ? { whiteSpace: 'pre-wrap', wordBreak: 'break-word', display: 'block', width: '100%' }
+            : { whiteSpace: 'nowrap' }),
+        ...(editing ? { outline: 'none', cursor: 'text' } : {}),
+    };
+
     return (
         <span
             ref={ref}
@@ -1988,11 +2430,10 @@ function EditableText({
             onDoubleClick={onStartEdit}
             onBlur={(e) => onCommit(e.currentTarget.textContent ?? '')}
             onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); e.currentTarget.blur(); }
+                if (e.key === 'Enter' && !e.shiftKey && !hasBox) { e.preventDefault(); e.currentTarget.blur(); }
                 else if (e.key === 'Escape') { e.currentTarget.textContent = el.content; e.currentTarget.blur(); }
             }}
-            className={`whitespace-nowrap leading-none ${editing ? 'cursor-text outline-none' : ''}`}
-            style={{ fontSize: el.fontSize, fontWeight: el.bold ? 700 : 400, color: el.color }}
+            style={textStyle}
         >
             {editing ? null : el.content}
         </span>
