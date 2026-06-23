@@ -131,7 +131,7 @@ class PdfTemplateController extends Controller
         $request->validate([
             'layout' => ['present', 'array'],
             'layout.*.id' => ['required'],
-            'layout.*.type' => ['required', 'in:text,image,table'],
+            'layout.*.type' => ['required', 'in:text,image,table,grid'],
             'layout.*.x' => ['required', 'numeric'],
             'layout.*.y' => ['required', 'numeric'],
         ]);
@@ -172,6 +172,24 @@ class PdfTemplateController extends Controller
                         ...$el,
                         'columns' => $columns,
                         'rows' => $rows,
+                    ];
+                }
+
+                if ($el['type'] === 'grid') {
+                    // Resolve {{tokens}} in every cell's text — single resolve path.
+                    $cells = collect($el['cells'] ?? [])->map(
+                        fn (array $row) => array_map(
+                            fn (array $cell) => [
+                                ...$cell,
+                                'text' => TemplateTokens::resolveText((string) ($cell['text'] ?? ''), $invoice),
+                            ],
+                            $row
+                        )
+                    )->all();
+
+                    return [
+                        ...$el,
+                        'cells' => $cells,
                     ];
                 }
 

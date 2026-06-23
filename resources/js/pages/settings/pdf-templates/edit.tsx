@@ -7,10 +7,14 @@ import {
     Type,
     Image as ImageIcon,
     Table2,
+    LayoutGrid,
     Trash2,
     ZoomIn,
     ZoomOut,
     Bold as BoldIcon,
+    AlignLeft,
+    AlignCenter,
+    AlignRight,
     GripVertical,
     Copy,
     Undo2,
@@ -18,6 +22,7 @@ import {
     Eye,
     Pencil,
     Plus,
+    Minus,
     Save,
     FileDown,
     Lock,
@@ -64,7 +69,27 @@ type TableEl = {
     showFooterSum: boolean;
 };
 
-type El = Text | Img | TableEl;
+/** One cell in the static grid element. */
+type GridCell = {
+    text: string;
+    align: 'left' | 'center' | 'right';
+    bold: boolean;
+    color: string;
+    fill?: string;
+};
+
+type GridEl = {
+    id: number; type: 'grid';
+    x: number; y: number;
+    width: number;
+    cols: number;
+    rows: number;
+    colWidths: number[];        // px per column (sum ≈ width)
+    cells: GridCell[][];        // [row][col]
+    border: { width: number; color: string };
+};
+
+type El = Text | Img | TableEl | GridEl;
 
 // ── Catalog types ─────────────────────────────────────────────────────────────
 
@@ -127,6 +152,34 @@ function tablePreviewHeight(el: TableEl, sampleItems: Array<Record<string, strin
     return TABLE_HEADER_H + TABLE_ROW_H * Math.max(1, sampleItems.length) + 2;
 }
 
+/** Default cell value. */
+function makeGridCell(): GridCell {
+    return { text: '', align: 'left', bold: false, color: '#0f172a' };
+}
+
+/** Build a default 3×3 grid element. */
+function makeDefaultGrid(id: number, x: number, y: number): GridEl {
+    const cols = 3;
+    const rows = 3;
+    const width = 300;
+    const colWidth = Math.floor(width / cols);
+    return {
+        id,
+        type: 'grid',
+        x, y, width,
+        cols, rows,
+        colWidths: Array.from({ length: cols }, () => colWidth),
+        cells: Array.from({ length: rows }, () => Array.from({ length: cols }, makeGridCell)),
+        border: { width: 1, color: '#cbd5e1' },
+    };
+}
+
+/** Height of a grid element for canvas layout. */
+const GRID_ROW_H = 24;
+function gridEditorHeight(el: GridEl): number {
+    return GRID_ROW_H * el.rows + el.border.width * (el.rows + 1);
+}
+
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function PdfTemplateEdit() {
@@ -143,6 +196,10 @@ export default function PdfTemplateEdit() {
 
     const [els, setEls] = React.useState<El[]>(initial);
     const [selectedId, setSelectedId] = React.useState<number | null>(null);
+    /** When a grid cell is selected: { row, col } */
+    const [selectedCell, setSelectedCell] = React.useState<{ row: number; col: number } | null>(null);
+    /** When a grid cell is being inline-edited: { row, col } */
+    const [editingCell, setEditingCell] = React.useState<{ row: number; col: number } | null>(null);
     const [saving, setSaving] = React.useState(false);
     const [editingId, setEditingId] = React.useState<number | null>(null);
     const [preview, setPreview] = React.useState(false);
@@ -298,6 +355,15 @@ export default function PdfTemplateEdit() {
         setSelectedId(id);
     };
 
+    const addGrid = (x = 80, y = 200) => {
+        snapshot();
+        const id = nextId.current++;
+        const el = makeDefaultGrid(id, x, y);
+        setEls((p) => [...p, el]);
+        setSelectedId(id);
+        setSelectedCell(null);
+    };
+
     const setImgSize = (el: Img, dim: 'width' | 'height', v: number) => {
         if (el.lockAspect && el.height) {
             const r = el.width / el.height;
@@ -341,6 +407,65 @@ export default function PdfTemplateEdit() {
         setEls((p) => p.map((e) => {
             if (e.id !== tableId || e.type !== 'table') return e;
             return { ...e, columns: e.columns.filter((_, i) => i !== colIdx) };
+        }));
+    };
+
+    /** Update a single cell's properties in a grid element. */
+    const updateGridCell = (gridId: number, row: number, col: number, patch: Partial<GridCell>) => {
+        setEls((p) => p.map((e) => {
+            if (e.id !== gridId || e.type !== 'grid') return e;
+            const cells = e.cells.map((r, ri) =>
+                r.map((c, ci) => (ri === row && ci === col ? { ...c, ...patch } : c))
+            );
+            return { ...e, cells };
+        }));
+    };
+
+    /** Update grid-level properties (rows/cols restructure, border, colWidths). */
+    const updateGrid = (gridId: number, patch: Partial<GridEl>) => {
+        setEls((p) => p.map((e) => {
+            if (e.id !== gridId || e.type !== 'grid') return e;
+            return { ...e, ...patch } as GridEl;
+        }));
+    };
+
+    /** Add a row to the grid (appended at bottom). */
+    const addGridRow = (gridId: number) => {
+        snapshot();
+        setEls((p) => p.map((e) => {
+            if (e.id !== gridId || e.type !== 'grid') return e;
+            const newRow = Array.from({ length: e.cols }, makeGridCell);
+            return { ...e, rows: e.rows + 1, cells: [...e.cells, newRow] };
+        }));
+    };
+
+    /** Remove the last row (min 1). */
+    const removeGridRow = (gridId: number) => {
+        snapshot();
+        setEls((p) => p.map((e) => {
+            if (e.id !== gridId || e.type !== 'grid' || e.rows <= 1) return e;
+            return { ...e, rows: e.rows - 1, cells: e.cells.slice(0, -1) };
+        }));
+    };
+
+    /** Add a column to the right. */
+    const addGridCol = (gridId: number) => {
+        snapshot();
+        setEls((p) => p.map((e) => {
+            if (e.id !== gridId || e.type !== 'grid') return e;
+            const newColWidth = Math.floor(e.width / (e.cols + 1));
+            const cells = e.cells.map((row) => [...row, makeGridCell()]);
+            return { ...e, cols: e.cols + 1, colWidths: [...e.colWidths, newColWidth], cells };
+        }));
+    };
+
+    /** Remove the last column (min 1). */
+    const removeGridCol = (gridId: number) => {
+        snapshot();
+        setEls((p) => p.map((e) => {
+            if (e.id !== gridId || e.type !== 'grid' || e.cols <= 1) return e;
+            const cells = e.cells.map((row) => row.slice(0, -1));
+            return { ...e, cols: e.cols - 1, colWidths: e.colWidths.slice(0, -1), cells };
         }));
     };
 
@@ -395,12 +520,15 @@ export default function PdfTemplateEdit() {
         if (kind === 'text') addText(x, y);
         else if (kind === 'image') { pendingImg.current = { x, y }; fileRef.current?.click(); }
         else if (kind === 'table') addTable(Math.min(x, A4.w - 100), y);
+        else if (kind === 'grid') addGrid(Math.min(x, A4.w - 100), y);
     };
 
     const remove = (id: number) => {
         snapshot();
         setEls((p) => p.filter((e) => e.id !== id));
         setSelectedId(null);
+        setSelectedCell(null);
+        setEditingCell(null);
     };
 
     const moveLayer = (draggedId: number, targetId: number) => {
@@ -608,10 +736,12 @@ export default function PdfTemplateEdit() {
                                             ? <Type className="w-3.5 h-3.5" />
                                             : el.type === 'image'
                                                 ? <ImageIcon className="w-3.5 h-3.5" />
-                                                : <Table2 className="w-3.5 h-3.5" />}
+                                                : el.type === 'grid'
+                                                    ? <LayoutGrid className="w-3.5 h-3.5" />
+                                                    : <Table2 className="w-3.5 h-3.5" />}
                                     </span>
                                     <span className={`flex-1 truncate text-sm ${active ? 'text-primary-700 dark:text-primary-200 font-medium' : 'text-dark-700 dark:text-dark-300'}`}>
-                                        {el.type === 'text' ? el.content : el.type === 'image' ? 'Gambar' : 'Tabel Item'}
+                                        {el.type === 'text' ? el.content : el.type === 'image' ? 'Gambar' : el.type === 'grid' ? 'Grid' : 'Tabel Item'}
                                     </span>
                                     <button
                                         onClick={(e) => { e.stopPropagation(); remove(el.id); }}
@@ -633,7 +763,7 @@ export default function PdfTemplateEdit() {
                             <div style={{ width: A4.w * zoom, height: A4.h * zoom }}>
                                 <div
                                     ref={paperRef}
-                                    onPointerDown={() => setSelectedId(null)}
+                                    onPointerDown={() => { setSelectedId(null); setSelectedCell(null); setEditingCell(null); }}
                                     onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; if (!dragOver) setDragOver(true); }}
                                     onDragLeave={() => setDragOver(false)}
                                     onDrop={onDrop}
@@ -680,6 +810,61 @@ export default function PdfTemplateEdit() {
                                                     {isSel && !preview && (
                                                         <span
                                                             onPointerDown={(e) => startTableResize(e, el)}
+                                                            className="absolute right-0 top-0 bottom-0 w-2 cursor-ew-resize flex items-center justify-center"
+                                                            title="Geser untuk ubah lebar"
+                                                        >
+                                                            <span className="w-1 h-6 rounded-sm bg-primary-500 opacity-70" />
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            );
+                                        }
+
+                                        if (el.type === 'grid') {
+                                            const height = gridEditorHeight(el);
+                                            return (
+                                                <div
+                                                    key={el.id}
+                                                    onPointerDown={(e) => {
+                                                        if (editingCell) return;
+                                                        startDrag(e, el);
+                                                        setSelectedCell(null);
+                                                    }}
+                                                    className={`absolute cursor-move ${isSel && !preview ? 'outline-2 outline-primary-500' : ''}`}
+                                                    style={{ left: el.x, top: el.y, width: el.width, height, touchAction: 'none' }}
+                                                >
+                                                    <GridCanvas
+                                                        el={el}
+                                                        preview={preview}
+                                                        resolve={resolve}
+                                                        selectedCell={isSel ? selectedCell : null}
+                                                        editingCell={isSel ? editingCell : null}
+                                                        onCellPointerDown={(r, c, e) => {
+                                                            e.stopPropagation();
+                                                            setSelectedId(el.id);
+                                                            setSelectedCell({ row: r, col: c });
+                                                        }}
+                                                        onCellDoubleClick={(r, c) => {
+                                                            if (preview) return;
+                                                            setSelectedId(el.id);
+                                                            setSelectedCell({ row: r, col: c });
+                                                            setEditingCell({ row: r, col: c });
+                                                        }}
+                                                        onCellCommit={(r, c, text) => {
+                                                            if (text !== el.cells[r]?.[c]?.text) {
+                                                                snapshot();
+                                                                updateGridCell(el.id, r, c, { text });
+                                                            }
+                                                            setEditingCell(null);
+                                                        }}
+                                                        onCellEscape={(r, c) => {
+                                                            setEditingCell(null);
+                                                        }}
+                                                    />
+                                                    {/* Right-edge resize handle */}
+                                                    {isSel && !preview && (
+                                                        <span
+                                                            onPointerDown={(e) => startTableResize(e, el as unknown as TableEl)}
                                                             className="absolute right-0 top-0 bottom-0 w-2 cursor-ew-resize flex items-center justify-center"
                                                             title="Geser untuk ubah lebar"
                                                         >
@@ -770,6 +955,11 @@ export default function PdfTemplateEdit() {
                                 <Table2 className="w-4 h-4" /> Tabel
                             </Button>
                         </div>
+                        <div draggable onDragStart={(e) => { e.dataTransfer.effectAllowed = 'copy'; e.dataTransfer.setData('kind', 'grid'); }} title="Grid statis — seret ke kanvas atau klik">
+                            <Button variant="ghost" size="sm" className="cursor-grab active:cursor-grabbing" onClick={() => addGrid()}>
+                                <LayoutGrid className="w-4 h-4" /> Grid
+                            </Button>
+                        </div>
                         <div className="w-px h-6 bg-secondary-200 dark:bg-dark-600 mx-1" />
                         <Button
                             variant={preview ? 'primary' : 'ghost'}
@@ -826,7 +1016,10 @@ export default function PdfTemplateEdit() {
                     <PanelHeader
                         title={
                             selected
-                                ? selected.type === 'text' ? 'Teks' : selected.type === 'image' ? 'Gambar' : 'Tabel Item'
+                                ? selected.type === 'text' ? 'Teks'
+                                    : selected.type === 'image' ? 'Gambar'
+                                    : selected.type === 'grid' ? 'Grid'
+                                    : 'Tabel Item'
                                 : 'Properti'
                         }
                     />
@@ -949,6 +1142,20 @@ export default function PdfTemplateEdit() {
                                 />
                             )}
 
+                            {/* ── Grid Inspector ── */}
+                            {selected.type === 'grid' && (
+                                <GridInspector
+                                    el={selected as GridEl}
+                                    selectedCell={selectedCell}
+                                    onAddRow={() => addGridRow(selected.id)}
+                                    onRemoveRow={() => removeGridRow(selected.id)}
+                                    onAddCol={() => addGridCol(selected.id)}
+                                    onRemoveCol={() => removeGridCol(selected.id)}
+                                    onUpdateGrid={(patch) => { snapshot(); updateGrid(selected.id, patch); }}
+                                    onUpdateCell={(r, c, patch) => { snapshot(); updateGridCell(selected.id, r, c, patch); }}
+                                />
+                            )}
+
                             {/* ── Posisi (shared) ── */}
                             <Section title="Posisi">
                                 <Row label="X">
@@ -957,9 +1164,9 @@ export default function PdfTemplateEdit() {
                                 <Row label="Y">
                                     <NumField value={Math.round(selected.y)} onChange={(v) => update(selected.id, { y: v })} />
                                 </Row>
-                                {selected.type === 'table' && (
+                                {(selected.type === 'table' || selected.type === 'grid') && (
                                     <Row label="Lebar">
-                                        <NumField value={(selected as TableEl).width} onChange={(v) => update(selected.id, { width: Math.max(100, v) })} />
+                                        <NumField value={(selected as TableEl | GridEl).width} onChange={(v) => update(selected.id, { width: Math.max(100, v) })} />
                                     </Row>
                                 )}
                             </Section>
@@ -977,6 +1184,300 @@ export default function PdfTemplateEdit() {
                 </aside>
             </div>
         </div>
+    );
+}
+
+// ── Grid canvas render ────────────────────────────────────────────────────────
+
+interface GridCanvasProps {
+    el: GridEl;
+    preview: boolean;
+    resolve: (text: string) => string;
+    selectedCell: { row: number; col: number } | null;
+    editingCell: { row: number; col: number } | null;
+    onCellPointerDown: (row: number, col: number, e: React.PointerEvent) => void;
+    onCellDoubleClick: (row: number, col: number) => void;
+    onCellCommit: (row: number, col: number, text: string) => void;
+    onCellEscape: (row: number, col: number) => void;
+}
+
+function GridCanvas({
+    el, preview, resolve,
+    selectedCell, editingCell,
+    onCellPointerDown, onCellDoubleClick, onCellCommit, onCellEscape,
+}: GridCanvasProps) {
+    const bw = el.border.width;
+    const bc = el.border.color;
+
+    return (
+        <table
+            style={{
+                width: el.width,
+                borderCollapse: 'collapse',
+                tableLayout: 'fixed',
+                fontFamily: 'Helvetica, Arial, sans-serif',
+                fontSize: 10,
+                userSelect: 'none',
+            }}
+        >
+            <tbody>
+                {el.cells.map((rowCells, ri) => (
+                    <tr key={ri}>
+                        {rowCells.map((cell, ci) => {
+                            const isSel = selectedCell?.row === ri && selectedCell?.col === ci;
+                            const isEditing = editingCell?.row === ri && editingCell?.col === ci;
+                            const displayText = preview ? resolve(cell.text) : cell.text;
+
+                            return (
+                                <td
+                                    key={ci}
+                                    onPointerDown={(e) => onCellPointerDown(ri, ci, e)}
+                                    onDoubleClick={() => onCellDoubleClick(ri, ci)}
+                                    style={{
+                                        width: el.colWidths[ci] ?? 'auto',
+                                        height: GRID_ROW_H,
+                                        border: `${bw}px solid ${bc}`,
+                                        padding: '2px 4px',
+                                        textAlign: cell.align,
+                                        fontWeight: cell.bold ? 700 : 400,
+                                        color: cell.color,
+                                        backgroundColor: isSel
+                                            ? '#eff6ff'
+                                            : (cell.fill ?? 'transparent'),
+                                        outline: isSel ? '2px solid #3b82f6' : 'none',
+                                        outlineOffset: -2,
+                                        verticalAlign: 'middle',
+                                        overflow: 'hidden',
+                                        cursor: isEditing ? 'text' : 'default',
+                                        position: 'relative',
+                                    }}
+                                >
+                                    {isEditing ? (
+                                        <GridCellEditor
+                                            initial={cell.text}
+                                            onCommit={(v) => onCellCommit(ri, ci, v)}
+                                            onEscape={() => onCellEscape(ri, ci)}
+                                            style={{
+                                                fontWeight: cell.bold ? 700 : 400,
+                                                color: cell.color,
+                                                textAlign: cell.align,
+                                            }}
+                                        />
+                                    ) : (
+                                        <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', display: 'block' }}>
+                                            {displayText}
+                                        </span>
+                                    )}
+                                </td>
+                            );
+                        })}
+                    </tr>
+                ))}
+            </tbody>
+        </table>
+    );
+}
+
+/** Inline editor for a single grid cell — contentEditable span. */
+function GridCellEditor({
+    initial, onCommit, onEscape, style,
+}: {
+    initial: string;
+    onCommit: (v: string) => void;
+    onEscape: () => void;
+    style?: React.CSSProperties;
+}) {
+    const ref = React.useRef<HTMLSpanElement>(null);
+
+    React.useEffect(() => {
+        if (!ref.current) return;
+        ref.current.textContent = initial;
+        ref.current.focus();
+        // Select all text
+        const range = document.createRange();
+        range.selectNodeContents(ref.current);
+        const sel = window.getSelection();
+        sel?.removeAllRanges();
+        sel?.addRange(range);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    return (
+        <span
+            ref={ref}
+            contentEditable
+            suppressContentEditableWarning
+            onBlur={(e) => onCommit(e.currentTarget.textContent ?? '')}
+            onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); e.currentTarget.blur(); }
+                else if (e.key === 'Escape') {
+                    e.currentTarget.textContent = initial;
+                    e.currentTarget.blur();
+                    onEscape();
+                }
+                e.stopPropagation(); // don't bubble to canvas Delete handler
+            }}
+            onPointerDown={(e) => e.stopPropagation()}
+            style={{
+                display: 'block',
+                outline: 'none',
+                whiteSpace: 'nowrap',
+                width: '100%',
+                ...style,
+            }}
+        />
+    );
+}
+
+// ── Grid Inspector ─────────────────────────────────────────────────────────────
+
+function GridInspector({
+    el,
+    selectedCell,
+    onAddRow, onRemoveRow, onAddCol, onRemoveCol,
+    onUpdateGrid, onUpdateCell,
+}: {
+    el: GridEl;
+    selectedCell: { row: number; col: number } | null;
+    onAddRow: () => void;
+    onRemoveRow: () => void;
+    onAddCol: () => void;
+    onRemoveCol: () => void;
+    onUpdateGrid: (patch: Partial<GridEl>) => void;
+    onUpdateCell: (row: number, col: number, patch: Partial<GridCell>) => void;
+}) {
+    const cell = selectedCell != null ? el.cells[selectedCell.row]?.[selectedCell.col] : null;
+
+    return (
+        <>
+            {/* ── Grid structure ── */}
+            <Section title="Struktur Grid">
+                {/* Rows */}
+                <div className="flex items-center gap-2">
+                    <span className="w-12 shrink-0 text-xs text-dark-500 dark:text-dark-400">Baris</span>
+                    <div className="flex items-center gap-1 flex-1">
+                        <button
+                            onClick={onRemoveRow}
+                            disabled={el.rows <= 1}
+                            className="grid place-items-center h-7 w-7 rounded-lg border border-secondary-200 dark:border-dark-600 text-dark-500 dark:text-dark-400 hover:bg-zinc-50 dark:hover:bg-dark-700 disabled:opacity-30 transition"
+                            title="Hapus baris terakhir"
+                        >
+                            <Minus className="w-3.5 h-3.5" />
+                        </button>
+                        <span className="flex-1 text-center text-sm tabular-nums font-medium text-dark-900 dark:text-dark-50">{el.rows}</span>
+                        <button
+                            onClick={onAddRow}
+                            className="grid place-items-center h-7 w-7 rounded-lg border border-secondary-200 dark:border-dark-600 text-dark-500 dark:text-dark-400 hover:bg-zinc-50 dark:hover:bg-dark-700 transition"
+                            title="Tambah baris"
+                        >
+                            <Plus className="w-3.5 h-3.5" />
+                        </button>
+                    </div>
+                </div>
+                {/* Cols */}
+                <div className="flex items-center gap-2">
+                    <span className="w-12 shrink-0 text-xs text-dark-500 dark:text-dark-400">Kolom</span>
+                    <div className="flex items-center gap-1 flex-1">
+                        <button
+                            onClick={onRemoveCol}
+                            disabled={el.cols <= 1}
+                            className="grid place-items-center h-7 w-7 rounded-lg border border-secondary-200 dark:border-dark-600 text-dark-500 dark:text-dark-400 hover:bg-zinc-50 dark:hover:bg-dark-700 disabled:opacity-30 transition"
+                            title="Hapus kolom terakhir"
+                        >
+                            <Minus className="w-3.5 h-3.5" />
+                        </button>
+                        <span className="flex-1 text-center text-sm tabular-nums font-medium text-dark-900 dark:text-dark-50">{el.cols}</span>
+                        <button
+                            onClick={onAddCol}
+                            className="grid place-items-center h-7 w-7 rounded-lg border border-secondary-200 dark:border-dark-600 text-dark-500 dark:text-dark-400 hover:bg-zinc-50 dark:hover:bg-dark-700 transition"
+                            title="Tambah kolom"
+                        >
+                            <Plus className="w-3.5 h-3.5" />
+                        </button>
+                    </div>
+                </div>
+            </Section>
+
+            {/* ── Border ── */}
+            <Section title="Garis Border">
+                <Row label="Tebal">
+                    <NumField
+                        value={el.border.width}
+                        onChange={(v) => onUpdateGrid({ border: { ...el.border, width: Math.max(0, v) } })}
+                        unit="px"
+                    />
+                </Row>
+                <Row label="Warna">
+                    <Swatch
+                        value={el.border.color}
+                        onChange={(v) => onUpdateGrid({ border: { ...el.border, color: v } })}
+                    />
+                </Row>
+            </Section>
+
+            {/* ── Cell properties (shown when cell is selected) ── */}
+            {cell != null && selectedCell != null ? (
+                <Section title={`Sel [${selectedCell.row + 1}, ${selectedCell.col + 1}]`}>
+                    {/* Alignment */}
+                    <Row label="Rata">
+                        <div className="flex gap-1">
+                            {([
+                                { value: 'left', icon: <AlignLeft className="w-3.5 h-3.5" />, title: 'Kiri' },
+                                { value: 'center', icon: <AlignCenter className="w-3.5 h-3.5" />, title: 'Tengah' },
+                                { value: 'right', icon: <AlignRight className="w-3.5 h-3.5" />, title: 'Kanan' },
+                            ] as const).map(({ value, icon, title }) => (
+                                <button
+                                    key={value}
+                                    onClick={() => onUpdateCell(selectedCell.row, selectedCell.col, { align: value })}
+                                    title={title}
+                                    className={`flex-1 grid place-items-center h-7 rounded-lg border transition-colors ${
+                                        cell.align === value
+                                            ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-300'
+                                            : 'border-secondary-200 dark:border-dark-600 text-dark-500 dark:text-dark-400 hover:bg-zinc-50 dark:hover:bg-dark-700'
+                                    }`}
+                                >
+                                    {icon}
+                                </button>
+                            ))}
+                        </div>
+                    </Row>
+                    {/* Bold */}
+                    <Row label="Tebal">
+                        <button
+                            onClick={() => onUpdateCell(selectedCell.row, selectedCell.col, { bold: !cell.bold })}
+                            className={`grid place-items-center h-8 w-8 rounded-lg border transition-colors ${
+                                cell.bold
+                                    ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-300'
+                                    : 'border-secondary-200 dark:border-dark-600 text-dark-500 dark:text-dark-400 hover:bg-zinc-50 dark:hover:bg-dark-700'
+                            }`}
+                            title="Bold"
+                        >
+                            <BoldIcon className="w-4 h-4" />
+                        </button>
+                    </Row>
+                    {/* Text color */}
+                    <Row label="Warna">
+                        <Swatch
+                            value={cell.color}
+                            onChange={(v) => onUpdateCell(selectedCell.row, selectedCell.col, { color: v })}
+                        />
+                    </Row>
+                    {/* Fill color */}
+                    <Row label="Isi">
+                        <Swatch
+                            value={cell.fill ?? '#ffffff'}
+                            onChange={(v) => onUpdateCell(selectedCell.row, selectedCell.col, { fill: v })}
+                        />
+                    </Row>
+                </Section>
+            ) : (
+                <Section title="Sel">
+                    <p className="text-[11px] text-dark-400 dark:text-dark-500 text-center py-1">
+                        Klik sel di kanvas untuk mengatur propertinya.
+                    </p>
+                </Section>
+            )}
+        </>
     );
 }
 

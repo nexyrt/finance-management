@@ -37,7 +37,7 @@
 
     // Header-zone elements: non-table AND (no table OR y < tableY)
     $headerEls = collect($elements)->filter(function ($el) use ($tableEl, $tableY) {
-        if (($el['type'] ?? '') === 'table') {
+        if (in_array($el['type'] ?? '', ['table'])) {
             return false;
         }
         if ($tableEl === null) {
@@ -62,9 +62,16 @@
             // Compute the height needed for the below container
             $belowContainerHeight = collect($belowEls)->reduce(function (int $max, array $el) use ($tableY): int {
                 $relTop = (int) ($el['y'] ?? 0) - $tableY;
-                $elHeight = ($el['type'] === 'image')
-                    ? (int) ($el['height'] ?? 40)
-                    : (int) round(($el['fontSize'] ?? 14) * 1.4);
+                if ($el['type'] === 'image') {
+                    $elHeight = (int) ($el['height'] ?? 40);
+                } elseif ($el['type'] === 'grid') {
+                    $rows = count($el['cells'] ?? []);
+                    $bw = (int) (($el['border'] ?? [])['width'] ?? 1);
+                    $elHeight = $rows * 24 + $bw * ($rows + 1);
+                } else {
+                    // text
+                    $elHeight = (int) round(($el['fontSize'] ?? 14) * 1.4);
+                }
                 return max($max, $relTop + $elHeight);
             }, 0);
         }
@@ -98,6 +105,19 @@
         .below-flow {
             position: relative;
             width: 793px;
+        }
+
+        /* ── Static grid element ── */
+        .grid-el {
+            border-collapse: collapse;
+            table-layout: fixed;
+            font-size: 10px;
+            font-family: 'Helvetica', Arial, sans-serif;
+        }
+        .grid-el td {
+            vertical-align: middle;
+            overflow: hidden;
+            padding: 2px 4px;
         }
 
         /* ── Items table ── */
@@ -156,6 +176,31 @@
             <img class="el"
                  style="left: {{ $el['x'] }}px; top: {{ $el['y'] }}px; width: {{ $el['width'] ?? 160 }}px;@isset($el['height']) height: {{ $el['height'] }}px;@endisset"
                  src="{{ $el['src'] }}">
+        @elseif ($el['type'] === 'grid')
+            @php
+                $gridBw    = (int) (($el['border'] ?? [])['width'] ?? 1);
+                $gridBc    = ($el['border'] ?? [])['color'] ?? '#cbd5e1';
+                $gridCells = $el['cells'] ?? [];
+                $gridColW  = $el['colWidths'] ?? [];
+                $gridW     = (int) ($el['width'] ?? 300);
+            @endphp
+            <table class="el grid-el"
+                   style="left: {{ $el['x'] }}px; top: {{ $el['y'] }}px; width: {{ $gridW }}px;">
+                <tbody>
+                    @foreach ($gridCells as $rowIdx => $rowCells)
+                        <tr>
+                            @foreach ($rowCells as $colIdx => $cell)
+                                @php
+                                    $cw   = $gridColW[$colIdx] ?? 'auto';
+                                    $ch   = 24;
+                                    $fill = ($cell['fill'] ?? '') ?: 'transparent';
+                                @endphp
+                                <td style="width: {{ $cw }}px; height: {{ $ch }}px; border: {{ $gridBw }}px solid {{ $gridBc }}; text-align: {{ $cell['align'] ?? 'left' }}; font-weight: {{ ($cell['bold'] ?? false) ? 700 : 400 }}; color: {{ $cell['color'] ?? '#0f172a' }}; background-color: {{ $fill }};">{{ $cell['text'] ?? '' }}</td>
+                            @endforeach
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
         @endif
     @endforeach
 </div>
@@ -238,6 +283,31 @@
                     <img class="el"
                          style="left: {{ $el['x'] }}px; top: {{ $relTop }}px; width: {{ $el['width'] ?? 160 }}px;@isset($el['height']) height: {{ $el['height'] }}px;@endisset"
                          src="{{ $el['src'] }}">
+                @elseif ($el['type'] === 'grid')
+                    @php
+                        $gridBw    = (int) (($el['border'] ?? [])['width'] ?? 1);
+                        $gridBc    = ($el['border'] ?? [])['color'] ?? '#cbd5e1';
+                        $gridCells = $el['cells'] ?? [];
+                        $gridColW  = $el['colWidths'] ?? [];
+                        $gridW     = (int) ($el['width'] ?? 300);
+                    @endphp
+                    <table class="el grid-el"
+                           style="left: {{ $el['x'] }}px; top: {{ $relTop }}px; width: {{ $gridW }}px;">
+                        <tbody>
+                            @foreach ($gridCells as $rowIdx => $rowCells)
+                                <tr>
+                                    @foreach ($rowCells as $colIdx => $cell)
+                                        @php
+                                            $cw   = $gridColW[$colIdx] ?? 'auto';
+                                            $ch   = 24;
+                                            $fill = ($cell['fill'] ?? '') ?: 'transparent';
+                                        @endphp
+                                        <td style="width: {{ $cw }}px; height: {{ $ch }}px; border: {{ $gridBw }}px solid {{ $gridBc }}; text-align: {{ $cell['align'] ?? 'left' }}; font-weight: {{ ($cell['bold'] ?? false) ? 700 : 400 }}; color: {{ $cell['color'] ?? '#0f172a' }}; background-color: {{ $fill }};">{{ $cell['text'] ?? '' }}</td>
+                                    @endforeach
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
                 @endif
             @endforeach
         </div>
