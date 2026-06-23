@@ -912,6 +912,11 @@ export default function PdfTemplateEdit() {
                                                             setSelectedId(el.id);
                                                             if (e.shiftKey && anchorCell && selectedId === el.id) {
                                                                 setRangeEnd({ row: r, col: c });
+                                                                // Rentang multi-sel → alihkan Inspector ke mode merge
+                                                                // (tombol "Gabungkan sel" hanya tampil saat selectedCell kosong).
+                                                                if (r !== anchorCell.row || c !== anchorCell.col) {
+                                                                    setSelectedCell(null);
+                                                                }
                                                             } else {
                                                                 setAnchorCell({ row: r, col: c });
                                                                 setRangeEnd({ row: r, col: c });
