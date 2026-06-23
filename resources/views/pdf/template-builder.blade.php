@@ -194,6 +194,14 @@
                     $rows = count($el['cells'] ?? []);
                     $bw = (int) (($el['border'] ?? [])['width'] ?? 1);
                     $elHeight = $rows * 24 + $bw * ($rows + 1);
+                } elseif ($el['type'] === 'rect') {
+                    $elHeight = (int) ($el['height'] ?? 40);
+                } elseif ($el['type'] === 'line') {
+                    // horizontal line: height = thickness; vertical line: height = length
+                    $orientation = $el['orientation'] ?? 'h';
+                    $elHeight = $orientation === 'h'
+                        ? (int) ($el['thickness'] ?? 1)
+                        : (int) ($el['length'] ?? 100);
                 } else {
                     // text: use explicit height if set (box mode), else fontSize*lineHeight estimate
                     if (isset($el['height'])) {
@@ -364,6 +372,31 @@
                     @endforeach
                 </tbody>
             </table>
+        @elseif ($el['type'] === 'rect')
+            @php
+                $rW      = (int) ($el['width'] ?? 100);
+                $rH      = (int) ($el['height'] ?? 40);
+                $rFill   = $el['fill'] ?? null;
+                $rBw     = (int) ($el['borderWidth'] ?? 0);
+                $rBc     = $el['borderColor'] ?? '#000000';
+                $rRadius = (int) ($el['borderRadius'] ?? 0);
+                $rStyle  = "position: absolute; left: {$el['x']}px; top: {$el['y']}px; width: {$rW}px; height: {$rH}px; box-sizing: border-box;";
+                if ($rFill)   { $rStyle .= " background-color: {$rFill};"; }
+                if ($rBw > 0) { $rStyle .= " border: {$rBw}px solid {$rBc};"; }
+                if ($rRadius > 0) { $rStyle .= " border-radius: {$rRadius}px;"; }
+            @endphp
+            <div style="{{ $rStyle }}"></div>
+        @elseif ($el['type'] === 'line')
+            @php
+                $lOrientation = $el['orientation'] ?? 'h';
+                $lLength      = (int) ($el['length'] ?? 100);
+                $lThick       = (int) ($el['thickness'] ?? 1);
+                $lColor       = $el['color'] ?? '#0f172a';
+                $lW           = $lOrientation === 'h' ? $lLength : $lThick;
+                $lH           = $lOrientation === 'h' ? $lThick  : $lLength;
+                $lStyle       = "position: absolute; left: {$el['x']}px; top: {$el['y']}px; width: {$lW}px; height: {$lH}px; background-color: {$lColor};";
+            @endphp
+            <div style="{{ $lStyle }}"></div>
         @endif
     @endforeach
 </div>
@@ -488,6 +521,31 @@
                             @endforeach
                         </tbody>
                     </table>
+                @elseif ($el['type'] === 'rect')
+                    @php
+                        $rW      = (int) ($el['width'] ?? 100);
+                        $rH      = (int) ($el['height'] ?? 40);
+                        $rFill   = $el['fill'] ?? null;
+                        $rBw     = (int) ($el['borderWidth'] ?? 0);
+                        $rBc     = $el['borderColor'] ?? '#000000';
+                        $rRadius = (int) ($el['borderRadius'] ?? 0);
+                        $rStyle  = "position: absolute; left: {$el['x']}px; top: {$relTop}px; width: {$rW}px; height: {$rH}px; box-sizing: border-box;";
+                        if ($rFill)   { $rStyle .= " background-color: {$rFill};"; }
+                        if ($rBw > 0) { $rStyle .= " border: {$rBw}px solid {$rBc};"; }
+                        if ($rRadius > 0) { $rStyle .= " border-radius: {$rRadius}px;"; }
+                    @endphp
+                    <div style="{{ $rStyle }}"></div>
+                @elseif ($el['type'] === 'line')
+                    @php
+                        $lOrientation = $el['orientation'] ?? 'h';
+                        $lLength      = (int) ($el['length'] ?? 100);
+                        $lThick       = (int) ($el['thickness'] ?? 1);
+                        $lColor       = $el['color'] ?? '#0f172a';
+                        $lW           = $lOrientation === 'h' ? $lLength : $lThick;
+                        $lH           = $lOrientation === 'h' ? $lThick  : $lLength;
+                        $lStyle       = "position: absolute; left: {$el['x']}px; top: {$relTop}px; width: {$lW}px; height: {$lH}px; background-color: {$lColor};";
+                    @endphp
+                    <div style="{{ $lStyle }}"></div>
                 @endif
             @endforeach
         </div>

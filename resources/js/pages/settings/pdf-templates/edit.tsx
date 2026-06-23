@@ -40,6 +40,8 @@ import {
     ChevronDown,
     GripHorizontal,
     Upload,
+    Minus as LineIcon,
+    Square as RectIcon,
 } from 'lucide-react';
 import type { SharedProps } from '@/types';
 
@@ -164,7 +166,28 @@ type GridEl = {
     anchorCell?: { row: number; col: number } | null;
 };
 
-type El = Text | Img | TableEl | GridEl;
+/** Rectangle shape element. fill=null means transparent. */
+type RectEl = {
+    id: number; type: 'rect';
+    x: number; y: number;
+    width: number; height: number;
+    fill?: string | null;          // background fill; null/undefined = transparent
+    borderWidth: number;           // px; 0 = no border
+    borderColor: string;
+    borderRadius: number;          // px corner radius
+};
+
+/** Line / divider shape element. length = px along the major axis. */
+type LineEl = {
+    id: number; type: 'line';
+    x: number; y: number;
+    length: number;                // px (width for h, height for v)
+    thickness: number;             // px (height for h, width for v)
+    color: string;
+    orientation: 'h' | 'v';       // horizontal | vertical
+};
+
+type El = Text | Img | TableEl | GridEl | RectEl | LineEl;
 
 // ── Catalog types ─────────────────────────────────────────────────────────────
 
@@ -257,6 +280,39 @@ function makeDefaultGrid(id: number, x: number, y: number): GridEl {
 const GRID_ROW_H = 24;
 function gridEditorHeight(el: GridEl): number {
     return GRID_ROW_H * el.rows + el.border.width * (el.rows + 1);
+}
+
+/** Build a default rectangle element. */
+function makeDefaultRect(id: number, x: number, y: number): RectEl {
+    return {
+        id, type: 'rect',
+        x, y,
+        width: 200, height: 40,
+        fill: null,
+        borderWidth: 1,
+        borderColor: '#0f172a',
+        borderRadius: 0,
+    };
+}
+
+/** Build a default line/divider element. */
+function makeDefaultLine(id: number, x: number, y: number): LineEl {
+    return {
+        id, type: 'line',
+        x, y,
+        length: 300,
+        thickness: 1,
+        color: '#0f172a',
+        orientation: 'h',
+    };
+}
+
+/** Canvas display dimensions for a line element. */
+function lineElWidth(el: LineEl): number {
+    return el.orientation === 'h' ? el.length : el.thickness;
+}
+function lineElHeight(el: LineEl): number {
+    return el.orientation === 'h' ? el.thickness : el.length;
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -433,6 +489,51 @@ export default function PdfTemplateEdit() {
         window.addEventListener('pointerup', up);
     };
 
+    /** SE corner resize for rect (width + height). */
+    const startRectResize = (e: React.PointerEvent, el: RectEl) => {
+        e.stopPropagation();
+        const rect = paperRef.current!.getBoundingClientRect();
+        const x0 = el.x;
+        const y0 = el.y;
+        let resized = false;
+        const move = (ev: PointerEvent) => {
+            if (!resized) { resized = true; snapshot(); }
+            update(el.id, {
+                width: Math.max(4, Math.round((ev.clientX - rect.left) / zoom - x0)),
+                height: Math.max(4, Math.round((ev.clientY - rect.top) / zoom - y0)),
+            });
+        };
+        const up = () => {
+            window.removeEventListener('pointermove', move);
+            window.removeEventListener('pointerup', up);
+        };
+        window.addEventListener('pointermove', move);
+        window.addEventListener('pointerup', up);
+    };
+
+    /** End-point resize for line (adjusts length). */
+    const startLineResize = (e: React.PointerEvent, el: LineEl) => {
+        e.stopPropagation();
+        const rect = paperRef.current!.getBoundingClientRect();
+        const x0 = el.x;
+        const y0 = el.y;
+        let resized = false;
+        const move = (ev: PointerEvent) => {
+            if (!resized) { resized = true; snapshot(); }
+            if (el.orientation === 'h') {
+                update(el.id, { length: Math.max(4, Math.round((ev.clientX - rect.left) / zoom - x0)) });
+            } else {
+                update(el.id, { length: Math.max(4, Math.round((ev.clientY - rect.top) / zoom - y0)) });
+            }
+        };
+        const up = () => {
+            window.removeEventListener('pointermove', move);
+            window.removeEventListener('pointerup', up);
+        };
+        window.addEventListener('pointermove', move);
+        window.addEventListener('pointerup', up);
+    };
+
     const startResize = (e: React.PointerEvent, el: Img, corner: 'nw' | 'ne' | 'sw' | 'se') => {
         e.stopPropagation();
         setSelectedId(el.id);
@@ -513,6 +614,22 @@ export default function PdfTemplateEdit() {
         setEls((p) => [...p, el]);
         setSelectedId(id);
         setSelectedCell(null);
+    };
+
+    const addRect = (x = 80, y = 200) => {
+        snapshot();
+        const id = nextId.current++;
+        const el = makeDefaultRect(id, x, y);
+        setEls((p) => [...p, el]);
+        setSelectedId(id);
+    };
+
+    const addLine = (x = 80, y = 200) => {
+        snapshot();
+        const id = nextId.current++;
+        const el = makeDefaultLine(id, x, y);
+        setEls((p) => [...p, el]);
+        setSelectedId(id);
     };
 
     const setImgSize = (el: Img, dim: 'width' | 'height', v: number) => {
@@ -719,6 +836,8 @@ export default function PdfTemplateEdit() {
         else if (kind === 'image') { pendingImg.current = { x, y }; fileRef.current?.click(); }
         else if (kind === 'table') addTable(Math.min(x, A4.w - 100), y);
         else if (kind === 'grid') addGrid(Math.min(x, A4.w - 100), y);
+        else if (kind === 'rect') addRect(x, y);
+        else if (kind === 'line') addLine(x, y);
     };
 
     const remove = (id: number) => {
@@ -936,10 +1055,19 @@ export default function PdfTemplateEdit() {
                                                 ? <ImageIcon className="w-3.5 h-3.5" />
                                                 : el.type === 'grid'
                                                     ? <LayoutGrid className="w-3.5 h-3.5" />
-                                                    : <Table2 className="w-3.5 h-3.5" />}
+                                                    : el.type === 'rect'
+                                                        ? <RectIcon className="w-3.5 h-3.5" />
+                                                        : el.type === 'line'
+                                                            ? <LineIcon className="w-3.5 h-3.5" />
+                                                            : <Table2 className="w-3.5 h-3.5" />}
                                     </span>
                                     <span className={`flex-1 truncate text-sm ${active ? 'text-primary-700 dark:text-primary-200 font-medium' : 'text-dark-700 dark:text-dark-300'}`}>
-                                        {el.type === 'text' ? el.content : el.type === 'image' ? 'Gambar' : el.type === 'grid' ? 'Grid' : 'Tabel Item'}
+                                        {el.type === 'text' ? el.content
+                                            : el.type === 'image' ? 'Gambar'
+                                            : el.type === 'grid' ? 'Grid'
+                                            : el.type === 'rect' ? 'Kotak'
+                                            : el.type === 'line' ? 'Garis'
+                                            : 'Tabel Item'}
                                     </span>
                                     <button
                                         onClick={(e) => { e.stopPropagation(); remove(el.id); }}
@@ -1081,6 +1209,66 @@ export default function PdfTemplateEdit() {
                                                         >
                                                             <span className="w-1 h-6 rounded-sm bg-primary-500 opacity-70" />
                                                         </span>
+                                                    )}
+                                                </div>
+                                            );
+                                        }
+
+                                        if (el.type === 'rect') {
+                                            return (
+                                                <div
+                                                    key={el.id}
+                                                    onPointerDown={(e) => startDrag(e, el)}
+                                                    className={`absolute cursor-move ${isSel && !preview ? 'outline-2 outline-primary-500' : ''}`}
+                                                    style={{
+                                                        left: el.x, top: el.y, touchAction: 'none',
+                                                        width: el.width, height: el.height,
+                                                        backgroundColor: el.fill ?? undefined,
+                                                        border: el.borderWidth > 0
+                                                            ? `${el.borderWidth}px solid ${el.borderColor}`
+                                                            : undefined,
+                                                        borderRadius: el.borderRadius > 0 ? `${el.borderRadius}px` : undefined,
+                                                        boxSizing: 'border-box',
+                                                    }}
+                                                >
+                                                    {/* SE resize handle */}
+                                                    {isSel && !preview && (
+                                                        <span
+                                                            onPointerDown={(e) => startRectResize(e, el)}
+                                                            className="absolute right-0 bottom-0 translate-x-full translate-y-full z-10 h-2.5 w-2.5 rounded-sm border border-primary-500 bg-white cursor-nwse-resize"
+                                                            title="Ubah ukuran"
+                                                        />
+                                                    )}
+                                                </div>
+                                            );
+                                        }
+
+                                        if (el.type === 'line') {
+                                            const lw = lineElWidth(el);
+                                            const lh = lineElHeight(el);
+                                            return (
+                                                <div
+                                                    key={el.id}
+                                                    onPointerDown={(e) => startDrag(e, el)}
+                                                    className={`absolute cursor-move ${isSel && !preview ? 'outline-2 outline-primary-500' : ''}`}
+                                                    style={{
+                                                        left: el.x, top: el.y, touchAction: 'none',
+                                                        width: lw, height: lh,
+                                                        backgroundColor: el.color,
+                                                        flexShrink: 0,
+                                                    }}
+                                                >
+                                                    {/* End resize handle */}
+                                                    {isSel && !preview && (
+                                                        <span
+                                                            onPointerDown={(e) => startLineResize(e, el)}
+                                                            className={`absolute z-10 h-2.5 w-2.5 rounded-sm border border-primary-500 bg-white cursor-ew-resize ${
+                                                                el.orientation === 'h'
+                                                                    ? 'right-0 top-1/2 -translate-y-1/2 translate-x-full'
+                                                                    : 'bottom-0 left-1/2 -translate-x-1/2 translate-y-full cursor-ns-resize'
+                                                            }`}
+                                                            title="Ubah panjang"
+                                                        />
                                                     )}
                                                 </div>
                                             );
@@ -1242,6 +1430,16 @@ export default function PdfTemplateEdit() {
                                 <LayoutGrid className="w-4 h-4" /> Grid
                             </Button>
                         </div>
+                        <div draggable onDragStart={(e) => { e.dataTransfer.effectAllowed = 'copy'; e.dataTransfer.setData('kind', 'rect'); }} title="Kotak/persegi — seret ke kanvas atau klik">
+                            <Button variant="ghost" size="sm" className="cursor-grab active:cursor-grabbing" onClick={() => addRect()}>
+                                <RectIcon className="w-4 h-4" /> Kotak
+                            </Button>
+                        </div>
+                        <div draggable onDragStart={(e) => { e.dataTransfer.effectAllowed = 'copy'; e.dataTransfer.setData('kind', 'line'); }} title="Garis/divider — seret ke kanvas atau klik">
+                            <Button variant="ghost" size="sm" className="cursor-grab active:cursor-grabbing" onClick={() => addLine()}>
+                                <LineIcon className="w-4 h-4" /> Garis
+                            </Button>
+                        </div>
                         <div className="w-px h-6 bg-secondary-200 dark:bg-dark-600 mx-1" />
                         <Button
                             variant={preview ? 'primary' : 'ghost'}
@@ -1301,6 +1499,8 @@ export default function PdfTemplateEdit() {
                                 ? selected.type === 'text' ? 'Teks'
                                     : selected.type === 'image' ? 'Gambar'
                                     : selected.type === 'grid' ? 'Grid'
+                                    : selected.type === 'rect' ? 'Kotak'
+                                    : selected.type === 'line' ? 'Garis'
                                     : 'Tabel Item'
                                 : 'Properti'
                         }
@@ -1437,6 +1637,22 @@ export default function PdfTemplateEdit() {
                                 />
                             )}
 
+                            {/* ── Rect Inspector ── */}
+                            {selected.type === 'rect' && (
+                                <RectInspector
+                                    el={selected as RectEl}
+                                    onUpdate={(patch) => { snapshot(); update(selected.id, patch); }}
+                                />
+                            )}
+
+                            {/* ── Line Inspector ── */}
+                            {selected.type === 'line' && (
+                                <LineInspector
+                                    el={selected as LineEl}
+                                    onUpdate={(patch) => { snapshot(); update(selected.id, patch); }}
+                                />
+                            )}
+
                             {/* ── Posisi (shared) ── */}
                             <Section title="Posisi">
                                 <Row label="X">
@@ -1448,6 +1664,21 @@ export default function PdfTemplateEdit() {
                                 {(selected.type === 'table' || selected.type === 'grid') && (
                                     <Row label="Lebar">
                                         <NumField value={(selected as TableEl | GridEl).width} onChange={(v) => update(selected.id, { width: Math.max(100, v) })} />
+                                    </Row>
+                                )}
+                                {selected.type === 'rect' && (
+                                    <>
+                                        <Row label="Lebar">
+                                            <NumField value={(selected as RectEl).width} onChange={(v) => update(selected.id, { width: Math.max(4, v) })} />
+                                        </Row>
+                                        <Row label="Tinggi">
+                                            <NumField value={(selected as RectEl).height} onChange={(v) => update(selected.id, { height: Math.max(4, v) })} />
+                                        </Row>
+                                    </>
+                                )}
+                                {selected.type === 'line' && (
+                                    <Row label="Panjang">
+                                        <NumField value={(selected as LineEl).length} onChange={(v) => update(selected.id, { length: Math.max(4, v) })} />
                                     </Row>
                                 )}
                             </Section>
@@ -2489,6 +2720,103 @@ function TableInspector({
                         )}
                     </div>
                 )}
+            </Section>
+        </>
+    );
+}
+
+// ── Rect Inspector ────────────────────────────────────────────────────────────
+
+function RectInspector({
+    el,
+    onUpdate,
+}: {
+    el: RectEl;
+    onUpdate: (patch: Partial<RectEl>) => void;
+}) {
+    return (
+        <>
+            <Section title="Ukuran">
+                <Row label="Lebar">
+                    <NumField value={el.width} onChange={(v) => onUpdate({ width: Math.max(4, v) })} />
+                </Row>
+                <Row label="Tinggi">
+                    <NumField value={el.height} onChange={(v) => onUpdate({ height: Math.max(4, v) })} />
+                </Row>
+            </Section>
+            <Section title="Tampilan">
+                <Row label="Isi">
+                    <div className="flex items-center gap-2">
+                        <input
+                            type="checkbox"
+                            checked={!!el.fill}
+                            onChange={(e) => onUpdate({ fill: e.target.checked ? '#ffffff' : null })}
+                            className="accent-primary-600"
+                        />
+                        {el.fill ? (
+                            <Swatch value={el.fill} onChange={(v) => onUpdate({ fill: v })} />
+                        ) : (
+                            <span className="text-xs text-dark-400 dark:text-dark-500">Transparan</span>
+                        )}
+                    </div>
+                </Row>
+                <Row label="Border">
+                    <NumField value={el.borderWidth} onChange={(v) => onUpdate({ borderWidth: Math.max(0, v) })} unit="px" />
+                </Row>
+                {el.borderWidth > 0 && (
+                    <Row label="Warna border">
+                        <Swatch value={el.borderColor} onChange={(v) => onUpdate({ borderColor: v })} />
+                    </Row>
+                )}
+                <Row label="Radius">
+                    <NumField value={el.borderRadius} onChange={(v) => onUpdate({ borderRadius: Math.max(0, v) })} unit="px" />
+                </Row>
+            </Section>
+        </>
+    );
+}
+
+// ── Line Inspector ────────────────────────────────────────────────────────────
+
+function LineInspector({
+    el,
+    onUpdate,
+}: {
+    el: LineEl;
+    onUpdate: (patch: Partial<LineEl>) => void;
+}) {
+    return (
+        <>
+            <Section title="Orientasi">
+                <div className="flex gap-1">
+                    {([
+                        { value: 'h' as const, label: 'Horizontal' },
+                        { value: 'v' as const, label: 'Vertikal' },
+                    ]).map(({ value, label }) => (
+                        <button
+                            key={value}
+                            onClick={() => onUpdate({ orientation: value })}
+                            className={`flex-1 h-8 rounded-lg border text-xs font-medium transition-colors ${
+                                el.orientation === value
+                                    ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300'
+                                    : 'border-secondary-200 dark:border-dark-600 text-dark-500 dark:text-dark-400 hover:bg-zinc-50 dark:hover:bg-dark-700'
+                            }`}
+                        >
+                            {label}
+                        </button>
+                    ))}
+                </div>
+            </Section>
+            <Section title="Tampilan">
+                <Row label="Panjang">
+                    <NumField value={el.length} onChange={(v) => onUpdate({ length: Math.max(4, v) })} unit="px" />
+                </Row>
+                <Row label="Tebal">
+                    <NumField value={el.thickness} onChange={(v) => onUpdate({ thickness: Math.max(1, v) })} unit="px" />
+                </Row>
+                <Row label="Warna">
+                    <Swatch value={el.color} onChange={(v) => onUpdate({ color: v })} />
+                </Row>
             </Section>
         </>
     );

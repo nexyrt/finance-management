@@ -144,7 +144,7 @@ class PdfTemplateController extends Controller
         $request->validate([
             'layout' => ['present', 'array'],
             'layout.*.id' => ['required'],
-            'layout.*.type' => ['required', 'in:text,image,table,grid'],
+            'layout.*.type' => ['required', 'in:text,image,table,grid,rect,line'],
             'layout.*.x' => ['required', 'numeric'],
             'layout.*.y' => ['required', 'numeric'],
         ]);
