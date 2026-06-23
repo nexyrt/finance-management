@@ -1,7 +1,7 @@
 # WYSIWYG Invoice Template Builder — Rencana Agile
 
 > **Tujuan akhir:** pengguna merancang template invoice PDF secara visual (drag-and-drop), lalu mencetak invoice nyata memakai template itu.
-> **Status:** **Sprint 1 SELESAI** (`0b9a009`) — modul `/settings/pdf-templates`, multi-template CRUD, permission, default. **Sprint 2 SELESAI** — data binding invoice nyata: katalog token `app/Services/TemplateTokens.php` (22 token invoice/client/company, format Rp + tanggal Indonesia), resolve dari Invoice terbaru/sample, editor konsumsi catalog+sampleData. **Berikutnya: Sprint 3** (tabel data-bound + multi-halaman).
+> **Status:** **Sprint 1 SELESAI** (`0b9a009`). **Sprint 2 SELESAI** — katalog token `app/Services/TemplateTokens.php`. **Sprint 3 SELESAI** — tabel item data-bound (`app/Services/ItemColumns.php`, elemen `table`, model PDF dua-zona: absolute layer + flow table yg paginate). **⚠ ISU TERBUKA:** model dua-zona meng-clip elemen bebas yg ditaruh DI BAWAH Y tabel (total/dll hilang di PDF → langgar WYSIWYG). Harus diselesaikan sebelum Sprint 4. **Berikutnya: selesaikan isu zona-bawah, lalu Sprint 4** (grid statis Word + merge Excel).
 > **Eksekutor:** Sonnet, **satu sprint per sesi**, commit di akhir tiap sprint.
 > **Sifat:** kebutuhan internal, konteks UMKM Indonesia.
 
@@ -14,6 +14,7 @@
 - **UI/UX dengan `/design-taste-frontend`.** Setiap sprint yang menyentuh UI editor/panel dikerjakan dengan standar skill ini: audit-first untuk redesign, anti-slop, hasil rapi & intuitif. Target rasa: sekuat alat familiar pengguna (Word/Excel) tapi lebih bersih.
 - **Verifikasi nyata sebelum klaim selesai:** `npm run build` tiap ubah frontend; `php artisan test --compact --filter=...` tiap ubah backend; lihat **editor DAN PDF asli**.
 - **Commit per sprint** — pesan terstruktur: ringkas tujuan, lalu bagian *Apa / Kenapa / Batasan (ponytail) / Tests*.
+- **JANGAN bertanya saat eksekusi.** Untuk keputusan yang bisa dibatalkan, ambil default paling masuk akal (ponytail), **catat di laporan akhir, lalu lanjut** — jangan berhenti menunggu jawaban (lingkungan ini tak bisa melanjutkan agen yang dijeda → harus diluncurkan ulang, boros). Berhenti HANYA untuk keputusan irreversible/berisiko tinggi, dan itu pun berupa laporan ke orchestrator. Semua "Titik Keputusan" sprint diselesaikan orchestrator dengan user SEBELUM agen diluncurkan, lalu ditanam ke prompt.
 - **Konvensi teknis tetap:** koordinat px @96dpi (A4 = 793,7×1122,5 → kertas PDF 793×1122 + `overflow:hidden`), gambar disimpan **base64**, mata uang **integer**, token dinamis `{{path}}`.
 - **WYSIWYG adalah kontrak:** tampilan editor HARUS identik hasil PDF. Setiap perbedaan editor↔PDF = bug (mis. kasus `img{max-width:100%}` preflight yang sudah diperbaiki).
 
@@ -82,15 +83,17 @@ Sandbox di `GET /template-builder-test` (`resources/js/pages/template-builder-te
 **Goal:** elemen `table` terikat `invoice.items`, baris dinamis, pecah multi-halaman.
 - Tipe `table`: **pilih field** dari DB (deskripsi, qty, unit, harga satuan, cogs, jumlah, flag pajak, dst.) + kolom statis/komputasi (no. urut, qty×harga).
 - Per kolom: label header, lebar, rata, format (Rp/angka/tanggal), mapping field.
-- Header row + baris **total/footer** (agregasi mis. SUM). Header berulang tiap halaman.
-- **Multi-halaman:** tabel di **zona mengalir** (bukan absolute) agar DomPDF memaginasi baris. Struktur kertas: band atas absolute (header/gambar) lalu band konten mengalir (tabel+total). Editor merepresentasikan band ini.
+- Header kolom (thead) **berulang tiap halaman** (DomPDF otomatis). Baris footer sum per kolom **opsional** (default mati).
+- **Grand total (Total/DP/Sisa) BUKAN bagian tabel** — ditaruh sebagai elemen teks bebas memakai token (keputusan user).
+- **Multi-halaman:** tabel item = **zona mengalir** (bukan absolute) agar DomPDF memaginasi baris. Model kertas di PDF: elemen absolute (header/gambar/total/teks) render di halaman 1; tabel item = `<table>` normal-flow dgn `padding-top = Y tabel` sehingga mulai di bawah header lalu mengalir & pecah ke halaman 2+. Editor: tabel punya X/Y/lebar (Y = awal band mengalir), tinggi dinamis dari baris contoh.
 - Editor: baris contoh; PDF: item nyata.
-- **Acceptance:** mencetak item terpilih; angka rata kanan; invoice banyak item pecah rapi ke halaman 2+ dgn header berulang.
-- **Tests:** render PDF sedikit & banyak item (lintas-halaman); kolom/total benar.
-- **Risiko:** menyatukan absolute + flow di satu kertas — mulai sederhana, struktur band jelas.
+- **Acceptance:** mencetak item terpilih; angka rata kanan; invoice banyak item pecah rapi ke halaman 2+ dgn header kolom berulang.
+- **Tests:** render PDF sedikit & banyak item (lintas-halaman); kolom benar.
+- **Keputusan terkunci (2026-06-23):** lingkup S3 = **tabel data-bound item SAJA** (grid statis bebas → Sprint 4); kolom default **Standar** (No · Deskripsi · Qty · Harga Satuan · Jumlah); **total via elemen teks bebas** — risiko tabrakan saat invoice multi-halaman **diterima** (user bertanggung jawab atas penempatan).
 
-### Sprint 4 — Tabel: struktur & gaya ala Excel (merge cell)
+### Sprint 4 — Tabel grid statis (ala Word) + struktur & gaya ala Excel (merge cell)
 **Goal:** tabel sefleksibel & sefamiliar Excel (permintaan user).
+- **Tabel grid statis bebas (ala Word, keputusan user):** elemen tabel KEDUA — grid baris×kolom tetap, diposisikan **bebas (absolute)** untuk layout sembarang; bila melebihi halaman → clip (bukan paginate, beda dari tabel item S3).
 - **Editor grid interaktif** ala Excel: pilih sel/range, atur per sel/baris/kolom.
 - Styling: border per sisi (gaya/warna/tebal), fill, font, padding, rata (h+v), zebra rows, garis grid.
 - **Merge cell** — penuh pada area **struktur** (header/footer & sel statis). Body data dinamis = "baris template" yang berulang per item, jadi merge antar-baris-data terbatas (perjelas di awal sprint — lihat Titik Keputusan).

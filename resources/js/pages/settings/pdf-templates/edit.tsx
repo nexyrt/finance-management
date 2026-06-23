@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import {
     Type,
     Image as ImageIcon,
+    Table2,
     Trash2,
     ZoomIn,
     ZoomOut,
@@ -23,47 +24,119 @@ import {
     Unlock,
     RotateCcw,
     ArrowLeft,
+    ChevronUp,
+    ChevronDown,
+    GripHorizontal,
 } from 'lucide-react';
 import type { SharedProps } from '@/types';
 
 // ponytail: koordinat px @96dpi. A4 = 794x1123.
 const A4 = { w: 794, h: 1123 };
 
-// Token catalog and sample data come from the server (TemplateTokens PHP service).
-// Do NOT hardcode tokens/data here — the server is the single source of truth.
+// ── Types ────────────────────────────────────────────────────────────────────
 
-type Text = { id: number; type: 'text'; x: number; y: number; content: string; fontSize: number; bold: boolean; color: string };
-type Img = { id: number; type: 'image'; x: number; y: number; src: string; width: number; height?: number; lockAspect?: boolean };
-type El = Text | Img;
+type Text = {
+    id: number; type: 'text';
+    x: number; y: number;
+    content: string; fontSize: number; bold: boolean; color: string;
+};
 
-/** One entry in the server-side token catalog. */
-interface TokenEntry {
-    path: string;
+type Img = {
+    id: number; type: 'image';
+    x: number; y: number;
+    src: string; width: number; height?: number; lockAspect?: boolean;
+};
+
+/** One column in the table element — stored in layout JSON. */
+type TableColumn = {
+    key: string;
     label: string;
+    width: number;
+    align: 'left' | 'center' | 'right';
+    format: 'text' | 'number' | 'rupiah';
+};
+
+type TableEl = {
+    id: number; type: 'table';
+    x: number; y: number;
+    width: number;
+    columns: TableColumn[];
+    showFooterSum: boolean;
+};
+
+type El = Text | Img | TableEl;
+
+// ── Catalog types ─────────────────────────────────────────────────────────────
+
+interface TokenEntry { path: string; label: string; }
+
+/** One entry from ItemColumns::catalogForFrontend() */
+interface ItemColumnEntry {
+    key: string;
+    label: string;
+    align: 'left' | 'center' | 'right';
+    format: 'text' | 'number' | 'rupiah';
+    default: boolean;
 }
 
-interface TemplateProps {
-    id: number;
-    name: string;
-    layout: El[];
-}
+interface TemplateProps { id: number; name: string; layout: El[]; }
 
 interface Props extends SharedProps {
     template: TemplateProps;
-    /** Token catalog from TemplateTokens::catalogForFrontend() — path + Indonesian label. */
     tokenCatalog: TokenEntry[];
-    /** Resolved values for the latest/sample invoice — path → formatted string. */
     sampleData: Record<string, string>;
+    /** Item column catalog from ItemColumns::catalogForFrontend() */
+    itemColumnCatalog: ItemColumnEntry[];
+    /**
+     * Resolved sample rows: array of {key→value} objects, one per sample item.
+     * Built server-side from the latest/sample invoice using the DEFAULT columns.
+     * In Preview mode the table renders these rows.
+     */
+    sampleItems: Array<Record<string, string>>;
 }
 
-export default function PdfTemplateEdit() {
-    const { template, tokenCatalog, sampleData } = usePage<Props>().props;
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
-    /** Resolve {{tokens}} in text against the server-provided sampleData map. */
+/** Build a default table element placed at (x, y). */
+function makeDefaultTable(id: number, catalog: ItemColumnEntry[], x: number, y: number): TableEl {
+    const defaults = catalog.filter((c) => c.default);
+    const widths: Record<string, number> = {
+        no: 36, description: 290, quantity: 72, unit: 80, unit_price: 130, amount: 130,
+        cogs_amount: 130, is_tax_deposit: 100,
+    };
+    const columns: TableColumn[] = defaults.map((c) => ({
+        key: c.key,
+        label: c.label,
+        width: widths[c.key] ?? 100,
+        align: c.align,
+        format: c.format,
+    }));
+    return { id, type: 'table', x, y, width: 714, columns, showFooterSum: false };
+}
+
+/** Approximate row height in the editor for 3 placeholder rows. */
+const TABLE_HEADER_H = 28;
+const TABLE_ROW_H = 24;
+const TABLE_PLACEHOLDER_ROWS = 3;
+
+function tableEditorHeight(el: TableEl): number {
+    return TABLE_HEADER_H + TABLE_ROW_H * TABLE_PLACEHOLDER_ROWS + 2;
+}
+
+function tablePreviewHeight(el: TableEl, sampleItems: Array<Record<string, string>>): number {
+    return TABLE_HEADER_H + TABLE_ROW_H * Math.max(1, sampleItems.length) + 2;
+}
+
+// ── Component ─────────────────────────────────────────────────────────────────
+
+export default function PdfTemplateEdit() {
+    const { template, tokenCatalog, sampleData, itemColumnCatalog, sampleItems } = usePage<Props>().props;
+
     const resolve = (text: string): string =>
         text.replace(/\{\{([\w.]+)\}\}/g, (match, path: string) =>
             Object.prototype.hasOwnProperty.call(sampleData, path) ? sampleData[path] : match,
         );
+
     const initial: El[] = Array.isArray(template.layout) && template.layout.length
         ? (template.layout as El[])
         : [{ id: 1, type: 'text', x: 60, y: 60, content: 'Invoice {{invoice.number}}', fontSize: 20, bold: true, color: '#0f172a' }];
@@ -85,7 +158,6 @@ export default function PdfTemplateEdit() {
     const dragLayerId = React.useRef<number | null>(null);
     const zoomAnchor = React.useRef<{ cx: number; cy: number; clientX: number; clientY: number } | null>(null);
     const nextId = React.useRef(Math.max(0, ...initial.map((e) => e.id)) + 1);
-
     const clipboard = React.useRef<El | null>(null);
     const history = React.useRef<{ past: El[][]; future: El[][] }>({ past: [], future: [] });
 
@@ -101,6 +173,7 @@ export default function PdfTemplateEdit() {
             h.future = [];
             return prev;
         });
+
     const undo = () =>
         setEls((prev) => {
             const h = history.current;
@@ -108,6 +181,7 @@ export default function PdfTemplateEdit() {
             h.future.push(prev);
             return h.past.pop()!;
         });
+
     const redo = () =>
         setEls((prev) => {
             const h = history.current;
@@ -128,6 +202,27 @@ export default function PdfTemplateEdit() {
             const x = Math.round((ev.clientX - rect.left) / zoom - dx);
             const y = Math.round((ev.clientY - rect.top) / zoom - dy);
             update(el.id, { x, y });
+        };
+        const up = () => {
+            window.removeEventListener('pointermove', move);
+            window.removeEventListener('pointerup', up);
+        };
+        window.addEventListener('pointermove', move);
+        window.addEventListener('pointerup', up);
+    };
+
+    /** Horizontal resize handle for the table (right edge). */
+    const startTableResize = (e: React.PointerEvent, el: TableEl) => {
+        e.stopPropagation();
+        const rect = paperRef.current!.getBoundingClientRect();
+        const x0 = el.x;
+        const w0 = el.width;
+        let resized = false;
+        const move = (ev: PointerEvent) => {
+            if (!resized) { resized = true; snapshot(); }
+            const pxRight = (ev.clientX - rect.left) / zoom;
+            const newW = Math.max(100, Math.round(pxRight - x0));
+            update(el.id, { width: newW });
         };
         const up = () => {
             window.removeEventListener('pointermove', move);
@@ -176,6 +271,7 @@ export default function PdfTemplateEdit() {
         setEls((p) => [...p, { id, type: 'text', x, y, content, fontSize: 14, bold: false, color: '#0f172a' }]);
         setSelectedId(id);
     };
+
     const addImage = (file: File, x = 80, y = 280) => {
         const reader = new FileReader();
         reader.onload = () => {
@@ -192,6 +288,14 @@ export default function PdfTemplateEdit() {
             probe.src = src;
         };
         reader.readAsDataURL(file);
+    };
+
+    const addTable = (x = 40, y = 300) => {
+        snapshot();
+        const id = nextId.current++;
+        const el = makeDefaultTable(id, itemColumnCatalog, x, y);
+        setEls((p) => [...p, el]);
+        setSelectedId(id);
     };
 
     const setImgSize = (el: Img, dim: 'width' | 'height', v: number) => {
@@ -213,7 +317,49 @@ export default function PdfTemplateEdit() {
         probe.src = el.src;
     };
 
-    // Save to this template's id
+    const updateTableColumn = (tableId: number, colIdx: number, patch: Partial<TableColumn>) => {
+        setEls((p) => p.map((e) => {
+            if (e.id !== tableId || e.type !== 'table') return e;
+            const cols = e.columns.map((c, i) => i === colIdx ? { ...c, ...patch } : c);
+            return { ...e, columns: cols };
+        }));
+    };
+
+    const moveTableColumn = (tableId: number, from: number, direction: -1 | 1) => {
+        const to = from + direction;
+        setEls((p) => p.map((e) => {
+            if (e.id !== tableId || e.type !== 'table') return e;
+            if (to < 0 || to >= e.columns.length) return e;
+            const cols = [...e.columns];
+            [cols[from], cols[to]] = [cols[to], cols[from]];
+            return { ...e, columns: cols };
+        }));
+    };
+
+    const removeTableColumn = (tableId: number, colIdx: number) => {
+        snapshot();
+        setEls((p) => p.map((e) => {
+            if (e.id !== tableId || e.type !== 'table') return e;
+            return { ...e, columns: e.columns.filter((_, i) => i !== colIdx) };
+        }));
+    };
+
+    const addTableColumn = (tableId: number, key: string) => {
+        const entry = itemColumnCatalog.find((c) => c.key === key);
+        if (!entry) return;
+        const widths: Record<string, number> = {
+            no: 36, description: 290, quantity: 72, unit: 80, unit_price: 130, amount: 130,
+            cogs_amount: 130, is_tax_deposit: 100,
+        };
+        snapshot();
+        setEls((p) => p.map((e) => {
+            if (e.id !== tableId || e.type !== 'table') return e;
+            if (e.columns.some((c) => c.key === key)) return e; // already present
+            const newCol: TableColumn = { key: entry.key, label: entry.label, width: widths[key] ?? 100, align: entry.align, format: entry.format };
+            return { ...e, columns: [...e.columns, newCol] };
+        }));
+    };
+
     const save = () => {
         setSaving(true);
         router.post(
@@ -238,6 +384,7 @@ export default function PdfTemplateEdit() {
             y: Math.max(0, Math.min(A4.h, (e.clientY - rect.top) / zoom)),
         };
     };
+
     const onDrop = (e: React.DragEvent) => {
         e.preventDefault();
         setDragOver(false);
@@ -247,7 +394,9 @@ export default function PdfTemplateEdit() {
         const kind = e.dataTransfer.getData('kind');
         if (kind === 'text') addText(x, y);
         else if (kind === 'image') { pendingImg.current = { x, y }; fileRef.current?.click(); }
+        else if (kind === 'table') addTable(Math.min(x, A4.w - 100), y);
     };
+
     const remove = (id: number) => {
         snapshot();
         setEls((p) => p.filter((e) => e.id !== id));
@@ -275,8 +424,8 @@ export default function PdfTemplateEdit() {
         const ta = contentRef.current;
         if (ta && document.activeElement === ta) {
             const s = ta.selectionStart ?? selected.content.length;
-            const e = ta.selectionEnd ?? s;
-            update(selected.id, { content: selected.content.slice(0, s) + token + selected.content.slice(e) });
+            const en = ta.selectionEnd ?? s;
+            update(selected.id, { content: selected.content.slice(0, s) + token + selected.content.slice(en) });
         } else {
             update(selected.id, { content: selected.content + token });
         }
@@ -292,15 +441,15 @@ export default function PdfTemplateEdit() {
     };
 
     const imgToPngBlob = (src: string) =>
-        new Promise<Blob>((resolve, reject) => {
+        new Promise<Blob>((res, rej) => {
             const img = new Image();
             img.onload = () => {
                 const c = document.createElement('canvas');
                 c.width = img.naturalWidth; c.height = img.naturalHeight;
                 c.getContext('2d')!.drawImage(img, 0, 0);
-                c.toBlob((b) => (b ? resolve(b) : reject(new Error('toBlob null'))), 'image/png');
+                c.toBlob((b) => (b ? res(b) : rej(new Error('toBlob null'))), 'image/png');
             };
-            img.onerror = reject;
+            img.onerror = rej;
             img.src = src;
         });
 
@@ -308,11 +457,11 @@ export default function PdfTemplateEdit() {
         try {
             if (el.type === 'text') {
                 await navigator.clipboard.writeText(el.content);
-            } else {
+            } else if (el.type === 'image') {
                 const png = await imgToPngBlob(el.src);
                 await navigator.clipboard.write([new ClipboardItem({ 'image/png': png })]);
             }
-        } catch { /* clipboard API bisa gagal — clipboard internal tetap jadi fallback */ }
+        } catch { /* clipboard bisa gagal — fallback ke clipboard internal */ }
     };
 
     React.useEffect(() => {
@@ -340,6 +489,7 @@ export default function PdfTemplateEdit() {
                 remove(selected.id);
             }
         };
+
         const onPaste = (e: ClipboardEvent) => {
             if (inField(e.target)) return;
             const imageItem = Array.from(e.clipboardData?.items ?? []).find((it) => it.type.startsWith('image/'));
@@ -404,12 +554,7 @@ export default function PdfTemplateEdit() {
         <div className="flex flex-col h-[calc(100vh-4rem)]">
             {/* Header bar */}
             <div className="flex items-center gap-3 px-4 py-2.5 border-b border-secondary-200 dark:border-dark-600 bg-white dark:bg-dark-800 shrink-0">
-                <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => router.visit('/settings/pdf-templates')}
-                    className="gap-1.5"
-                >
+                <Button variant="ghost" size="sm" onClick={() => router.visit('/settings/pdf-templates')} className="gap-1.5">
                     <ArrowLeft className="w-4 h-4" />
                     Kembali
                 </Button>
@@ -420,6 +565,7 @@ export default function PdfTemplateEdit() {
 
             {/* 3-column editor */}
             <div className="flex flex-1 overflow-hidden rounded-b-xl border-x border-b border-secondary-200 dark:border-dark-600 bg-white dark:bg-dark-800">
+
                 {/* ── KIRI: Layers ── */}
                 <aside className="w-52 shrink-0 border-r border-secondary-200 dark:border-dark-600 flex flex-col">
                     <PanelHeader title="Layers" meta={els.length ? String(els.length) : undefined} />
@@ -458,10 +604,14 @@ export default function PdfTemplateEdit() {
                                 >
                                     <GripVertical className="w-3.5 h-3.5 shrink-0 text-dark-300 dark:text-dark-500 opacity-0 group-hover:opacity-100 cursor-grab active:cursor-grabbing" />
                                     <span className={`grid place-items-center h-6 w-6 rounded-md shrink-0 ${active ? 'bg-primary-100 dark:bg-primary-900/40 text-primary-600 dark:text-primary-300' : 'bg-zinc-100 dark:bg-dark-700 text-dark-500 dark:text-dark-400'}`}>
-                                        {el.type === 'text' ? <Type className="w-3.5 h-3.5" /> : <ImageIcon className="w-3.5 h-3.5" />}
+                                        {el.type === 'text'
+                                            ? <Type className="w-3.5 h-3.5" />
+                                            : el.type === 'image'
+                                                ? <ImageIcon className="w-3.5 h-3.5" />
+                                                : <Table2 className="w-3.5 h-3.5" />}
                                     </span>
                                     <span className={`flex-1 truncate text-sm ${active ? 'text-primary-700 dark:text-primary-200 font-medium' : 'text-dark-700 dark:text-dark-300'}`}>
-                                        {el.type === 'text' ? el.content : 'Gambar'}
+                                        {el.type === 'text' ? el.content : el.type === 'image' ? 'Gambar' : 'Tabel Item'}
                                     </span>
                                     <button
                                         onClick={(e) => { e.stopPropagation(); remove(el.id); }}
@@ -493,6 +643,34 @@ export default function PdfTemplateEdit() {
                                     {els.map((el) => {
                                         const isSel = selectedId === el.id;
                                         const isEditing = editingId === el.id;
+
+                                        if (el.type === 'table') {
+                                            const height = preview
+                                                ? tablePreviewHeight(el, sampleItems)
+                                                : tableEditorHeight(el);
+                                            const rows = preview ? sampleItems : null;
+                                            return (
+                                                <div
+                                                    key={el.id}
+                                                    onPointerDown={(e) => startDrag(e, el)}
+                                                    className={`absolute cursor-move ${isSel && !preview ? 'outline-2 outline-primary-500' : ''}`}
+                                                    style={{ left: el.x, top: el.y, width: el.width, height, touchAction: 'none' }}
+                                                >
+                                                    <TablePreview el={el} rows={rows} />
+                                                    {/* Right-edge resize handle */}
+                                                    {isSel && !preview && (
+                                                        <span
+                                                            onPointerDown={(e) => startTableResize(e, el)}
+                                                            className="absolute right-0 top-0 bottom-0 w-2 cursor-ew-resize flex items-center justify-center"
+                                                            title="Geser untuk ubah lebar"
+                                                        >
+                                                            <span className="w-1 h-6 rounded-sm bg-primary-500 opacity-70" />
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            );
+                                        }
+
                                         return (
                                             <div
                                                 key={el.id}
@@ -558,22 +736,19 @@ export default function PdfTemplateEdit() {
 
                     {/* Floating toolbar */}
                     <div className="absolute bottom-5 left-1/2 -translate-x-1/2 flex items-center gap-1 px-2 py-1.5 rounded-xl bg-white dark:bg-dark-700 border border-secondary-200 dark:border-dark-600 shadow-lg">
-                        <div
-                            draggable
-                            onDragStart={(e) => { e.dataTransfer.effectAllowed = 'copy'; e.dataTransfer.setData('kind', 'text'); }}
-                            title="Seret ke kanvas, atau klik"
-                        >
+                        <div draggable onDragStart={(e) => { e.dataTransfer.effectAllowed = 'copy'; e.dataTransfer.setData('kind', 'text'); }} title="Seret ke kanvas, atau klik">
                             <Button variant="ghost" size="sm" className="cursor-grab active:cursor-grabbing" onClick={() => addText()}>
                                 <Type className="w-4 h-4" /> Teks
                             </Button>
                         </div>
-                        <div
-                            draggable
-                            onDragStart={(e) => { e.dataTransfer.effectAllowed = 'copy'; e.dataTransfer.setData('kind', 'image'); }}
-                            title="Seret ke kanvas, atau klik"
-                        >
+                        <div draggable onDragStart={(e) => { e.dataTransfer.effectAllowed = 'copy'; e.dataTransfer.setData('kind', 'image'); }} title="Seret ke kanvas, atau klik">
                             <Button variant="ghost" size="sm" className="cursor-grab active:cursor-grabbing" onClick={() => fileRef.current?.click()}>
                                 <ImageIcon className="w-4 h-4" /> Gambar
+                            </Button>
+                        </div>
+                        <div draggable onDragStart={(e) => { e.dataTransfer.effectAllowed = 'copy'; e.dataTransfer.setData('kind', 'table'); }} title="Seret ke kanvas, atau klik">
+                            <Button variant="ghost" size="sm" className="cursor-grab active:cursor-grabbing" onClick={() => addTable()}>
+                                <Table2 className="w-4 h-4" /> Tabel
                             </Button>
                         </div>
                         <div className="w-px h-6 bg-secondary-200 dark:bg-dark-600 mx-1" />
@@ -628,8 +803,14 @@ export default function PdfTemplateEdit() {
                 </div>
 
                 {/* ── KANAN: Inspector ── */}
-                <aside className="w-64 shrink-0 border-l border-secondary-200 dark:border-dark-600 flex flex-col">
-                    <PanelHeader title={selected ? (selected.type === 'text' ? 'Teks' : 'Gambar') : 'Properti'} />
+                <aside className="w-72 shrink-0 border-l border-secondary-200 dark:border-dark-600 flex flex-col">
+                    <PanelHeader
+                        title={
+                            selected
+                                ? selected.type === 'text' ? 'Teks' : selected.type === 'image' ? 'Gambar' : 'Tabel Item'
+                                : 'Properti'
+                        }
+                    />
 
                     {!selected ? (
                         <div className="flex-1 grid place-items-center p-6 text-center">
@@ -645,6 +826,7 @@ export default function PdfTemplateEdit() {
                                 if (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA') snapshot();
                             }}
                         >
+                            {/* ── Text Inspector ── */}
                             {selected.type === 'text' && (
                                 <>
                                     <Section title="Konten">
@@ -704,6 +886,7 @@ export default function PdfTemplateEdit() {
                                 </>
                             )}
 
+                            {/* ── Image Inspector ── */}
                             {selected.type === 'image' && (
                                 <Section title="Gambar">
                                     <Row label="Lebar">
@@ -720,7 +903,6 @@ export default function PdfTemplateEdit() {
                                                     ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300'
                                                     : 'border-secondary-200 dark:border-dark-600 text-dark-500 dark:text-dark-400 hover:bg-zinc-50 dark:hover:bg-dark-700'
                                             }`}
-                                            title="Kunci rasio lebar : tinggi"
                                         >
                                             {(selected as Img).lockAspect ? <Lock className="w-4 h-4" /> : <Unlock className="w-4 h-4" />}
                                             {(selected as Img).lockAspect ? 'Terkunci' : 'Bebas'}
@@ -735,6 +917,20 @@ export default function PdfTemplateEdit() {
                                 </Section>
                             )}
 
+                            {/* ── Table Inspector ── */}
+                            {selected.type === 'table' && (
+                                <TableInspector
+                                    el={selected as TableEl}
+                                    catalog={itemColumnCatalog}
+                                    onUpdate={(patch) => { snapshot(); update(selected.id, patch); }}
+                                    onUpdateColumn={(idx, patch) => { snapshot(); updateTableColumn(selected.id, idx, patch); }}
+                                    onMoveColumn={(idx, dir) => { snapshot(); moveTableColumn(selected.id, idx, dir); }}
+                                    onRemoveColumn={(idx) => removeTableColumn(selected.id, idx)}
+                                    onAddColumn={(key) => addTableColumn(selected.id, key)}
+                                />
+                            )}
+
+                            {/* ── Posisi (shared) ── */}
                             <Section title="Posisi">
                                 <Row label="X">
                                     <NumField value={Math.round(selected.x)} onChange={(v) => update(selected.id, { x: v })} />
@@ -742,6 +938,11 @@ export default function PdfTemplateEdit() {
                                 <Row label="Y">
                                     <NumField value={Math.round(selected.y)} onChange={(v) => update(selected.id, { y: v })} />
                                 </Row>
+                                {selected.type === 'table' && (
+                                    <Row label="Lebar">
+                                        <NumField value={(selected as TableEl).width} onChange={(v) => update(selected.id, { width: Math.max(100, v) })} />
+                                    </Row>
+                                )}
                             </Section>
 
                             <Section title="">
@@ -759,6 +960,206 @@ export default function PdfTemplateEdit() {
         </div>
     );
 }
+
+// ── Table canvas render ────────────────────────────────────────────────────────
+
+function TablePreview({
+    el, rows,
+}: { el: TableEl; rows: Array<Record<string, string>> | null }) {
+    const placeholderRows = rows ?? Array.from({ length: TABLE_PLACEHOLDER_ROWS }, (_, i) => {
+        const row: Record<string, string> = {};
+        el.columns.forEach((c) => {
+            row[c.key] = c.format === 'rupiah'
+                ? (i === 0 ? 'Rp 1.500.000' : i === 1 ? 'Rp 2.000.000' : 'Rp 500.000')
+                : c.format === 'number'
+                    ? (c.key === 'no' ? String(i + 1) : (i === 0 ? '2' : i === 1 ? '1' : '3'))
+                    : (c.key === 'description' ? `Item Contoh ${i + 1}` : c.key === 'unit' ? 'pcs' : '—');
+        });
+        return row;
+    });
+
+    const alignClass = (align: string) => align === 'right' ? 'text-right' : align === 'center' ? 'text-center' : 'text-left';
+
+    return (
+        <div className="w-full h-full overflow-hidden rounded border border-blue-200 dark:border-blue-900/40 bg-white dark:bg-dark-800 select-none text-[10px]" style={{ fontFamily: 'Helvetica, Arial, sans-serif' }}>
+            {/* Header row */}
+            <div className="flex bg-slate-100 dark:bg-dark-700 border-b border-slate-200 dark:border-dark-600" style={{ height: TABLE_HEADER_H }}>
+                {el.columns.map((col) => (
+                    <div
+                        key={col.key}
+                        className={`shrink-0 px-2 flex items-center font-semibold text-dark-700 dark:text-dark-200 truncate ${alignClass(col.align)} border-r border-slate-200 dark:border-dark-600 last:border-r-0`}
+                        style={{ width: col.width }}
+                    >
+                        {col.label}
+                    </div>
+                ))}
+            </div>
+            {/* Data rows */}
+            {placeholderRows.map((row, i) => (
+                <div
+                    key={i}
+                    className={`flex border-b border-slate-100 dark:border-dark-700 last:border-b-0 ${i % 2 === 1 ? 'bg-slate-50 dark:bg-dark-750' : ''}`}
+                    style={{ height: TABLE_ROW_H }}
+                >
+                    {el.columns.map((col) => (
+                        <div
+                            key={col.key}
+                            className={`shrink-0 px-2 flex items-center text-dark-700 dark:text-dark-300 truncate ${alignClass(col.align)} border-r border-slate-100 dark:border-dark-700 last:border-r-0`}
+                            style={{ width: col.width }}
+                        >
+                            {row[col.key] ?? ''}
+                        </div>
+                    ))}
+                </div>
+            ))}
+        </div>
+    );
+}
+
+// ── Table Inspector ────────────────────────────────────────────────────────────
+
+function TableInspector({
+    el, catalog, onUpdate, onUpdateColumn, onMoveColumn, onRemoveColumn, onAddColumn,
+}: {
+    el: TableEl;
+    catalog: ItemColumnEntry[];
+    onUpdate: (patch: Partial<TableEl>) => void;
+    onUpdateColumn: (idx: number, patch: Partial<TableColumn>) => void;
+    onMoveColumn: (idx: number, dir: -1 | 1) => void;
+    onRemoveColumn: (idx: number) => void;
+    onAddColumn: (key: string) => void;
+}) {
+    const [addOpen, setAddOpen] = React.useState(false);
+    const usedKeys = new Set(el.columns.map((c) => c.key));
+    const available = catalog.filter((c) => !usedKeys.has(c.key));
+
+    return (
+        <>
+            {/* Footer sum toggle */}
+            <Section title="Opsi Tabel">
+                <Row label="Total baris">
+                    <button
+                        onClick={() => onUpdate({ showFooterSum: !el.showFooterSum })}
+                        className={`flex items-center gap-2 h-8 w-full rounded-lg border px-2.5 text-sm transition-colors ${
+                            el.showFooterSum
+                                ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300'
+                                : 'border-secondary-200 dark:border-dark-600 text-dark-500 dark:text-dark-400 hover:bg-zinc-50 dark:hover:bg-dark-700'
+                        }`}
+                    >
+                        {el.showFooterSum ? '✓ Tampilkan' : 'Sembunyikan'}
+                    </button>
+                </Row>
+            </Section>
+
+            {/* Column list */}
+            <Section title="Kolom">
+                <div className="space-y-1.5">
+                    {el.columns.map((col, idx) => (
+                        <div key={col.key} className="rounded-lg border border-secondary-200 dark:border-dark-600 bg-zinc-50 dark:bg-dark-700 overflow-hidden">
+                            {/* Column header row */}
+                            <div className="flex items-center gap-1.5 px-2 py-1.5">
+                                <GripHorizontal className="w-3.5 h-3.5 shrink-0 text-dark-400 dark:text-dark-500" />
+                                <span className="flex-1 text-xs font-medium text-dark-700 dark:text-dark-300 truncate">{col.label}</span>
+                                <button
+                                    disabled={idx === 0}
+                                    onClick={() => onMoveColumn(idx, -1)}
+                                    className="grid place-items-center h-5 w-5 rounded text-dark-400 hover:text-dark-700 dark:hover:text-dark-200 disabled:opacity-30"
+                                    title="Pindah ke atas"
+                                >
+                                    <ChevronUp className="w-3.5 h-3.5" />
+                                </button>
+                                <button
+                                    disabled={idx === el.columns.length - 1}
+                                    onClick={() => onMoveColumn(idx, 1)}
+                                    className="grid place-items-center h-5 w-5 rounded text-dark-400 hover:text-dark-700 dark:hover:text-dark-200 disabled:opacity-30"
+                                    title="Pindah ke bawah"
+                                >
+                                    <ChevronDown className="w-3.5 h-3.5" />
+                                </button>
+                                <button
+                                    onClick={() => onRemoveColumn(idx)}
+                                    disabled={el.columns.length <= 1}
+                                    className="grid place-items-center h-5 w-5 rounded text-dark-400 hover:text-red-500 dark:hover:text-red-400 disabled:opacity-30 transition"
+                                    title="Hapus kolom"
+                                >
+                                    <Trash2 className="w-3 h-3" />
+                                </button>
+                            </div>
+                            {/* Column detail fields */}
+                            <div className="px-2 pb-2 space-y-1.5 border-t border-secondary-200 dark:border-dark-600 pt-1.5">
+                                <div className="flex items-center gap-1.5">
+                                    <span className="w-14 shrink-0 text-[11px] text-dark-500 dark:text-dark-400">Label</span>
+                                    <input
+                                        type="text"
+                                        value={col.label}
+                                        onChange={(e) => onUpdateColumn(idx, { label: e.target.value })}
+                                        className={`${inputCn} text-xs h-7`}
+                                    />
+                                </div>
+                                <div className="flex items-center gap-1.5">
+                                    <span className="w-14 shrink-0 text-[11px] text-dark-500 dark:text-dark-400">Lebar</span>
+                                    <div className="relative flex-1">
+                                        <input
+                                            type="number"
+                                            value={col.width}
+                                            min={20}
+                                            onChange={(e) => onUpdateColumn(idx, { width: Math.max(20, +e.target.value) })}
+                                            className={`${inputCn} h-7 text-xs pr-7`}
+                                        />
+                                        <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-dark-400 dark:text-dark-500 pointer-events-none">px</span>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-1.5">
+                                    <span className="w-14 shrink-0 text-[11px] text-dark-500 dark:text-dark-400">Rata</span>
+                                    <div className="flex gap-1">
+                                        {(['left', 'center', 'right'] as const).map((a) => (
+                                            <button
+                                                key={a}
+                                                onClick={() => onUpdateColumn(idx, { align: a })}
+                                                className={`px-2 py-0.5 rounded text-[11px] border transition-colors ${
+                                                    col.align === a
+                                                        ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300'
+                                                        : 'border-secondary-200 dark:border-dark-600 text-dark-500 dark:text-dark-400 hover:bg-zinc-50 dark:hover:bg-dark-600'
+                                                }`}
+                                            >
+                                                {a === 'left' ? '⬅' : a === 'center' ? '↔' : '➡'}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+
+                {/* Add column button */}
+                {available.length > 0 && (
+                    <div className="relative mt-1">
+                        <Button variant="zinc" size="sm" className="w-full" onClick={() => setAddOpen((o) => !o)}>
+                            <Plus className="w-4 h-4" /> Tambah kolom
+                        </Button>
+                        {addOpen && (
+                            <div className="absolute z-20 left-0 right-0 mt-1 rounded-lg border border-secondary-200 dark:border-dark-600 bg-white dark:bg-dark-700 shadow-lg p-1">
+                                {available.map((c) => (
+                                    <button
+                                        key={c.key}
+                                        onClick={() => { onAddColumn(c.key); setAddOpen(false); }}
+                                        className="w-full text-left px-2 py-1.5 rounded-md hover:bg-zinc-50 dark:hover:bg-dark-600"
+                                    >
+                                        <div className="text-xs font-medium text-dark-700 dark:text-dark-300">{c.label}</div>
+                                        <div className="text-[11px] text-dark-400 dark:text-dark-500">{c.format} · {c.align}</div>
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                )}
+            </Section>
+        </>
+    );
+}
+
+// ── Shared primitives ──────────────────────────────────────────────────────────
 
 const inputCn =
     'h-8 w-full rounded-lg border border-secondary-200 dark:border-dark-600 bg-white dark:bg-dark-800 px-2.5 text-sm text-dark-900 dark:text-dark-50 tabular-nums focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500';

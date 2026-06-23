@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Client;
 use App\Models\CompanyProfile;
 use App\Models\Invoice;
+use App\Models\InvoiceItem;
 use Carbon\Carbon;
 
 /**
@@ -220,7 +221,16 @@ class TemplateTokens
 
         // Payments relation = empty collection so accessors work without DB.
         $inv->setRelation('payments', collect());
-        $inv->setRelation('items', collect());
+
+        // Attach sample items — enough rows to test multi-page in PDF.
+        $sampleItems = collect([
+            new InvoiceItem(['invoice_id' => 0, 'service_name' => 'Konsultasi IT', 'quantity' => '2.000', 'unit' => 'jam', 'unit_price' => 750000, 'amount' => 1500000, 'cogs_amount' => 300000, 'is_tax_deposit' => false]),
+            new InvoiceItem(['invoice_id' => 0, 'service_name' => 'Pengembangan Fitur A', 'quantity' => '1.000', 'unit' => 'paket', 'unit_price' => 2000000, 'amount' => 2000000, 'cogs_amount' => 800000, 'is_tax_deposit' => false]),
+            new InvoiceItem(['invoice_id' => 0, 'service_name' => 'Hosting & Domain (1 th)', 'quantity' => '1.000', 'unit' => 'tahun', 'unit_price' => 500000, 'amount' => 500000, 'cogs_amount' => 350000, 'is_tax_deposit' => false]),
+            new InvoiceItem(['invoice_id' => 0, 'service_name' => 'PPh Final 0,5%', 'quantity' => '1.000', 'unit' => 'ls', 'unit_price' => 20000, 'amount' => 20000, 'cogs_amount' => 0, 'is_tax_deposit' => true]),
+            new InvoiceItem(['invoice_id' => 0, 'service_name' => 'Pemeliharaan Bulanan', 'quantity' => '3.000', 'unit' => 'bulan', 'unit_price' => 300000, 'amount' => 900000, 'cogs_amount' => 150000, 'is_tax_deposit' => false]),
+        ]);
+        $inv->setRelation('items', $sampleItems);
 
         return $inv;
     }

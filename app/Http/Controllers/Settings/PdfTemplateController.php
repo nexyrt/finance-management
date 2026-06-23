@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Settings;
 use App\Http\Controllers\Controller;
 use App\Models\Invoice;
 use App\Models\PdfTemplate;
+use App\Services\ItemColumns;
 use App\Services\TemplateTokens;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
@@ -108,6 +109,10 @@ class PdfTemplateController extends Controller
         $invoice = $this->resolvePreviewInvoice();
         $sampleData = TemplateTokens::buildMap($invoice);
 
+        // Build resolved sample rows for the table element Preview mode.
+        $defaultColumns = ItemColumns::defaultColumns();
+        $sampleItems = ItemColumns::resolveItems($defaultColumns, $invoice->items);
+
         return Inertia::render('settings/pdf-templates/edit', [
             'template' => [
                 'id' => $pdfTemplate->id,
@@ -116,6 +121,8 @@ class PdfTemplateController extends Controller
             ],
             'tokenCatalog' => TemplateTokens::catalogForFrontend(),
             'sampleData' => $sampleData,
+            'itemColumnCatalog' => ItemColumns::catalogForFrontend(),
+            'sampleItems' => $sampleItems,
         ]);
     }
 
@@ -124,7 +131,7 @@ class PdfTemplateController extends Controller
         $request->validate([
             'layout' => ['present', 'array'],
             'layout.*.id' => ['required'],
-            'layout.*.type' => ['required', 'in:text,image'],
+            'layout.*.type' => ['required', 'in:text,image,table'],
             'layout.*.x' => ['required', 'numeric'],
             'layout.*.y' => ['required', 'numeric'],
         ]);
@@ -147,13 +154,30 @@ class PdfTemplateController extends Controller
     public function pdf(PdfTemplate $pdfTemplate, ?Invoice $invoice = null): HttpResponse
     {
         $invoice = $invoice ?? $this->resolvePreviewInvoice();
+
         $elements = collect($pdfTemplate->layout ?? [])
-            ->map(fn (array $el) => [
-                ...$el,
-                'content' => isset($el['content'])
-                    ? TemplateTokens::resolveText($el['content'], $invoice)
-                    : null,
-            ])
+            ->map(function (array $el) use ($invoice): array {
+                if ($el['type'] === 'text') {
+                    return [
+                        ...$el,
+                        'content' => TemplateTokens::resolveText((string) ($el['content'] ?? ''), $invoice),
+                    ];
+                }
+
+                if ($el['type'] === 'table') {
+                    $columns = $el['columns'] ?? ItemColumns::defaultColumns();
+                    $rows = ItemColumns::resolveItems($columns, $invoice->items);
+
+                    return [
+                        ...$el,
+                        'columns' => $columns,
+                        'rows' => $rows,
+                    ];
+                }
+
+                // image — pass through unchanged
+                return $el;
+            })
             ->all();
 
         return Pdf::loadView('pdf.template-builder', ['elements' => $elements])
