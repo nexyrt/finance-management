@@ -29,32 +29,18 @@ import type { SharedProps } from '@/types';
 // ponytail: koordinat px @96dpi. A4 = 794x1123.
 const A4 = { w: 794, h: 1123 };
 
-// Data contoh untuk preview/binding. Saat cetak nanti diganti data invoice asli.
-const DATA = {
-    invoice: { number: 'INV/001/KSN/06.26', date: '08 Jun 2026', due_date: '22 Jun 2026', total: 'Rp 5.000.000' },
-    client: { name: 'PT Maju Jaya', npwp: '01.234.567.8-901.000' },
-    company: { name: 'Kisantra' },
-};
-
-function flattenData(obj: Record<string, unknown>, prefix = ''): { path: string; sample: string }[] {
-    return Object.entries(obj).flatMap(([k, v]) => {
-        const path = prefix ? `${prefix}.${k}` : k;
-        return v && typeof v === 'object'
-            ? flattenData(v as Record<string, unknown>, path)
-            : [{ path, sample: String(v) }];
-    });
-}
-const TOKENS = flattenData(DATA);
-
-const resolve = (text: string) =>
-    text.replace(/\{\{([\w.]+)\}\}/g, (_, path: string) => {
-        const val = path.split('.').reduce<unknown>((o, k) => (o as Record<string, unknown>)?.[k], DATA);
-        return val == null ? `{{${path}}}` : String(val);
-    });
+// Token catalog and sample data come from the server (TemplateTokens PHP service).
+// Do NOT hardcode tokens/data here — the server is the single source of truth.
 
 type Text = { id: number; type: 'text'; x: number; y: number; content: string; fontSize: number; bold: boolean; color: string };
 type Img = { id: number; type: 'image'; x: number; y: number; src: string; width: number; height?: number; lockAspect?: boolean };
 type El = Text | Img;
+
+/** One entry in the server-side token catalog. */
+interface TokenEntry {
+    path: string;
+    label: string;
+}
 
 interface TemplateProps {
     id: number;
@@ -64,10 +50,20 @@ interface TemplateProps {
 
 interface Props extends SharedProps {
     template: TemplateProps;
+    /** Token catalog from TemplateTokens::catalogForFrontend() — path + Indonesian label. */
+    tokenCatalog: TokenEntry[];
+    /** Resolved values for the latest/sample invoice — path → formatted string. */
+    sampleData: Record<string, string>;
 }
 
 export default function PdfTemplateEdit() {
-    const { template } = usePage<Props>().props;
+    const { template, tokenCatalog, sampleData } = usePage<Props>().props;
+
+    /** Resolve {{tokens}} in text against the server-provided sampleData map. */
+    const resolve = (text: string): string =>
+        text.replace(/\{\{([\w.]+)\}\}/g, (match, path: string) =>
+            Object.prototype.hasOwnProperty.call(sampleData, path) ? sampleData[path] : match,
+        );
     const initial: El[] = Array.isArray(template.layout) && template.layout.length
         ? (template.layout as El[])
         : [{ id: 1, type: 'text', x: 60, y: 60, content: 'Invoice {{invoice.number}}', fontSize: 20, bold: true, color: '#0f172a' }];
@@ -665,14 +661,16 @@ export default function PdfTemplateEdit() {
                                             </Button>
                                             {fieldMenu && (
                                                 <div className="absolute z-20 left-0 right-0 mt-1 max-h-56 overflow-auto rounded-lg border border-secondary-200 dark:border-dark-600 bg-white dark:bg-dark-700 shadow-lg p-1">
-                                                    {TOKENS.map((t) => (
+                                                    {tokenCatalog.map((t) => (
                                                         <button
                                                             key={t.path}
                                                             onClick={() => { insertToken(t.path); setFieldMenu(false); }}
                                                             className="w-full text-left px-2 py-1.5 rounded-md hover:bg-zinc-50 dark:hover:bg-dark-600"
                                                         >
                                                             <div className="text-xs font-mono text-primary-600 dark:text-primary-400">{`{{${t.path}}}`}</div>
-                                                            <div className="text-[11px] text-dark-400 dark:text-dark-500 truncate">{t.sample}</div>
+                                                            <div className="text-[11px] text-dark-400 dark:text-dark-500 truncate">
+                                                                {sampleData[t.path] ?? t.label}
+                                                            </div>
                                                         </button>
                                                     ))}
                                                 </div>

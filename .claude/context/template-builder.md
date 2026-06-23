@@ -1,7 +1,7 @@
 # WYSIWYG Invoice Template Builder — Rencana Agile
 
 > **Tujuan akhir:** pengguna merancang template invoice PDF secara visual (drag-and-drop), lalu mencetak invoice nyata memakai template itu.
-> **Status:** sandbox end-to-end sudah jalan (lihat "Kondisi Saat Ini"). Sprint berikutnya mengubahnya jadi fitur produksi.
+> **Status:** **Sprint 1 SELESAI** (`0b9a009`) — modul `/settings/pdf-templates`, multi-template CRUD, permission, default. **Sprint 2 SELESAI** — data binding invoice nyata: katalog token `app/Services/TemplateTokens.php` (22 token invoice/client/company, format Rp + tanggal Indonesia), resolve dari Invoice terbaru/sample, editor konsumsi catalog+sampleData. **Berikutnya: Sprint 3** (tabel data-bound + multi-halaman).
 > **Eksekutor:** Sonnet, **satu sprint per sesi**, commit di akhir tiap sprint.
 > **Sifat:** kebutuhan internal, konteks UMKM Indonesia.
 

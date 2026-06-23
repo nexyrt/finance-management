@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Settings;
 
 use App\Http\Controllers\Controller;
+use App\Models\Invoice;
 use App\Models\PdfTemplate;
+use App\Services\TemplateTokens;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -13,13 +15,6 @@ use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
 class PdfTemplateController extends Controller
 {
-    /** Sample data for token resolution (same as sandbox). */
-    private const SAMPLE = [
-        'invoice' => ['number' => 'INV/001/KSN/06.26', 'date' => '08 Jun 2026', 'due_date' => '22 Jun 2026', 'total' => 'Rp 5.000.000'],
-        'client' => ['name' => 'PT Maju Jaya', 'npwp' => '01.234.567.8-901.000'],
-        'company' => ['name' => 'Kisantra'],
-    ];
-
     public function index(): InertiaResponse
     {
         $templates = PdfTemplate::query()
@@ -105,14 +100,22 @@ class PdfTemplateController extends Controller
         return redirect()->back()->with('success', 'Template default berhasil diubah.');
     }
 
+    /**
+     * Editor page — passes token catalog + resolved sample data to the frontend.
+     */
     public function edit(PdfTemplate $pdfTemplate): InertiaResponse
     {
+        $invoice = $this->resolvePreviewInvoice();
+        $sampleData = TemplateTokens::buildMap($invoice);
+
         return Inertia::render('settings/pdf-templates/edit', [
             'template' => [
                 'id' => $pdfTemplate->id,
                 'name' => $pdfTemplate->name,
                 'layout' => $pdfTemplate->layout ?? [],
             ],
+            'tokenCatalog' => TemplateTokens::catalogForFrontend(),
+            'sampleData' => $sampleData,
         ]);
     }
 
@@ -133,12 +136,23 @@ class PdfTemplateController extends Controller
         return back()->with('success', 'Layout tersimpan.');
     }
 
-    public function pdf(PdfTemplate $pdfTemplate): HttpResponse
+    /**
+     * Render template as PDF, resolving tokens against a real Invoice.
+     *
+     * Route: GET /settings/pdf-templates/{template}/pdf/{invoice?}
+     * - Invoice param provided → use that invoice.
+     * - No param → latest invoice in DB.
+     * - DB empty → in-memory sample (never crashes).
+     */
+    public function pdf(PdfTemplate $pdfTemplate, ?Invoice $invoice = null): HttpResponse
     {
+        $invoice = $invoice ?? $this->resolvePreviewInvoice();
         $elements = collect($pdfTemplate->layout ?? [])
             ->map(fn (array $el) => [
                 ...$el,
-                'content' => isset($el['content']) ? $this->resolve($el['content']) : null,
+                'content' => isset($el['content'])
+                    ? TemplateTokens::resolveText($el['content'], $invoice)
+                    : null,
             ])
             ->all();
 
@@ -147,13 +161,18 @@ class PdfTemplateController extends Controller
             ->stream('template.pdf');
     }
 
-    /** Replace {{path}} tokens with values from sample data. */
-    private function resolve(string $text): string
-    {
-        return preg_replace_callback('/\{\{([\w.]+)\}\}/', function (array $m): string {
-            $value = data_get(self::SAMPLE, $m[1]);
+    // ── Private helpers ───────────────────────────────────────────────────────
 
-            return $value === null ? $m[0] : (string) $value;
-        }, $text);
+    /**
+     * Auto-pick the latest invoice (with client eager-loaded) for preview/PDF.
+     * Falls back to an in-memory sample when the DB has no invoices yet.
+     */
+    private function resolvePreviewInvoice(): Invoice
+    {
+        $invoice = Invoice::with(['client', 'payments', 'items'])
+            ->latest()
+            ->first();
+
+        return $invoice ?? TemplateTokens::sampleInvoice();
     }
 }

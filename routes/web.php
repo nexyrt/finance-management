@@ -509,6 +509,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('/{pdfTemplate}/edit', [PdfTemplateController::class, 'edit'])->name('edit');
             Route::post('/{pdfTemplate}/save', [PdfTemplateController::class, 'save'])->name('save');
             Route::get('/{pdfTemplate}/pdf', [PdfTemplateController::class, 'pdf'])->name('pdf');
+            Route::get('/{pdfTemplate}/pdf/{invoice}', [PdfTemplateController::class, 'pdf'])->name('pdf.invoice');
         });
     });
 
