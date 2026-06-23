@@ -190,12 +190,16 @@
                     @foreach ($gridCells as $rowIdx => $rowCells)
                         <tr>
                             @foreach ($rowCells as $colIdx => $cell)
-                                @php
-                                    $cw   = $gridColW[$colIdx] ?? 'auto';
-                                    $ch   = 24;
-                                    $fill = ($cell['fill'] ?? '') ?: 'transparent';
-                                @endphp
-                                <td style="width: {{ $cw }}px; height: {{ $ch }}px; border: {{ $gridBw }}px solid {{ $gridBc }}; text-align: {{ $cell['align'] ?? 'left' }}; font-weight: {{ ($cell['bold'] ?? false) ? 700 : 400 }}; color: {{ $cell['color'] ?? '#0f172a' }}; background-color: {{ $fill }};">{{ $cell['text'] ?? '' }}</td>
+                                @if (!($cell['merged'] ?? false))
+                                    @php
+                                        $cw       = $gridColW[$colIdx] ?? 'auto';
+                                        $ch       = 24;
+                                        $fill     = ($cell['fill'] ?? '') ?: 'transparent';
+                                        $colSpan  = (int) ($cell['colSpan'] ?? 1);
+                                        $rowSpan  = (int) ($cell['rowSpan'] ?? 1);
+                                    @endphp
+                                    <td @if($colSpan > 1) colspan="{{ $colSpan }}" @endif @if($rowSpan > 1) rowspan="{{ $rowSpan }}" @endif style="width: {{ $cw }}px; height: {{ $ch }}px; border: {{ $gridBw }}px solid {{ $gridBc }}; text-align: {{ $cell['align'] ?? 'left' }}; font-weight: {{ ($cell['bold'] ?? false) ? 700 : 400 }}; color: {{ $cell['color'] ?? '#0f172a' }}; background-color: {{ $fill }};">{{ $cell['text'] ?? '' }}</td>
+                                @endif
                             @endforeach
                         </tr>
                     @endforeach
@@ -217,6 +221,18 @@
     <div class="table-flow" style="padding-left: {{ $tableX }}px; width: 793px;">
         <table class="items-table" style="width: {{ $tableW }}px;">
             <thead>
+                @if (!empty($tableEl['headerGroups']))
+                    <tr>
+                        @foreach ($tableEl['headerGroups'] as $group)
+                            @php $gSpan = (int)($group['span'] ?? 1); @endphp
+                            <th class="align-{{ $group['align'] ?? 'center' }}"
+                                @if($gSpan > 1) colspan="{{ $gSpan }}" @endif
+                                style="padding: 6px 8px; font-weight: bold; font-size: 10px; border: 1px solid #cbd5e1; white-space: nowrap; background-color: #f1f5f9;">
+                                {{ $group['label'] ?? '' }}
+                            </th>
+                        @endforeach
+                    </tr>
+                @endif
                 <tr>
                     @foreach ($columns as $col)
                         <th class="align-{{ $col['align'] ?? 'left' }}"
@@ -297,12 +313,16 @@
                             @foreach ($gridCells as $rowIdx => $rowCells)
                                 <tr>
                                     @foreach ($rowCells as $colIdx => $cell)
-                                        @php
-                                            $cw   = $gridColW[$colIdx] ?? 'auto';
-                                            $ch   = 24;
-                                            $fill = ($cell['fill'] ?? '') ?: 'transparent';
-                                        @endphp
-                                        <td style="width: {{ $cw }}px; height: {{ $ch }}px; border: {{ $gridBw }}px solid {{ $gridBc }}; text-align: {{ $cell['align'] ?? 'left' }}; font-weight: {{ ($cell['bold'] ?? false) ? 700 : 400 }}; color: {{ $cell['color'] ?? '#0f172a' }}; background-color: {{ $fill }};">{{ $cell['text'] ?? '' }}</td>
+                                        @if (!($cell['merged'] ?? false))
+                                            @php
+                                                $cw       = $gridColW[$colIdx] ?? 'auto';
+                                                $ch       = 24;
+                                                $fill     = ($cell['fill'] ?? '') ?: 'transparent';
+                                                $colSpan  = (int) ($cell['colSpan'] ?? 1);
+                                                $rowSpan  = (int) ($cell['rowSpan'] ?? 1);
+                                            @endphp
+                                            <td @if($colSpan > 1) colspan="{{ $colSpan }}" @endif @if($rowSpan > 1) rowspan="{{ $rowSpan }}" @endif style="width: {{ $cw }}px; height: {{ $ch }}px; border: {{ $gridBw }}px solid {{ $gridBc }}; text-align: {{ $cell['align'] ?? 'left' }}; font-weight: {{ ($cell['bold'] ?? false) ? 700 : 400 }}; color: {{ $cell['color'] ?? '#0f172a' }}; background-color: {{ $fill }};">{{ $cell['text'] ?? '' }}</td>
+                                        @endif
                                     @endforeach
                                 </tr>
                             @endforeach

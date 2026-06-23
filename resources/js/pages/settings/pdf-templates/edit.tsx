@@ -67,6 +67,7 @@ type TableEl = {
     width: number;
     columns: TableColumn[];
     showFooterSum: boolean;
+    headerGroups?: Array<{ label: string; span: number; align?: 'left' | 'center' | 'right' }>;
 };
 
 /** One cell in the static grid element. */
@@ -76,6 +77,9 @@ type GridCell = {
     bold: boolean;
     color: string;
     fill?: string;
+    colSpan?: number;  // default 1
+    rowSpan?: number;  // default 1
+    merged?: boolean;  // true = covered by another cell's span
 };
 
 type GridEl = {
@@ -87,6 +91,7 @@ type GridEl = {
     colWidths: number[];        // px per column (sum ≈ width)
     cells: GridCell[][];        // [row][col]
     border: { width: number; color: string };
+    anchorCell?: { row: number; col: number } | null;
 };
 
 type El = Text | Img | TableEl | GridEl;
@@ -145,11 +150,13 @@ const TABLE_ROW_H = 24;
 const TABLE_PLACEHOLDER_ROWS = 3;
 
 function tableEditorHeight(el: TableEl): number {
-    return TABLE_HEADER_H + TABLE_ROW_H * TABLE_PLACEHOLDER_ROWS + 2;
+    const groupRowH = (el.headerGroups?.length ?? 0) > 0 ? TABLE_HEADER_H : 0;
+    return groupRowH + TABLE_HEADER_H + TABLE_ROW_H * TABLE_PLACEHOLDER_ROWS + 2;
 }
 
 function tablePreviewHeight(el: TableEl, sampleItems: Array<Record<string, string>>): number {
-    return TABLE_HEADER_H + TABLE_ROW_H * Math.max(1, sampleItems.length) + 2;
+    const groupRowH = (el.headerGroups?.length ?? 0) > 0 ? TABLE_HEADER_H : 0;
+    return groupRowH + TABLE_HEADER_H + TABLE_ROW_H * Math.max(1, sampleItems.length) + 2;
 }
 
 /** Default cell value. */
@@ -198,6 +205,8 @@ export default function PdfTemplateEdit() {
     const [selectedId, setSelectedId] = React.useState<number | null>(null);
     /** When a grid cell is selected: { row, col } */
     const [selectedCell, setSelectedCell] = React.useState<{ row: number; col: number } | null>(null);
+    const [rangeEnd, setRangeEnd] = React.useState<{ row: number; col: number } | null>(null);
+    const [anchorCell, setAnchorCell] = React.useState<{ row: number; col: number } | null>(null);
     /** When a grid cell is being inline-edited: { row, col } */
     const [editingCell, setEditingCell] = React.useState<{ row: number; col: number } | null>(null);
     const [saving, setSaving] = React.useState(false);
@@ -221,6 +230,18 @@ export default function PdfTemplateEdit() {
     const selected = els.find((e) => e.id === selectedId) ?? null;
     const update = (id: number, patch: Partial<El>) =>
         setEls((p) => p.map((e) => (e.id === id ? ({ ...e, ...patch } as El) : e)));
+
+    const selectedRange: { r1: number; c1: number; r2: number; c2: number } | null =
+        anchorCell && rangeEnd
+            ? {
+                  r1: Math.min(anchorCell.row, rangeEnd.row),
+                  c1: Math.min(anchorCell.col, rangeEnd.col),
+                  r2: Math.max(anchorCell.row, rangeEnd.row),
+                  c2: Math.max(anchorCell.col, rangeEnd.col),
+              }
+            : anchorCell
+              ? { r1: anchorCell.row, c1: anchorCell.col, r2: anchorCell.row, c2: anchorCell.col }
+              : null;
 
     const snapshot = () =>
         setEls((prev) => {
@@ -426,6 +447,53 @@ export default function PdfTemplateEdit() {
         setEls((p) => p.map((e) => {
             if (e.id !== gridId || e.type !== 'grid') return e;
             return { ...e, ...patch } as GridEl;
+        }));
+    };
+
+    const mergeRange = (gridId: number, r1: number, c1: number, r2: number, c2: number) => {
+        snapshot();
+        setEls((p) => p.map((e) => {
+            if (e.id !== gridId || e.type !== 'grid') return e;
+            const cells = e.cells.map((row, ri) =>
+                row.map((cell, ci) => {
+                    if (ri === r1 && ci === c1) {
+                        // keeper cell
+                        return { ...cell, colSpan: c2 - c1 + 1, rowSpan: r2 - r1 + 1, merged: false };
+                    }
+                    if (ri >= r1 && ri <= r2 && ci >= c1 && ci <= c2) {
+                        // covered cell
+                        return { ...cell, text: '', colSpan: 1, rowSpan: 1, merged: true };
+                    }
+                    return cell;
+                })
+            );
+            return { ...e, cells };
+        }));
+        setAnchorCell({ row: r1, col: c1 });
+        setRangeEnd({ row: r1, col: c1 });
+        setSelectedCell({ row: r1, col: c1 });
+    };
+
+    const unmergeCell = (gridId: number, row: number, col: number) => {
+        snapshot();
+        setEls((p) => p.map((e) => {
+            if (e.id !== gridId || e.type !== 'grid') return e;
+            const keeper = e.cells[row]?.[col];
+            if (!keeper) return e;
+            const cs = keeper.colSpan ?? 1;
+            const rs = keeper.rowSpan ?? 1;
+            const cells = e.cells.map((rowCells, ri) =>
+                rowCells.map((cell, ci) => {
+                    if (ri === row && ci === col) {
+                        return { ...cell, colSpan: 1, rowSpan: 1, merged: false };
+                    }
+                    if (ri >= row && ri < row + rs && ci >= col && ci < col + cs) {
+                        return { ...cell, merged: false, colSpan: 1, rowSpan: 1 };
+                    }
+                    return cell;
+                })
+            );
+            return { ...e, cells };
         }));
     };
 
@@ -842,7 +910,13 @@ export default function PdfTemplateEdit() {
                                                         onCellPointerDown={(r, c, e) => {
                                                             e.stopPropagation();
                                                             setSelectedId(el.id);
-                                                            setSelectedCell({ row: r, col: c });
+                                                            if (e.shiftKey && anchorCell && selectedId === el.id) {
+                                                                setRangeEnd({ row: r, col: c });
+                                                            } else {
+                                                                setAnchorCell({ row: r, col: c });
+                                                                setRangeEnd({ row: r, col: c });
+                                                                setSelectedCell({ row: r, col: c });
+                                                            }
                                                         }}
                                                         onCellDoubleClick={(r, c) => {
                                                             if (preview) return;
@@ -860,6 +934,8 @@ export default function PdfTemplateEdit() {
                                                         onCellEscape={(r, c) => {
                                                             setEditingCell(null);
                                                         }}
+                                                        selectedRange={isSel ? selectedRange : null}
+                                                        rangeAnchor={isSel ? anchorCell : null}
                                                     />
                                                     {/* Right-edge resize handle */}
                                                     {isSel && !preview && (
@@ -1147,12 +1223,15 @@ export default function PdfTemplateEdit() {
                                 <GridInspector
                                     el={selected as GridEl}
                                     selectedCell={selectedCell}
+                                    selectedRange={selectedRange}
                                     onAddRow={() => addGridRow(selected.id)}
                                     onRemoveRow={() => removeGridRow(selected.id)}
                                     onAddCol={() => addGridCol(selected.id)}
                                     onRemoveCol={() => removeGridCol(selected.id)}
                                     onUpdateGrid={(patch) => { snapshot(); updateGrid(selected.id, patch); }}
                                     onUpdateCell={(r, c, patch) => { snapshot(); updateGridCell(selected.id, r, c, patch); }}
+                                    onMerge={(r1, c1, r2, c2) => mergeRange(selected.id, r1, c1, r2, c2)}
+                                    onUnmerge={(row, col) => unmergeCell(selected.id, row, col)}
                                 />
                             )}
 
@@ -1195,6 +1274,8 @@ interface GridCanvasProps {
     resolve: (text: string) => string;
     selectedCell: { row: number; col: number } | null;
     editingCell: { row: number; col: number } | null;
+    selectedRange: { r1: number; c1: number; r2: number; c2: number } | null;
+    rangeAnchor: { row: number; col: number } | null;
     onCellPointerDown: (row: number, col: number, e: React.PointerEvent) => void;
     onCellDoubleClick: (row: number, col: number) => void;
     onCellCommit: (row: number, col: number, text: string) => void;
@@ -1204,6 +1285,7 @@ interface GridCanvasProps {
 function GridCanvas({
     el, preview, resolve,
     selectedCell, editingCell,
+    selectedRange, rangeAnchor,
     onCellPointerDown, onCellDoubleClick, onCellCommit, onCellEscape,
 }: GridCanvasProps) {
     const bw = el.border.width;
@@ -1224,13 +1306,22 @@ function GridCanvas({
                 {el.cells.map((rowCells, ri) => (
                     <tr key={ri}>
                         {rowCells.map((cell, ci) => {
+                            if (cell.merged) return null;
+
                             const isSel = selectedCell?.row === ri && selectedCell?.col === ci;
                             const isEditing = editingCell?.row === ri && editingCell?.col === ci;
                             const displayText = preview ? resolve(cell.text) : cell.text;
 
+                            const inRange = selectedRange
+                                ? (ri >= selectedRange.r1 && ri <= selectedRange.r2 && ci >= selectedRange.c1 && ci <= selectedRange.c2)
+                                : false;
+                            const isAnchor = rangeAnchor?.row === ri && rangeAnchor?.col === ci;
+
                             return (
                                 <td
                                     key={ci}
+                                    colSpan={cell.colSpan ?? 1}
+                                    rowSpan={cell.rowSpan ?? 1}
                                     onPointerDown={(e) => onCellPointerDown(ri, ci, e)}
                                     onDoubleClick={() => onCellDoubleClick(ri, ci)}
                                     style={{
@@ -1241,10 +1332,10 @@ function GridCanvas({
                                         textAlign: cell.align,
                                         fontWeight: cell.bold ? 700 : 400,
                                         color: cell.color,
-                                        backgroundColor: isSel
+                                        backgroundColor: inRange
                                             ? '#eff6ff'
                                             : (cell.fill ?? 'transparent'),
-                                        outline: isSel ? '2px solid #3b82f6' : 'none',
+                                        outline: isAnchor ? '2px solid #3b82f6' : inRange ? '1px solid #93c5fd' : 'none',
                                         outlineOffset: -2,
                                         verticalAlign: 'middle',
                                         overflow: 'hidden',
@@ -1334,17 +1425,22 @@ function GridCellEditor({
 function GridInspector({
     el,
     selectedCell,
+    selectedRange,
     onAddRow, onRemoveRow, onAddCol, onRemoveCol,
     onUpdateGrid, onUpdateCell,
+    onMerge, onUnmerge,
 }: {
     el: GridEl;
     selectedCell: { row: number; col: number } | null;
+    selectedRange: { r1: number; c1: number; r2: number; c2: number } | null;
     onAddRow: () => void;
     onRemoveRow: () => void;
     onAddCol: () => void;
     onRemoveCol: () => void;
     onUpdateGrid: (patch: Partial<GridEl>) => void;
     onUpdateCell: (row: number, col: number, patch: Partial<GridCell>) => void;
+    onMerge: (r1: number, c1: number, r2: number, c2: number) => void;
+    onUnmerge: (row: number, col: number) => void;
 }) {
     const cell = selectedCell != null ? el.cells[selectedCell.row]?.[selectedCell.col] : null;
 
@@ -1469,12 +1565,31 @@ function GridInspector({
                             onChange={(v) => onUpdateCell(selectedCell.row, selectedCell.col, { fill: v })}
                         />
                     </Row>
+                    {/* Merge/unmerge */}
+                    {((cell.colSpan ?? 1) > 1 || (cell.rowSpan ?? 1) > 1) && (
+                        <Button variant="zinc" size="sm" className="w-full mt-1"
+                            onClick={() => onUnmerge(selectedCell.row, selectedCell.col)}>
+                            Pisahkan sel
+                        </Button>
+                    )}
                 </Section>
             ) : (
                 <Section title="Sel">
-                    <p className="text-[11px] text-dark-400 dark:text-dark-500 text-center py-1">
-                        Klik sel di kanvas untuk mengatur propertinya.
-                    </p>
+                    {selectedRange && (selectedRange.r1 !== selectedRange.r2 || selectedRange.c1 !== selectedRange.c2) ? (
+                        <>
+                            <p className="text-[11px] text-dark-400 dark:text-dark-500 text-center py-1">
+                                {`${selectedRange.r2 - selectedRange.r1 + 1} baris × ${selectedRange.c2 - selectedRange.c1 + 1} kolom dipilih`}
+                            </p>
+                            <Button variant="primary" size="sm" className="w-full"
+                                onClick={() => onMerge(selectedRange.r1, selectedRange.c1, selectedRange.r2, selectedRange.c2)}>
+                                Gabungkan sel
+                            </Button>
+                        </>
+                    ) : (
+                        <p className="text-[11px] text-dark-400 dark:text-dark-500 text-center py-1">
+                            Klik sel di kanvas untuk mengatur propertinya.
+                        </p>
+                    )}
                 </Section>
             )}
         </>
@@ -1502,6 +1617,25 @@ function TablePreview({
 
     return (
         <div className="w-full h-full overflow-hidden rounded border border-blue-200 dark:border-blue-900/40 bg-white dark:bg-dark-800 select-none text-[10px]" style={{ fontFamily: 'Helvetica, Arial, sans-serif' }}>
+            {/* Group header row */}
+            {(el.headerGroups?.length ?? 0) > 0 && (
+                <div className="flex bg-slate-200 dark:bg-dark-600 border-b border-slate-300 dark:border-dark-500" style={{ height: TABLE_HEADER_H }}>
+                    {(el.headerGroups ?? []).map((g, gi) => {
+                        const startCol = (el.headerGroups ?? []).slice(0, gi).reduce((s, g2) => s + (g2.span ?? 1), 0);
+                        const pxWidth = el.columns.slice(startCol, startCol + (g.span ?? 1)).reduce((s, c) => s + c.width, 0);
+                        const alignClass = g.align === 'right' ? 'text-right' : g.align === 'left' ? 'text-left' : 'text-center';
+                        return (
+                            <div
+                                key={gi}
+                                className={`shrink-0 px-2 flex items-center font-semibold text-dark-800 dark:text-dark-100 truncate ${alignClass} border-r border-slate-300 dark:border-dark-500 last:border-r-0`}
+                                style={{ width: pxWidth }}
+                            >
+                                {g.label}
+                            </div>
+                        );
+                    })}
+                </div>
+            )}
             {/* Header row */}
             <div className="flex bg-slate-100 dark:bg-dark-700 border-b border-slate-200 dark:border-dark-600" style={{ height: TABLE_HEADER_H }}>
                 {el.columns.map((col) => (
@@ -1569,6 +1703,89 @@ function TableInspector({
                         {el.showFooterSum ? '✓ Tampilkan' : 'Sembunyikan'}
                     </button>
                 </Row>
+            </Section>
+
+            {/* Header Groups */}
+            <Section title="Grup Header">
+                {(el.headerGroups ?? []).length > 0 && (() => {
+                    const totalSpan = (el.headerGroups ?? []).reduce((s, g) => s + (g.span ?? 1), 0);
+                    const mismatch = totalSpan !== el.columns.length;
+                    return (
+                        <>
+                            {mismatch && (
+                                <p className="text-[11px] text-yellow-600 dark:text-yellow-400 mb-1">
+                                    Jumlah span ({totalSpan}) ≠ jumlah kolom ({el.columns.length})
+                                </p>
+                            )}
+                            <div className="space-y-1.5">
+                                {(el.headerGroups ?? []).map((g, gi) => (
+                                    <div key={gi} className="rounded-lg border border-secondary-200 dark:border-dark-600 bg-zinc-50 dark:bg-dark-700 p-2 space-y-1.5">
+                                        <div className="flex items-center gap-1.5">
+                                            <span className="w-10 shrink-0 text-[11px] text-dark-500 dark:text-dark-400">Label</span>
+                                            <input
+                                                type="text"
+                                                value={g.label}
+                                                onChange={(e) => {
+                                                    const groups = [...(el.headerGroups ?? [])];
+                                                    groups[gi] = { ...groups[gi], label: e.target.value };
+                                                    onUpdate({ headerGroups: groups });
+                                                }}
+                                                className={`${inputCn} text-xs h-7 flex-1`}
+                                            />
+                                            <button
+                                                onClick={() => {
+                                                    const groups = (el.headerGroups ?? []).filter((_, i) => i !== gi);
+                                                    onUpdate({ headerGroups: groups });
+                                                }}
+                                                className="grid place-items-center h-6 w-6 rounded text-dark-400 hover:text-red-500 dark:hover:text-red-400 transition"
+                                                title="Hapus grup"
+                                            >
+                                                <Trash2 className="w-3 h-3" />
+                                            </button>
+                                        </div>
+                                        <div className="flex items-center gap-1.5">
+                                            <span className="w-10 shrink-0 text-[11px] text-dark-500 dark:text-dark-400">Span</span>
+                                            <input
+                                                type="number"
+                                                min={1}
+                                                value={g.span ?? 1}
+                                                onChange={(e) => {
+                                                    const groups = [...(el.headerGroups ?? [])];
+                                                    groups[gi] = { ...groups[gi], span: Math.max(1, +e.target.value) };
+                                                    onUpdate({ headerGroups: groups });
+                                                }}
+                                                className={`${inputCn} h-7 text-xs w-16`}
+                                            />
+                                            <div className="flex gap-1 ml-auto">
+                                                {(['left', 'center', 'right'] as const).map((a) => (
+                                                    <button
+                                                        key={a}
+                                                        onClick={() => {
+                                                            const groups = [...(el.headerGroups ?? [])];
+                                                            groups[gi] = { ...groups[gi], align: a };
+                                                            onUpdate({ headerGroups: groups });
+                                                        }}
+                                                        className={`px-1.5 py-0.5 rounded text-[11px] border transition-colors ${
+                                                            (g.align ?? 'center') === a
+                                                                ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300'
+                                                                : 'border-secondary-200 dark:border-dark-600 text-dark-500 dark:text-dark-400 hover:bg-zinc-50 dark:hover:bg-dark-600'
+                                                        }`}
+                                                    >
+                                                        {a === 'left' ? '⬅' : a === 'center' ? '↔' : '➡'}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </>
+                    );
+                })()}
+                <Button variant="zinc" size="sm" className="w-full mt-1"
+                    onClick={() => onUpdate({ headerGroups: [...(el.headerGroups ?? []), { label: '', span: 1, align: 'center' }] })}>
+                    <Plus className="w-4 h-4" /> Tambah Grup
+                </Button>
             </Section>
 
             {/* Column list */}
