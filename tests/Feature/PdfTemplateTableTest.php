@@ -381,4 +381,204 @@ class PdfTemplateTableTest extends TestCase
             ->has('sampleItems')
         );
     }
+
+    // ── Sprint 4: Below-zone (3-zone model) ──────────────────────────────────
+
+    /**
+     * A text element placed BELOW the table's Y must appear in the rendered blade
+     * HTML (not clipped). We test the Blade view directly via view()->make().
+     */
+    public function test_below_zone_text_appears_in_rendered_blade(): void
+    {
+        $tableY = 350;
+        $belowY = 420; // below tableY → zone 3
+
+        $elements = [
+            // Header-zone text (y < tableY)
+            [
+                'id' => 1, 'type' => 'text',
+                'x' => 60, 'y' => 60,
+                'content' => 'TeksHeader', 'fontSize' => 14, 'bold' => false, 'color' => '#0f172a',
+            ],
+            // Table element
+            [
+                'id' => 2, 'type' => 'table',
+                'x' => 40, 'y' => $tableY,
+                'width' => 714,
+                'columns' => ItemColumns::defaultColumns(),
+                'rows' => [],
+                'showFooterSum' => false,
+            ],
+            // Below-zone text (y >= tableY) — this must NOT be clipped
+            [
+                'id' => 3, 'type' => 'text',
+                'x' => 60, 'y' => $belowY,
+                'content' => 'TeksBawahTabel', 'fontSize' => 12, 'bold' => false, 'color' => '#0f172a',
+            ],
+        ];
+
+        $html = view('pdf.template-builder', ['elements' => $elements])->render();
+
+        // The below-zone text must appear in the output
+        $this->assertStringContainsString('TeksBawahTabel', $html);
+
+        // The header-zone text must also appear
+        $this->assertStringContainsString('TeksHeader', $html);
+
+        // The below-zone container element must exist (div with class="below-flow")
+        $this->assertStringContainsString('class="below-flow"', $html);
+    }
+
+    /**
+     * A header-zone element (y < tableY) must still be inside the absolute .paper
+     * layer, not the below-flow container.
+     */
+    public function test_header_zone_element_stays_in_absolute_paper(): void
+    {
+        $tableY = 300;
+
+        $elements = [
+            [
+                'id' => 1, 'type' => 'text',
+                'x' => 60, 'y' => 80,
+                'content' => 'TeksZonaHeader', 'fontSize' => 14, 'bold' => false, 'color' => '#0f172a',
+            ],
+            [
+                'id' => 2, 'type' => 'table',
+                'x' => 40, 'y' => $tableY,
+                'width' => 714,
+                'columns' => ItemColumns::defaultColumns(),
+                'rows' => [],
+                'showFooterSum' => false,
+            ],
+        ];
+
+        $html = view('pdf.template-builder', ['elements' => $elements])->render();
+
+        // The header text appears
+        $this->assertStringContainsString('TeksZonaHeader', $html);
+
+        // No below-flow *element* (div with class) since there are no below-zone elements.
+        // The CSS class name appears in the <style> block, so we test for the HTML element specifically.
+        $this->assertStringNotContainsString('class="below-flow"', $html);
+    }
+
+    /**
+     * A below-zone text element must use top = (y - tableY) relative positioning,
+     * not the original absolute y coordinate.
+     */
+    public function test_below_zone_element_uses_relative_top_positioning(): void
+    {
+        $tableY = 400;
+        $belowY = 480;
+        $expectedRelTop = $belowY - $tableY; // 80
+
+        $elements = [
+            [
+                'id' => 1, 'type' => 'table',
+                'x' => 40, 'y' => $tableY,
+                'width' => 714,
+                'columns' => ItemColumns::defaultColumns(),
+                'rows' => [],
+                'showFooterSum' => false,
+            ],
+            [
+                'id' => 2, 'type' => 'text',
+                'x' => 100, 'y' => $belowY,
+                'content' => 'RelPosTest', 'fontSize' => 11, 'bold' => false, 'color' => '#000',
+            ],
+        ];
+
+        $html = view('pdf.template-builder', ['elements' => $elements])->render();
+
+        // The relative top (80px) must appear in the below-flow section
+        $this->assertStringContainsString('RelPosTest', $html);
+        $this->assertStringContainsString("top: {$expectedRelTop}px", $html);
+    }
+
+    /**
+     * Multi-page with 40 items AND a below-zone total text must render as PDF (200)
+     * and the below-zone text must appear in the Blade output.
+     */
+    public function test_multipage_with_below_zone_renders_pdf(): void
+    {
+        $invoice = $this->makeInvoiceWithItems(40);
+        $tableY = 200;
+
+        $columns = ItemColumns::defaultColumns();
+        $rows = ItemColumns::resolveItems($columns, $invoice->items);
+
+        $totalText = 'Grand Total: Rp 40.000.000';
+        $elements = [
+            [
+                'id' => 1, 'type' => 'table',
+                'x' => 40, 'y' => $tableY,
+                'width' => 714,
+                'columns' => $columns,
+                'rows' => $rows,
+                'showFooterSum' => false,
+            ],
+            [
+                'id' => 2, 'type' => 'text',
+                'x' => 60, 'y' => $tableY + 100, // below tableY
+                'content' => $totalText, 'fontSize' => 12, 'bold' => true, 'color' => '#0f172a',
+            ],
+        ];
+
+        // Blade render must contain the below-zone text
+        $html = view('pdf.template-builder', ['elements' => $elements])->render();
+        $this->assertStringContainsString($totalText, $html);
+        $this->assertStringContainsString('below-flow', $html);
+
+        // Full PDF render via the HTTP endpoint must also succeed
+        $template = PdfTemplate::query()->create([
+            'name' => 'Multipage Below Zone',
+            'layout' => [
+                [
+                    'id' => 1, 'type' => 'table',
+                    'x' => 40, 'y' => $tableY,
+                    'width' => 714,
+                    'columns' => $columns,
+                    'showFooterSum' => false,
+                ],
+                [
+                    'id' => 2, 'type' => 'text',
+                    'x' => 60, 'y' => $tableY + 100,
+                    'content' => $totalText, 'fontSize' => 12, 'bold' => true, 'color' => '#0f172a',
+                ],
+            ],
+            'is_default' => false,
+        ]);
+
+        $response = $this->actingAs($this->admin)
+            ->get("/settings/pdf-templates/{$template->id}/pdf/{$invoice->id}")
+            ->assertOk();
+
+        $this->assertStringContainsString('application/pdf', (string) $response->headers->get('content-type'));
+    }
+
+    /**
+     * A template with NO table element must behave identically to Sprint 1/2/3
+     * (single absolute page, no below-flow, no table-flow).
+     */
+    public function test_no_table_template_unchanged_regression(): void
+    {
+        $elements = [
+            [
+                'id' => 1, 'type' => 'text',
+                'x' => 60, 'y' => 60,
+                'content' => 'TanpaTabel', 'fontSize' => 14, 'bold' => false, 'color' => '#0f172a',
+            ],
+        ];
+
+        $html = view('pdf.template-builder', ['elements' => $elements])->render();
+
+        $this->assertStringContainsString('TanpaTabel', $html);
+        // CSS class names appear in the <style> block, so we assert on the HTML *elements*.
+        $this->assertStringNotContainsString('class="table-flow"', $html);
+        $this->assertStringNotContainsString('class="below-flow"', $html);
+
+        // The paper div must be 1122px tall (full page, no table cap)
+        $this->assertStringContainsString('height: 1122px', $html);
+    }
 }

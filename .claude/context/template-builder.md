@@ -1,7 +1,7 @@
 # WYSIWYG Invoice Template Builder — Rencana Agile
 
 > **Tujuan akhir:** pengguna merancang template invoice PDF secara visual (drag-and-drop), lalu mencetak invoice nyata memakai template itu.
-> **Status:** **Sprint 1 SELESAI** (`0b9a009`). **Sprint 2 SELESAI** — katalog token `app/Services/TemplateTokens.php`. **Sprint 3 SELESAI** — tabel item data-bound (`app/Services/ItemColumns.php`, elemen `table`, model PDF dua-zona: absolute layer + flow table yg paginate). **⚠ ISU TERBUKA:** model dua-zona meng-clip elemen bebas yg ditaruh DI BAWAH Y tabel (total/dll hilang di PDF → langgar WYSIWYG). Harus diselesaikan sebelum Sprint 4. **Berikutnya: selesaikan isu zona-bawah, lalu Sprint 4** (grid statis Word + merge Excel).
+> **Status:** **Sprint 1 SELESAI** (`0b9a009`). **Sprint 2 SELESAI** — katalog token `app/Services/TemplateTokens.php`. **Sprint 3 SELESAI** — tabel item data-bound (`app/Services/ItemColumns.php`, elemen `table`, model PDF dua-zona: absolute layer + flow table yg paginate). **⚠ ISU TERBUKA:** model dua-zona meng-clip elemen bebas yg ditaruh DI BAWAH Y tabel (total/dll hilang di PDF → langgar WYSIWYG). **Solusi terkunci = model 3-zona:** elemen `y < tableY` = Header (absolute page 1); Tabel = flow paginate; elemen `y >= tableY` = zona Bawah yang mengalir SETELAH item terakhir (X dipertahankan, jarak Y antar-elemen dijaga via container relative). Editor tampilkan garis batas zona ("Mengalir setelah tabel"). **Zona-bawah SELESAI** (3-zona di blade + indikator editor). **Berikutnya: Sprint 4** (grid statis Word + merge Excel).
 > **Eksekutor:** Sonnet, **satu sprint per sesi**, commit di akhir tiap sprint.
 > **Sifat:** kebutuhan internal, konteks UMKM Indonesia.
 

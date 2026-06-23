@@ -1,29 +1,74 @@
 @php
     /** @var array $elements */
     // ──────────────────────────────────────────────────────────────────────────
-    // PDF rendering model (Sprint 3)
+    // PDF rendering model (Sprint 4 — 3-zone)
     //
-    // A4 @96dpi = 794×1123px. Two rendering zones:
+    // A4 @96dpi = 794×1123px. Three rendering zones:
     //
-    // 1. ABSOLUTE layer (.paper): text + image elements positioned exactly.
-    //    This layer uses position:relative + overflow:hidden — same as before.
-    //    It lives on page 1 only; if content is taller than A4 it clips.
+    // 1. HEADER zone (.paper, absolute, page 1):
+    //    Text + image elements with y < tableY are positioned exactly inside the
+    //    absolute .paper div, which is capped at height = tableY with overflow:hidden.
+    //    Unchanged from Sprint 3.
     //
-    // 2. FLOW layer (.table-flow): the items <table> is rendered in normal flow,
-    //    sitting below the absolute layer via a wrapper with padding-top = table Y.
-    //    DomPDF paginates the flow layer automatically across pages.
-    //    <thead> repeats on each page because DomPDF supports the CSS property
-    //    `table-header-group` / `thead { display: table-header-group }`.
+    // 2. TABLE zone (flow):
+    //    The items <table> renders in normal flow, pushed down by padding-top = tableY
+    //    so it visually starts where the table element was placed on page 1.
+    //    DomPDF paginates across pages automatically; <thead> repeats.
+    //    Unchanged from Sprint 3.
     //
-    // If the layout has no table element, the flow layer is omitted and the
-    // document behaves exactly as before (single absolute page).
+    // 3. BELOW zone (flow, NEW):
+    //    Elements with y >= tableY (text or image) must appear BELOW the last table
+    //    row. They are collected and rendered in a position:relative container placed
+    //    after the flow table. Inside that container each element is position:absolute
+    //    with left = el.x  and  top = (el.y - tableY). The container is given an
+    //    explicit height equal to the tallest below-element bottom edge so that the
+    //    container is tall enough to show all content.
+    //    estimatedHeight: image → el.height; text → fontSize * 1.4 (line-height ≈1.4).
+    //
+    // If the layout has NO table element, the whole document stays as a single
+    // absolute page (Sprint 1/2 behaviour, fully backward-compatible).
+    // If there are NO below-zone elements the below-zone container is omitted.
     // ──────────────────────────────────────────────────────────────────────────
 
     /** @var array|null $tableEl */
     $tableEl = collect($elements)->first(fn($el) => ($el['type'] ?? '') === 'table');
 
-    // Only absolute (non-table) elements for the absolute layer.
-    $absoluteEls = collect($elements)->filter(fn($el) => ($el['type'] ?? '') !== 'table')->all();
+    $tableY = $tableEl ? (int) ($tableEl['y'] ?? 0) : null;
+
+    // Header-zone elements: non-table AND (no table OR y < tableY)
+    $headerEls = collect($elements)->filter(function ($el) use ($tableEl, $tableY) {
+        if (($el['type'] ?? '') === 'table') {
+            return false;
+        }
+        if ($tableEl === null) {
+            return true; // no table → everything goes in the absolute page
+        }
+        return (int) ($el['y'] ?? 0) < $tableY;
+    })->all();
+
+    // Below-zone elements: non-table AND y >= tableY (only meaningful when table exists)
+    $belowEls = [];
+    $belowContainerHeight = 0;
+
+    if ($tableEl !== null) {
+        $belowEls = collect($elements)->filter(function ($el) use ($tableY) {
+            if (($el['type'] ?? '') === 'table') {
+                return false;
+            }
+            return (int) ($el['y'] ?? 0) >= $tableY;
+        })->values()->all();
+
+        if (count($belowEls) > 0) {
+            // Compute the height needed for the below container
+            $belowContainerHeight = collect($belowEls)->reduce(function (int $max, array $el) use ($tableY): int {
+                $relTop = (int) ($el['y'] ?? 0) - $tableY;
+                $elHeight = ($el['type'] === 'image')
+                    ? (int) ($el['height'] ?? 40)
+                    : (int) round(($el['fontSize'] ?? 14) * 1.4);
+                return max($max, $relTop + $elHeight);
+            }, 0);
+        }
+    }
 @endphp
 <!DOCTYPE html>
 <html lang="id">
@@ -34,24 +79,25 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html, body { margin: 0; padding: 0; font-family: 'Helvetica', Arial, sans-serif; font-size: 11px; }
 
-        /* ── Absolute layer (page 1 header/footer/logo/text) ── */
+        /* ── Zone 1: Absolute header layer (page 1) ── */
         .paper {
             position: relative;
             width: 793px;
-            /* No fixed height — let it be tall enough to clip content but DomPDF
-               will still render the flow layer below it on the same first page.
-               We use overflow:hidden so absolute elements don't bleed. */
             overflow: hidden;
             background: #fff;
         }
         .el { position: absolute; }
         .text { white-space: nowrap; line-height: 1; }
 
-        /* ── Flow layer (items table, paginates across pages) ── */
+        /* ── Zone 2: Flow layer (items table, paginates) ── */
         .table-flow {
             width: 793px;
-            /* padding-top pushes the table start to the Y coordinate of the
-               table element, aligning it below header content on page 1. */
+        }
+
+        /* ── Zone 3: Below-zone flow container ── */
+        .below-flow {
+            position: relative;
+            width: 793px;
         }
 
         /* ── Items table ── */
@@ -94,15 +140,15 @@
 </head>
 <body>
 
-{{-- ── 1. Absolute layer ── --}}
+{{-- ── Zone 1: Absolute header layer ── --}}
 <div class="paper"
     @if($tableEl)
-        style="height: {{ $tableEl['y'] }}px;"
+        style="height: {{ $tableY }}px;"
     @else
         style="height: 1122px;"
     @endif
 >
-    @foreach ($absoluteEls as $el)
+    @foreach ($headerEls as $el)
         @if ($el['type'] === 'text')
             <div class="el text"
                  style="left: {{ $el['x'] }}px; top: {{ $el['y'] }}px; font-size: {{ $el['fontSize'] ?? 14 }}px; font-weight: {{ ($el['bold'] ?? false) ? 700 : 400 }}; color: {{ $el['color'] ?? '#0f172a' }};">{{ $el['content'] }}</div>
@@ -114,7 +160,7 @@
     @endforeach
 </div>
 
-{{-- ── 2. Flow layer (only when a table element exists) ── --}}
+{{-- ── Zone 2: Flow layer (only when a table element exists) ── --}}
 @if ($tableEl)
     @php
         $columns   = $tableEl['columns'] ?? [];
@@ -177,6 +223,25 @@
             @endif
         </table>
     </div>
+
+    {{-- ── Zone 3: Below-zone (elements placed at y >= tableY) ── --}}
+    @if (count($belowEls) > 0)
+        <div class="below-flow" style="height: {{ $belowContainerHeight }}px;">
+            @foreach ($belowEls as $el)
+                @php
+                    $relTop = (int) ($el['y'] ?? 0) - $tableY;
+                @endphp
+                @if ($el['type'] === 'text')
+                    <div class="el text"
+                         style="left: {{ $el['x'] }}px; top: {{ $relTop }}px; font-size: {{ $el['fontSize'] ?? 14 }}px; font-weight: {{ ($el['bold'] ?? false) ? 700 : 400 }}; color: {{ $el['color'] ?? '#0f172a' }};">{{ $el['content'] }}</div>
+                @elseif ($el['type'] === 'image' && ! empty($el['src']))
+                    <img class="el"
+                         style="left: {{ $el['x'] }}px; top: {{ $relTop }}px; width: {{ $el['width'] ?? 160 }}px;@isset($el['height']) height: {{ $el['height'] }}px;@endisset"
+                         src="{{ $el['src'] }}">
+                @endif
+            @endforeach
+        </div>
+    @endif
 @endif
 
 </body>

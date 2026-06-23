@@ -640,6 +640,25 @@ export default function PdfTemplateEdit() {
                                     className={`relative overflow-hidden bg-white shadow-xl origin-top-left ${dragOver ? 'ring-2 ring-primary-500' : ''}`}
                                     style={{ width: A4.w, height: A4.h, transform: `scale(${zoom})` }}
                                 >
+                                    {/* ── Flow-boundary indicator ── */}
+                                    {(() => {
+                                        const tableEl = els.find((e): e is TableEl => e.type === 'table');
+                                        if (!tableEl) return null;
+                                        return (
+                                            <div
+                                                key="flow-boundary"
+                                                className="pointer-events-none absolute left-0 right-0 flex items-center"
+                                                style={{ top: tableEl.y }}
+                                            >
+                                                <div className="flex-1 border-t border-dashed border-dark-400/40 dark:border-dark-500/40" />
+                                                <span className="mx-2 shrink-0 rounded px-1.5 py-0.5 text-[9px] font-medium text-dark-400/70 dark:text-dark-500/70 bg-white dark:bg-dark-800 select-none">
+                                                    Mengalir setelah tabel ↓
+                                                </span>
+                                                <div className="flex-1 border-t border-dashed border-dark-400/40 dark:border-dark-500/40" />
+                                            </div>
+                                        );
+                                    })()}
+
                                     {els.map((el) => {
                                         const isSel = selectedId === el.id;
                                         const isEditing = editingId === el.id;
