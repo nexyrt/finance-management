@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Settings;
 
 use App\Http\Controllers\Controller;
+use App\Models\CustomFont;
 use App\Models\Invoice;
 use App\Models\PdfTemplate;
 use App\Services\ItemColumns;
@@ -113,6 +114,17 @@ class PdfTemplateController extends Controller
         $defaultColumns = ItemColumns::defaultColumns();
         $sampleItems = ItemColumns::resolveItems($defaultColumns, $invoice->items);
 
+        // Sprint 5b: global custom font library for the editor font picker.
+        $customFonts = CustomFont::query()
+            ->orderBy('name')
+            ->get()
+            ->map(fn (CustomFont $f) => [
+                'id' => $f->id,
+                'name' => $f->name,
+                'url' => $f->browserUrl(),
+            ])
+            ->all();
+
         return Inertia::render('settings/pdf-templates/edit', [
             'template' => [
                 'id' => $pdfTemplate->id,
@@ -123,6 +135,7 @@ class PdfTemplateController extends Controller
             'sampleData' => $sampleData,
             'itemColumnCatalog' => ItemColumns::catalogForFrontend(),
             'sampleItems' => $sampleItems,
+            'customFonts' => $customFonts,
         ]);
     }
 
@@ -198,7 +211,20 @@ class PdfTemplateController extends Controller
             })
             ->all();
 
-        return Pdf::loadView('pdf.template-builder', ['elements' => $elements])
+        // Sprint 5b: pass custom fonts so the blade can emit @font-face for DomPDF.
+        $customFonts = CustomFont::query()
+            ->orderBy('name')
+            ->get()
+            ->map(fn (CustomFont $f) => [
+                'name' => $f->name,
+                'path' => $f->diskPath(),
+            ])
+            ->all();
+
+        return Pdf::loadView('pdf.template-builder', [
+            'elements' => $elements,
+            'customFonts' => $customFonts,
+        ])
             ->setPaper('A4', 'portrait')
             ->stream('template.pdf');
     }

@@ -39,6 +39,20 @@
         'DejaVu Sans'       => "'DejaVu Sans', sans-serif",
     ];
 
+    // Sprint 5b: custom fonts passed from PdfTemplateController::pdf().
+    // Each entry: ['name' => string, 'path' => absolute_path_to_.ttf]
+    // For a custom font, fontFamily label = name → @font-face emitted below.
+    // We extend $fontFamilyMap so $textStyle() resolves them to their CSS name.
+    /** @var array $customFonts */
+    $customFonts = $customFonts ?? [];
+    foreach ($customFonts as $cf) {
+        $cfName = $cf['name'] ?? '';
+        if ($cfName !== '' && file_exists($cf['path'] ?? '')) {
+            // The CSS font-family name is the display name itself (same on both sides).
+            $fontFamilyMap[$cfName] = "'{$cfName}'";
+        }
+    }
+
     /**
      * Build inline CSS for a text element (Sprint 5a).
      * If el['width'] is NOT set → legacy mode (nowrap, line-height:1).
@@ -285,6 +299,21 @@
         .align-left   { text-align: left; }
         .align-center { text-align: center; }
         .align-right  { text-align: right; }
+
+        @foreach ($customFonts as $cf)
+            @php
+                $cfName = $cf['name'] ?? '';
+                $cfPath = $cf['path'] ?? '';
+            @endphp
+            @if ($cfName !== '' && file_exists($cfPath))
+                @font-face {
+                    font-family: '{{ $cfName }}';
+                    src: url('{{ $cfPath }}') format('truetype');
+                    font-weight: normal;
+                    font-style: normal;
+                }
+            @endif
+        @endforeach
     </style>
 </head>
 <body>

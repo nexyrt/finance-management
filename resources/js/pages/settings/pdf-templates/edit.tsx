@@ -39,6 +39,7 @@ import {
     ChevronUp,
     ChevronDown,
     GripHorizontal,
+    Upload,
 } from 'lucide-react';
 import type { SharedProps } from '@/types';
 
@@ -46,7 +47,7 @@ import type { SharedProps } from '@/types';
 const A4 = { w: 794, h: 1123 };
 
 // ── Font map (ONE source of truth — editor CSS stack + DomPDF family name) ──────
-// DomPDF-safe fonts only (Sprint 5b adds custom upload).
+// DomPDF-safe curated fonts. Sprint 5b adds custom uploaded fonts dynamically.
 export const FONT_MAP = [
     { label: 'Helvetica / Arial',  cssFontStack: 'Helvetica, Arial, sans-serif',     dompdfFamily: 'Helvetica' },
     { label: 'Times New Roman',    cssFontStack: '"Times New Roman", Times, serif',   dompdfFamily: 'Times New Roman' },
@@ -56,9 +57,33 @@ export const FONT_MAP = [
 
 export type FontLabel = typeof FONT_MAP[number]['label'];
 
-/** Return the browser CSS font-family for a given label (fallback: Helvetica). */
-export function fontCssStack(label: FontLabel | string | undefined): string {
-    return FONT_MAP.find((f) => f.label === label)?.cssFontStack ?? 'Helvetica, Arial, sans-serif';
+/**
+ * Sprint 5b: custom font entry passed from the server.
+ * name = CSS font-family name (also used as DomPDF family).
+ * url  = browser-accessible URL to the .ttf file for @font-face.
+ */
+export interface CustomFontEntry {
+    id: number;
+    name: string;
+    url: string;
+}
+
+/**
+ * Return the browser CSS font-family for a given label.
+ * For curated fonts: returns the safe CSS font-stack.
+ * For custom fonts: the name IS the font-family (injected via @font-face).
+ * Fallback: Helvetica.
+ */
+export function fontCssStack(label: FontLabel | string | undefined, customFonts: CustomFontEntry[] = []): string {
+    const curated = FONT_MAP.find((f) => f.label === label);
+    if (curated) {
+        return curated.cssFontStack;
+    }
+    // Custom font: name is the font-family injected via @font-face
+    if (label && customFonts.some((f) => f.name === label)) {
+        return `"${label}"`;
+    }
+    return 'Helvetica, Arial, sans-serif';
 }
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -168,6 +193,8 @@ interface Props extends SharedProps {
      * In Preview mode the table renders these rows.
      */
     sampleItems: Array<Record<string, string>>;
+    /** Sprint 5b: global custom font library (uploaded .ttf files). */
+    customFonts: CustomFontEntry[];
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -235,7 +262,26 @@ function gridEditorHeight(el: GridEl): number {
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function PdfTemplateEdit() {
-    const { template, tokenCatalog, sampleData, itemColumnCatalog, sampleItems } = usePage<Props>().props;
+    const { template, tokenCatalog, sampleData, itemColumnCatalog, sampleItems, customFonts } = usePage<Props>().props;
+
+    // Sprint 5b: inject @font-face rules for all custom fonts so the browser renders them.
+    React.useEffect(() => {
+        if (!customFonts?.length) {
+            return;
+        }
+        const id = 'custom-fonts-style';
+        let style = document.getElementById(id) as HTMLStyleElement | null;
+        if (!style) {
+            style = document.createElement('style');
+            style.id = id;
+            document.head.appendChild(style);
+        }
+        style.textContent = customFonts
+            .map((f) => `@font-face { font-family: "${f.name}"; src: url("${f.url}") format("truetype"); }`)
+            .join('\n');
+        // Cleanup not strictly needed (editor is single-page) but good hygiene.
+        return () => { style?.remove(); };
+    }, [customFonts]);
 
     const resolve = (text: string): string =>
         text.replace(/\{\{([\w.]+)\}\}/g, (match, path: string) =>
@@ -1072,7 +1118,7 @@ export default function PdfTemplateEdit() {
                                                                 fontSize: el.fontSize,
                                                                 fontWeight: el.bold ? 700 : 400,
                                                                 color: el.color,
-                                                                fontFamily: fontCssStack(el.fontFamily),
+                                                                fontFamily: fontCssStack(el.fontFamily, customFonts),
                                                                 fontStyle: el.italic ? 'italic' : 'normal',
                                                                 textDecoration: [
                                                                     el.underline ? 'underline' : '',
@@ -1093,6 +1139,7 @@ export default function PdfTemplateEdit() {
                                                         <EditableText
                                                             el={el}
                                                             editing={isEditing}
+                                                            customFonts={customFonts}
                                                             onStartEdit={() => setEditingId(el.id)}
                                                             onCommit={(v) => {
                                                                 if (v !== el.content) { snapshot(); update(el.id, { content: v }); }
@@ -1285,6 +1332,7 @@ export default function PdfTemplateEdit() {
                                     onInsertToken={insertToken}
                                     onUpdate={(patch) => update(selected.id, patch)}
                                     onSnapshot={snapshot}
+                                    customFonts={customFonts}
                                 />
                             )}
 
@@ -1432,6 +1480,7 @@ function TextInspector({
     onInsertToken,
     onUpdate,
     onSnapshot,
+    customFonts,
 }: {
     el: Text;
     contentRef: React.RefObject<HTMLTextAreaElement | null>;
@@ -1442,8 +1491,44 @@ function TextInspector({
     onInsertToken: (path: string) => void;
     onUpdate: (patch: Partial<Text>) => void;
     onSnapshot: () => void;
+    customFonts: CustomFontEntry[];
 }) {
     const hasBox = el.width !== undefined;
+
+    // ── Upload font state ──────────────────────────────────────────────────────
+    const [uploadOpen, setUploadOpen] = React.useState(false);
+    const [uploadName, setUploadName] = React.useState('');
+    const [uploadFile, setUploadFile] = React.useState<File | null>(null);
+    const [uploading, setUploading] = React.useState(false);
+    const uploadFileRef = React.useRef<HTMLInputElement>(null);
+
+    const handleFontUpload = () => {
+        if (!uploadName.trim() || !uploadFile) {
+            return;
+        }
+        setUploading(true);
+        const formData = new FormData();
+        formData.append('name', uploadName.trim());
+        formData.append('file', uploadFile);
+        router.post('/settings/pdf-templates/custom-fonts', formData, {
+            forceFormData: true,
+            preserveScroll: true,
+            onSuccess: () => {
+                toast.success(`Font "${uploadName}" berhasil diunggah.`);
+                setUploadOpen(false);
+                setUploadName('');
+                setUploadFile(null);
+                if (uploadFileRef.current) {
+                    uploadFileRef.current.value = '';
+                }
+            },
+            onError: (errors) => {
+                const msg = Object.values(errors)[0] ?? 'Gagal mengunggah font.';
+                toast.error(String(msg));
+            },
+            onFinish: () => setUploading(false),
+        });
+    };
 
     const toggleBtn = (active: boolean, onClick: () => void, title: string, children: React.ReactNode) => (
         <button
@@ -1498,20 +1583,108 @@ function TextInspector({
 
             {/* ── Font ── */}
             <Section title="Font">
-                {/* Font family */}
+                {/* Font family — curated + custom fonts in one <select>, plus upload */}
                 <Row label="Jenis">
                     <select
                         value={el.fontFamily ?? 'Helvetica / Arial'}
                         onChange={(e) => onUpdate({ fontFamily: e.target.value as FontLabel })}
                         className={`${inputCn} pr-2`}
                     >
-                        {FONT_MAP.map((f) => (
-                            <option key={f.label} value={f.label} style={{ fontFamily: f.cssFontStack }}>
-                                {f.label}
-                            </option>
-                        ))}
+                        <optgroup label="Bawaan">
+                            {FONT_MAP.map((f) => (
+                                <option key={f.label} value={f.label} style={{ fontFamily: f.cssFontStack }}>
+                                    {f.label}
+                                </option>
+                            ))}
+                        </optgroup>
+                        {customFonts.length > 0 && (
+                            <optgroup label="Font kustom">
+                                {customFonts.map((f) => (
+                                    <option key={f.name} value={f.name} style={{ fontFamily: `"${f.name}"` }}>
+                                        {f.name}
+                                    </option>
+                                ))}
+                            </optgroup>
+                        )}
                     </select>
                 </Row>
+
+                {/* Upload font control */}
+                <div className="space-y-1.5">
+                    <button
+                        onClick={() => setUploadOpen((o) => !o)}
+                        className="flex items-center gap-1.5 text-[11px] text-primary-600 dark:text-primary-400 hover:underline"
+                    >
+                        <Upload className="w-3 h-3" />
+                        {uploadOpen ? 'Batal unggah' : '+ Unggah font (.ttf)'}
+                    </button>
+
+                    {uploadOpen && (
+                        <div className="space-y-2 rounded-lg border border-secondary-200 dark:border-dark-600 bg-zinc-50 dark:bg-dark-700 p-2.5">
+                            <div>
+                                <label className="block text-[11px] text-dark-500 dark:text-dark-400 mb-1">Nama font *</label>
+                                <input
+                                    type="text"
+                                    placeholder="mis. Poppins"
+                                    value={uploadName}
+                                    onChange={(e) => setUploadName(e.target.value)}
+                                    className={`${inputCn} h-7 text-xs`}
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-[11px] text-dark-500 dark:text-dark-400 mb-1">File .ttf *</label>
+                                <input
+                                    ref={uploadFileRef}
+                                    type="file"
+                                    accept=".ttf"
+                                    onChange={(e) => setUploadFile(e.target.files?.[0] ?? null)}
+                                    className="block w-full text-xs text-dark-700 dark:text-dark-300 file:mr-2 file:rounded file:border-0 file:bg-primary-50 file:px-2 file:py-0.5 file:text-[11px] file:font-medium file:text-primary-700 dark:file:bg-primary-900/30 dark:file:text-primary-300 cursor-pointer"
+                                />
+                            </div>
+                            <Button
+                                variant="primary"
+                                size="sm"
+                                className="w-full"
+                                disabled={!uploadName.trim() || !uploadFile || uploading}
+                                onClick={handleFontUpload}
+                            >
+                                <Upload className="w-3.5 h-3.5" />
+                                {uploading ? 'Mengunggah…' : 'Unggah font'}
+                            </Button>
+                        </div>
+                    )}
+
+                    {/* Installed custom fonts list with delete */}
+                    {customFonts.length > 0 && (
+                        <div className="space-y-1 mt-1">
+                            {customFonts.map((f) => (
+                                <div
+                                    key={f.id}
+                                    className="flex items-center gap-1.5 rounded-md px-2 py-1 bg-zinc-50 dark:bg-dark-700 border border-secondary-200 dark:border-dark-600"
+                                >
+                                    <span
+                                        className="flex-1 truncate text-[11px] text-dark-700 dark:text-dark-300"
+                                        style={{ fontFamily: `"${f.name}"` }}
+                                    >
+                                        {f.name}
+                                    </span>
+                                    <button
+                                        onClick={() =>
+                                            router.delete(`/settings/pdf-templates/custom-fonts/${f.id}`, {
+                                                preserveScroll: true,
+                                                onSuccess: () => toast.success(`Font "${f.name}" dihapus.`),
+                                            })
+                                        }
+                                        className="grid place-items-center h-5 w-5 rounded text-dark-400 hover:text-red-500 dark:hover:text-red-400 transition"
+                                        title="Hapus font"
+                                    >
+                                        <Trash2 className="w-3 h-3" />
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
                 {/* Size + color */}
                 <Row label="Ukuran">
                     <NumField value={el.fontSize} onChange={(v) => onUpdate({ fontSize: Math.max(4, v) })} unit="px" />
@@ -2384,8 +2557,8 @@ function Swatch({ value, onChange }: { value: string; onChange: (v: string) => v
 }
 
 function EditableText({
-    el, editing, onStartEdit, onCommit,
-}: { el: Text; editing: boolean; onStartEdit: () => void; onCommit: (v: string) => void }) {
+    el, editing, customFonts, onStartEdit, onCommit,
+}: { el: Text; editing: boolean; customFonts: CustomFontEntry[]; onStartEdit: () => void; onCommit: (v: string) => void }) {
     const ref = React.useRef<HTMLSpanElement>(null);
     const hasBox = el.width !== undefined;
 
@@ -2406,7 +2579,7 @@ function EditableText({
         fontSize: el.fontSize,
         fontWeight: el.bold ? 700 : 400,
         color: el.color,
-        fontFamily: fontCssStack(el.fontFamily),
+        fontFamily: fontCssStack(el.fontFamily, customFonts),
         fontStyle: el.italic ? 'italic' : 'normal',
         textDecoration: [
             el.underline ? 'underline' : '',

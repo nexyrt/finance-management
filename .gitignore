@@ -34,3 +34,7 @@ composer.lock
 
 # Playwright MCP output (snapshots, screenshots, logs)
 /.playwright-mcp/
+
+# DomPDF font dir (generated cache + uploaded fonts)
+/storage/fonts/*
+!/storage/fonts/.gitkeep

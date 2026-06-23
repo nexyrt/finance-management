@@ -21,6 +21,7 @@ use App\Http\Controllers\RecurringInvoiceController;
 use App\Http\Controllers\ReimbursementController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\Settings\CompanyController;
+use App\Http\Controllers\Settings\CustomFontController;
 use App\Http\Controllers\Settings\PasswordController as SettingsPasswordController;
 use App\Http\Controllers\Settings\PdfTemplateController;
 use App\Http\Controllers\Settings\ProfileController;
@@ -510,6 +511,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::post('/{pdfTemplate}/save', [PdfTemplateController::class, 'save'])->name('save');
             Route::get('/{pdfTemplate}/pdf', [PdfTemplateController::class, 'pdf'])->name('pdf');
             Route::get('/{pdfTemplate}/pdf/{invoice}', [PdfTemplateController::class, 'pdf'])->name('pdf.invoice');
+
+            // Custom font library (global — shared across all templates)
+            Route::get('/custom-fonts', [CustomFontController::class, 'index'])->name('custom-fonts.index');
+            Route::post('/custom-fonts', [CustomFontController::class, 'store'])->name('custom-fonts.store');
+            Route::delete('/custom-fonts/{customFont}', [CustomFontController::class, 'destroy'])->name('custom-fonts.destroy');
         });
     });
 
