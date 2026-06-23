@@ -22,6 +22,7 @@ use App\Http\Controllers\ReimbursementController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\Settings\CompanyController;
 use App\Http\Controllers\Settings\PasswordController as SettingsPasswordController;
+use App\Http\Controllers\Settings\PdfTemplateController;
 use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\TemplateBuilderController;
 use App\Http\Controllers\TransactionCategoryController;
@@ -101,8 +102,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // ------------------------------------------------------------------------
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
 
-    // ponytail: sandbox WYSIWYG template builder (teks+gambar, simpan JSON + cetak PDF).
-    Route::get('/template-builder-test', [TemplateBuilderController::class, 'index'])->name('template-builder-test');
+    // ponytail: redirect sandbox GET to new module; keep save/pdf routes for test backward-compat.
+    Route::get('/template-builder-test', fn () => redirect()->route('settings.pdf-templates.index'))->name('template-builder-test');
     Route::post('/template-builder-test', [TemplateBuilderController::class, 'save'])->name('template-builder-test.save');
     Route::get('/template-builder-test/pdf', [TemplateBuilderController::class, 'pdf'])->name('template-builder-test.pdf');
 
@@ -496,6 +497,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/company', [CompanyController::class, 'edit'])->name('company');
         Route::post('/company', [CompanyController::class, 'update'])->name('company.update');
         Route::delete('/company/assets/{asset}', [CompanyController::class, 'deleteAsset'])->name('company.delete-asset');
+
+        // PDF Template Builder — gated by permission
+        Route::prefix('pdf-templates')->name('pdf-templates.')->middleware('can:manage pdf templates')->group(function () {
+            Route::get('/', [PdfTemplateController::class, 'index'])->name('index');
+            Route::post('/', [PdfTemplateController::class, 'store'])->name('store');
+            Route::put('/{pdfTemplate}', [PdfTemplateController::class, 'update'])->name('update');
+            Route::delete('/{pdfTemplate}', [PdfTemplateController::class, 'destroy'])->name('destroy');
+            Route::post('/{pdfTemplate}/duplicate', [PdfTemplateController::class, 'duplicate'])->name('duplicate');
+            Route::post('/{pdfTemplate}/set-default', [PdfTemplateController::class, 'setDefault'])->name('set-default');
+            Route::get('/{pdfTemplate}/edit', [PdfTemplateController::class, 'edit'])->name('edit');
+            Route::post('/{pdfTemplate}/save', [PdfTemplateController::class, 'save'])->name('save');
+            Route::get('/{pdfTemplate}/pdf', [PdfTemplateController::class, 'pdf'])->name('pdf');
+        });
     });
 
     // ------------------------------------------------------------------------

@@ -173,6 +173,9 @@ class MasterPermissionSeeder extends Seeder
 
             // Reports
             'view profit-loss',
+
+            // PDF Templates
+            'manage pdf templates',
         ];
 
         $newCount = 0;

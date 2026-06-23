@@ -1,23 +1,31 @@
 import { Link, usePage } from '@inertiajs/react';
-import { Building2, KeyRound, User } from 'lucide-react';
+import { Building2, FileText, KeyRound, User } from 'lucide-react';
 import * as React from 'react';
 import { PageHeader } from '@/components/shared/page-header';
 import { cn } from '@/lib/utils';
+import type { SharedProps } from '@/types';
 
 interface SettingsLayoutProps {
     children: React.ReactNode;
     title: string;
     description?: string;
+    action?: React.ReactNode;
 }
 
-const NAV_ITEMS = [
-    { href: '/settings/profile', label: 'Profil', icon: User, active: 'profile' },
-    { href: '/settings/password', label: 'Kata Sandi', icon: KeyRound, active: 'password' },
-    { href: '/settings/company', label: 'Profil Perusahaan', icon: Building2, active: 'company' },
+const BASE_NAV_ITEMS = [
+    { href: '/settings/profile', label: 'Profil', icon: User, permission: null },
+    { href: '/settings/password', label: 'Kata Sandi', icon: KeyRound, permission: null },
+    { href: '/settings/company', label: 'Profil Perusahaan', icon: Building2, permission: null },
+    { href: '/settings/pdf-templates', label: 'Template PDF', icon: FileText, permission: 'manage pdf templates' },
 ];
 
-export function SettingsLayout({ children, title, description }: SettingsLayoutProps) {
-    const { url } = usePage();
+export function SettingsLayout({ children, title, description, action }: SettingsLayoutProps) {
+    const { url, props } = usePage<SharedProps>();
+    const permissions: string[] = props.auth?.permissions ?? [];
+
+    const navItems = BASE_NAV_ITEMS.filter(
+        (item) => item.permission === null || permissions.includes(item.permission),
+    );
 
     return (
         <div className="space-y-6">
@@ -27,7 +35,7 @@ export function SettingsLayout({ children, title, description }: SettingsLayoutP
                 {/* Sidebar Nav */}
                 <aside className="lg:w-60 shrink-0">
                     <nav className="rounded-xl border border-secondary-200 dark:border-dark-600 overflow-hidden bg-white dark:bg-dark-700">
-                        {NAV_ITEMS.map((item) => {
+                        {navItems.map((item) => {
                             const Icon = item.icon;
                             const isActive = url.startsWith(item.href);
                             return (
@@ -52,11 +60,14 @@ export function SettingsLayout({ children, title, description }: SettingsLayoutP
                 {/* Content Card */}
                 <main className="flex-1 min-w-0">
                     <div className="rounded-xl border border-secondary-200 dark:border-dark-600 bg-white dark:bg-dark-700 overflow-hidden">
-                        <div className="px-6 py-5 border-b border-secondary-200 dark:border-dark-600 bg-secondary-50/40 dark:bg-dark-800/40">
-                            <h2 className="text-lg font-bold text-dark-900 dark:text-dark-50">{title}</h2>
-                            {description && (
-                                <p className="text-sm text-dark-500 dark:text-dark-400 mt-1">{description}</p>
-                            )}
+                        <div className="px-6 py-5 border-b border-secondary-200 dark:border-dark-600 bg-secondary-50/40 dark:bg-dark-800/40 flex items-start justify-between gap-4">
+                            <div className="min-w-0">
+                                <h2 className="text-lg font-bold text-dark-900 dark:text-dark-50">{title}</h2>
+                                {description && (
+                                    <p className="text-sm text-dark-500 dark:text-dark-400 mt-1">{description}</p>
+                                )}
+                            </div>
+                            {action && <div className="shrink-0">{action}</div>}
                         </div>
                         <div className="p-6">{children}</div>
                     </div>
