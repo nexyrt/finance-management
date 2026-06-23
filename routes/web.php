@@ -23,6 +23,7 @@ use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\Settings\CompanyController;
 use App\Http\Controllers\Settings\PasswordController as SettingsPasswordController;
 use App\Http\Controllers\Settings\ProfileController;
+use App\Http\Controllers\TemplateBuilderController;
 use App\Http\Controllers\TransactionCategoryController;
 use App\Models\BankAccount;
 use App\Models\Client;
@@ -99,6 +100,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // DASHBOARD
     // ------------------------------------------------------------------------
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
+
+    // ponytail: sandbox WYSIWYG template builder (teks+gambar, simpan JSON + cetak PDF).
+    Route::get('/template-builder-test', [TemplateBuilderController::class, 'index'])->name('template-builder-test');
+    Route::post('/template-builder-test', [TemplateBuilderController::class, 'save'])->name('template-builder-test.save');
+    Route::get('/template-builder-test/pdf', [TemplateBuilderController::class, 'pdf'])->name('template-builder-test.pdf');
 
     // ------------------------------------------------------------------------
     // CLIENTS & SERVICES
