@@ -2,6 +2,7 @@ import { CheckCircle2, FileText, Printer, Wallet } from 'lucide-react';
 import * as React from 'react';
 import { Button } from '@/components/ui/button';
 import { Combobox } from '@/components/ui/combobox';
+import type { ComboboxOption } from '@/components/ui/combobox';
 import {
     Dialog,
     DialogContent,
@@ -16,6 +17,12 @@ import { formatCurrency } from '@/lib/utils';
 
 type PrintType = 'full' | 'dp' | 'pelunasan';
 
+interface CustomTemplate {
+    id: number;
+    name: string;
+    isDefault: boolean;
+}
+
 interface Props {
     open: boolean;
     onOpenChange: (open: boolean) => void;
@@ -23,14 +30,34 @@ interface Props {
     invoiceNumber: string | null;
     totalAmount: number;
     amountPaid: number;
+    customTemplates?: CustomTemplate[];
 }
 
-const TEMPLATE_OPTIONS = [
+const BUILTIN_OPTIONS: ComboboxOption[] = [
     { value: 'kisantra-invoice', label: 'Kisantra', description: 'Template default' },
     { value: 'semesta-invoice', label: 'Semesta', description: 'Mining (PPN + PPH 22)' },
     { value: 'agsa-invoice', label: 'AGSA', description: 'Alternatif' },
     { value: 'invoice', label: 'Generic', description: 'Sederhana' },
 ];
+
+/** Build grouped flat option list for the Combobox. */
+function buildTemplateOptions(customTemplates: CustomTemplate[]): ComboboxOption[] {
+    const opts: ComboboxOption[] = [
+        { value: '__group_bawaan__', label: 'Bawaan', disabled: true },
+        ...BUILTIN_OPTIONS,
+    ];
+    if (customTemplates.length > 0) {
+        opts.push({ value: '__group_kustom__', label: 'Kustom', disabled: true });
+        for (const t of customTemplates) {
+            opts.push({
+                value: `builder:${t.id}`,
+                label: t.name,
+                description: t.isDefault ? 'Default' : undefined,
+            });
+        }
+    }
+    return opts;
+}
 
 export function PrintInvoiceDialog({
     open,
@@ -39,24 +66,37 @@ export function PrintInvoiceDialog({
     invoiceNumber,
     totalAmount,
     amountPaid,
+    customTemplates = [],
 }: Props) {
     const remaining = totalAmount - amountPaid;
     const settlementAvailable = amountPaid > 0 && remaining > 0;
 
+    const defaultTemplate = React.useMemo(() => {
+        // Keep kisantra as the dialog default; only pre-select the builder default
+        // if the user explicitly set one AND there are no builtin templates as fallback —
+        // per locked decision: "keep current default (kisantra) as the dialog default".
+        return 'kisantra-invoice';
+    }, []);
+
     const [printType, setPrintType] = React.useState<PrintType>('full');
     const [dpAmount, setDpAmount] = React.useState(0);
-    const [template, setTemplate] = React.useState('kisantra-invoice');
+    const [template, setTemplate] = React.useState(defaultTemplate);
     const [dpError, setDpError] = React.useState('');
+
+    const templateOptions = React.useMemo(
+        () => buildTemplateOptions(customTemplates),
+        [customTemplates],
+    );
 
     /* reset on open */
     React.useEffect(() => {
         if (open) {
             setPrintType('full');
             setDpAmount(0);
-            setTemplate('kisantra-invoice');
+            setTemplate(defaultTemplate);
             setDpError('');
         }
-    }, [open]);
+    }, [open, defaultTemplate]);
 
     const typeOptions = React.useMemo<SegmentedOption<PrintType>[]>(() => {
         const base: SegmentedOption<PrintType>[] = [
@@ -185,12 +225,12 @@ export function PrintInvoiceDialog({
                         )}
                     </div>
 
-                    {/* Template */}
+                    {/* Template — grouped: Bawaan + Kustom */}
                     <Combobox
                         label="Template"
-                        options={TEMPLATE_OPTIONS}
+                        options={templateOptions}
                         value={template}
-                        onChange={(v) => setTemplate((v as string) ?? 'kisantra-invoice')}
+                        onChange={(v) => setTemplate((v as string) ?? defaultTemplate)}
                         clearable={false}
                     />
                 </div>

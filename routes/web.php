@@ -30,7 +30,9 @@ use App\Http\Controllers\TransactionCategoryController;
 use App\Models\BankAccount;
 use App\Models\Client;
 use App\Models\Invoice;
+use App\Models\PdfTemplate;
 use App\Models\TransactionCategory;
+use App\Services\BuilderInvoicePrinter;
 use App\Services\FundRequestExportService;
 use App\Services\InvoicePrintService;
 use Illuminate\Http\Request;
@@ -151,14 +153,23 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Invoice PDF Operations
     Route::prefix('invoice')->name('invoice.')->group(function () {
         Route::get('/{invoice}/download', function (Invoice $invoice, Request $request) {
-            $service = new InvoicePrintService;
             $dpAmount = $request->query('dp_amount') ? (int) $request->query('dp_amount') : null;
             $pelunasanAmount = $request->query('pelunasan_amount') ? (int) $request->query('pelunasan_amount') : null;
-            $template = $request->query('template', 'kisantra-invoice'); // Template parameter
-            $pdf = $service->generateSingleInvoicePdf($invoice, $dpAmount, $pelunasanAmount, $template);
+            $template = $request->query('template', 'kisantra-invoice');
 
-            $invoiceType = $dpAmount ? 'DP-' : ($pelunasanAmount ? 'Pelunasan-' : '');
-            $filename = $invoiceType.'Invoice-'.str_replace(['/', '\\', ':', '*', '?', '"', '<', '>', '|'], '-', $invoice->invoice_number).'.pdf';
+            // Builder template: template=builder:{id}
+            if (str_starts_with((string) $template, 'builder:')) {
+                $templateId = (int) substr((string) $template, 8);
+                $pdfTemplate = PdfTemplate::findOrFail($templateId);
+                $printer = new BuilderInvoicePrinter;
+                $pdf = $printer->render($pdfTemplate, $invoice, $dpAmount, $pelunasanAmount);
+                $filename = $printer->filename($invoice, $dpAmount, $pelunasanAmount);
+            } else {
+                $service = new InvoicePrintService;
+                $pdf = $service->generateSingleInvoicePdf($invoice, $dpAmount, $pelunasanAmount, $template);
+                $invoiceType = $dpAmount ? 'DP-' : ($pelunasanAmount ? 'Pelunasan-' : '');
+                $filename = $invoiceType.'Invoice-'.str_replace(['/', '\\', ':', '*', '?', '"', '<', '>', '|'], '-', $invoice->invoice_number).'.pdf';
+            }
 
             return response()->streamDownload(function () use ($pdf) {
                 echo $pdf->output();
@@ -169,11 +180,20 @@ Route::middleware(['auth', 'verified'])->group(function () {
         })->middleware('can:view invoices')->name('download');
 
         Route::get('/{invoice}/preview', function (Invoice $invoice, Request $request) {
-            $service = new InvoicePrintService;
             $dpAmount = $request->query('dp_amount') ? (int) $request->query('dp_amount') : null;
             $pelunasanAmount = $request->query('pelunasan_amount') ? (int) $request->query('pelunasan_amount') : null;
-            $template = $request->query('template', 'kisantra-invoice'); // Template parameter
-            $pdf = $service->generateSingleInvoicePdf($invoice, $dpAmount, $pelunasanAmount, $template);
+            $template = $request->query('template', 'kisantra-invoice');
+
+            // Builder template: template=builder:{id}
+            if (str_starts_with((string) $template, 'builder:')) {
+                $templateId = (int) substr((string) $template, 8);
+                $pdfTemplate = PdfTemplate::findOrFail($templateId);
+                $printer = new BuilderInvoicePrinter;
+                $pdf = $printer->render($pdfTemplate, $invoice, $dpAmount, $pelunasanAmount);
+            } else {
+                $service = new InvoicePrintService;
+                $pdf = $service->generateSingleInvoicePdf($invoice, $dpAmount, $pelunasanAmount, $template);
+            }
 
             return response($pdf->output(), 200, [
                 'Content-Type' => 'application/pdf',

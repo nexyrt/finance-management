@@ -11,6 +11,7 @@ use App\Models\CompanyProfile;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
 use App\Models\Payment;
+use App\Models\PdfTemplate;
 use App\Models\Service;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
@@ -157,11 +158,22 @@ class InvoiceController extends Controller
             ->values()
             ->all();
 
+        $customTemplates = PdfTemplate::query()
+            ->orderByDesc('is_default')
+            ->orderBy('name')
+            ->get()
+            ->map(fn (PdfTemplate $t) => [
+                'id' => $t->id,
+                'name' => $t->name,
+                'isDefault' => (bool) $t->is_default,
+            ]);
+
         return Inertia::render('invoices/index', [
             'invoices' => $invoices,
             'stats' => $stats,
             'clients' => $clients,
             'rollbackableIds' => $rollbackableIds,
+            'customTemplates' => $customTemplates,
             'filters' => [
                 'search' => $search,
                 'status' => $status,

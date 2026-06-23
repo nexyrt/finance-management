@@ -172,11 +172,18 @@ interface InvoiceDetail {
     }>;
 }
 
+interface CustomTemplate {
+    id: number;
+    name: string;
+    isDefault: boolean;
+}
+
 interface Props extends SharedProps {
     invoices: PaginatedInvoices;
     stats: Stats;
     clients: ClientOption[];
     rollbackableIds: number[];
+    customTemplates: CustomTemplate[];
     filters: Filters;
 }
 
@@ -828,6 +835,7 @@ function InvoiceDrawer({
                     invoiceNumber={detail.invoice_number}
                     totalAmount={detail.total_amount}
                     amountPaid={detail.amount_paid}
+                    customTemplates={customTemplates}
                 />
             )}
 
@@ -1056,7 +1064,7 @@ const TABLE_COLS: { key: string; label: string; align?: 'right'; sortable?: fals
     { key: 'actions', label: '', sortable: false },
 ];
 
-function InvoicesPage({ invoices, stats, clients, rollbackableIds, filters }: Props) {
+function InvoicesPage({ invoices, stats, clients, rollbackableIds, customTemplates, filters }: Props) {
     const [drawerOpen, setDrawerOpen] = React.useState(false);
     const [selectedId, setSelectedId] = React.useState<number | null>(null);
 
@@ -1723,6 +1731,7 @@ function InvoicesPage({ invoices, stats, clients, rollbackableIds, filters }: Pr
                     invoiceNumber={printRow.invoice_number}
                     totalAmount={printRow.total_amount}
                     amountPaid={printRow.amount_paid}
+                    customTemplates={customTemplates}
                 />
             )}
 
