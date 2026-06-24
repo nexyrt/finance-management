@@ -42,6 +42,8 @@ import {
     Upload,
     Minus as LineIcon,
     Square as RectIcon,
+    Repeat2,
+    Layers,
 } from 'lucide-react';
 import type { SharedProps } from '@/types';
 
@@ -49,7 +51,6 @@ import type { SharedProps } from '@/types';
 const A4 = { w: 794, h: 1123 };
 
 // ── Font map (ONE source of truth — editor CSS stack + DomPDF family name) ──────
-// DomPDF-safe curated fonts. Sprint 5b adds custom uploaded fonts dynamically.
 export const FONT_MAP = [
     { label: 'Helvetica / Arial',  cssFontStack: 'Helvetica, Arial, sans-serif',     dompdfFamily: 'Helvetica' },
     { label: 'Times New Roman',    cssFontStack: '"Times New Roman", Times, serif',   dompdfFamily: 'Times New Roman' },
@@ -59,32 +60,16 @@ export const FONT_MAP = [
 
 export type FontLabel = typeof FONT_MAP[number]['label'];
 
-/**
- * Sprint 5b: custom font entry passed from the server.
- * name = CSS font-family name (also used as DomPDF family).
- * url  = browser-accessible URL to the .ttf file for @font-face.
- */
 export interface CustomFontEntry {
     id: number;
     name: string;
     url: string;
 }
 
-/**
- * Return the browser CSS font-family for a given label.
- * For curated fonts: returns the safe CSS font-stack.
- * For custom fonts: the name IS the font-family (injected via @font-face).
- * Fallback: Helvetica.
- */
 export function fontCssStack(label: FontLabel | string | undefined, customFonts: CustomFontEntry[] = []): string {
     const curated = FONT_MAP.find((f) => f.label === label);
-    if (curated) {
-        return curated.cssFontStack;
-    }
-    // Custom font: name is the font-family injected via @font-face
-    if (label && customFonts.some((f) => f.name === label)) {
-        return `"${label}"`;
-    }
+    if (curated) return curated.cssFontStack;
+    if (label && customFonts.some((f) => f.name === label)) return `"${label}"`;
     return 'Helvetica, Arial, sans-serif';
 }
 
@@ -94,37 +79,33 @@ type Text = {
     id: number; type: 'text';
     x: number; y: number;
     content: string; fontSize: number; bold: boolean; color: string;
-    // Sprint 5a additions (all optional → backward-compat with legacy text)
     fontFamily?: FontLabel;
     italic?: boolean;
     underline?: boolean;
     strikethrough?: boolean;
-    highlight?: string | null;       // box background / highlight color; null = none
+    highlight?: string | null;
     align?: 'left' | 'center' | 'right' | 'justify';
     valign?: 'top' | 'middle' | 'bottom';
-    lineHeight?: number;             // e.g. 1.4
-    letterSpacing?: number;          // px
-    padding?: number;                // px uniform
-    borderWidth?: number;            // px; 0/undefined = no border
+    lineHeight?: number;
+    letterSpacing?: number;
+    padding?: number;
+    borderWidth?: number;
     borderColor?: string;
-    fill?: string | null;            // box background fill; null = none
-    // Box model: if width is undefined → legacy (auto-width, nowrap). If set → text box.
+    fill?: string | null;
     width?: number;
-    height?: number;                 // optional; if set, valign applies
+    height?: number;
 };
 
 type Img = {
     id: number; type: 'image';
     x: number; y: number;
     src: string; width: number; height?: number; lockAspect?: boolean;
-    // Sprint 5a additions
-    opacity?: number;                // 0–100
+    opacity?: number;
     borderWidth?: number;
     borderColor?: string;
-    borderRadius?: number;           // px
+    borderRadius?: number;
 };
 
-/** One column in the table element — stored in layout JSON. */
 type TableColumn = {
     key: string;
     label: string;
@@ -142,16 +123,15 @@ type TableEl = {
     headerGroups?: Array<{ label: string; span: number; align?: 'left' | 'center' | 'right' }>;
 };
 
-/** One cell in the static grid element. */
 type GridCell = {
     text: string;
     align: 'left' | 'center' | 'right';
     bold: boolean;
     color: string;
     fill?: string;
-    colSpan?: number;  // default 1
-    rowSpan?: number;  // default 1
-    merged?: boolean;  // true = covered by another cell's span
+    colSpan?: number;
+    rowSpan?: number;
+    merged?: boolean;
 };
 
 type GridEl = {
@@ -160,40 +140,59 @@ type GridEl = {
     width: number;
     cols: number;
     rows: number;
-    colWidths: number[];        // px per column (sum ≈ width)
-    cells: GridCell[][];        // [row][col]
+    colWidths: number[];
+    cells: GridCell[][];
     border: { width: number; color: string };
     anchorCell?: { row: number; col: number } | null;
 };
 
-/** Rectangle shape element. fill=null means transparent. */
 type RectEl = {
     id: number; type: 'rect';
     x: number; y: number;
     width: number; height: number;
-    fill?: string | null;          // background fill; null/undefined = transparent
-    borderWidth: number;           // px; 0 = no border
+    fill?: string | null;
+    borderWidth: number;
     borderColor: string;
-    borderRadius: number;          // px corner radius
+    borderRadius: number;
 };
 
-/** Line / divider shape element. length = px along the major axis. */
 type LineEl = {
     id: number; type: 'line';
     x: number; y: number;
-    length: number;                // px (width for h, height for v)
-    thickness: number;             // px (height for h, width for v)
+    length: number;
+    thickness: number;
     color: string;
-    orientation: 'h' | 'v';       // horizontal | vertical
+    orientation: 'h' | 'v';
 };
 
 type El = Text | Img | TableEl | GridEl | RectEl | LineEl;
+type BandEl = Text | Img | GridEl | RectEl | LineEl;
+
+// ── Banded layout types ──────────────────────────────────────────────────────
+
+type BandName = 'header' | 'content' | 'footerFlow' | 'footerFixed';
+
+type Band = {
+    height: number;
+    elements: BandEl[];
+};
+
+type HeaderBand = Band & { repeat: boolean };
+
+type BandedLayout = {
+    paper: { margins: { top: number; right: number; bottom: number; left: number } };
+    bands: {
+        header: HeaderBand;
+        content: { table: TableEl | null };
+        footerFlow: Band;
+        footerFixed: Band;
+    };
+};
 
 // ── Catalog types ─────────────────────────────────────────────────────────────
 
 interface TokenEntry { path: string; label: string; }
 
-/** One entry from ItemColumns::catalogForFrontend() */
 interface ItemColumnEntry {
     key: string;
     label: string;
@@ -202,27 +201,19 @@ interface ItemColumnEntry {
     default: boolean;
 }
 
-interface TemplateProps { id: number; name: string; layout: El[]; }
+interface TemplateProps { id: number; name: string; layout: unknown; }
 
 interface Props extends SharedProps {
     template: TemplateProps;
     tokenCatalog: TokenEntry[];
     sampleData: Record<string, string>;
-    /** Item column catalog from ItemColumns::catalogForFrontend() */
     itemColumnCatalog: ItemColumnEntry[];
-    /**
-     * Resolved sample rows: array of {key→value} objects, one per sample item.
-     * Built server-side from the latest/sample invoice using the DEFAULT columns.
-     * In Preview mode the table renders these rows.
-     */
     sampleItems: Array<Record<string, string>>;
-    /** Sprint 5b: global custom font library (uploaded .ttf files). */
     customFonts: CustomFontEntry[];
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-/** Build a default table element placed at (x, y). */
 function makeDefaultTable(id: number, catalog: ItemColumnEntry[], x: number, y: number): TableEl {
     const defaults = catalog.filter((c) => c.default);
     const widths: Record<string, number> = {
@@ -230,16 +221,11 @@ function makeDefaultTable(id: number, catalog: ItemColumnEntry[], x: number, y: 
         cogs_amount: 130, is_tax_deposit: 100,
     };
     const columns: TableColumn[] = defaults.map((c) => ({
-        key: c.key,
-        label: c.label,
-        width: widths[c.key] ?? 100,
-        align: c.align,
-        format: c.format,
+        key: c.key, label: c.label, width: widths[c.key] ?? 100, align: c.align, format: c.format,
     }));
     return { id, type: 'table', x, y, width: 714, columns, showFooterSum: false };
 }
 
-/** Approximate row height in the editor for 3 placeholder rows. */
 const TABLE_HEADER_H = 28;
 const TABLE_ROW_H = 24;
 const TABLE_PLACEHOLDER_ROWS = 3;
@@ -254,77 +240,161 @@ function tablePreviewHeight(el: TableEl, sampleItems: Array<Record<string, strin
     return groupRowH + TABLE_HEADER_H + TABLE_ROW_H * Math.max(1, sampleItems.length) + 2;
 }
 
-/** Default cell value. */
 function makeGridCell(): GridCell {
     return { text: '', align: 'left', bold: false, color: '#0f172a' };
 }
 
-/** Build a default 3×3 grid element. */
 function makeDefaultGrid(id: number, x: number, y: number): GridEl {
-    const cols = 3;
-    const rows = 3;
-    const width = 300;
+    const cols = 3; const rows = 3; const width = 300;
     const colWidth = Math.floor(width / cols);
     return {
-        id,
-        type: 'grid',
-        x, y, width,
-        cols, rows,
+        id, type: 'grid', x, y, width, cols, rows,
         colWidths: Array.from({ length: cols }, () => colWidth),
         cells: Array.from({ length: rows }, () => Array.from({ length: cols }, makeGridCell)),
         border: { width: 1, color: '#cbd5e1' },
     };
 }
 
-/** Height of a grid element for canvas layout. */
 const GRID_ROW_H = 24;
 function gridEditorHeight(el: GridEl): number {
     return GRID_ROW_H * el.rows + el.border.width * (el.rows + 1);
 }
 
-/** Build a default rectangle element. */
 function makeDefaultRect(id: number, x: number, y: number): RectEl {
-    return {
-        id, type: 'rect',
-        x, y,
-        width: 200, height: 40,
-        fill: null,
-        borderWidth: 1,
-        borderColor: '#0f172a',
-        borderRadius: 0,
-    };
+    return { id, type: 'rect', x, y, width: 200, height: 40, fill: null, borderWidth: 1, borderColor: '#0f172a', borderRadius: 0 };
 }
 
-/** Build a default line/divider element. */
 function makeDefaultLine(id: number, x: number, y: number): LineEl {
+    return { id, type: 'line', x, y, length: 300, thickness: 1, color: '#0f172a', orientation: 'h' };
+}
+
+function lineElWidth(el: LineEl): number { return el.orientation === 'h' ? el.length : el.thickness; }
+function lineElHeight(el: LineEl): number { return el.orientation === 'h' ? el.thickness : el.length; }
+
+// ── Legacy migration ──────────────────────────────────────────────────────────
+
+function migrateToLegacyBanded(oldEls: El[]): BandedLayout['bands'] {
+    const tableEl = oldEls.find((e): e is TableEl => e.type === 'table') ?? null;
+    const bandEls = oldEls.filter((e) => e.type !== 'table') as BandEl[];
     return {
-        id, type: 'line',
-        x, y,
-        length: 300,
-        thickness: 1,
-        color: '#0f172a',
-        orientation: 'h',
+        header: { height: 200, repeat: false, elements: bandEls },
+        content: { table: tableEl },
+        footerFlow: { height: 80, elements: [] },
+        footerFixed: { height: 40, elements: [] },
     };
 }
 
-/** Canvas display dimensions for a line element. */
-function lineElWidth(el: LineEl): number {
-    return el.orientation === 'h' ? el.length : el.thickness;
-}
-function lineElHeight(el: LineEl): number {
-    return el.orientation === 'h' ? el.thickness : el.length;
+const DEFAULT_BANDS: BandedLayout['bands'] = {
+    header: {
+        height: 180, repeat: false,
+        elements: [{
+            id: 1, type: 'text', x: 60, y: 40, content: 'Invoice {{invoice.number}}',
+            fontSize: 20, bold: true, color: '#0f172a', fontFamily: 'Helvetica / Arial',
+            italic: false, underline: false, strikethrough: false,
+            align: 'left', lineHeight: 1.2, letterSpacing: 0, padding: 0, width: 300,
+        }],
+    },
+    content: { table: null },
+    footerFlow: { height: 120, elements: [] },
+    footerFixed: { height: 50, elements: [] },
+};
+
+function bandLabel(band: BandName): string {
+    if (band === 'header') return 'Header';
+    if (band === 'content') return 'Konten';
+    if (band === 'footerFlow') return 'Footer Flow';
+    return 'Footer Tetap';
 }
 
-// ── Component ─────────────────────────────────────────────────────────────────
+// ── Band Settings Panel ───────────────────────────────────────────────────────
+
+function BandSettingsPanel({
+    bands,
+    onChangeBands,
+}: {
+    bands: BandedLayout['bands'];
+    onChangeBands: (patch: Partial<BandedLayout['bands']>) => void;
+}) {
+    return (
+        <div className="space-y-2.5">
+            {/* Header */}
+            <div className="rounded-lg border border-secondary-200 dark:border-dark-600 bg-zinc-50 dark:bg-dark-700 p-2.5 space-y-2">
+                <div className="flex items-center gap-1.5">
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-dark-500 dark:text-dark-400 flex-1">Header</span>
+                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-blue-100/80 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">Tetap</span>
+                </div>
+                <Row label="Tinggi">
+                    <NumField
+                        value={bands.header.height}
+                        onChange={(v) => onChangeBands({ header: { ...bands.header, height: Math.max(20, v) } })}
+                        unit="px"
+                    />
+                </Row>
+                <Row label="Ulangi">
+                    <button
+                        onClick={() => onChangeBands({ header: { ...bands.header, repeat: !bands.header.repeat } })}
+                        className={`flex items-center gap-2 h-8 w-full rounded-lg border px-2.5 text-sm transition-colors ${
+                            bands.header.repeat
+                                ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300'
+                                : 'border-secondary-200 dark:border-dark-600 text-dark-500 dark:text-dark-400 hover:bg-zinc-50 dark:hover:bg-dark-600'
+                        }`}
+                    >
+                        <Repeat2 className="w-4 h-4" />
+                        {bands.header.repeat ? 'Tiap halaman' : 'Halaman pertama saja'}
+                    </button>
+                </Row>
+            </div>
+
+            {/* Content */}
+            <div className="rounded-lg border border-secondary-200 dark:border-dark-600 bg-zinc-50 dark:bg-dark-700 p-2.5 space-y-2">
+                <div className="flex items-center gap-1.5">
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-dark-500 dark:text-dark-400 flex-1">Konten</span>
+                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-green-100/80 text-green-700 dark:bg-green-900/30 dark:text-green-300">Dinamis ⇕</span>
+                </div>
+                <p className="text-[11px] text-dark-400 dark:text-dark-500">Tinggi menyesuaikan jumlah item.</p>
+            </div>
+
+            {/* Footer Flow */}
+            <div className="rounded-lg border border-secondary-200 dark:border-dark-600 bg-zinc-50 dark:bg-dark-700 p-2.5 space-y-2">
+                <div className="flex items-center gap-1.5">
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-dark-500 dark:text-dark-400 flex-1">Footer Flow</span>
+                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-orange-100/80 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300">Setelah konten</span>
+                </div>
+                <Row label="Tinggi">
+                    <NumField
+                        value={bands.footerFlow.height}
+                        onChange={(v) => onChangeBands({ footerFlow: { ...bands.footerFlow, height: Math.max(20, v) } })}
+                        unit="px"
+                    />
+                </Row>
+            </div>
+
+            {/* Footer Fixed */}
+            <div className="rounded-lg border border-secondary-200 dark:border-dark-600 bg-zinc-50 dark:bg-dark-700 p-2.5 space-y-2">
+                <div className="flex items-center gap-1.5">
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-dark-500 dark:text-dark-400 flex-1">Footer Tetap</span>
+                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-purple-100/80 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300">Tiap halaman</span>
+                </div>
+                <Row label="Tinggi">
+                    <NumField
+                        value={bands.footerFixed.height}
+                        onChange={(v) => onChangeBands({ footerFixed: { ...bands.footerFixed, height: Math.max(20, v) } })}
+                        unit="px"
+                    />
+                </Row>
+            </div>
+        </div>
+    );
+}
+
+// ── Main component ────────────────────────────────────────────────────────────
 
 export default function PdfTemplateEdit() {
     const { template, tokenCatalog, sampleData, itemColumnCatalog, sampleItems, customFonts } = usePage<Props>().props;
 
-    // Sprint 5b: inject @font-face rules for all custom fonts so the browser renders them.
+    // Inject @font-face for custom fonts
     React.useEffect(() => {
-        if (!customFonts?.length) {
-            return;
-        }
+        if (!customFonts?.length) return;
         const id = 'custom-fonts-style';
         let style = document.getElementById(id) as HTMLStyleElement | null;
         if (!style) {
@@ -335,7 +405,6 @@ export default function PdfTemplateEdit() {
         style.textContent = customFonts
             .map((f) => `@font-face { font-family: "${f.name}"; src: url("${f.url}") format("truetype"); }`)
             .join('\n');
-        // Cleanup not strictly needed (editor is single-page) but good hygiene.
         return () => { style?.remove(); };
     }, [customFonts]);
 
@@ -344,17 +413,26 @@ export default function PdfTemplateEdit() {
             Object.prototype.hasOwnProperty.call(sampleData, path) ? sampleData[path] : match,
         );
 
-    const initial: El[] = Array.isArray(template.layout) && template.layout.length
-        ? (template.layout as El[])
-        : [{ id: 1, type: 'text', x: 60, y: 60, content: 'Invoice {{invoice.number}}', fontSize: 20, bold: true, color: '#0f172a' }];
+    // Compute initial bands from layout (banded, legacy array, or default)
+    const initialBands = React.useMemo((): BandedLayout['bands'] => {
+        const layout = template.layout;
+        if (layout && typeof layout === 'object' && !Array.isArray(layout) && 'bands' in (layout as object)) {
+            return (layout as BandedLayout).bands;
+        }
+        if (Array.isArray(layout) && layout.length > 0) {
+            return migrateToLegacyBanded(layout as El[]);
+        }
+        return DEFAULT_BANDS;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
-    const [els, setEls] = React.useState<El[]>(initial);
+    const [bands, setBands] = React.useState<BandedLayout['bands']>(initialBands);
+    const [activeBand, setActiveBand] = React.useState<BandName>('header');
     const [selectedId, setSelectedId] = React.useState<number | null>(null);
-    /** When a grid cell is selected: { row, col } */
+    const [selectedBand, setSelectedBand] = React.useState<BandName | null>(null);
     const [selectedCell, setSelectedCell] = React.useState<{ row: number; col: number } | null>(null);
     const [rangeEnd, setRangeEnd] = React.useState<{ row: number; col: number } | null>(null);
     const [anchorCell, setAnchorCell] = React.useState<{ row: number; col: number } | null>(null);
-    /** When a grid cell is being inline-edited: { row, col } */
     const [editingCell, setEditingCell] = React.useState<{ row: number; col: number } | null>(null);
     const [saving, setSaving] = React.useState(false);
     const [editingId, setEditingId] = React.useState<number | null>(null);
@@ -363,35 +441,91 @@ export default function PdfTemplateEdit() {
     const [zoom, setZoom] = React.useState(0.6);
     const [dragOver, setDragOver] = React.useState(false);
     const [overLayerId, setOverLayerId] = React.useState<number | null>(null);
-    const paperRef = React.useRef<HTMLDivElement>(null);
+
+    // Per-band refs for drag calculations
+    const headerRef = React.useRef<HTMLDivElement>(null);
+    const contentRef = React.useRef<HTMLDivElement>(null);
+    const footerFlowRef = React.useRef<HTMLDivElement>(null);
+    const footerFixedRef = React.useRef<HTMLDivElement>(null);
     const canvasRef = React.useRef<HTMLDivElement>(null);
+    const textContentRef = React.useRef<HTMLTextAreaElement>(null);
     const fileRef = React.useRef<HTMLInputElement>(null);
-    const contentRef = React.useRef<HTMLTextAreaElement>(null);
-    const pendingImg = React.useRef<{ x: number; y: number } | null>(null);
+    const pendingImg = React.useRef<{ x: number; y: number; band: BandName } | null>(null);
     const dragLayerId = React.useRef<number | null>(null);
     const zoomAnchor = React.useRef<{ cx: number; cy: number; clientX: number; clientY: number } | null>(null);
-    const nextId = React.useRef(Math.max(0, ...initial.map((e) => e.id)) + 1);
-    const clipboard = React.useRef<El | null>(null);
-    const history = React.useRef<{ past: El[][]; future: El[][] }>({ past: [], future: [] });
+    const clipboard = React.useRef<BandEl | null>(null);
+    const history = React.useRef<{ past: BandedLayout['bands'][]; future: BandedLayout['bands'][] }>({ past: [], future: [] });
 
-    const selected = els.find((e) => e.id === selectedId) ?? null;
-    const update = (id: number, patch: Partial<El>) =>
-        setEls((p) => p.map((e) => (e.id === id ? ({ ...e, ...patch } as El) : e)));
+    // nextId: computed once from initial bands
+    const allInitialEls = [
+        ...initialBands.header.elements,
+        ...(initialBands.content.table ? [initialBands.content.table] : []),
+        ...initialBands.footerFlow.elements,
+        ...initialBands.footerFixed.elements,
+    ];
+    const nextId = React.useRef(Math.max(0, ...allInitialEls.map((e) => e.id)) + 1);
+
+    // ── Band element helpers ──────────────────────────────────────────────────
+
+    const getBandEls = React.useCallback((band: BandName): BandEl[] => {
+        if (band === 'header') return bands.header.elements;
+        if (band === 'footerFlow') return bands.footerFlow.elements;
+        if (band === 'footerFixed') return bands.footerFixed.elements;
+        return [];
+    }, [bands]);
+
+    const setBandEls = React.useCallback((band: BandName, els: BandEl[]) => {
+        setBands((prev) => {
+            if (band === 'header') return { ...prev, header: { ...prev.header, elements: els } };
+            if (band === 'footerFlow') return { ...prev, footerFlow: { ...prev.footerFlow, elements: els } };
+            if (band === 'footerFixed') return { ...prev, footerFixed: { ...prev.footerFixed, elements: els } };
+            return prev;
+        });
+    }, []);
+
+    // Find which band owns an element id
+    const findElBand = React.useCallback((id: number): BandName | null => {
+        if (bands.header.elements.some((e) => e.id === id)) return 'header';
+        if (bands.content.table?.id === id) return 'content';
+        if (bands.footerFlow.elements.some((e) => e.id === id)) return 'footerFlow';
+        if (bands.footerFixed.elements.some((e) => e.id === id)) return 'footerFixed';
+        return null;
+    }, [bands]);
+
+    const getBandRef = (band: BandName): React.RefObject<HTMLDivElement | null> => {
+        if (band === 'header') return headerRef;
+        if (band === 'content') return contentRef;
+        if (band === 'footerFlow') return footerFlowRef;
+        return footerFixedRef;
+    };
+
+    // Find element by id across all bands
+    const findEl = React.useCallback((id: number): El | null => {
+        const fromBand = [...bands.header.elements, ...bands.footerFlow.elements, ...bands.footerFixed.elements]
+            .find((e) => e.id === id);
+        if (fromBand) return fromBand;
+        if (bands.content.table?.id === id) return bands.content.table;
+        return null;
+    }, [bands]);
+
+    const selected = selectedId != null ? findEl(selectedId) : null;
 
     const selectedRange: { r1: number; c1: number; r2: number; c2: number } | null =
         anchorCell && rangeEnd
             ? {
-                  r1: Math.min(anchorCell.row, rangeEnd.row),
-                  c1: Math.min(anchorCell.col, rangeEnd.col),
-                  r2: Math.max(anchorCell.row, rangeEnd.row),
-                  c2: Math.max(anchorCell.col, rangeEnd.col),
-              }
+                r1: Math.min(anchorCell.row, rangeEnd.row),
+                c1: Math.min(anchorCell.col, rangeEnd.col),
+                r2: Math.max(anchorCell.row, rangeEnd.row),
+                c2: Math.max(anchorCell.col, rangeEnd.col),
+            }
             : anchorCell
               ? { r1: anchorCell.row, c1: anchorCell.col, r2: anchorCell.row, c2: anchorCell.col }
               : null;
 
+    // ── Undo/redo ─────────────────────────────────────────────────────────────
+
     const snapshot = () =>
-        setEls((prev) => {
+        setBands((prev) => {
             const h = history.current;
             h.past.push(prev);
             if (h.past.length > 100) h.past.shift();
@@ -400,7 +534,7 @@ export default function PdfTemplateEdit() {
         });
 
     const undo = () =>
-        setEls((prev) => {
+        setBands((prev) => {
             const h = history.current;
             if (!h.past.length) return prev;
             h.future.push(prev);
@@ -408,17 +542,53 @@ export default function PdfTemplateEdit() {
         });
 
     const redo = () =>
-        setEls((prev) => {
+        setBands((prev) => {
             const h = history.current;
             if (!h.future.length) return prev;
             h.past.push(prev);
             return h.future.pop()!;
         });
 
-    const startDrag = (e: React.PointerEvent, el: El) => {
+    // ── Update helpers ────────────────────────────────────────────────────────
+
+    const update = React.useCallback((id: number, patch: Partial<El>) => {
+        const band = findElBand(id);
+        if (!band) return;
+        if (band === 'content') {
+            setBands((prev) => ({
+                ...prev,
+                content: { table: prev.content.table ? { ...prev.content.table, ...patch } as TableEl : null },
+            }));
+            return;
+        }
+        setBandEls(band, getBandEls(band).map((e) => (e.id === id ? ({ ...e, ...patch } as BandEl) : e)));
+    }, [findElBand, getBandEls, setBandEls]);
+
+    const setContentTable = (patchOrNull: Partial<TableEl> | null) => {
+        setBands((prev) => ({
+            ...prev,
+            content: {
+                table: patchOrNull === null
+                    ? null
+                    : {
+                        ...(prev.content.table ?? {
+                            id: nextId.current++, type: 'table', x: 0, y: 0,
+                            width: 714, columns: [], showFooterSum: false,
+                        }),
+                        ...patchOrNull,
+                    } as TableEl,
+            },
+        }));
+    };
+
+    // ── Drag in band ──────────────────────────────────────────────────────────
+
+    const startDragInBand = (e: React.PointerEvent, el: BandEl | TableEl, bandRef: React.RefObject<HTMLDivElement | null>) => {
         e.stopPropagation();
         setSelectedId(el.id);
-        const rect = paperRef.current!.getBoundingClientRect();
+        const band = findElBand(el.id);
+        if (band) setSelectedBand(band);
+        const rect = bandRef.current!.getBoundingClientRect();
         const dx = (e.clientX - rect.left) / zoom - el.x;
         const dy = (e.clientY - rect.top) / zoom - el.y;
         let moved = false;
@@ -436,65 +606,43 @@ export default function PdfTemplateEdit() {
         window.addEventListener('pointerup', up);
     };
 
-    /** Resize handle for a text box (SE corner: width + height). */
-    const startTextResize = (
-        e: React.PointerEvent,
-        el: Text,
-        axis: 'width' | 'height' | 'both',
-    ) => {
+    const startTextResize = (e: React.PointerEvent, el: Text, axis: 'width' | 'height' | 'both', bandRef: React.RefObject<HTMLDivElement | null>) => {
         e.stopPropagation();
-        const rect = paperRef.current!.getBoundingClientRect();
-        const x0 = el.x;
-        const w0 = el.width ?? 200;
-        const h0 = el.height;
+        const rect = bandRef.current!.getBoundingClientRect();
+        const x0 = el.x; const h0 = el.height;
         let resized = false;
         const move = (ev: PointerEvent) => {
             if (!resized) { resized = true; snapshot(); }
             const patch: Partial<Text> = {};
-            if (axis === 'width' || axis === 'both') {
-                patch.width = Math.max(40, Math.round((ev.clientX - rect.left) / zoom - x0));
-            }
+            if (axis === 'width' || axis === 'both') patch.width = Math.max(40, Math.round((ev.clientX - rect.left) / zoom - x0));
             if ((axis === 'height' || axis === 'both') && h0 !== undefined) {
-                const top0 = el.y;
-                patch.height = Math.max(20, Math.round((ev.clientY - rect.top) / zoom - top0));
+                patch.height = Math.max(20, Math.round((ev.clientY - rect.top) / zoom - el.y));
             }
             update(el.id, patch);
         };
-        const up = () => {
-            window.removeEventListener('pointermove', move);
-            window.removeEventListener('pointerup', up);
-        };
+        const up = () => { window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up); };
         window.addEventListener('pointermove', move);
         window.addEventListener('pointerup', up);
     };
 
-    /** Horizontal resize handle for the table (right edge). */
-    const startTableResize = (e: React.PointerEvent, el: TableEl) => {
+    const startTableResize = (e: React.PointerEvent, el: TableEl | GridEl, bandRef: React.RefObject<HTMLDivElement | null>) => {
         e.stopPropagation();
-        const rect = paperRef.current!.getBoundingClientRect();
+        const rect = bandRef.current!.getBoundingClientRect();
         const x0 = el.x;
-        const w0 = el.width;
         let resized = false;
         const move = (ev: PointerEvent) => {
             if (!resized) { resized = true; snapshot(); }
-            const pxRight = (ev.clientX - rect.left) / zoom;
-            const newW = Math.max(100, Math.round(pxRight - x0));
-            update(el.id, { width: newW });
+            update(el.id, { width: Math.max(100, Math.round((ev.clientX - rect.left) / zoom - x0)) });
         };
-        const up = () => {
-            window.removeEventListener('pointermove', move);
-            window.removeEventListener('pointerup', up);
-        };
+        const up = () => { window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up); };
         window.addEventListener('pointermove', move);
         window.addEventListener('pointerup', up);
     };
 
-    /** SE corner resize for rect (width + height). */
-    const startRectResize = (e: React.PointerEvent, el: RectEl) => {
+    const startRectResize = (e: React.PointerEvent, el: RectEl, bandRef: React.RefObject<HTMLDivElement | null>) => {
         e.stopPropagation();
-        const rect = paperRef.current!.getBoundingClientRect();
-        const x0 = el.x;
-        const y0 = el.y;
+        const rect = bandRef.current!.getBoundingClientRect();
+        const x0 = el.x; const y0 = el.y;
         let resized = false;
         const move = (ev: PointerEvent) => {
             if (!resized) { resized = true; snapshot(); }
@@ -503,48 +651,33 @@ export default function PdfTemplateEdit() {
                 height: Math.max(4, Math.round((ev.clientY - rect.top) / zoom - y0)),
             });
         };
-        const up = () => {
-            window.removeEventListener('pointermove', move);
-            window.removeEventListener('pointerup', up);
-        };
+        const up = () => { window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up); };
         window.addEventListener('pointermove', move);
         window.addEventListener('pointerup', up);
     };
 
-    /** End-point resize for line (adjusts length). */
-    const startLineResize = (e: React.PointerEvent, el: LineEl) => {
+    const startLineResize = (e: React.PointerEvent, el: LineEl, bandRef: React.RefObject<HTMLDivElement | null>) => {
         e.stopPropagation();
-        const rect = paperRef.current!.getBoundingClientRect();
-        const x0 = el.x;
-        const y0 = el.y;
+        const rect = bandRef.current!.getBoundingClientRect();
+        const x0 = el.x; const y0 = el.y;
         let resized = false;
         const move = (ev: PointerEvent) => {
             if (!resized) { resized = true; snapshot(); }
-            if (el.orientation === 'h') {
-                update(el.id, { length: Math.max(4, Math.round((ev.clientX - rect.left) / zoom - x0)) });
-            } else {
-                update(el.id, { length: Math.max(4, Math.round((ev.clientY - rect.top) / zoom - y0)) });
-            }
+            if (el.orientation === 'h') update(el.id, { length: Math.max(4, Math.round((ev.clientX - rect.left) / zoom - x0)) });
+            else update(el.id, { length: Math.max(4, Math.round((ev.clientY - rect.top) / zoom - y0)) });
         };
-        const up = () => {
-            window.removeEventListener('pointermove', move);
-            window.removeEventListener('pointerup', up);
-        };
+        const up = () => { window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up); };
         window.addEventListener('pointermove', move);
         window.addEventListener('pointerup', up);
     };
 
-    const startResize = (e: React.PointerEvent, el: Img, corner: 'nw' | 'ne' | 'sw' | 'se') => {
+    const startImgResize = (e: React.PointerEvent, el: Img, corner: 'nw' | 'ne' | 'sw' | 'se', bandRef: React.RefObject<HTMLDivElement | null>) => {
         e.stopPropagation();
         setSelectedId(el.id);
-        const rect = paperRef.current!.getBoundingClientRect();
-        const w0 = el.width;
-        const h0 = el.height ?? w0;
-        const ratio = w0 / h0;
-        const left0 = el.x;
-        const top0 = el.y;
-        const right0 = el.x + w0;
-        const bottom0 = el.y + h0;
+        const rect = bandRef.current!.getBoundingClientRect();
+        const w0 = el.width; const h0 = el.height ?? w0; const ratio = w0 / h0;
+        const left0 = el.x; const top0 = el.y;
+        const right0 = el.x + w0; const bottom0 = el.y + h0;
         const west = corner === 'nw' || corner === 'sw';
         const north = corner === 'nw' || corner === 'ne';
         let resized = false;
@@ -559,29 +692,31 @@ export default function PdfTemplateEdit() {
             const newY = north ? bottom0 - newH : top0;
             update(el.id, { x: Math.round(newX), y: Math.round(newY), width: Math.round(newW), height: Math.round(newH) });
         };
-        const up = () => {
-            window.removeEventListener('pointermove', move);
-            window.removeEventListener('pointerup', up);
-        };
+        const up = () => { window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up); };
         window.addEventListener('pointermove', move);
         window.addEventListener('pointerup', up);
     };
 
-    const addText = (x = 80, y = 200, content = 'Teks baru') => {
+    // ── Add element helpers ────────────────────────────────────────────────────
+
+    const addText = (x = 80, y = 40, content = 'Teks baru') => {
+        if (activeBand === 'content') return;
         snapshot();
         const id = nextId.current++;
-        setEls((p) => [...p, {
+        const el: BandEl = {
             id, type: 'text', x, y, content,
             fontSize: 14, bold: false, color: '#0f172a',
             fontFamily: 'Helvetica / Arial',
             italic: false, underline: false, strikethrough: false,
-            align: 'left', lineHeight: 1.2, letterSpacing: 0,
-            padding: 0, width: 200,
-        }]);
+            align: 'left', lineHeight: 1.2, letterSpacing: 0, padding: 0, width: 200,
+        };
+        setBandEls(activeBand, [...getBandEls(activeBand), el]);
         setSelectedId(id);
+        setSelectedBand(activeBand);
     };
 
-    const addImage = (file: File, x = 80, y = 280) => {
+    const addImage = (file: File, x = 80, y = 80, targetBand: BandName = activeBand) => {
+        if (targetBand === 'content') return;
         const reader = new FileReader();
         reader.onload = () => {
             const src = reader.result as string;
@@ -591,45 +726,56 @@ export default function PdfTemplateEdit() {
                 const id = nextId.current++;
                 const width = 160;
                 const height = Math.round(width * (probe.naturalHeight / probe.naturalWidth));
-                setEls((p) => [...p, { id, type: 'image', x, y, src, width, height, lockAspect: true }]);
+                const el: BandEl = { id, type: 'image', x, y, src, width, height, lockAspect: true };
+                setBandEls(targetBand, [...getBandEls(targetBand), el]);
                 setSelectedId(id);
+                setSelectedBand(targetBand);
             };
             probe.src = src;
         };
         reader.readAsDataURL(file);
     };
 
-    const addTable = (x = 40, y = 300) => {
+    const addTable = () => {
+        if (bands.content.table) return;
         snapshot();
         const id = nextId.current++;
-        const el = makeDefaultTable(id, itemColumnCatalog, x, y);
-        setEls((p) => [...p, el]);
+        const el = makeDefaultTable(id, itemColumnCatalog, 0, 0);
+        setBands((prev) => ({ ...prev, content: { table: el } }));
         setSelectedId(id);
+        setSelectedBand('content');
+        setActiveBand('content');
     };
 
-    const addGrid = (x = 80, y = 200) => {
+    const addGrid = (x = 80, y = 40) => {
+        if (activeBand === 'content') return;
         snapshot();
         const id = nextId.current++;
         const el = makeDefaultGrid(id, x, y);
-        setEls((p) => [...p, el]);
+        setBandEls(activeBand, [...getBandEls(activeBand), el]);
         setSelectedId(id);
+        setSelectedBand(activeBand);
         setSelectedCell(null);
     };
 
-    const addRect = (x = 80, y = 200) => {
+    const addRect = (x = 80, y = 40) => {
+        if (activeBand === 'content') return;
         snapshot();
         const id = nextId.current++;
         const el = makeDefaultRect(id, x, y);
-        setEls((p) => [...p, el]);
+        setBandEls(activeBand, [...getBandEls(activeBand), el]);
         setSelectedId(id);
+        setSelectedBand(activeBand);
     };
 
-    const addLine = (x = 80, y = 200) => {
+    const addLine = (x = 80, y = 40) => {
+        if (activeBand === 'content') return;
         snapshot();
         const id = nextId.current++;
         const el = makeDefaultLine(id, x, y);
-        setEls((p) => [...p, el]);
+        setBandEls(activeBand, [...getBandEls(activeBand), el]);
         setSelectedId(id);
+        setSelectedBand(activeBand);
     };
 
     const setImgSize = (el: Img, dim: 'width' | 'height', v: number) => {
@@ -644,73 +790,73 @@ export default function PdfTemplateEdit() {
 
     const resetImage = (el: Img) => {
         const probe = new Image();
-        probe.onload = () => {
-            snapshot();
-            update(el.id, { width: probe.naturalWidth, height: probe.naturalHeight });
-        };
+        probe.onload = () => { snapshot(); update(el.id, { width: probe.naturalWidth, height: probe.naturalHeight }); };
         probe.src = el.src;
     };
 
     const updateTableColumn = (tableId: number, colIdx: number, patch: Partial<TableColumn>) => {
-        setEls((p) => p.map((e) => {
-            if (e.id !== tableId || e.type !== 'table') return e;
-            const cols = e.columns.map((c, i) => i === colIdx ? { ...c, ...patch } : c);
-            return { ...e, columns: cols };
-        }));
+        const t = bands.content.table;
+        if (!t || t.id !== tableId) return;
+        setContentTable({ columns: t.columns.map((c, i) => i === colIdx ? { ...c, ...patch } : c) });
     };
 
     const moveTableColumn = (tableId: number, from: number, direction: -1 | 1) => {
+        const t = bands.content.table;
+        if (!t || t.id !== tableId) return;
         const to = from + direction;
-        setEls((p) => p.map((e) => {
-            if (e.id !== tableId || e.type !== 'table') return e;
-            if (to < 0 || to >= e.columns.length) return e;
-            const cols = [...e.columns];
-            [cols[from], cols[to]] = [cols[to], cols[from]];
-            return { ...e, columns: cols };
-        }));
+        if (to < 0 || to >= t.columns.length) return;
+        const cols = [...t.columns];
+        [cols[from], cols[to]] = [cols[to], cols[from]];
+        setContentTable({ columns: cols });
     };
 
     const removeTableColumn = (tableId: number, colIdx: number) => {
+        const t = bands.content.table;
+        if (!t || t.id !== tableId) return;
         snapshot();
-        setEls((p) => p.map((e) => {
-            if (e.id !== tableId || e.type !== 'table') return e;
-            return { ...e, columns: e.columns.filter((_, i) => i !== colIdx) };
-        }));
+        setContentTable({ columns: t.columns.filter((_, i) => i !== colIdx) });
     };
 
-    /** Update a single cell's properties in a grid element. */
+    const addTableColumn = (tableId: number, key: string) => {
+        const t = bands.content.table;
+        if (!t || t.id !== tableId) return;
+        const entry = itemColumnCatalog.find((c) => c.key === key);
+        if (!entry || t.columns.some((c) => c.key === key)) return;
+        const widths: Record<string, number> = {
+            no: 36, description: 290, quantity: 72, unit: 80, unit_price: 130, amount: 130,
+            cogs_amount: 130, is_tax_deposit: 100,
+        };
+        snapshot();
+        const newCol: TableColumn = { key: entry.key, label: entry.label, width: widths[key] ?? 100, align: entry.align, format: entry.format };
+        setContentTable({ columns: [...t.columns, newCol] });
+    };
+
     const updateGridCell = (gridId: number, row: number, col: number, patch: Partial<GridCell>) => {
-        setEls((p) => p.map((e) => {
+        const band = findElBand(gridId);
+        if (!band || band === 'content') return;
+        setBandEls(band, getBandEls(band).map((e) => {
             if (e.id !== gridId || e.type !== 'grid') return e;
-            const cells = e.cells.map((r, ri) =>
-                r.map((c, ci) => (ri === row && ci === col ? { ...c, ...patch } : c))
-            );
+            const cells = e.cells.map((r, ri) => r.map((c, ci) => (ri === row && ci === col ? { ...c, ...patch } : c)));
             return { ...e, cells };
         }));
     };
 
-    /** Update grid-level properties (rows/cols restructure, border, colWidths). */
     const updateGrid = (gridId: number, patch: Partial<GridEl>) => {
-        setEls((p) => p.map((e) => {
-            if (e.id !== gridId || e.type !== 'grid') return e;
-            return { ...e, ...patch } as GridEl;
-        }));
+        const band = findElBand(gridId);
+        if (!band || band === 'content') return;
+        setBandEls(band, getBandEls(band).map((e) => (e.id === gridId && e.type === 'grid' ? { ...e, ...patch } as GridEl : e)));
     };
 
     const mergeRange = (gridId: number, r1: number, c1: number, r2: number, c2: number) => {
         snapshot();
-        setEls((p) => p.map((e) => {
+        const band = findElBand(gridId);
+        if (!band || band === 'content') return;
+        setBandEls(band, getBandEls(band).map((e) => {
             if (e.id !== gridId || e.type !== 'grid') return e;
             const cells = e.cells.map((row, ri) =>
                 row.map((cell, ci) => {
-                    if (ri === r1 && ci === c1) {
-                        // keeper cell
-                        return { ...cell, colSpan: c2 - c1 + 1, rowSpan: r2 - r1 + 1, merged: false };
-                    }
-                    if (ri >= r1 && ri <= r2 && ci >= c1 && ci <= c2) {
-                        // covered cell
-                        return { ...cell, text: '', colSpan: 1, rowSpan: 1, merged: true };
-                    }
+                    if (ri === r1 && ci === c1) return { ...cell, colSpan: c2 - c1 + 1, rowSpan: r2 - r1 + 1, merged: false };
+                    if (ri >= r1 && ri <= r2 && ci >= c1 && ci <= c2) return { ...cell, text: '', colSpan: 1, rowSpan: 1, merged: true };
                     return cell;
                 })
             );
@@ -723,20 +869,17 @@ export default function PdfTemplateEdit() {
 
     const unmergeCell = (gridId: number, row: number, col: number) => {
         snapshot();
-        setEls((p) => p.map((e) => {
+        const band = findElBand(gridId);
+        if (!band || band === 'content') return;
+        setBandEls(band, getBandEls(band).map((e) => {
             if (e.id !== gridId || e.type !== 'grid') return e;
             const keeper = e.cells[row]?.[col];
             if (!keeper) return e;
-            const cs = keeper.colSpan ?? 1;
-            const rs = keeper.rowSpan ?? 1;
+            const cs = keeper.colSpan ?? 1; const rs = keeper.rowSpan ?? 1;
             const cells = e.cells.map((rowCells, ri) =>
                 rowCells.map((cell, ci) => {
-                    if (ri === row && ci === col) {
-                        return { ...cell, colSpan: 1, rowSpan: 1, merged: false };
-                    }
-                    if (ri >= row && ri < row + rs && ci >= col && ci < col + cs) {
-                        return { ...cell, merged: false, colSpan: 1, rowSpan: 1 };
-                    }
+                    if (ri === row && ci === col) return { ...cell, colSpan: 1, rowSpan: 1, merged: false };
+                    if (ri >= row && ri < row + rs && ci >= col && ci < col + cs) return { ...cell, merged: false, colSpan: 1, rowSpan: 1 };
                     return cell;
                 })
             );
@@ -744,67 +887,113 @@ export default function PdfTemplateEdit() {
         }));
     };
 
-    /** Add a row to the grid (appended at bottom). */
     const addGridRow = (gridId: number) => {
         snapshot();
-        setEls((p) => p.map((e) => {
+        const band = findElBand(gridId);
+        if (!band || band === 'content') return;
+        setBandEls(band, getBandEls(band).map((e) => {
             if (e.id !== gridId || e.type !== 'grid') return e;
-            const newRow = Array.from({ length: e.cols }, makeGridCell);
-            return { ...e, rows: e.rows + 1, cells: [...e.cells, newRow] };
+            return { ...e, rows: e.rows + 1, cells: [...e.cells, Array.from({ length: e.cols }, makeGridCell)] };
         }));
     };
 
-    /** Remove the last row (min 1). */
     const removeGridRow = (gridId: number) => {
         snapshot();
-        setEls((p) => p.map((e) => {
+        const band = findElBand(gridId);
+        if (!band || band === 'content') return;
+        setBandEls(band, getBandEls(band).map((e) => {
             if (e.id !== gridId || e.type !== 'grid' || e.rows <= 1) return e;
             return { ...e, rows: e.rows - 1, cells: e.cells.slice(0, -1) };
         }));
     };
 
-    /** Add a column to the right. */
     const addGridCol = (gridId: number) => {
         snapshot();
-        setEls((p) => p.map((e) => {
+        const band = findElBand(gridId);
+        if (!band || band === 'content') return;
+        setBandEls(band, getBandEls(band).map((e) => {
             if (e.id !== gridId || e.type !== 'grid') return e;
-            const newColWidth = Math.floor(e.width / (e.cols + 1));
-            const cells = e.cells.map((row) => [...row, makeGridCell()]);
-            return { ...e, cols: e.cols + 1, colWidths: [...e.colWidths, newColWidth], cells };
+            return { ...e, cols: e.cols + 1, colWidths: [...e.colWidths, Math.floor(e.width / (e.cols + 1))], cells: e.cells.map((row) => [...row, makeGridCell()]) };
         }));
     };
 
-    /** Remove the last column (min 1). */
     const removeGridCol = (gridId: number) => {
         snapshot();
-        setEls((p) => p.map((e) => {
+        const band = findElBand(gridId);
+        if (!band || band === 'content') return;
+        setBandEls(band, getBandEls(band).map((e) => {
             if (e.id !== gridId || e.type !== 'grid' || e.cols <= 1) return e;
-            const cells = e.cells.map((row) => row.slice(0, -1));
-            return { ...e, cols: e.cols - 1, colWidths: e.colWidths.slice(0, -1), cells };
+            return { ...e, cols: e.cols - 1, colWidths: e.colWidths.slice(0, -1), cells: e.cells.map((row) => row.slice(0, -1)) };
         }));
     };
 
-    const addTableColumn = (tableId: number, key: string) => {
-        const entry = itemColumnCatalog.find((c) => c.key === key);
-        if (!entry) return;
-        const widths: Record<string, number> = {
-            no: 36, description: 290, quantity: 72, unit: 80, unit_price: 130, amount: 130,
-            cogs_amount: 130, is_tax_deposit: 100,
-        };
+    // ── Remove / duplicate / move layer ───────────────────────────────────────
+
+    const remove = (id: number) => {
         snapshot();
-        setEls((p) => p.map((e) => {
-            if (e.id !== tableId || e.type !== 'table') return e;
-            if (e.columns.some((c) => c.key === key)) return e; // already present
-            const newCol: TableColumn = { key: entry.key, label: entry.label, width: widths[key] ?? 100, align: entry.align, format: entry.format };
-            return { ...e, columns: [...e.columns, newCol] };
-        }));
+        const band = findElBand(id);
+        if (!band) return;
+        if (band === 'content') {
+            setBands((prev) => ({ ...prev, content: { table: null } }));
+        } else {
+            setBandEls(band, getBandEls(band).filter((e) => e.id !== id));
+        }
+        setSelectedId(null);
+        setSelectedBand(null);
+        setSelectedCell(null);
+        setEditingCell(null);
     };
+
+    const duplicate = (src: BandEl) => {
+        snapshot();
+        const srcBand = findElBand(src.id);
+        if (!srcBand || srcBand === 'content') return;
+        const id = nextId.current++;
+        const copy = { ...src, id, x: src.x + 20, y: src.y + 20 } as BandEl;
+        setBandEls(srcBand, [...getBandEls(srcBand), copy]);
+        setSelectedId(id);
+        setSelectedBand(srcBand);
+        clipboard.current = copy;
+    };
+
+    const moveLayer = (draggedId: number, targetId: number, band: BandName) => {
+        if (draggedId === targetId) return;
+        snapshot();
+        const els = getBandEls(band);
+        const display = [...els].reverse();
+        const from = display.findIndex((e) => e.id === draggedId);
+        const to = display.findIndex((e) => e.id === targetId);
+        if (from < 0 || to < 0) return;
+        const [moved] = display.splice(from, 1);
+        display.splice(to, 0, moved);
+        setBandEls(band, display.reverse());
+    };
+
+    const insertToken = (path: string) => {
+        if (!selected || selected.type !== 'text') return;
+        snapshot();
+        const token = `{{${path}}}`;
+        const ta = textContentRef.current;
+        if (ta && document.activeElement === ta) {
+            const s = ta.selectionStart ?? selected.content.length;
+            const en = ta.selectionEnd ?? s;
+            update(selected.id, { content: selected.content.slice(0, s) + token + selected.content.slice(en) });
+        } else {
+            update(selected.id, { content: selected.content + token });
+        }
+    };
+
+    // ── Save ──────────────────────────────────────────────────────────────────
 
     const save = () => {
         setSaving(true);
+        const layout: BandedLayout = {
+            paper: { margins: { top: 40, right: 40, bottom: 40, left: 40 } },
+            bands,
+        };
         router.post(
             `/settings/pdf-templates/${template.id}/save`,
-            { layout: els },
+            { layout },
             {
                 preserveScroll: true,
                 preserveState: true,
@@ -817,73 +1006,30 @@ export default function PdfTemplateEdit() {
 
     const openPdf = () => window.open(`/settings/pdf-templates/${template.id}/pdf`, '_blank');
 
-    const dropPos = (e: React.DragEvent) => {
-        const rect = paperRef.current!.getBoundingClientRect();
-        return {
-            x: Math.max(0, Math.min(A4.w, (e.clientX - rect.left) / zoom)),
-            y: Math.max(0, Math.min(A4.h, (e.clientY - rect.top) / zoom)),
-        };
-    };
+    // ── Drop on band ──────────────────────────────────────────────────────────
 
-    const onDrop = (e: React.DragEvent) => {
+    const dropOnBand = (e: React.DragEvent, band: BandName, bandRef: React.RefObject<HTMLDivElement | null>) => {
         e.preventDefault();
         setDragOver(false);
-        const { x, y } = dropPos(e);
+        if (band === 'content') return;
+        const rect = bandRef.current!.getBoundingClientRect();
+        const x = Math.max(0, Math.round((e.clientX - rect.left) / zoom));
+        const y = Math.max(0, Math.round((e.clientY - rect.top) / zoom));
         const file = e.dataTransfer.files?.[0];
-        if (file?.type.startsWith('image/')) { addImage(file, x, y); return; }
+        if (file?.type.startsWith('image/')) { addImage(file, x, y, band); return; }
         const kind = e.dataTransfer.getData('kind');
+        const prevActive = activeBand;
+        setActiveBand(band);
         if (kind === 'text') addText(x, y);
-        else if (kind === 'image') { pendingImg.current = { x, y }; fileRef.current?.click(); }
-        else if (kind === 'table') addTable(Math.min(x, A4.w - 100), y);
-        else if (kind === 'grid') addGrid(Math.min(x, A4.w - 100), y);
+        else if (kind === 'image') { pendingImg.current = { x, y, band }; fileRef.current?.click(); }
+        else if (kind === 'table') addTable();
+        else if (kind === 'grid') addGrid(x, y);
         else if (kind === 'rect') addRect(x, y);
         else if (kind === 'line') addLine(x, y);
+        else setActiveBand(prevActive);
     };
 
-    const remove = (id: number) => {
-        snapshot();
-        setEls((p) => p.filter((e) => e.id !== id));
-        setSelectedId(null);
-        setSelectedCell(null);
-        setEditingCell(null);
-    };
-
-    const moveLayer = (draggedId: number, targetId: number) => {
-        if (draggedId === targetId) return;
-        snapshot();
-        setEls((prev) => {
-            const display = [...prev].reverse();
-            const from = display.findIndex((e) => e.id === draggedId);
-            const to = display.findIndex((e) => e.id === targetId);
-            if (from < 0 || to < 0) return prev;
-            const [moved] = display.splice(from, 1);
-            display.splice(to, 0, moved);
-            return display.reverse();
-        });
-    };
-
-    const insertToken = (path: string) => {
-        if (!selected || selected.type !== 'text') return;
-        snapshot();
-        const token = `{{${path}}}`;
-        const ta = contentRef.current;
-        if (ta && document.activeElement === ta) {
-            const s = ta.selectionStart ?? selected.content.length;
-            const en = ta.selectionEnd ?? s;
-            update(selected.id, { content: selected.content.slice(0, s) + token + selected.content.slice(en) });
-        } else {
-            update(selected.id, { content: selected.content + token });
-        }
-    };
-
-    const duplicate = (src: El) => {
-        snapshot();
-        const id = nextId.current++;
-        const copy = { ...src, id, x: Math.min(A4.w, src.x + 20), y: Math.min(A4.h, src.y + 20) } as El;
-        setEls((p) => [...p, copy]);
-        setSelectedId(id);
-        clipboard.current = copy;
-    };
+    // ── Clipboard helpers ─────────────────────────────────────────────────────
 
     const imgToPngBlob = (src: string) =>
         new Promise<Blob>((res, rej) => {
@@ -894,64 +1040,57 @@ export default function PdfTemplateEdit() {
                 c.getContext('2d')!.drawImage(img, 0, 0);
                 c.toBlob((b) => (b ? res(b) : rej(new Error('toBlob null'))), 'image/png');
             };
-            img.onerror = rej;
-            img.src = src;
+            img.onerror = rej; img.src = src;
         });
 
-    const copyToOS = async (el: El) => {
+    const copyToOS = async (el: BandEl) => {
         try {
-            if (el.type === 'text') {
-                await navigator.clipboard.writeText(el.content);
-            } else if (el.type === 'image') {
+            if (el.type === 'text') await navigator.clipboard.writeText(el.content);
+            else if (el.type === 'image') {
                 const png = await imgToPngBlob(el.src);
                 await navigator.clipboard.write([new ClipboardItem({ 'image/png': png })]);
             }
-        } catch { /* clipboard bisa gagal — fallback ke clipboard internal */ }
+        } catch { /* clipboard may fail */ }
     };
+
+    // ── Keyboard shortcuts ────────────────────────────────────────────────────
 
     React.useEffect(() => {
         const inField = (t: EventTarget | null) =>
             t instanceof HTMLElement && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable);
-
         const onKey = (e: KeyboardEvent) => {
             if (inField(e.target)) return;
             const mod = e.ctrlKey || e.metaKey;
-            if (mod && e.key.toLowerCase() === 'z') {
-                e.preventDefault();
-                if (e.shiftKey) redo(); else undo();
-                return;
-            }
+            if (mod && e.key.toLowerCase() === 'z') { e.preventDefault(); if (e.shiftKey) redo(); else undo(); return; }
             if (mod && e.key.toLowerCase() === 'c' && selected) {
-                clipboard.current = selected;
-                copyToOS(selected);
+                clipboard.current = selected as BandEl;
+                copyToOS(selected as BandEl);
             }
             if (mod && e.key.toLowerCase() === 'd' && selected) {
                 e.preventDefault();
-                duplicate(selected);
+                duplicate(selected as BandEl);
             }
             if ((e.key === 'Delete' || e.key === 'Backspace') && selected) {
                 e.preventDefault();
                 remove(selected.id);
             }
         };
-
         const onPaste = (e: ClipboardEvent) => {
             if (inField(e.target)) return;
             const imageItem = Array.from(e.clipboardData?.items ?? []).find((it) => it.type.startsWith('image/'));
             const file = imageItem?.getAsFile();
             const text = e.clipboardData?.getData('text');
-            if (file) { e.preventDefault(); addImage(file, 100, 120); }
-            else if (text) { e.preventDefault(); addText(100, 120, text); }
+            if (file) { e.preventDefault(); addImage(file, 100, 40); }
+            else if (text) { e.preventDefault(); addText(100, 40, text); }
             else if (clipboard.current) { e.preventDefault(); duplicate(clipboard.current); }
         };
-
         window.addEventListener('keydown', onKey);
         window.addEventListener('paste', onPaste);
-        return () => {
-            window.removeEventListener('keydown', onKey);
-            window.removeEventListener('paste', onPaste);
-        };
-    }, [selected]);
+        return () => { window.removeEventListener('keydown', onKey); window.removeEventListener('paste', onPaste); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selected, activeBand, bands]);
+
+    // ── Zoom wheel ────────────────────────────────────────────────────────────
 
     React.useEffect(() => {
         const node = canvasRef.current;
@@ -959,41 +1098,289 @@ export default function PdfTemplateEdit() {
         const onWheel = (e: WheelEvent) => {
             if (!e.ctrlKey && !e.metaKey) return;
             e.preventDefault();
-            const paper = paperRef.current;
-            if (!paper) return;
-            const rect = paper.getBoundingClientRect();
-            const cx = (e.clientX - rect.left) / zoom;
-            const cy = (e.clientY - rect.top) / zoom;
             const factor = e.deltaY < 0 ? 1.1 : 1 / 1.1;
             const newZoom = Math.min(3, Math.max(0.2, +(zoom * factor).toFixed(3)));
             if (newZoom === zoom) return;
-            zoomAnchor.current = { cx, cy, clientX: e.clientX, clientY: e.clientY };
+            zoomAnchor.current = { cx: 0, cy: 0, clientX: e.clientX, clientY: e.clientY };
             setZoom(newZoom);
         };
         node.addEventListener('wheel', onWheel, { passive: false });
         return () => node.removeEventListener('wheel', onWheel);
     }, [zoom]);
 
-    React.useLayoutEffect(() => {
-        const a = zoomAnchor.current;
-        if (!a || !paperRef.current || !canvasRef.current) return;
-        const rect = paperRef.current.getBoundingClientRect();
-        canvasRef.current.scrollLeft += a.cx * zoom - (a.clientX - rect.left);
-        canvasRef.current.scrollTop += a.cy * zoom - (a.clientY - rect.top);
-        zoomAnchor.current = null;
-    }, [zoom]);
-
+    // Fix image height if missing
     React.useEffect(() => {
-        els.filter((e): e is Img => e.type === 'image' && e.height == null).forEach((el) => {
+        const allImgs = [
+            ...bands.header.elements,
+            ...bands.footerFlow.elements,
+            ...bands.footerFixed.elements,
+        ].filter((e): e is Img => e.type === 'image' && e.height == null);
+        allImgs.forEach((el) => {
             const probe = new Image();
             probe.onload = () => {
-                const height = Math.round(el.width * (probe.naturalHeight / probe.naturalWidth));
-                setEls((p) => p.map((e) => (e.id === el.id ? { ...e, height, lockAspect: (e as Img).lockAspect ?? true } : e)));
+                update(el.id, { height: Math.round(el.width * (probe.naturalHeight / probe.naturalWidth)), lockAspect: (el as Img).lockAspect ?? true });
             };
             probe.src = el.src;
         });
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [els]);
+    }, [bands]);
+
+    // ── Band canvas render helper ──────────────────────────────────────────────
+
+    const renderBandElements = (bandName: BandName, bandRef: React.RefObject<HTMLDivElement | null>, elements: BandEl[]) => {
+        return elements.map((el) => {
+            const isSel = selectedId === el.id;
+            const isEditing = editingId === el.id;
+
+            if (el.type === 'grid') {
+                const height = gridEditorHeight(el);
+                return (
+                    <div
+                        key={el.id}
+                        onPointerDown={(e) => {
+                            if (editingCell) return;
+                            startDragInBand(e, el, bandRef);
+                            setSelectedCell(null);
+                        }}
+                        className={`absolute cursor-move ${isSel && !preview ? 'outline-2 outline-primary-500' : ''}`}
+                        style={{ left: el.x, top: el.y, width: el.width, height, touchAction: 'none' }}
+                    >
+                        <GridCanvas
+                            el={el}
+                            preview={preview}
+                            resolve={resolve}
+                            selectedCell={isSel ? selectedCell : null}
+                            editingCell={isSel ? editingCell : null}
+                            onCellPointerDown={(r, c, e) => {
+                                e.stopPropagation();
+                                setSelectedId(el.id);
+                                setSelectedBand(bandName);
+                                if (e.shiftKey && anchorCell && selectedId === el.id) {
+                                    setRangeEnd({ row: r, col: c });
+                                    if (r !== anchorCell.row || c !== anchorCell.col) setSelectedCell(null);
+                                } else {
+                                    setAnchorCell({ row: r, col: c });
+                                    setRangeEnd({ row: r, col: c });
+                                    setSelectedCell({ row: r, col: c });
+                                }
+                            }}
+                            onCellDoubleClick={(r, c) => {
+                                if (preview) return;
+                                setSelectedId(el.id);
+                                setSelectedBand(bandName);
+                                setSelectedCell({ row: r, col: c });
+                                setEditingCell({ row: r, col: c });
+                            }}
+                            onCellCommit={(r, c, text) => {
+                                if (text !== el.cells[r]?.[c]?.text) { snapshot(); updateGridCell(el.id, r, c, { text }); }
+                                setEditingCell(null);
+                            }}
+                            onCellEscape={() => setEditingCell(null)}
+                            selectedRange={isSel ? selectedRange : null}
+                            rangeAnchor={isSel ? anchorCell : null}
+                        />
+                        {isSel && !preview && (
+                            <span
+                                onPointerDown={(e) => startTableResize(e, el, bandRef)}
+                                className="absolute right-0 top-0 bottom-0 w-2 cursor-ew-resize flex items-center justify-center"
+                            >
+                                <span className="w-1 h-6 rounded-sm bg-primary-500 opacity-70" />
+                            </span>
+                        )}
+                    </div>
+                );
+            }
+
+            if (el.type === 'rect') {
+                return (
+                    <div
+                        key={el.id}
+                        onPointerDown={(e) => startDragInBand(e, el, bandRef)}
+                        className={`absolute cursor-move ${isSel && !preview ? 'outline-2 outline-primary-500' : ''}`}
+                        style={{
+                            left: el.x, top: el.y, touchAction: 'none',
+                            width: el.width, height: el.height,
+                            backgroundColor: el.fill ?? undefined,
+                            border: el.borderWidth > 0 ? `${el.borderWidth}px solid ${el.borderColor}` : undefined,
+                            borderRadius: el.borderRadius > 0 ? `${el.borderRadius}px` : undefined,
+                            boxSizing: 'border-box',
+                        }}
+                    >
+                        {isSel && !preview && (
+                            <span
+                                onPointerDown={(e) => startRectResize(e, el, bandRef)}
+                                className="absolute right-0 bottom-0 translate-x-full translate-y-full z-10 h-2.5 w-2.5 rounded-sm border border-primary-500 bg-white cursor-nwse-resize"
+                            />
+                        )}
+                    </div>
+                );
+            }
+
+            if (el.type === 'line') {
+                const lw = lineElWidth(el); const lh = lineElHeight(el);
+                return (
+                    <div
+                        key={el.id}
+                        onPointerDown={(e) => startDragInBand(e, el, bandRef)}
+                        className={`absolute cursor-move ${isSel && !preview ? 'outline-2 outline-primary-500' : ''}`}
+                        style={{ left: el.x, top: el.y, touchAction: 'none', width: lw, height: lh, backgroundColor: el.color, flexShrink: 0 }}
+                    >
+                        {isSel && !preview && (
+                            <span
+                                onPointerDown={(e) => startLineResize(e, el, bandRef)}
+                                className={`absolute z-10 h-2.5 w-2.5 rounded-sm border border-primary-500 bg-white ${
+                                    el.orientation === 'h'
+                                        ? 'right-0 top-1/2 -translate-y-1/2 translate-x-full cursor-ew-resize'
+                                        : 'bottom-0 left-1/2 -translate-x-1/2 translate-y-full cursor-ns-resize'
+                                }`}
+                            />
+                        )}
+                    </div>
+                );
+            }
+
+            if (el.type === 'text') {
+                const hasBox = el.width !== undefined;
+                const boxStyle: React.CSSProperties = hasBox ? {
+                    width: el.width,
+                    ...(el.height !== undefined ? { height: el.height } : {}),
+                    padding: el.padding ?? 0,
+                    border: (el.borderWidth && el.borderWidth > 0) ? `${el.borderWidth}px solid ${el.borderColor ?? '#000000'}` : undefined,
+                    backgroundColor: el.fill ?? undefined,
+                    boxSizing: 'border-box',
+                    overflow: 'hidden',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: el.valign === 'bottom' ? 'flex-end' : el.valign === 'middle' ? 'center' : 'flex-start',
+                } : {};
+                return (
+                    <div
+                        key={el.id}
+                        onPointerDown={(e) => {
+                            if (isEditing) { e.stopPropagation(); return; }
+                            startDragInBand(e, el, bandRef);
+                        }}
+                        className={`absolute select-none ${isEditing ? 'cursor-text' : 'cursor-move'} ${isSel && !preview ? 'outline-2 outline-primary-500' : ''}`}
+                        style={{ left: el.x, top: el.y, touchAction: 'none', ...boxStyle }}
+                    >
+                        {preview ? (
+                            <span style={{
+                                fontSize: el.fontSize, fontWeight: el.bold ? 700 : 400,
+                                color: el.color, fontFamily: fontCssStack(el.fontFamily, customFonts),
+                                fontStyle: el.italic ? 'italic' : 'normal',
+                                textDecoration: [el.underline ? 'underline' : '', el.strikethrough ? 'line-through' : ''].filter(Boolean).join(' ') || 'none',
+                                backgroundColor: el.highlight ?? undefined,
+                                textAlign: el.align ?? 'left',
+                                lineHeight: el.lineHeight ?? 1.2,
+                                letterSpacing: el.letterSpacing ? `${el.letterSpacing}px` : undefined,
+                                ...(hasBox ? { whiteSpace: 'pre-wrap', wordBreak: 'break-word', display: 'block', width: '100%' } : { whiteSpace: 'nowrap' }),
+                            }}>
+                                {resolve(el.content)}
+                            </span>
+                        ) : (
+                            <EditableText
+                                el={el}
+                                editing={isEditing}
+                                customFonts={customFonts}
+                                onStartEdit={() => setEditingId(el.id)}
+                                onCommit={(v) => {
+                                    if (v !== el.content) { snapshot(); update(el.id, { content: v }); }
+                                    setEditingId(null);
+                                }}
+                            />
+                        )}
+                        {isSel && !preview && hasBox && (
+                            <>
+                                <span
+                                    onPointerDown={(e) => startTextResize(e, el, 'width', bandRef)}
+                                    className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-full z-10 h-5 w-2 cursor-ew-resize flex items-center justify-center"
+                                >
+                                    <span className="w-1 h-4 rounded-sm bg-primary-500 opacity-70" />
+                                </span>
+                                {el.height !== undefined && (
+                                    <span
+                                        onPointerDown={(e) => startTextResize(e, el, 'both', bandRef)}
+                                        className="absolute right-0 bottom-0 translate-x-full translate-y-full z-10 h-2.5 w-2.5 rounded-sm border border-primary-500 bg-white cursor-nwse-resize"
+                                    />
+                                )}
+                            </>
+                        )}
+                    </div>
+                );
+            }
+
+            // image
+            if (el.type === 'image') {
+                return (
+                    <div
+                        key={el.id}
+                        onPointerDown={(e) => {
+                            if (isEditing) { e.stopPropagation(); return; }
+                            startDragInBand(e, el, bandRef);
+                        }}
+                        className={`absolute select-none cursor-move ${isSel && !preview ? 'outline-2 outline-primary-500' : ''}`}
+                        style={{ left: el.x, top: el.y, touchAction: 'none', width: el.width, height: el.height }}
+                    >
+                        <div style={{
+                            width: '100%', height: '100%',
+                            opacity: el.opacity !== undefined ? el.opacity / 100 : undefined,
+                            border: (el.borderWidth && el.borderWidth > 0) ? `${el.borderWidth}px solid ${el.borderColor ?? '#000000'}` : undefined,
+                            borderRadius: el.borderRadius ? `${el.borderRadius}px` : undefined,
+                            overflow: 'hidden', boxSizing: 'border-box',
+                        }}>
+                            <img src={el.src} alt="" draggable={false} style={{ width: '100%', height: '100%', maxWidth: 'none' }} className="pointer-events-none block" />
+                        </div>
+                        {isSel && !preview && (['nw', 'ne', 'sw', 'se'] as const).map((corner) => (
+                            <span
+                                key={corner}
+                                onPointerDown={(e) => startImgResize(e, el, corner, bandRef)}
+                                className={`absolute z-10 h-2.5 w-2.5 rounded-sm border border-primary-500 bg-white ${
+                                    corner === 'nw' ? 'left-0 top-0 -translate-x-full -translate-y-full cursor-nwse-resize'
+                                    : corner === 'ne' ? 'right-0 top-0 translate-x-full -translate-y-full cursor-nesw-resize'
+                                    : corner === 'sw' ? 'left-0 bottom-0 -translate-x-full translate-y-full cursor-nesw-resize'
+                                    : 'right-0 bottom-0 translate-x-full translate-y-full cursor-nwse-resize'
+                                }`}
+                            />
+                        ))}
+                    </div>
+                );
+            }
+
+            return null;
+        });
+    };
+
+    // ── Band badge colours ────────────────────────────────────────────────────
+
+    const bandBadgeColor: Record<BandName, string> = {
+        header: 'bg-blue-100/80 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
+        content: 'bg-green-100/80 text-green-700 dark:bg-green-900/30 dark:text-green-300',
+        footerFlow: 'bg-orange-100/80 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300',
+        footerFixed: 'bg-purple-100/80 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300',
+    };
+
+    const bandSubtitle: Record<BandName, string> = {
+        header: bands.header.repeat ? 'Tiap halaman' : 'Halaman pertama',
+        content: 'Dinamis ⇕',
+        footerFlow: 'Setelah konten',
+        footerFixed: 'Tiap halaman',
+    };
+
+    // ── Layer groups for left panel ───────────────────────────────────────────
+
+    const layerGroups: { band: BandName; els: (BandEl | TableEl)[] }[] = [
+        { band: 'header', els: [...bands.header.elements].reverse() },
+        { band: 'content', els: bands.content.table ? [bands.content.table] : [] },
+        { band: 'footerFlow', els: [...bands.footerFlow.elements].reverse() },
+        { band: 'footerFixed', els: [...bands.footerFixed.elements].reverse() },
+    ];
+
+    const totalElCount = bands.header.elements.length
+        + (bands.content.table ? 1 : 0)
+        + bands.footerFlow.elements.length
+        + bands.footerFixed.elements.length;
+
+    const tableEl = bands.content.table;
 
     return (
         <div className="flex flex-col h-[calc(100vh-4rem)]">
@@ -1005,7 +1392,7 @@ export default function PdfTemplateEdit() {
                 </Button>
                 <div className="w-px h-5 bg-secondary-200 dark:bg-dark-600" />
                 <span className="text-sm font-medium text-dark-900 dark:text-dark-50 truncate">{template.name}</span>
-                <span className="text-xs text-dark-400 dark:text-dark-500 shrink-0">— Editor Template PDF</span>
+                <span className="text-xs text-dark-400 dark:text-dark-500 shrink-0">— Editor Template PDF (Banded)</span>
             </div>
 
             {/* 3-column editor */}
@@ -1013,72 +1400,76 @@ export default function PdfTemplateEdit() {
 
                 {/* ── KIRI: Layers ── */}
                 <aside className="w-52 shrink-0 border-r border-secondary-200 dark:border-dark-600 flex flex-col">
-                    <PanelHeader title="Layers" meta={els.length ? String(els.length) : undefined} />
-                    <div className="flex-1 overflow-auto p-2 space-y-0.5">
-                        {els.length === 0 && (
+                    <PanelHeader title="Layers" meta={totalElCount ? String(totalElCount) : undefined} />
+                    <div className="flex-1 overflow-auto p-2 space-y-1">
+                        {totalElCount === 0 && (
                             <p className="text-xs text-dark-400 dark:text-dark-500 px-2 py-3 text-center">Belum ada elemen.<br />Seret dari toolbar.</p>
                         )}
-                        {[...els].reverse().map((el) => {
-                            const active = selectedId === el.id;
-                            const isOver = overLayerId === el.id;
-                            return (
-                                <div
-                                    key={el.id}
-                                    draggable
-                                    onClick={() => setSelectedId(el.id)}
-                                    onDragStart={(e) => {
-                                        dragLayerId.current = el.id;
-                                        e.dataTransfer.effectAllowed = 'move';
-                                        e.stopPropagation();
-                                    }}
-                                    onDragOver={(e) => {
-                                        e.preventDefault();
-                                        if (dragLayerId.current != null && overLayerId !== el.id) setOverLayerId(el.id);
-                                    }}
-                                    onDrop={(e) => {
-                                        e.preventDefault(); e.stopPropagation();
-                                        if (dragLayerId.current != null) moveLayer(dragLayerId.current, el.id);
-                                        dragLayerId.current = null; setOverLayerId(null);
-                                    }}
-                                    onDragEnd={() => { dragLayerId.current = null; setOverLayerId(null); }}
-                                    className={`group flex items-center gap-1.5 rounded-lg pl-1 pr-1.5 py-1.5 cursor-pointer border-l-2 transition-colors ${
-                                        active
-                                            ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20'
-                                            : 'border-transparent hover:bg-zinc-50 dark:hover:bg-dark-700'
-                                    } ${isOver ? 'ring-1 ring-primary-400 ring-inset' : ''}`}
-                                >
-                                    <GripVertical className="w-3.5 h-3.5 shrink-0 text-dark-300 dark:text-dark-500 opacity-0 group-hover:opacity-100 cursor-grab active:cursor-grabbing" />
-                                    <span className={`grid place-items-center h-6 w-6 rounded-md shrink-0 ${active ? 'bg-primary-100 dark:bg-primary-900/40 text-primary-600 dark:text-primary-300' : 'bg-zinc-100 dark:bg-dark-700 text-dark-500 dark:text-dark-400'}`}>
-                                        {el.type === 'text'
-                                            ? <Type className="w-3.5 h-3.5" />
-                                            : el.type === 'image'
-                                                ? <ImageIcon className="w-3.5 h-3.5" />
-                                                : el.type === 'grid'
-                                                    ? <LayoutGrid className="w-3.5 h-3.5" />
-                                                    : el.type === 'rect'
-                                                        ? <RectIcon className="w-3.5 h-3.5" />
-                                                        : el.type === 'line'
-                                                            ? <LineIcon className="w-3.5 h-3.5" />
-                                                            : <Table2 className="w-3.5 h-3.5" />}
-                                    </span>
-                                    <span className={`flex-1 truncate text-sm ${active ? 'text-primary-700 dark:text-primary-200 font-medium' : 'text-dark-700 dark:text-dark-300'}`}>
-                                        {el.type === 'text' ? el.content
-                                            : el.type === 'image' ? 'Gambar'
-                                            : el.type === 'grid' ? 'Grid'
-                                            : el.type === 'rect' ? 'Kotak'
-                                            : el.type === 'line' ? 'Garis'
-                                            : 'Tabel Item'}
-                                    </span>
-                                    <button
-                                        onClick={(e) => { e.stopPropagation(); remove(el.id); }}
-                                        className="grid place-items-center h-6 w-6 rounded-md text-dark-400 opacity-0 group-hover:opacity-100 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20 transition"
-                                        title="Hapus"
-                                    >
-                                        <Trash2 className="w-3.5 h-3.5" />
-                                    </button>
+                        {layerGroups.map(({ band, els }) => (
+                            els.length > 0 && (
+                                <div key={band}>
+                                    <div className="px-1 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-dark-400 dark:text-dark-500 flex items-center gap-1">
+                                        <Layers className="w-3 h-3" />
+                                        {bandLabel(band)}
+                                    </div>
+                                    {els.map((el) => {
+                                        const active = selectedId === el.id;
+                                        const isOver = overLayerId === el.id;
+                                        return (
+                                            <div
+                                                key={el.id}
+                                                draggable={band !== 'content'}
+                                                onClick={() => { setSelectedId(el.id); setSelectedBand(band); setActiveBand(band); }}
+                                                onDragStart={(ev) => {
+                                                    dragLayerId.current = el.id;
+                                                    ev.dataTransfer.effectAllowed = 'move';
+                                                    ev.stopPropagation();
+                                                }}
+                                                onDragOver={(ev) => {
+                                                    ev.preventDefault();
+                                                    if (dragLayerId.current != null && overLayerId !== el.id) setOverLayerId(el.id);
+                                                }}
+                                                onDrop={(ev) => {
+                                                    ev.preventDefault(); ev.stopPropagation();
+                                                    if (dragLayerId.current != null) moveLayer(dragLayerId.current, el.id, band);
+                                                    dragLayerId.current = null; setOverLayerId(null);
+                                                }}
+                                                onDragEnd={() => { dragLayerId.current = null; setOverLayerId(null); }}
+                                                className={`group flex items-center gap-1.5 rounded-lg pl-1 pr-1.5 py-1.5 cursor-pointer border-l-2 transition-colors ${
+                                                    active
+                                                        ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20'
+                                                        : 'border-transparent hover:bg-zinc-50 dark:hover:bg-dark-700'
+                                                } ${isOver ? 'ring-1 ring-primary-400 ring-inset' : ''}`}
+                                            >
+                                                <GripVertical className="w-3.5 h-3.5 shrink-0 text-dark-300 dark:text-dark-500 opacity-0 group-hover:opacity-100 cursor-grab active:cursor-grabbing" />
+                                                <span className={`grid place-items-center h-6 w-6 rounded-md shrink-0 ${active ? 'bg-primary-100 dark:bg-primary-900/40 text-primary-600 dark:text-primary-300' : 'bg-zinc-100 dark:bg-dark-700 text-dark-500 dark:text-dark-400'}`}>
+                                                    {el.type === 'text' ? <Type className="w-3.5 h-3.5" />
+                                                        : el.type === 'image' ? <ImageIcon className="w-3.5 h-3.5" />
+                                                        : el.type === 'grid' ? <LayoutGrid className="w-3.5 h-3.5" />
+                                                        : el.type === 'rect' ? <RectIcon className="w-3.5 h-3.5" />
+                                                        : el.type === 'line' ? <LineIcon className="w-3.5 h-3.5" />
+                                                        : <Table2 className="w-3.5 h-3.5" />}
+                                                </span>
+                                                <span className={`flex-1 truncate text-sm ${active ? 'text-primary-700 dark:text-primary-200 font-medium' : 'text-dark-700 dark:text-dark-300'}`}>
+                                                    {el.type === 'text' ? el.content
+                                                        : el.type === 'image' ? 'Gambar'
+                                                        : el.type === 'grid' ? 'Grid'
+                                                        : el.type === 'rect' ? 'Kotak'
+                                                        : el.type === 'line' ? 'Garis'
+                                                        : 'Tabel Item'}
+                                                </span>
+                                                <button
+                                                    onClick={(ev) => { ev.stopPropagation(); remove(el.id); }}
+                                                    className="grid place-items-center h-6 w-6 rounded-md text-dark-400 opacity-0 group-hover:opacity-100 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20 transition"
+                                                >
+                                                    <Trash2 className="w-3.5 h-3.5" />
+                                                </button>
+                                            </div>
+                                        );
+                                    })}
                                 </div>
-                            );
-                        })}
+                            )
+                        ))}
                     </div>
                 </aside>
 
@@ -1086,329 +1477,135 @@ export default function PdfTemplateEdit() {
                 <div className="relative flex-1 overflow-hidden">
                     <div ref={canvasRef} className="absolute inset-0 overflow-auto bg-zinc-200 dark:bg-dark-950">
                         <div className="min-h-full flex items-start justify-center p-10">
-                            <div style={{ width: A4.w * zoom, height: A4.h * zoom }}>
+                            <div style={{ width: A4.w * zoom }}>
+                                {/* A4 paper — height auto since bands stack */}
                                 <div
-                                    ref={paperRef}
-                                    onPointerDown={() => { setSelectedId(null); setSelectedCell(null); setEditingCell(null); }}
-                                    onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; if (!dragOver) setDragOver(true); }}
-                                    onDragLeave={() => setDragOver(false)}
-                                    onDrop={onDrop}
-                                    className={`relative overflow-hidden bg-white shadow-xl origin-top-left ${dragOver ? 'ring-2 ring-primary-500' : ''}`}
-                                    style={{ width: A4.w, height: A4.h, transform: `scale(${zoom})` }}
+                                    className={`relative bg-white shadow-xl ${dragOver ? 'ring-2 ring-primary-500' : ''}`}
+                                    style={{ width: A4.w, height: 'auto', transform: `scale(${zoom})`, transformOrigin: 'top left', overflow: 'visible' }}
                                 >
-                                    {/* ── Flow-boundary indicator ── */}
-                                    {(() => {
-                                        const tableEl = els.find((e): e is TableEl => e.type === 'table');
-                                        if (!tableEl) return null;
-                                        return (
-                                            <div
-                                                key="flow-boundary"
-                                                className="pointer-events-none absolute left-0 right-0 flex items-center"
-                                                style={{ top: tableEl.y }}
-                                            >
-                                                <div className="flex-1 border-t border-dashed border-dark-400/40 dark:border-dark-500/40" />
-                                                <span className="mx-2 shrink-0 rounded px-1.5 py-0.5 text-[9px] font-medium text-dark-400/70 dark:text-dark-500/70 bg-white dark:bg-dark-800 select-none">
-                                                    Mengalir setelah tabel ↓
-                                                </span>
-                                                <div className="flex-1 border-t border-dashed border-dark-400/40 dark:border-dark-500/40" />
-                                            </div>
-                                        );
-                                    })()}
+                                    {/* ── HEADER BAND ── */}
+                                    <div
+                                        ref={headerRef}
+                                        className={`relative border-b-2 ${activeBand === 'header' ? 'border-blue-300/60' : 'border-slate-100 dark:border-dark-700'}`}
+                                        style={{ width: A4.w, height: bands.header.height, overflow: 'visible' }}
+                                        onPointerDown={() => { setActiveBand('header'); setSelectedId(null); setSelectedBand(null); }}
+                                        onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; setDragOver(true); }}
+                                        onDragLeave={() => setDragOver(false)}
+                                        onDrop={(e) => dropOnBand(e, 'header', headerRef)}
+                                    >
+                                        <div className="absolute top-0 left-0 right-0 flex items-center gap-1.5 px-2 pointer-events-none" style={{ height: 20, zIndex: 10 }}>
+                                            <span className="text-[9px] font-semibold uppercase tracking-wider text-dark-400/50">Header</span>
+                                            <span className={`text-[8px] px-1.5 py-0.5 rounded ${bandBadgeColor.header}`}>{bandSubtitle.header}</span>
+                                        </div>
+                                        {renderBandElements('header', headerRef, bands.header.elements)}
+                                    </div>
 
-                                    {els.map((el) => {
-                                        const isSel = selectedId === el.id;
-                                        const isEditing = editingId === el.id;
+                                    {/* Divider label */}
+                                    <div className="w-full flex items-center bg-slate-50 dark:bg-dark-900/30" style={{ height: 18 }}>
+                                        <div className="flex-1 border-t border-dashed border-slate-200 dark:border-dark-700" />
+                                        <span className="mx-2 shrink-0 text-[9px] text-slate-400 dark:text-dark-500 select-none">Konten</span>
+                                        <div className="flex-1 border-t border-dashed border-slate-200 dark:border-dark-700" />
+                                    </div>
 
-                                        if (el.type === 'table') {
-                                            const height = preview
-                                                ? tablePreviewHeight(el, sampleItems)
-                                                : tableEditorHeight(el);
+                                    {/* ── CONTENT BAND ── */}
+                                    <div
+                                        ref={contentRef}
+                                        className={`relative border-b-2 ${activeBand === 'content' ? 'border-green-300/60' : 'border-slate-100 dark:border-dark-700'}`}
+                                        style={{ width: A4.w, minHeight: 80, overflow: 'visible' }}
+                                        onPointerDown={() => { setActiveBand('content'); if (!tableEl) { setSelectedId(null); setSelectedBand(null); } }}
+                                    >
+                                        <div className="absolute top-0 left-0 right-0 flex items-center gap-1.5 px-2 pointer-events-none" style={{ height: 20, zIndex: 10 }}>
+                                            <span className="text-[9px] font-semibold uppercase tracking-wider text-dark-400/50">Konten</span>
+                                            <span className={`text-[8px] px-1.5 py-0.5 rounded ${bandBadgeColor.content}`}>{bandSubtitle.content}</span>
+                                        </div>
+                                        {tableEl ? (() => {
+                                            const isSel = selectedId === tableEl.id;
+                                            const height = preview ? tablePreviewHeight(tableEl, sampleItems) : tableEditorHeight(tableEl);
                                             const rows = preview ? sampleItems : null;
                                             return (
                                                 <div
-                                                    key={el.id}
-                                                    onPointerDown={(e) => startDrag(e, el)}
+                                                    onPointerDown={(e) => {
+                                                        e.stopPropagation();
+                                                        setSelectedId(tableEl.id);
+                                                        setSelectedBand('content');
+                                                        setActiveBand('content');
+                                                    }}
                                                     className={`absolute cursor-move ${isSel && !preview ? 'outline-2 outline-primary-500' : ''}`}
-                                                    style={{ left: el.x, top: el.y, width: el.width, height, touchAction: 'none' }}
+                                                    style={{ left: tableEl.x, top: 24, width: tableEl.width, height, touchAction: 'none' }}
                                                 >
-                                                    <TablePreview el={el} rows={rows} />
-                                                    {/* Right-edge resize handle */}
+                                                    <TablePreview el={tableEl} rows={rows} />
                                                     {isSel && !preview && (
                                                         <span
-                                                            onPointerDown={(e) => startTableResize(e, el)}
+                                                            onPointerDown={(e) => startTableResize(e, tableEl, contentRef)}
                                                             className="absolute right-0 top-0 bottom-0 w-2 cursor-ew-resize flex items-center justify-center"
-                                                            title="Geser untuk ubah lebar"
                                                         >
                                                             <span className="w-1 h-6 rounded-sm bg-primary-500 opacity-70" />
                                                         </span>
                                                     )}
                                                 </div>
                                             );
-                                        }
-
-                                        if (el.type === 'grid') {
-                                            const height = gridEditorHeight(el);
-                                            return (
-                                                <div
-                                                    key={el.id}
-                                                    onPointerDown={(e) => {
-                                                        if (editingCell) return;
-                                                        startDrag(e, el);
-                                                        setSelectedCell(null);
-                                                    }}
-                                                    className={`absolute cursor-move ${isSel && !preview ? 'outline-2 outline-primary-500' : ''}`}
-                                                    style={{ left: el.x, top: el.y, width: el.width, height, touchAction: 'none' }}
+                                        })() : (
+                                            <div className="flex items-center justify-center" style={{ paddingTop: 28, paddingBottom: 20, minHeight: 80 }}>
+                                                <button
+                                                    onClick={() => { setActiveBand('content'); addTable(); }}
+                                                    className="flex items-center gap-2 px-4 py-2 rounded-xl border-2 border-dashed border-slate-300 dark:border-dark-600 text-sm text-slate-400 dark:text-dark-500 hover:border-primary-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
                                                 >
-                                                    <GridCanvas
-                                                        el={el}
-                                                        preview={preview}
-                                                        resolve={resolve}
-                                                        selectedCell={isSel ? selectedCell : null}
-                                                        editingCell={isSel ? editingCell : null}
-                                                        onCellPointerDown={(r, c, e) => {
-                                                            e.stopPropagation();
-                                                            setSelectedId(el.id);
-                                                            if (e.shiftKey && anchorCell && selectedId === el.id) {
-                                                                setRangeEnd({ row: r, col: c });
-                                                                // Rentang multi-sel → alihkan Inspector ke mode merge
-                                                                // (tombol "Gabungkan sel" hanya tampil saat selectedCell kosong).
-                                                                if (r !== anchorCell.row || c !== anchorCell.col) {
-                                                                    setSelectedCell(null);
-                                                                }
-                                                            } else {
-                                                                setAnchorCell({ row: r, col: c });
-                                                                setRangeEnd({ row: r, col: c });
-                                                                setSelectedCell({ row: r, col: c });
-                                                            }
-                                                        }}
-                                                        onCellDoubleClick={(r, c) => {
-                                                            if (preview) return;
-                                                            setSelectedId(el.id);
-                                                            setSelectedCell({ row: r, col: c });
-                                                            setEditingCell({ row: r, col: c });
-                                                        }}
-                                                        onCellCommit={(r, c, text) => {
-                                                            if (text !== el.cells[r]?.[c]?.text) {
-                                                                snapshot();
-                                                                updateGridCell(el.id, r, c, { text });
-                                                            }
-                                                            setEditingCell(null);
-                                                        }}
-                                                        onCellEscape={(r, c) => {
-                                                            setEditingCell(null);
-                                                        }}
-                                                        selectedRange={isSel ? selectedRange : null}
-                                                        rangeAnchor={isSel ? anchorCell : null}
-                                                    />
-                                                    {/* Right-edge resize handle */}
-                                                    {isSel && !preview && (
-                                                        <span
-                                                            onPointerDown={(e) => startTableResize(e, el as unknown as TableEl)}
-                                                            className="absolute right-0 top-0 bottom-0 w-2 cursor-ew-resize flex items-center justify-center"
-                                                            title="Geser untuk ubah lebar"
-                                                        >
-                                                            <span className="w-1 h-6 rounded-sm bg-primary-500 opacity-70" />
-                                                        </span>
-                                                    )}
-                                                </div>
-                                            );
-                                        }
-
-                                        if (el.type === 'rect') {
-                                            return (
-                                                <div
-                                                    key={el.id}
-                                                    onPointerDown={(e) => startDrag(e, el)}
-                                                    className={`absolute cursor-move ${isSel && !preview ? 'outline-2 outline-primary-500' : ''}`}
-                                                    style={{
-                                                        left: el.x, top: el.y, touchAction: 'none',
-                                                        width: el.width, height: el.height,
-                                                        backgroundColor: el.fill ?? undefined,
-                                                        border: el.borderWidth > 0
-                                                            ? `${el.borderWidth}px solid ${el.borderColor}`
-                                                            : undefined,
-                                                        borderRadius: el.borderRadius > 0 ? `${el.borderRadius}px` : undefined,
-                                                        boxSizing: 'border-box',
-                                                    }}
-                                                >
-                                                    {/* SE resize handle */}
-                                                    {isSel && !preview && (
-                                                        <span
-                                                            onPointerDown={(e) => startRectResize(e, el)}
-                                                            className="absolute right-0 bottom-0 translate-x-full translate-y-full z-10 h-2.5 w-2.5 rounded-sm border border-primary-500 bg-white cursor-nwse-resize"
-                                                            title="Ubah ukuran"
-                                                        />
-                                                    )}
-                                                </div>
-                                            );
-                                        }
-
-                                        if (el.type === 'line') {
-                                            const lw = lineElWidth(el);
-                                            const lh = lineElHeight(el);
-                                            return (
-                                                <div
-                                                    key={el.id}
-                                                    onPointerDown={(e) => startDrag(e, el)}
-                                                    className={`absolute cursor-move ${isSel && !preview ? 'outline-2 outline-primary-500' : ''}`}
-                                                    style={{
-                                                        left: el.x, top: el.y, touchAction: 'none',
-                                                        width: lw, height: lh,
-                                                        backgroundColor: el.color,
-                                                        flexShrink: 0,
-                                                    }}
-                                                >
-                                                    {/* End resize handle */}
-                                                    {isSel && !preview && (
-                                                        <span
-                                                            onPointerDown={(e) => startLineResize(e, el)}
-                                                            className={`absolute z-10 h-2.5 w-2.5 rounded-sm border border-primary-500 bg-white cursor-ew-resize ${
-                                                                el.orientation === 'h'
-                                                                    ? 'right-0 top-1/2 -translate-y-1/2 translate-x-full'
-                                                                    : 'bottom-0 left-1/2 -translate-x-1/2 translate-y-full cursor-ns-resize'
-                                                            }`}
-                                                            title="Ubah panjang"
-                                                        />
-                                                    )}
-                                                </div>
-                                            );
-                                        }
-
-                                        if (el.type === 'text') {
-                                            const hasBox = el.width !== undefined;
-                                            const boxStyle: React.CSSProperties = hasBox ? {
-                                                width: el.width,
-                                                ...(el.height !== undefined ? { height: el.height } : {}),
-                                                padding: el.padding ?? 0,
-                                                border: (el.borderWidth && el.borderWidth > 0)
-                                                    ? `${el.borderWidth}px solid ${el.borderColor ?? '#000000'}`
-                                                    : undefined,
-                                                backgroundColor: el.fill ?? undefined,
-                                                boxSizing: 'border-box',
-                                                overflow: 'hidden',
-                                                display: 'flex',
-                                                flexDirection: 'column',
-                                                justifyContent: el.valign === 'bottom' ? 'flex-end' : el.valign === 'middle' ? 'center' : 'flex-start',
-                                            } : {};
-                                            return (
-                                                <div
-                                                    key={el.id}
-                                                    onPointerDown={(e) => {
-                                                        if (isEditing) { e.stopPropagation(); return; }
-                                                        startDrag(e, el);
-                                                    }}
-                                                    className={`absolute select-none ${isEditing ? 'cursor-text' : 'cursor-move'} ${isSel && !preview ? 'outline-2 outline-primary-500' : ''}`}
-                                                    style={{ left: el.x, top: el.y, touchAction: 'none', ...boxStyle }}
-                                                >
-                                                    {preview ? (
-                                                        <span
-                                                            style={{
-                                                                fontSize: el.fontSize,
-                                                                fontWeight: el.bold ? 700 : 400,
-                                                                color: el.color,
-                                                                fontFamily: fontCssStack(el.fontFamily, customFonts),
-                                                                fontStyle: el.italic ? 'italic' : 'normal',
-                                                                textDecoration: [
-                                                                    el.underline ? 'underline' : '',
-                                                                    el.strikethrough ? 'line-through' : '',
-                                                                ].filter(Boolean).join(' ') || 'none',
-                                                                backgroundColor: el.highlight ?? undefined,
-                                                                textAlign: el.align ?? 'left',
-                                                                lineHeight: el.lineHeight ?? 1.2,
-                                                                letterSpacing: el.letterSpacing ? `${el.letterSpacing}px` : undefined,
-                                                                ...(hasBox
-                                                                    ? { whiteSpace: 'pre-wrap', wordBreak: 'break-word', display: 'block', width: '100%' }
-                                                                    : { whiteSpace: 'nowrap' }),
-                                                            }}
-                                                        >
-                                                            {resolve(el.content)}
-                                                        </span>
-                                                    ) : (
-                                                        <EditableText
-                                                            el={el}
-                                                            editing={isEditing}
-                                                            customFonts={customFonts}
-                                                            onStartEdit={() => setEditingId(el.id)}
-                                                            onCommit={(v) => {
-                                                                if (v !== el.content) { snapshot(); update(el.id, { content: v }); }
-                                                                setEditingId(null);
-                                                            }}
-                                                        />
-                                                    )}
-                                                    {/* Text box resize handle — SE corner (width+height) and E handle (width only) */}
-                                                    {isSel && !preview && hasBox && (
-                                                        <>
-                                                            {/* E handle — width only */}
-                                                            <span
-                                                                onPointerDown={(e) => startTextResize(e, el, 'width')}
-                                                                className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-full z-10 h-5 w-2 cursor-ew-resize flex items-center justify-center"
-                                                                title="Ubah lebar"
-                                                            >
-                                                                <span className="w-1 h-4 rounded-sm bg-primary-500 opacity-70" />
-                                                            </span>
-                                                            {/* SE handle — width+height (only if height is set) */}
-                                                            {el.height !== undefined && (
-                                                                <span
-                                                                    onPointerDown={(e) => startTextResize(e, el, 'both')}
-                                                                    className="absolute right-0 bottom-0 translate-x-full translate-y-full z-10 h-2.5 w-2.5 rounded-sm border border-primary-500 bg-white cursor-nwse-resize"
-                                                                    title="Ubah lebar & tinggi"
-                                                                />
-                                                            )}
-                                                        </>
-                                                    )}
-                                                </div>
-                                            );
-                                        }
-
-                                        return (
-                                            <div
-                                                key={el.id}
-                                                onPointerDown={(e) => {
-                                                    if (isEditing) { e.stopPropagation(); return; }
-                                                    startDrag(e, el);
-                                                }}
-                                                className={`absolute select-none ${isEditing ? 'cursor-text' : 'cursor-move'} ${isSel && !preview ? 'outline-2 outline-primary-500' : ''}`}
-                                                style={{ left: el.x, top: el.y, touchAction: 'none', width: el.width, height: el.height }}
-                                            >
-                                                {/* Inner clip layer holds border/radius/opacity/crop. Kept separate
-                                                    so the resize handles (positioned OUTSIDE the box) are not clipped
-                                                    by overflow:hidden. */}
-                                                <div
-                                                    style={{
-                                                        width: '100%', height: '100%',
-                                                        opacity: el.opacity !== undefined ? el.opacity / 100 : undefined,
-                                                        border: (el.borderWidth && el.borderWidth > 0)
-                                                            ? `${el.borderWidth}px solid ${el.borderColor ?? '#000000'}`
-                                                            : undefined,
-                                                        borderRadius: el.borderRadius ? `${el.borderRadius}px` : undefined,
-                                                        overflow: 'hidden',
-                                                        boxSizing: 'border-box',
-                                                    }}
-                                                >
-                                                    <img
-                                                        src={el.src}
-                                                        alt=""
-                                                        draggable={false}
-                                                        style={{ width: '100%', height: '100%', maxWidth: 'none' }}
-                                                        className="pointer-events-none block"
-                                                    />
-                                                </div>
-                                                {isSel && !preview &&
-                                                    (['nw', 'ne', 'sw', 'se'] as const).map((corner) => (
-                                                        <span
-                                                            key={corner}
-                                                            onPointerDown={(e) => startResize(e, el, corner)}
-                                                            className={`absolute z-10 h-2.5 w-2.5 rounded-sm border border-primary-500 bg-white ${
-                                                                corner === 'nw' ? 'left-0 top-0 -translate-x-full -translate-y-full cursor-nwse-resize'
-                                                                : corner === 'ne' ? 'right-0 top-0 translate-x-full -translate-y-full cursor-nesw-resize'
-                                                                : corner === 'sw' ? 'left-0 bottom-0 -translate-x-full translate-y-full cursor-nesw-resize'
-                                                                : 'right-0 bottom-0 translate-x-full translate-y-full cursor-nwse-resize'
-                                                            }`}
-                                                        />
-                                                    ))}
+                                                    <Table2 className="w-4 h-4" />
+                                                    + Tabel Item
+                                                </button>
                                             </div>
-                                        );
-                                    })}
+                                        )}
+                                        {/* Spacer below table */}
+                                        {tableEl && <div style={{ height: tableEditorHeight(tableEl) + 24 + 16 }} />}
+                                    </div>
+
+                                    {/* Divider label */}
+                                    <div className="w-full flex items-center bg-slate-50 dark:bg-dark-900/30" style={{ height: 18 }}>
+                                        <div className="flex-1 border-t border-dashed border-slate-200 dark:border-dark-700" />
+                                        <span className="mx-2 shrink-0 text-[9px] text-slate-400 dark:text-dark-500 select-none">Footer Flow</span>
+                                        <div className="flex-1 border-t border-dashed border-slate-200 dark:border-dark-700" />
+                                    </div>
+
+                                    {/* ── FOOTER FLOW BAND ── */}
+                                    <div
+                                        ref={footerFlowRef}
+                                        className={`relative border-b-2 ${activeBand === 'footerFlow' ? 'border-orange-300/60' : 'border-slate-100 dark:border-dark-700'}`}
+                                        style={{ width: A4.w, height: bands.footerFlow.height, overflow: 'visible' }}
+                                        onPointerDown={() => { setActiveBand('footerFlow'); setSelectedId(null); setSelectedBand(null); }}
+                                        onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; setDragOver(true); }}
+                                        onDragLeave={() => setDragOver(false)}
+                                        onDrop={(e) => dropOnBand(e, 'footerFlow', footerFlowRef)}
+                                    >
+                                        <div className="absolute top-0 left-0 right-0 flex items-center gap-1.5 px-2 pointer-events-none" style={{ height: 20, zIndex: 10 }}>
+                                            <span className="text-[9px] font-semibold uppercase tracking-wider text-dark-400/50">Footer Flow</span>
+                                            <span className={`text-[8px] px-1.5 py-0.5 rounded ${bandBadgeColor.footerFlow}`}>{bandSubtitle.footerFlow}</span>
+                                        </div>
+                                        {renderBandElements('footerFlow', footerFlowRef, bands.footerFlow.elements)}
+                                    </div>
+
+                                    {/* Divider label */}
+                                    <div className="w-full flex items-center bg-slate-50 dark:bg-dark-900/30" style={{ height: 18 }}>
+                                        <div className="flex-1 border-t border-dashed border-slate-200 dark:border-dark-700" />
+                                        <span className="mx-2 shrink-0 text-[9px] text-slate-400 dark:text-dark-500 select-none">Footer Tetap</span>
+                                        <div className="flex-1 border-t border-dashed border-slate-200 dark:border-dark-700" />
+                                    </div>
+
+                                    {/* ── FOOTER FIXED BAND ── */}
+                                    <div
+                                        ref={footerFixedRef}
+                                        className={`relative ${activeBand === 'footerFixed' ? 'ring-inset ring-1 ring-purple-300/60' : ''}`}
+                                        style={{ width: A4.w, height: bands.footerFixed.height, overflow: 'visible' }}
+                                        onPointerDown={() => { setActiveBand('footerFixed'); setSelectedId(null); setSelectedBand(null); }}
+                                        onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; setDragOver(true); }}
+                                        onDragLeave={() => setDragOver(false)}
+                                        onDrop={(e) => dropOnBand(e, 'footerFixed', footerFixedRef)}
+                                    >
+                                        <div className="absolute top-0 left-0 right-0 flex items-center gap-1.5 px-2 pointer-events-none" style={{ height: 20, zIndex: 10 }}>
+                                            <span className="text-[9px] font-semibold uppercase tracking-wider text-dark-400/50">Footer Tetap</span>
+                                            <span className={`text-[8px] px-1.5 py-0.5 rounded ${bandBadgeColor.footerFixed}`}>{bandSubtitle.footerFixed}</span>
+                                        </div>
+                                        {renderBandElements('footerFixed', footerFixedRef, bands.footerFixed.elements)}
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -1416,42 +1613,47 @@ export default function PdfTemplateEdit() {
 
                     {/* Floating toolbar */}
                     <div className="absolute bottom-5 left-1/2 -translate-x-1/2 flex items-center gap-1 px-2 py-1.5 rounded-xl bg-white dark:bg-dark-700 border border-secondary-200 dark:border-dark-600 shadow-lg">
-                        <div draggable onDragStart={(e) => { e.dataTransfer.effectAllowed = 'copy'; e.dataTransfer.setData('kind', 'text'); }} title="Seret ke kanvas, atau klik">
-                            <Button variant="ghost" size="sm" className="cursor-grab active:cursor-grabbing" onClick={() => addText()}>
+                        <div draggable onDragStart={(e) => { e.dataTransfer.effectAllowed = 'copy'; e.dataTransfer.setData('kind', 'text'); }}>
+                            <Button variant="ghost" size="sm" className="cursor-grab active:cursor-grabbing" onClick={() => addText()} disabled={activeBand === 'content'}>
                                 <Type className="w-4 h-4" /> Teks
                             </Button>
                         </div>
-                        <div draggable onDragStart={(e) => { e.dataTransfer.effectAllowed = 'copy'; e.dataTransfer.setData('kind', 'image'); }} title="Seret ke kanvas, atau klik">
-                            <Button variant="ghost" size="sm" className="cursor-grab active:cursor-grabbing" onClick={() => fileRef.current?.click()}>
+                        <div draggable onDragStart={(e) => { e.dataTransfer.effectAllowed = 'copy'; e.dataTransfer.setData('kind', 'image'); }}>
+                            <Button variant="ghost" size="sm" className="cursor-grab active:cursor-grabbing" onClick={() => fileRef.current?.click()} disabled={activeBand === 'content'}>
                                 <ImageIcon className="w-4 h-4" /> Gambar
                             </Button>
                         </div>
-                        <div draggable onDragStart={(e) => { e.dataTransfer.effectAllowed = 'copy'; e.dataTransfer.setData('kind', 'table'); }} title="Seret ke kanvas, atau klik">
-                            <Button variant="ghost" size="sm" className="cursor-grab active:cursor-grabbing" onClick={() => addTable()}>
+                        <div draggable onDragStart={(e) => { e.dataTransfer.effectAllowed = 'copy'; e.dataTransfer.setData('kind', 'table'); }}>
+                            <Button variant="ghost" size="sm" className="cursor-grab active:cursor-grabbing" onClick={() => addTable()} disabled={!!bands.content.table} title={bands.content.table ? 'Sudah ada tabel' : 'Tambah tabel item ke konten'}>
                                 <Table2 className="w-4 h-4" /> Tabel
                             </Button>
                         </div>
-                        <div draggable onDragStart={(e) => { e.dataTransfer.effectAllowed = 'copy'; e.dataTransfer.setData('kind', 'grid'); }} title="Grid statis — seret ke kanvas atau klik">
-                            <Button variant="ghost" size="sm" className="cursor-grab active:cursor-grabbing" onClick={() => addGrid()}>
+                        <div draggable onDragStart={(e) => { e.dataTransfer.effectAllowed = 'copy'; e.dataTransfer.setData('kind', 'grid'); }}>
+                            <Button variant="ghost" size="sm" className="cursor-grab active:cursor-grabbing" onClick={() => addGrid()} disabled={activeBand === 'content'}>
                                 <LayoutGrid className="w-4 h-4" /> Grid
                             </Button>
                         </div>
-                        <div draggable onDragStart={(e) => { e.dataTransfer.effectAllowed = 'copy'; e.dataTransfer.setData('kind', 'rect'); }} title="Kotak/persegi — seret ke kanvas atau klik">
-                            <Button variant="ghost" size="sm" className="cursor-grab active:cursor-grabbing" onClick={() => addRect()}>
+                        <div draggable onDragStart={(e) => { e.dataTransfer.effectAllowed = 'copy'; e.dataTransfer.setData('kind', 'rect'); }}>
+                            <Button variant="ghost" size="sm" className="cursor-grab active:cursor-grabbing" onClick={() => addRect()} disabled={activeBand === 'content'}>
                                 <RectIcon className="w-4 h-4" /> Kotak
                             </Button>
                         </div>
-                        <div draggable onDragStart={(e) => { e.dataTransfer.effectAllowed = 'copy'; e.dataTransfer.setData('kind', 'line'); }} title="Garis/divider — seret ke kanvas atau klik">
-                            <Button variant="ghost" size="sm" className="cursor-grab active:cursor-grabbing" onClick={() => addLine()}>
+                        <div draggable onDragStart={(e) => { e.dataTransfer.effectAllowed = 'copy'; e.dataTransfer.setData('kind', 'line'); }}>
+                            <Button variant="ghost" size="sm" className="cursor-grab active:cursor-grabbing" onClick={() => addLine()} disabled={activeBand === 'content'}>
                                 <LineIcon className="w-4 h-4" /> Garis
                             </Button>
+                        </div>
+                        <div className="w-px h-6 bg-secondary-200 dark:bg-dark-600 mx-1" />
+                        {/* Active band indicator */}
+                        <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-zinc-100 dark:bg-dark-600">
+                            <span className="text-[10px] text-dark-500 dark:text-dark-400">Band:</span>
+                            <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${bandBadgeColor[activeBand]}`}>{bandLabel(activeBand)}</span>
                         </div>
                         <div className="w-px h-6 bg-secondary-200 dark:bg-dark-600 mx-1" />
                         <Button
                             variant={preview ? 'primary' : 'ghost'}
                             size="sm"
                             onClick={() => { setPreview((p) => !p); setEditingId(null); }}
-                            title="Lihat hasil dengan data contoh"
                         >
                             {preview ? <Pencil className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                             {preview ? 'Edit' : 'Preview'}
@@ -1490,7 +1692,7 @@ export default function PdfTemplateEdit() {
                             if (file) {
                                 const p = pendingImg.current;
                                 pendingImg.current = null;
-                                addImage(file, p?.x, p?.y);
+                                addImage(file, p?.x, p?.y, p?.band ?? activeBand);
                             }
                             e.target.value = '';
                         }}
@@ -1513,10 +1715,14 @@ export default function PdfTemplateEdit() {
                     />
 
                     {!selected ? (
-                        <div className="flex-1 grid place-items-center p-6 text-center">
-                            <p className="text-xs text-dark-400 dark:text-dark-500 leading-relaxed">
-                                Pilih elemen di kanvas<br />untuk mengatur propertinya.
+                        <div className="flex-1 overflow-auto px-3 py-3">
+                            <p className="text-[11px] text-dark-400 dark:text-dark-500 mb-3">
+                                Pilih elemen di kanvas, atau atur ukuran band di bawah.
                             </p>
+                            <BandSettingsPanel
+                                bands={bands}
+                                onChangeBands={(patch) => { snapshot(); setBands((prev) => ({ ...prev, ...patch })); }}
+                            />
                         </div>
                     ) : (
                         <div
@@ -1526,11 +1732,10 @@ export default function PdfTemplateEdit() {
                                 if (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA') snapshot();
                             }}
                         >
-                            {/* ── Text Inspector ── */}
                             {selected.type === 'text' && (
                                 <TextInspector
                                     el={selected as Text}
-                                    contentRef={contentRef}
+                                    contentRef={textContentRef}
                                     tokenCatalog={tokenCatalog}
                                     sampleData={sampleData}
                                     fieldMenu={fieldMenu}
@@ -1542,12 +1747,11 @@ export default function PdfTemplateEdit() {
                                 />
                             )}
 
-                            {/* ── Image Inspector ── */}
                             {selected.type === 'image' && (
                                 <>
                                     <Section title="Ukuran">
                                         <Row label="Lebar">
-                                            <NumField value={selected.width} onChange={(v) => setImgSize(selected, 'width', v)} />
+                                            <NumField value={selected.width} onChange={(v) => setImgSize(selected as Img, 'width', v)} />
                                         </Row>
                                         <Row label="Tinggi">
                                             <NumField value={Math.round((selected as Img).height ?? 0)} onChange={(v) => setImgSize(selected as Img, 'height', v)} />
@@ -1575,50 +1779,34 @@ export default function PdfTemplateEdit() {
                                     <Section title="Tampilan">
                                         <Row label="Opasitas">
                                             <div className="flex items-center gap-2">
-                                                <input
-                                                    type="range"
-                                                    min={0} max={100} step={1}
+                                                <input type="range" min={0} max={100} step={1}
                                                     value={(selected as Img).opacity ?? 100}
                                                     onChange={(e) => update(selected.id, { opacity: +e.target.value })}
                                                     className="flex-1 accent-primary-600"
                                                 />
-                                                <span className="text-xs tabular-nums w-8 text-right text-dark-500 dark:text-dark-400">
-                                                    {(selected as Img).opacity ?? 100}%
-                                                </span>
+                                                <span className="text-xs tabular-nums w-8 text-right text-dark-500 dark:text-dark-400">{(selected as Img).opacity ?? 100}%</span>
                                             </div>
                                         </Row>
                                         <Row label="Radius">
-                                            <NumField
-                                                value={(selected as Img).borderRadius ?? 0}
-                                                onChange={(v) => update(selected.id, { borderRadius: Math.max(0, v) })}
-                                                unit="px"
-                                            />
+                                            <NumField value={(selected as Img).borderRadius ?? 0} onChange={(v) => update(selected.id, { borderRadius: Math.max(0, v) })} unit="px" />
                                         </Row>
                                         <Row label="Border">
-                                            <NumField
-                                                value={(selected as Img).borderWidth ?? 0}
-                                                onChange={(v) => update(selected.id, { borderWidth: Math.max(0, v) })}
-                                                unit="px"
-                                            />
+                                            <NumField value={(selected as Img).borderWidth ?? 0} onChange={(v) => update(selected.id, { borderWidth: Math.max(0, v) })} unit="px" />
                                         </Row>
                                         {((selected as Img).borderWidth ?? 0) > 0 && (
                                             <Row label="Warna border">
-                                                <Swatch
-                                                    value={(selected as Img).borderColor ?? '#000000'}
-                                                    onChange={(v) => update(selected.id, { borderColor: v })}
-                                                />
+                                                <Swatch value={(selected as Img).borderColor ?? '#000000'} onChange={(v) => update(selected.id, { borderColor: v })} />
                                             </Row>
                                         )}
                                     </Section>
                                 </>
                             )}
 
-                            {/* ── Table Inspector ── */}
                             {selected.type === 'table' && (
                                 <TableInspector
                                     el={selected as TableEl}
                                     catalog={itemColumnCatalog}
-                                    onUpdate={(patch) => { snapshot(); update(selected.id, patch); }}
+                                    onUpdate={(patch) => { snapshot(); setContentTable(patch); }}
                                     onUpdateColumn={(idx, patch) => { snapshot(); updateTableColumn(selected.id, idx, patch); }}
                                     onMoveColumn={(idx, dir) => { snapshot(); moveTableColumn(selected.id, idx, dir); }}
                                     onRemoveColumn={(idx) => removeTableColumn(selected.id, idx)}
@@ -1626,7 +1814,6 @@ export default function PdfTemplateEdit() {
                                 />
                             )}
 
-                            {/* ── Grid Inspector ── */}
                             {selected.type === 'grid' && (
                                 <GridInspector
                                     el={selected as GridEl}
@@ -1643,7 +1830,6 @@ export default function PdfTemplateEdit() {
                                 />
                             )}
 
-                            {/* ── Rect Inspector ── */}
                             {selected.type === 'rect' && (
                                 <RectInspector
                                     el={selected as RectEl}
@@ -1651,7 +1837,6 @@ export default function PdfTemplateEdit() {
                                 />
                             )}
 
-                            {/* ── Line Inspector ── */}
                             {selected.type === 'line' && (
                                 <LineInspector
                                     el={selected as LineEl}
@@ -1659,7 +1844,7 @@ export default function PdfTemplateEdit() {
                                 />
                             )}
 
-                            {/* ── Posisi (shared) ── */}
+                            {/* Posisi (shared) */}
                             <Section title="Posisi">
                                 <Row label="X">
                                     <NumField value={Math.round(selected.x)} onChange={(v) => update(selected.id, { x: v })} />
@@ -1674,25 +1859,21 @@ export default function PdfTemplateEdit() {
                                 )}
                                 {selected.type === 'rect' && (
                                     <>
-                                        <Row label="Lebar">
-                                            <NumField value={(selected as RectEl).width} onChange={(v) => update(selected.id, { width: Math.max(4, v) })} />
-                                        </Row>
-                                        <Row label="Tinggi">
-                                            <NumField value={(selected as RectEl).height} onChange={(v) => update(selected.id, { height: Math.max(4, v) })} />
-                                        </Row>
+                                        <Row label="Lebar"><NumField value={(selected as RectEl).width} onChange={(v) => update(selected.id, { width: Math.max(4, v) })} /></Row>
+                                        <Row label="Tinggi"><NumField value={(selected as RectEl).height} onChange={(v) => update(selected.id, { height: Math.max(4, v) })} /></Row>
                                     </>
                                 )}
                                 {selected.type === 'line' && (
-                                    <Row label="Panjang">
-                                        <NumField value={(selected as LineEl).length} onChange={(v) => update(selected.id, { length: Math.max(4, v) })} />
-                                    </Row>
+                                    <Row label="Panjang"><NumField value={(selected as LineEl).length} onChange={(v) => update(selected.id, { length: Math.max(4, v) })} /></Row>
                                 )}
                             </Section>
 
                             <Section title="">
-                                <Button variant="zinc" size="sm" className="w-full" onClick={() => duplicate(selected)}>
-                                    <Copy className="w-4 h-4" /> Gandakan <span className="text-xs opacity-60">Ctrl+D</span>
-                                </Button>
+                                {selected.type !== 'table' && (
+                                    <Button variant="zinc" size="sm" className="w-full" onClick={() => duplicate(selected as BandEl)}>
+                                        <Copy className="w-4 h-4" /> Gandakan <span className="text-xs opacity-60">Ctrl+D</span>
+                                    </Button>
+                                )}
                                 <Button variant="red" size="sm" className="w-full" onClick={() => remove(selected.id)}>
                                     <Trash2 className="w-4 h-4" /> Hapus elemen
                                 </Button>
@@ -2948,3 +3129,4 @@ function EditableText({
 }
 
 PdfTemplateEdit.layout = (page: React.ReactNode) => <AppLayout>{page}</AppLayout>;
+

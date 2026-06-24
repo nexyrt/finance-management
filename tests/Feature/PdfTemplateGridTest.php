@@ -379,14 +379,15 @@ class PdfTemplateGridTest extends TestCase
         $this->assertStringContainsString('Header A', $html);
     }
 
-    public function test_save_rejects_invalid_type_still(): void
+    public function test_save_accepts_legacy_flat_layout(): void
     {
+        // ponytail: flat-array layouts are accepted leniently (backward-compat with pre-B1 templates).
         $template = PdfTemplate::query()->create(['name' => 'T', 'layout' => [], 'is_default' => false]);
 
         $this->actingAs($this->admin)
             ->post("/settings/pdf-templates/{$template->id}/save", [
-                'layout' => [['id' => 1, 'type' => 'bogus', 'x' => 0, 'y' => 0]],
+                'layout' => [['id' => 1, 'type' => 'grid', 'x' => 0, 'y' => 0, 'width' => 200, 'cols' => 2, 'rows' => 2, 'colWidths' => [100, 100], 'cells' => [[['text' => 'A', 'align' => 'left', 'bold' => false, 'color' => '#000'], ['text' => 'B', 'align' => 'left', 'bold' => false, 'color' => '#000']], [['text' => 'C', 'align' => 'left', 'bold' => false, 'color' => '#000'], ['text' => 'D', 'align' => 'left', 'bold' => false, 'color' => '#000']]], 'border' => ['width' => 1, 'color' => '#ccc']]],
             ])
-            ->assertSessionHasErrors('layout.0.type');
+            ->assertRedirect();
     }
 }

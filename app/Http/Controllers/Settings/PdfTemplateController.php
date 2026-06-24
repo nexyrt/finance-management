@@ -141,16 +141,28 @@ class PdfTemplateController extends Controller
 
     public function save(Request $request, PdfTemplate $pdfTemplate): RedirectResponse
     {
-        $request->validate([
-            'layout' => ['present', 'array'],
-            'layout.*.id' => ['required'],
-            'layout.*.type' => ['required', 'in:text,image,table,grid,rect,line'],
-            'layout.*.x' => ['required', 'numeric'],
-            'layout.*.y' => ['required', 'numeric'],
-        ]);
+        $layout = $request->input('layout');
+
+        // Banded layout: { paper: {...}, bands: { header, content, footerFlow, footerFixed } }
+        if (is_array($layout) && array_key_exists('bands', $layout)) {
+            $request->validate([
+                'layout' => ['present', 'array'],
+                'layout.paper' => ['required', 'array'],
+                'layout.bands' => ['required', 'array'],
+                'layout.bands.header' => ['required', 'array'],
+                'layout.bands.content' => ['required', 'array'],
+                'layout.bands.footerFlow' => ['required', 'array'],
+                'layout.bands.footerFixed' => ['required', 'array'],
+            ]);
+        } else {
+            // Legacy flat-array layout — lenient, accept as-is.
+            $request->validate([
+                'layout' => ['present', 'array'],
+            ]);
+        }
 
         $pdfTemplate->update([
-            'layout' => $request->input('layout'),
+            'layout' => $layout,
         ]);
 
         return back()->with('success', 'Layout tersimpan.');

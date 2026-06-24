@@ -6,6 +6,36 @@
 
 ---
 
+## ARSITEKTUR v2 — BANDED (disepakati 2026-06-24, MENGGANTIKAN model absolut untuk invoice)
+
+Dokumen = pita (band) **mengalir**, bukan kanvas absolut bebas. Elemen lama (teks/gambar/grid/shape/font/token/merge) **dipakai ulang** sebagai editor-mini di DALAM tiap band.
+
+**Skema layout baru:**
+```
+{
+  paper: { margins: { top, right, bottom, left } },        // px
+  bands: {
+    header:      { height, repeat:boolean, elements:[] },  // Fixed; repeat→tiap halaman, else→halaman 1
+    content:     { table: <TableEl|null> },                // Detail dinamis: tabel item, paginate
+    footerFlow:  { height, elements:[] },                  // mengalir setelah content (sekali, di akhir)
+    footerFixed: { height, elements:[] }                   // position:fixed, dasar SETIAP halaman
+  }
+}
+```
+Elemen di dalam band = **absolut relatif ke band** (1:1, presisi). Antar-band = **mengalir** (header→tabel→footerFlow); footerFixed dipaku ke dasar.
+
+**Margin per-sisi:** area cetak = kertas − margin; di PDF `@page { margin: T R B L }`; footerFixed nempel tepat di atas margin bawah.
+
+**Perilaku konten (A/B/C):** item sedikit → 1 halaman; mendekati batas → footerFlow pindah **utuh** (`page-break-inside: avoid`); melebihi halaman → tabel **paginate** (`<thead>` berulang), footerFlow **setelah baris terakhir**, footerFixed di **tiap** halaman. Elemen setelah tabel = footerFlow → posisinya selalu "setelah baris terakhir", bukan Y tetap.
+
+**Footer 2 mode (bisa bersamaan):** Flow (setelah konten, sekali) + Fixed (dasar tiap halaman).
+
+**Editor:** 3–4 area berlabel + badge mode (Fixed / Dinamis ⇕ / Flow / Fixed-bawah), tinggi band Header/Footer bisa di-drag, garis **margin** & **batas halaman**, **Preview-dengan-N-item**. WYSIWYG: gaya tiap band 1:1; paginasi data-dinamis dilihat via Preview-N.
+
+**Slice:** B1 model+editor band · B2 margin per-sisi · B3 render PDF banded-flow · B4 footerFixed + header-repeat · B5 preview-N + poles. Backward-compat: layout lama (array datar) ditangani aman (jangan crash; bungkus ke band header).
+
+> Catatan: arsitektur ini **menggantikan** model 3-zona absolut (Sprint 3–6) untuk dokumen invoice. Elemen tetap di-drag bebas, tapi **di dalam band**-nya.
+
 ## Pola Kerja (WAJIB diikuti eksekutor)
 
 - **Irisan vertikal kecil.** Satu kapabilitas per langkah, di atas yang sudah jalan. Jangan bangun banyak hal sekaligus.

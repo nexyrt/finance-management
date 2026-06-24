@@ -216,15 +216,106 @@ class PdfTemplateControllerTest extends TestCase
         $this->assertSame('Milik T2', $t2->fresh()->layout[0]['content']);
     }
 
-    public function test_save_rejects_invalid_element_type(): void
+    public function test_save_legacy_flat_layout_is_accepted(): void
     {
+        // ponytail: legacy flat-array layouts are accepted without deep validation (backward-compat).
         $template = PdfTemplate::query()->create(['name' => 'T', 'layout' => [], 'is_default' => false]);
 
         $this->actingAs($this->admin)
             ->post("/settings/pdf-templates/{$template->id}/save", [
-                'layout' => [['id' => 1, 'type' => 'bogus', 'x' => 0, 'y' => 0]],
+                'layout' => [['id' => 1, 'type' => 'text', 'x' => 0, 'y' => 0, 'content' => 'Hello']],
             ])
-            ->assertSessionHasErrors('layout.0.type');
+            ->assertRedirect();
+
+        $this->assertSame('Hello', $template->fresh()->layout[0]['content']);
+    }
+
+    // ── Banded layout (B1) ───────────────────────────────────────────────────
+
+    public function test_save_accepts_banded_layout_and_round_trips(): void
+    {
+        $template = PdfTemplate::query()->create(['name' => 'Banded', 'layout' => [], 'is_default' => false]);
+
+        $bandedLayout = [
+            'paper' => ['margins' => ['top' => 40, 'right' => 40, 'bottom' => 40, 'left' => 40]],
+            'bands' => [
+                'header' => [
+                    'height' => 180,
+                    'repeat' => false,
+                    'elements' => [
+                        ['id' => 1, 'type' => 'text', 'x' => 60, 'y' => 40, 'content' => 'Invoice {{invoice.number}}', 'fontSize' => 20, 'bold' => true, 'color' => '#0f172a'],
+                    ],
+                ],
+                'content' => [
+                    'table' => [
+                        'id' => 2, 'type' => 'table', 'x' => 0, 'y' => 0, 'width' => 714,
+                        'columns' => [['key' => 'description', 'label' => 'Deskripsi', 'width' => 290, 'align' => 'left', 'format' => 'text']],
+                        'showFooterSum' => false,
+                    ],
+                ],
+                'footerFlow' => [
+                    'height' => 120,
+                    'elements' => [
+                        ['id' => 3, 'type' => 'rect', 'x' => 0, 'y' => 0, 'width' => 714, 'height' => 1, 'borderWidth' => 1, 'borderColor' => '#cbd5e1', 'borderRadius' => 0],
+                    ],
+                ],
+                'footerFixed' => [
+                    'height' => 50,
+                    'elements' => [],
+                ],
+            ],
+        ];
+
+        $this->actingAs($this->admin)
+            ->post("/settings/pdf-templates/{$template->id}/save", ['layout' => $bandedLayout])
+            ->assertRedirect();
+
+        $saved = $template->fresh()->layout;
+
+        $this->assertArrayHasKey('bands', $saved);
+        $this->assertArrayHasKey('paper', $saved);
+        $this->assertSame(40, $saved['paper']['margins']['top']);
+        $this->assertSame(180, $saved['bands']['header']['height']);
+        $this->assertFalse($saved['bands']['header']['repeat']);
+        $this->assertSame('Invoice {{invoice.number}}', $saved['bands']['header']['elements'][0]['content']);
+        $this->assertSame('description', $saved['bands']['content']['table']['columns'][0]['key']);
+        $this->assertSame(120, $saved['bands']['footerFlow']['height']);
+        $this->assertEmpty($saved['bands']['footerFixed']['elements']);
+    }
+
+    public function test_save_banded_layout_requires_all_four_bands(): void
+    {
+        $template = PdfTemplate::query()->create(['name' => 'T', 'layout' => [], 'is_default' => false]);
+
+        // Missing footerFixed band → should fail validation
+        $this->actingAs($this->admin)
+            ->post("/settings/pdf-templates/{$template->id}/save", [
+                'layout' => [
+                    'bands' => ['header' => [], 'content' => [], 'footerFlow' => []],
+                    'paper' => ['margins' => ['top' => 40, 'right' => 40, 'bottom' => 40, 'left' => 40]],
+                ],
+            ])
+            ->assertSessionHasErrors('layout.bands.footerFixed');
+    }
+
+    public function test_save_legacy_flat_layout_backward_compat(): void
+    {
+        // Old flat-array layout from pre-B1 templates must save without errors.
+        $template = PdfTemplate::query()->create(['name' => 'Legacy', 'layout' => [], 'is_default' => false]);
+
+        $legacyLayout = [
+            ['id' => 1, 'type' => 'text', 'x' => 10, 'y' => 20, 'content' => 'Lama', 'fontSize' => 14, 'bold' => false, 'color' => '#000'],
+            ['id' => 2, 'type' => 'rect', 'x' => 0, 'y' => 0, 'width' => 100, 'height' => 10, 'borderWidth' => 1, 'borderColor' => '#000', 'borderRadius' => 0],
+        ];
+
+        $this->actingAs($this->admin)
+            ->post("/settings/pdf-templates/{$template->id}/save", ['layout' => $legacyLayout])
+            ->assertRedirect();
+
+        $saved = $template->fresh()->layout;
+        $this->assertIsArray($saved);
+        $this->assertCount(2, $saved);
+        $this->assertSame('Lama', $saved[0]['content']);
     }
 
     // ── PDF render ───────────────────────────────────────────────────────────
