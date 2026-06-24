@@ -180,12 +180,34 @@ class PdfTemplateController extends Controller
      * - Invoice param provided → use that invoice.
      * - No param → latest invoice in DB.
      * - DB empty → in-memory sample (never crashes).
+     *
+     * B3: branches on banded vs legacy layout.
+     *   Banded  → resolves band elements + table, passes $banded=true + band vars.
+     *   Legacy  → maps flat elements array (unchanged behaviour).
      */
     public function pdf(PdfTemplate $pdfTemplate, ?Invoice $invoice = null): HttpResponse
     {
         $invoice = $invoice ?? $this->resolvePreviewInvoice();
 
-        $elements = collect($pdfTemplate->layout ?? [])
+        // Sprint 5b: pass custom fonts so the blade can emit @font-face for DomPDF.
+        $customFonts = CustomFont::query()
+            ->orderBy('name')
+            ->get()
+            ->map(fn (CustomFont $f) => [
+                'name' => $f->name,
+                'path' => $f->diskPath(),
+            ])
+            ->all();
+
+        $layout = $pdfTemplate->layout ?? [];
+
+        // ── B3: Banded layout path ────────────────────────────────────────────
+        if (is_array($layout) && array_key_exists('bands', $layout)) {
+            return $this->pdfBanded($layout, $invoice, $customFonts);
+        }
+
+        // ── Legacy flat-array path (unchanged) ───────────────────────────────
+        $elements = collect($layout)
             ->map(function (array $el) use ($invoice): array {
                 if ($el['type'] === 'text') {
                     return [
@@ -228,19 +250,111 @@ class PdfTemplateController extends Controller
             })
             ->all();
 
-        // Sprint 5b: pass custom fonts so the blade can emit @font-face for DomPDF.
-        $customFonts = CustomFont::query()
-            ->orderBy('name')
-            ->get()
-            ->map(fn (CustomFont $f) => [
-                'name' => $f->name,
-                'path' => $f->diskPath(),
-            ])
-            ->all();
-
         return Pdf::loadView('pdf.template-builder', [
             'elements' => $elements,
             'customFonts' => $customFonts,
+        ])
+            ->setPaper('A4', 'portrait')
+            ->stream('template.pdf');
+    }
+
+    /**
+     * Render a banded layout to PDF (B3).
+     *
+     * Resolves:
+     *  - header.elements  → tokens in text content + grid cell text
+     *  - content.table    → columns + rows via ItemColumns
+     *  - footerFlow.elements → same as header
+     *  footerFixed + header.repeat are passed through for B4; not rendered as fixed yet.
+     *
+     * @param  array<string, mixed>  $layout
+     * @param  array<int, array{name: string, path: string}>  $customFonts
+     */
+    private function pdfBanded(array $layout, Invoice $invoice, array $customFonts): HttpResponse
+    {
+        $bands = $layout['bands'] ?? [];
+        $paper = $layout['paper'] ?? [];
+        $margins = $paper['margins'] ?? ['top' => 40, 'right' => 40, 'bottom' => 40, 'left' => 40];
+
+        // Resolve a band's elements array (text tokens + grid cell tokens; images pass through).
+        $resolveElements = function (array $elements) use ($invoice): array {
+            return array_map(function (array $el) use ($invoice): array {
+                if (($el['type'] ?? '') === 'text') {
+                    return [
+                        ...$el,
+                        'content' => TemplateTokens::resolveText((string) ($el['content'] ?? ''), $invoice),
+                    ];
+                }
+
+                if (($el['type'] ?? '') === 'grid') {
+                    $cells = collect($el['cells'] ?? [])->map(
+                        fn (array $row) => array_map(
+                            fn (array $cell) => [
+                                ...$cell,
+                                'text' => TemplateTokens::resolveText((string) ($cell['text'] ?? ''), $invoice),
+                            ],
+                            $row
+                        )
+                    )->all();
+
+                    return [...$el, 'cells' => $cells];
+                }
+
+                return $el; // image, rect, line — pass through
+            }, $elements);
+        };
+
+        // Header band
+        $headerBand = $bands['header'] ?? [];
+        $headerHeight = (int) ($headerBand['height'] ?? 180);
+        $headerElements = $resolveElements($headerBand['elements'] ?? []);
+        $headerRepeat = (bool) ($headerBand['repeat'] ?? false);
+
+        // Content band — items table (null if not set)
+        $contentBand = $bands['content'] ?? [];
+        $tableEl = $contentBand['table'] ?? null;
+        if ($tableEl !== null) {
+            $columns = $tableEl['columns'] ?? ItemColumns::defaultColumns();
+            $rows = ItemColumns::resolveItems($columns, $invoice->items);
+            $tableEl = [
+                ...$tableEl,
+                'columns' => $columns,
+                'rows' => $rows,
+            ];
+        }
+
+        // Footer-flow band
+        $footerFlowBand = $bands['footerFlow'] ?? [];
+        $footerFlowHeight = (int) ($footerFlowBand['height'] ?? 120);
+        $footerFlowElements = $resolveElements($footerFlowBand['elements'] ?? []);
+
+        // Footer-fixed band (B4 — pass through, not rendered as fixed yet)
+        $footerFixedBand = $bands['footerFixed'] ?? [];
+
+        return Pdf::loadView('pdf.template-builder', [
+            // Banded path signal
+            'banded' => true,
+            // Paper
+            'paper' => ['margins' => $margins],
+            // Header band
+            'headerBand' => [
+                'height' => $headerHeight,
+                'repeat' => $headerRepeat,
+                'elements' => $headerElements,
+            ],
+            // Content / items table
+            'tableEl' => $tableEl,
+            // Footer-flow band
+            'footerFlowBand' => [
+                'height' => $footerFlowHeight,
+                'elements' => $footerFlowElements,
+            ],
+            // Footer-fixed (B4 — passed but not rendered fixed yet)
+            'footerFixedBand' => $footerFixedBand,
+            // Custom fonts
+            'customFonts' => $customFonts,
+            // Legacy $elements must be present so the blade @else path doesn't error
+            'elements' => [],
         ])
             ->setPaper('A4', 'portrait')
             ->stream('template.pdf');
