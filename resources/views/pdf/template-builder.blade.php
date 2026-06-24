@@ -124,6 +124,8 @@
             $style .= "white-space: nowrap; ";
         }
 
+        if (isset($el['_z'])) { $style .= "z-index: {$el['_z']}; "; }
+
         return $style;
     };
 
@@ -153,8 +155,20 @@
         $radius = (int) ($el['borderRadius'] ?? 0);
         if ($radius > 0) { $style .= "border-radius: {$radius}px; "; }
 
+        if (isset($el['_z'])) { $style .= "z-index: {$el['_z']}; "; }
+
         return $style;
     };
+
+    // Paint order: in the editor every element is absolute, so z-order = array
+    // order (later = on top). In the PDF the items table is in normal flow, which
+    // CSS paints BELOW positioned (absolute) elements regardless of DOM order. To
+    // match the editor we give every element an explicit z-index = its array index
+    // and make the table container positioned with the table's index, so DomPDF
+    // paints strictly by array order.
+    foreach ($elements as $i => $_el) {
+        $elements[$i]['_z'] = $i;
+    }
 
     /** @var array|null $tableEl */
     $tableEl = collect($elements)->first(fn($el) => ($el['type'] ?? '') === 'table');
@@ -355,7 +369,7 @@
                 $gridW     = (int) ($el['width'] ?? 300);
             @endphp
             <table class="el grid-el"
-                   style="left: {{ $el['x'] }}px; top: {{ $el['y'] }}px; width: {{ $gridW }}px;">
+                   style="left: {{ $el['x'] }}px; top: {{ $el['y'] }}px; width: {{ $gridW }}px; z-index: {{ $el['_z'] ?? 0 }};">
                 <tbody>
                     @foreach ($gridCells as $rowIdx => $rowCells)
                         <tr>
@@ -383,7 +397,7 @@
                 $rBw     = (int) ($el['borderWidth'] ?? 0);
                 $rBc     = $el['borderColor'] ?? '#000000';
                 $rRadius = (int) ($el['borderRadius'] ?? 0);
-                $rStyle  = "position: absolute; left: {$el['x']}px; top: {$el['y']}px; width: {$rW}px; height: {$rH}px; box-sizing: border-box;";
+                $rStyle  = "position: absolute; left: {$el['x']}px; top: {$el['y']}px; width: {$rW}px; height: {$rH}px; box-sizing: border-box; z-index: ".($el['_z'] ?? 0).';';
                 if ($rFill)   { $rStyle .= " background-color: {$rFill};"; }
                 if ($rBw > 0) { $rStyle .= " border: {$rBw}px solid {$rBc};"; }
                 if ($rRadius > 0) { $rStyle .= " border-radius: {$rRadius}px;"; }
@@ -397,7 +411,7 @@
                 $lColor       = $el['color'] ?? '#0f172a';
                 $lW           = $lOrientation === 'h' ? $lLength : $lThick;
                 $lH           = $lOrientation === 'h' ? $lThick  : $lLength;
-                $lStyle       = "position: absolute; left: {$el['x']}px; top: {$el['y']}px; width: {$lW}px; height: {$lH}px; background-color: {$lColor};";
+                $lStyle       = "position: absolute; left: {$el['x']}px; top: {$el['y']}px; width: {$lW}px; height: {$lH}px; background-color: {$lColor}; z-index: ".($el['_z'] ?? 0).';';
             @endphp
             <div style="{{ $lStyle }}"></div>
         @endif
@@ -413,7 +427,7 @@
         $tableW    = $tableEl['width'] ?? 714;
         $tableX    = $tableEl['x'] ?? 40;
     @endphp
-    <div class="table-flow" style="padding-left: {{ $tableX }}px; width: 793px;">
+    <div class="table-flow" style="padding-left: {{ $tableX }}px; width: 793px; position: relative; z-index: {{ $tableEl['_z'] ?? 0 }};">
         <table class="items-table" style="width: {{ $tableW }}px;">
             <thead>
                 @if (!empty($tableEl['headerGroups']))
@@ -504,7 +518,7 @@
                         $gridW     = (int) ($el['width'] ?? 300);
                     @endphp
                     <table class="el grid-el"
-                           style="left: {{ $el['x'] }}px; top: {{ $relTop }}px; width: {{ $gridW }}px;">
+                           style="left: {{ $el['x'] }}px; top: {{ $relTop }}px; width: {{ $gridW }}px; z-index: {{ $el['_z'] ?? 0 }};">
                         <tbody>
                             @foreach ($gridCells as $rowIdx => $rowCells)
                                 <tr>
@@ -532,7 +546,7 @@
                         $rBw     = (int) ($el['borderWidth'] ?? 0);
                         $rBc     = $el['borderColor'] ?? '#000000';
                         $rRadius = (int) ($el['borderRadius'] ?? 0);
-                        $rStyle  = "position: absolute; left: {$el['x']}px; top: {$relTop}px; width: {$rW}px; height: {$rH}px; box-sizing: border-box;";
+                        $rStyle  = "position: absolute; left: {$el['x']}px; top: {$relTop}px; width: {$rW}px; height: {$rH}px; box-sizing: border-box; z-index: ".($el['_z'] ?? 0).';';
                         if ($rFill)   { $rStyle .= " background-color: {$rFill};"; }
                         if ($rBw > 0) { $rStyle .= " border: {$rBw}px solid {$rBc};"; }
                         if ($rRadius > 0) { $rStyle .= " border-radius: {$rRadius}px;"; }
@@ -546,7 +560,7 @@
                         $lColor       = $el['color'] ?? '#0f172a';
                         $lW           = $lOrientation === 'h' ? $lLength : $lThick;
                         $lH           = $lOrientation === 'h' ? $lThick  : $lLength;
-                        $lStyle       = "position: absolute; left: {$el['x']}px; top: {$relTop}px; width: {$lW}px; height: {$lH}px; background-color: {$lColor};";
+                        $lStyle       = "position: absolute; left: {$el['x']}px; top: {$relTop}px; width: {$lW}px; height: {$lH}px; background-color: {$lColor}; z-index: ".($el['_z'] ?? 0).';';
                     @endphp
                     <div style="{{ $lStyle }}"></div>
                 @endif

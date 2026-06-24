@@ -527,6 +527,25 @@ class PdfTemplateTableTest extends TestCase
         $this->assertSame(1, $pdf->getDomPDF()->getCanvas()->get_page_count());
     }
 
+    #[Test]
+    public function test_pdf_layers_match_editor_array_order_via_zindex(): void
+    {
+        // Editor order: image first (behind), table second (in front).
+        // Each element gets z-index = its array index; the flow table container is
+        // positioned with the table's index so it paints ABOVE the earlier image.
+        $png = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+        $elements = [
+            ['id' => 1, 'type' => 'image', 'x' => 40, 'y' => 100, 'src' => $png, 'width' => 200, 'height' => 300],
+            $this->defaultTableEl(150),
+        ];
+
+        $html = view('pdf.template-builder', ['elements' => $elements])->render();
+
+        // image at index 0 → z-index: 0; table container at index 1 → z-index: 1 (above).
+        $this->assertStringContainsString('z-index: 0;', $html);
+        $this->assertMatchesRegularExpression('/class="table-flow"[^>]*position: relative; z-index: 1;/', $html);
+    }
+
     /**
      * Multi-page with 40 items AND a below-zone total text must render as PDF (200)
      * and the below-zone text must appear in the Blade output.
