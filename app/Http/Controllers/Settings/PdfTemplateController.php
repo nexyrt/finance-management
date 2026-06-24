@@ -5,12 +5,14 @@ namespace App\Http\Controllers\Settings;
 use App\Http\Controllers\Controller;
 use App\Models\CustomFont;
 use App\Models\Invoice;
+use App\Models\InvoiceItem;
 use App\Models\PdfTemplate;
 use App\Services\ItemColumns;
 use App\Services\TemplateTokens;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
@@ -185,7 +187,7 @@ class PdfTemplateController extends Controller
      *   Banded  → resolves band elements + table, passes $banded=true + band vars.
      *   Legacy  → maps flat elements array (unchanged behaviour).
      */
-    public function pdf(PdfTemplate $pdfTemplate, ?Invoice $invoice = null): HttpResponse
+    public function pdf(Request $request, PdfTemplate $pdfTemplate, ?Invoice $invoice = null): HttpResponse
     {
         $invoice = $invoice ?? $this->resolvePreviewInvoice();
 
@@ -203,7 +205,12 @@ class PdfTemplateController extends Controller
 
         // ── B3: Banded layout path ────────────────────────────────────────────
         if (is_array($layout) && array_key_exists('bands', $layout)) {
-            return $this->pdfBanded($layout, $invoice, $customFonts);
+            // B5: optional ?items=N for preview-with-N sample rows (clamp 1–200).
+            $itemCount = $request->has('items')
+                ? max(1, min(200, (int) $request->query('items')))
+                : null;
+
+            return $this->pdfBanded($layout, $invoice, $customFonts, $itemCount);
         }
 
         // ── Legacy flat-array path (unchanged) ───────────────────────────────
@@ -259,18 +266,22 @@ class PdfTemplateController extends Controller
     }
 
     /**
-     * Render a banded layout to PDF (B3).
+     * Render a banded layout to PDF (B3/B5).
      *
      * Resolves:
      *  - header.elements  → tokens in text content + grid cell text
      *  - content.table    → columns + rows via ItemColumns
      *  - footerFlow.elements → same as header
-     *  footerFixed + header.repeat are passed through for B4; not rendered as fixed yet.
+     *  footerFixed + header.repeat are passed through for B4.
+     *
+     * B5: when $itemCount is set, the content table is rendered with $itemCount
+     * generated in-memory sample rows instead of the real invoice's items.
+     * Header/footer tokens still resolve from $invoice (real or sample).
      *
      * @param  array<string, mixed>  $layout
      * @param  array<int, array{name: string, path: string}>  $customFonts
      */
-    private function pdfBanded(array $layout, Invoice $invoice, array $customFonts): HttpResponse
+    private function pdfBanded(array $layout, Invoice $invoice, array $customFonts, ?int $itemCount = null): HttpResponse
     {
         $bands = $layout['bands'] ?? [];
         $paper = $layout['paper'] ?? [];
@@ -315,7 +326,17 @@ class PdfTemplateController extends Controller
         $tableEl = $contentBand['table'] ?? null;
         if ($tableEl !== null) {
             $columns = $tableEl['columns'] ?? ItemColumns::defaultColumns();
-            $rows = ItemColumns::resolveItems($columns, $invoice->items);
+
+            // B5: when $itemCount is set, generate that many in-memory sample rows
+            // instead of using the real invoice's items — lets the user see
+            // how pagination looks with few vs many rows without a real invoice.
+            if ($itemCount !== null) {
+                $items = $this->makeSampleItems($itemCount);
+            } else {
+                $items = $invoice->items;
+            }
+
+            $rows = ItemColumns::resolveItems($columns, $items);
             $tableEl = [
                 ...$tableEl,
                 'columns' => $columns,
@@ -366,6 +387,49 @@ class PdfTemplateController extends Controller
     }
 
     // ── Private helpers ───────────────────────────────────────────────────────
+
+    /**
+     * Generate N in-memory InvoiceItem instances for the "preview with N items" feature (B5).
+     *
+     * Items are representative enough to render all standard columns:
+     *   No · Deskripsi · Qty · Satuan · Harga Satuan · Jumlah
+     *
+     * @return Collection<int, InvoiceItem>
+     */
+    private function makeSampleItems(int $count): Collection
+    {
+        $services = [
+            'Konsultasi IT',
+            'Pengembangan Fitur',
+            'Desain UI/UX',
+            'Hosting & Domain',
+            'Pemeliharaan Bulanan',
+            'Pelatihan Pengguna',
+            'Audit Sistem',
+            'Integrasi API',
+            'Backup & Recovery',
+            'Laporan Bulanan',
+        ];
+
+        $units = ['jam', 'paket', 'bulan', 'unit', 'ls', 'hari'];
+
+        return collect(range(1, $count))->map(function (int $i) use ($services, $units): InvoiceItem {
+            $unitPrice = ($i % 5 + 1) * 250000;
+            $qty = ($i % 3 + 1);
+            $amount = $unitPrice * $qty;
+
+            return new InvoiceItem([
+                'invoice_id' => 0,
+                'service_name' => ($services[($i - 1) % count($services)]).' '.($i > count($services) ? '#'.ceil($i / count($services)) : ''),
+                'quantity' => number_format($qty, 3, '.', ''),
+                'unit' => $units[($i - 1) % count($units)],
+                'unit_price' => $unitPrice,
+                'amount' => $amount,
+                'cogs_amount' => (int) ($amount * 0.4),
+                'is_tax_deposit' => $i % 10 === 0,
+            ]);
+        });
+    }
 
     /**
      * Auto-pick the latest invoice (with client eager-loaded) for preview/PDF.

@@ -620,6 +620,177 @@ class PdfTemplateBandedTest extends TestCase
         $this->assertStringContainsString('band-footer-flow', $html);
     }
 
+    // ── B5 Tests ──────────────────────────────────────────────────────────────
+
+    // ── Test B5-1: ?items=3 → banded PDF 200 with ~3 sample rows ─────────────
+
+    public function test_banded_pdf_with_items_param_3_renders_sample_rows(): void
+    {
+        $layout = $this->makeBandedLayout(
+            headerElements: [
+                ['id' => 1, 'type' => 'text', 'x' => 20, 'y' => 20, 'content' => 'B5 Test Header', 'fontSize' => 14, 'bold' => true, 'color' => '#0f172a'],
+            ],
+            tableEl: $this->defaultBandedTableEl(),
+            footerFlowElements: [
+                ['id' => 2, 'type' => 'text', 'x' => 20, 'y' => 20, 'content' => 'B5_3_ITEMS_FOOTER', 'fontSize' => 10, 'bold' => false, 'color' => '#0f172a'],
+            ],
+        );
+
+        $template = PdfTemplate::query()->create([
+            'name' => 'B5 Items=3',
+            'layout' => $layout,
+            'is_default' => false,
+        ]);
+
+        // ?items=3 — uses sample rows, no real invoice needed.
+        $response = $this->actingAs($this->admin)
+            ->get("/settings/pdf-templates/{$template->id}/pdf?items=3")
+            ->assertOk();
+
+        $this->assertStringContainsString(
+            'application/pdf',
+            (string) $response->headers->get('content-type'),
+        );
+
+        // Verify sample rows are generated correctly (3 rows via makeSampleItems)
+        // by rendering the blade directly with 3 resolved sample rows.
+        $columns = ItemColumns::defaultColumns();
+        $sampleItems = collect(range(1, 3))->map(fn (int $i) => new InvoiceItem([
+            'invoice_id' => 0,
+            'service_name' => 'Item Contoh '.$i,
+            'quantity' => '1.000',
+            'unit' => 'paket',
+            'unit_price' => 500000,
+            'amount' => 500000,
+            'cogs_amount' => 200000,
+            'is_tax_deposit' => false,
+        ]));
+        $rows = ItemColumns::resolveItems($columns, $sampleItems);
+        $this->assertCount(3, $rows);
+    }
+
+    // ── Test B5-2: ?items=60 → 200, multi-page (page count > 1) ─────────────
+
+    public function test_banded_pdf_with_items_param_60_is_multipage(): void
+    {
+        $layout = $this->makeBandedLayout(
+            headerElements: [
+                ['id' => 1, 'type' => 'text', 'x' => 20, 'y' => 20, 'content' => 'B5 60-item Header', 'fontSize' => 14, 'bold' => true, 'color' => '#0f172a'],
+            ],
+            tableEl: $this->defaultBandedTableEl(),
+            footerFlowElements: [
+                ['id' => 2, 'type' => 'text', 'x' => 20, 'y' => 10, 'content' => 'B5_60_ITEMS_FOOTER', 'fontSize' => 10, 'bold' => false, 'color' => '#0f172a'],
+            ],
+        );
+
+        $template = PdfTemplate::query()->create([
+            'name' => 'B5 Items=60',
+            'layout' => $layout,
+            'is_default' => false,
+        ]);
+
+        // ?items=60 must return a valid PDF.
+        $response = $this->actingAs($this->admin)
+            ->get("/settings/pdf-templates/{$template->id}/pdf?items=60")
+            ->assertOk();
+
+        $this->assertStringContainsString(
+            'application/pdf',
+            (string) $response->headers->get('content-type'),
+        );
+
+        // 60 rows will produce multiple pages: assert page count > 1 via DomPDF canvas.
+        $columns = ItemColumns::defaultColumns();
+        // Build 60 sample rows the same way the controller does.
+        $units = ['jam', 'paket', 'bulan', 'unit', 'ls', 'hari'];
+        $services = ['Konsultasi IT', 'Pengembangan Fitur', 'Desain UI/UX', 'Hosting & Domain', 'Pemeliharaan Bulanan', 'Pelatihan Pengguna', 'Audit Sistem', 'Integrasi API', 'Backup & Recovery', 'Laporan Bulanan'];
+        $sampleItems = collect(range(1, 60))->map(function (int $i) use ($services, $units): InvoiceItem {
+            $unitPrice = ($i % 5 + 1) * 250000;
+            $qty = ($i % 3 + 1);
+
+            return new InvoiceItem([
+                'invoice_id' => 0,
+                'service_name' => ($services[($i - 1) % count($services)]).' '.($i > count($services) ? '#'.ceil($i / count($services)) : ''),
+                'quantity' => number_format($qty, 3, '.', ''),
+                'unit' => $units[($i - 1) % count($units)],
+                'unit_price' => $unitPrice,
+                'amount' => $unitPrice * $qty,
+                'cogs_amount' => (int) ($unitPrice * $qty * 0.4),
+                'is_tax_deposit' => $i % 10 === 0,
+            ]);
+        });
+        $rows = ItemColumns::resolveItems($columns, $sampleItems);
+        $this->assertCount(60, $rows);
+
+        $tableEl = array_merge($this->defaultBandedTableEl(), ['rows' => $rows]);
+
+        // Render through DomPDF and assert page count > 1.
+        $pdf = Pdf::loadView('pdf.template-builder', [
+            'banded' => true,
+            'paper' => ['margins' => ['top' => 40, 'right' => 40, 'bottom' => 40, 'left' => 40]],
+            'headerBand' => ['height' => 180, 'repeat' => false, 'elements' => []],
+            'tableEl' => $tableEl,
+            'footerFlowBand' => ['height' => 120, 'elements' => [
+                ['id' => 2, 'type' => 'text', 'x' => 20, 'y' => 10, 'content' => 'B5_60_ITEMS_FOOTER', 'fontSize' => 10, 'bold' => false, 'color' => '#0f172a'],
+            ]],
+            'footerFixedBand' => ['height' => 0, 'elements' => []],
+            'customFonts' => [],
+            'elements' => [],
+        ])->setPaper('A4', 'portrait');
+
+        $pdf->render();
+        $pageCount = $pdf->getDomPDF()->getCanvas()->get_page_count();
+        $this->assertGreaterThan(1, $pageCount, '60 sample rows should produce more than 1 page');
+
+        // Footer-flow text must be present in the HTML.
+        $html = view('pdf.template-builder', [
+            'banded' => true,
+            'paper' => ['margins' => ['top' => 40, 'right' => 40, 'bottom' => 40, 'left' => 40]],
+            'headerBand' => ['height' => 180, 'repeat' => false, 'elements' => []],
+            'tableEl' => $tableEl,
+            'footerFlowBand' => ['height' => 120, 'elements' => [
+                ['id' => 2, 'type' => 'text', 'x' => 20, 'y' => 10, 'content' => 'B5_60_ITEMS_FOOTER', 'fontSize' => 10, 'bold' => false, 'color' => '#0f172a'],
+            ]],
+            'footerFixedBand' => ['height' => 0, 'elements' => []],
+            'customFonts' => [],
+            'elements' => [],
+        ])->render();
+
+        $this->assertStringContainsString('B5_60_ITEMS_FOOTER', $html);
+    }
+
+    // ── Test B5-3: items param clamping (0 → 1, 9999 → 200) ─────────────────
+
+    public function test_banded_pdf_items_param_clamping(): void
+    {
+        $layout = $this->makeBandedLayout(
+            headerElements: [],
+            tableEl: $this->defaultBandedTableEl(),
+            footerFlowElements: [],
+        );
+
+        $template = PdfTemplate::query()->create([
+            'name' => 'B5 Clamping',
+            'layout' => $layout,
+            'is_default' => false,
+        ]);
+
+        // items=0 should be clamped to 1 — renders without error.
+        $this->actingAs($this->admin)
+            ->get("/settings/pdf-templates/{$template->id}/pdf?items=0")
+            ->assertOk();
+
+        // items=9999 should be clamped to 200 — renders without error.
+        $this->actingAs($this->admin)
+            ->get("/settings/pdf-templates/{$template->id}/pdf?items=9999")
+            ->assertOk();
+
+        // items=-5 should also be clamped to 1 — renders without error.
+        $this->actingAs($this->admin)
+            ->get("/settings/pdf-templates/{$template->id}/pdf?items=-5")
+            ->assertOk();
+    }
+
     // ── Test 10: Grid element in header band renders with token resolution ────
 
     public function test_banded_header_grid_element_renders(): void

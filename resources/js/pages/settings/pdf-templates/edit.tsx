@@ -477,6 +477,7 @@ export default function PdfTemplateEdit() {
     const [fieldMenu, setFieldMenu] = React.useState(false);
     const [zoom, setZoom] = React.useState(0.6);
     const [dragOver, setDragOver] = React.useState(false);
+    const [pratinjauOpen, setPratinjauOpen] = React.useState(false);
     const [overLayerId, setOverLayerId] = React.useState<number | null>(null);
 
     // Per-band refs for drag calculations
@@ -1042,6 +1043,10 @@ export default function PdfTemplateEdit() {
     };
 
     const openPdf = () => window.open(`/settings/pdf-templates/${template.id}/pdf`, '_blank');
+
+    // B5: open PDF in a new tab with a fixed item count for pagination preview.
+    const openPdfWithItems = (n: number) =>
+        window.open(`/settings/pdf-templates/${template.id}/pdf?items=${n}`, '_blank');
 
     // ── Drop on band ──────────────────────────────────────────────────────────
 
@@ -1729,9 +1734,48 @@ export default function PdfTemplateEdit() {
                             <ZoomIn className="w-4 h-4" />
                         </Button>
                         <div className="w-px h-6 bg-secondary-200 dark:bg-dark-600 mx-1" />
-                        <Button variant="ghost" size="sm" onClick={openPdf} title="Cetak PDF (data contoh)">
+                        <Button variant="ghost" size="sm" onClick={openPdf} title="Cetak PDF (data asli/contoh)">
                             <FileDown className="w-4 h-4" /> PDF
                         </Button>
+                        {/* B5: Pratinjau dengan N item — lets the user see pagination behavior */}
+                        <div className="relative">
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setPratinjauOpen((o) => !o)}
+                                title="Pratinjau PDF dengan jumlah item tertentu"
+                            >
+                                <Eye className="w-4 h-4" />
+                                Pratinjau
+                                <ChevronDown className="w-3 h-3 ml-0.5" />
+                            </Button>
+                            {pratinjauOpen && (
+                                <>
+                                    {/* Backdrop to close dropdown */}
+                                    <div
+                                        className="fixed inset-0 z-40"
+                                        onClick={() => setPratinjauOpen(false)}
+                                    />
+                                    <div className="absolute bottom-full mb-1.5 left-1/2 -translate-x-1/2 z-50 min-w-[160px] bg-white dark:bg-dark-700 border border-secondary-200 dark:border-dark-600 rounded-xl shadow-lg py-1 overflow-hidden">
+                                        <p className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-dark-400 dark:text-dark-500 border-b border-secondary-200 dark:border-dark-600 mb-1">
+                                            Jumlah item
+                                        </p>
+                                        {([3, 10, 25, 60] as const).map((n) => (
+                                            <button
+                                                key={n}
+                                                onClick={() => { setPratinjauOpen(false); openPdfWithItems(n); }}
+                                                className="w-full text-left px-3 py-1.5 text-sm text-dark-700 dark:text-dark-300 hover:bg-zinc-50 dark:hover:bg-dark-600 transition-colors flex items-center justify-between gap-3"
+                                            >
+                                                <span>{n} item</span>
+                                                <span className="text-[10px] text-dark-400 dark:text-dark-500">
+                                                    {n <= 5 ? '1 hal.' : n <= 20 ? '~2 hal.' : n <= 40 ? '~3 hal.' : '~5 hal.'}
+                                                </span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </>
+                            )}
+                        </div>
                         <Button variant="primary" size="sm" onClick={save} disabled={saving}>
                             <Save className="w-4 h-4" /> {saving ? 'Menyimpan…' : 'Simpan'}
                         </Button>
