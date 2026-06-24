@@ -336,8 +336,9 @@ class PdfTemplateShapeTest extends TestCase
         $rectFillPos = (int) strpos($html, 'background-color: #fef9c3');
         $this->assertGreaterThan($belowPos, $rectFillPos);
 
-        // relTop = 700 - 300 = 400 → top: 400px in below-flow
-        $this->assertStringContainsString('top: 400px', $html);
+        // Below elements are positioned relative to the TOPMOST below element.
+        // The rect is the only below element → it sits at the top (relTop 0).
+        $this->assertStringContainsString('left: 500px; top: 0px', $html);
 
         // Border and radius
         $this->assertStringContainsString('border: 1px solid #ca8a04', $html);
@@ -383,8 +384,8 @@ class PdfTemplateShapeTest extends TestCase
         $this->assertGreaterThan($belowPos, $lineH);
         $this->assertStringContainsString('background-color: #64748b', $html);
 
-        // relTop = 800 - 300 = 500
-        $this->assertStringContainsString('top: 500px', $html);
+        // Only below element → sits at the top of the below zone (relTop 0).
+        $this->assertStringContainsString('left: 40px; top: 0px', $html);
     }
 
     // ── Below-zone container height estimate ───────────────────────────────────
@@ -414,8 +415,8 @@ class PdfTemplateShapeTest extends TestCase
 
         $html = $this->renderBlade($layout);
 
-        // relTop = 700 - 300 = 400; height = 80 → container height = 480
-        $this->assertStringContainsString('height: 480px', $html);
+        // Lone below element → relTop 0; container height = the rect's own height (80).
+        $this->assertStringContainsString('class="below-flow" style="height: 80px;"', $html);
     }
 
     #[Test]
@@ -444,8 +445,8 @@ class PdfTemplateShapeTest extends TestCase
 
         $html = $this->renderBlade($layout);
 
-        // relTop = 600 - 300 = 300; vertical line height = length = 200 → container = 500
-        $this->assertStringContainsString('height: 500px', $html);
+        // Lone below element → relTop 0; container height = the line's own length (200).
+        $this->assertStringContainsString('class="below-flow" style="height: 200px;"', $html);
     }
 
     // ── save() validation accepts rect and line ─────────────────────────────────

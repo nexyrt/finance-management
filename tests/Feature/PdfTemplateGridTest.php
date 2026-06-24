@@ -267,15 +267,18 @@ class PdfTemplateGridTest extends TestCase
         // below-flow container must exist
         $this->assertStringContainsString('class="below-flow"', $html);
 
-        // The relative top for y=400 with tableY=300 = 100px
-        $this->assertStringContainsString('top: 100px', $html);
+        // Lone below element → positioned at the top of the below zone (relTop 0).
+        $this->assertStringContainsString('top: 0px', $html);
     }
 
     public function test_grid_below_zone_uses_relative_top_positioning(): void
     {
+        // Below elements are positioned relative to the TOPMOST below element.
+        // An anchor sits at the table boundary; the grid is 130px below it.
         $tableY = 250;
+        $anchorY = 250; // topmost below element → defines the below-zone origin
         $gridY = 380;
-        $expectedTop = $gridY - $tableY; // 130
+        $expectedTop = $gridY - $anchorY; // 130
 
         $el = $this->gridEl(60, $gridY);
 
@@ -288,6 +291,7 @@ class PdfTemplateGridTest extends TestCase
                 'rows' => [],
                 'showFooterSum' => false,
             ],
+            ['id' => 9, 'type' => 'text', 'x' => 40, 'y' => $anchorY, 'content' => 'Footer'],
             $el,
         ];
 

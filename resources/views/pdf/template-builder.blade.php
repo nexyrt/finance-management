@@ -184,10 +184,16 @@
             return (int) ($el['y'] ?? 0) >= $tableY;
         })->values()->all();
 
+        // Below-zone elements are stacked right AFTER the flow table, so position
+        // them relative to the TOPMOST below-element (not tableY). Using tableY
+        // would add a spurious gap (belowMinY - tableY) that pushes content onto a
+        // second page when an element sits near the page bottom.
+        $belowMinY = (int) collect($belowEls)->min(fn (array $el) => (int) ($el['y'] ?? 0));
+
         if (count($belowEls) > 0) {
             // Compute the height needed for the below container
-            $belowContainerHeight = collect($belowEls)->reduce(function (int $max, array $el) use ($tableY): int {
-                $relTop = (int) ($el['y'] ?? 0) - $tableY;
+            $belowContainerHeight = collect($belowEls)->reduce(function (int $max, array $el) use ($belowMinY): int {
+                $relTop = (int) ($el['y'] ?? 0) - $belowMinY;
                 if ($el['type'] === 'image') {
                     $elHeight = (int) ($el['height'] ?? 40);
                 } elseif ($el['type'] === 'grid') {
@@ -229,8 +235,11 @@
         .paper {
             position: relative;
             width: 793px;
-            overflow: hidden;
             background: #fff;
+            /* overflow set inline: hidden when no table (full page),
+               visible when a table exists so tall header elements (e.g. a big
+               image spanning past tableY) are NOT clipped at the table start.
+               Off-page bleed is still clipped by the A4 page media box. */
         }
         .el { position: absolute; }
         .text { white-space: nowrap; line-height: 1; }
@@ -327,13 +336,7 @@
 <body>
 
 {{-- ── Zone 1: Absolute header layer ── --}}
-<div class="paper"
-    @if($tableEl)
-        style="height: {{ $tableY }}px;"
-    @else
-        style="height: 1122px;"
-    @endif
->
+<div class="paper" style="height: {{ $tableEl ? $tableY : 1122 }}px; overflow: {{ $tableEl ? 'visible' : 'hidden' }};">
     @foreach ($headerEls as $el)
         @if ($el['type'] === 'text')
             @php $hasBox = array_key_exists('width', $el) && $el['width'] !== null; @endphp
@@ -482,7 +485,7 @@
         <div class="below-flow" style="height: {{ $belowContainerHeight }}px;">
             @foreach ($belowEls as $el)
                 @php
-                    $relTop = (int) ($el['y'] ?? 0) - $tableY;
+                    $relTop = (int) ($el['y'] ?? 0) - $belowMinY;
                 @endphp
                 @if ($el['type'] === 'text')
                     @php $hasBox = array_key_exists('width', $el) && $el['width'] !== null; @endphp

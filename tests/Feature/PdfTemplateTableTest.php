@@ -8,7 +8,9 @@ use App\Models\InvoiceItem;
 use App\Models\PdfTemplate;
 use App\Models\User;
 use App\Services\ItemColumns;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\Test;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
@@ -469,9 +471,12 @@ class PdfTemplateTableTest extends TestCase
      */
     public function test_below_zone_element_uses_relative_top_positioning(): void
     {
+        // Below elements are positioned relative to the TOPMOST below element.
+        // An anchor at the table boundary defines the origin; the text is 80px below it.
         $tableY = 400;
+        $anchorY = 400; // topmost below element
         $belowY = 480;
-        $expectedRelTop = $belowY - $tableY; // 80
+        $expectedRelTop = $belowY - $anchorY; // 80
 
         $elements = [
             [
@@ -482,6 +487,7 @@ class PdfTemplateTableTest extends TestCase
                 'rows' => [],
                 'showFooterSum' => false,
             ],
+            ['id' => 9, 'type' => 'text', 'x' => 40, 'y' => $anchorY, 'content' => 'Footer'],
             [
                 'id' => 2, 'type' => 'text',
                 'x' => 100, 'y' => $belowY,
@@ -494,6 +500,31 @@ class PdfTemplateTableTest extends TestCase
         // The relative top (80px) must appear in the below-flow section
         $this->assertStringContainsString('RelPosTest', $html);
         $this->assertStringContainsString("top: {$expectedRelTop}px", $html);
+    }
+
+    #[Test]
+    public function test_lone_below_element_near_page_bottom_stays_single_page(): void
+    {
+        // Regression: a single below-zone element placed near the page bottom must
+        // NOT spill onto a second page. It is positioned relative to itself (relTop 0)
+        // and sits right after the (short) table, so the document fits one page.
+        $elements = [
+            [
+                'id' => 1, 'type' => 'table',
+                'x' => 40, 'y' => 300,
+                'width' => 714,
+                'columns' => ItemColumns::defaultColumns(),
+                'rows' => [],
+                'showFooterSum' => false,
+            ],
+            ['id' => 2, 'type' => 'text', 'x' => 40, 'y' => 1090, 'content' => 'Catatan kaki'],
+        ];
+
+        $pdf = Pdf::loadView('pdf.template-builder', ['elements' => $elements])
+            ->setPaper('A4', 'portrait');
+        $pdf->output();
+
+        $this->assertSame(1, $pdf->getDomPDF()->getCanvas()->get_page_count());
     }
 
     /**
