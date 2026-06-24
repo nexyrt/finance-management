@@ -1368,25 +1368,31 @@ export default function PdfTemplateEdit() {
                                                     startDrag(e, el);
                                                 }}
                                                 className={`absolute select-none ${isEditing ? 'cursor-text' : 'cursor-move'} ${isSel && !preview ? 'outline-2 outline-primary-500' : ''}`}
-                                                style={{
-                                                    left: el.x, top: el.y, touchAction: 'none',
-                                                    width: el.width, height: el.height,
-                                                    opacity: el.opacity !== undefined ? el.opacity / 100 : undefined,
-                                                    border: (el.borderWidth && el.borderWidth > 0)
-                                                        ? `${el.borderWidth}px solid ${el.borderColor ?? '#000000'}`
-                                                        : undefined,
-                                                    borderRadius: el.borderRadius ? `${el.borderRadius}px` : undefined,
-                                                    overflow: 'hidden',
-                                                    boxSizing: 'border-box',
-                                                }}
+                                                style={{ left: el.x, top: el.y, touchAction: 'none', width: el.width, height: el.height }}
                                             >
-                                                <img
-                                                    src={el.src}
-                                                    alt=""
-                                                    draggable={false}
-                                                    style={{ width: '100%', height: '100%', maxWidth: 'none' }}
-                                                    className="pointer-events-none block"
-                                                />
+                                                {/* Inner clip layer holds border/radius/opacity/crop. Kept separate
+                                                    so the resize handles (positioned OUTSIDE the box) are not clipped
+                                                    by overflow:hidden. */}
+                                                <div
+                                                    style={{
+                                                        width: '100%', height: '100%',
+                                                        opacity: el.opacity !== undefined ? el.opacity / 100 : undefined,
+                                                        border: (el.borderWidth && el.borderWidth > 0)
+                                                            ? `${el.borderWidth}px solid ${el.borderColor ?? '#000000'}`
+                                                            : undefined,
+                                                        borderRadius: el.borderRadius ? `${el.borderRadius}px` : undefined,
+                                                        overflow: 'hidden',
+                                                        boxSizing: 'border-box',
+                                                    }}
+                                                >
+                                                    <img
+                                                        src={el.src}
+                                                        alt=""
+                                                        draggable={false}
+                                                        style={{ width: '100%', height: '100%', maxWidth: 'none' }}
+                                                        className="pointer-events-none block"
+                                                    />
+                                                </div>
                                                 {isSel && !preview &&
                                                     (['nw', 'ne', 'sw', 'se'] as const).map((corner) => (
                                                         <span
