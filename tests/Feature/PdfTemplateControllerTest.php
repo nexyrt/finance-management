@@ -298,6 +298,74 @@ class PdfTemplateControllerTest extends TestCase
             ->assertSessionHasErrors('layout.bands.footerFixed');
     }
 
+    // ── Margin persistence (B2) ──────────────────────────────────────────────
+
+    public function test_save_persists_custom_per_side_margins(): void
+    {
+        $template = PdfTemplate::query()->create(['name' => 'Margins', 'layout' => [], 'is_default' => false]);
+
+        $layout = [
+            'paper' => ['margins' => ['top' => 50, 'right' => 30, 'bottom' => 50, 'left' => 30]],
+            'bands' => [
+                'header' => ['height' => 180, 'repeat' => false, 'elements' => []],
+                'content' => ['table' => null],
+                'footerFlow' => ['height' => 80, 'elements' => []],
+                'footerFixed' => ['height' => 40, 'elements' => []],
+            ],
+        ];
+
+        $this->actingAs($this->admin)
+            ->post("/settings/pdf-templates/{$template->id}/save", ['layout' => $layout])
+            ->assertRedirect();
+
+        $saved = $template->fresh()->layout;
+
+        // Must round-trip the custom values — NOT overwritten by hardcoded 40s
+        $this->assertSame(50, $saved['paper']['margins']['top']);
+        $this->assertSame(30, $saved['paper']['margins']['right']);
+        $this->assertSame(50, $saved['paper']['margins']['bottom']);
+        $this->assertSame(30, $saved['paper']['margins']['left']);
+    }
+
+    public function test_save_banded_layout_rejects_negative_margin(): void
+    {
+        $template = PdfTemplate::query()->create(['name' => 'T', 'layout' => [], 'is_default' => false]);
+
+        $layout = [
+            'paper' => ['margins' => ['top' => -5, 'right' => 40, 'bottom' => 40, 'left' => 40]],
+            'bands' => [
+                'header' => ['height' => 180, 'repeat' => false, 'elements' => []],
+                'content' => ['table' => null],
+                'footerFlow' => ['height' => 80, 'elements' => []],
+                'footerFixed' => ['height' => 40, 'elements' => []],
+            ],
+        ];
+
+        $this->actingAs($this->admin)
+            ->post("/settings/pdf-templates/{$template->id}/save", ['layout' => $layout])
+            ->assertSessionHasErrors('layout.paper.margins.top');
+    }
+
+    public function test_save_banded_layout_rejects_missing_margin_key(): void
+    {
+        $template = PdfTemplate::query()->create(['name' => 'T', 'layout' => [], 'is_default' => false]);
+
+        // 'left' is missing from margins
+        $layout = [
+            'paper' => ['margins' => ['top' => 40, 'right' => 40, 'bottom' => 40]],
+            'bands' => [
+                'header' => ['height' => 180, 'repeat' => false, 'elements' => []],
+                'content' => ['table' => null],
+                'footerFlow' => ['height' => 80, 'elements' => []],
+                'footerFixed' => ['height' => 40, 'elements' => []],
+            ],
+        ];
+
+        $this->actingAs($this->admin)
+            ->post("/settings/pdf-templates/{$template->id}/save", ['layout' => $layout])
+            ->assertSessionHasErrors('layout.paper.margins.left');
+    }
+
     public function test_save_legacy_flat_layout_backward_compat(): void
     {
         // Old flat-array layout from pre-B1 templates must save without errors.

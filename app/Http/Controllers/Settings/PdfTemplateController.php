@@ -148,6 +148,11 @@ class PdfTemplateController extends Controller
             $request->validate([
                 'layout' => ['present', 'array'],
                 'layout.paper' => ['required', 'array'],
+                'layout.paper.margins' => ['required', 'array'],
+                'layout.paper.margins.top' => ['required', 'numeric', 'min:0'],
+                'layout.paper.margins.right' => ['required', 'numeric', 'min:0'],
+                'layout.paper.margins.bottom' => ['required', 'numeric', 'min:0'],
+                'layout.paper.margins.left' => ['required', 'numeric', 'min:0'],
                 'layout.bands' => ['required', 'array'],
                 'layout.bands.header' => ['required', 'array'],
                 'layout.bands.content' => ['required', 'array'],

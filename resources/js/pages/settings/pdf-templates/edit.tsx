@@ -50,6 +50,8 @@ import type { SharedProps } from '@/types';
 // ponytail: koordinat px @96dpi. A4 = 794x1123.
 const A4 = { w: 794, h: 1123 };
 
+const DEFAULT_MARGINS = { top: 40, right: 40, bottom: 40, left: 40 };
+
 // ── Font map (ONE source of truth — editor CSS stack + DomPDF family name) ──────
 export const FONT_MAP = [
     { label: 'Helvetica / Arial',  cssFontStack: 'Helvetica, Arial, sans-serif',     dompdfFamily: 'Helvetica' },
@@ -306,6 +308,39 @@ function bandLabel(band: BandName): string {
     return 'Footer Tetap';
 }
 
+// ── Margin Settings Panel ─────────────────────────────────────────────────────
+
+type Margins = { top: number; right: number; bottom: number; left: number };
+
+function MarginSettingsPanel({
+    margins,
+    onChangeMargins,
+}: {
+    margins: Margins;
+    onChangeMargins: (m: Margins) => void;
+}) {
+    const set = (key: keyof Margins, v: number) =>
+        onChangeMargins({ ...margins, [key]: Math.max(0, v) });
+
+    return (
+        <div className="rounded-lg border border-secondary-200 dark:border-dark-600 bg-zinc-50 dark:bg-dark-700 p-2.5 space-y-2">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-dark-500 dark:text-dark-400 block">Halaman / Margin</span>
+            <Row label="Atas">
+                <NumField value={margins.top} onChange={(v) => set('top', v)} unit="px" />
+            </Row>
+            <Row label="Kanan">
+                <NumField value={margins.right} onChange={(v) => set('right', v)} unit="px" />
+            </Row>
+            <Row label="Bawah">
+                <NumField value={margins.bottom} onChange={(v) => set('bottom', v)} unit="px" />
+            </Row>
+            <Row label="Kiri">
+                <NumField value={margins.left} onChange={(v) => set('left', v)} unit="px" />
+            </Row>
+        </div>
+    );
+}
+
 // ── Band Settings Panel ───────────────────────────────────────────────────────
 
 function BandSettingsPanel({
@@ -413,20 +448,22 @@ export default function PdfTemplateEdit() {
             Object.prototype.hasOwnProperty.call(sampleData, path) ? sampleData[path] : match,
         );
 
-    // Compute initial bands from layout (banded, legacy array, or default)
-    const initialBands = React.useMemo((): BandedLayout['bands'] => {
+    // Compute initial bands + margins from layout (banded, legacy array, or default)
+    const { initialBands, initialMargins } = React.useMemo(() => {
         const layout = template.layout;
         if (layout && typeof layout === 'object' && !Array.isArray(layout) && 'bands' in (layout as object)) {
-            return (layout as BandedLayout).bands;
+            const bl = layout as BandedLayout;
+            return { initialBands: bl.bands, initialMargins: bl.paper?.margins ?? { ...DEFAULT_MARGINS } };
         }
         if (Array.isArray(layout) && layout.length > 0) {
-            return migrateToLegacyBanded(layout as El[]);
+            return { initialBands: migrateToLegacyBanded(layout as El[]), initialMargins: { ...DEFAULT_MARGINS } };
         }
-        return DEFAULT_BANDS;
+        return { initialBands: DEFAULT_BANDS, initialMargins: { ...DEFAULT_MARGINS } };
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const [bands, setBands] = React.useState<BandedLayout['bands']>(initialBands);
+    const [margins, setMargins] = React.useState<{ top: number; right: number; bottom: number; left: number }>(initialMargins);
     const [activeBand, setActiveBand] = React.useState<BandName>('header');
     const [selectedId, setSelectedId] = React.useState<number | null>(null);
     const [selectedBand, setSelectedBand] = React.useState<BandName | null>(null);
@@ -988,7 +1025,7 @@ export default function PdfTemplateEdit() {
     const save = () => {
         setSaving(true);
         const layout: BandedLayout = {
-            paper: { margins: { top: 40, right: 40, bottom: 40, left: 40 } },
+            paper: { margins },
             bands,
         };
         router.post(
@@ -1483,6 +1520,24 @@ export default function PdfTemplateEdit() {
                                     className={`relative bg-white shadow-xl ${dragOver ? 'ring-2 ring-primary-500' : ''}`}
                                     style={{ width: A4.w, height: 'auto', transform: `scale(${zoom})`, transformOrigin: 'top left', overflow: 'visible' }}
                                 >
+                                    {/* ── MARGIN GUIDE — dashed rect showing printable area ── */}
+                                    {/* ponytail: pointer-events none so it never blocks clicks */}
+                                    <div
+                                        aria-hidden
+                                        className="absolute pointer-events-none"
+                                        style={{
+                                            top: margins.top,
+                                            left: margins.left,
+                                            width: A4.w - margins.left - margins.right,
+                                            // height spans from top margin to bottom margin; content is dynamic so we use a large height
+                                            // We just mark the L/R/T edges — the bottom margin line is shown separately
+                                            bottom: margins.bottom,
+                                            border: '1px dashed rgba(99,102,241,0.35)',
+                                            borderRadius: 0,
+                                            zIndex: 100,
+                                        }}
+                                    />
+
                                     {/* ── HEADER BAND ── */}
                                     <div
                                         ref={headerRef}
@@ -1531,7 +1586,7 @@ export default function PdfTemplateEdit() {
                                                         setActiveBand('content');
                                                     }}
                                                     className={`absolute cursor-move ${isSel && !preview ? 'outline-2 outline-primary-500' : ''}`}
-                                                    style={{ left: tableEl.x, top: 24, width: tableEl.width, height, touchAction: 'none' }}
+                                                    style={{ left: tableEl.x + margins.left, top: 24, width: tableEl.width, height, touchAction: 'none' }}
                                                 >
                                                     <TablePreview el={tableEl} rows={rows} />
                                                     {isSel && !preview && (
@@ -1715,10 +1770,14 @@ export default function PdfTemplateEdit() {
                     />
 
                     {!selected ? (
-                        <div className="flex-1 overflow-auto px-3 py-3">
-                            <p className="text-[11px] text-dark-400 dark:text-dark-500 mb-3">
-                                Pilih elemen di kanvas, atau atur ukuran band di bawah.
+                        <div className="flex-1 overflow-auto px-3 py-3 space-y-3">
+                            <p className="text-[11px] text-dark-400 dark:text-dark-500">
+                                Pilih elemen di kanvas, atau atur margin & ukuran band di bawah.
                             </p>
+                            <MarginSettingsPanel
+                                margins={margins}
+                                onChangeMargins={(m) => setMargins(m)}
+                            />
                             <BandSettingsPanel
                                 bands={bands}
                                 onChangeBands={(patch) => { snapshot(); setBands((prev) => ({ ...prev, ...patch })); }}
