@@ -273,6 +273,20 @@
         .band-table-flow {
             width: 100%;
         }
+        /* B4: running footer — DomPDF repeats position:fixed on every page */
+        .band-footer-fixed {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+        }
+        /* B4: running header (repeat mode) */
+        .band-header-fixed {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+        }
 
         /* ── Legacy path: Zone 1: Absolute header layer (page 1) ── */
         .paper {
@@ -545,26 +559,67 @@
 
 @if (! empty($banded))
 {{-- ══════════════════════════════════════════════════════════════════════════
-     PATH A — BANDED LAYOUT (B3)
-     Structure: header band (absolute elements) → items table (flow) → footer-flow band (avoid break)
+     PATH A — BANDED LAYOUT (B3 + B4)
+     B4 additions:
+       - header.repeat=true  → position:fixed top (running header every page) + padding-top on body
+       - footerFixed elements → position:fixed bottom (running footer every page) + padding-bottom on body
      @page margins already applied via CSS @page rule above.
-     footerFixed + header.repeat deferred to B4.
 ══════════════════════════════════════════════════════════════════════════ --}}
 
-{{-- ── A1: Header band (page 1; repeat = B4) ── --}}
-@php $hBand = $headerBand ?? []; @endphp
-<div class="band-header" style="height: {{ (int) ($hBand['height'] ?? 180) }}px;">
+@php
+    $hBand       = $headerBand ?? [];
+    $hRepeat     = (bool) ($hBand['repeat'] ?? false);
+    $hHeight     = (int) ($hBand['height'] ?? 180);
+    $ffxBand     = $footerFixedBand ?? [];
+    $ffxHeight   = (int) ($ffxBand['height'] ?? 0);
+    $ffxHasEls   = count($ffxBand['elements'] ?? []) > 0;
+
+    // B4: body padding reserves space so flow content never overlaps running bands.
+    // padding-top only when header repeats; padding-bottom only when footerFixed has elements.
+    $bodyPaddingTop    = $hRepeat    ? $hHeight  : 0;
+    $bodyPaddingBottom = $ffxHasEls  ? $ffxHeight : 0;
+@endphp
+
+{{-- B4: inject body padding when running bands are active --}}
+@if ($bodyPaddingTop > 0 || $bodyPaddingBottom > 0)
+<style>
+    body {
+        @if ($bodyPaddingTop > 0) padding-top: {{ $bodyPaddingTop }}px; @endif
+        @if ($bodyPaddingBottom > 0) padding-bottom: {{ $bodyPaddingBottom }}px; @endif
+    }
+</style>
+@endif
+
+{{-- ── B4: Footer-fixed running band (position:fixed bottom, every page) ── --}}
+{{-- Rendered FIRST in DOM so DomPDF's fixed-positioning registers it before flow content --}}
+@if ($ffxHasEls)
+<div class="band-footer-fixed" style="height: {{ $ffxHeight }}px;">
+    @foreach ($ffxBand['elements'] as $el)
+        {!! $renderElement($el) !!}
+    @endforeach
+</div>
+@endif
+
+{{-- ── B4: Header-fixed running band (repeat=true → position:fixed top, every page) ── --}}
+{{-- When repeat=false: rendered as first flow block (page 1 only, B3 behaviour). ── --}}
+@if ($hRepeat)
+<div class="band-header-fixed" style="height: {{ $hHeight }}px;">
     @foreach ($hBand['elements'] ?? [] as $el)
         {!! $renderElement($el) !!}
     @endforeach
 </div>
+@else
+{{-- ── A1: Header band (page 1 only, flow) ── --}}
+<div class="band-header" style="height: {{ $hHeight }}px;">
+    @foreach ($hBand['elements'] ?? [] as $el)
+        {!! $renderElement($el) !!}
+    @endforeach
+</div>
+@endif
 
 {{-- ── A2: Content — items table in normal flow (DomPDF paginates, thead repeats) ── --}}
 @if (! empty($tableEl))
-    @php
-        $bandedTableStyle = "width: 100%;";
-    @endphp
-    {!! $renderItemsTable($tableEl, 'band-table-flow', $bandedTableStyle) !!}
+    {!! $renderItemsTable($tableEl, 'band-table-flow', 'width: 100%;') !!}
 @endif
 
 {{-- ── A3: Footer-flow band (follows last table row; page-break-inside:avoid) ── --}}

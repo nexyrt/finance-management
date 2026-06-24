@@ -458,6 +458,168 @@ class PdfTemplateBandedTest extends TestCase
         $this->assertStringContainsString('margin: 0', $html);
     }
 
+    // ── B4 Tests ──────────────────────────────────────────────────────────────
+
+    // ── Test B4-1: Footer-fixed → position:fixed bottom + padding-bottom on body ─
+
+    public function test_footer_fixed_renders_as_position_fixed_with_padding_bottom(): void
+    {
+        $ffxHeight = 60;
+
+        $html = view('pdf.template-builder', [
+            'banded' => true,
+            'paper' => ['margins' => ['top' => 40, 'right' => 40, 'bottom' => 40, 'left' => 40]],
+            'headerBand' => ['height' => 180, 'repeat' => false, 'elements' => []],
+            'tableEl' => null,
+            'footerFlowBand' => ['height' => 80, 'elements' => []],
+            'footerFixedBand' => [
+                'height' => $ffxHeight,
+                'elements' => [
+                    ['id' => 99, 'type' => 'text', 'x' => 20, 'y' => 10, 'content' => 'FIXED_FOOTER_SENTINEL', 'fontSize' => 10, 'bold' => false, 'color' => '#0f172a'],
+                ],
+            ],
+            'customFonts' => [],
+            'elements' => [],
+        ])->render();
+
+        // Fixed container must be present with bottom:0
+        $this->assertStringContainsString('position: fixed', $html);
+        $this->assertStringContainsString('bottom: 0', $html);
+        // The sentinel element must be rendered inside it
+        $this->assertStringContainsString('FIXED_FOOTER_SENTINEL', $html);
+        // Body padding-bottom must be >= footerFixed height
+        $this->assertMatchesRegularExpression('/padding-bottom:\s*'.$ffxHeight.'px/', $html);
+    }
+
+    // ── Test B4-2: Header repeat=true → position:fixed top + padding-top on body ─
+
+    public function test_header_repeat_true_renders_as_position_fixed_with_padding_top(): void
+    {
+        $hHeight = 150;
+
+        $html = view('pdf.template-builder', [
+            'banded' => true,
+            'paper' => ['margins' => ['top' => 40, 'right' => 40, 'bottom' => 40, 'left' => 40]],
+            'headerBand' => [
+                'height' => $hHeight,
+                'repeat' => true,
+                'elements' => [
+                    ['id' => 1, 'type' => 'text', 'x' => 20, 'y' => 10, 'content' => 'REPEAT_HEADER_SENTINEL', 'fontSize' => 12, 'bold' => false, 'color' => '#0f172a'],
+                ],
+            ],
+            'tableEl' => null,
+            'footerFlowBand' => ['height' => 80, 'elements' => []],
+            'footerFixedBand' => ['height' => 0, 'elements' => []],
+            'customFonts' => [],
+            'elements' => [],
+        ])->render();
+
+        // Running header: position:fixed + top:0
+        $this->assertStringContainsString('position: fixed', $html);
+        $this->assertStringContainsString('top: 0', $html);
+        $this->assertStringContainsString('REPEAT_HEADER_SENTINEL', $html);
+        // band-header-fixed class (not band-header which is flow)
+        $this->assertStringContainsString('band-header-fixed', $html);
+        $this->assertStringNotContainsString('class="band-header"', $html);
+        // Body padding-top >= header height
+        $this->assertMatchesRegularExpression('/padding-top:\s*'.$hHeight.'px/', $html);
+    }
+
+    // ── Test B4-3: Header repeat=false → flow block (B3 behaviour, no fixed) ────
+
+    public function test_header_repeat_false_renders_as_flow_not_fixed(): void
+    {
+        $html = view('pdf.template-builder', [
+            'banded' => true,
+            'paper' => ['margins' => ['top' => 40, 'right' => 40, 'bottom' => 40, 'left' => 40]],
+            'headerBand' => [
+                'height' => 180,
+                'repeat' => false,
+                'elements' => [
+                    ['id' => 1, 'type' => 'text', 'x' => 20, 'y' => 10, 'content' => 'FLOW_HEADER_SENTINEL', 'fontSize' => 12, 'bold' => false, 'color' => '#0f172a'],
+                ],
+            ],
+            'tableEl' => null,
+            'footerFlowBand' => ['height' => 80, 'elements' => []],
+            'footerFixedBand' => ['height' => 0, 'elements' => []],
+            'customFonts' => [],
+            'elements' => [],
+        ])->render();
+
+        // Flow header: uses .band-header element, NOT .band-header-fixed element
+        $this->assertStringContainsString('class="band-header"', $html);
+        $this->assertStringNotContainsString('class="band-header-fixed"', $html);
+        $this->assertStringContainsString('FLOW_HEADER_SENTINEL', $html);
+        // No body padding-top injected (no running header)
+        $this->assertStringNotContainsString('padding-top:', $html);
+    }
+
+    // ── Test B4-4: Multi-page (40 items) with BOTH footer-fixed + footer-flow ───
+
+    public function test_banded_multipage_with_footer_fixed_and_footer_flow_renders_200(): void
+    {
+        $invoice = $this->makeInvoiceWithItems(40);
+
+        $layout = $this->makeBandedLayout(
+            headerElements: [
+                ['id' => 1, 'type' => 'text', 'x' => 20, 'y' => 20, 'content' => 'Invoice Header', 'fontSize' => 14, 'bold' => true, 'color' => '#0f172a'],
+            ],
+            tableEl: $this->defaultBandedTableEl(),
+            footerFlowElements: [
+                ['id' => 2, 'type' => 'text', 'x' => 20, 'y' => 10, 'content' => 'FLOW_FOOTER_40', 'fontSize' => 10, 'bold' => false, 'color' => '#0f172a'],
+            ],
+        );
+
+        // Add footerFixed elements to the layout
+        $layout['bands']['footerFixed'] = [
+            'height' => 50,
+            'elements' => [
+                ['id' => 3, 'type' => 'text', 'x' => 20, 'y' => 10, 'content' => 'FIXED_FOOTER_40', 'fontSize' => 9, 'bold' => false, 'color' => '#555555'],
+            ],
+        ];
+
+        $template = PdfTemplate::query()->create([
+            'name' => 'B4 Multi-page Both Footers',
+            'layout' => $layout,
+            'is_default' => false,
+        ]);
+
+        $response = $this->actingAs($this->admin)
+            ->get("/settings/pdf-templates/{$template->id}/pdf/{$invoice->id}")
+            ->assertOk();
+
+        $this->assertStringContainsString(
+            'application/pdf',
+            (string) $response->headers->get('content-type'),
+        );
+
+        // Blade render: both footer sentinels present
+        $invoice->load(['client', 'items', 'payments']);
+        $columns = ItemColumns::defaultColumns();
+        $rows = ItemColumns::resolveItems($columns, $invoice->items);
+        $tableEl = array_merge($this->defaultBandedTableEl(), ['rows' => $rows]);
+
+        $html = view('pdf.template-builder', [
+            'banded' => true,
+            'paper' => ['margins' => ['top' => 40, 'right' => 40, 'bottom' => 40, 'left' => 40]],
+            'headerBand' => ['height' => 180, 'repeat' => false, 'elements' => []],
+            'tableEl' => $tableEl,
+            'footerFlowBand' => ['height' => 60, 'elements' => [
+                ['id' => 2, 'type' => 'text', 'x' => 20, 'y' => 10, 'content' => 'FLOW_FOOTER_40', 'fontSize' => 10, 'bold' => false, 'color' => '#0f172a'],
+            ]],
+            'footerFixedBand' => ['height' => 50, 'elements' => [
+                ['id' => 3, 'type' => 'text', 'x' => 20, 'y' => 10, 'content' => 'FIXED_FOOTER_40', 'fontSize' => 9, 'bold' => false, 'color' => '#555555'],
+            ]],
+            'customFonts' => [],
+            'elements' => [],
+        ])->render();
+
+        $this->assertStringContainsString('FLOW_FOOTER_40', $html);
+        $this->assertStringContainsString('FIXED_FOOTER_40', $html);
+        $this->assertStringContainsString('band-footer-fixed', $html);
+        $this->assertStringContainsString('band-footer-flow', $html);
+    }
+
     // ── Test 10: Grid element in header band renders with token resolution ────
 
     public function test_banded_header_grid_element_renders(): void

@@ -328,8 +328,13 @@ class PdfTemplateController extends Controller
         $footerFlowHeight = (int) ($footerFlowBand['height'] ?? 120);
         $footerFlowElements = $resolveElements($footerFlowBand['elements'] ?? []);
 
-        // Footer-fixed band (B4 — pass through, not rendered as fixed yet)
-        $footerFixedBand = $bands['footerFixed'] ?? [];
+        // Footer-fixed band (B4 — resolve tokens + render as position:fixed)
+        $footerFixedRaw = $bands['footerFixed'] ?? [];
+        $footerFixedHeight = (int) ($footerFixedRaw['height'] ?? 0);
+        $footerFixedBand = [
+            'height' => $footerFixedHeight,
+            'elements' => $resolveElements($footerFixedRaw['elements'] ?? []),
+        ];
 
         return Pdf::loadView('pdf.template-builder', [
             // Banded path signal
@@ -349,7 +354,7 @@ class PdfTemplateController extends Controller
                 'height' => $footerFlowHeight,
                 'elements' => $footerFlowElements,
             ],
-            // Footer-fixed (B4 — passed but not rendered fixed yet)
+            // Footer-fixed (B4 — rendered as position:fixed bottom, every page)
             'footerFixedBand' => $footerFixedBand,
             // Custom fonts
             'customFonts' => $customFonts,
