@@ -339,8 +339,8 @@ export default function PdfTemplateEdit() {
         return () => { style?.remove(); };
     }, [customFonts]);
 
-    const resolve = (text: string): string =>
-        text.replace(/\{\{([\w.]+)\}\}/g, (match, path: string) =>
+    const resolve = (text: string | null | undefined): string =>
+        (text ?? '').replace(/\{\{([\w.]+)\}\}/g, (match, path: string) =>
             Object.prototype.hasOwnProperty.call(sampleData, path) ? sampleData[path] : match,
         );
 
