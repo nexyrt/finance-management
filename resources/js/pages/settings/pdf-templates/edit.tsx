@@ -3216,8 +3216,8 @@ function TablePreview({
         'item.is_tax_deposit': 'Tidak',
     }));
 
-    const resolveCell = (content: string, itemRow?: Record<string, string>): string =>
-        content.replace(/\{\{([\w.]+)\}\}/g, (_, key) => {
+    const resolveCell = (content: string | null | undefined, itemRow?: Record<string, string>): string =>
+        (content ?? '').replace(/\{\{([\w.]+)\}\}/g, (_, key) => {
             if (itemRow && key.startsWith('item.')) { return itemRow[key] ?? key; }
             return `{{${key}}}`;
         });
