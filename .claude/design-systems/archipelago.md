@@ -223,6 +223,8 @@ This rule exists because every catalog component is pre-styled to Archipelago to
 - Single date → `DatePicker`, never `<input type="date">`
 - Date range → `DatePicker mode="range"`, never two separate pickers
 - On/off toggle → `Switch`, never a hand-styled checkbox
+- Color picker / hex input → `ColorInput`, never `<input type="color">` or a custom swatch
+- Numeric range / slider → `Slider`, never `<input type="range">`
 - Yes / no checkbox → `Checkbox`, never raw `<input type="checkbox">`
 - File / attachment → `FileUpload`, never `<input type="file">` or a custom drop zone
 - Exclusive choice (radio / segment) → `SegmentedControl`, never a custom button group

@@ -528,6 +528,8 @@ Semua komponen sudah dikustomisasi penuh sesuai Archipelago design system. Refer
 | `Textarea` | `@/components/ui/textarea` | `<textarea>` biasa | Props: `label`, `hint`, `error`. |
 | `Checkbox` | `@/components/ui/checkbox` | `<input type="checkbox">` | `primary-600` checked state. |
 | `Switch` | `@/components/ui/switch` | Toggle HTML manual | `primary-600` on, `dark-600` off. |
+| `ColorInput` | `@/components/ui/color-input` | **`<input type="color">` + hex text manual — WAJIB** | Swatch + hex field combo. Props: `value`, `onChange`, `label`, `error`. Stores lowercase hex string. |
+| `Slider` | `@/components/ui/slider` | **`<input type="range">` manual — WAJIB** | Styled range with optional suffix label. Props: `value`, `onChange`, `min`, `max`, `step`, `label`, `suffix`, `disabled`. |
 | `SegmentedControl` | `@/components/ui/segmented-control` | **Tombol pilihan segmented/radio manual** | Pilihan eksklusif berbentuk grup tombol (mis. tipe/prioritas/status). Props: `options` (`{value,label,icon?,activeClassName?}`), `value`, `onChange`, `columns`, `layout` (`stack`\|`inline`), `label`, `error`. Generic atas tipe value. |
 | `Label` | `@/components/ui/label` | `<label>` manual | `dark-900 dark:text-dark-300`. |
 | `Combobox` | `@/components/ui/combobox` | **`<select>` — WAJIB** | Searchable dropdown via `cmdk`. Props: `options`, `value`, `onChange`, `placeholder`, `searchPlaceholder`, `emptyText`. |
@@ -565,6 +567,8 @@ Pilihan dari daftar (select)   → Combobox       ← JANGAN <select> HTML
 Pilihan tanggal (single)       → DatePicker     ← JANGAN <input type="date">
 Pilihan rentang tanggal        → DatePicker mode="range"
 Toggle on/off                  → Switch
+Pilih warna / hex input        → ColorInput     ← JANGAN <input type="color"> manual
+Slider numerik (range)         → Slider         ← JANGAN <input type="range"> manual
 Pilihan eksklusif (radio/segment) → SegmentedControl  ← JANGAN tombol custom
 Yes/No checkbox                → Checkbox
 Label standalone               → Label

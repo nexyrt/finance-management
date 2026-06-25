@@ -3,6 +3,21 @@ import { router, usePage } from '@inertiajs/react';
 import { toast } from 'sonner';
 import { AppLayout } from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Switch } from '@/components/ui/switch';
+import { Badge } from '@/components/ui/badge';
+import { Textarea } from '@/components/ui/textarea';
+import { Combobox } from '@/components/ui/combobox';
+import { ColorInput } from '@/components/ui/color-input';
+import { Slider } from '@/components/ui/slider';
+import {
+    DropdownMenu,
+    DropdownMenuTrigger,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu';
 import {
     Type,
     Image as ImageIcon,
@@ -381,7 +396,7 @@ function BandSettingsPanel({
                 <div className="flex items-center gap-2 px-3 py-2 bg-blue-50/60 dark:bg-blue-900/10 border-b border-blue-100 dark:border-blue-900/20">
                     <span className="inline-block w-2 h-2 rounded-full bg-blue-400 shrink-0" />
                     <span className="text-[10px] font-semibold uppercase tracking-[0.1em] text-dark-600 dark:text-dark-300 flex-1">Header</span>
-                    <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded-md leading-none bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">Tetap</span>
+                    <Badge variant="blue" size="sm">Tetap</Badge>
                 </div>
                 <div className="p-3 space-y-2">
                     <Row label="Tinggi">
@@ -391,21 +406,13 @@ function BandSettingsPanel({
                             unit="px"
                         />
                     </Row>
-                    {/* Header repeat toggle — inline switch style */}
+                    {/* Header repeat toggle — catalog Switch */}
                     <div className="flex items-center gap-2">
                         <span className="w-12 shrink-0 text-xs text-dark-500 dark:text-dark-400">Ulangi</span>
-                        <button
-                            role="switch"
-                            aria-checked={bands.header.repeat}
-                            onClick={() => onChangeBands({ header: { ...bands.header, repeat: !bands.header.repeat } })}
-                            className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-1 ${
-                                bands.header.repeat ? 'bg-primary-600' : 'bg-zinc-200 dark:bg-dark-500'
-                            }`}
-                        >
-                            <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow-sm transition-transform duration-200 ${
-                                bands.header.repeat ? 'translate-x-4' : 'translate-x-0.5'
-                            }`} />
-                        </button>
+                        <Switch
+                            checked={bands.header.repeat}
+                            onCheckedChange={(checked) => onChangeBands({ header: { ...bands.header, repeat: checked } })}
+                        />
                         <span className="text-xs text-dark-500 dark:text-dark-400 flex items-center gap-1">
                             <Repeat2 className="w-3 h-3" />
                             {bands.header.repeat ? 'Tiap halaman' : 'Hal. pertama saja'}
@@ -419,7 +426,7 @@ function BandSettingsPanel({
                 <div className="flex items-center gap-2 px-3 py-2 bg-emerald-50/60 dark:bg-emerald-900/10 border-b border-emerald-100 dark:border-emerald-900/20">
                     <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 shrink-0" />
                     <span className="text-[10px] font-semibold uppercase tracking-[0.1em] text-dark-600 dark:text-dark-300 flex-1">Konten</span>
-                    <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded-md leading-none bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">Dinamis ⇕</span>
+                    <Badge variant="emerald" size="sm">Dinamis ⇕</Badge>
                 </div>
                 <div className="px-3 py-2.5">
                     <p className="text-[11px] text-dark-400 dark:text-dark-500 leading-relaxed">Tinggi otomatis — mengikuti jumlah baris item invoice.</p>
@@ -431,7 +438,7 @@ function BandSettingsPanel({
                 <div className="flex items-center gap-2 px-3 py-2 bg-amber-50/60 dark:bg-amber-900/10 border-b border-amber-100 dark:border-amber-900/20">
                     <span className="inline-block w-2 h-2 rounded-full bg-amber-400 shrink-0" />
                     <span className="text-[10px] font-semibold uppercase tracking-[0.1em] text-dark-600 dark:text-dark-300 flex-1">Footer Flow</span>
-                    <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded-md leading-none bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">Setelah konten</span>
+                    <Badge variant="orange" size="sm">Setelah konten</Badge>
                 </div>
                 <div className="p-3">
                     <Row label="Tinggi">
@@ -449,7 +456,7 @@ function BandSettingsPanel({
                 <div className="flex items-center gap-2 px-3 py-2 bg-purple-50/60 dark:bg-purple-900/10 border-b border-purple-100 dark:border-purple-900/20">
                     <span className="inline-block w-2 h-2 rounded-full bg-purple-400 shrink-0" />
                     <span className="text-[10px] font-semibold uppercase tracking-[0.1em] text-dark-600 dark:text-dark-300 flex-1">Footer Tetap</span>
-                    <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded-md leading-none bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300">Tiap halaman</span>
+                    <Badge variant="purple" size="sm">Tiap halaman</Badge>
                 </div>
                 <div className="p-3 space-y-2">
                     <Row label="Tinggi">
@@ -521,7 +528,6 @@ export default function PdfTemplateEdit() {
     const [fieldMenu, setFieldMenu] = React.useState(false);
     const [zoom, setZoom] = React.useState(0.6);
     const [dragOver, setDragOver] = React.useState(false);
-    const [pratinjauOpen, setPratinjauOpen] = React.useState(false);
     const [overLayerId, setOverLayerId] = React.useState<number | null>(null);
 
     // Per-band refs for drag calculations
@@ -1460,14 +1466,7 @@ export default function PdfTemplateEdit() {
         });
     };
 
-    // ── Band badge colours ────────────────────────────────────────────────────
-
-    const bandBadgeColor: Record<BandName, string> = {
-        header: 'bg-blue-100/80 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
-        content: 'bg-green-100/80 text-green-700 dark:bg-green-900/30 dark:text-green-300',
-        footerFlow: 'bg-orange-100/80 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300',
-        footerFixed: 'bg-purple-100/80 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300',
-    };
+    // ── Band subtitles ────────────────────────────────────────────────────────
 
     const bandSubtitle: Record<BandName, string> = {
         header: bands.header.repeat ? 'Tiap halaman' : 'Halaman pertama',
@@ -1552,42 +1551,37 @@ export default function PdfTemplateEdit() {
 
                     <div className="w-px h-5 bg-secondary-200 dark:bg-dark-600 mx-1 shrink-0" />
 
-                    {/* Pratinjau N-item dropdown */}
-                    <div className="relative">
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            className="gap-1 text-xs text-dark-600 dark:text-dark-300"
-                            onClick={() => setPratinjauOpen((o) => !o)}
-                            title="Pratinjau PDF dengan N item"
-                        >
-                            <FileDown className="w-3.5 h-3.5" />
-                            <span className="hidden sm:inline">Pratinjau</span>
-                            <ChevronDown className="w-3 h-3 opacity-60" />
-                        </Button>
-                        {pratinjauOpen && (
-                            <>
-                                <div className="fixed inset-0 z-40" onClick={() => setPratinjauOpen(false)} />
-                                <div className="absolute top-full mt-1.5 right-0 z-50 min-w-[148px] bg-white dark:bg-dark-700 border border-secondary-200 dark:border-dark-600 rounded-xl shadow-xl overflow-hidden">
-                                    <p className="px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.08em] text-dark-400 dark:text-dark-500 border-b border-secondary-200 dark:border-dark-600">
-                                        Jumlah item
-                                    </p>
-                                    {([3, 10, 25, 60] as const).map((n) => (
-                                        <button
-                                            key={n}
-                                            onClick={() => { setPratinjauOpen(false); openPdfWithItems(n); }}
-                                            className="w-full text-left px-3 py-2 text-xs text-dark-700 dark:text-dark-300 hover:bg-zinc-50 dark:hover:bg-dark-600 transition-colors duration-100 flex items-center justify-between gap-3"
-                                        >
-                                            <span className="font-medium">{n} item</span>
-                                            <span className="text-[10px] text-dark-400 dark:text-dark-500 tabular-nums">
-                                                {n <= 5 ? '1 hal.' : n <= 20 ? '~2 hal.' : n <= 40 ? '~3 hal.' : '~5 hal.'}
-                                            </span>
-                                        </button>
-                                    ))}
-                                </div>
-                            </>
-                        )}
-                    </div>
+                    {/* Pratinjau N-item dropdown — catalog DropdownMenu */}
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="gap-1 text-xs text-dark-600 dark:text-dark-300"
+                                title="Pratinjau PDF dengan N item"
+                            >
+                                <FileDown className="w-3.5 h-3.5" />
+                                <span className="hidden sm:inline">Pratinjau</span>
+                                <ChevronDown className="w-3 h-3 opacity-60" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="min-w-[148px]">
+                            <DropdownMenuLabel>Jumlah item</DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            {([3, 10, 25, 60] as const).map((n) => (
+                                <DropdownMenuItem
+                                    key={n}
+                                    onClick={() => openPdfWithItems(n)}
+                                    className="flex items-center justify-between gap-3"
+                                >
+                                    <span className="font-medium">{n} item</span>
+                                    <span className="text-[10px] text-dark-400 dark:text-dark-500 tabular-nums">
+                                        {n <= 5 ? '1 hal.' : n <= 20 ? '~2 hal.' : n <= 40 ? '~3 hal.' : '~5 hal.'}
+                                    </span>
+                                </DropdownMenuItem>
+                            ))}
+                        </DropdownMenuContent>
+                    </DropdownMenu>
 
                     {/* PDF — quick export */}
                     <Button variant="ghost" size="sm" onClick={openPdf} className="gap-1 text-xs text-dark-600 dark:text-dark-300" title="Cetak PDF (data contoh)">
@@ -1757,9 +1751,7 @@ export default function PdfTemplateEdit() {
                                         {/* Band label — top-left corner tab */}
                                         <div className="absolute top-1 left-1 flex items-center gap-1 pointer-events-none z-10">
                                             <span className="text-[8px] font-bold uppercase tracking-[0.12em] text-slate-300 dark:text-dark-600">HEADER</span>
-                                            <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded-md leading-none ${bandBadgeColor.header}`}>
-                                                {bandSubtitle.header}
-                                            </span>
+                                            <Badge variant="blue" size="sm" className="text-[9px] leading-none py-0.5 px-1.5">{bandSubtitle.header}</Badge>
                                         </div>
                                         {renderBandElements('header', headerRef, bands.header.elements)}
                                     </div>
@@ -1792,9 +1784,7 @@ export default function PdfTemplateEdit() {
                                         {/* Band label */}
                                         <div className="absolute top-1 left-1 flex items-center gap-1 pointer-events-none z-10">
                                             <span className="text-[8px] font-bold uppercase tracking-[0.12em] text-slate-300 dark:text-dark-600">KONTEN</span>
-                                            <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded-md leading-none ${bandBadgeColor.content}`}>
-                                                {bandSubtitle.content}
-                                            </span>
+                                            <Badge variant="emerald" size="sm" className="text-[9px] leading-none py-0.5 px-1.5">{bandSubtitle.content}</Badge>
                                         </div>
                                         {tableEl ? (() => {
                                             const isSel = selectedId === tableEl.id;
@@ -1868,9 +1858,7 @@ export default function PdfTemplateEdit() {
                                         {/* Band label */}
                                         <div className="absolute top-1 left-1 flex items-center gap-1 pointer-events-none z-10">
                                             <span className="text-[8px] font-bold uppercase tracking-[0.12em] text-slate-300 dark:text-dark-600">FOOTER FLOW</span>
-                                            <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded-md leading-none ${bandBadgeColor.footerFlow}`}>
-                                                {bandSubtitle.footerFlow}
-                                            </span>
+                                            <Badge variant="orange" size="sm" className="text-[9px] leading-none py-0.5 px-1.5">{bandSubtitle.footerFlow}</Badge>
                                         </div>
                                         {renderBandElements('footerFlow', footerFlowRef, bands.footerFlow.elements)}
                                     </div>
@@ -1907,9 +1895,7 @@ export default function PdfTemplateEdit() {
                                         {/* Band label — shown at top-left of the fixed footer */}
                                         <div className="absolute top-1 left-1 flex items-center gap-1 pointer-events-none z-10">
                                             <span className="text-[8px] font-bold uppercase tracking-[0.12em] text-slate-300 dark:text-dark-600">FOOTER TETAP</span>
-                                            <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded-md leading-none ${bandBadgeColor.footerFixed}`}>
-                                                {bandSubtitle.footerFixed}
-                                            </span>
+                                            <Badge variant="purple" size="sm" className="text-[9px] leading-none py-0.5 px-1.5">{bandSubtitle.footerFixed}</Badge>
                                         </div>
                                         {renderBandElements('footerFixed', footerFixedRef, bands.footerFixed.elements)}
                                     </div>
@@ -2066,14 +2052,14 @@ export default function PdfTemplateEdit() {
                                     </Section>
                                     <Section title="Tampilan">
                                         <Row label="Opasitas">
-                                            <div className="flex items-center gap-2">
-                                                <input type="range" min={0} max={100} step={1}
-                                                    value={(selected as Img).opacity ?? 100}
-                                                    onChange={(e) => update(selected.id, { opacity: +e.target.value })}
-                                                    className="flex-1 accent-primary-600"
-                                                />
-                                                <span className="text-xs tabular-nums w-8 text-right text-dark-500 dark:text-dark-400">{(selected as Img).opacity ?? 100}%</span>
-                                            </div>
+                                            <Slider
+                                                value={(selected as Img).opacity ?? 100}
+                                                onChange={(v) => update(selected.id, { opacity: v })}
+                                                min={0}
+                                                max={100}
+                                                step={1}
+                                                suffix="%"
+                                            />
                                         </Row>
                                         <Row label="Radius">
                                             <NumField value={(selected as Img).borderRadius ?? 0} onChange={(v) => update(selected.id, { borderRadius: Math.max(0, v) })} unit="px" />
@@ -2083,7 +2069,7 @@ export default function PdfTemplateEdit() {
                                         </Row>
                                         {((selected as Img).borderWidth ?? 0) > 0 && (
                                             <Row label="Warna border">
-                                                <Swatch value={(selected as Img).borderColor ?? '#000000'} onChange={(v) => update(selected.id, { borderColor: v })} />
+                                                <ColorInput value={(selected as Img).borderColor ?? '#000000'} onChange={(v) => update(selected.id, { borderColor: v })} />
                                             </Row>
                                         )}
                                     </Section>
@@ -2254,12 +2240,12 @@ function TextInspector({
         <>
             {/* ── Konten ── */}
             <Section title="Konten">
-                <textarea
+                <Textarea
                     ref={contentRef}
                     value={el.content}
                     onChange={(e) => onUpdate({ content: e.target.value })}
                     rows={2}
-                    className={`${inputCn} h-auto py-1.5 font-mono text-xs leading-relaxed`}
+                    className="font-mono text-xs leading-relaxed"
                 />
                 <div className="relative">
                     <Button variant="zinc" size="sm" className="w-full" onClick={() => setFieldMenu((o) => !o)}>
@@ -2289,30 +2275,25 @@ function TextInspector({
 
             {/* ── Font ── */}
             <Section title="Font">
-                {/* Font family — curated + custom fonts in one <select>, plus upload */}
+                {/* Font family — curated + custom fonts via catalog Combobox */}
                 <Row label="Jenis">
-                    <select
+                    <Combobox
                         value={el.fontFamily ?? 'Helvetica / Arial'}
-                        onChange={(e) => onUpdate({ fontFamily: e.target.value as FontLabel })}
-                        className={`${inputCn} pr-2`}
-                    >
-                        <optgroup label="Bawaan">
-                            {FONT_MAP.map((f) => (
-                                <option key={f.label} value={f.label} style={{ fontFamily: f.cssFontStack }}>
-                                    {f.label}
-                                </option>
-                            ))}
-                        </optgroup>
-                        {customFonts.length > 0 && (
-                            <optgroup label="Font kustom">
-                                {customFonts.map((f) => (
-                                    <option key={f.name} value={f.name} style={{ fontFamily: `"${f.name}"` }}>
-                                        {f.name}
-                                    </option>
-                                ))}
-                            </optgroup>
-                        )}
-                    </select>
+                        onChange={(v) => { if (v) onUpdate({ fontFamily: v as FontLabel }); }}
+                        options={[
+                            { value: '__builtin__', label: 'Bawaan', disabled: true },
+                            ...FONT_MAP.map((f) => ({ value: f.label, label: f.label })),
+                            ...(customFonts.length > 0
+                                ? [
+                                    { value: '__custom__', label: 'Font kustom', disabled: true },
+                                    ...customFonts.map((f) => ({ value: f.name, label: f.name })),
+                                ]
+                                : []),
+                        ]}
+                        placeholder="Pilih font…"
+                        searchPlaceholder="Cari font…"
+                        clearable={false}
+                    />
                 </Row>
 
                 {/* Upload font control */}
@@ -2328,13 +2309,12 @@ function TextInspector({
                     {uploadOpen && (
                         <div className="space-y-2 rounded-lg border border-secondary-200 dark:border-dark-600 bg-zinc-50 dark:bg-dark-700 p-2.5">
                             <div>
-                                <label className="block text-[11px] text-dark-500 dark:text-dark-400 mb-1">Nama font *</label>
-                                <input
-                                    type="text"
+                                <Input
+                                    label="Nama font *"
                                     placeholder="mis. Poppins"
                                     value={uploadName}
                                     onChange={(e) => setUploadName(e.target.value)}
-                                    className={`${inputCn} h-7 text-xs`}
+                                    className="h-7 text-xs"
                                 />
                             </div>
                             <div>
@@ -2396,7 +2376,7 @@ function TextInspector({
                     <NumField value={el.fontSize} onChange={(v) => onUpdate({ fontSize: Math.max(4, v) })} unit="px" />
                 </Row>
                 <Row label="Warna teks">
-                    <Swatch value={el.color} onChange={(v) => onUpdate({ color: v })} />
+                    <ColorInput value={el.color} onChange={(v) => onUpdate({ color: v })} />
                 </Row>
                 {/* Style toggles: B I U S */}
                 <Row label="Gaya">
@@ -2417,7 +2397,7 @@ function TextInspector({
                             className="accent-primary-600"
                         />
                         {el.highlight && (
-                            <Swatch value={el.highlight} onChange={(v) => onUpdate({ highlight: v })} />
+                            <ColorInput value={el.highlight} onChange={(v) => onUpdate({ highlight: v })} />
                         )}
                         {!el.highlight && (
                             <span className="text-xs text-dark-400 dark:text-dark-500">Tidak aktif</span>
@@ -2476,15 +2456,7 @@ function TextInspector({
                     </div>
                 </Row>
                 <Row label="Line-height">
-                    <div className="relative">
-                        <input
-                            type="number" step={0.1} min={0.5} max={5}
-                            value={el.lineHeight ?? 1.2}
-                            onChange={(e) => onUpdate({ lineHeight: Math.max(0.5, +e.target.value) })}
-                            className={`${inputCn} pr-8`}
-                        />
-                        <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[11px] text-dark-400 dark:text-dark-500 pointer-events-none">×</span>
-                    </div>
+                    <NumField value={el.lineHeight ?? 1.2} onChange={(v) => onUpdate({ lineHeight: Math.max(0.5, v) })} unit="×" />
                 </Row>
                 <Row label="Spasi huruf">
                     <NumField value={el.letterSpacing ?? 0} onChange={(v) => onUpdate({ letterSpacing: v })} unit="px" />
@@ -2544,7 +2516,7 @@ function TextInspector({
                         </Row>
                         {(el.borderWidth ?? 0) > 0 && (
                             <Row label="Warna border">
-                                <Swatch value={el.borderColor ?? '#000000'} onChange={(v) => onUpdate({ borderColor: v })} />
+                                <ColorInput value={el.borderColor ?? '#000000'} onChange={(v) => onUpdate({ borderColor: v })} />
                             </Row>
                         )}
                         <Row label="Isi kotak">
@@ -2556,7 +2528,7 @@ function TextInspector({
                                     className="accent-primary-600"
                                 />
                                 {el.fill && (
-                                    <Swatch value={el.fill} onChange={(v) => onUpdate({ fill: v })} />
+                                    <ColorInput value={el.fill} onChange={(v) => onUpdate({ fill: v })} />
                                 )}
                                 {!el.fill && (
                                     <span className="text-xs text-dark-400 dark:text-dark-500">Transparan</span>
@@ -2808,7 +2780,7 @@ function GridInspector({
                     />
                 </Row>
                 <Row label="Warna">
-                    <Swatch
+                    <ColorInput
                         value={el.border.color}
                         onChange={(v) => onUpdateGrid({ border: { ...el.border, color: v } })}
                     />
@@ -2857,14 +2829,14 @@ function GridInspector({
                     </Row>
                     {/* Text color */}
                     <Row label="Warna">
-                        <Swatch
+                        <ColorInput
                             value={cell.color}
                             onChange={(v) => onUpdateCell(selectedCell.row, selectedCell.col, { color: v })}
                         />
                     </Row>
                     {/* Fill color */}
                     <Row label="Isi">
-                        <Swatch
+                        <ColorInput
                             value={cell.fill ?? '#ffffff'}
                             onChange={(v) => onUpdateCell(selectedCell.row, selectedCell.col, { fill: v })}
                         />
@@ -3026,15 +2998,14 @@ function TableInspector({
                                     <div key={gi} className="rounded-lg border border-secondary-200 dark:border-dark-600 bg-zinc-50 dark:bg-dark-700 p-2 space-y-1.5">
                                         <div className="flex items-center gap-1.5">
                                             <span className="w-10 shrink-0 text-[11px] text-dark-500 dark:text-dark-400">Label</span>
-                                            <input
-                                                type="text"
+                                            <Input
                                                 value={g.label}
                                                 onChange={(e) => {
                                                     const groups = [...(el.headerGroups ?? [])];
                                                     groups[gi] = { ...groups[gi], label: e.target.value };
                                                     onUpdate({ headerGroups: groups });
                                                 }}
-                                                className={`${inputCn} text-xs h-7 flex-1`}
+                                                className="text-xs h-7 flex-1"
                                             />
                                             <button
                                                 onClick={() => {
@@ -3049,16 +3020,16 @@ function TableInspector({
                                         </div>
                                         <div className="flex items-center gap-1.5">
                                             <span className="w-10 shrink-0 text-[11px] text-dark-500 dark:text-dark-400">Span</span>
-                                            <input
+                                            <Input
                                                 type="number"
                                                 min={1}
-                                                value={g.span ?? 1}
+                                                value={String(g.span ?? 1)}
                                                 onChange={(e) => {
                                                     const groups = [...(el.headerGroups ?? [])];
                                                     groups[gi] = { ...groups[gi], span: Math.max(1, +e.target.value) };
                                                     onUpdate({ headerGroups: groups });
                                                 }}
-                                                className={`${inputCn} h-7 text-xs w-16`}
+                                                className="h-7 text-xs w-16"
                                             />
                                             <div className="flex gap-1 ml-auto">
                                                 {(['left', 'center', 'right'] as const).map((a) => (
@@ -3130,25 +3101,19 @@ function TableInspector({
                             <div className="px-2 pb-2 space-y-1.5 border-t border-secondary-200 dark:border-dark-600 pt-1.5">
                                 <div className="flex items-center gap-1.5">
                                     <span className="w-14 shrink-0 text-[11px] text-dark-500 dark:text-dark-400">Label</span>
-                                    <input
-                                        type="text"
+                                    <Input
                                         value={col.label}
                                         onChange={(e) => onUpdateColumn(idx, { label: e.target.value })}
-                                        className={`${inputCn} text-xs h-7`}
+                                        className="text-xs h-7"
                                     />
                                 </div>
                                 <div className="flex items-center gap-1.5">
                                     <span className="w-14 shrink-0 text-[11px] text-dark-500 dark:text-dark-400">Lebar</span>
-                                    <div className="relative flex-1">
-                                        <input
-                                            type="number"
-                                            value={col.width}
-                                            min={20}
-                                            onChange={(e) => onUpdateColumn(idx, { width: Math.max(20, +e.target.value) })}
-                                            className={`${inputCn} h-7 text-xs pr-7`}
-                                        />
-                                        <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-dark-400 dark:text-dark-500 pointer-events-none">px</span>
-                                    </div>
+                                    <NumField
+                                        value={col.width}
+                                        onChange={(v) => onUpdateColumn(idx, { width: Math.max(20, v) })}
+                                        unit="px"
+                                    />
                                 </div>
                                 <div className="flex items-center gap-1.5">
                                     <span className="w-14 shrink-0 text-[11px] text-dark-500 dark:text-dark-400">Rata</span>
@@ -3229,7 +3194,7 @@ function RectInspector({
                             className="accent-primary-600"
                         />
                         {el.fill ? (
-                            <Swatch value={el.fill} onChange={(v) => onUpdate({ fill: v })} />
+                            <ColorInput value={el.fill} onChange={(v) => onUpdate({ fill: v })} />
                         ) : (
                             <span className="text-xs text-dark-400 dark:text-dark-500">Transparan</span>
                         )}
@@ -3240,7 +3205,7 @@ function RectInspector({
                 </Row>
                 {el.borderWidth > 0 && (
                     <Row label="Warna border">
-                        <Swatch value={el.borderColor} onChange={(v) => onUpdate({ borderColor: v })} />
+                        <ColorInput value={el.borderColor} onChange={(v) => onUpdate({ borderColor: v })} />
                     </Row>
                 )}
                 <Row label="Radius">
@@ -3290,7 +3255,7 @@ function LineInspector({
                     <NumField value={el.thickness} onChange={(v) => onUpdate({ thickness: Math.max(1, v) })} unit="px" />
                 </Row>
                 <Row label="Warna">
-                    <Swatch value={el.color} onChange={(v) => onUpdate({ color: v })} />
+                    <ColorInput value={el.color} onChange={(v) => onUpdate({ color: v })} />
                 </Row>
             </Section>
         </>
@@ -3298,9 +3263,6 @@ function LineInspector({
 }
 
 // ── Shared primitives ──────────────────────────────────────────────────────────
-
-const inputCn =
-    'h-8 w-full rounded-lg border border-secondary-200 dark:border-dark-600 bg-white dark:bg-dark-800 px-2.5 text-sm text-dark-900 dark:text-dark-50 tabular-nums focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500';
 
 function PanelHeader({ title, meta }: { title: string; meta?: string }) {
     return (
@@ -3337,29 +3299,13 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
 
 function NumField({ value, onChange, unit = 'px' }: { value: number; onChange: (v: number) => void; unit?: string }) {
     return (
-        <div className="relative">
-            <input type="number" value={value} onChange={(e) => onChange(+e.target.value)} className={`${inputCn} pr-8`} />
-            <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[11px] text-dark-400 dark:text-dark-500 pointer-events-none">{unit}</span>
-        </div>
-    );
-}
-
-function Swatch({ value, onChange }: { value: string; onChange: (v: string) => void }) {
-    return (
-        <div className="flex items-center gap-2 h-8 rounded-lg border border-secondary-200 dark:border-dark-600 bg-white dark:bg-dark-800 pl-1.5 pr-2.5">
-            <input
-                type="color"
-                value={value}
-                onChange={(e) => onChange(e.target.value)}
-                className="h-5 w-5 shrink-0 cursor-pointer rounded border-0 bg-transparent p-0 appearance-none"
-            />
-            <input
-                type="text"
-                value={value.toUpperCase()}
-                onChange={(e) => onChange(e.target.value)}
-                className="flex-1 min-w-0 bg-transparent text-xs tabular-nums uppercase text-dark-700 dark:text-dark-300 outline-none"
-            />
-        </div>
+        <Input
+            type="number"
+            value={String(value)}
+            onChange={(e) => onChange(+e.target.value)}
+            iconRight={<span className="text-[11px] text-dark-400 dark:text-dark-500 pointer-events-none">{unit}</span>}
+            className="h-8 tabular-nums"
+        />
     );
 }
 
