@@ -45,6 +45,11 @@ class TemplateTokens
                 'resolve' => fn (Invoice $inv, array $ctx = []): string => self::formatDate($inv->issue_date),
             ],
             [
+                'path' => 'invoice.date',
+                'label' => 'Tanggal (alias issue_date)',
+                'resolve' => fn (Invoice $inv, array $ctx = []): string => self::formatDate($inv->issue_date),
+            ],
+            [
                 'path' => 'invoice.due_date',
                 'label' => 'Jatuh Tempo',
                 'resolve' => fn (Invoice $inv, array $ctx = []): string => self::formatDate($inv->due_date),
