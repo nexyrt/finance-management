@@ -3174,7 +3174,7 @@ function GridInspector({
             </Section>
 
             {/* â”€â”€ Cell properties (shown when cell is selected) â”€â”€ */}
-            {cell != null && selectedCell != null ? (
+            {cell != null && selectedCell != null && !(selectedRange && (selectedRange.r1 !== selectedRange.r2 || selectedRange.c1 !== selectedRange.c2)) ? (
                 <Section title={`Sel [${selectedCell.row + 1}, ${selectedCell.col + 1}]`}>
                     {/* Alignment */}
                     <Row label="Rata">
@@ -3508,7 +3508,7 @@ function TableInspector({
             </Section>
 
             {/* â”€â”€ Cell properties â”€â”€ */}
-            {cell != null && selectedCell != null ? (
+            {cell != null && selectedCell != null && !(selectedRange && (selectedRange.r1 !== selectedRange.r2 || selectedRange.c1 !== selectedRange.c2)) ? (
                 <Section title={`Sel B${selectedCell.row + 1}Â·K${selectedCell.col + 1}`}>
                     {/* Content + field insert */}
                     <div className="flex gap-1 items-start">
