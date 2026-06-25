@@ -595,7 +595,7 @@
                 $wStyle = $w > 0 ? "width: {$w}px; " : '';
                 $fsSt   = $fs ? "font-size: {$fs}px; " : '';
                 $tdTag  = $isHead ? 'th' : 'td';
-                $html  .= "<{$tdTag}{$csAttr}{$rsAttr} style=\"{$wStyle}height: 24px; border: {$bw}px solid {$bc}; text-align: {$align}; font-weight: {$bold}; color: {$color}; background-color: {$fill}; {$fsSt}padding: 2px 6px; vertical-align: middle; word-wrap: break-word;\">{$content}</{$tdTag}>";
+                $html  .= "<{$tdTag}{$csAttr}{$rsAttr} style=\"{$wStyle}border: {$bw}px solid {$bc}; text-align: {$align}; font-weight: {$bold}; color: {$color}; background-color: {$fill}; {$fsSt}padding: 2px 6px; vertical-align: middle;\">{$content}</{$tdTag}>";
             }
             return $html;
         };
@@ -656,7 +656,7 @@
 
         $html  = "<div class=\"{$wrapperClass}\" style=\"{$wrapperStyle}\">";
         $html .= "<table style=\"width: {$tableW}px; border-collapse: collapse; table-layout: fixed;\">";
-        $html .= $colgroup.$thead.$tbody.$tfoot;
+        $html .= $thead.$tbody.$tfoot;
         $html .= '</table></div>';
         return $html;
     };
