@@ -555,6 +555,111 @@
         $html .= '</table></div>';
         return $html;
     };
+
+    /**
+     * Render a TRB (Tabel Terpadu Row-Band) table element.
+     *
+     * $trbEl has: colWidths[], rows[](kind/repeat/cells[]), border{width,color}
+     * $items: iterable of InvoiceItem (for repeat:'items' rows)
+     * Returns HTML string.
+     */
+    $renderRowBandTable = function (array $trbEl, iterable $items = [], string $wrapperClass = 'band-table-flow', string $wrapperStyle = '') use (&$renderRowBandTable): string {
+        $colWidths  = $trbEl['colWidths'] ?? [];
+        $rows       = $trbEl['rows'] ?? [];
+        $border     = $trbEl['border'] ?? ['width' => 1, 'color' => '#e2e8f0'];
+        $bw         = (int) ($border['width'] ?? 1);
+        $bc         = $border['color'] ?? '#e2e8f0';
+        $tableW     = array_sum($colWidths) ?: (int) ($trbEl['width'] ?? 714);
+
+        $renderCells = function (array $cells, bool $isHead = false) use ($bw, $bc, $colWidths): string {
+            $html = '';
+            foreach ($cells as $ci => $cell) {
+                if ($cell['merged'] ?? false) {
+                    continue;
+                }
+                $colspan  = (int) ($cell['colSpan'] ?? 1);
+                $rowspan  = (int) ($cell['rowSpan'] ?? 1);
+                $csAttr   = $colspan > 1 ? " colspan=\"{$colspan}\"" : '';
+                $rsAttr   = $rowspan > 1 ? " rowspan=\"{$rowspan}\"" : '';
+                $align    = $cell['align'] ?? 'left';
+                $bold     = ($cell['bold'] ?? $isHead) ? 700 : 400;
+                $color    = $cell['color'] ?? '#0f172a';
+                $fill     = ($cell['fill'] ?? '') ?: 'transparent';
+                $fs       = isset($cell['fontSize']) ? (int) $cell['fontSize'] : null;
+                $content  = htmlspecialchars((string) ($cell['content'] ?? ''), ENT_QUOTES, 'UTF-8');
+                // Compute pixel width spanning the colspan
+                $w = 0;
+                for ($ci2 = $ci; $ci2 < $ci + $colspan && $ci2 < count($colWidths); $ci2++) {
+                    $w += $colWidths[$ci2] ?? 0;
+                }
+                $wStyle = $w > 0 ? "width: {$w}px; " : '';
+                $fsSt   = $fs ? "font-size: {$fs}px; " : '';
+                $tdTag  = $isHead ? 'th' : 'td';
+                $html  .= "<{$tdTag}{$csAttr}{$rsAttr} style=\"{$wStyle}height: 24px; border: {$bw}px solid {$bc}; text-align: {$align}; font-weight: {$bold}; color: {$color}; background-color: {$fill}; {$fsSt}padding: 2px 6px; overflow: hidden; vertical-align: middle;\">{$content}</{$tdTag}>";
+            }
+            return $html;
+        };
+
+        // Materialise items for repeat rows
+        $itemsArr = collect($items)->values()->all();
+
+        // Split rows by kind
+        $headRows = array_values(array_filter($rows, fn ($r) => ($r['kind'] ?? '') === 'head'));
+        $bodyRows = array_values(array_filter($rows, fn ($r) => ($r['kind'] ?? '') === 'body'));
+        $footRows = array_values(array_filter($rows, fn ($r) => ($r['kind'] ?? '') === 'foot'));
+
+        // Colgroup
+        $colgroup = '<colgroup>';
+        foreach ($colWidths as $cw) {
+            $colgroup .= "<col style=\"width: {$cw}px;\">";
+        }
+        $colgroup .= '</colgroup>';
+
+        // THEAD — DomPDF repeats <thead> on every page automatically
+        $thead = '<thead>';
+        foreach ($headRows as $row) {
+            $thead .= '<tr style="page-break-inside: avoid;">'.$renderCells($row['cells'] ?? [], true).'</tr>';
+        }
+        $thead .= '</thead>';
+
+        // TBODY
+        $tbody = '<tbody>';
+        foreach ($bodyRows as $row) {
+            if (($row['repeat'] ?? '') === 'items') {
+                // Detail template row — clone once per item, resolving item.* tokens
+                foreach ($itemsArr as $idx => $item) {
+                    $itemData = \App\Services\TemplateTokens::itemMap($item, $idx + 1);
+                    $resolvedCells = array_map(function (array $cell) use ($itemData): array {
+                        $content = preg_replace_callback('/\{\{([\w.]+)\}\}/', function (array $m) use ($itemData): string {
+                            return array_key_exists($m[1], $itemData) ? $itemData[$m[1]] : $m[0];
+                        }, $cell['content'] ?? '');
+                        return [...$cell, 'content' => $content];
+                    }, $row['cells'] ?? []);
+                    $tbody .= '<tr style="page-break-inside: avoid;">'.$renderCells($resolvedCells).'</tr>';
+                }
+            } else {
+                // Static body row — rendered once
+                $tbody .= '<tr style="page-break-inside: avoid;">'.$renderCells($row['cells'] ?? []).'</tr>';
+            }
+        }
+        $tbody .= '</tbody>';
+
+        // TFOOT
+        $tfoot = '';
+        if (count($footRows) > 0) {
+            $tfoot = '<tfoot>';
+            foreach ($footRows as $row) {
+                $tfoot .= '<tr style="page-break-inside: avoid;">'.$renderCells($row['cells'] ?? [], true).'</tr>';
+            }
+            $tfoot .= '</tfoot>';
+        }
+
+        $html  = "<div class=\"{$wrapperClass}\" style=\"{$wrapperStyle}\">";
+        $html .= "<table style=\"width: {$tableW}px; border-collapse: collapse; table-layout: fixed;\">";
+        $html .= $colgroup.$thead.$tbody.$tfoot;
+        $html .= '</table></div>';
+        return $html;
+    };
 @endphp
 
 @if (! empty($banded))
@@ -618,8 +723,19 @@
 @endif
 
 {{-- ── A2: Content — items table in normal flow (DomPDF paginates, thead repeats) ── --}}
+{{-- TRB detection: rows[0] must have a 'kind' key (head|body|foot).
+     Old pre-resolved flat rows (e.g. ['description' => '...']) fall back to legacy renderer. --}}
 @if (! empty($tableEl))
-    {!! $renderItemsTable($tableEl, 'band-table-flow', 'width: 100%;') !!}
+    @php
+        $isTrb = is_array($tableEl['rows'] ?? null)
+            && count($tableEl['rows'] ?? []) > 0
+            && isset($tableEl['rows'][0]['kind']);
+    @endphp
+    @if ($isTrb)
+        {!! $renderRowBandTable($tableEl, $trbItems ?? [], 'band-table-flow', 'width: 100%;') !!}
+    @else
+        {!! $renderItemsTable($tableEl, 'band-table-flow', 'width: 100%;') !!}
+    @endif
 @endif
 
 {{-- ── A3: Footer-flow band (follows last table row; page-break-inside:avoid) ── --}}

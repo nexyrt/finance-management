@@ -189,3 +189,93 @@ Sandbox di `GET /template-builder-test` (`resources/js/pages/template-builder-te
 - **Merge cell di baris data dinamis** — sejauh mana didukung vs hanya area struktur (Sprint 4).
 - **Properti teks/gambar** mana yang prioritas vs ekor panjang (Sprint 5).
 - **Engine PDF:** tetap DomPDF; naik ke Puppeteer/Gotenberg hanya bila fidelity jadi blocker — **paling mungkin muncul di Sprint 4** (border/merge kompleks), final di Sprint 7. Jangan ganti tanpa persetujuan user.
+
+---
+
+## REWORK v3 — TABEL TERPADU ROW-BAND (TRB)
+
+> **Tujuan:** menggantikan model tabel kolom-rigid dengan model baris-band spreadsheet-like yang mendukung merge, styling per-sel, baris statis di atas/bawah detail, DAN baris detail yang repeat per item — sambil tetap menggunakan DomPDF native pagination.
+
+### Model Data Baru
+
+```typescript
+type TableCell = {
+  content: string;          // teks atau token {{item.key}}
+  colSpan?: number;         // colspan HTML
+  rowSpan?: number;         // rowspan HTML (TIDAK boleh melintas ke/dari band detail)
+  align: 'left'|'center'|'right';
+  bold?: boolean;
+  color?: string;           // hex warna teks
+  fill?: string;            // hex background sel
+  fontSize?: number;        // px
+  merged?: boolean;         // true = sel ini disembunyikan (tertelan colspan/rowspan lain)
+};
+type TableRow = {
+  kind: 'head'|'body'|'foot';
+  repeat?: 'items';         // HANYA pada 'body' — baris template yang diulang per item
+  cells: TableCell[];
+};
+type TableEl = {
+  id: number; type: 'table';
+  x: number; y: number; width: number;
+  colWidths: number[];      // lebar tiap kolom dalam px
+  rows: TableRow[];         // semua baris dalam urutan
+  border: { width: number; color: string };
+  // Field LEGACY (hanya untuk deteksi migrasi):
+  columns?: unknown;
+  showFooterSum?: boolean;
+  headerGroups?: unknown;
+};
+```
+
+### Alur Render PDF (DomPDF)
+
+- `<thead>`: semua baris `kind:'head'` → DomPDF mengulang thead di tiap halaman otomatis (`display:table-header-group`)
+- `<tbody>`: baris `kind:'body'` secara berurutan:
+  - Jika `repeat:'items'` → diklon sekali per InvoiceItem, token `{{item.*}}` di-resolve via `TemplateTokens::itemMap($item, $idx)` per item
+  - Jika tidak ada `repeat` → dirender sekali (baris statis)
+- `<tfoot>`: semua baris `kind:'foot'` → dirender sekali setelah semua item
+
+### Token Scope untuk Baris Detail
+
+- Baris `repeat:'items'` → token `{{item.no}}`, `{{item.description}}`, `{{item.quantity}}`, `{{item.unit}}`, `{{item.unit_price}}`, `{{item.amount}}`, `{{item.cogs_amount}}`, `{{item.is_tax_deposit}}` di-resolve dari `TemplateTokens::itemMap()`
+- Baris statis (head/body non-repeat/foot) → token di-resolve dari scope invoice seperti biasa via `TemplateTokens::resolveText()`
+
+### Migrasi Backward-Compat (Old Column-Based → Row-Band)
+
+Deteksi: `Array.isArray(el.columns) && !Array.isArray(el.rows)`
+
+Hasil migrasi:
+1. Head row dari `headerGroups` (jika ada) — colSpan sesuai `span`
+2. Head row dari `columns[].label`
+3. ONE detail row `kind:'body', repeat:'items'` — satu sel per kolom, `content = {{item.<key>}}`
+4. Foot row jika `showFooterSum:true`
+- `colWidths` dari `columns[].width`
+- `border` default `{width:1, color:'#e2e8f0'}`
+
+**Deteksi di blade:** `isset($tableEl['rows'][0]['kind'])` — memastikan `rows[0]` punya key `kind` (bukan flat pre-resolved row lama).
+
+### Batasan yang Disepakati
+
+- **rowspan TIDAK boleh melintas ke/dari band detail** — rowspan harus sepenuhnya di dalam satu band (semua head, atau semua body-non-repeat, atau semua foot). Crossing ke repeat-items band tidak didukung dan tidak dienforce secara kode (tanggung jawab editor T2).
+
+### Slice Plan T1..T5
+
+| Slice | Status | Isi |
+|-------|--------|-----|
+| **T1** | ✅ SELESAI | Model + engine: type TS baru, migration, `$renderRowBandTable`, `itemMap()`, controller bifurcation, 8 tes baru |
+| **T2** | Berikutnya | Editor baris/sel: UI edit kind/repeat/cells, tambah/hapus baris & kolom, merge antar-baris |
+| **T3** | — | Margin safe-area clamp |
+| **T3.5** | — | Smart guides inti (snap ke elemen lain) |
+| **T4** | — | Band drag-resize (tinggi band bisa di-drag) |
+| **T5** | — | Poles + integrasi akhir |
+
+### File yang Diubah di T1
+
+| File | Perubahan |
+|------|-----------|
+| `resources/js/pages/settings/pdf-templates/edit.tsx` | `TableCell`, `TableRow` types; `TableEl` redefined (colWidths+rows+border); `isLegacyTableEl()`, `migrateTableElToRowBand()`; `makeDefaultTable()` baru; `tableEditorHeight/Preview()` baru; `TablePreview` rewrite (`<table>`-based); `TableInspector` stub T2; migration wired at load; column ops → no-ops |
+| `app/Services/TemplateTokens.php` | `itemMap(InvoiceItem, int): array<string,string>` static method |
+| `resources/views/pdf/template-builder.blade.php` | `$renderRowBandTable` closure (head/body/foot, repeat:'items', per-cell styling); TRB detection di banded path menggunakan `isset(rows[0]['kind'])` |
+| `app/Http/Controllers/Settings/PdfTemplateController.php` | `pdfBanded()` bifurcated — TRB path passes `$trbItems` (Collection); legacy path passes pre-resolved rows |
+| `tests/Feature/PdfTemplateTrbTest.php` | 8 tes baru (60 item, colspan, static body, foot, per-cell style, token binding, migration, save) |

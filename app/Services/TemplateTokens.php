@@ -274,6 +274,25 @@ class TemplateTokens
     }
 
     /**
+     * Build a flat key→value map for a single InvoiceItem,
+     * prefixed with "item." for use in TRB detail row token resolution.
+     *
+     * @return array<string, string>
+     */
+    public static function itemMap(InvoiceItem $item, int $index): array
+    {
+        $columns = ItemColumns::catalog();
+        $map = [];
+        foreach ($columns as $col) {
+            $map['item.'.$col['key']] = ($col['resolve'])($item, $index);
+        }
+        // Explicitly override item.no with the row index
+        $map['item.no'] = (string) $index;
+
+        return $map;
+    }
+
+    /**
      * Return just [path, label] pairs — safe to serialize to JSON for the frontend.
      *
      * @return array<int, array{path: string, label: string}>

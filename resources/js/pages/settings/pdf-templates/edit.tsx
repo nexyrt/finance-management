@@ -131,13 +131,37 @@ type TableColumn = {
     format: 'text' | 'number' | 'rupiah';
 };
 
+// ── TRB (Tabel Terpadu Row-Band) types ────────────────────────────────────────
+
+type TableCell = {
+    content: string;
+    colSpan?: number;
+    rowSpan?: number;
+    align: 'left' | 'center' | 'right';
+    bold?: boolean;
+    color?: string;
+    fill?: string;
+    fontSize?: number;
+    merged?: boolean;
+};
+
+type TableRow = {
+    kind: 'head' | 'body' | 'foot';
+    repeat?: 'items';
+    cells: TableCell[];
+};
+
 type TableEl = {
     id: number; type: 'table';
     x: number; y: number;
     width: number;
-    columns: TableColumn[];
-    showFooterSum: boolean;
-    headerGroups?: Array<{ label: string; span: number; align?: 'left' | 'center' | 'right' }>;
+    colWidths: number[];
+    rows: TableRow[];
+    border: { width: number; color: string };
+    // LEGACY fields kept for migration detection only:
+    columns?: unknown;
+    showFooterSum?: boolean;
+    headerGroups?: unknown;
 };
 
 type GridCell = {
@@ -237,10 +261,25 @@ function makeDefaultTable(id: number, catalog: ItemColumnEntry[], x: number, y: 
         no: 36, description: 290, quantity: 72, unit: 80, unit_price: 130, amount: 130,
         cogs_amount: 130, is_tax_deposit: 100,
     };
-    const columns: TableColumn[] = defaults.map((c) => ({
-        key: c.key, label: c.label, width: widths[c.key] ?? 100, align: c.align, format: c.format,
-    }));
-    return { id, type: 'table', x, y, width: 714, columns, showFooterSum: false };
+    const colWidths = defaults.map((c) => widths[c.key] ?? 100);
+
+    const headRow: TableRow = {
+        kind: 'head',
+        cells: defaults.map((c) => ({ content: c.label, align: c.align, bold: true })),
+    };
+    const detailRow: TableRow = {
+        kind: 'body',
+        repeat: 'items',
+        cells: defaults.map((c) => ({ content: `{{item.${c.key}}}`, align: c.align })),
+    };
+
+    return {
+        id, type: 'table', x, y,
+        width: colWidths.reduce((a, b) => a + b, 0) || 714,
+        colWidths,
+        rows: [headRow, detailRow],
+        border: { width: 1, color: '#e2e8f0' },
+    };
 }
 
 const TABLE_HEADER_H = 28;
@@ -248,13 +287,17 @@ const TABLE_ROW_H = 24;
 const TABLE_PLACEHOLDER_ROWS = 3;
 
 function tableEditorHeight(el: TableEl): number {
-    const groupRowH = (el.headerGroups?.length ?? 0) > 0 ? TABLE_HEADER_H : 0;
-    return groupRowH + TABLE_HEADER_H + TABLE_ROW_H * TABLE_PLACEHOLDER_ROWS + 2;
+    const headRows = el.rows.filter((r) => r.kind === 'head').length;
+    const footRows = el.rows.filter((r) => r.kind === 'foot').length;
+    const hasDetail = el.rows.some((r) => r.repeat === 'items');
+    return (headRows + footRows) * TABLE_HEADER_H + (hasDetail ? TABLE_ROW_H * TABLE_PLACEHOLDER_ROWS : 0) + 2;
 }
 
 function tablePreviewHeight(el: TableEl, sampleItems: Array<Record<string, string>>): number {
-    const groupRowH = (el.headerGroups?.length ?? 0) > 0 ? TABLE_HEADER_H : 0;
-    return groupRowH + TABLE_HEADER_H + TABLE_ROW_H * Math.max(1, sampleItems.length) + 2;
+    const headRows = el.rows.filter((r) => r.kind === 'head').length;
+    const footRows = el.rows.filter((r) => r.kind === 'foot').length;
+    const hasDetail = el.rows.some((r) => r.repeat === 'items');
+    return (headRows + footRows) * TABLE_HEADER_H + (hasDetail ? TABLE_ROW_H * Math.max(1, sampleItems.length) : 0) + 2;
 }
 
 function makeGridCell(): GridCell {
@@ -298,6 +341,83 @@ function migrateToLegacyBanded(oldEls: El[]): BandedLayout['bands'] {
         content: { table: tableEl },
         footerFlow: { height: 80, elements: [] },
         footerFixed: { height: 40, elements: [] },
+    };
+}
+
+// ── TRB migration helpers ─────────────────────────────────────────────────────
+
+/** Detect if a stored table element uses the OLD column-based model. */
+function isLegacyTableEl(el: unknown): boolean {
+    if (!el || typeof el !== 'object') { return false; }
+    const t = el as Record<string, unknown>;
+    return Array.isArray(t.columns) && !Array.isArray(t.rows);
+}
+
+/**
+ * Migrate OLD column-based TableEl → new row-band TableEl.
+ * Detection: old shape has `columns` array but no `rows` array.
+ */
+function migrateTableElToRowBand(old: Record<string, unknown>): TableEl {
+    const columns = (old.columns as Array<{ key: string; label: string; width: number; align: 'left' | 'center' | 'right'; format: string }>) ?? [];
+    const headerGroups = old.headerGroups as Array<{ label: string; span: number; align?: 'left' | 'center' | 'right' }> | undefined;
+    const showFooterSum = (old.showFooterSum as boolean | undefined) ?? false;
+
+    const colWidths = columns.map((c) => c.width ?? 100);
+    const border = { width: 1, color: '#e2e8f0' };
+
+    const rows: TableRow[] = [];
+
+    // Head row from headerGroups (if present)
+    if (headerGroups && headerGroups.length > 0) {
+        const groupCells: TableCell[] = headerGroups.map((g) => ({
+            content: g.label,
+            colSpan: g.span ?? 1,
+            align: g.align ?? 'center',
+            bold: true,
+        }));
+        rows.push({ kind: 'head', cells: groupCells });
+    }
+
+    // Head row from column labels
+    rows.push({
+        kind: 'head',
+        cells: columns.map((c) => ({
+            content: c.label,
+            align: c.align,
+            bold: true,
+        })),
+    });
+
+    // Detail row (repeat:items) — one cell per column with item.* token
+    rows.push({
+        kind: 'body',
+        repeat: 'items',
+        cells: columns.map((c) => ({
+            content: `{{item.${c.key}}}`,
+            align: c.align,
+        })),
+    });
+
+    // Foot row if showFooterSum
+    if (showFooterSum) {
+        rows.push({
+            kind: 'foot',
+            cells: columns.map((c, i) => ({
+                content: i === 0 ? 'Total' : (c.format === 'rupiah' || c.format === 'number') ? `{{item.sum.${c.key}}}` : '',
+                align: c.align,
+            })),
+        });
+    }
+
+    return {
+        id: (old.id as number) ?? 1,
+        type: 'table',
+        x: (old.x as number) ?? 40,
+        y: (old.y as number) ?? 200,
+        width: (old.width as number) ?? 714,
+        colWidths,
+        rows,
+        border,
     };
 }
 
@@ -499,12 +619,23 @@ export default function PdfTemplateEdit() {
             Object.prototype.hasOwnProperty.call(sampleData, path) ? sampleData[path] : match,
         );
 
-    // Compute initial bands + margins from layout (banded, legacy array, or default)
+    // Compute initial bands + margins from layout (banded, legacy array, or default).
+    // Also runs TRB migration: if content.table uses the old column-based model,
+    // it is migrated to the new row-band model on first load.
     const { initialBands, initialMargins } = React.useMemo(() => {
         const layout = template.layout;
         if (layout && typeof layout === 'object' && !Array.isArray(layout) && 'bands' in (layout as object)) {
             const bl = layout as BandedLayout;
-            return { initialBands: bl.bands, initialMargins: bl.paper?.margins ?? { ...DEFAULT_MARGINS } };
+            let loadedBands = bl.bands;
+            // TRB migration: old column-based table → new row-band TableEl
+            const rawTable = loadedBands.content.table;
+            if (isLegacyTableEl(rawTable)) {
+                loadedBands = {
+                    ...loadedBands,
+                    content: { table: migrateTableElToRowBand(rawTable as Record<string, unknown>) },
+                };
+            }
+            return { initialBands: loadedBands, initialMargins: bl.paper?.margins ?? { ...DEFAULT_MARGINS } };
         }
         if (Array.isArray(layout) && layout.length > 0) {
             return { initialBands: migrateToLegacyBanded(layout as El[]), initialMargins: { ...DEFAULT_MARGINS } };
@@ -882,42 +1013,11 @@ export default function PdfTemplateEdit() {
         probe.src = el.src;
     };
 
-    const updateTableColumn = (tableId: number, colIdx: number, patch: Partial<TableColumn>) => {
-        const t = bands.content.table;
-        if (!t || t.id !== tableId) return;
-        setContentTable({ columns: t.columns.map((c, i) => i === colIdx ? { ...c, ...patch } : c) });
-    };
-
-    const moveTableColumn = (tableId: number, from: number, direction: -1 | 1) => {
-        const t = bands.content.table;
-        if (!t || t.id !== tableId) return;
-        const to = from + direction;
-        if (to < 0 || to >= t.columns.length) return;
-        const cols = [...t.columns];
-        [cols[from], cols[to]] = [cols[to], cols[from]];
-        setContentTable({ columns: cols });
-    };
-
-    const removeTableColumn = (tableId: number, colIdx: number) => {
-        const t = bands.content.table;
-        if (!t || t.id !== tableId) return;
-        snapshot();
-        setContentTable({ columns: t.columns.filter((_, i) => i !== colIdx) });
-    };
-
-    const addTableColumn = (tableId: number, key: string) => {
-        const t = bands.content.table;
-        if (!t || t.id !== tableId) return;
-        const entry = itemColumnCatalog.find((c) => c.key === key);
-        if (!entry || t.columns.some((c) => c.key === key)) return;
-        const widths: Record<string, number> = {
-            no: 36, description: 290, quantity: 72, unit: 80, unit_price: 130, amount: 130,
-            cogs_amount: 130, is_tax_deposit: 100,
-        };
-        snapshot();
-        const newCol: TableColumn = { key: entry.key, label: entry.label, width: widths[key] ?? 100, align: entry.align, format: entry.format };
-        setContentTable({ columns: [...t.columns, newCol] });
-    };
+    // T2: full row-band editor — these column-level operations are no-ops in T1
+    const updateTableColumn = (_tableId: number, _colIdx: number, _patch: Partial<TableColumn>) => { /* T2 */ };
+    const moveTableColumn = (_tableId: number, _from: number, _direction: -1 | 1) => { /* T2 */ };
+    const removeTableColumn = (_tableId: number, _colIdx: number) => { /* T2 */ };
+    const addTableColumn = (_tableId: number, _key: string) => { /* T2 */ };
 
     const updateGridCell = (gridId: number, row: number, col: number, patch: Partial<GridCell>) => {
         const band = findElBand(gridId);
@@ -2872,84 +2972,109 @@ function GridInspector({
     );
 }
 
-// ── Table canvas render ────────────────────────────────────────────────────────
+// ── Table canvas render (TRB row-band model) ──────────────────────────────────
 
 function TablePreview({
     el, rows,
 }: { el: TableEl; rows: Array<Record<string, string>> | null }) {
-    const placeholderRows = rows ?? Array.from({ length: TABLE_PLACEHOLDER_ROWS }, (_, i) => {
-        const row: Record<string, string> = {};
-        el.columns.forEach((c) => {
-            row[c.key] = c.format === 'rupiah'
-                ? (i === 0 ? 'Rp 1.500.000' : i === 1 ? 'Rp 2.000.000' : 'Rp 500.000')
-                : c.format === 'number'
-                    ? (c.key === 'no' ? String(i + 1) : (i === 0 ? '2' : i === 1 ? '1' : '3'))
-                    : (c.key === 'description' ? `Item Contoh ${i + 1}` : c.key === 'unit' ? 'pcs' : '—');
-        });
-        return row;
-    });
+    const sampleRows = rows ?? Array.from({ length: TABLE_PLACEHOLDER_ROWS }, (_, i) => ({
+        'item.no': String(i + 1),
+        'item.description': `Item Contoh ${i + 1}`,
+        'item.quantity': '2',
+        'item.unit': 'pcs',
+        'item.unit_price': i === 0 ? 'Rp 1.500.000' : i === 1 ? 'Rp 2.000.000' : 'Rp 500.000',
+        'item.amount': i === 0 ? 'Rp 3.000.000' : i === 1 ? 'Rp 2.000.000' : 'Rp 1.500.000',
+        'item.cogs_amount': 'Rp 500.000',
+        'item.is_tax_deposit': 'Tidak',
+    }));
 
-    const alignClass = (align: string) => align === 'right' ? 'text-right' : align === 'center' ? 'text-center' : 'text-left';
+    const resolveCell = (content: string, itemRow?: Record<string, string>): string =>
+        content.replace(/\{\{([\w.]+)\}\}/g, (_, key) => {
+            if (itemRow && key.startsWith('item.')) { return itemRow[key] ?? key; }
+            return `{{${key}}}`;
+        });
+
+    const alignClass = (align: string) =>
+        align === 'right' ? 'text-right' : align === 'center' ? 'text-center' : 'text-left';
+
+    const renderCell = (cell: TableCell, key: string | number, itemRow?: Record<string, string>) => {
+        if (cell.merged) { return null; }
+        return (
+            <td
+                key={key}
+                colSpan={cell.colSpan ?? 1}
+                rowSpan={cell.rowSpan ?? 1}
+                className={`shrink-0 px-2 truncate ${alignClass(cell.align)}`}
+                style={{
+                    height: TABLE_HEADER_H,
+                    fontWeight: cell.bold ? 700 : 400,
+                    color: cell.color ?? undefined,
+                    backgroundColor: cell.fill ?? undefined,
+                    fontSize: cell.fontSize ?? undefined,
+                    border: `1px solid #e2e8f0`,
+                    verticalAlign: 'middle',
+                    overflow: 'hidden',
+                    padding: '2px 8px',
+                }}
+            >
+                {resolveCell(cell.content, itemRow)}
+            </td>
+        );
+    };
+
+    const headRows = el.rows.filter((r) => r.kind === 'head');
+    const bodyRows = el.rows.filter((r) => r.kind === 'body');
+    const footRows = el.rows.filter((r) => r.kind === 'foot');
 
     return (
-        <div className="w-full h-full overflow-hidden rounded border border-blue-200 dark:border-blue-900/40 bg-white dark:bg-dark-800 select-none text-[10px]" style={{ fontFamily: 'Helvetica, Arial, sans-serif' }}>
-            {/* Group header row */}
-            {(el.headerGroups?.length ?? 0) > 0 && (
-                <div className="flex bg-slate-200 dark:bg-dark-600 border-b border-slate-300 dark:border-dark-500" style={{ height: TABLE_HEADER_H }}>
-                    {(el.headerGroups ?? []).map((g, gi) => {
-                        const startCol = (el.headerGroups ?? []).slice(0, gi).reduce((s, g2) => s + (g2.span ?? 1), 0);
-                        const pxWidth = el.columns.slice(startCol, startCol + (g.span ?? 1)).reduce((s, c) => s + c.width, 0);
-                        const alignClass = g.align === 'right' ? 'text-right' : g.align === 'left' ? 'text-left' : 'text-center';
-                        return (
-                            <div
-                                key={gi}
-                                className={`shrink-0 px-2 flex items-center font-semibold text-dark-800 dark:text-dark-100 truncate ${alignClass} border-r border-slate-300 dark:border-dark-500 last:border-r-0`}
-                                style={{ width: pxWidth }}
-                            >
-                                {g.label}
-                            </div>
-                        );
-                    })}
-                </div>
-            )}
-            {/* Header row */}
-            <div className="flex bg-slate-100 dark:bg-dark-700 border-b border-slate-200 dark:border-dark-600" style={{ height: TABLE_HEADER_H }}>
-                {el.columns.map((col) => (
-                    <div
-                        key={col.key}
-                        className={`shrink-0 px-2 flex items-center font-semibold text-dark-700 dark:text-dark-200 truncate ${alignClass(col.align)} border-r border-slate-200 dark:border-dark-600 last:border-r-0`}
-                        style={{ width: col.width }}
-                    >
-                        {col.label}
-                    </div>
-                ))}
-            </div>
-            {/* Data rows */}
-            {placeholderRows.map((row, i) => (
-                <div
-                    key={i}
-                    className={`flex border-b border-slate-100 dark:border-dark-700 last:border-b-0 ${i % 2 === 1 ? 'bg-slate-50 dark:bg-dark-750' : ''}`}
-                    style={{ height: TABLE_ROW_H }}
-                >
-                    {el.columns.map((col) => (
-                        <div
-                            key={col.key}
-                            className={`shrink-0 px-2 flex items-center text-dark-700 dark:text-dark-300 truncate ${alignClass(col.align)} border-r border-slate-100 dark:border-dark-700 last:border-r-0`}
-                            style={{ width: col.width }}
-                        >
-                            {row[col.key] ?? ''}
-                        </div>
+        <div
+            className="w-full h-full overflow-hidden rounded border border-blue-200 dark:border-blue-900/40 bg-white dark:bg-dark-800 select-none text-[10px]"
+            style={{ fontFamily: 'Helvetica, Arial, sans-serif' }}
+        >
+            <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
+                <colgroup>
+                    {el.colWidths.map((w, i) => <col key={i} style={{ width: w }} />)}
+                </colgroup>
+                <thead>
+                    {headRows.map((row, ri) => (
+                        <tr key={ri} style={{ background: ri === headRows.length - 1 ? '#f1f5f9' : '#e2e8f0' }}>
+                            {row.cells.map((cell, ci) => renderCell(cell, ci))}
+                        </tr>
                     ))}
-                </div>
-            ))}
+                </thead>
+                <tbody>
+                    {bodyRows.map((row, ri) =>
+                        row.repeat === 'items'
+                            ? sampleRows.map((sampleItem, si) => (
+                                <tr key={`${ri}-${si}`} style={{ background: si % 2 === 1 ? '#f8fafc' : undefined }}>
+                                    {row.cells.map((cell, ci) => renderCell(cell, ci, sampleItem))}
+                                </tr>
+                            ))
+                            : (
+                                <tr key={ri}>
+                                    {row.cells.map((cell, ci) => renderCell(cell, ci))}
+                                </tr>
+                            ),
+                    )}
+                </tbody>
+                {footRows.length > 0 && (
+                    <tfoot>
+                        {footRows.map((row, ri) => (
+                            <tr key={ri} style={{ background: '#f1f5f9', fontWeight: 700 }}>
+                                {row.cells.map((cell, ci) => renderCell(cell, ci))}
+                            </tr>
+                        ))}
+                    </tfoot>
+                )}
+            </table>
         </div>
     );
 }
 
-// ── Table Inspector ────────────────────────────────────────────────────────────
+// ── Table Inspector (T1 stub — full row-band editor in T2) ────────────────────
 
 function TableInspector({
-    el, catalog, onUpdate, onUpdateColumn, onMoveColumn, onRemoveColumn, onAddColumn,
+    el, onUpdate,
 }: {
     el: TableEl;
     catalog: ItemColumnEntry[];
@@ -2959,207 +3084,32 @@ function TableInspector({
     onRemoveColumn: (idx: number) => void;
     onAddColumn: (key: string) => void;
 }) {
-    const [addOpen, setAddOpen] = React.useState(false);
-    const usedKeys = new Set(el.columns.map((c) => c.key));
-    const available = catalog.filter((c) => !usedKeys.has(c.key));
+    const headRows = el.rows.filter((r) => r.kind === 'head');
+    const detailRow = el.rows.find((r) => r.repeat === 'items');
+    const footRows = el.rows.filter((r) => r.kind === 'foot');
 
     return (
         <>
-            {/* Footer sum toggle */}
-            <Section title="Opsi Tabel">
-                <Row label="Total baris">
-                    <button
-                        onClick={() => onUpdate({ showFooterSum: !el.showFooterSum })}
-                        className={`flex items-center gap-2 h-8 w-full rounded-lg border px-2.5 text-sm transition-colors ${
-                            el.showFooterSum
-                                ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300'
-                                : 'border-secondary-200 dark:border-dark-600 text-dark-500 dark:text-dark-400 hover:bg-zinc-50 dark:hover:bg-dark-700'
-                        }`}
-                    >
-                        {el.showFooterSum ? '✓ Tampilkan' : 'Sembunyikan'}
-                    </button>
+            <Section title="Tabel Terpadu (TRB)">
+                <p className="text-[11px] text-dark-400 dark:text-dark-500 py-1">
+                    {`${el.colWidths.length} kolom · ${el.rows.length} baris`}
+                </p>
+                <p className="text-[11px] text-dark-400 dark:text-dark-500 py-1">
+                    {headRows.length > 0 && `${headRows.length} header · `}
+                    {detailRow ? '1 baris detail (repeat) · ' : ''}
+                    {footRows.length > 0 ? `${footRows.length} footer` : ''}
+                </p>
+                <p className="text-[10px] text-dark-300 dark:text-dark-500 py-1 italic">
+                    Editor baris/sel penuh tersedia di T2.
+                </p>
+            </Section>
+            <Section title="Border">
+                <Row label="Tebal">
+                    <NumField value={el.border.width} onChange={(v) => onUpdate({ border: { ...el.border, width: v } })} unit="px" />
                 </Row>
-            </Section>
-
-            {/* Header Groups */}
-            <Section title="Grup Header">
-                {(el.headerGroups ?? []).length > 0 && (() => {
-                    const totalSpan = (el.headerGroups ?? []).reduce((s, g) => s + (g.span ?? 1), 0);
-                    const mismatch = totalSpan !== el.columns.length;
-                    return (
-                        <>
-                            {mismatch && (
-                                <p className="text-[11px] text-yellow-600 dark:text-yellow-400 mb-1">
-                                    Jumlah span ({totalSpan}) ≠ jumlah kolom ({el.columns.length})
-                                </p>
-                            )}
-                            <div className="space-y-1.5">
-                                {(el.headerGroups ?? []).map((g, gi) => (
-                                    <div key={gi} className="rounded-lg border border-secondary-200 dark:border-dark-600 bg-zinc-50 dark:bg-dark-700 p-2 space-y-1.5">
-                                        <div className="flex items-center gap-1.5">
-                                            <span className="w-10 shrink-0 text-[11px] text-dark-500 dark:text-dark-400">Label</span>
-                                            <Input
-                                                value={g.label}
-                                                onChange={(e) => {
-                                                    const groups = [...(el.headerGroups ?? [])];
-                                                    groups[gi] = { ...groups[gi], label: e.target.value };
-                                                    onUpdate({ headerGroups: groups });
-                                                }}
-                                                className="text-xs h-7 flex-1"
-                                            />
-                                            <button
-                                                onClick={() => {
-                                                    const groups = (el.headerGroups ?? []).filter((_, i) => i !== gi);
-                                                    onUpdate({ headerGroups: groups });
-                                                }}
-                                                className="grid place-items-center h-6 w-6 rounded text-dark-400 hover:text-red-500 dark:hover:text-red-400 transition"
-                                                title="Hapus grup"
-                                            >
-                                                <Trash2 className="w-3 h-3" />
-                                            </button>
-                                        </div>
-                                        <div className="flex items-center gap-1.5">
-                                            <span className="w-10 shrink-0 text-[11px] text-dark-500 dark:text-dark-400">Span</span>
-                                            <Input
-                                                type="number"
-                                                min={1}
-                                                value={String(g.span ?? 1)}
-                                                onChange={(e) => {
-                                                    const groups = [...(el.headerGroups ?? [])];
-                                                    groups[gi] = { ...groups[gi], span: Math.max(1, +e.target.value) };
-                                                    onUpdate({ headerGroups: groups });
-                                                }}
-                                                className="h-7 text-xs w-16"
-                                            />
-                                            <div className="flex gap-1 ml-auto">
-                                                {(['left', 'center', 'right'] as const).map((a) => (
-                                                    <button
-                                                        key={a}
-                                                        onClick={() => {
-                                                            const groups = [...(el.headerGroups ?? [])];
-                                                            groups[gi] = { ...groups[gi], align: a };
-                                                            onUpdate({ headerGroups: groups });
-                                                        }}
-                                                        className={`px-1.5 py-0.5 rounded text-[11px] border transition-colors ${
-                                                            (g.align ?? 'center') === a
-                                                                ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300'
-                                                                : 'border-secondary-200 dark:border-dark-600 text-dark-500 dark:text-dark-400 hover:bg-zinc-50 dark:hover:bg-dark-600'
-                                                        }`}
-                                                    >
-                                                        {a === 'left' ? '⬅' : a === 'center' ? '↔' : '➡'}
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </>
-                    );
-                })()}
-                <Button variant="zinc" size="sm" className="w-full mt-1"
-                    onClick={() => onUpdate({ headerGroups: [...(el.headerGroups ?? []), { label: '', span: 1, align: 'center' }] })}>
-                    <Plus className="w-4 h-4" /> Tambah Grup
-                </Button>
-            </Section>
-
-            {/* Column list */}
-            <Section title="Kolom">
-                <div className="space-y-1.5">
-                    {el.columns.map((col, idx) => (
-                        <div key={col.key} className="rounded-lg border border-secondary-200 dark:border-dark-600 bg-zinc-50 dark:bg-dark-700 overflow-hidden">
-                            {/* Column header row */}
-                            <div className="flex items-center gap-1.5 px-2 py-1.5">
-                                <GripHorizontal className="w-3.5 h-3.5 shrink-0 text-dark-400 dark:text-dark-500" />
-                                <span className="flex-1 text-xs font-medium text-dark-700 dark:text-dark-300 truncate">{col.label}</span>
-                                <button
-                                    disabled={idx === 0}
-                                    onClick={() => onMoveColumn(idx, -1)}
-                                    className="grid place-items-center h-5 w-5 rounded text-dark-400 hover:text-dark-700 dark:hover:text-dark-200 disabled:opacity-30"
-                                    title="Pindah ke atas"
-                                >
-                                    <ChevronUp className="w-3.5 h-3.5" />
-                                </button>
-                                <button
-                                    disabled={idx === el.columns.length - 1}
-                                    onClick={() => onMoveColumn(idx, 1)}
-                                    className="grid place-items-center h-5 w-5 rounded text-dark-400 hover:text-dark-700 dark:hover:text-dark-200 disabled:opacity-30"
-                                    title="Pindah ke bawah"
-                                >
-                                    <ChevronDown className="w-3.5 h-3.5" />
-                                </button>
-                                <button
-                                    onClick={() => onRemoveColumn(idx)}
-                                    disabled={el.columns.length <= 1}
-                                    className="grid place-items-center h-5 w-5 rounded text-dark-400 hover:text-red-500 dark:hover:text-red-400 disabled:opacity-30 transition"
-                                    title="Hapus kolom"
-                                >
-                                    <Trash2 className="w-3 h-3" />
-                                </button>
-                            </div>
-                            {/* Column detail fields */}
-                            <div className="px-2 pb-2 space-y-1.5 border-t border-secondary-200 dark:border-dark-600 pt-1.5">
-                                <div className="flex items-center gap-1.5">
-                                    <span className="w-14 shrink-0 text-[11px] text-dark-500 dark:text-dark-400">Label</span>
-                                    <Input
-                                        value={col.label}
-                                        onChange={(e) => onUpdateColumn(idx, { label: e.target.value })}
-                                        className="text-xs h-7"
-                                    />
-                                </div>
-                                <div className="flex items-center gap-1.5">
-                                    <span className="w-14 shrink-0 text-[11px] text-dark-500 dark:text-dark-400">Lebar</span>
-                                    <NumField
-                                        value={col.width}
-                                        onChange={(v) => onUpdateColumn(idx, { width: Math.max(20, v) })}
-                                        unit="px"
-                                    />
-                                </div>
-                                <div className="flex items-center gap-1.5">
-                                    <span className="w-14 shrink-0 text-[11px] text-dark-500 dark:text-dark-400">Rata</span>
-                                    <div className="flex gap-1">
-                                        {(['left', 'center', 'right'] as const).map((a) => (
-                                            <button
-                                                key={a}
-                                                onClick={() => onUpdateColumn(idx, { align: a })}
-                                                className={`px-2 py-0.5 rounded text-[11px] border transition-colors ${
-                                                    col.align === a
-                                                        ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300'
-                                                        : 'border-secondary-200 dark:border-dark-600 text-dark-500 dark:text-dark-400 hover:bg-zinc-50 dark:hover:bg-dark-600'
-                                                }`}
-                                            >
-                                                {a === 'left' ? '⬅' : a === 'center' ? '↔' : '➡'}
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-
-                {/* Add column button */}
-                {available.length > 0 && (
-                    <div className="relative mt-1">
-                        <Button variant="zinc" size="sm" className="w-full" onClick={() => setAddOpen((o) => !o)}>
-                            <Plus className="w-4 h-4" /> Tambah kolom
-                        </Button>
-                        {addOpen && (
-                            <div className="absolute z-20 left-0 right-0 mt-1 rounded-lg border border-secondary-200 dark:border-dark-600 bg-white dark:bg-dark-700 shadow-lg p-1">
-                                {available.map((c) => (
-                                    <button
-                                        key={c.key}
-                                        onClick={() => { onAddColumn(c.key); setAddOpen(false); }}
-                                        className="w-full text-left px-2 py-1.5 rounded-md hover:bg-zinc-50 dark:hover:bg-dark-600"
-                                    >
-                                        <div className="text-xs font-medium text-dark-700 dark:text-dark-300">{c.label}</div>
-                                        <div className="text-[11px] text-dark-400 dark:text-dark-500">{c.format} · {c.align}</div>
-                                    </button>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-                )}
+                <Row label="Warna">
+                    <ColorInput value={el.border.color} onChange={(v) => onUpdate({ border: { ...el.border, color: v } })} />
+                </Row>
             </Section>
         </>
     );

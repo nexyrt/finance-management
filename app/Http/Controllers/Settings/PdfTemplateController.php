@@ -324,24 +324,33 @@ class PdfTemplateController extends Controller
         // Content band — items table (null if not set)
         $contentBand = $bands['content'] ?? [];
         $tableEl = $contentBand['table'] ?? null;
-        if ($tableEl !== null) {
-            $columns = $tableEl['columns'] ?? ItemColumns::defaultColumns();
+        $trbItems = null; // InvoiceItem collection for TRB row-band renderer
 
-            // B5: when $itemCount is set, generate that many in-memory sample rows
-            // instead of using the real invoice's items — lets the user see
-            // how pagination looks with few vs many rows without a real invoice.
+        if ($tableEl !== null) {
+            // B5: when $itemCount is set, generate that many in-memory sample rows.
             if ($itemCount !== null) {
                 $items = $this->makeSampleItems($itemCount);
             } else {
                 $items = $invoice->items;
             }
 
-            $rows = ItemColumns::resolveItems($columns, $items);
-            $tableEl = [
-                ...$tableEl,
-                'columns' => $columns,
-                'rows' => $rows,
-            ];
+            // TRB detection: new row-band model has a 'rows' array instead of 'columns'.
+            $isTrb = isset($tableEl['rows']) && is_array($tableEl['rows']);
+
+            if ($isTrb) {
+                // Pass the InvoiceItem collection through to the blade renderer.
+                // The $renderRowBandTable closure resolves {{item.*}} tokens per-row.
+                $trbItems = $items;
+            } else {
+                // Legacy column-based path — resolve all items to a flat array of strings.
+                $columns = $tableEl['columns'] ?? ItemColumns::defaultColumns();
+                $rows = ItemColumns::resolveItems($columns, $items);
+                $tableEl = [
+                    ...$tableEl,
+                    'columns' => $columns,
+                    'rows' => $rows,
+                ];
+            }
         }
 
         // Footer-flow band
@@ -370,6 +379,8 @@ class PdfTemplateController extends Controller
             ],
             // Content / items table
             'tableEl' => $tableEl,
+            // TRB: InvoiceItem collection for row-band renderer (null for legacy path)
+            'trbItems' => $trbItems,
             // Footer-flow band
             'footerFlowBand' => [
                 'height' => $footerFlowHeight,
