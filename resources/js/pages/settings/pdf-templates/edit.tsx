@@ -265,11 +265,9 @@ function makeDefaultTable(id: number, catalog: ItemColumnEntry[], x: number, y: 
     const colWidths = defaults.map((c) => widths[c.key] ?? 100);
 
     const headRow: TableRow = {
-        kind: 'head',
         cells: defaults.map((c) => ({ content: c.label, align: c.align, bold: true })),
     };
     const detailRow: TableRow = {
-        kind: 'body',
         repeat: 'items',
         cells: defaults.map((c) => ({ content: `{{item.${c.key}}}`, align: c.align })),
     };
@@ -1113,22 +1111,13 @@ export default function PdfTemplateEdit() {
         }));
     };
 
-    const addTrbRow = (kind: 'head' | 'body' | 'foot') => {
+    const addTrbRow = () => {
         snapshot();
         updateTrb((el) => {
             const newCells: TableCell[] = el.colWidths.map(() => ({ content: '', align: 'left' as const }));
-            const newRow: TableRow = { kind, cells: newCells };
+            const newRow: TableRow = { cells: newCells };
             const rows = [...el.rows];
-            let insertIdx: number;
-            if (kind === 'head') {
-                const firstNonHead = rows.findIndex((r) => r.kind !== 'head');
-                insertIdx = firstNonHead === -1 ? rows.length : firstNonHead;
-            } else if (kind === 'foot') {
-                insertIdx = rows.length;
-            } else {
-                const firstFoot = rows.findIndex((r) => r.kind === 'foot');
-                insertIdx = firstFoot === -1 ? rows.length : firstFoot;
-            }
+            const insertIdx = selectedCell != null ? selectedCell.row + 1 : rows.length;
             rows.splice(insertIdx, 0, newRow);
             return { ...el, rows };
         });
@@ -3335,9 +3324,11 @@ function TablePreview({
         );
     };
 
-    const headRowsWithIdx = el.rows.map((r, i) => ({ r, i })).filter(({ r }) => r.kind === 'head');
-    const bodyRowsWithIdx = el.rows.map((r, i) => ({ r, i })).filter(({ r }) => r.kind === 'body');
-    const footRowsWithIdx = el.rows.map((r, i) => ({ r, i })).filter(({ r }) => r.kind === 'foot');
+    // Auto-detect sections — mirrors blade renderer: pre-repeat→thead, repeat→tbody, post-repeat→tfoot.
+    const firstRepeatIdx = el.rows.findIndex((r) => r.repeat === 'items');
+    const headRowsWithIdx = el.rows.map((r, i) => ({ r, i })).filter(({ i }) => firstRepeatIdx !== -1 && i < firstRepeatIdx);
+    const bodyRowsWithIdx = el.rows.map((r, i) => ({ r, i })).filter(({ r }) => r.repeat === 'items');
+    const footRowsWithIdx = el.rows.map((r, i) => ({ r, i })).filter(({ r, i }) => firstRepeatIdx !== -1 && i > firstRepeatIdx && r.repeat !== 'items');
 
     return (
         <div
@@ -3406,7 +3397,7 @@ function TableInspector({
     onUpdateTrb: (patch: Partial<TableEl>) => void;
     onUpdateRow: (rowIdx: number, patch: Partial<TableRow>) => void;
     onUpdateCell: (rowIdx: number, colIdx: number, patch: Partial<TableCell>) => void;
-    onAddRow: (kind: 'head' | 'body' | 'foot') => void;
+    onAddRow: () => void;
     onRemoveRow: (rowIdx: number) => void;
     onMoveRow: (rowIdx: number, dir: -1 | 1) => void;
     onAddCol: () => void;
@@ -3417,8 +3408,13 @@ function TableInspector({
     const cell = selectedCell != null ? el.rows[selectedCell.row]?.cells[selectedCell.col] : null;
     const selectedRow = selectedCell != null ? el.rows[selectedCell.row] : null;
 
-    const kindLabel: Record<string, string> = { head: 'Header', body: 'Isi', foot: 'Footer' };
-    const kindVariant: Record<string, 'blue' | 'zinc' | 'purple'> = { head: 'blue', body: 'zinc', foot: 'purple' };
+    // Position-based section label (mirrors blade auto-detect)
+    const firstRepeatRowIdx = el.rows.findIndex((r) => r.repeat === 'items');
+    const rowSection = (ri: number): { label: string; variant: 'blue' | 'zinc' | 'purple' } => {
+        if (firstRepeatRowIdx === -1 || ri < firstRepeatRowIdx) return { label: 'Header', variant: 'blue' };
+        if (el.rows[ri]?.repeat === 'items') return { label: 'Isi', variant: 'zinc' };
+        return { label: 'Footer', variant: 'purple' };
+    };
 
     const itemTokens = [
         { key: 'item.no', label: 'No.' },
@@ -3446,8 +3442,8 @@ function TableInspector({
                             }`}
                         >
                             <span className="w-4 shrink-0 text-center text-dark-400 dark:text-dark-500 tabular-nums">{ri + 1}</span>
-                            <Badge variant={kindVariant[row.kind]} size="sm" className="shrink-0 text-[9px] py-0.5 px-1.5">
-                                {kindLabel[row.kind]}
+                            <Badge variant={rowSection(ri).variant} size="sm" className="shrink-0 text-[9px] py-0.5 px-1.5">
+                                {rowSection(ri).label}
                             </Badge>
                             {row.repeat === 'items' && (
                                 <Badge variant="emerald" size="sm" className="shrink-0 text-[9px] py-0.5 px-1.5">
@@ -3471,24 +3467,10 @@ function TableInspector({
                     ))}
                 </div>
 
-                {/* Kind + repeat toggle for selected row */}
+                {/* Repeat toggle for selected row */}
                 {selectedRow != null && selectedCell != null && (
-                    <div className="space-y-2 pt-2 border-t border-secondary-200 dark:border-dark-600 mt-2">
-                        <Row label="Jenis">
-                            <div className="flex gap-1">
-                                {(['head', 'body', 'foot'] as const).map((k) => (
-                                    <button key={k}
-                                        onClick={() => onUpdateRow(selectedCell.row, { kind: k })}
-                                        className={`flex-1 h-7 rounded-lg border text-[10px] font-medium transition-colors ${
-                                            selectedRow.kind === k
-                                                ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-300'
-                                                : 'border-secondary-200 dark:border-dark-600 text-dark-500 dark:text-dark-400 hover:bg-zinc-50 dark:hover:bg-dark-700'
-                                        }`}
-                                    >{kindLabel[k]}</button>
-                                ))}
-                            </div>
-                        </Row>
-                        <Row label="Repeat">
+                    <div className="pt-2 border-t border-secondary-200 dark:border-dark-600 mt-2">
+                        <Row label="Repeat items">
                             <Switch
                                 checked={selectedRow.repeat === 'items'}
                                 onCheckedChange={(v) => onUpdateRow(selectedCell.row, { repeat: v ? 'items' : undefined })}
@@ -3497,14 +3479,12 @@ function TableInspector({
                     </div>
                 )}
 
-                {/* Add row buttons */}
-                <div className="flex gap-1 pt-1">
-                    {(['head', 'body', 'foot'] as const).map((k) => (
-                        <button key={k} onClick={() => onAddRow(k)}
-                            className="flex-1 flex items-center justify-center gap-0.5 h-6 rounded-lg border border-dashed border-secondary-200 dark:border-dark-600 text-[10px] text-dark-400 hover:border-primary-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">
-                            <Plus className="w-2.5 h-2.5" />{kindLabel[k]}
-                        </button>
-                    ))}
+                {/* Add row button */}
+                <div className="pt-1">
+                    <button onClick={onAddRow}
+                        className="w-full flex items-center justify-center gap-1 h-6 rounded-lg border border-dashed border-secondary-200 dark:border-dark-600 text-[10px] text-dark-400 hover:border-primary-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">
+                        <Plus className="w-2.5 h-2.5" />Tambah Baris
+                    </button>
                 </div>
             </Section>
 

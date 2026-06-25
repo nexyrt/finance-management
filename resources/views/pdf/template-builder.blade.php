@@ -603,10 +603,25 @@
         // Materialise items for repeat rows
         $itemsArr = collect($items)->values()->all();
 
-        // Split rows by kind
-        $headRows = array_values(array_filter($rows, fn ($r) => ($r['kind'] ?? '') === 'head'));
-        $bodyRows = array_values(array_filter($rows, fn ($r) => ($r['kind'] ?? '') === 'body'));
-        $footRows = array_values(array_filter($rows, fn ($r) => ($r['kind'] ?? '') === 'foot'));
+        // Auto-detect sections by position relative to the first repeat:'items' row.
+        // Rows before first repeat → thead (header). Repeat row(s) → tbody.
+        // Static rows after first repeat → tfoot. No 'kind' field needed.
+        // Backward-compat: old templates with explicit 'kind' still work because
+        // the repeat flag is the only meaningful split point.
+        $headRows = [];
+        $bodyRows = [];
+        $footRows = [];
+        $seenRepeat = false;
+        foreach ($rows as $row) {
+            if (($row['repeat'] ?? '') === 'items') {
+                $seenRepeat = true;
+                $bodyRows[] = $row;
+            } elseif (! $seenRepeat) {
+                $headRows[] = $row;
+            } else {
+                $footRows[] = $row;
+            }
+        }
 
         // Colgroup
         $colgroup = '<colgroup>';
