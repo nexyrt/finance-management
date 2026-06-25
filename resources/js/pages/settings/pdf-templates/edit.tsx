@@ -148,6 +148,7 @@ type TableCell = {
 type TableRow = {
     kind: 'head' | 'body' | 'foot';
     repeat?: 'items';
+    height?: number;
     cells: TableCell[];
 };
 
@@ -286,18 +287,17 @@ const TABLE_HEADER_H = 28;
 const TABLE_ROW_H = 24;
 const TABLE_PLACEHOLDER_ROWS = 3;
 
+function rowVisualH(row: TableRow, sampleCount = TABLE_PLACEHOLDER_ROWS): number {
+    const baseH = row.height ?? (row.kind === 'body' ? TABLE_ROW_H : TABLE_HEADER_H);
+    return row.repeat === 'items' ? baseH * sampleCount : baseH;
+}
+
 function tableEditorHeight(el: TableEl): number {
-    const headRows = el.rows.filter((r) => r.kind === 'head').length;
-    const footRows = el.rows.filter((r) => r.kind === 'foot').length;
-    const hasDetail = el.rows.some((r) => r.repeat === 'items');
-    return (headRows + footRows) * TABLE_HEADER_H + (hasDetail ? TABLE_ROW_H * TABLE_PLACEHOLDER_ROWS : 0) + 2;
+    return el.rows.reduce((sum, r) => sum + rowVisualH(r, TABLE_PLACEHOLDER_ROWS), 0) + 2;
 }
 
 function tablePreviewHeight(el: TableEl, sampleItems: Array<Record<string, string>>): number {
-    const headRows = el.rows.filter((r) => r.kind === 'head').length;
-    const footRows = el.rows.filter((r) => r.kind === 'foot').length;
-    const hasDetail = el.rows.some((r) => r.repeat === 'items');
-    return (headRows + footRows) * TABLE_HEADER_H + (hasDetail ? TABLE_ROW_H * Math.max(1, sampleItems.length) : 0) + 2;
+    return el.rows.reduce((sum, r) => sum + rowVisualH(r, Math.max(1, sampleItems.length)), 0) + 2;
 }
 
 function makeGridCell(): GridCell {
@@ -858,6 +858,43 @@ export default function PdfTemplateEdit() {
         window.addEventListener('pointerup', up);
     };
 
+    const startColResize = (e: React.PointerEvent, el: TableEl, colIdx: number) => {
+        e.stopPropagation(); e.preventDefault();
+        const x0 = e.clientX;
+        const w0 = el.colWidths[colIdx];
+        const minW = 20;
+        let snapped = false;
+        const onMove = (ev: PointerEvent) => {
+            if (!snapped) { snapshot(); snapped = true; }
+            const newW = Math.max(minW, Math.round(w0 + (ev.clientX - x0) / zoom));
+            updateTrb((cur) => ({ ...cur, colWidths: cur.colWidths.map((w, i) => (i === colIdx ? newW : w)) }));
+        };
+        const onUp = () => { window.removeEventListener('pointermove', onMove); window.removeEventListener('pointerup', onUp); };
+        window.addEventListener('pointermove', onMove);
+        window.addEventListener('pointerup', onUp);
+    };
+
+    const startRowResize = (e: React.PointerEvent, el: TableEl, rowIdx: number) => {
+        e.stopPropagation(); e.preventDefault();
+        const y0 = e.clientY;
+        const row = el.rows[rowIdx];
+        const defaultH = row.kind === 'body' ? TABLE_ROW_H : TABLE_HEADER_H;
+        const isRepeat = row.repeat === 'items';
+        const sampleCount = isRepeat ? TABLE_PLACEHOLDER_ROWS : 1;
+        const h0 = (row.height ?? defaultH) * sampleCount;
+        const minH = 12 * sampleCount;
+        let snapped = false;
+        const onMove = (ev: PointerEvent) => {
+            if (!snapped) { snapshot(); snapped = true; }
+            const newVisualH = Math.max(minH, Math.round(h0 + (ev.clientY - y0) / zoom));
+            const newH = Math.round(newVisualH / sampleCount);
+            updateTrb((cur) => ({ ...cur, rows: cur.rows.map((r, i) => (i === rowIdx ? { ...r, height: newH } : r)) }));
+        };
+        const onUp = () => { window.removeEventListener('pointermove', onMove); window.removeEventListener('pointerup', onUp); };
+        window.addEventListener('pointermove', onMove);
+        window.addEventListener('pointerup', onUp);
+    };
+
     const startRectResize = (e: React.PointerEvent, el: RectEl, bandRef: React.RefObject<HTMLDivElement | null>) => {
         e.stopPropagation();
         const rect = bandRef.current!.getBoundingClientRect();
@@ -1013,11 +1050,134 @@ export default function PdfTemplateEdit() {
         probe.src = el.src;
     };
 
-    // T2: full row-band editor — these column-level operations are no-ops in T1
-    const updateTableColumn = (_tableId: number, _colIdx: number, _patch: Partial<TableColumn>) => { /* T2 */ };
-    const moveTableColumn = (_tableId: number, _from: number, _direction: -1 | 1) => { /* T2 */ };
-    const removeTableColumn = (_tableId: number, _colIdx: number) => { /* T2 */ };
-    const addTableColumn = (_tableId: number, _key: string) => { /* T2 */ };
+    // ── TRB helpers ──────────────────────────────────────────────────────────────
+    const updateTrb = (fn: (el: TableEl) => TableEl) => {
+        setBands((prev) => {
+            if (!prev.content.table) return prev;
+            return { ...prev, content: { table: fn(prev.content.table) } };
+        });
+    };
+
+    const updateTrbRow = (rowIdx: number, patch: Partial<TableRow>) => {
+        snapshot();
+        updateTrb((el) => ({ ...el, rows: el.rows.map((r, i) => (i === rowIdx ? { ...r, ...patch } : r)) }));
+    };
+
+    const updateTrbCell = (rowIdx: number, colIdx: number, patch: Partial<TableCell>) => {
+        snapshot();
+        updateTrb((el) => ({
+            ...el,
+            rows: el.rows.map((r, ri) =>
+                ri === rowIdx
+                    ? { ...r, cells: r.cells.map((c, ci) => (ci === colIdx ? { ...c, ...patch } : c)) }
+                    : r,
+            ),
+        }));
+    };
+
+    const addTrbRow = (kind: 'head' | 'body' | 'foot') => {
+        snapshot();
+        updateTrb((el) => {
+            const newCells: TableCell[] = el.colWidths.map(() => ({ content: '', align: 'left' as const }));
+            const newRow: TableRow = { kind, cells: newCells };
+            const rows = [...el.rows];
+            let insertIdx: number;
+            if (kind === 'head') {
+                const firstNonHead = rows.findIndex((r) => r.kind !== 'head');
+                insertIdx = firstNonHead === -1 ? rows.length : firstNonHead;
+            } else if (kind === 'foot') {
+                insertIdx = rows.length;
+            } else {
+                const firstFoot = rows.findIndex((r) => r.kind === 'foot');
+                insertIdx = firstFoot === -1 ? rows.length : firstFoot;
+            }
+            rows.splice(insertIdx, 0, newRow);
+            return { ...el, rows };
+        });
+    };
+
+    const removeTrbRow = (rowIdx: number) => {
+        snapshot();
+        updateTrb((el) => {
+            if (el.rows.length <= 1) return el;
+            return { ...el, rows: el.rows.filter((_, i) => i !== rowIdx) };
+        });
+        if (selectedCell?.row === rowIdx) { setSelectedCell(null); setAnchorCell(null); setRangeEnd(null); }
+    };
+
+    const moveTrbRow = (rowIdx: number, dir: -1 | 1) => {
+        snapshot();
+        updateTrb((el) => {
+            const rows = [...el.rows];
+            const target = rowIdx + dir;
+            if (target < 0 || target >= rows.length) return el;
+            [rows[rowIdx], rows[target]] = [rows[target], rows[rowIdx]];
+            return { ...el, rows };
+        });
+    };
+
+    const addTrbCol = () => {
+        snapshot();
+        updateTrb((el) => ({
+            ...el,
+            width: el.width + 80,
+            colWidths: [...el.colWidths, 80],
+            rows: el.rows.map((r) => ({ ...r, cells: [...r.cells, { content: '', align: 'left' as const }] })),
+        }));
+    };
+
+    const removeTrbCol = (colIdx: number) => {
+        snapshot();
+        updateTrb((el) => {
+            if (el.colWidths.length <= 1) return el;
+            const removed = el.colWidths[colIdx] ?? 0;
+            return {
+                ...el,
+                width: el.width - removed,
+                colWidths: el.colWidths.filter((_, i) => i !== colIdx),
+                rows: el.rows.map((r) => ({ ...r, cells: r.cells.filter((_, ci) => ci !== colIdx) })),
+            };
+        });
+    };
+
+    const mergeTrbRange = (r1: number, c1: number, r2: number, c2: number) => {
+        snapshot();
+        updateTrb((el) => ({
+            ...el,
+            rows: el.rows.map((row, ri) => ({
+                ...row,
+                cells: row.cells.map((cell, ci) => {
+                    if (ri === r1 && ci === c1) return { ...cell, colSpan: c2 - c1 + 1, rowSpan: r2 - r1 + 1, merged: false };
+                    if (ri >= r1 && ri <= r2 && ci >= c1 && ci <= c2) return { ...cell, content: '', colSpan: 1, rowSpan: 1, merged: true };
+                    return cell;
+                }),
+            })),
+        }));
+        setSelectedCell({ row: r1, col: c1 });
+        setAnchorCell({ row: r1, col: c1 });
+        setRangeEnd(null);
+    };
+
+    const unmergeTrbCell = (row: number, col: number) => {
+        snapshot();
+        updateTrb((el) => {
+            const keeper = el.rows[row]?.cells[col];
+            if (!keeper) return el;
+            const cs = keeper.colSpan ?? 1;
+            const rs = keeper.rowSpan ?? 1;
+            return {
+                ...el,
+                rows: el.rows.map((r, ri) => ({
+                    ...r,
+                    cells: r.cells.map((cell, ci) => {
+                        if (ri === row && ci === col) return { ...cell, colSpan: 1, rowSpan: 1, merged: false };
+                        if (ri >= row && ri < row + rs && ci >= col && ci < col + cs) return { ...cell, merged: false, colSpan: 1, rowSpan: 1 };
+                        return cell;
+                    }),
+                })),
+            };
+        });
+    };
 
     const updateGridCell = (gridId: number, row: number, col: number, patch: Partial<GridCell>) => {
         const band = findElBand(gridId);
@@ -1890,6 +2050,23 @@ export default function PdfTemplateEdit() {
                                             const isSel = selectedId === tableEl.id;
                                             const height = preview ? tablePreviewHeight(tableEl, sampleItems) : tableEditorHeight(tableEl);
                                             const rows = preview ? sampleItems : null;
+
+                                            // Column resize handle x positions (all borders except rightmost)
+                                            const colXs: number[] = [];
+                                            let cx = 0;
+                                            tableEl.colWidths.forEach((w, i) => {
+                                                cx += w;
+                                                if (i < tableEl.colWidths.length - 1) colXs.push(cx);
+                                            });
+
+                                            // Row resize handle y positions (bottom of each row)
+                                            const rowYs: number[] = [];
+                                            let ry = 0;
+                                            tableEl.rows.forEach((row, i) => {
+                                                ry += rowVisualH(row, TABLE_PLACEHOLDER_ROWS);
+                                                rowYs.push({ y: ry, rowIdx: i });
+                                            });
+
                                             return (
                                                 <div
                                                     onPointerDown={(e) => {
@@ -1898,10 +2075,49 @@ export default function PdfTemplateEdit() {
                                                         setSelectedBand('content');
                                                         setActiveBand('content');
                                                     }}
-                                                    className={`absolute cursor-move ${isSel && !preview ? 'outline-2 outline-primary-500' : ''}`}
+                                                    className={`absolute ${isSel && !preview ? 'outline outline-2 outline-primary-500' : ''}`}
                                                     style={{ left: tableEl.x + margins.left, top: 22, width: tableEl.width, height, touchAction: 'none' }}
                                                 >
-                                                    <TablePreview el={tableEl} rows={rows} />
+                                                    <TablePreview
+                                                        el={tableEl}
+                                                        rows={rows}
+                                                        selectedCell={isSel ? selectedCell : null}
+                                                        tableSelRange={isSel ? selectedRange : null}
+                                                        onCellPointerDown={isSel && !preview ? (ri, ci, e) => {
+                                                            e.stopPropagation();
+                                                            if (e.shiftKey && anchorCell) {
+                                                                setRangeEnd({ row: ri, col: ci });
+                                                                setSelectedCell({ row: ri, col: ci });
+                                                            } else {
+                                                                setAnchorCell({ row: ri, col: ci });
+                                                                setRangeEnd(null);
+                                                                setSelectedCell({ row: ri, col: ci });
+                                                            }
+                                                        } : undefined}
+                                                    />
+                                                    {/* Column resize handles */}
+                                                    {isSel && !preview && colXs.map((x, i) => (
+                                                        <span
+                                                            key={i}
+                                                            onPointerDown={(e) => startColResize(e, tableEl, i)}
+                                                            className="absolute top-0 bottom-0 z-20 flex items-center justify-center group"
+                                                            style={{ left: x - 4, width: 8, cursor: 'col-resize' }}
+                                                        >
+                                                            <span className="w-px h-full bg-transparent group-hover:bg-primary-400/80 transition-colors" />
+                                                        </span>
+                                                    ))}
+                                                    {/* Row resize handles */}
+                                                    {isSel && !preview && rowYs.map(({ y, rowIdx }) => (
+                                                        <span
+                                                            key={rowIdx}
+                                                            onPointerDown={(e) => startRowResize(e, tableEl, rowIdx)}
+                                                            className="absolute left-0 right-0 z-20 group"
+                                                            style={{ top: y - 4, height: 8, cursor: 'row-resize' }}
+                                                        >
+                                                            <span className="absolute inset-x-0 top-1/2 h-px bg-transparent group-hover:bg-primary-400/80 transition-colors" />
+                                                        </span>
+                                                    ))}
+                                                    {/* Right-edge table width resize */}
                                                     {isSel && !preview && (
                                                         <span
                                                             onPointerDown={(e) => startTableResize(e, tableEl, contentRef)}
@@ -2179,12 +2395,18 @@ export default function PdfTemplateEdit() {
                             {selected.type === 'table' && (
                                 <TableInspector
                                     el={selected as TableEl}
-                                    catalog={itemColumnCatalog}
-                                    onUpdate={(patch) => { snapshot(); setContentTable(patch); }}
-                                    onUpdateColumn={(idx, patch) => { snapshot(); updateTableColumn(selected.id, idx, patch); }}
-                                    onMoveColumn={(idx, dir) => { snapshot(); moveTableColumn(selected.id, idx, dir); }}
-                                    onRemoveColumn={(idx) => removeTableColumn(selected.id, idx)}
-                                    onAddColumn={(key) => addTableColumn(selected.id, key)}
+                                    selectedCell={selectedCell}
+                                    selectedRange={selectedRange}
+                                    onUpdateTrb={(patch) => { snapshot(); setContentTable(patch); }}
+                                    onUpdateRow={updateTrbRow}
+                                    onUpdateCell={updateTrbCell}
+                                    onAddRow={addTrbRow}
+                                    onRemoveRow={removeTrbRow}
+                                    onMoveRow={moveTrbRow}
+                                    onAddCol={addTrbCol}
+                                    onRemoveCol={removeTrbCol}
+                                    onMerge={mergeTrbRange}
+                                    onUnmerge={unmergeTrbCell}
                                 />
                             )}
 
@@ -2975,8 +3197,14 @@ function GridInspector({
 // ── Table canvas render (TRB row-band model) ──────────────────────────────────
 
 function TablePreview({
-    el, rows,
-}: { el: TableEl; rows: Array<Record<string, string>> | null }) {
+    el, rows, selectedCell, tableSelRange, onCellPointerDown,
+}: {
+    el: TableEl;
+    rows: Array<Record<string, string>> | null;
+    selectedCell?: { row: number; col: number } | null;
+    tableSelRange?: { r1: number; c1: number; r2: number; c2: number } | null;
+    onCellPointerDown?: (ri: number, ci: number, e: React.PointerEvent) => void;
+}) {
     const sampleRows = rows ?? Array.from({ length: TABLE_PLACEHOLDER_ROWS }, (_, i) => ({
         'item.no': String(i + 1),
         'item.description': `Item Contoh ${i + 1}`,
@@ -2994,27 +3222,36 @@ function TablePreview({
             return `{{${key}}}`;
         });
 
-    const alignClass = (align: string) =>
-        align === 'right' ? 'text-right' : align === 'center' ? 'text-center' : 'text-left';
-
-    const renderCell = (cell: TableCell, key: string | number, itemRow?: Record<string, string>) => {
-        if (cell.merged) { return null; }
+    const renderCell = (cell: TableCell, tableRowIdx: number, colIdx: number, rowH: number, itemRow?: Record<string, string>) => {
+        if (cell.merged) return null;
+        const isSel = selectedCell?.row === tableRowIdx && selectedCell?.col === colIdx;
+        const inRange = tableSelRange != null
+            && tableRowIdx >= tableSelRange.r1 && tableRowIdx <= tableSelRange.r2
+            && colIdx >= tableSelRange.c1 && colIdx <= tableSelRange.c2;
+        const textAlign = cell.align === 'right' ? 'right' : cell.align === 'center' ? 'center' : 'left';
         return (
             <td
-                key={key}
+                key={`${tableRowIdx}-${colIdx}`}
                 colSpan={cell.colSpan ?? 1}
                 rowSpan={cell.rowSpan ?? 1}
-                className={`shrink-0 px-2 truncate ${alignClass(cell.align)}`}
+                onPointerDown={onCellPointerDown ? (e) => { e.stopPropagation(); onCellPointerDown(tableRowIdx, colIdx, e); } : undefined}
                 style={{
-                    height: TABLE_HEADER_H,
+                    height: rowH,
+                    textAlign,
                     fontWeight: cell.bold ? 700 : 400,
                     color: cell.color ?? undefined,
-                    backgroundColor: cell.fill ?? undefined,
+                    backgroundColor: isSel
+                        ? 'rgba(59,130,246,0.15)'
+                        : inRange
+                        ? 'rgba(59,130,246,0.07)'
+                        : (cell.fill ?? undefined),
                     fontSize: cell.fontSize ?? undefined,
-                    border: `1px solid #e2e8f0`,
+                    border: isSel ? '1.5px solid rgba(59,130,246,0.7)' : '1px solid #e2e8f0',
                     verticalAlign: 'middle',
                     overflow: 'hidden',
                     padding: '2px 8px',
+                    cursor: onCellPointerDown ? 'pointer' : undefined,
+                    userSelect: 'none',
                 }}
             >
                 {resolveCell(cell.content, itemRow)}
@@ -3022,13 +3259,13 @@ function TablePreview({
         );
     };
 
-    const headRows = el.rows.filter((r) => r.kind === 'head');
-    const bodyRows = el.rows.filter((r) => r.kind === 'body');
-    const footRows = el.rows.filter((r) => r.kind === 'foot');
+    const headRowsWithIdx = el.rows.map((r, i) => ({ r, i })).filter(({ r }) => r.kind === 'head');
+    const bodyRowsWithIdx = el.rows.map((r, i) => ({ r, i })).filter(({ r }) => r.kind === 'body');
+    const footRowsWithIdx = el.rows.map((r, i) => ({ r, i })).filter(({ r }) => r.kind === 'foot');
 
     return (
         <div
-            className="w-full h-full overflow-hidden rounded border border-blue-200 dark:border-blue-900/40 bg-white dark:bg-dark-800 select-none text-[10px]"
+            className="w-full h-full overflow-hidden rounded border border-blue-200 dark:border-blue-900/40 bg-white dark:bg-dark-800 text-[10px]"
             style={{ fontFamily: 'Helvetica, Arial, sans-serif' }}
         >
             <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
@@ -3036,34 +3273,41 @@ function TablePreview({
                     {el.colWidths.map((w, i) => <col key={i} style={{ width: w }} />)}
                 </colgroup>
                 <thead>
-                    {headRows.map((row, ri) => (
-                        <tr key={ri} style={{ background: ri === headRows.length - 1 ? '#f1f5f9' : '#e2e8f0' }}>
-                            {row.cells.map((cell, ci) => renderCell(cell, ci))}
-                        </tr>
-                    ))}
+                    {headRowsWithIdx.map(({ r: row, i: ri }, pos) => {
+                        const rowH = row.height ?? TABLE_HEADER_H;
+                        return (
+                            <tr key={ri} style={{ background: pos === headRowsWithIdx.length - 1 ? '#f1f5f9' : '#e2e8f0' }}>
+                                {row.cells.map((cell, ci) => renderCell(cell, ri, ci, rowH))}
+                            </tr>
+                        );
+                    })}
                 </thead>
                 <tbody>
-                    {bodyRows.map((row, ri) =>
-                        row.repeat === 'items'
+                    {bodyRowsWithIdx.map(({ r: row, i: ri }) => {
+                        const rowH = row.height ?? TABLE_ROW_H;
+                        return row.repeat === 'items'
                             ? sampleRows.map((sampleItem, si) => (
                                 <tr key={`${ri}-${si}`} style={{ background: si % 2 === 1 ? '#f8fafc' : undefined }}>
-                                    {row.cells.map((cell, ci) => renderCell(cell, ci, sampleItem))}
+                                    {row.cells.map((cell, ci) => renderCell(cell, ri, ci, rowH, sampleItem))}
                                 </tr>
                             ))
                             : (
                                 <tr key={ri}>
-                                    {row.cells.map((cell, ci) => renderCell(cell, ci))}
+                                    {row.cells.map((cell, ci) => renderCell(cell, ri, ci, rowH))}
                                 </tr>
-                            ),
-                    )}
+                            );
+                    })}
                 </tbody>
-                {footRows.length > 0 && (
+                {footRowsWithIdx.length > 0 && (
                     <tfoot>
-                        {footRows.map((row, ri) => (
-                            <tr key={ri} style={{ background: '#f1f5f9', fontWeight: 700 }}>
-                                {row.cells.map((cell, ci) => renderCell(cell, ci))}
-                            </tr>
-                        ))}
+                        {footRowsWithIdx.map(({ r: row, i: ri }) => {
+                            const rowH = row.height ?? TABLE_HEADER_H;
+                            return (
+                                <tr key={ri} style={{ background: '#f1f5f9', fontWeight: 700 }}>
+                                    {row.cells.map((cell, ci) => renderCell(cell, ri, ci, rowH))}
+                                </tr>
+                            );
+                        })}
                     </tfoot>
                 )}
             </table>
@@ -3071,44 +3315,251 @@ function TablePreview({
     );
 }
 
-// ── Table Inspector (T1 stub — full row-band editor in T2) ────────────────────
+// ── Table Inspector ───────────────────────────────────────────────────────────
 
 function TableInspector({
-    el, onUpdate,
+    el, selectedCell, selectedRange,
+    onUpdateTrb, onUpdateRow, onUpdateCell,
+    onAddRow, onRemoveRow, onMoveRow,
+    onAddCol, onRemoveCol,
+    onMerge, onUnmerge,
 }: {
     el: TableEl;
-    catalog: ItemColumnEntry[];
-    onUpdate: (patch: Partial<TableEl>) => void;
-    onUpdateColumn: (idx: number, patch: Partial<TableColumn>) => void;
-    onMoveColumn: (idx: number, dir: -1 | 1) => void;
-    onRemoveColumn: (idx: number) => void;
-    onAddColumn: (key: string) => void;
+    selectedCell: { row: number; col: number } | null;
+    selectedRange: { r1: number; c1: number; r2: number; c2: number } | null;
+    onUpdateTrb: (patch: Partial<TableEl>) => void;
+    onUpdateRow: (rowIdx: number, patch: Partial<TableRow>) => void;
+    onUpdateCell: (rowIdx: number, colIdx: number, patch: Partial<TableCell>) => void;
+    onAddRow: (kind: 'head' | 'body' | 'foot') => void;
+    onRemoveRow: (rowIdx: number) => void;
+    onMoveRow: (rowIdx: number, dir: -1 | 1) => void;
+    onAddCol: () => void;
+    onRemoveCol: (colIdx: number) => void;
+    onMerge: (r1: number, c1: number, r2: number, c2: number) => void;
+    onUnmerge: (row: number, col: number) => void;
 }) {
-    const headRows = el.rows.filter((r) => r.kind === 'head');
-    const detailRow = el.rows.find((r) => r.repeat === 'items');
-    const footRows = el.rows.filter((r) => r.kind === 'foot');
+    const cell = selectedCell != null ? el.rows[selectedCell.row]?.cells[selectedCell.col] : null;
+    const selectedRow = selectedCell != null ? el.rows[selectedCell.row] : null;
+
+    const kindLabel: Record<string, string> = { head: 'Header', body: 'Isi', foot: 'Footer' };
+    const kindVariant: Record<string, 'blue' | 'zinc' | 'purple'> = { head: 'blue', body: 'zinc', foot: 'purple' };
+
+    const itemTokens = [
+        { key: 'item.no', label: 'No.' },
+        { key: 'item.description', label: 'Deskripsi' },
+        { key: 'item.quantity', label: 'Qty' },
+        { key: 'item.unit', label: 'Satuan' },
+        { key: 'item.unit_price', label: 'Harga' },
+        { key: 'item.amount', label: 'Jumlah' },
+        { key: 'item.cogs_amount', label: 'COGS' },
+        { key: 'item.is_tax_deposit', label: 'Pajak' },
+    ];
 
     return (
         <>
-            <Section title="Tabel Terpadu (TRB)">
-                <p className="text-[11px] text-dark-400 dark:text-dark-500 py-1">
-                    {`${el.colWidths.length} kolom · ${el.rows.length} baris`}
-                </p>
-                <p className="text-[11px] text-dark-400 dark:text-dark-500 py-1">
-                    {headRows.length > 0 && `${headRows.length} header · `}
-                    {detailRow ? '1 baris detail (repeat) · ' : ''}
-                    {footRows.length > 0 ? `${footRows.length} footer` : ''}
-                </p>
-                <p className="text-[10px] text-dark-300 dark:text-dark-500 py-1 italic">
-                    Editor baris/sel penuh tersedia di T2.
-                </p>
+            {/* ── Rows list ── */}
+            <Section title="Baris">
+                <div className="space-y-1">
+                    {el.rows.map((row, ri) => (
+                        <div
+                            key={ri}
+                            className={`flex items-center gap-1 px-2 py-1.5 rounded-lg border transition-colors text-[11px] ${
+                                selectedCell?.row === ri
+                                    ? 'border-primary-400 bg-primary-50 dark:bg-primary-900/20'
+                                    : 'border-secondary-200 dark:border-dark-600'
+                            }`}
+                        >
+                            <span className="w-4 shrink-0 text-center text-dark-400 dark:text-dark-500 tabular-nums">{ri + 1}</span>
+                            <Badge variant={kindVariant[row.kind]} size="sm" className="shrink-0 text-[9px] py-0.5 px-1.5">
+                                {kindLabel[row.kind]}
+                            </Badge>
+                            {row.repeat === 'items' && (
+                                <Badge variant="emerald" size="sm" className="shrink-0 text-[9px] py-0.5 px-1.5">
+                                    <Repeat2 className="w-2.5 h-2.5 mr-0.5 inline-block" />repeat
+                                </Badge>
+                            )}
+                            <span className="flex-1" />
+                            <button onClick={() => onMoveRow(ri, -1)} disabled={ri === 0}
+                                className="grid place-items-center h-5 w-5 rounded border border-secondary-200 dark:border-dark-600 text-dark-400 disabled:opacity-30 hover:bg-zinc-50 dark:hover:bg-dark-700 transition">
+                                <ChevronUp className="w-3 h-3" />
+                            </button>
+                            <button onClick={() => onMoveRow(ri, 1)} disabled={ri === el.rows.length - 1}
+                                className="grid place-items-center h-5 w-5 rounded border border-secondary-200 dark:border-dark-600 text-dark-400 disabled:opacity-30 hover:bg-zinc-50 dark:hover:bg-dark-700 transition">
+                                <ChevronDown className="w-3 h-3" />
+                            </button>
+                            <button onClick={() => onRemoveRow(ri)} disabled={el.rows.length <= 1}
+                                className="grid place-items-center h-5 w-5 rounded border border-secondary-200 dark:border-dark-600 text-red-400 disabled:opacity-30 hover:bg-red-50 dark:hover:bg-red-900/20 transition">
+                                <Trash2 className="w-3 h-3" />
+                            </button>
+                        </div>
+                    ))}
+                </div>
+
+                {/* Kind + repeat toggle for selected row */}
+                {selectedRow != null && selectedCell != null && (
+                    <div className="space-y-2 pt-2 border-t border-secondary-200 dark:border-dark-600 mt-2">
+                        <Row label="Jenis">
+                            <div className="flex gap-1">
+                                {(['head', 'body', 'foot'] as const).map((k) => (
+                                    <button key={k}
+                                        onClick={() => onUpdateRow(selectedCell.row, { kind: k })}
+                                        className={`flex-1 h-7 rounded-lg border text-[10px] font-medium transition-colors ${
+                                            selectedRow.kind === k
+                                                ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-300'
+                                                : 'border-secondary-200 dark:border-dark-600 text-dark-500 dark:text-dark-400 hover:bg-zinc-50 dark:hover:bg-dark-700'
+                                        }`}
+                                    >{kindLabel[k]}</button>
+                                ))}
+                            </div>
+                        </Row>
+                        <Row label="Repeat">
+                            <Switch
+                                checked={selectedRow.repeat === 'items'}
+                                onCheckedChange={(v) => onUpdateRow(selectedCell.row, { repeat: v ? 'items' : undefined })}
+                            />
+                        </Row>
+                    </div>
+                )}
+
+                {/* Add row buttons */}
+                <div className="flex gap-1 pt-1">
+                    {(['head', 'body', 'foot'] as const).map((k) => (
+                        <button key={k} onClick={() => onAddRow(k)}
+                            className="flex-1 flex items-center justify-center gap-0.5 h-6 rounded-lg border border-dashed border-secondary-200 dark:border-dark-600 text-[10px] text-dark-400 hover:border-primary-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">
+                            <Plus className="w-2.5 h-2.5" />{kindLabel[k]}
+                        </button>
+                    ))}
+                </div>
             </Section>
-            <Section title="Border">
+
+            {/* ── Columns ── */}
+            <Section title="Kolom">
+                <div className="flex items-center gap-2">
+                    <span className="flex-1 text-[11px] text-dark-500 dark:text-dark-400">{el.colWidths.length} kolom</span>
+                    <div className="flex gap-1">
+                        <button
+                            onClick={() => selectedCell != null && onRemoveCol(selectedCell.col)}
+                            disabled={el.colWidths.length <= 1 || selectedCell == null}
+                            title="Hapus kolom dipilih"
+                            className="grid place-items-center h-7 w-7 rounded-lg border border-secondary-200 dark:border-dark-600 text-dark-500 disabled:opacity-30 hover:bg-zinc-50 dark:hover:bg-dark-700 transition">
+                            <Minus className="w-3.5 h-3.5" />
+                        </button>
+                        <button onClick={onAddCol} title="Tambah kolom"
+                            className="grid place-items-center h-7 w-7 rounded-lg border border-secondary-200 dark:border-dark-600 text-dark-500 hover:bg-zinc-50 dark:hover:bg-dark-700 transition">
+                            <Plus className="w-3.5 h-3.5" />
+                        </button>
+                    </div>
+                </div>
+            </Section>
+
+            {/* ── Cell properties ── */}
+            {cell != null && selectedCell != null ? (
+                <Section title={`Sel B${selectedCell.row + 1}·K${selectedCell.col + 1}`}>
+                    {/* Content + field insert */}
+                    <div className="flex gap-1 items-start">
+                        <div className="flex-1">
+                            <Textarea
+                                value={cell.content}
+                                onChange={(e) => onUpdateCell(selectedCell.row, selectedCell.col, { content: e.target.value })}
+                                className="min-h-[44px] text-[11px] resize-none"
+                            />
+                        </div>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <button title="Sisipkan field item"
+                                    className="h-7 px-1.5 rounded-lg border border-secondary-200 dark:border-dark-600 text-dark-400 hover:bg-zinc-50 dark:hover:bg-dark-700 transition shrink-0">
+                                    <Table2 className="w-3.5 h-3.5" />
+                                </button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-44">
+                                <DropdownMenuLabel className="text-[10px]">Field Item</DropdownMenuLabel>
+                                <DropdownMenuSeparator />
+                                {itemTokens.map(({ key, label }) => (
+                                    <DropdownMenuItem key={key} className="text-[11px]"
+                                        onSelect={() => onUpdateCell(selectedCell.row, selectedCell.col, { content: `{{${key}}}` })}>
+                                        {label}
+                                        <span className="ml-auto text-dark-400 text-[9px] font-mono">{'{{' + key + '}}'}</span>
+                                    </DropdownMenuItem>
+                                ))}
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
+                    {/* Align */}
+                    <Row label="Rata">
+                        <div className="flex gap-1">
+                            {([
+                                { value: 'left', icon: <AlignLeft className="w-3.5 h-3.5" />, title: 'Kiri' },
+                                { value: 'center', icon: <AlignCenter className="w-3.5 h-3.5" />, title: 'Tengah' },
+                                { value: 'right', icon: <AlignRight className="w-3.5 h-3.5" />, title: 'Kanan' },
+                            ] as const).map(({ value, icon, title }) => (
+                                <button key={value} onClick={() => onUpdateCell(selectedCell.row, selectedCell.col, { align: value })} title={title}
+                                    className={`flex-1 grid place-items-center h-7 rounded-lg border transition-colors ${
+                                        cell.align === value
+                                            ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-300'
+                                            : 'border-secondary-200 dark:border-dark-600 text-dark-500 dark:text-dark-400 hover:bg-zinc-50 dark:hover:bg-dark-700'
+                                    }`}>{icon}</button>
+                            ))}
+                        </div>
+                    </Row>
+                    {/* Bold */}
+                    <Row label="Tebal">
+                        <button
+                            onClick={() => onUpdateCell(selectedCell.row, selectedCell.col, { bold: !cell.bold })}
+                            title="Bold"
+                            className={`grid place-items-center h-8 w-8 rounded-lg border transition-colors ${
+                                cell.bold
+                                    ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-300'
+                                    : 'border-secondary-200 dark:border-dark-600 text-dark-500 dark:text-dark-400 hover:bg-zinc-50 dark:hover:bg-dark-700'
+                            }`}
+                        ><BoldIcon className="w-4 h-4" /></button>
+                    </Row>
+                    {/* Font size */}
+                    <Row label="Ukuran">
+                        <NumField value={cell.fontSize ?? 11} onChange={(v) => onUpdateCell(selectedCell.row, selectedCell.col, { fontSize: v })} unit="px" />
+                    </Row>
+                    {/* Text color */}
+                    <Row label="Warna">
+                        <ColorInput value={cell.color ?? '#000000'} onChange={(v) => onUpdateCell(selectedCell.row, selectedCell.col, { color: v })} />
+                    </Row>
+                    {/* Fill */}
+                    <Row label="Isi bg">
+                        <ColorInput value={cell.fill ?? '#ffffff'} onChange={(v) => onUpdateCell(selectedCell.row, selectedCell.col, { fill: v })} />
+                    </Row>
+                    {/* Unmerge */}
+                    {((cell.colSpan ?? 1) > 1 || (cell.rowSpan ?? 1) > 1) && (
+                        <Button variant="zinc" size="sm" className="w-full mt-1"
+                            onClick={() => onUnmerge(selectedCell.row, selectedCell.col)}>
+                            Pisahkan sel
+                        </Button>
+                    )}
+                </Section>
+            ) : (
+                <Section title="Sel">
+                    {selectedRange && (selectedRange.r1 !== selectedRange.r2 || selectedRange.c1 !== selectedRange.c2) ? (
+                        <>
+                            <p className="text-[11px] text-dark-400 dark:text-dark-500 text-center py-1">
+                                {`${selectedRange.r2 - selectedRange.r1 + 1} baris × ${selectedRange.c2 - selectedRange.c1 + 1} kolom`}
+                            </p>
+                            <Button variant="primary" size="sm" className="w-full"
+                                onClick={() => onMerge(selectedRange.r1, selectedRange.c1, selectedRange.r2, selectedRange.c2)}>
+                                Gabungkan sel
+                            </Button>
+                        </>
+                    ) : (
+                        <p className="text-[11px] text-dark-400 dark:text-dark-500 text-center py-1">
+                            Klik sel di kanvas untuk mengaturnya.
+                        </p>
+                    )}
+                </Section>
+            )}
+
+            {/* ── Border ── */}
+            <Section title="Garis Border">
                 <Row label="Tebal">
-                    <NumField value={el.border.width} onChange={(v) => onUpdate({ border: { ...el.border, width: v } })} unit="px" />
+                    <NumField value={el.border.width} onChange={(v) => onUpdateTrb({ border: { ...el.border, width: v } })} unit="px" />
                 </Row>
                 <Row label="Warna">
-                    <ColorInput value={el.border.color} onChange={(v) => onUpdate({ border: { ...el.border, color: v } })} />
+                    <ColorInput value={el.border.color} onChange={(v) => onUpdateTrb({ border: { ...el.border, color: v } })} />
                 </Row>
             </Section>
         </>
