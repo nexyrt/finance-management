@@ -2087,7 +2087,7 @@ export default function PdfTemplateEdit() {
                                                             e.stopPropagation();
                                                             if (e.shiftKey && anchorCell) {
                                                                 setRangeEnd({ row: ri, col: ci });
-                                                                setSelectedCell({ row: ri, col: ci });
+                                                                setSelectedCell(null);
                                                             } else {
                                                                 setAnchorCell({ row: ri, col: ci });
                                                                 setRangeEnd(null);
