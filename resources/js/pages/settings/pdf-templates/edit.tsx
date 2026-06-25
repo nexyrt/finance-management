@@ -1,4 +1,4 @@
-import * as React from 'react';
+﻿import * as React from 'react';
 import { router, usePage } from '@inertiajs/react';
 import { toast } from 'sonner';
 import { AppLayout } from '@/layouts/app-layout';
@@ -67,7 +67,7 @@ const A4 = { w: 794, h: 1123 };
 
 const DEFAULT_MARGINS = { top: 40, right: 40, bottom: 40, left: 40 };
 
-// ── Font map (ONE source of truth — editor CSS stack + DomPDF family name) ──────
+// â”€â”€ Font map (ONE source of truth â€” editor CSS stack + DomPDF family name) â”€â”€â”€â”€â”€â”€
 export const FONT_MAP = [
     { label: 'Helvetica / Arial',  cssFontStack: 'Helvetica, Arial, sans-serif',     dompdfFamily: 'Helvetica' },
     { label: 'Times New Roman',    cssFontStack: '"Times New Roman", Times, serif',   dompdfFamily: 'Times New Roman' },
@@ -90,7 +90,7 @@ export function fontCssStack(label: FontLabel | string | undefined, customFonts:
     return 'Helvetica, Arial, sans-serif';
 }
 
-// ── Types ────────────────────────────────────────────────────────────────────
+// â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 type Text = {
     id: number; type: 'text';
@@ -131,7 +131,7 @@ type TableColumn = {
     format: 'text' | 'number' | 'rupiah';
 };
 
-// ── TRB (Tabel Terpadu Row-Band) types ────────────────────────────────────────
+// â”€â”€ TRB (Tabel Terpadu Row-Band) types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 type TableCell = {
     content: string;
@@ -210,7 +210,7 @@ type LineEl = {
 type El = Text | Img | TableEl | GridEl | RectEl | LineEl;
 type BandEl = Text | Img | GridEl | RectEl | LineEl;
 
-// ── Banded layout types ──────────────────────────────────────────────────────
+// â”€â”€ Banded layout types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 type BandName = 'header' | 'content' | 'footerFlow' | 'footerFixed';
 
@@ -231,7 +231,7 @@ type BandedLayout = {
     };
 };
 
-// ── Catalog types ─────────────────────────────────────────────────────────────
+// â”€â”€ Catalog types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 interface TokenEntry { path: string; label: string; }
 
@@ -254,7 +254,7 @@ interface Props extends SharedProps {
     customFonts: CustomFontEntry[];
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function makeDefaultTable(id: number, catalog: ItemColumnEntry[], x: number, y: number): TableEl {
     const defaults = catalog.filter((c) => c.default);
@@ -329,7 +329,7 @@ function makeDefaultLine(id: number, x: number, y: number): LineEl {
 function lineElWidth(el: LineEl): number { return el.orientation === 'h' ? el.length : el.thickness; }
 function lineElHeight(el: LineEl): number { return el.orientation === 'h' ? el.thickness : el.length; }
 
-// ── Legacy migration ──────────────────────────────────────────────────────────
+// â”€â”€ Legacy migration â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function migrateToLegacyBanded(oldEls: El[]): BandedLayout['bands'] {
     const tableEl = oldEls.find((e): e is TableEl => e.type === 'table') ?? null;
@@ -342,7 +342,7 @@ function migrateToLegacyBanded(oldEls: El[]): BandedLayout['bands'] {
     };
 }
 
-// ── TRB migration helpers ─────────────────────────────────────────────────────
+// â”€â”€ TRB migration helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /** Detect if a stored table element uses the OLD column-based model. */
 function isLegacyTableEl(el: unknown): boolean {
@@ -352,7 +352,7 @@ function isLegacyTableEl(el: unknown): boolean {
 }
 
 /**
- * Migrate OLD column-based TableEl → new row-band TableEl.
+ * Migrate OLD column-based TableEl â†’ new row-band TableEl.
  * Detection: old shape has `columns` array but no `rows` array.
  */
 function migrateTableElToRowBand(old: Record<string, unknown>): TableEl {
@@ -386,7 +386,7 @@ function migrateTableElToRowBand(old: Record<string, unknown>): TableEl {
         })),
     });
 
-    // Detail row (repeat:items) — one cell per column with item.* token
+    // Detail row (repeat:items) â€” one cell per column with item.* token
     rows.push({
         kind: 'body',
         repeat: 'items',
@@ -441,7 +441,7 @@ function bandLabel(band: BandName): string {
     return 'Footer Tetap';
 }
 
-// ── Margin Settings Panel ─────────────────────────────────────────────────────
+// â”€â”€ Margin Settings Panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 type Margins = { top: number; right: number; bottom: number; left: number };
 
@@ -493,7 +493,7 @@ function MarginSettingsPanel({
     );
 }
 
-// ── Band Settings Panel ───────────────────────────────────────────────────────
+// â”€â”€ Band Settings Panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function BandSettingsPanel({
     bands,
@@ -524,7 +524,7 @@ function BandSettingsPanel({
                             unit="px"
                         />
                     </Row>
-                    {/* Header repeat toggle — catalog Switch */}
+                    {/* Header repeat toggle â€” catalog Switch */}
                     <div className="flex items-center gap-2">
                         <span className="w-12 shrink-0 text-xs text-dark-500 dark:text-dark-400">Ulangi</span>
                         <Switch
@@ -544,10 +544,10 @@ function BandSettingsPanel({
                 <div className="flex items-center gap-2 px-3 py-2 bg-emerald-50/60 dark:bg-emerald-900/10 border-b border-emerald-100 dark:border-emerald-900/20">
                     <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 shrink-0" />
                     <span className="text-[10px] font-semibold uppercase tracking-[0.1em] text-dark-600 dark:text-dark-300 flex-1">Konten</span>
-                    <Badge variant="emerald" size="sm">Dinamis ⇕</Badge>
+                    <Badge variant="emerald" size="sm">Dinamis â‡•</Badge>
                 </div>
                 <div className="px-3 py-2.5">
-                    <p className="text-[11px] text-dark-400 dark:text-dark-500 leading-relaxed">Tinggi otomatis — mengikuti jumlah baris item invoice.</p>
+                    <p className="text-[11px] text-dark-400 dark:text-dark-500 leading-relaxed">Tinggi otomatis â€” mengikuti jumlah baris item invoice.</p>
                 </div>
             </div>
 
@@ -591,7 +591,7 @@ function BandSettingsPanel({
     );
 }
 
-// ── Main component ────────────────────────────────────────────────────────────
+// â”€â”€ Main component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export default function PdfTemplateEdit() {
     const { template, tokenCatalog, sampleData, itemColumnCatalog, sampleItems, customFonts } = usePage<Props>().props;
@@ -625,7 +625,7 @@ export default function PdfTemplateEdit() {
         if (layout && typeof layout === 'object' && !Array.isArray(layout) && 'bands' in (layout as object)) {
             const bl = layout as BandedLayout;
             let loadedBands = bl.bands;
-            // TRB migration: old column-based table → new row-band TableEl
+            // TRB migration: old column-based table â†’ new row-band TableEl
             const rawTable = loadedBands.content.table;
             if (isLegacyTableEl(rawTable)) {
                 loadedBands = {
@@ -683,7 +683,7 @@ export default function PdfTemplateEdit() {
     ];
     const nextId = React.useRef(Math.max(0, ...allInitialEls.map((e) => e.id)) + 1);
 
-    // ── Band element helpers ──────────────────────────────────────────────────
+    // â”€â”€ Band element helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     const getBandEls = React.useCallback((band: BandName): BandEl[] => {
         if (band === 'header') return bands.header.elements;
@@ -740,7 +740,7 @@ export default function PdfTemplateEdit() {
               ? { r1: anchorCell.row, c1: anchorCell.col, r2: anchorCell.row, c2: anchorCell.col }
               : null;
 
-    // ── Undo/redo ─────────────────────────────────────────────────────────────
+    // â”€â”€ Undo/redo â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     const snapshot = () =>
         setBands((prev) => {
@@ -767,7 +767,7 @@ export default function PdfTemplateEdit() {
             return h.future.pop()!;
         });
 
-    // ── Update helpers ────────────────────────────────────────────────────────
+    // â”€â”€ Update helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     const update = React.useCallback((id: number, patch: Partial<El>) => {
         const band = findElBand(id);
@@ -799,7 +799,7 @@ export default function PdfTemplateEdit() {
         }));
     };
 
-    // ── Drag in band ──────────────────────────────────────────────────────────
+    // â”€â”€ Drag in band â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     const startDragInBand = (e: React.PointerEvent, el: BandEl | TableEl, bandRef: React.RefObject<HTMLDivElement | null>) => {
         e.stopPropagation();
@@ -810,7 +810,7 @@ export default function PdfTemplateEdit() {
         const dx = (e.clientX - rect.left) / zoom - el.x - margins.left;
         const dy = (e.clientY - rect.top) / zoom - el.y;
 
-        // T3.5: snap X points — margin edges + other elements' left/right/center
+        // T3.5: snap X points â€” margin edges + other elements' left/right/center
         const SNAP = 6;
         const snapXs: number[] = [margins.left, A4.w - margins.right];
         if (band && band !== 'content') {
@@ -914,7 +914,7 @@ export default function PdfTemplateEdit() {
         window.addEventListener('pointerup', onUp);
     };
 
-    // T4 — drag to resize band height
+    // T4 â€” drag to resize band height
     const startBandResize = (e: React.PointerEvent, bandName: 'header' | 'footerFlow' | 'footerFixed') => {
         e.stopPropagation();
         const y0 = e.clientY;
@@ -989,7 +989,7 @@ export default function PdfTemplateEdit() {
         window.addEventListener('pointerup', up);
     };
 
-    // ── Add element helpers ────────────────────────────────────────────────────
+    // â”€â”€ Add element helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     const addText = (x = 80, y = 40, content = 'Teks baru') => {
         if (activeBand === 'content') return;
@@ -1086,7 +1086,7 @@ export default function PdfTemplateEdit() {
         probe.src = el.src;
     };
 
-    // ── TRB helpers ──────────────────────────────────────────────────────────────
+    // â”€â”€ TRB helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const updateTrb = (fn: (el: TableEl) => TableEl) => {
         setBands((prev) => {
             if (!prev.content.table) return prev;
@@ -1302,7 +1302,7 @@ export default function PdfTemplateEdit() {
         }));
     };
 
-    // ── Remove / duplicate / move layer ───────────────────────────────────────
+    // â”€â”€ Remove / duplicate / move layer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     const remove = (id: number) => {
         snapshot();
@@ -1358,7 +1358,7 @@ export default function PdfTemplateEdit() {
         }
     };
 
-    // ── Save ──────────────────────────────────────────────────────────────────
+    // â”€â”€ Save â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     const save = () => {
         setSaving(true);
@@ -1385,7 +1385,7 @@ export default function PdfTemplateEdit() {
     const openPdfWithItems = (n: number) =>
         window.open(`/settings/pdf-templates/${template.id}/pdf?items=${n}`, '_blank');
 
-    // ── Drop on band ──────────────────────────────────────────────────────────
+    // â”€â”€ Drop on band â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     const dropOnBand = (e: React.DragEvent, band: BandName, bandRef: React.RefObject<HTMLDivElement | null>) => {
         e.preventDefault();
@@ -1408,7 +1408,7 @@ export default function PdfTemplateEdit() {
         else setActiveBand(prevActive);
     };
 
-    // ── Clipboard helpers ─────────────────────────────────────────────────────
+    // â”€â”€ Clipboard helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     const imgToPngBlob = (src: string) =>
         new Promise<Blob>((res, rej) => {
@@ -1432,7 +1432,7 @@ export default function PdfTemplateEdit() {
         } catch { /* clipboard may fail */ }
     };
 
-    // ── Keyboard shortcuts ────────────────────────────────────────────────────
+    // â”€â”€ Keyboard shortcuts â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     React.useEffect(() => {
         const inField = (t: EventTarget | null) =>
@@ -1478,7 +1478,7 @@ export default function PdfTemplateEdit() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selected, activeBand, bands]);
 
-    // ── Zoom wheel ────────────────────────────────────────────────────────────
+    // â”€â”€ Zoom wheel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     React.useEffect(() => {
         const node = canvasRef.current;
@@ -1496,7 +1496,7 @@ export default function PdfTemplateEdit() {
         return () => node.removeEventListener('wheel', onWheel);
     }, [zoom]);
 
-    // ── Fit-to-width on mount ─────────────────────────────────────────────────
+    // â”€â”€ Fit-to-width on mount â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     // Fire once: wait until the canvas container has a real width (rAF loop),
     // then set zoom so the A4 page fits with 24px padding on each side.
     const fitDoneRef = React.useRef(false);
@@ -1537,7 +1537,7 @@ export default function PdfTemplateEdit() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [bands]);
 
-    // ── Band canvas render helper ──────────────────────────────────────────────
+    // â”€â”€ Band canvas render helper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     const renderBandElements = (bandName: BandName, bandRef: React.RefObject<HTMLDivElement | null>, elements: BandEl[]) => {
         return elements.map((el) => {
@@ -1569,7 +1569,7 @@ export default function PdfTemplateEdit() {
                                 setSelectedBand(bandName);
                                 if (e.shiftKey && anchorCell && selectedId === el.id) {
                                     setRangeEnd({ row: r, col: c });
-                                    if (r !== anchorCell.row || c !== anchorCell.col) setSelectedCell(null);
+                                    // keep selectedCell = anchorCell so inspector stays visible
                                 } else {
                                     setAnchorCell({ row: r, col: c });
                                     setRangeEnd({ row: r, col: c });
@@ -1762,16 +1762,16 @@ export default function PdfTemplateEdit() {
         });
     };
 
-    // ── Band subtitles ────────────────────────────────────────────────────────
+    // â”€â”€ Band subtitles â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     const bandSubtitle: Record<BandName, string> = {
         header: bands.header.repeat ? 'Tiap halaman' : 'Halaman pertama',
-        content: 'Dinamis ⇕',
+        content: 'Dinamis â‡•',
         footerFlow: 'Setelah konten',
         footerFixed: 'Tiap halaman',
     };
 
-    // ── Layer groups for left panel ───────────────────────────────────────────
+    // â”€â”€ Layer groups for left panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     const layerGroups: { band: BandName; els: (BandEl | TableEl)[] }[] = [
         { band: 'header', els: [...bands.header.elements].reverse() },
@@ -1789,7 +1789,7 @@ export default function PdfTemplateEdit() {
 
     return (
         <div className="flex flex-col h-[calc(100vh-4rem)]">
-            {/* ── Top header bar ── */}
+            {/* â”€â”€ Top header bar â”€â”€ */}
             <div className="flex items-center gap-2 px-3 py-2 border-b border-secondary-200 dark:border-dark-600 bg-white dark:bg-dark-900 shrink-0">
                 {/* Left: back + title */}
                 <Button variant="ghost" size="sm" onClick={() => router.visit('/settings/pdf-templates')} className="gap-1.5 text-dark-500 dark:text-dark-400 hover:text-dark-900 dark:hover:text-dark-50 shrink-0">
@@ -1847,7 +1847,7 @@ export default function PdfTemplateEdit() {
 
                     <div className="w-px h-5 bg-secondary-200 dark:bg-dark-600 mx-1 shrink-0" />
 
-                    {/* Pratinjau N-item dropdown — catalog DropdownMenu */}
+                    {/* Pratinjau N-item dropdown â€” catalog DropdownMenu */}
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button
@@ -1879,7 +1879,7 @@ export default function PdfTemplateEdit() {
                         </DropdownMenuContent>
                     </DropdownMenu>
 
-                    {/* PDF — quick export */}
+                    {/* PDF â€” quick export */}
                     <Button variant="ghost" size="sm" onClick={openPdf} className="gap-1 text-xs text-dark-600 dark:text-dark-300" title="Cetak PDF (data contoh)">
                         <Eye className="w-3.5 h-3.5" />
                         <span className="hidden sm:inline">PDF</span>
@@ -1887,10 +1887,10 @@ export default function PdfTemplateEdit() {
 
                     <div className="w-px h-5 bg-secondary-200 dark:bg-dark-600 mx-1 shrink-0" />
 
-                    {/* Save — primary CTA */}
+                    {/* Save â€” primary CTA */}
                     <Button variant="primary" size="sm" onClick={save} disabled={saving} className="gap-1.5 text-xs font-semibold">
                         <Save className="w-3.5 h-3.5" />
-                        {saving ? 'Menyimpan…' : 'Simpan'}
+                        {saving ? 'Menyimpanâ€¦' : 'Simpan'}
                     </Button>
                 </div>
             </div>
@@ -1898,7 +1898,7 @@ export default function PdfTemplateEdit() {
             {/* 3-column editor */}
             <div className="flex flex-1 overflow-hidden">
 
-                {/* ── KIRI: Layers ── */}
+                {/* â”€â”€ KIRI: Layers â”€â”€ */}
                 <aside className="w-52 shrink-0 border-r border-secondary-200 dark:border-dark-600 flex flex-col bg-white dark:bg-dark-900">
                     <PanelHeader title="Layers" meta={totalElCount ? String(totalElCount) : undefined} />
                     <div className="flex-1 overflow-auto p-2 space-y-0.5">
@@ -1967,9 +1967,9 @@ export default function PdfTemplateEdit() {
                                                             : <Table2 className="w-3 h-3" />}
                                                     </span>
                                                     <span className={`flex-1 truncate text-xs font-medium ${active ? 'text-primary-700 dark:text-primary-200' : 'text-dark-700 dark:text-dark-300'}`}>
-                                                        {el.type === 'text' ? (el.content.length > 18 ? el.content.slice(0, 18) + '…' : el.content || '(kosong)')
+                                                        {el.type === 'text' ? (el.content.length > 18 ? el.content.slice(0, 18) + 'â€¦' : el.content || '(kosong)')
                                                             : el.type === 'image' ? 'Gambar'
-                                                            : el.type === 'grid' ? `Grid ${(el as GridEl).rows}×${(el as GridEl).cols}`
+                                                            : el.type === 'grid' ? `Grid ${(el as GridEl).rows}Ã—${(el as GridEl).cols}`
                                                             : el.type === 'rect' ? 'Kotak'
                                                             : el.type === 'line' ? 'Garis'
                                                             : 'Tabel Item'}
@@ -1990,13 +1990,13 @@ export default function PdfTemplateEdit() {
                     </div>
                 </aside>
 
-                {/* ── TENGAH: Kanvas ── */}
+                {/* â”€â”€ TENGAH: Kanvas â”€â”€ */}
                 <div className="relative flex-1 overflow-hidden">
                     <div ref={canvasRef} className="absolute inset-0 overflow-auto" style={{ backgroundColor: '#1a1a1d' }}>
                         <div className="min-h-full flex items-start justify-center py-10 px-10">
-                            {/* Outer sizing wrapper — exact A4 footprint at current zoom */}
+                            {/* Outer sizing wrapper â€” exact A4 footprint at current zoom */}
                             <div style={{ width: A4.w * zoom, height: A4.h * zoom, flexShrink: 0 }}>
-                                {/* ── A4 PAPER SHEET — true portrait 793×1123px ── */}
+                                {/* â”€â”€ A4 PAPER SHEET â€” true portrait 793Ã—1123px â”€â”€ */}
                                 <div
                                     className={`relative bg-white shadow-xl ${dragOver ? 'ring-2 ring-primary-400' : ''}`}
                                     style={{
@@ -2007,7 +2007,7 @@ export default function PdfTemplateEdit() {
                                         overflow: 'hidden',
                                     }}
                                 >
-                                    {/* ── MARGIN GUIDE — dashed rect showing printable area ── */}
+                                    {/* â”€â”€ MARGIN GUIDE â€” dashed rect showing printable area â”€â”€ */}
                                     <div
                                         aria-hidden
                                         className="absolute pointer-events-none z-[100]"
@@ -2020,10 +2020,10 @@ export default function PdfTemplateEdit() {
                                         }}
                                     />
 
-                                    {/* ── FLOWING BANDS: Header → Content → FooterFlow ── */}
+                                    {/* â”€â”€ FLOWING BANDS: Header â†’ Content â†’ FooterFlow â”€â”€ */}
                                     {/* These stack top-to-bottom inside the top margin area */}
 
-                                    {/* ── HEADER BAND ── */}
+                                    {/* â”€â”€ HEADER BAND â”€â”€ */}
                                     <div
                                         ref={headerRef}
                                         className={`relative transition-shadow duration-150 ${
@@ -2044,7 +2044,7 @@ export default function PdfTemplateEdit() {
                                         onDragLeave={() => setDragOver(false)}
                                         onDrop={(e) => dropOnBand(e, 'header', headerRef)}
                                     >
-                                        {/* Band label — top-left corner tab */}
+                                        {/* Band label â€” top-left corner tab */}
                                         <div className="absolute top-1 left-1 flex items-center gap-1 pointer-events-none z-10">
                                             <span className="text-[8px] font-bold uppercase tracking-[0.12em] text-slate-300 dark:text-dark-600">HEADER</span>
                                             <Badge variant="blue" size="sm" className="text-[9px] leading-none py-0.5 px-1.5">{bandSubtitle.header}</Badge>
@@ -2070,7 +2070,7 @@ export default function PdfTemplateEdit() {
                                         <div className="flex-1 border-t border-dashed border-slate-200/70 dark:border-dark-700/70" />
                                     </div>
 
-                                    {/* ── CONTENT BAND ── */}
+                                    {/* â”€â”€ CONTENT BAND â”€â”€ */}
                                     <div
                                         ref={contentRef}
                                         className={`relative transition-shadow duration-150 ${
@@ -2134,7 +2134,6 @@ export default function PdfTemplateEdit() {
                                                             e.stopPropagation();
                                                             if (e.shiftKey && anchorCell) {
                                                                 setRangeEnd({ row: ri, col: ci });
-                                                                setSelectedCell(null);
                                                             } else {
                                                                 setAnchorCell({ row: ri, col: ci });
                                                                 setRangeEnd(null);
@@ -2197,7 +2196,7 @@ export default function PdfTemplateEdit() {
                                         <div className="flex-1 border-t border-dashed border-slate-200/70 dark:border-dark-700/70" />
                                     </div>
 
-                                    {/* ── FOOTER FLOW BAND ── */}
+                                    {/* â”€â”€ FOOTER FLOW BAND â”€â”€ */}
                                     <div
                                         ref={footerFlowRef}
                                         className={`relative transition-shadow duration-150 ${
@@ -2235,7 +2234,7 @@ export default function PdfTemplateEdit() {
                                         )}
                                     </div>
 
-                                    {/* ── FOOTER FIXED BAND — pinned to bottom of A4 page ── */}
+                                    {/* â”€â”€ FOOTER FIXED BAND â€” pinned to bottom of A4 page â”€â”€ */}
                                     {/* position: absolute so it always sits just above the bottom margin, */}
                                     {/* regardless of how tall the flowing bands above are.             */}
                                     <div
@@ -2264,7 +2263,7 @@ export default function PdfTemplateEdit() {
                                         onDragLeave={() => setDragOver(false)}
                                         onDrop={(e) => dropOnBand(e, 'footerFixed', footerFixedRef)}
                                     >
-                                        {/* Band label — shown at top-left of the fixed footer */}
+                                        {/* Band label â€” shown at top-left of the fixed footer */}
                                         <div className="absolute top-1 left-1 flex items-center gap-1 pointer-events-none z-10">
                                             <span className="text-[8px] font-bold uppercase tracking-[0.12em] text-slate-300 dark:text-dark-600">FOOTER TETAP</span>
                                             <Badge variant="purple" size="sm" className="text-[9px] leading-none py-0.5 px-1.5">{bandSubtitle.footerFixed}</Badge>
@@ -2285,7 +2284,7 @@ export default function PdfTemplateEdit() {
                         </div>
                     </div>
 
-                        {/* ── Active-band indicator — canvas overlay (top-left) ── */}
+                        {/* â”€â”€ Active-band indicator â€” canvas overlay (top-left) â”€â”€ */}
                     <div className="absolute top-3 left-3 z-20 pointer-events-none">
                         <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-dark-900/80 dark:bg-dark-800/90 backdrop-blur-sm border border-white/10 shadow-lg">
                             <span className={`inline-block w-2 h-2 rounded-full shrink-0 ${
@@ -2297,10 +2296,10 @@ export default function PdfTemplateEdit() {
                         </div>
                     </div>
 
-                    {/* ── FLOATING ELEMENT-INSERT TOOLBAR ── */}
+                    {/* â”€â”€ FLOATING ELEMENT-INSERT TOOLBAR â”€â”€ */}
                     <div className="absolute bottom-5 left-1/2 -translate-x-1/2 z-30 flex items-center gap-0.5 p-1.5 rounded-xl bg-white dark:bg-dark-700 border border-secondary-200 dark:border-dark-600 shadow-lg">
                         <div draggable onDragStart={(e) => { e.dataTransfer.effectAllowed = 'copy'; e.dataTransfer.setData('kind', 'text'); }}>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 text-dark-600 dark:text-dark-300 hover:text-dark-900 dark:hover:text-dark-50" onClick={() => addText()} disabled={activeBand === 'content'} title="Teks — klik tambah / seret ke band">
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-dark-600 dark:text-dark-300 hover:text-dark-900 dark:hover:text-dark-50" onClick={() => addText()} disabled={activeBand === 'content'} title="Teks â€” klik tambah / seret ke band">
                                 <Type className="w-4 h-4" />
                             </Button>
                         </div>
@@ -2349,7 +2348,7 @@ export default function PdfTemplateEdit() {
                     />
                 </div>
 
-                {/* ── KANAN: Inspector ── */}
+                {/* â”€â”€ KANAN: Inspector â”€â”€ */}
                 <aside className="w-72 shrink-0 border-l border-secondary-200 dark:border-dark-600 flex flex-col bg-white dark:bg-dark-900">
                     <PanelHeader
                         title={
@@ -2547,7 +2546,7 @@ export default function PdfTemplateEdit() {
     );
 }
 
-// ── Text Inspector ────────────────────────────────────────────────────────────
+// â”€â”€ Text Inspector â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function TextInspector({
     el,
@@ -2574,7 +2573,7 @@ function TextInspector({
 }) {
     const hasBox = el.width !== undefined;
 
-    // ── Upload font state ──────────────────────────────────────────────────────
+    // â”€â”€ Upload font state â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const [uploadOpen, setUploadOpen] = React.useState(false);
     const [uploadName, setUploadName] = React.useState('');
     const [uploadFile, setUploadFile] = React.useState<File | null>(null);
@@ -2625,7 +2624,7 @@ function TextInspector({
 
     return (
         <>
-            {/* ── Konten ── */}
+            {/* â”€â”€ Konten â”€â”€ */}
             <Section title="Konten">
                 <Textarea
                     ref={contentRef}
@@ -2660,9 +2659,9 @@ function TextInspector({
                 </p>
             </Section>
 
-            {/* ── Font ── */}
+            {/* â”€â”€ Font â”€â”€ */}
             <Section title="Font">
-                {/* Font family — curated + custom fonts via catalog Combobox */}
+                {/* Font family â€” curated + custom fonts via catalog Combobox */}
                 <Row label="Jenis">
                     <Combobox
                         value={el.fontFamily ?? 'Helvetica / Arial'}
@@ -2677,8 +2676,8 @@ function TextInspector({
                                 ]
                                 : []),
                         ]}
-                        placeholder="Pilih font…"
-                        searchPlaceholder="Cari font…"
+                        placeholder="Pilih fontâ€¦"
+                        searchPlaceholder="Cari fontâ€¦"
                         clearable={false}
                     />
                 </Row>
@@ -2722,7 +2721,7 @@ function TextInspector({
                                 onClick={handleFontUpload}
                             >
                                 <Upload className="w-3.5 h-3.5" />
-                                {uploading ? 'Mengunggah…' : 'Unggah font'}
+                                {uploading ? 'Mengunggahâ€¦' : 'Unggah font'}
                             </Button>
                         </div>
                     )}
@@ -2793,7 +2792,7 @@ function TextInspector({
                 </Row>
             </Section>
 
-            {/* ── Paragraf ── */}
+            {/* â”€â”€ Paragraf â”€â”€ */}
             <Section title="Paragraf">
                 {/* H-align */}
                 <Row label="Rata H">
@@ -2843,14 +2842,14 @@ function TextInspector({
                     </div>
                 </Row>
                 <Row label="Line-height">
-                    <NumField value={el.lineHeight ?? 1.2} onChange={(v) => onUpdate({ lineHeight: Math.max(0.5, v) })} unit="×" />
+                    <NumField value={el.lineHeight ?? 1.2} onChange={(v) => onUpdate({ lineHeight: Math.max(0.5, v) })} unit="Ã—" />
                 </Row>
                 <Row label="Spasi huruf">
                     <NumField value={el.letterSpacing ?? 0} onChange={(v) => onUpdate({ letterSpacing: v })} unit="px" />
                 </Row>
             </Section>
 
-            {/* ── Kotak ── */}
+            {/* â”€â”€ Kotak â”€â”€ */}
             <Section title="Kotak">
                 <Row label="Lebar">
                     <div className="flex items-center gap-2">
@@ -2929,7 +2928,7 @@ function TextInspector({
     );
 }
 
-// ── Grid canvas render ────────────────────────────────────────────────────────
+// â”€â”€ Grid canvas render â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 interface GridCanvasProps {
     el: GridEl;
@@ -3032,7 +3031,7 @@ function GridCanvas({
     );
 }
 
-/** Inline editor for a single grid cell — contentEditable span. */
+/** Inline editor for a single grid cell â€” contentEditable span. */
 function GridCellEditor({
     initial, onCommit, onEscape, style,
 }: {
@@ -3083,7 +3082,7 @@ function GridCellEditor({
     );
 }
 
-// ── Grid Inspector ─────────────────────────────────────────────────────────────
+// â”€â”€ Grid Inspector â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function GridInspector({
     el,
@@ -3109,7 +3108,7 @@ function GridInspector({
 
     return (
         <>
-            {/* ── Grid structure ── */}
+            {/* â”€â”€ Grid structure â”€â”€ */}
             <Section title="Struktur Grid">
                 {/* Rows */}
                 <div className="flex items-center gap-2">
@@ -3157,7 +3156,7 @@ function GridInspector({
                 </div>
             </Section>
 
-            {/* ── Border ── */}
+            {/* â”€â”€ Border â”€â”€ */}
             <Section title="Garis Border">
                 <Row label="Tebal">
                     <NumField
@@ -3174,7 +3173,7 @@ function GridInspector({
                 </Row>
             </Section>
 
-            {/* ── Cell properties (shown when cell is selected) ── */}
+            {/* â”€â”€ Cell properties (shown when cell is selected) â”€â”€ */}
             {cell != null && selectedCell != null ? (
                 <Section title={`Sel [${selectedCell.row + 1}, ${selectedCell.col + 1}]`}>
                     {/* Alignment */}
@@ -3241,7 +3240,7 @@ function GridInspector({
                     {selectedRange && (selectedRange.r1 !== selectedRange.r2 || selectedRange.c1 !== selectedRange.c2) ? (
                         <>
                             <p className="text-[11px] text-dark-400 dark:text-dark-500 text-center py-1">
-                                {`${selectedRange.r2 - selectedRange.r1 + 1} baris × ${selectedRange.c2 - selectedRange.c1 + 1} kolom dipilih`}
+                                {`${selectedRange.r2 - selectedRange.r1 + 1} baris Ã— ${selectedRange.c2 - selectedRange.c1 + 1} kolom dipilih`}
                             </p>
                             <Button variant="primary" size="sm" className="w-full"
                                 onClick={() => onMerge(selectedRange.r1, selectedRange.c1, selectedRange.r2, selectedRange.c2)}>
@@ -3259,7 +3258,7 @@ function GridInspector({
     );
 }
 
-// ── Table canvas render (TRB row-band model) ──────────────────────────────────
+// â”€â”€ Table canvas render (TRB row-band model) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function TablePreview({
     el, rows, selectedCell, tableSelRange, onCellPointerDown,
@@ -3324,7 +3323,7 @@ function TablePreview({
         );
     };
 
-    // Auto-detect sections — mirrors blade renderer: pre-repeat→thead, repeat→tbody, post-repeat→tfoot.
+    // Auto-detect sections â€” mirrors blade renderer: pre-repeatâ†’thead, repeatâ†’tbody, post-repeatâ†’tfoot.
     const firstRepeatIdx = el.rows.findIndex((r) => r.repeat === 'items');
     const headRowsWithIdx = el.rows.map((r, i) => ({ r, i })).filter(({ i }) => firstRepeatIdx !== -1 && i < firstRepeatIdx);
     const bodyRowsWithIdx = el.rows.map((r, i) => ({ r, i })).filter(({ r }) => r.repeat === 'items');
@@ -3382,7 +3381,7 @@ function TablePreview({
     );
 }
 
-// ── Table Inspector ───────────────────────────────────────────────────────────
+// â”€â”€ Table Inspector â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function TableInspector({
     el, selectedCell, selectedRange,
@@ -3429,7 +3428,7 @@ function TableInspector({
 
     return (
         <>
-            {/* ── Rows list ── */}
+            {/* â”€â”€ Rows list â”€â”€ */}
             <Section title="Baris">
                 <div className="space-y-1">
                     {el.rows.map((row, ri) => (
@@ -3488,7 +3487,7 @@ function TableInspector({
                 </div>
             </Section>
 
-            {/* ── Columns ── */}
+            {/* â”€â”€ Columns â”€â”€ */}
             <Section title="Kolom">
                 <div className="flex items-center gap-2">
                     <span className="flex-1 text-[11px] text-dark-500 dark:text-dark-400">{el.colWidths.length} kolom</span>
@@ -3508,9 +3507,9 @@ function TableInspector({
                 </div>
             </Section>
 
-            {/* ── Cell properties ── */}
+            {/* â”€â”€ Cell properties â”€â”€ */}
             {cell != null && selectedCell != null ? (
-                <Section title={`Sel B${selectedCell.row + 1}·K${selectedCell.col + 1}`}>
+                <Section title={`Sel B${selectedCell.row + 1}Â·K${selectedCell.col + 1}`}>
                     {/* Content + field insert */}
                     <div className="flex gap-1 items-start">
                         <div className="flex-1">
@@ -3594,7 +3593,7 @@ function TableInspector({
                     {selectedRange && (selectedRange.r1 !== selectedRange.r2 || selectedRange.c1 !== selectedRange.c2) ? (
                         <>
                             <p className="text-[11px] text-dark-400 dark:text-dark-500 text-center py-1">
-                                {`${selectedRange.r2 - selectedRange.r1 + 1} baris × ${selectedRange.c2 - selectedRange.c1 + 1} kolom`}
+                                {`${selectedRange.r2 - selectedRange.r1 + 1} baris Ã— ${selectedRange.c2 - selectedRange.c1 + 1} kolom`}
                             </p>
                             <Button variant="primary" size="sm" className="w-full"
                                 onClick={() => onMerge(selectedRange.r1, selectedRange.c1, selectedRange.r2, selectedRange.c2)}>
@@ -3609,7 +3608,7 @@ function TableInspector({
                 </Section>
             )}
 
-            {/* ── Border ── */}
+            {/* â”€â”€ Border â”€â”€ */}
             <Section title="Garis Border">
                 <Row label="Tebal">
                     <NumField value={el.border.width} onChange={(v) => onUpdateTrb({ border: { ...el.border, width: v } })} unit="px" />
@@ -3622,7 +3621,7 @@ function TableInspector({
     );
 }
 
-// ── Rect Inspector ────────────────────────────────────────────────────────────
+// â”€â”€ Rect Inspector â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function RectInspector({
     el,
@@ -3673,7 +3672,7 @@ function RectInspector({
     );
 }
 
-// ── Line Inspector ────────────────────────────────────────────────────────────
+// â”€â”€ Line Inspector â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function LineInspector({
     el,
@@ -3719,7 +3718,7 @@ function LineInspector({
     );
 }
 
-// ── Shared primitives ──────────────────────────────────────────────────────────
+// â”€â”€ Shared primitives â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function PanelHeader({ title, meta }: { title: string; meta?: string }) {
     return (
