@@ -3298,14 +3298,35 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
 }
 
 function NumField({ value, onChange, unit = 'px' }: { value: number; onChange: (v: number) => void; unit?: string }) {
+    // Free typing but digits only (with optional leading minus), no native spinner.
+    // Local text state lets the user clear/edit freely while focused; it re-syncs
+    // from the prop when not focused (e.g. after a drag updates X/Y).
+    const [text, setText] = React.useState(String(value));
+    const focused = React.useRef(false);
+    React.useEffect(() => {
+        if (!focused.current) setText(String(value));
+    }, [value]);
+
     return (
-        <Input
-            type="number"
-            value={String(value)}
-            onChange={(e) => onChange(+e.target.value)}
-            iconRight={<span className="text-[11px] text-dark-400 dark:text-dark-500 pointer-events-none">{unit}</span>}
-            className="h-8 tabular-nums"
-        />
+        <div className="relative">
+            <Input
+                type="text"
+                inputMode="numeric"
+                value={text}
+                onFocus={() => { focused.current = true; }}
+                onBlur={() => { focused.current = false; setText(String(value)); }}
+                onChange={(e) => {
+                    const cleaned = e.target.value.replace(/[^\d-]/g, '');
+                    setText(cleaned);
+                    const n = parseInt(cleaned, 10);
+                    if (!Number.isNaN(n)) onChange(n);
+                }}
+                className="h-8 pr-8 tabular-nums"
+            />
+            <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-[11px] text-dark-400 dark:text-dark-500">
+                {unit}
+            </span>
+        </div>
     );
 }
 
