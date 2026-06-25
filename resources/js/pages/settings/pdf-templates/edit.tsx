@@ -323,20 +323,39 @@ function MarginSettingsPanel({
         onChangeMargins({ ...margins, [key]: Math.max(0, v) });
 
     return (
-        <div className="rounded-lg border border-secondary-200 dark:border-dark-600 bg-zinc-50 dark:bg-dark-700 p-2.5 space-y-2">
-            <span className="text-[10px] font-semibold uppercase tracking-wider text-dark-500 dark:text-dark-400 block">Halaman / Margin</span>
-            <Row label="Atas">
-                <NumField value={margins.top} onChange={(v) => set('top', v)} unit="px" />
-            </Row>
-            <Row label="Kanan">
-                <NumField value={margins.right} onChange={(v) => set('right', v)} unit="px" />
-            </Row>
-            <Row label="Bawah">
-                <NumField value={margins.bottom} onChange={(v) => set('bottom', v)} unit="px" />
-            </Row>
-            <Row label="Kiri">
-                <NumField value={margins.left} onChange={(v) => set('left', v)} unit="px" />
-            </Row>
+        <div className="rounded-xl border border-secondary-200 dark:border-dark-600 bg-white dark:bg-dark-700 overflow-hidden shadow-sm">
+            <div className="px-3 py-2 bg-zinc-50 dark:bg-dark-800 border-b border-secondary-200 dark:border-dark-600">
+                <span className="text-[10px] font-semibold uppercase tracking-[0.1em] text-dark-400 dark:text-dark-500">Margin Halaman</span>
+            </div>
+            <div className="p-3 space-y-2">
+                {/* Visual margin diagram */}
+                <div className="flex items-center justify-center py-1">
+                    <div className="relative w-20 h-24 border-2 border-zinc-200 dark:border-dark-600 rounded-md bg-zinc-50 dark:bg-dark-800">
+                        <div
+                            className="absolute inset-0 border border-dashed border-primary-300 dark:border-primary-700/50 rounded-sm"
+                            style={{
+                                top: Math.round((margins.top / 40) * 8),
+                                right: Math.round((margins.right / 40) * 8),
+                                bottom: Math.round((margins.bottom / 40) * 8),
+                                left: Math.round((margins.left / 40) * 8),
+                            }}
+                        />
+                        <span className="absolute inset-0 flex items-center justify-center text-[8px] text-dark-300 dark:text-dark-600 font-medium">A4</span>
+                    </div>
+                </div>
+                <Row label="Atas">
+                    <NumField value={margins.top} onChange={(v) => set('top', v)} unit="px" />
+                </Row>
+                <Row label="Kanan">
+                    <NumField value={margins.right} onChange={(v) => set('right', v)} unit="px" />
+                </Row>
+                <Row label="Bawah">
+                    <NumField value={margins.bottom} onChange={(v) => set('bottom', v)} unit="px" />
+                </Row>
+                <Row label="Kiri">
+                    <NumField value={margins.left} onChange={(v) => set('left', v)} unit="px" />
+                </Row>
+            </div>
         </div>
     );
 }
@@ -351,72 +370,97 @@ function BandSettingsPanel({
     onChangeBands: (patch: Partial<BandedLayout['bands']>) => void;
 }) {
     return (
-        <div className="space-y-2.5">
-            {/* Header */}
-            <div className="rounded-lg border border-secondary-200 dark:border-dark-600 bg-zinc-50 dark:bg-dark-700 p-2.5 space-y-2">
-                <div className="flex items-center gap-1.5">
-                    <span className="text-[10px] font-semibold uppercase tracking-wider text-dark-500 dark:text-dark-400 flex-1">Header</span>
-                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-blue-100/80 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">Tetap</span>
+        <div className="space-y-2">
+            {/* Section title */}
+            <span className="block text-[10px] font-semibold uppercase tracking-[0.1em] text-dark-400 dark:text-dark-500 px-0.5">
+                Ukuran Band
+            </span>
+
+            {/* Header band card */}
+            <div className="rounded-xl border border-secondary-200 dark:border-dark-600 bg-white dark:bg-dark-700 overflow-hidden shadow-sm">
+                <div className="flex items-center gap-2 px-3 py-2 bg-blue-50/60 dark:bg-blue-900/10 border-b border-blue-100 dark:border-blue-900/20">
+                    <span className="inline-block w-2 h-2 rounded-full bg-blue-400 shrink-0" />
+                    <span className="text-[10px] font-semibold uppercase tracking-[0.1em] text-dark-600 dark:text-dark-300 flex-1">Header</span>
+                    <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded-md leading-none bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">Tetap</span>
                 </div>
-                <Row label="Tinggi">
-                    <NumField
-                        value={bands.header.height}
-                        onChange={(v) => onChangeBands({ header: { ...bands.header, height: Math.max(20, v) } })}
-                        unit="px"
-                    />
-                </Row>
-                <Row label="Ulangi">
-                    <button
-                        onClick={() => onChangeBands({ header: { ...bands.header, repeat: !bands.header.repeat } })}
-                        className={`flex items-center gap-2 h-8 w-full rounded-lg border px-2.5 text-sm transition-colors ${
-                            bands.header.repeat
-                                ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300'
-                                : 'border-secondary-200 dark:border-dark-600 text-dark-500 dark:text-dark-400 hover:bg-zinc-50 dark:hover:bg-dark-600'
-                        }`}
-                    >
-                        <Repeat2 className="w-4 h-4" />
-                        {bands.header.repeat ? 'Tiap halaman' : 'Halaman pertama saja'}
-                    </button>
-                </Row>
+                <div className="p-3 space-y-2">
+                    <Row label="Tinggi">
+                        <NumField
+                            value={bands.header.height}
+                            onChange={(v) => onChangeBands({ header: { ...bands.header, height: Math.max(20, v) } })}
+                            unit="px"
+                        />
+                    </Row>
+                    {/* Header repeat toggle — inline switch style */}
+                    <div className="flex items-center gap-2">
+                        <span className="w-12 shrink-0 text-xs text-dark-500 dark:text-dark-400">Ulangi</span>
+                        <button
+                            role="switch"
+                            aria-checked={bands.header.repeat}
+                            onClick={() => onChangeBands({ header: { ...bands.header, repeat: !bands.header.repeat } })}
+                            className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-1 ${
+                                bands.header.repeat ? 'bg-primary-600' : 'bg-zinc-200 dark:bg-dark-500'
+                            }`}
+                        >
+                            <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow-sm transition-transform duration-200 ${
+                                bands.header.repeat ? 'translate-x-4' : 'translate-x-0.5'
+                            }`} />
+                        </button>
+                        <span className="text-xs text-dark-500 dark:text-dark-400 flex items-center gap-1">
+                            <Repeat2 className="w-3 h-3" />
+                            {bands.header.repeat ? 'Tiap halaman' : 'Hal. pertama saja'}
+                        </span>
+                    </div>
+                </div>
             </div>
 
-            {/* Content */}
-            <div className="rounded-lg border border-secondary-200 dark:border-dark-600 bg-zinc-50 dark:bg-dark-700 p-2.5 space-y-2">
-                <div className="flex items-center gap-1.5">
-                    <span className="text-[10px] font-semibold uppercase tracking-wider text-dark-500 dark:text-dark-400 flex-1">Konten</span>
-                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-green-100/80 text-green-700 dark:bg-green-900/30 dark:text-green-300">Dinamis ⇕</span>
+            {/* Content band card */}
+            <div className="rounded-xl border border-secondary-200 dark:border-dark-600 bg-white dark:bg-dark-700 overflow-hidden shadow-sm">
+                <div className="flex items-center gap-2 px-3 py-2 bg-emerald-50/60 dark:bg-emerald-900/10 border-b border-emerald-100 dark:border-emerald-900/20">
+                    <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 shrink-0" />
+                    <span className="text-[10px] font-semibold uppercase tracking-[0.1em] text-dark-600 dark:text-dark-300 flex-1">Konten</span>
+                    <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded-md leading-none bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">Dinamis ⇕</span>
                 </div>
-                <p className="text-[11px] text-dark-400 dark:text-dark-500">Tinggi menyesuaikan jumlah item.</p>
+                <div className="px-3 py-2.5">
+                    <p className="text-[11px] text-dark-400 dark:text-dark-500 leading-relaxed">Tinggi otomatis — mengikuti jumlah baris item invoice.</p>
+                </div>
             </div>
 
-            {/* Footer Flow */}
-            <div className="rounded-lg border border-secondary-200 dark:border-dark-600 bg-zinc-50 dark:bg-dark-700 p-2.5 space-y-2">
-                <div className="flex items-center gap-1.5">
-                    <span className="text-[10px] font-semibold uppercase tracking-wider text-dark-500 dark:text-dark-400 flex-1">Footer Flow</span>
-                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-orange-100/80 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300">Setelah konten</span>
+            {/* Footer Flow band card */}
+            <div className="rounded-xl border border-secondary-200 dark:border-dark-600 bg-white dark:bg-dark-700 overflow-hidden shadow-sm">
+                <div className="flex items-center gap-2 px-3 py-2 bg-amber-50/60 dark:bg-amber-900/10 border-b border-amber-100 dark:border-amber-900/20">
+                    <span className="inline-block w-2 h-2 rounded-full bg-amber-400 shrink-0" />
+                    <span className="text-[10px] font-semibold uppercase tracking-[0.1em] text-dark-600 dark:text-dark-300 flex-1">Footer Flow</span>
+                    <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded-md leading-none bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">Setelah konten</span>
                 </div>
-                <Row label="Tinggi">
-                    <NumField
-                        value={bands.footerFlow.height}
-                        onChange={(v) => onChangeBands({ footerFlow: { ...bands.footerFlow, height: Math.max(20, v) } })}
-                        unit="px"
-                    />
-                </Row>
+                <div className="p-3">
+                    <Row label="Tinggi">
+                        <NumField
+                            value={bands.footerFlow.height}
+                            onChange={(v) => onChangeBands({ footerFlow: { ...bands.footerFlow, height: Math.max(20, v) } })}
+                            unit="px"
+                        />
+                    </Row>
+                </div>
             </div>
 
-            {/* Footer Fixed */}
-            <div className="rounded-lg border border-secondary-200 dark:border-dark-600 bg-zinc-50 dark:bg-dark-700 p-2.5 space-y-2">
-                <div className="flex items-center gap-1.5">
-                    <span className="text-[10px] font-semibold uppercase tracking-wider text-dark-500 dark:text-dark-400 flex-1">Footer Tetap</span>
-                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-purple-100/80 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300">Tiap halaman</span>
+            {/* Footer Fixed band card */}
+            <div className="rounded-xl border border-secondary-200 dark:border-dark-600 bg-white dark:bg-dark-700 overflow-hidden shadow-sm">
+                <div className="flex items-center gap-2 px-3 py-2 bg-purple-50/60 dark:bg-purple-900/10 border-b border-purple-100 dark:border-purple-900/20">
+                    <span className="inline-block w-2 h-2 rounded-full bg-purple-400 shrink-0" />
+                    <span className="text-[10px] font-semibold uppercase tracking-[0.1em] text-dark-600 dark:text-dark-300 flex-1">Footer Tetap</span>
+                    <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded-md leading-none bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300">Tiap halaman</span>
                 </div>
-                <Row label="Tinggi">
-                    <NumField
-                        value={bands.footerFixed.height}
-                        onChange={(v) => onChangeBands({ footerFixed: { ...bands.footerFixed, height: Math.max(20, v) } })}
-                        unit="px"
-                    />
-                </Row>
+                <div className="p-3 space-y-2">
+                    <Row label="Tinggi">
+                        <NumField
+                            value={bands.footerFixed.height}
+                            onChange={(v) => onChangeBands({ footerFixed: { ...bands.footerFixed, height: Math.max(20, v) } })}
+                            unit="px"
+                        />
+                    </Row>
+                    <p className="text-[11px] text-dark-400 dark:text-dark-500 leading-relaxed">Dipaku di bagian bawah setiap halaman, di atas margin bawah.</p>
+                </div>
             </div>
         </div>
     );
@@ -1150,6 +1194,30 @@ export default function PdfTemplateEdit() {
         return () => node.removeEventListener('wheel', onWheel);
     }, [zoom]);
 
+    // ── Fit-to-width on mount ─────────────────────────────────────────────────
+    // Fire once: wait until the canvas container has a real width (rAF loop),
+    // then set zoom so the A4 page fits with 24px padding on each side.
+    const fitDoneRef = React.useRef(false);
+    React.useEffect(() => {
+        if (fitDoneRef.current) return;
+        const node = canvasRef.current;
+        if (!node) return;
+        let rafId: number;
+        const tryFit = () => {
+            const w = node.clientWidth;
+            if (w > 0) {
+                const fitted = Math.min(Math.max((w - 48) / A4.w, 0.25), 1);
+                setZoom(+fitted.toFixed(3));
+                fitDoneRef.current = true;
+            } else {
+                rafId = requestAnimationFrame(tryFit);
+            }
+        };
+        rafId = requestAnimationFrame(tryFit);
+        return () => cancelAnimationFrame(rafId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
     // Fix image height if missing
     React.useEffect(() => {
         const allImgs = [
@@ -1426,89 +1494,206 @@ export default function PdfTemplateEdit() {
 
     return (
         <div className="flex flex-col h-[calc(100vh-4rem)]">
-            {/* Header bar */}
-            <div className="flex items-center gap-3 px-4 py-2.5 border-b border-secondary-200 dark:border-dark-600 bg-white dark:bg-dark-800 shrink-0">
-                <Button variant="ghost" size="sm" onClick={() => router.visit('/settings/pdf-templates')} className="gap-1.5">
+            {/* ── Top header bar ── */}
+            <div className="flex items-center gap-2 px-3 py-2 border-b border-secondary-200 dark:border-dark-600 bg-white dark:bg-dark-900 shrink-0">
+                {/* Left: back + title */}
+                <Button variant="ghost" size="sm" onClick={() => router.visit('/settings/pdf-templates')} className="gap-1.5 text-dark-500 dark:text-dark-400 hover:text-dark-900 dark:hover:text-dark-50 shrink-0">
                     <ArrowLeft className="w-4 h-4" />
                     Kembali
                 </Button>
-                <div className="w-px h-5 bg-secondary-200 dark:bg-dark-600" />
-                <span className="text-sm font-medium text-dark-900 dark:text-dark-50 truncate">{template.name}</span>
-                <span className="text-xs text-dark-400 dark:text-dark-500 shrink-0">— Editor Template PDF (Banded)</span>
+                <div className="w-px h-5 bg-secondary-200 dark:bg-dark-600 shrink-0" />
+                <span className="text-sm font-semibold text-dark-900 dark:text-dark-100 truncate min-w-0 flex-1">{template.name}</span>
+                <span className="text-[11px] font-medium text-dark-400 dark:text-dark-500 shrink-0 hidden md:inline">Banded</span>
+
+                {/* Right: document actions */}
+                <div className="flex items-center gap-0.5 shrink-0 ml-2">
+                    {/* Undo / Redo */}
+                    <Button variant="ghost" size="icon" onClick={() => undo()} title="Undo (Ctrl+Z)" className="w-7 h-7">
+                        <Undo2 className="w-3.5 h-3.5" />
+                    </Button>
+                    <Button variant="ghost" size="icon" onClick={() => redo()} title="Redo (Ctrl+Shift+Z)" className="w-7 h-7">
+                        <Redo2 className="w-3.5 h-3.5" />
+                    </Button>
+
+                    <div className="w-px h-5 bg-secondary-200 dark:bg-dark-600 mx-1 shrink-0" />
+
+                    {/* Zoom controls */}
+                    <Button variant="ghost" size="icon" onClick={() => setZoom((z) => Math.max(0.2, +(z - 0.1).toFixed(2)))} className="w-7 h-7" title="Perkecil">
+                        <ZoomOut className="w-3.5 h-3.5" />
+                    </Button>
+                    <button
+                        onClick={() => {
+                            const node = canvasRef.current;
+                            if (!node) return;
+                            const w = node.clientWidth;
+                            if (w > 0) setZoom(+Math.min(Math.max((w - 48) / A4.w, 0.25), 1).toFixed(3));
+                        }}
+                        className="text-[11px] tabular-nums font-medium text-dark-500 dark:text-dark-400 w-10 text-center select-none hover:text-dark-900 dark:hover:text-dark-50 transition-colors duration-150"
+                        title="Klik untuk fit lebar"
+                    >
+                        {Math.round(zoom * 100)}%
+                    </button>
+                    <Button variant="ghost" size="icon" onClick={() => setZoom((z) => Math.min(3, +(z + 0.1).toFixed(2)))} className="w-7 h-7" title="Perbesar">
+                        <ZoomIn className="w-3.5 h-3.5" />
+                    </Button>
+
+                    <div className="w-px h-5 bg-secondary-200 dark:bg-dark-600 mx-1 shrink-0" />
+
+                    {/* Preview toggle */}
+                    <Button
+                        variant={preview ? 'primary' : 'ghost'}
+                        size="sm"
+                        className="gap-1 text-xs"
+                        onClick={() => { setPreview((p) => !p); setEditingId(null); }}
+                    >
+                        {preview ? <Pencil className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                        <span className="hidden sm:inline">{preview ? 'Edit' : 'Preview'}</span>
+                    </Button>
+
+                    <div className="w-px h-5 bg-secondary-200 dark:bg-dark-600 mx-1 shrink-0" />
+
+                    {/* Pratinjau N-item dropdown */}
+                    <div className="relative">
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            className="gap-1 text-xs text-dark-600 dark:text-dark-300"
+                            onClick={() => setPratinjauOpen((o) => !o)}
+                            title="Pratinjau PDF dengan N item"
+                        >
+                            <FileDown className="w-3.5 h-3.5" />
+                            <span className="hidden sm:inline">Pratinjau</span>
+                            <ChevronDown className="w-3 h-3 opacity-60" />
+                        </Button>
+                        {pratinjauOpen && (
+                            <>
+                                <div className="fixed inset-0 z-40" onClick={() => setPratinjauOpen(false)} />
+                                <div className="absolute top-full mt-1.5 right-0 z-50 min-w-[148px] bg-white dark:bg-dark-700 border border-secondary-200 dark:border-dark-600 rounded-xl shadow-xl overflow-hidden">
+                                    <p className="px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.08em] text-dark-400 dark:text-dark-500 border-b border-secondary-200 dark:border-dark-600">
+                                        Jumlah item
+                                    </p>
+                                    {([3, 10, 25, 60] as const).map((n) => (
+                                        <button
+                                            key={n}
+                                            onClick={() => { setPratinjauOpen(false); openPdfWithItems(n); }}
+                                            className="w-full text-left px-3 py-2 text-xs text-dark-700 dark:text-dark-300 hover:bg-zinc-50 dark:hover:bg-dark-600 transition-colors duration-100 flex items-center justify-between gap-3"
+                                        >
+                                            <span className="font-medium">{n} item</span>
+                                            <span className="text-[10px] text-dark-400 dark:text-dark-500 tabular-nums">
+                                                {n <= 5 ? '1 hal.' : n <= 20 ? '~2 hal.' : n <= 40 ? '~3 hal.' : '~5 hal.'}
+                                            </span>
+                                        </button>
+                                    ))}
+                                </div>
+                            </>
+                        )}
+                    </div>
+
+                    {/* PDF — quick export */}
+                    <Button variant="ghost" size="sm" onClick={openPdf} className="gap-1 text-xs text-dark-600 dark:text-dark-300" title="Cetak PDF (data contoh)">
+                        <Eye className="w-3.5 h-3.5" />
+                        <span className="hidden sm:inline">PDF</span>
+                    </Button>
+
+                    <div className="w-px h-5 bg-secondary-200 dark:bg-dark-600 mx-1 shrink-0" />
+
+                    {/* Save — primary CTA */}
+                    <Button variant="primary" size="sm" onClick={save} disabled={saving} className="gap-1.5 text-xs font-semibold">
+                        <Save className="w-3.5 h-3.5" />
+                        {saving ? 'Menyimpan…' : 'Simpan'}
+                    </Button>
+                </div>
             </div>
 
             {/* 3-column editor */}
-            <div className="flex flex-1 overflow-hidden rounded-b-xl border-x border-b border-secondary-200 dark:border-dark-600 bg-white dark:bg-dark-800">
+            <div className="flex flex-1 overflow-hidden">
 
                 {/* ── KIRI: Layers ── */}
-                <aside className="w-52 shrink-0 border-r border-secondary-200 dark:border-dark-600 flex flex-col">
+                <aside className="w-52 shrink-0 border-r border-secondary-200 dark:border-dark-600 flex flex-col bg-white dark:bg-dark-900">
                     <PanelHeader title="Layers" meta={totalElCount ? String(totalElCount) : undefined} />
-                    <div className="flex-1 overflow-auto p-2 space-y-1">
+                    <div className="flex-1 overflow-auto p-2 space-y-0.5">
                         {totalElCount === 0 && (
-                            <p className="text-xs text-dark-400 dark:text-dark-500 px-2 py-3 text-center">Belum ada elemen.<br />Seret dari toolbar.</p>
+                            <div className="px-3 py-6 text-center">
+                                <Layers className="w-6 h-6 mx-auto mb-2 text-dark-300 dark:text-dark-600" />
+                                <p className="text-xs text-dark-400 dark:text-dark-500 leading-relaxed">Belum ada elemen.<br />Seret dari toolbar.</p>
+                            </div>
                         )}
                         {layerGroups.map(({ band, els }) => (
                             els.length > 0 && (
-                                <div key={band}>
-                                    <div className="px-1 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-dark-400 dark:text-dark-500 flex items-center gap-1">
-                                        <Layers className="w-3 h-3" />
-                                        {bandLabel(band)}
+                                <div key={band} className="pb-1">
+                                    {/* Band group header */}
+                                    <div className="flex items-center gap-1.5 px-2 py-1.5 mt-1">
+                                        <span className={`inline-block w-1.5 h-1.5 rounded-full shrink-0 ${
+                                            band === 'header' ? 'bg-blue-400' :
+                                            band === 'content' ? 'bg-emerald-400' :
+                                            band === 'footerFlow' ? 'bg-amber-400' : 'bg-purple-400'
+                                        }`} />
+                                        <span className="text-[10px] font-semibold uppercase tracking-[0.1em] text-dark-400 dark:text-dark-500">
+                                            {bandLabel(band)}
+                                        </span>
                                     </div>
-                                    {els.map((el) => {
-                                        const active = selectedId === el.id;
-                                        const isOver = overLayerId === el.id;
-                                        return (
-                                            <div
-                                                key={el.id}
-                                                draggable={band !== 'content'}
-                                                onClick={() => { setSelectedId(el.id); setSelectedBand(band); setActiveBand(band); }}
-                                                onDragStart={(ev) => {
-                                                    dragLayerId.current = el.id;
-                                                    ev.dataTransfer.effectAllowed = 'move';
-                                                    ev.stopPropagation();
-                                                }}
-                                                onDragOver={(ev) => {
-                                                    ev.preventDefault();
-                                                    if (dragLayerId.current != null && overLayerId !== el.id) setOverLayerId(el.id);
-                                                }}
-                                                onDrop={(ev) => {
-                                                    ev.preventDefault(); ev.stopPropagation();
-                                                    if (dragLayerId.current != null) moveLayer(dragLayerId.current, el.id, band);
-                                                    dragLayerId.current = null; setOverLayerId(null);
-                                                }}
-                                                onDragEnd={() => { dragLayerId.current = null; setOverLayerId(null); }}
-                                                className={`group flex items-center gap-1.5 rounded-lg pl-1 pr-1.5 py-1.5 cursor-pointer border-l-2 transition-colors ${
-                                                    active
-                                                        ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20'
-                                                        : 'border-transparent hover:bg-zinc-50 dark:hover:bg-dark-700'
-                                                } ${isOver ? 'ring-1 ring-primary-400 ring-inset' : ''}`}
-                                            >
-                                                <GripVertical className="w-3.5 h-3.5 shrink-0 text-dark-300 dark:text-dark-500 opacity-0 group-hover:opacity-100 cursor-grab active:cursor-grabbing" />
-                                                <span className={`grid place-items-center h-6 w-6 rounded-md shrink-0 ${active ? 'bg-primary-100 dark:bg-primary-900/40 text-primary-600 dark:text-primary-300' : 'bg-zinc-100 dark:bg-dark-700 text-dark-500 dark:text-dark-400'}`}>
-                                                    {el.type === 'text' ? <Type className="w-3.5 h-3.5" />
-                                                        : el.type === 'image' ? <ImageIcon className="w-3.5 h-3.5" />
-                                                        : el.type === 'grid' ? <LayoutGrid className="w-3.5 h-3.5" />
-                                                        : el.type === 'rect' ? <RectIcon className="w-3.5 h-3.5" />
-                                                        : el.type === 'line' ? <LineIcon className="w-3.5 h-3.5" />
-                                                        : <Table2 className="w-3.5 h-3.5" />}
-                                                </span>
-                                                <span className={`flex-1 truncate text-sm ${active ? 'text-primary-700 dark:text-primary-200 font-medium' : 'text-dark-700 dark:text-dark-300'}`}>
-                                                    {el.type === 'text' ? el.content
-                                                        : el.type === 'image' ? 'Gambar'
-                                                        : el.type === 'grid' ? 'Grid'
-                                                        : el.type === 'rect' ? 'Kotak'
-                                                        : el.type === 'line' ? 'Garis'
-                                                        : 'Tabel Item'}
-                                                </span>
-                                                <button
-                                                    onClick={(ev) => { ev.stopPropagation(); remove(el.id); }}
-                                                    className="grid place-items-center h-6 w-6 rounded-md text-dark-400 opacity-0 group-hover:opacity-100 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20 transition"
+                                    {/* Layer rows */}
+                                    <div className="space-y-0.5 pl-1">
+                                        {els.map((el) => {
+                                            const active = selectedId === el.id;
+                                            const isOver = overLayerId === el.id;
+                                            return (
+                                                <div
+                                                    key={el.id}
+                                                    draggable={band !== 'content'}
+                                                    onClick={() => { setSelectedId(el.id); setSelectedBand(band); setActiveBand(band); }}
+                                                    onDragStart={(ev) => {
+                                                        dragLayerId.current = el.id;
+                                                        ev.dataTransfer.effectAllowed = 'move';
+                                                        ev.stopPropagation();
+                                                    }}
+                                                    onDragOver={(ev) => {
+                                                        ev.preventDefault();
+                                                        if (dragLayerId.current != null && overLayerId !== el.id) setOverLayerId(el.id);
+                                                    }}
+                                                    onDrop={(ev) => {
+                                                        ev.preventDefault(); ev.stopPropagation();
+                                                        if (dragLayerId.current != null) moveLayer(dragLayerId.current, el.id, band);
+                                                        dragLayerId.current = null; setOverLayerId(null);
+                                                    }}
+                                                    onDragEnd={() => { dragLayerId.current = null; setOverLayerId(null); }}
+                                                    className={`group flex items-center gap-1.5 rounded-lg pl-1.5 pr-1 py-1.5 transition-colors duration-150 ${
+                                                        active
+                                                            ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-200'
+                                                            : 'text-dark-700 dark:text-dark-300 hover:bg-zinc-50 dark:hover:bg-dark-700'
+                                                    } ${isOver ? 'ring-1 ring-primary-400/60 ring-inset' : ''}`}
                                                 >
-                                                    <Trash2 className="w-3.5 h-3.5" />
-                                                </button>
-                                            </div>
-                                        );
-                                    })}
+                                                    <GripVertical className="w-3 h-3 shrink-0 text-dark-300 dark:text-dark-600 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                    <span className={`grid place-items-center h-5 w-5 rounded-md shrink-0 transition-colors ${
+                                                        active
+                                                            ? 'bg-primary-100 dark:bg-primary-900/40 text-primary-600 dark:text-primary-300'
+                                                            : 'bg-zinc-100 dark:bg-dark-700 text-dark-400 dark:text-dark-500 group-hover:bg-zinc-200 dark:group-hover:bg-dark-600'
+                                                    }`}>
+                                                        {el.type === 'text' ? <Type className="w-3 h-3" />
+                                                            : el.type === 'image' ? <ImageIcon className="w-3 h-3" />
+                                                            : el.type === 'grid' ? <LayoutGrid className="w-3 h-3" />
+                                                            : el.type === 'rect' ? <RectIcon className="w-3 h-3" />
+                                                            : el.type === 'line' ? <LineIcon className="w-3 h-3" />
+                                                            : <Table2 className="w-3 h-3" />}
+                                                    </span>
+                                                    <span className={`flex-1 truncate text-xs font-medium ${active ? 'text-primary-700 dark:text-primary-200' : 'text-dark-700 dark:text-dark-300'}`}>
+                                                        {el.type === 'text' ? (el.content.length > 18 ? el.content.slice(0, 18) + '…' : el.content || '(kosong)')
+                                                            : el.type === 'image' ? 'Gambar'
+                                                            : el.type === 'grid' ? `Grid ${(el as GridEl).rows}×${(el as GridEl).cols}`
+                                                            : el.type === 'rect' ? 'Kotak'
+                                                            : el.type === 'line' ? 'Garis'
+                                                            : 'Tabel Item'}
+                                                    </span>
+                                                    <button
+                                                        onClick={(ev) => { ev.stopPropagation(); remove(el.id); }}
+                                                        className="grid place-items-center h-5 w-5 rounded-md text-dark-300 dark:text-dark-600 opacity-0 group-hover:opacity-100 hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-900/20 dark:hover:text-red-400 transition-all duration-150"
+                                                    >
+                                                        <Trash2 className="w-3 h-3" />
+                                                    </button>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
                                 </div>
                             )
                         ))}
@@ -1517,66 +1702,99 @@ export default function PdfTemplateEdit() {
 
                 {/* ── TENGAH: Kanvas ── */}
                 <div className="relative flex-1 overflow-hidden">
-                    <div ref={canvasRef} className="absolute inset-0 overflow-auto bg-zinc-200 dark:bg-dark-950">
-                        <div className="min-h-full flex items-start justify-center p-10">
-                            <div style={{ width: A4.w * zoom }}>
-                                {/* A4 paper — height auto since bands stack */}
+                    <div ref={canvasRef} className="absolute inset-0 overflow-auto" style={{ backgroundColor: '#1a1a1d' }}>
+                        <div className="min-h-full flex items-start justify-center py-10 px-10">
+                            {/* Outer sizing wrapper — exact A4 footprint at current zoom */}
+                            <div style={{ width: A4.w * zoom, height: A4.h * zoom, flexShrink: 0 }}>
+                                {/* ── A4 PAPER SHEET — true portrait 793×1123px ── */}
                                 <div
-                                    className={`relative bg-white shadow-xl ${dragOver ? 'ring-2 ring-primary-500' : ''}`}
-                                    style={{ width: A4.w, height: 'auto', transform: `scale(${zoom})`, transformOrigin: 'top left', overflow: 'visible' }}
+                                    className={`relative bg-white shadow-xl ${dragOver ? 'ring-2 ring-primary-400' : ''}`}
+                                    style={{
+                                        width: A4.w,
+                                        height: A4.h,
+                                        transform: `scale(${zoom})`,
+                                        transformOrigin: 'top left',
+                                        overflow: 'hidden',
+                                    }}
                                 >
                                     {/* ── MARGIN GUIDE — dashed rect showing printable area ── */}
-                                    {/* ponytail: pointer-events none so it never blocks clicks */}
                                     <div
                                         aria-hidden
-                                        className="absolute pointer-events-none"
+                                        className="absolute pointer-events-none z-[100]"
                                         style={{
                                             top: margins.top,
                                             left: margins.left,
                                             width: A4.w - margins.left - margins.right,
-                                            // height spans from top margin to bottom margin; content is dynamic so we use a large height
-                                            // We just mark the L/R/T edges — the bottom margin line is shown separately
                                             bottom: margins.bottom,
-                                            border: '1px dashed rgba(99,102,241,0.35)',
-                                            borderRadius: 0,
-                                            zIndex: 100,
+                                            border: '1.5px dashed rgba(99,102,241,0.30)',
                                         }}
                                     />
+
+                                    {/* ── FLOWING BANDS: Header → Content → FooterFlow ── */}
+                                    {/* These stack top-to-bottom inside the top margin area */}
 
                                     {/* ── HEADER BAND ── */}
                                     <div
                                         ref={headerRef}
-                                        className={`relative border-b-2 ${activeBand === 'header' ? 'border-blue-300/60' : 'border-slate-100 dark:border-dark-700'}`}
-                                        style={{ width: A4.w, height: bands.header.height, overflow: 'visible' }}
+                                        className={`relative transition-shadow duration-150 ${
+                                            activeBand === 'header'
+                                                ? 'ring-2 ring-inset ring-blue-400/50 bg-blue-50/20 dark:bg-blue-900/5'
+                                                : ''
+                                        }`}
+                                        style={{
+                                            width: A4.w,
+                                            height: bands.header.height,
+                                            overflow: 'visible',
+                                            borderBottom: activeBand === 'header'
+                                                ? '2px solid rgba(96,165,250,0.5)'
+                                                : '1px solid rgba(226,232,240,0.8)',
+                                        }}
                                         onPointerDown={() => { setActiveBand('header'); setSelectedId(null); setSelectedBand(null); }}
                                         onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; setDragOver(true); }}
                                         onDragLeave={() => setDragOver(false)}
                                         onDrop={(e) => dropOnBand(e, 'header', headerRef)}
                                     >
-                                        <div className="absolute top-0 left-0 right-0 flex items-center gap-1.5 px-2 pointer-events-none" style={{ height: 20, zIndex: 10 }}>
-                                            <span className="text-[9px] font-semibold uppercase tracking-wider text-dark-400/50">Header</span>
-                                            <span className={`text-[8px] px-1.5 py-0.5 rounded ${bandBadgeColor.header}`}>{bandSubtitle.header}</span>
+                                        {/* Band label — top-left corner tab */}
+                                        <div className="absolute top-1 left-1 flex items-center gap-1 pointer-events-none z-10">
+                                            <span className="text-[8px] font-bold uppercase tracking-[0.12em] text-slate-300 dark:text-dark-600">HEADER</span>
+                                            <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded-md leading-none ${bandBadgeColor.header}`}>
+                                                {bandSubtitle.header}
+                                            </span>
                                         </div>
                                         {renderBandElements('header', headerRef, bands.header.elements)}
                                     </div>
 
-                                    {/* Divider label */}
-                                    <div className="w-full flex items-center bg-slate-50 dark:bg-dark-900/30" style={{ height: 18 }}>
-                                        <div className="flex-1 border-t border-dashed border-slate-200 dark:border-dark-700" />
-                                        <span className="mx-2 shrink-0 text-[9px] text-slate-400 dark:text-dark-500 select-none">Konten</span>
-                                        <div className="flex-1 border-t border-dashed border-slate-200 dark:border-dark-700" />
+                                    {/* Band separator */}
+                                    <div className="flex items-center w-full" style={{ height: 16 }}>
+                                        <div className="flex-1 border-t border-dashed border-slate-200/70 dark:border-dark-700/70" />
+                                        <span className="mx-2 shrink-0 text-[8px] font-medium tracking-widest uppercase text-slate-300 dark:text-dark-600 select-none">Konten</span>
+                                        <div className="flex-1 border-t border-dashed border-slate-200/70 dark:border-dark-700/70" />
                                     </div>
 
                                     {/* ── CONTENT BAND ── */}
                                     <div
                                         ref={contentRef}
-                                        className={`relative border-b-2 ${activeBand === 'content' ? 'border-green-300/60' : 'border-slate-100 dark:border-dark-700'}`}
-                                        style={{ width: A4.w, minHeight: 80, overflow: 'visible' }}
+                                        className={`relative transition-shadow duration-150 ${
+                                            activeBand === 'content'
+                                                ? 'ring-2 ring-inset ring-emerald-400/50 bg-emerald-50/20 dark:bg-emerald-900/5'
+                                                : ''
+                                        }`}
+                                        style={{
+                                            width: A4.w,
+                                            minHeight: 80,
+                                            overflow: 'visible',
+                                            borderBottom: activeBand === 'content'
+                                                ? '2px solid rgba(52,211,153,0.5)'
+                                                : '1px solid rgba(226,232,240,0.8)',
+                                        }}
                                         onPointerDown={() => { setActiveBand('content'); if (!tableEl) { setSelectedId(null); setSelectedBand(null); } }}
                                     >
-                                        <div className="absolute top-0 left-0 right-0 flex items-center gap-1.5 px-2 pointer-events-none" style={{ height: 20, zIndex: 10 }}>
-                                            <span className="text-[9px] font-semibold uppercase tracking-wider text-dark-400/50">Konten</span>
-                                            <span className={`text-[8px] px-1.5 py-0.5 rounded ${bandBadgeColor.content}`}>{bandSubtitle.content}</span>
+                                        {/* Band label */}
+                                        <div className="absolute top-1 left-1 flex items-center gap-1 pointer-events-none z-10">
+                                            <span className="text-[8px] font-bold uppercase tracking-[0.12em] text-slate-300 dark:text-dark-600">KONTEN</span>
+                                            <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded-md leading-none ${bandBadgeColor.content}`}>
+                                                {bandSubtitle.content}
+                                            </span>
                                         </div>
                                         {tableEl ? (() => {
                                             const isSel = selectedId === tableEl.id;
@@ -1591,7 +1809,7 @@ export default function PdfTemplateEdit() {
                                                         setActiveBand('content');
                                                     }}
                                                     className={`absolute cursor-move ${isSel && !preview ? 'outline-2 outline-primary-500' : ''}`}
-                                                    style={{ left: tableEl.x + margins.left, top: 24, width: tableEl.width, height, touchAction: 'none' }}
+                                                    style={{ left: tableEl.x + margins.left, top: 22, width: tableEl.width, height, touchAction: 'none' }}
                                                 >
                                                     <TablePreview el={tableEl} rows={rows} />
                                                     {isSel && !preview && (
@@ -1605,10 +1823,10 @@ export default function PdfTemplateEdit() {
                                                 </div>
                                             );
                                         })() : (
-                                            <div className="flex items-center justify-center" style={{ paddingTop: 28, paddingBottom: 20, minHeight: 80 }}>
+                                            <div className="flex items-center justify-center" style={{ paddingTop: 30, paddingBottom: 20, minHeight: 80 }}>
                                                 <button
                                                     onClick={() => { setActiveBand('content'); addTable(); }}
-                                                    className="flex items-center gap-2 px-4 py-2 rounded-xl border-2 border-dashed border-slate-300 dark:border-dark-600 text-sm text-slate-400 dark:text-dark-500 hover:border-primary-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+                                                    className="flex items-center gap-2 px-4 py-2 rounded-xl border-2 border-dashed border-slate-200 dark:border-dark-600 text-sm text-slate-400 dark:text-dark-500 hover:border-primary-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors duration-150"
                                                 >
                                                     <Table2 className="w-4 h-4" />
                                                     + Tabel Item
@@ -1616,53 +1834,82 @@ export default function PdfTemplateEdit() {
                                             </div>
                                         )}
                                         {/* Spacer below table */}
-                                        {tableEl && <div style={{ height: tableEditorHeight(tableEl) + 24 + 16 }} />}
+                                        {tableEl && <div style={{ height: tableEditorHeight(tableEl) + 22 + 16 }} />}
                                     </div>
 
-                                    {/* Divider label */}
-                                    <div className="w-full flex items-center bg-slate-50 dark:bg-dark-900/30" style={{ height: 18 }}>
-                                        <div className="flex-1 border-t border-dashed border-slate-200 dark:border-dark-700" />
-                                        <span className="mx-2 shrink-0 text-[9px] text-slate-400 dark:text-dark-500 select-none">Footer Flow</span>
-                                        <div className="flex-1 border-t border-dashed border-slate-200 dark:border-dark-700" />
+                                    {/* Band separator */}
+                                    <div className="flex items-center w-full" style={{ height: 16 }}>
+                                        <div className="flex-1 border-t border-dashed border-slate-200/70 dark:border-dark-700/70" />
+                                        <span className="mx-2 shrink-0 text-[8px] font-medium tracking-widest uppercase text-slate-300 dark:text-dark-600 select-none">Footer Flow</span>
+                                        <div className="flex-1 border-t border-dashed border-slate-200/70 dark:border-dark-700/70" />
                                     </div>
 
                                     {/* ── FOOTER FLOW BAND ── */}
                                     <div
                                         ref={footerFlowRef}
-                                        className={`relative border-b-2 ${activeBand === 'footerFlow' ? 'border-orange-300/60' : 'border-slate-100 dark:border-dark-700'}`}
-                                        style={{ width: A4.w, height: bands.footerFlow.height, overflow: 'visible' }}
+                                        className={`relative transition-shadow duration-150 ${
+                                            activeBand === 'footerFlow'
+                                                ? 'ring-2 ring-inset ring-amber-400/50 bg-amber-50/20 dark:bg-amber-900/5'
+                                                : ''
+                                        }`}
+                                        style={{
+                                            width: A4.w,
+                                            height: bands.footerFlow.height,
+                                            overflow: 'visible',
+                                            borderBottom: activeBand === 'footerFlow'
+                                                ? '2px solid rgba(251,191,36,0.5)'
+                                                : '1px solid rgba(226,232,240,0.8)',
+                                        }}
                                         onPointerDown={() => { setActiveBand('footerFlow'); setSelectedId(null); setSelectedBand(null); }}
                                         onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; setDragOver(true); }}
                                         onDragLeave={() => setDragOver(false)}
                                         onDrop={(e) => dropOnBand(e, 'footerFlow', footerFlowRef)}
                                     >
-                                        <div className="absolute top-0 left-0 right-0 flex items-center gap-1.5 px-2 pointer-events-none" style={{ height: 20, zIndex: 10 }}>
-                                            <span className="text-[9px] font-semibold uppercase tracking-wider text-dark-400/50">Footer Flow</span>
-                                            <span className={`text-[8px] px-1.5 py-0.5 rounded ${bandBadgeColor.footerFlow}`}>{bandSubtitle.footerFlow}</span>
+                                        {/* Band label */}
+                                        <div className="absolute top-1 left-1 flex items-center gap-1 pointer-events-none z-10">
+                                            <span className="text-[8px] font-bold uppercase tracking-[0.12em] text-slate-300 dark:text-dark-600">FOOTER FLOW</span>
+                                            <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded-md leading-none ${bandBadgeColor.footerFlow}`}>
+                                                {bandSubtitle.footerFlow}
+                                            </span>
                                         </div>
                                         {renderBandElements('footerFlow', footerFlowRef, bands.footerFlow.elements)}
                                     </div>
 
-                                    {/* Divider label */}
-                                    <div className="w-full flex items-center bg-slate-50 dark:bg-dark-900/30" style={{ height: 18 }}>
-                                        <div className="flex-1 border-t border-dashed border-slate-200 dark:border-dark-700" />
-                                        <span className="mx-2 shrink-0 text-[9px] text-slate-400 dark:text-dark-500 select-none">Footer Tetap</span>
-                                        <div className="flex-1 border-t border-dashed border-slate-200 dark:border-dark-700" />
-                                    </div>
-
-                                    {/* ── FOOTER FIXED BAND ── */}
+                                    {/* ── FOOTER FIXED BAND — pinned to bottom of A4 page ── */}
+                                    {/* position: absolute so it always sits just above the bottom margin, */}
+                                    {/* regardless of how tall the flowing bands above are.             */}
                                     <div
                                         ref={footerFixedRef}
-                                        className={`relative ${activeBand === 'footerFixed' ? 'ring-inset ring-1 ring-purple-300/60' : ''}`}
-                                        style={{ width: A4.w, height: bands.footerFixed.height, overflow: 'visible' }}
+                                        className={`absolute transition-shadow duration-150 ${
+                                            activeBand === 'footerFixed'
+                                                ? 'ring-2 ring-inset ring-purple-400/50 bg-purple-50/20 dark:bg-purple-900/5'
+                                                : ''
+                                        }`}
+                                        style={{
+                                            left: 0,
+                                            right: 0,
+                                            bottom: margins.bottom,
+                                            height: bands.footerFixed.height,
+                                            overflow: 'visible',
+                                            borderTop: activeBand === 'footerFixed'
+                                                ? '2px solid rgba(192,132,252,0.5)'
+                                                : '1px dashed rgba(200,200,220,0.6)',
+                                            zIndex: 20,
+                                            backgroundColor: activeBand === 'footerFixed'
+                                                ? undefined
+                                                : 'rgba(250,250,255,0.6)',
+                                        }}
                                         onPointerDown={() => { setActiveBand('footerFixed'); setSelectedId(null); setSelectedBand(null); }}
                                         onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; setDragOver(true); }}
                                         onDragLeave={() => setDragOver(false)}
                                         onDrop={(e) => dropOnBand(e, 'footerFixed', footerFixedRef)}
                                     >
-                                        <div className="absolute top-0 left-0 right-0 flex items-center gap-1.5 px-2 pointer-events-none" style={{ height: 20, zIndex: 10 }}>
-                                            <span className="text-[9px] font-semibold uppercase tracking-wider text-dark-400/50">Footer Tetap</span>
-                                            <span className={`text-[8px] px-1.5 py-0.5 rounded ${bandBadgeColor.footerFixed}`}>{bandSubtitle.footerFixed}</span>
+                                        {/* Band label — shown at top-left of the fixed footer */}
+                                        <div className="absolute top-1 left-1 flex items-center gap-1 pointer-events-none z-10">
+                                            <span className="text-[8px] font-bold uppercase tracking-[0.12em] text-slate-300 dark:text-dark-600">FOOTER TETAP</span>
+                                            <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded-md leading-none ${bandBadgeColor.footerFixed}`}>
+                                                {bandSubtitle.footerFixed}
+                                            </span>
                                         </div>
                                         {renderBandElements('footerFixed', footerFixedRef, bands.footerFixed.elements)}
                                     </div>
@@ -1671,114 +1918,51 @@ export default function PdfTemplateEdit() {
                         </div>
                     </div>
 
-                    {/* Floating toolbar */}
-                    <div className="absolute bottom-5 left-1/2 -translate-x-1/2 flex items-center gap-1 px-2 py-1.5 rounded-xl bg-white dark:bg-dark-700 border border-secondary-200 dark:border-dark-600 shadow-lg">
+                        {/* ── Active-band indicator — canvas overlay (top-left) ── */}
+                    <div className="absolute top-3 left-3 z-20 pointer-events-none">
+                        <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-dark-900/80 dark:bg-dark-800/90 backdrop-blur-sm border border-white/10 shadow-lg">
+                            <span className={`inline-block w-2 h-2 rounded-full shrink-0 ${
+                                activeBand === 'header' ? 'bg-blue-400' :
+                                activeBand === 'content' ? 'bg-emerald-400' :
+                                activeBand === 'footerFlow' ? 'bg-amber-400' : 'bg-purple-400'
+                            }`} />
+                            <span className="text-[10px] font-semibold text-white/80 tracking-wide">{bandLabel(activeBand)}</span>
+                        </div>
+                    </div>
+
+                    {/* ── FLOATING ELEMENT-INSERT TOOLBAR ── */}
+                    <div className="absolute bottom-5 left-1/2 -translate-x-1/2 z-30 flex items-center gap-0.5 p-1.5 rounded-xl bg-white dark:bg-dark-700 border border-secondary-200 dark:border-dark-600 shadow-lg">
                         <div draggable onDragStart={(e) => { e.dataTransfer.effectAllowed = 'copy'; e.dataTransfer.setData('kind', 'text'); }}>
-                            <Button variant="ghost" size="sm" className="cursor-grab active:cursor-grabbing" onClick={() => addText()} disabled={activeBand === 'content'}>
-                                <Type className="w-4 h-4" /> Teks
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-dark-600 dark:text-dark-300 hover:text-dark-900 dark:hover:text-dark-50" onClick={() => addText()} disabled={activeBand === 'content'} title="Teks — klik tambah / seret ke band">
+                                <Type className="w-4 h-4" />
                             </Button>
                         </div>
                         <div draggable onDragStart={(e) => { e.dataTransfer.effectAllowed = 'copy'; e.dataTransfer.setData('kind', 'image'); }}>
-                            <Button variant="ghost" size="sm" className="cursor-grab active:cursor-grabbing" onClick={() => fileRef.current?.click()} disabled={activeBand === 'content'}>
-                                <ImageIcon className="w-4 h-4" /> Gambar
-                            </Button>
-                        </div>
-                        <div draggable onDragStart={(e) => { e.dataTransfer.effectAllowed = 'copy'; e.dataTransfer.setData('kind', 'table'); }}>
-                            <Button variant="ghost" size="sm" className="cursor-grab active:cursor-grabbing" onClick={() => addTable()} disabled={!!bands.content.table} title={bands.content.table ? 'Sudah ada tabel' : 'Tambah tabel item ke konten'}>
-                                <Table2 className="w-4 h-4" /> Tabel
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-dark-600 dark:text-dark-300 hover:text-dark-900 dark:hover:text-dark-50" onClick={() => fileRef.current?.click()} disabled={activeBand === 'content'} title="Gambar">
+                                <ImageIcon className="w-4 h-4" />
                             </Button>
                         </div>
                         <div draggable onDragStart={(e) => { e.dataTransfer.effectAllowed = 'copy'; e.dataTransfer.setData('kind', 'grid'); }}>
-                            <Button variant="ghost" size="sm" className="cursor-grab active:cursor-grabbing" onClick={() => addGrid()} disabled={activeBand === 'content'}>
-                                <LayoutGrid className="w-4 h-4" /> Grid
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-dark-600 dark:text-dark-300 hover:text-dark-900 dark:hover:text-dark-50" onClick={() => addGrid()} disabled={activeBand === 'content'} title="Grid statis">
+                                <LayoutGrid className="w-4 h-4" />
                             </Button>
                         </div>
                         <div draggable onDragStart={(e) => { e.dataTransfer.effectAllowed = 'copy'; e.dataTransfer.setData('kind', 'rect'); }}>
-                            <Button variant="ghost" size="sm" className="cursor-grab active:cursor-grabbing" onClick={() => addRect()} disabled={activeBand === 'content'}>
-                                <RectIcon className="w-4 h-4" /> Kotak
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-dark-600 dark:text-dark-300 hover:text-dark-900 dark:hover:text-dark-50" onClick={() => addRect()} disabled={activeBand === 'content'} title="Kotak">
+                                <RectIcon className="w-4 h-4" />
                             </Button>
                         </div>
                         <div draggable onDragStart={(e) => { e.dataTransfer.effectAllowed = 'copy'; e.dataTransfer.setData('kind', 'line'); }}>
-                            <Button variant="ghost" size="sm" className="cursor-grab active:cursor-grabbing" onClick={() => addLine()} disabled={activeBand === 'content'}>
-                                <LineIcon className="w-4 h-4" /> Garis
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-dark-600 dark:text-dark-300 hover:text-dark-900 dark:hover:text-dark-50" onClick={() => addLine()} disabled={activeBand === 'content'} title="Garis">
+                                <LineIcon className="w-4 h-4" />
                             </Button>
                         </div>
                         <div className="w-px h-6 bg-secondary-200 dark:bg-dark-600 mx-1" />
-                        {/* Active band indicator */}
-                        <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-zinc-100 dark:bg-dark-600">
-                            <span className="text-[10px] text-dark-500 dark:text-dark-400">Band:</span>
-                            <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${bandBadgeColor[activeBand]}`}>{bandLabel(activeBand)}</span>
-                        </div>
-                        <div className="w-px h-6 bg-secondary-200 dark:bg-dark-600 mx-1" />
-                        <Button
-                            variant={preview ? 'primary' : 'ghost'}
-                            size="sm"
-                            onClick={() => { setPreview((p) => !p); setEditingId(null); }}
-                        >
-                            {preview ? <Pencil className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                            {preview ? 'Edit' : 'Preview'}
-                        </Button>
-                        <div className="w-px h-6 bg-secondary-200 dark:bg-dark-600 mx-1" />
-                        <Button variant="ghost" size="icon" onClick={() => undo()} title="Undo (Ctrl+Z)">
-                            <Undo2 className="w-4 h-4" />
-                        </Button>
-                        <Button variant="ghost" size="icon" onClick={() => redo()} title="Redo (Ctrl+Shift+Z)">
-                            <Redo2 className="w-4 h-4" />
-                        </Button>
-                        <div className="w-px h-6 bg-secondary-200 dark:bg-dark-600 mx-1" />
-                        <Button variant="ghost" size="icon" onClick={() => setZoom((z) => Math.max(0.2, +(z - 0.1).toFixed(2)))}>
-                            <ZoomOut className="w-4 h-4" />
-                        </Button>
-                        <span className="text-xs tabular-nums text-dark-500 dark:text-dark-400 w-10 text-center">{Math.round(zoom * 100)}%</span>
-                        <Button variant="ghost" size="icon" onClick={() => setZoom((z) => Math.min(3, +(z + 0.1).toFixed(2)))}>
-                            <ZoomIn className="w-4 h-4" />
-                        </Button>
-                        <div className="w-px h-6 bg-secondary-200 dark:bg-dark-600 mx-1" />
-                        <Button variant="ghost" size="sm" onClick={openPdf} title="Cetak PDF (data asli/contoh)">
-                            <FileDown className="w-4 h-4" /> PDF
-                        </Button>
-                        {/* B5: Pratinjau dengan N item — lets the user see pagination behavior */}
-                        <div className="relative">
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => setPratinjauOpen((o) => !o)}
-                                title="Pratinjau PDF dengan jumlah item tertentu"
-                            >
-                                <Eye className="w-4 h-4" />
-                                Pratinjau
-                                <ChevronDown className="w-3 h-3 ml-0.5" />
+                        <div draggable onDragStart={(e) => { e.dataTransfer.effectAllowed = 'copy'; e.dataTransfer.setData('kind', 'table'); }}>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-dark-600 dark:text-dark-300 hover:text-dark-900 dark:hover:text-dark-50" onClick={() => addTable()} disabled={!!bands.content.table} title={bands.content.table ? 'Tabel sudah ada' : 'Tabel item (band Konten)'}>
+                                <Table2 className="w-4 h-4" />
                             </Button>
-                            {pratinjauOpen && (
-                                <>
-                                    {/* Backdrop to close dropdown */}
-                                    <div
-                                        className="fixed inset-0 z-40"
-                                        onClick={() => setPratinjauOpen(false)}
-                                    />
-                                    <div className="absolute bottom-full mb-1.5 left-1/2 -translate-x-1/2 z-50 min-w-[160px] bg-white dark:bg-dark-700 border border-secondary-200 dark:border-dark-600 rounded-xl shadow-lg py-1 overflow-hidden">
-                                        <p className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-dark-400 dark:text-dark-500 border-b border-secondary-200 dark:border-dark-600 mb-1">
-                                            Jumlah item
-                                        </p>
-                                        {([3, 10, 25, 60] as const).map((n) => (
-                                            <button
-                                                key={n}
-                                                onClick={() => { setPratinjauOpen(false); openPdfWithItems(n); }}
-                                                className="w-full text-left px-3 py-1.5 text-sm text-dark-700 dark:text-dark-300 hover:bg-zinc-50 dark:hover:bg-dark-600 transition-colors flex items-center justify-between gap-3"
-                                            >
-                                                <span>{n} item</span>
-                                                <span className="text-[10px] text-dark-400 dark:text-dark-500">
-                                                    {n <= 5 ? '1 hal.' : n <= 20 ? '~2 hal.' : n <= 40 ? '~3 hal.' : '~5 hal.'}
-                                                </span>
-                                            </button>
-                                        ))}
-                                    </div>
-                                </>
-                            )}
                         </div>
-                        <Button variant="primary" size="sm" onClick={save} disabled={saving}>
-                            <Save className="w-4 h-4" /> {saving ? 'Menyimpan…' : 'Simpan'}
-                        </Button>
                     </div>
 
                     <input
@@ -1799,7 +1983,7 @@ export default function PdfTemplateEdit() {
                 </div>
 
                 {/* ── KANAN: Inspector ── */}
-                <aside className="w-72 shrink-0 border-l border-secondary-200 dark:border-dark-600 flex flex-col">
+                <aside className="w-72 shrink-0 border-l border-secondary-200 dark:border-dark-600 flex flex-col bg-white dark:bg-dark-900">
                     <PanelHeader
                         title={
                             selected
@@ -1811,12 +1995,13 @@ export default function PdfTemplateEdit() {
                                     : 'Tabel Item'
                                 : 'Properti'
                         }
+                        meta={selected ? undefined : 'Halaman'}
                     />
 
                     {!selected ? (
                         <div className="flex-1 overflow-auto px-3 py-3 space-y-3">
-                            <p className="text-[11px] text-dark-400 dark:text-dark-500">
-                                Pilih elemen di kanvas, atau atur margin & ukuran band di bawah.
+                            <p className="text-[11px] text-dark-400 dark:text-dark-500 leading-relaxed">
+                                Klik elemen di kanvas untuk memilihnya. Atur margin halaman dan tinggi band di bawah.
                             </p>
                             <MarginSettingsPanel
                                 margins={margins}
@@ -1829,7 +2014,7 @@ export default function PdfTemplateEdit() {
                         </div>
                     ) : (
                         <div
-                            className="flex-1 overflow-auto px-3 divide-y divide-secondary-200 dark:divide-dark-600"
+                            className="flex-1 overflow-auto px-3"
                             onFocusCapture={(e) => {
                                 const t = e.target as HTMLElement;
                                 if (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA') snapshot();
@@ -3119,10 +3304,10 @@ const inputCn =
 
 function PanelHeader({ title, meta }: { title: string; meta?: string }) {
     return (
-        <div className="flex items-center justify-between px-3 h-9 shrink-0 border-b border-secondary-200 dark:border-dark-600 bg-zinc-50/60 dark:bg-dark-900/30">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-dark-500 dark:text-dark-400">{title}</span>
+        <div className="flex items-center justify-between px-3 h-9 shrink-0 border-b border-secondary-200 dark:border-dark-600 bg-zinc-50 dark:bg-dark-800">
+            <span className="text-[10px] font-semibold uppercase tracking-[0.1em] text-dark-400 dark:text-dark-500">{title}</span>
             {meta && (
-                <span className="text-[11px] tabular-nums text-dark-500 dark:text-dark-400 bg-zinc-100 dark:bg-dark-700 rounded-full px-1.5 py-0.5">{meta}</span>
+                <span className="text-[10px] tabular-nums font-medium text-dark-500 dark:text-dark-400 bg-zinc-100 dark:bg-dark-700 border border-secondary-200 dark:border-dark-600 rounded-full px-1.5 py-0.5">{meta}</span>
             )}
         </div>
     );
@@ -3130,8 +3315,12 @@ function PanelHeader({ title, meta }: { title: string; meta?: string }) {
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
     return (
-        <section className="py-3.5 first:pt-3 space-y-2.5">
-            {title && <h4 className="text-[11px] font-semibold uppercase tracking-wider text-dark-400 dark:text-dark-500">{title}</h4>}
+        <section className="py-3 first:pt-3 space-y-2.5 border-b border-secondary-200 dark:border-dark-600 last:border-b-0">
+            {title && (
+                <h4 className="text-[10px] font-semibold uppercase tracking-[0.1em] text-dark-400 dark:text-dark-500">
+                    {title}
+                </h4>
+            )}
             {children}
         </section>
     );
