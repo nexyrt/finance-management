@@ -808,12 +808,12 @@ export default function PdfTemplateEdit() {
         const band = findElBand(el.id);
         if (band) setSelectedBand(band);
         const rect = bandRef.current!.getBoundingClientRect();
-        const dx = (e.clientX - rect.left) / zoom - el.x;
+        const dx = (e.clientX - rect.left) / zoom - el.x - margins.left;
         const dy = (e.clientY - rect.top) / zoom - el.y;
         let moved = false;
         const move = (ev: PointerEvent) => {
             if (!moved) { moved = true; snapshot(); }
-            const x = Math.round((ev.clientX - rect.left) / zoom - dx);
+            const x = Math.max(0, Math.round((ev.clientX - rect.left) / zoom - dx - margins.left));
             const y = Math.round((ev.clientY - rect.top) / zoom - dy);
             update(el.id, { x, y });
         };
@@ -833,7 +833,7 @@ export default function PdfTemplateEdit() {
         const move = (ev: PointerEvent) => {
             if (!resized) { resized = true; snapshot(); }
             const patch: Partial<Text> = {};
-            if (axis === 'width' || axis === 'both') patch.width = Math.max(40, Math.round((ev.clientX - rect.left) / zoom - x0));
+            if (axis === 'width' || axis === 'both') patch.width = Math.max(40, Math.round((ev.clientX - rect.left) / zoom - x0 - margins.left));
             if ((axis === 'height' || axis === 'both') && h0 !== undefined) {
                 patch.height = Math.max(20, Math.round((ev.clientY - rect.top) / zoom - el.y));
             }
@@ -851,7 +851,7 @@ export default function PdfTemplateEdit() {
         let resized = false;
         const move = (ev: PointerEvent) => {
             if (!resized) { resized = true; snapshot(); }
-            update(el.id, { width: Math.max(100, Math.round((ev.clientX - rect.left) / zoom - x0)) });
+            update(el.id, { width: Math.max(100, Math.round((ev.clientX - rect.left) / zoom - x0 - margins.left)) });
         };
         const up = () => { window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up); };
         window.addEventListener('pointermove', move);
@@ -903,7 +903,7 @@ export default function PdfTemplateEdit() {
         const move = (ev: PointerEvent) => {
             if (!resized) { resized = true; snapshot(); }
             update(el.id, {
-                width: Math.max(4, Math.round((ev.clientX - rect.left) / zoom - x0)),
+                width: Math.max(4, Math.round((ev.clientX - rect.left) / zoom - x0 - margins.left)),
                 height: Math.max(4, Math.round((ev.clientY - rect.top) / zoom - y0)),
             });
         };
@@ -919,7 +919,7 @@ export default function PdfTemplateEdit() {
         let resized = false;
         const move = (ev: PointerEvent) => {
             if (!resized) { resized = true; snapshot(); }
-            if (el.orientation === 'h') update(el.id, { length: Math.max(4, Math.round((ev.clientX - rect.left) / zoom - x0)) });
+            if (el.orientation === 'h') update(el.id, { length: Math.max(4, Math.round((ev.clientX - rect.left) / zoom - x0 - margins.left)) });
             else update(el.id, { length: Math.max(4, Math.round((ev.clientY - rect.top) / zoom - y0)) });
         };
         const up = () => { window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up); };
@@ -932,8 +932,8 @@ export default function PdfTemplateEdit() {
         setSelectedId(el.id);
         const rect = bandRef.current!.getBoundingClientRect();
         const w0 = el.width; const h0 = el.height ?? w0; const ratio = w0 / h0;
-        const left0 = el.x; const top0 = el.y;
-        const right0 = el.x + w0; const bottom0 = el.y + h0;
+        const left0 = el.x + margins.left; const top0 = el.y;
+        const right0 = el.x + w0 + margins.left; const bottom0 = el.y + h0;
         const west = corner === 'nw' || corner === 'sw';
         const north = corner === 'nw' || corner === 'ne';
         let resized = false;
@@ -946,7 +946,7 @@ export default function PdfTemplateEdit() {
             if (el.lockAspect) { newH = newW / ratio; }
             const newX = west ? right0 - newW : left0;
             const newY = north ? bottom0 - newH : top0;
-            update(el.id, { x: Math.round(newX), y: Math.round(newY), width: Math.round(newW), height: Math.round(newH) });
+            update(el.id, { x: Math.round(newX - margins.left), y: Math.round(newY), width: Math.round(newW), height: Math.round(newH) });
         };
         const up = () => { window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up); };
         window.addEventListener('pointermove', move);
@@ -1519,7 +1519,7 @@ export default function PdfTemplateEdit() {
                             setSelectedCell(null);
                         }}
                         className={`absolute cursor-move ${isSel && !preview ? 'outline-2 outline-primary-500' : ''}`}
-                        style={{ left: el.x, top: el.y, width: el.width, height, touchAction: 'none' }}
+                        style={{ left: el.x + margins.left, top: el.y, width: el.width, height, touchAction: 'none' }}
                     >
                         <GridCanvas
                             el={el}
@@ -1574,7 +1574,7 @@ export default function PdfTemplateEdit() {
                         onPointerDown={(e) => startDragInBand(e, el, bandRef)}
                         className={`absolute cursor-move ${isSel && !preview ? 'outline-2 outline-primary-500' : ''}`}
                         style={{
-                            left: el.x, top: el.y, touchAction: 'none',
+                            left: el.x + margins.left, top: el.y, touchAction: 'none',
                             width: el.width, height: el.height,
                             backgroundColor: el.fill ?? undefined,
                             border: el.borderWidth > 0 ? `${el.borderWidth}px solid ${el.borderColor}` : undefined,
@@ -1599,7 +1599,7 @@ export default function PdfTemplateEdit() {
                         key={el.id}
                         onPointerDown={(e) => startDragInBand(e, el, bandRef)}
                         className={`absolute cursor-move ${isSel && !preview ? 'outline-2 outline-primary-500' : ''}`}
-                        style={{ left: el.x, top: el.y, touchAction: 'none', width: lw, height: lh, backgroundColor: el.color, flexShrink: 0 }}
+                        style={{ left: el.x + margins.left, top: el.y, touchAction: 'none', width: lw, height: lh, backgroundColor: el.color, flexShrink: 0 }}
                     >
                         {isSel && !preview && (
                             <span
@@ -1637,7 +1637,7 @@ export default function PdfTemplateEdit() {
                             startDragInBand(e, el, bandRef);
                         }}
                         className={`absolute select-none ${isEditing ? 'cursor-text' : 'cursor-move'} ${isSel && !preview ? 'outline-2 outline-primary-500' : ''}`}
-                        style={{ left: el.x, top: el.y, touchAction: 'none', ...boxStyle }}
+                        style={{ left: el.x + margins.left, top: el.y, touchAction: 'none', ...boxStyle }}
                     >
                         {preview ? (
                             <span style={{
@@ -1695,7 +1695,7 @@ export default function PdfTemplateEdit() {
                             startDragInBand(e, el, bandRef);
                         }}
                         className={`absolute select-none cursor-move ${isSel && !preview ? 'outline-2 outline-primary-500' : ''}`}
-                        style={{ left: el.x, top: el.y, touchAction: 'none', width: el.width, height: el.height }}
+                        style={{ left: el.x + margins.left, top: el.y, touchAction: 'none', width: el.width, height: el.height }}
                     >
                         <div style={{
                             width: '100%', height: '100%',
