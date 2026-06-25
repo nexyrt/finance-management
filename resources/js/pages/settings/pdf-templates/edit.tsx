@@ -646,6 +646,7 @@ export default function PdfTemplateEdit() {
 
     const [bands, setBands] = React.useState<BandedLayout['bands']>(initialBands);
     const [margins, setMargins] = React.useState<{ top: number; right: number; bottom: number; left: number }>(initialMargins);
+    const [guides, setGuides] = React.useState<Array<{ x: number; bandName: BandName }>>([]);
     const [activeBand, setActiveBand] = React.useState<BandName>('header');
     const [selectedId, setSelectedId] = React.useState<number | null>(null);
     const [selectedBand, setSelectedBand] = React.useState<BandName | null>(null);
@@ -810,16 +811,36 @@ export default function PdfTemplateEdit() {
         const rect = bandRef.current!.getBoundingClientRect();
         const dx = (e.clientX - rect.left) / zoom - el.x - margins.left;
         const dy = (e.clientY - rect.top) / zoom - el.y;
+
+        // T3.5: snap X points — margin edges + other elements' left/right/center
+        const SNAP = 6;
+        const snapXs: number[] = [margins.left, A4.w - margins.right];
+        if (band && band !== 'content') {
+            getBandEls(band).filter((o) => o.id !== el.id).forEach((o) => {
+                const ow = (o as { width?: number }).width ?? 0;
+                snapXs.push(o.x + margins.left, o.x + margins.left + ow, o.x + margins.left + ow / 2);
+            });
+        }
+        const elW = (el as { width?: number }).width ?? 0;
+
         let moved = false;
         const move = (ev: PointerEvent) => {
             if (!moved) { moved = true; snapshot(); }
-            const x = Math.max(0, Math.round((ev.clientX - rect.left) / zoom - dx - margins.left));
-            const y = Math.round((ev.clientY - rect.top) / zoom - dy);
-            update(el.id, { x, y });
+            let vx = (ev.clientX - rect.left) / zoom - dx;
+            const vy = (ev.clientY - rect.top) / zoom - dy;
+            let snapGuide: number | null = null;
+            for (const sx of snapXs) {
+                if (Math.abs(vx - sx) < SNAP) { vx = sx; snapGuide = sx; break; }
+                if (elW > 0 && Math.abs(vx + elW - sx) < SNAP) { vx = sx - elW; snapGuide = sx; break; }
+                if (elW > 0 && Math.abs(vx + elW / 2 - sx) < SNAP) { vx = sx - elW / 2; snapGuide = sx; break; }
+            }
+            update(el.id, { x: Math.max(0, Math.round(vx - margins.left)), y: Math.round(vy) });
+            setGuides(snapGuide !== null && band ? [{ x: snapGuide, bandName: band }] : []);
         };
         const up = () => {
             window.removeEventListener('pointermove', move);
             window.removeEventListener('pointerup', up);
+            setGuides([]);
         };
         window.addEventListener('pointermove', move);
         window.addEventListener('pointerup', up);
@@ -893,6 +914,23 @@ export default function PdfTemplateEdit() {
         const onUp = () => { window.removeEventListener('pointermove', onMove); window.removeEventListener('pointerup', onUp); };
         window.addEventListener('pointermove', onMove);
         window.addEventListener('pointerup', onUp);
+    };
+
+    // T4 — drag to resize band height
+    const startBandResize = (e: React.PointerEvent, bandName: 'header' | 'footerFlow' | 'footerFixed') => {
+        e.stopPropagation();
+        const y0 = e.clientY;
+        const h0 = bands[bandName].height;
+        const sign = bandName === 'footerFixed' ? -1 : 1;
+        let moved = false;
+        const move = (ev: PointerEvent) => {
+            if (!moved) { moved = true; snapshot(); }
+            const newH = Math.max(20, Math.round(h0 + sign * (ev.clientY - y0) / zoom));
+            setBands((prev) => ({ ...prev, [bandName]: { ...prev[bandName], height: newH } }));
+        };
+        const up = () => { window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up); };
+        window.addEventListener('pointermove', move);
+        window.addEventListener('pointerup', up);
     };
 
     const startRectResize = (e: React.PointerEvent, el: RectEl, bandRef: React.RefObject<HTMLDivElement | null>) => {
@@ -1425,6 +1463,15 @@ export default function PdfTemplateEdit() {
             if ((e.key === 'Delete' || e.key === 'Backspace') && selected) {
                 e.preventDefault();
                 remove(selected.id);
+            }
+            if (e.key.startsWith('Arrow') && selected && selectedBand !== 'content') {
+                e.preventDefault();
+                const d = e.shiftKey ? 10 : 1;
+                const s = selected as BandEl;
+                if (e.key === 'ArrowLeft') update(s.id, { x: Math.max(0, s.x - d) });
+                if (e.key === 'ArrowRight') update(s.id, { x: s.x + d });
+                if (e.key === 'ArrowUp') update(s.id, { y: Math.max(0, s.y - d) });
+                if (e.key === 'ArrowDown') update(s.id, { y: s.y + d });
             }
         };
         const onPaste = (e: ClipboardEvent) => {
@@ -2014,6 +2061,17 @@ export default function PdfTemplateEdit() {
                                             <Badge variant="blue" size="sm" className="text-[9px] leading-none py-0.5 px-1.5">{bandSubtitle.header}</Badge>
                                         </div>
                                         {renderBandElements('header', headerRef, bands.header.elements)}
+                                        {/* T3.5 snap guides */}
+                                        {guides.filter((g) => g.bandName === 'header').map((g, i) => (
+                                            <div key={i} className="absolute top-0 bottom-0 pointer-events-none z-40" style={{ left: g.x, width: 1, backgroundColor: 'rgba(59,130,246,0.8)' }} />
+                                        ))}
+                                        {/* T4 band resize handle */}
+                                        {!preview && (
+                                            <div onPointerDown={(e) => startBandResize(e, 'header')}
+                                                className="absolute bottom-0 left-0 right-0 z-30 h-[6px] cursor-ns-resize group flex items-end">
+                                                <div className="w-full h-[2px] bg-transparent group-hover:bg-blue-400/60 transition-colors" />
+                                            </div>
+                                        )}
                                     </div>
 
                                     {/* Band separator */}
@@ -2177,6 +2235,15 @@ export default function PdfTemplateEdit() {
                                             <Badge variant="orange" size="sm" className="text-[9px] leading-none py-0.5 px-1.5">{bandSubtitle.footerFlow}</Badge>
                                         </div>
                                         {renderBandElements('footerFlow', footerFlowRef, bands.footerFlow.elements)}
+                                        {guides.filter((g) => g.bandName === 'footerFlow').map((g, i) => (
+                                            <div key={i} className="absolute top-0 bottom-0 pointer-events-none z-40" style={{ left: g.x, width: 1, backgroundColor: 'rgba(59,130,246,0.8)' }} />
+                                        ))}
+                                        {!preview && (
+                                            <div onPointerDown={(e) => startBandResize(e, 'footerFlow')}
+                                                className="absolute bottom-0 left-0 right-0 z-30 h-[6px] cursor-ns-resize group flex items-end">
+                                                <div className="w-full h-[2px] bg-transparent group-hover:bg-amber-400/60 transition-colors" />
+                                            </div>
+                                        )}
                                     </div>
 
                                     {/* ── FOOTER FIXED BAND — pinned to bottom of A4 page ── */}
@@ -2214,6 +2281,15 @@ export default function PdfTemplateEdit() {
                                             <Badge variant="purple" size="sm" className="text-[9px] leading-none py-0.5 px-1.5">{bandSubtitle.footerFixed}</Badge>
                                         </div>
                                         {renderBandElements('footerFixed', footerFixedRef, bands.footerFixed.elements)}
+                                        {guides.filter((g) => g.bandName === 'footerFixed').map((g, i) => (
+                                            <div key={i} className="absolute top-0 bottom-0 pointer-events-none z-40" style={{ left: g.x, width: 1, backgroundColor: 'rgba(59,130,246,0.8)' }} />
+                                        ))}
+                                        {!preview && (
+                                            <div onPointerDown={(e) => startBandResize(e, 'footerFixed')}
+                                                className="absolute top-0 left-0 right-0 z-30 h-[6px] cursor-ns-resize group flex items-start">
+                                                <div className="w-full h-[2px] bg-transparent group-hover:bg-purple-400/60 transition-colors" />
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </div>
