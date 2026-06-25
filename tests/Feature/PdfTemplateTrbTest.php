@@ -7,6 +7,7 @@ use App\Models\Invoice;
 use App\Models\InvoiceItem;
 use App\Models\PdfTemplate;
 use App\Models\User;
+use App\Services\BuilderInvoicePrinter;
 use App\Services\ItemColumns;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Permission;
@@ -405,6 +406,66 @@ class PdfTemplateTrbTest extends TestCase
     }
 
     // ── Test 8: save() accepts new TRB shape ─────────────────────────────────
+
+    // ── Tests 9–11: BuilderInvoicePrinter — banded+TRB integration ───────────
+
+    public function test_builder_printer_renders_banded_trb_pdf(): void
+    {
+        $invoice = $this->makeInvoiceWithItems(3);
+        $template = PdfTemplate::query()->create([
+            'name' => 'Printer TRB',
+            'layout' => $this->makeBandedLayout($this->defaultTrbTableEl()),
+            'is_default' => false,
+        ]);
+
+        $pdf = (new BuilderInvoicePrinter)->render($template, $invoice);
+
+        $this->assertStringContainsString('%PDF', $pdf->output());
+    }
+
+    public function test_builder_printer_resolves_payment_tokens_in_header(): void
+    {
+        $invoice = $this->makeInvoiceWithItems(1);
+
+        $layout = $this->makeBandedLayout($this->defaultTrbTableEl());
+        $layout['bands']['header']['elements'] = [
+            [
+                'id' => 99,
+                'type' => 'text',
+                'x' => 0, 'y' => 0,
+                'content' => 'Invoice: {{invoice.number}}',
+                'fontSize' => 14, 'bold' => false, 'color' => '#000000',
+            ],
+        ];
+
+        $template = PdfTemplate::query()->create([
+            'name' => 'Printer Token',
+            'layout' => $layout,
+            'is_default' => false,
+        ]);
+
+        $pdf = (new BuilderInvoicePrinter)->render($template, $invoice);
+        $output = $pdf->output();
+
+        $this->assertStringContainsString('%PDF', $output);
+        // Token resolved — literal placeholder must not be in the PDF source
+        $this->assertStringNotContainsString('{{invoice.number}}', $output);
+    }
+
+    public function test_builder_printer_legacy_flat_layout_still_works(): void
+    {
+        $invoice = $this->makeInvoiceWithItems(2);
+
+        $template = PdfTemplate::query()->create([
+            'name' => 'Printer Legacy',
+            'layout' => [$this->legacyTableEl()],
+            'is_default' => false,
+        ]);
+
+        $pdf = (new BuilderInvoicePrinter)->render($template, $invoice);
+
+        $this->assertStringContainsString('%PDF', $pdf->output());
+    }
 
     public function test_save_accepts_new_trb_shape(): void
     {
