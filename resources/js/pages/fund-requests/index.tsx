@@ -18,7 +18,6 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Combobox } from '@/components/ui/combobox';
 import { DatePicker } from '@/components/ui/date-picker';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import {
     Sheet,
     SheetBody,
@@ -726,15 +725,12 @@ export default function FundRequestsIndex({
                             onChange={(v) => setDisburseBankAccountId(v ? Number(v) : null)}
                             placeholder="Pilih rekening"
                         />
-                        <div>
-                            <Label>Tanggal Pencairan *</Label>
-                            <Input
-                                type="date"
-                                value={disburseDate}
-                                onChange={(e) => setDisburseDate(e.target.value)}
-                                max={new Date().toISOString().slice(0, 10)}
-                            />
-                        </div>
+                        <DatePicker
+                            label="Tanggal Pencairan *"
+                            value={disburseDate ? new Date(disburseDate) : null}
+                            onChange={(d) => setDisburseDate(d ? d.toISOString().slice(0, 10) : '')}
+                            maxDate={new Date()}
+                        />
                         <Textarea
                             label="Catatan Pencairan"
                             value={disburseNotes}

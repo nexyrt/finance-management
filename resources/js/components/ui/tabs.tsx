@@ -15,80 +15,202 @@ interface TabsProps {
     className?: string;
     storageKey?: string;
     variant?: 'pill' | 'underline';
+    /** Pill variant only: stretch the bar to full width with equal-width tabs. */
+    fullWidth?: boolean;
 }
 
-function Tabs({ items, value, onChange, className, variant = 'pill' }: TabsProps) {
+interface Indicator {
+    /** Distance from the container's left padding edge to the active button. */
+    left: number;
+    /** Distance from the active button to the container's right padding edge. */
+    right: number;
+    /** Travel direction since the last change: 1 = right, -1 = left, 0 = none. */
+    dir: number;
+    ready: boolean;
+}
+
+const STRETCH_DURATION = 320;
+const STRETCH_DELAY = 130;
+const STRETCH_EASE = 'cubic-bezier(0.32, 0.72, 0, 1)';
+
+/**
+ * Builds the "stretch & settle" (liquid) transition: the leading edge moves
+ * immediately while the trailing edge follows after a delay, so the indicator
+ * elongates toward the destination and then contracts onto it.
+ */
+function stretchTransition(dir: number): string {
+    const lead = `${STRETCH_DURATION}ms ${STRETCH_EASE}`;
+    const trail = `${STRETCH_DURATION}ms ${STRETCH_EASE} ${STRETCH_DELAY}ms`;
+    if (dir > 0) {
+        // Moving right: the right edge leads, the left edge trails.
+        return `right ${lead}, left ${trail}`;
+    }
+    if (dir < 0) {
+        // Moving left: the left edge leads, the right edge trails.
+        return `left ${lead}, right ${trail}`;
+    }
+    return `left ${lead}, right ${lead}`;
+}
+
+/**
+ * Measures the active tab button as {left,right} offsets within the container
+ * and tracks travel direction. The container uses `ring` (not `border`) so the
+ * button's offsetLeft shares the indicator's origin — keeping it pixel-perfect.
+ */
+function useTabIndicator(activeIndex: number, deps: React.DependencyList) {
+    const containerRef = React.useRef<HTMLDivElement>(null);
+    const btnRefs = React.useRef<(HTMLButtonElement | null)[]>([]);
+    const prevIndex = React.useRef(activeIndex);
+    const [indicator, setIndicator] = React.useState<Indicator>({ left: 0, right: 0, dir: 0, ready: false });
+
+    React.useLayoutEffect(() => {
+        const measure = (withDirection: boolean) => {
+            const container = containerRef.current;
+            const btn = btnRefs.current[activeIndex];
+            if (!container || !btn) return;
+            const dir = withDirection
+                ? Math.sign(activeIndex - prevIndex.current)
+                : 0;
+            setIndicator({
+                left: btn.offsetLeft,
+                right: container.clientWidth - btn.offsetLeft - btn.offsetWidth,
+                dir,
+                ready: true,
+            });
+        };
+
+        measure(true);
+        prevIndex.current = activeIndex;
+
+        // Re-measure on resize without re-triggering the stretch (dir = 0 → plain settle).
+        const container = containerRef.current;
+        if (!container || typeof ResizeObserver === 'undefined') return;
+        const ro = new ResizeObserver(() => measure(false));
+        ro.observe(container);
+        return () => ro.disconnect();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [activeIndex, ...deps]);
+
+    return { containerRef, btnRefs, indicator };
+}
+
+function Badge({ active, children, variant }: { active: boolean; children: React.ReactNode; variant: 'pill' | 'underline' }) {
+    return (
+        <span
+            className={cn(
+                'ml-0.5 inline-flex min-w-4.5 items-center justify-center rounded-full px-1.5 text-[0.6875rem] font-semibold leading-tight transition-colors duration-200',
+                active
+                    ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/40 dark:text-primary-300'
+                    : 'bg-zinc-200/70 text-dark-500 dark:bg-dark-600 dark:text-dark-400',
+                variant === 'pill' && 'py-px',
+            )}
+        >
+            {children}
+        </span>
+    );
+}
+
+function Tabs({ items, value, onChange, className, variant = 'pill', fullWidth = false }: TabsProps) {
+    const activeIndex = Math.max(0, items.findIndex((i) => i.value === value));
+    // Re-measure whenever any item's label/badge changes (not just the count),
+    // since a badge appearing/disappearing changes button widths without
+    // changing the container size — so a ResizeObserver alone would miss it.
+    const itemsKey = items.map((i) => `${i.value} ${i.label} ${i.badge ?? ''}`).join('');
+    const { containerRef, btnRefs, indicator } = useTabIndicator(activeIndex, [value, itemsKey]);
+
+    /* ── Underline variant ── */
     if (variant === 'underline') {
         return (
             <div
+                ref={containerRef}
                 className={cn(
-                    'flex items-center border-b border-secondary-200 dark:border-dark-600',
+                    'relative flex items-center border-b border-secondary-200 dark:border-dark-600',
                     className,
                 )}
             >
-                {items.map((item) => (
-                    <button
-                        key={item.value}
-                        type="button"
-                        onClick={() => onChange(item.value)}
-                        className={cn(
-                            'relative flex items-center gap-2 px-4 py-2.5 text-sm font-medium transition-all duration-150',
-                            'border-b-2 -mb-px',
-                            value === item.value
-                                ? 'border-primary-600 dark:border-primary-400 text-primary-700 dark:text-primary-400'
-                                : 'border-transparent text-dark-500 dark:text-dark-400 hover:text-dark-800 dark:hover:text-dark-200 hover:border-dark-200 dark:hover:border-dark-500',
-                        )}
-                    >
-                        {item.icon && <span className="h-4 w-4 shrink-0">{item.icon}</span>}
-                        <span>{item.label}</span>
-                        {item.badge !== undefined && (
-                            <span
-                                className={cn(
-                                    'ml-0.5 min-w-4.5 px-1.5 py-px text-xs font-semibold rounded-full text-center',
-                                    value === item.value
-                                        ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
-                                        : 'bg-zinc-100 dark:bg-dark-700 text-dark-500 dark:text-dark-400',
-                                )}
-                            >
-                                {item.badge}
-                            </span>
-                        )}
-                    </button>
-                ))}
+                {/* sliding underline (liquid stretch) */}
+                <span
+                    aria-hidden
+                    className={cn(
+                        '-bottom-px absolute h-0.5 rounded-full bg-primary-600 dark:bg-primary-400',
+                        indicator.ready ? 'opacity-100' : 'opacity-0',
+                    )}
+                    style={{
+                        left: indicator.left,
+                        right: indicator.right,
+                        transition: indicator.ready ? stretchTransition(indicator.dir) : 'none',
+                    }}
+                />
+                {items.map((item, i) => {
+                    const active = value === item.value;
+                    return (
+                        <button
+                            key={item.value}
+                            ref={(el) => { btnRefs.current[i] = el; }}
+                            type="button"
+                            onClick={() => onChange(item.value)}
+                            className={cn(
+                                'relative flex items-center gap-2 px-4 py-2.5 text-sm font-medium transition-colors duration-150',
+                                active
+                                    ? 'text-primary-700 dark:text-primary-400'
+                                    : 'text-dark-500 dark:text-dark-400 hover:text-dark-800 dark:hover:text-dark-200',
+                            )}
+                        >
+                            {item.icon && <span className="h-4 w-4 shrink-0">{item.icon}</span>}
+                            <span>{item.label}</span>
+                            {item.badge !== undefined && <Badge active={active} variant="underline">{item.badge}</Badge>}
+                        </button>
+                    );
+                })}
             </div>
         );
     }
 
+    /* ── Pill variant (segmented) ── */
     return (
         <div
+            ref={containerRef}
             className={cn(
-                'inline-flex items-center gap-1 p-1 rounded-xl',
-                'bg-zinc-100 dark:bg-dark-700',
-                'border border-zinc-200 dark:border-dark-600',
+                'relative items-center gap-1 rounded-xl bg-zinc-100 p-1 ring-1 ring-inset ring-zinc-200 dark:bg-dark-700 dark:ring-dark-600',
+                fullWidth ? 'flex w-full' : 'inline-flex',
                 className,
             )}
         >
-            {items.map((item) => (
-                <button
-                    key={item.value}
-                    type="button"
-                    onClick={() => onChange(item.value)}
-                    className={cn(
-                        'flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200',
-                        value === item.value
-                            ? 'bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 shadow-sm border border-zinc-200 dark:border-dark-600'
-                            : 'text-dark-500 dark:text-dark-400 hover:text-dark-800 dark:hover:text-dark-200 hover:bg-zinc-50 dark:hover:bg-dark-600',
-                    )}
-                >
-                    {item.icon && <span className="h-4 w-4 shrink-0">{item.icon}</span>}
-                    <span>{item.label}</span>
-                    {item.badge !== undefined && (
-                        <span className="ml-1 px-1.5 py-0.5 text-xs font-bold bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 rounded-full">
-                            {item.badge}
-                        </span>
-                    )}
-                </button>
-            ))}
+            {/* sliding thumb (liquid stretch) */}
+            <span
+                aria-hidden
+                className={cn(
+                    'absolute top-1 bottom-1 rounded-lg bg-white shadow-sm ring-1 ring-zinc-200/80 dark:bg-dark-900 dark:ring-dark-500',
+                    indicator.ready ? 'opacity-100' : 'opacity-0',
+                )}
+                style={{
+                    left: indicator.left,
+                    right: indicator.right,
+                    transition: indicator.ready ? stretchTransition(indicator.dir) : 'none',
+                }}
+            />
+            {items.map((item, i) => {
+                const active = value === item.value;
+                return (
+                    <button
+                        key={item.value}
+                        ref={(el) => { btnRefs.current[i] = el; }}
+                        type="button"
+                        onClick={() => onChange(item.value)}
+                        className={cn(
+                            'relative z-10 flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors duration-200',
+                            fullWidth && 'flex-1 justify-center',
+                            active
+                                ? 'text-dark-900 dark:text-dark-50'
+                                : 'text-dark-500 dark:text-dark-400 hover:text-dark-800 dark:hover:text-dark-200',
+                        )}
+                    >
+                        {item.icon && <span className="h-4 w-4 shrink-0">{item.icon}</span>}
+                        <span>{item.label}</span>
+                        {item.badge !== undefined && <Badge active={active} variant="pill">{item.badge}</Badge>}
+                    </button>
+                );
+            })}
         </div>
     );
 }

@@ -1,8 +1,11 @@
 import { Head, router, useForm } from '@inertiajs/react';
 import {
+    AlertCircle,
     ArrowUpDown,
     CheckCircle2,
+    Download,
     Eye,
+    FileSpreadsheet,
     FileText,
     MoreHorizontal,
     Pencil,
@@ -99,7 +102,8 @@ interface Stats {
     total_revenue: number;
     total_cogs: number;
     gross_profit: number;
-    paid_this_month: number;
+    total_paid: number;
+    total_outstanding: number;
     draft_count: number;
     sent_count: number;
     partially_paid_count: number;
@@ -118,7 +122,6 @@ interface Filters {
     month?: string;
     date_from?: string | null;
     date_to?: string | null;
-    period_mode?: 'month' | 'range';
     per_page?: number;
     sort?: string;
     direction?: string;
@@ -1000,7 +1003,6 @@ function InvoiceDrawer({
 
 const DEFAULT_MONTH = new Date().toISOString().slice(0, 7);
 
-type DateMode = 'month' | 'range';
 
 /* Colored accent config for stats cards */
 const STATS_CONFIG = [
@@ -1021,18 +1023,18 @@ const STATS_CONFIG = [
         icon: <TrendingUp className="w-5 h-5" />,
     },
     {
-        key: 'paid_month',
-        label: 'Dibayar Bulan Ini',
+        key: 'paid',
+        label: 'Terbayar',
         accent: 'bg-green-500',
         iconCn: 'text-green-500 dark:text-green-400',
         icon: <CheckCircle2 className="w-5 h-5" />,
     },
     {
-        key: 'count',
-        label: 'Total Invoice',
-        accent: 'bg-purple-500',
-        iconCn: 'text-purple-500 dark:text-purple-400',
-        icon: <FileText className="w-5 h-5" />,
+        key: 'outstanding',
+        label: 'Outstanding',
+        accent: 'bg-amber-500',
+        iconCn: 'text-amber-500 dark:text-amber-400',
+        icon: <AlertCircle className="w-5 h-5" />,
     },
 ] as const;
 
@@ -1073,14 +1075,13 @@ function InvoicesPage({ invoices, stats, clients, rollbackableIds, filters }: Pr
         month: filters.month ?? '',
         date_from: filters.date_from ?? '',
         date_to: filters.date_to ?? '',
-        period_mode: filters.period_mode ?? 'month',
         sort: filters.sort ?? 'issue_date',
         direction: filters.direction ?? 'desc',
         per_page: filters.per_page ?? 25,
     };
 
-    /* derive date mode from URL — survives tab navigation / remount */
-    const dateMode: DateMode = currentFilters.period_mode === 'range' ? 'range' : 'month';
+    /* A date range, when set, overrides the month filter (both fields stay visible). */
+    const hasRange = !!currentFilters.date_from || !!currentFilters.date_to;
     const dateRange = {
         from: currentFilters.date_from ? new Date(currentFilters.date_from) : null,
         to: currentFilters.date_to ? new Date(currentFilters.date_to) : null,
@@ -1096,6 +1097,23 @@ function InvoicesPage({ invoices, stats, clients, rollbackableIds, filters }: Pr
         });
     };
 
+    /* Build an export URL carrying the active filters so the recap matches the listing. */
+    const buildExportUrl = (format: 'excel' | 'pdf'): string => {
+        const params = new URLSearchParams();
+        if (currentFilters.search) params.set('search', currentFilters.search);
+        if (currentFilters.status) params.set('status', currentFilters.status);
+        // Always send month (even empty = "Semua") + the range. The backend lets
+        // the range override the month, matching the on-screen listing exactly.
+        params.set('month', currentFilters.month ?? '');
+        if (currentFilters.date_from) params.set('date_from', currentFilters.date_from);
+        if (currentFilters.date_to) params.set('date_to', currentFilters.date_to);
+        (currentFilters.client_ids ?? []).forEach((id) => params.append('client_ids[]', String(id)));
+        if (currentFilters.sort) params.set('sort', currentFilters.sort);
+        if (currentFilters.direction) params.set('direction', currentFilters.direction);
+        const qs = params.toString();
+        return `/invoices/export/${format}${qs ? `?${qs}` : ''}`;
+    };
+
     const handleSearchSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         navigate({ search });
@@ -1108,18 +1126,8 @@ function InvoicesPage({ invoices, stats, clients, rollbackableIds, filters }: Pr
         });
     };
 
-    const handleSwitchToMonth = () => {
-        navigate({ period_mode: 'month', month: DEFAULT_MONTH, date_from: '', date_to: '' });
-    };
-
-    const handleSwitchToRange = () => {
-        navigate({ period_mode: 'range', month: '', date_from: '', date_to: '' });
-    };
-
     const handleDateRangeChange = (range: { from: Date | null; to: Date | null }) => {
         navigate({
-            period_mode: 'range',
-            month: '',
             date_from: range.from ? range.from.toISOString().slice(0, 10) : '',
             date_to: range.to ? range.to.toISOString().slice(0, 10) : '',
         });
@@ -1127,7 +1135,7 @@ function InvoicesPage({ invoices, stats, clients, rollbackableIds, filters }: Pr
 
     const handleResetFilters = () => {
         setSearch('');
-        navigate({ search: '', status: '', client_ids: [], period_mode: 'month', month: DEFAULT_MONTH, date_from: '', date_to: '' });
+        navigate({ search: '', status: '', client_ids: [], month: DEFAULT_MONTH, date_from: '', date_to: '' });
     };
 
     const handleDeleteFromTable = () => {
@@ -1151,9 +1159,7 @@ function InvoicesPage({ invoices, stats, clients, rollbackableIds, filters }: Pr
         !!currentFilters.status,
         currentFilters.client_ids.length > 0,
         !!currentFilters.search,
-        dateMode === 'month'
-            ? currentFilters.month && currentFilters.month !== DEFAULT_MONTH
-            : !!currentFilters.date_from || !!currentFilters.date_to,
+        hasRange || (currentFilters.month && currentFilters.month !== DEFAULT_MONTH),
     ].filter(Boolean).length;
 
     const tabItems: TabItem[] = [
@@ -1174,14 +1180,37 @@ function InvoicesPage({ invoices, stats, clients, rollbackableIds, filters }: Pr
                     title="Invoice"
                     description="Kelola semua invoice dan pembayaran klien"
                     action={
-                        <Button
-                            variant="primary"
-                            size="md"
-                            icon={<Plus className="w-4 h-4" />}
-                            onClick={() => router.get('/invoices/create')}
-                        >
-                            Buat Invoice
-                        </Button>
+                        <div className="flex items-center gap-2">
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="outline" size="md" icon={<Download className="w-4 h-4" />}>
+                                        Export
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuItem asChild>
+                                        <a href={buildExportUrl('excel')}>
+                                            <FileSpreadsheet className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                                            Export Excel
+                                        </a>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem asChild>
+                                        <a href={buildExportUrl('pdf')}>
+                                            <FileText className="w-4 h-4 text-red-600 dark:text-red-400" />
+                                            Export PDF
+                                        </a>
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                            <Button
+                                variant="primary"
+                                size="md"
+                                icon={<Plus className="w-4 h-4" />}
+                                onClick={() => router.get('/invoices/create')}
+                            >
+                                Buat Invoice
+                            </Button>
+                        </div>
                     }
                 />
 
@@ -1243,7 +1272,7 @@ function InvoicesPage({ invoices, stats, clients, rollbackableIds, filters }: Pr
                             </TooltipContent>
                         </Tooltip>
 
-                        {/* Dibayar Bulan Ini */}
+                        {/* Terbayar */}
                         <Tooltip>
                             <TooltipTrigger asChild>
                                 <Card className="hover:shadow-md transition-all duration-200 overflow-hidden cursor-default">
@@ -1256,20 +1285,20 @@ function InvoicesPage({ invoices, stats, clients, rollbackableIds, filters }: Pr
                                             <span className={STATS_CONFIG[2].iconCn + ' shrink-0'}>{STATS_CONFIG[2].icon}</span>
                                         </div>
                                         <p className="text-xl font-bold text-dark-900 dark:text-dark-50 leading-none">
-                                            {formatCurrency(stats.paid_this_month)}
+                                            {formatCurrency(stats.total_paid)}
                                         </p>
                                         <p className="text-xs text-dark-500 dark:text-dark-400 mt-2">
-                                            Bulan kalender berjalan
+                                            Pembayaran pada invoice periode ini
                                         </p>
                                     </CardContent>
                                 </Card>
                             </TooltipTrigger>
                             <TooltipContent side="bottom" className="max-w-56 text-center">
-                                Total pembayaran yang masuk pada bulan ini berdasarkan tanggal pembayaran, tidak terpengaruh oleh filter periode yang dipilih
+                                Total pembayaran yang masuk pada invoice yang sesuai filter aktif (periode/klien/pencarian), tidak termasuk draft &amp; cancelled
                             </TooltipContent>
                         </Tooltip>
 
-                        {/* Total Invoice */}
+                        {/* Outstanding */}
                         <Tooltip>
                             <TooltipTrigger asChild>
                                 <Card className="hover:shadow-md transition-all duration-200 overflow-hidden cursor-default">
@@ -1282,16 +1311,16 @@ function InvoicesPage({ invoices, stats, clients, rollbackableIds, filters }: Pr
                                             <span className={STATS_CONFIG[3].iconCn + ' shrink-0'}>{STATS_CONFIG[3].icon}</span>
                                         </div>
                                         <p className="text-xl font-bold text-dark-900 dark:text-dark-50 leading-none">
-                                            {stats.invoice_count}
+                                            {formatCurrency(stats.total_outstanding)}
                                         </p>
                                         <p className="text-xs text-dark-500 dark:text-dark-400 mt-2">
-                                            {invoices.total} sesuai filter aktif
+                                            {stats.sent_count + stats.partially_paid_count} invoice belum lunas
                                         </p>
                                     </CardContent>
                                 </Card>
                             </TooltipTrigger>
                             <TooltipContent side="bottom" className="max-w-56 text-center">
-                                Jumlah seluruh invoice dalam sistem. Angka di bawah menunjukkan invoice yang sesuai dengan filter aktif saat ini.
+                                Total tagihan yang belum dibayar — sisa dari invoice berstatus Terkirim &amp; Sebagian. Inilah uang yang masih harus ditagih.
                             </TooltipContent>
                         </Tooltip>
 
@@ -1362,55 +1391,49 @@ function InvoicesPage({ invoices, stats, clients, rollbackableIds, filters }: Pr
                             />
                         </div>
 
-                        {/* Periode */}
-                        <div className="flex flex-col gap-1.5 w-full lg:w-64 shrink-0">
-                            <div className="flex items-center justify-between">
-                                <label className="text-sm font-medium text-dark-900 dark:text-dark-300">
-                                    Periode
-                                </label>
-                                <div className="inline-flex items-center p-0.5 bg-zinc-100 dark:bg-dark-700 rounded-lg border border-zinc-200 dark:border-dark-600">
-                                    <button
-                                        type="button"
-                                        onClick={handleSwitchToMonth}
-                                        className={cn(
-                                            'px-2.5 py-1 rounded-md text-xs font-medium transition-colors',
-                                            dateMode === 'month'
-                                                ? 'bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 shadow-sm border border-zinc-200 dark:border-dark-600'
-                                                : 'text-dark-500 dark:text-dark-400 hover:text-dark-700 dark:hover:text-dark-200',
-                                        )}
-                                    >
-                                        Bulan
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={handleSwitchToRange}
-                                        className={cn(
-                                            'px-2.5 py-1 rounded-md text-xs font-medium transition-colors',
-                                            dateMode === 'range'
-                                                ? 'bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 shadow-sm border border-zinc-200 dark:border-dark-600'
-                                                : 'text-dark-500 dark:text-dark-400 hover:text-dark-700 dark:hover:text-dark-200',
-                                        )}
-                                    >
-                                        Rentang
-                                    </button>
-                                </div>
+                        {/* Periode — Bulan + Rentang Tanggal berdampingan (rentang meng-override bulan) */}
+                        <div className="flex flex-col sm:flex-row sm:items-start gap-3 w-full lg:w-auto shrink-0">
+                            <div className="w-full sm:w-40 shrink-0">
+                                {hasRange ? (
+                                    <TooltipProvider delayDuration={150}>
+                                        <Tooltip>
+                                            <TooltipTrigger asChild>
+                                                {/* wrapper receives hover even though the inner field is disabled */}
+                                                <div>
+                                                    <DatePicker
+                                                        mode="month"
+                                                        label="Bulan"
+                                                        value={currentFilters.month || null}
+                                                        onChange={(v) => navigate({ month: v ?? '' })}
+                                                        placeholder="Pilih bulan..."
+                                                        disabled
+                                                    />
+                                                </div>
+                                            </TooltipTrigger>
+                                            <TooltipContent>Diabaikan — rentang tanggal sedang aktif</TooltipContent>
+                                        </Tooltip>
+                                    </TooltipProvider>
+                                ) : (
+                                    <DatePicker
+                                        mode="month"
+                                        label="Bulan"
+                                        value={currentFilters.month || null}
+                                        onChange={(v) => navigate({ month: v ?? '' })}
+                                        placeholder="Pilih bulan..."
+                                    />
+                                )}
                             </div>
-                            {dateMode === 'month' ? (
-                                <DatePicker
-                                    mode="month"
-                                    value={currentFilters.month || null}
-                                    onChange={(v) => navigate({ month: v ?? '', date_from: '', date_to: '' })}
-                                    placeholder="Pilih bulan..."
-                                />
-                            ) : (
+                            <div className="w-full sm:w-60 shrink-0">
                                 <DatePicker
                                     mode="range"
+                                    label="Rentang Tanggal"
                                     value={dateRange}
                                     onChange={handleDateRangeChange}
                                     placeholder="Tanggal mulai..."
                                     placeholderTo="Tanggal akhir..."
+                                    clearable
                                 />
-                            )}
+                            </div>
                         </div>
 
                         {/* Search + controls */}

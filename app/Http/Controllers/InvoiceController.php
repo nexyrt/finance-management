@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\InvoiceRecapExport;
 use App\Http\Requests\SendInvoiceRequest;
 use App\Http\Requests\StoreInvoiceRequest;
 use App\Http\Requests\UpdateInvoiceRequest;
@@ -9,13 +10,21 @@ use App\Models\Client;
 use App\Models\CompanyProfile;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
+use App\Models\Payment;
 use App\Models\Service;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response as HttpResponse;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class InvoiceController extends Controller
 {
@@ -24,8 +33,7 @@ class InvoiceController extends Controller
         $search = $request->input('search');
         $status = $request->input('status');
         $clientIds = array_filter((array) $request->input('client_ids', []), fn ($v) => $v !== '' && $v !== null);
-        $periodMode = $request->input('period_mode', 'month');
-        $month = $request->input('month', $periodMode === 'range' ? null : now()->format('Y-m'));
+        $month = $request->input('month', now()->format('Y-m'));
         $dateFrom = $request->input('date_from');
         $dateTo = $request->input('date_to');
         $perPage = (int) $request->input('per_page', 25);
@@ -49,13 +57,9 @@ class InvoiceController extends Controller
                     ->orWhere('clients.name', 'like', "%{$search}%");
             }))
             ->when($status, fn ($q) => $q->where('invoices.status', $status))
-            ->when($clientIds, fn ($q) => $q->whereIn('invoices.billed_to_id', $clientIds))
-            ->when($periodMode === 'range' && $dateFrom, fn ($q) => $q->whereDate('invoices.issue_date', '>=', $dateFrom))
-            ->when($periodMode === 'range' && $dateTo, fn ($q) => $q->whereDate('invoices.issue_date', '<=', $dateTo))
-            ->when($periodMode !== 'range' && $month, fn ($q) => $q
-                ->whereYear('invoices.issue_date', substr($month, 0, 4))
-                ->whereMonth('invoices.issue_date', substr($month, 5, 2))
-            );
+            ->when($clientIds, fn ($q) => $q->whereIn('invoices.billed_to_id', $clientIds));
+
+        $this->applyPeriodFilter($query, $month, $dateFrom, $dateTo, 'invoices.issue_date');
 
         match ($sort) {
             'client_name' => $query->orderBy('clients.name', $direction),
@@ -77,16 +81,24 @@ class InvoiceController extends Controller
                 'faktur' => $invoice->faktur,
             ]);
 
-        // Stats (exclude drafts from revenue calculations, match Listing.php behaviour)
-        $statsIds = Invoice::query()
-            ->whereNotIn('status', ['draft'])
-            ->when($periodMode === 'range' && $dateFrom, fn ($q) => $q->whereDate('issue_date', '>=', $dateFrom))
-            ->when($periodMode === 'range' && $dateTo, fn ($q) => $q->whereDate('issue_date', '<=', $dateTo))
-            ->when($periodMode !== 'range' && $month, fn ($q) => $q
-                ->whereYear('issue_date', substr($month, 0, 4))
-                ->whereMonth('issue_date', substr($month, 5, 2))
-            )
-            ->pluck('id');
+        // All stat cards + tab counts share one filtered scope: the active
+        // period + client + search (NOT status — the tabs switch status). Each
+        // call returns a fresh query so the aggregates don't interfere.
+        $filtered = function () use ($search, $clientIds, $month, $dateFrom, $dateTo) {
+            $q = Invoice::query()
+                ->join('clients', 'invoices.billed_to_id', '=', 'clients.id')
+                ->when($search, fn ($qq) => $qq->where(function ($w) use ($search) {
+                    $w->where('invoices.invoice_number', 'like', "%{$search}%")
+                        ->orWhere('clients.name', 'like', "%{$search}%");
+                }))
+                ->when($clientIds, fn ($qq) => $qq->whereIn('invoices.billed_to_id', $clientIds));
+            $this->applyPeriodFilter($q, $month, $dateFrom, $dateTo, 'invoices.issue_date');
+
+            return $q;
+        };
+
+        // Revenue/profit/count exclude drafts (match Listing.php behaviour).
+        $statsIds = $filtered()->whereNotIn('invoices.status', ['draft', 'cancelled'])->pluck('invoices.id');
 
         $basicStats = DB::table('invoices')
             ->whereIn('id', $statsIds)
@@ -98,24 +110,36 @@ class InvoiceController extends Controller
             ->selectRaw('COALESCE(SUM(CASE WHEN is_tax_deposit = 0 THEN cogs_amount ELSE 0 END), 0) as total_cogs')
             ->first();
 
-        $paidThisMonth = (int) DB::table('payments')
-            ->whereMonth('payment_date', now()->month)
-            ->whereYear('payment_date', now()->year)
-            ->sum('amount');
+        // Total payments received on the filtered invoices (follows the active
+        // period/client/search scope, excludes draft & cancelled).
+        $totalPaid = (int) Payment::whereIn('invoice_id', $statsIds)->sum('amount');
 
         $totalRevenue = (int) $basicStats->total_revenue;
         $totalCogs = (int) $itemStats->total_cogs;
+
+        // Outstanding within the active filters: billed minus paid on unpaid invoices.
+        $outstandingIds = $filtered()->whereIn('invoices.status', ['sent', 'partially_paid'])->pluck('invoices.id');
+        $billed = (int) Invoice::whereIn('id', $outstandingIds)->sum('total_amount');
+        $paidOnOutstanding = (int) Payment::whereIn('invoice_id', $outstandingIds)->sum('amount');
+        $totalOutstanding = max(0, $billed - $paidOnOutstanding);
+
+        // Per-status tab counts within the same filtered scope.
+        $statusCounts = $filtered()
+            ->selectRaw('invoices.status as status, COUNT(*) as c')
+            ->groupBy('invoices.status')
+            ->pluck('c', 'status');
 
         $stats = [
             'invoice_count' => (int) $basicStats->invoice_count,
             'total_revenue' => $totalRevenue,
             'total_cogs' => $totalCogs,
             'gross_profit' => $totalRevenue - $totalCogs,
-            'paid_this_month' => $paidThisMonth,
-            'draft_count' => Invoice::where('status', 'draft')->count(),
-            'sent_count' => Invoice::where('status', 'sent')->count(),
-            'partially_paid_count' => Invoice::where('status', 'partially_paid')->count(),
-            'paid_count' => Invoice::where('status', 'paid')->count(),
+            'total_paid' => $totalPaid,
+            'total_outstanding' => $totalOutstanding,
+            'draft_count' => (int) ($statusCounts['draft'] ?? 0),
+            'sent_count' => (int) ($statusCounts['sent'] ?? 0),
+            'partially_paid_count' => (int) ($statusCounts['partially_paid'] ?? 0),
+            'paid_count' => (int) ($statusCounts['paid'] ?? 0),
         ];
 
         $clients = Client::orderBy('name')
@@ -145,12 +169,144 @@ class InvoiceController extends Controller
                 'month' => $month,
                 'date_from' => $dateFrom,
                 'date_to' => $dateTo,
-                'period_mode' => $periodMode,
                 'per_page' => $perPage,
                 'sort' => $sort,
                 'direction' => $direction,
             ],
         ]);
+    }
+
+    /**
+     * Apply the issue-date period filter. A date range (date_from/date_to)
+     * takes precedence over the month filter when either bound is present,
+     * so a range silently overrides a month value that is still set.
+     *
+     * @param  Builder<Invoice>  $query
+     */
+    private function applyPeriodFilter($query, ?string $month, ?string $dateFrom, ?string $dateTo, string $column = 'issue_date'): void
+    {
+        if (filled($dateFrom) || filled($dateTo)) {
+            $query->when(filled($dateFrom), fn ($q) => $q->whereDate($column, '>=', $dateFrom))
+                ->when(filled($dateTo), fn ($q) => $q->whereDate($column, '<=', $dateTo));
+        } elseif (filled($month)) {
+            $query->whereYear($column, substr($month, 0, 4))
+                ->whereMonth($column, substr($month, 5, 2));
+        }
+    }
+
+    /**
+     * Build the recap dataset (filtered invoice rows + summary) shared by the
+     * Excel and PDF exports. Honours the same filters as the index listing.
+     *
+     * @return array{rows: Collection<int, array<string, mixed>>, summary: array<string, mixed>, period: string}
+     */
+    private function buildRecapData(Request $request): array
+    {
+        $search = $request->input('search');
+        $status = $request->input('status');
+        $clientIds = array_filter((array) $request->input('client_ids', []), fn ($v) => $v !== '' && $v !== null);
+        $month = $request->input('month', now()->format('Y-m'));
+        $dateFrom = $request->input('date_from');
+        $dateTo = $request->input('date_to');
+        $sort = $request->input('sort', 'issue_date');
+        $direction = $request->input('direction', 'desc');
+
+        $query = Invoice::query()
+            ->join('clients', 'invoices.billed_to_id', '=', 'clients.id')
+            ->leftJoin(
+                DB::raw('(SELECT invoice_id, COALESCE(SUM(amount), 0) as amount_paid FROM payments GROUP BY invoice_id) as p'),
+                'invoices.id', '=', 'p.invoice_id'
+            )
+            ->leftJoin(
+                DB::raw('(SELECT invoice_id, COALESCE(SUM(cogs_amount), 0) as total_cogs FROM invoice_items GROUP BY invoice_id) as ic'),
+                'invoices.id', '=', 'ic.invoice_id'
+            )
+            ->select([
+                'invoices.*',
+                'clients.name as client_name',
+                DB::raw('COALESCE(p.amount_paid, 0) as amount_paid'),
+                DB::raw('COALESCE(ic.total_cogs, 0) as total_cogs'),
+            ])
+            ->when($search, fn ($q) => $q->where(function ($query) use ($search) {
+                $query->where('invoices.invoice_number', 'like', "%{$search}%")
+                    ->orWhere('clients.name', 'like', "%{$search}%");
+            }))
+            ->when($status, fn ($q) => $q->where('invoices.status', $status))
+            ->when($clientIds, fn ($q) => $q->whereIn('invoices.billed_to_id', $clientIds))
+            // Draft & cancelled invoices are not realised revenue, so they never
+            // count toward the recap's omzet / HPP / profit / PPh figures.
+            ->whereNotIn('invoices.status', ['draft', 'cancelled']);
+
+        $this->applyPeriodFilter($query, $month, $dateFrom, $dateTo, 'invoices.issue_date');
+
+        match ($sort) {
+            'client_name' => $query->orderBy('clients.name', $direction),
+            default => $query->orderBy("invoices.{$sort}", $direction),
+        };
+
+        $rows = $query->get()->map(function ($invoice) {
+            $omzet = (int) $invoice->total_amount;
+            $hpp = (int) $invoice->total_cogs;
+
+            return [
+                'invoice_number' => $invoice->invoice_number,
+                'client_name' => $invoice->client_name,
+                'issue_date' => $invoice->issue_date?->format('Y-m-d'),
+                'due_date' => $invoice->due_date?->format('Y-m-d'),
+                'total_amount' => $omzet,
+                'hpp' => $hpp,
+                'profit' => $omzet - $hpp,            // gross profit = omzet − HPP
+                'pph_final' => (int) round($omzet * 0.005), // PP 55/2022 final: 0,5% × omzet
+                'amount_paid' => (int) $invoice->amount_paid,
+                'amount_remaining' => $omzet - (int) $invoice->amount_paid,
+                'status' => $invoice->status,
+            ];
+        });
+
+        $summary = [
+            'count' => $rows->count(),
+            'total_amount' => $rows->sum('total_amount'),
+            'total_hpp' => $rows->sum('hpp'),
+            'total_profit' => $rows->sum('profit'),
+            'total_pph_final' => $rows->sum('pph_final'),
+            'total_paid' => $rows->sum('amount_paid'),
+            'total_outstanding' => $rows->sum('amount_remaining'),
+        ];
+
+        // Human-readable period label for the report header. A date range
+        // overrides the month, matching the listing's filter precedence.
+        if (filled($dateFrom) || filled($dateTo)) {
+            $period = trim(($dateFrom ?: '…').' s/d '.($dateTo ?: '…'));
+        } else {
+            $period = $month
+                ? Carbon::parse($month.'-01')->isoFormat('MMMM Y')
+                : 'Semua Periode';
+        }
+
+        return ['rows' => $rows, 'summary' => $summary, 'period' => $period];
+    }
+
+    public function exportExcel(Request $request): BinaryFileResponse
+    {
+        $data = $this->buildRecapData($request);
+        $filename = 'rekap-invoice-'.now()->format('Ymd-His').'.xlsx';
+
+        return Excel::download(new InvoiceRecapExport($data['rows'], $data['summary'], $data['period']), $filename);
+    }
+
+    public function exportPdf(Request $request): HttpResponse
+    {
+        $data = $this->buildRecapData($request);
+        $company = CompanyProfile::first();
+
+        $pdf = Pdf::loadView('pdf.invoice-recap', [
+            'rows' => $data['rows'],
+            'summary' => $data['summary'],
+            'period' => $data['period'],
+            'company' => $company,
+        ])->setPaper('a4', 'landscape');
+
+        return $pdf->download('rekap-invoice-'.now()->format('Ymd-His').'.pdf');
     }
 
     public function show(Invoice $invoice): JsonResponse

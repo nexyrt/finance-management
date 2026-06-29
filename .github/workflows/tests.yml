@@ -44,6 +44,20 @@ jobs:
       - name: Generate Application Key
         run: php artisan key:generate
 
+      # The Build Assets step runs `php artisan wayfinder:generate` via the Vite
+      # plugin, which boots the app — and the app queries company_profiles during
+      # boot. There is no MySQL/Redis service in CI, so point the runtime at
+      # SQLite + driverless stores and migrate it so the boot query succeeds.
+      # (Tests themselves use phpunit.xml's own SQLite :memory: config.)
+      - name: Prepare CI runtime (SQLite + driverless stores)
+        run: |
+          sed -i 's/^DB_CONNECTION=.*/DB_CONNECTION=sqlite/' .env
+          sed -i 's/^CACHE_STORE=.*/CACHE_STORE=array/' .env
+          sed -i 's/^SESSION_DRIVER=.*/SESSION_DRIVER=array/' .env
+          sed -i 's/^QUEUE_CONNECTION=.*/QUEUE_CONNECTION=sync/' .env
+          touch database/database.sqlite
+          php artisan migrate --force
+
       - name: Build Assets
         run: npm run build
 

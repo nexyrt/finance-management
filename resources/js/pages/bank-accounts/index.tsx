@@ -27,6 +27,7 @@ import {
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { EmptyState } from '@/components/shared/empty-state';
 import { PageHeader } from '@/components/shared/page-header';
+import { Tabs } from '@/components/ui/tabs';
 import { AppLayout } from '@/layouts/app-layout';
 import { cn } from '@/lib/utils';
 import * as bankAccountsRoutes from '@/routes/bank-accounts';
@@ -270,20 +271,14 @@ export default function BankAccountsIndex({ accounts, overallSummary, detail, fi
                                         {/* Tabs */}
                                         <div>
                                             <div className="flex items-center gap-4 mb-4">
-                                                <div className="inline-flex items-center gap-1 p-1 bg-zinc-100 dark:bg-dark-700 rounded-xl border border-zinc-200 dark:border-dark-600">
-                                                    <TabButton
-                                                        active={activeTab === 'transactions'}
-                                                        onClick={() => setActiveTab('transactions')}
-                                                        icon={<ArrowLeftRight className="w-4 h-4" />}
-                                                        label="Transaksi"
-                                                    />
-                                                    <TabButton
-                                                        active={activeTab === 'payments'}
-                                                        onClick={() => setActiveTab('payments')}
-                                                        icon={<Wallet className="w-4 h-4" />}
-                                                        label="Pembayaran"
-                                                    />
-                                                </div>
+                                                <Tabs
+                                                    items={[
+                                                        { value: 'transactions', label: 'Transaksi', icon: <ArrowLeftRight className="h-4 w-4" /> },
+                                                        { value: 'payments', label: 'Pembayaran', icon: <Wallet className="h-4 w-4" /> },
+                                                    ]}
+                                                    value={activeTab}
+                                                    onChange={(v) => setActiveTab(v as TabKey)}
+                                                />
                                                 <div className="hidden sm:flex items-center gap-3 flex-1 min-w-0">
                                                     <div className="h-px flex-1 bg-linear-to-r from-zinc-200 dark:from-dark-600 to-transparent" />
                                                     <p className="text-xs text-dark-400 dark:text-dark-500 whitespace-nowrap">
@@ -383,26 +378,3 @@ function TrendBadge({ trend }: { trend: 'up' | 'down' }) {
     );
 }
 
-interface TabButtonProps {
-    active: boolean;
-    onClick: () => void;
-    icon: React.ReactNode;
-    label: string;
-}
-
-function TabButton({ active, onClick, icon, label }: TabButtonProps) {
-    return (
-        <button
-            onClick={onClick}
-            className={cn(
-                'flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200',
-                active
-                    ? 'bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 shadow-sm border border-zinc-200 dark:border-dark-600'
-                    : 'text-dark-500 dark:text-dark-400 hover:text-dark-800 dark:hover:text-dark-200',
-            )}
-        >
-            <span className="shrink-0">{icon}</span>
-            <span>{label}</span>
-        </button>
-    );
-}
