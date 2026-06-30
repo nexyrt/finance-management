@@ -3293,14 +3293,27 @@ function TablePreview({
             && tableRowIdx >= tableSelRange.r1 && tableRowIdx <= tableSelRange.r2
             && colIdx >= tableSelRange.c1 && colIdx <= tableSelRange.c2;
         const textAlign = cell.align === 'right' ? 'right' : cell.align === 'center' ? 'center' : 'left';
+
+        // Rowspan cells: compute total height = sum of all spanned row heights.
+        const rowSpan = cell.rowSpan ?? 1;
+        let cellH = rowH;
+        if (rowSpan > 1) {
+            cellH = 0;
+            for (let s = 0; s < rowSpan; s++) {
+                const sr = el.rows[tableRowIdx + s];
+                const srH = sr ? (sr.height ?? (sr.repeat === 'items' ? TABLE_ROW_H : TABLE_HEADER_H)) : TABLE_ROW_H;
+                cellH += srH;
+            }
+        }
+
         return (
             <td
                 key={`${tableRowIdx}-${colIdx}`}
                 colSpan={cell.colSpan ?? 1}
-                rowSpan={cell.rowSpan ?? 1}
+                rowSpan={rowSpan}
                 onPointerDown={onCellPointerDown ? (e) => { e.stopPropagation(); onCellPointerDown(tableRowIdx, colIdx, e); } : undefined}
                 style={{
-                    height: rowH,
+                    height: cellH,
                     textAlign,
                     fontWeight: cell.bold ? 700 : 400,
                     color: cell.color ?? undefined,
@@ -3341,6 +3354,7 @@ function TablePreview({
                 <thead>
                     {headRowsWithIdx.map(({ r: row, i: ri }, pos) => {
                         const rowH = row.height ?? TABLE_HEADER_H;
+                        if (row.cells.every((c) => c.merged)) return <tr key={ri} style={{ height: rowH }} />;
                         return (
                             <tr key={ri} style={{ background: pos === headRowsWithIdx.length - 1 ? '#f1f5f9' : '#e2e8f0' }}>
                                 {row.cells.map((cell, ci) => renderCell(cell, ri, ci, rowH))}
@@ -3351,6 +3365,7 @@ function TablePreview({
                 <tbody>
                     {bodyRowsWithIdx.map(({ r: row, i: ri }) => {
                         const rowH = row.height ?? TABLE_ROW_H;
+                        if (row.cells.every((c) => c.merged)) return <tr key={ri} style={{ height: rowH }} />;
                         return row.repeat === 'items'
                             ? sampleRows.map((sampleItem, si) => (
                                 <tr key={`${ri}-${si}`} style={{ background: si % 2 === 1 ? '#f8fafc' : undefined }}>
@@ -3368,6 +3383,7 @@ function TablePreview({
                     <tfoot>
                         {footRowsWithIdx.map(({ r: row, i: ri }) => {
                             const rowH = row.height ?? TABLE_HEADER_H;
+                            if (row.cells.every((c) => c.merged)) return <tr key={ri} style={{ height: rowH }} />;
                             return (
                                 <tr key={ri} style={{ background: '#f1f5f9', fontWeight: 700 }}>
                                     {row.cells.map((cell, ci) => renderCell(cell, ri, ci, rowH))}

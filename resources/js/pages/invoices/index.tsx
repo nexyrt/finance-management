@@ -265,11 +265,13 @@ function InvoiceDrawer({
     onClose,
     invoiceId,
     rollbackableIds,
+    customTemplates,
 }: {
     open: boolean;
     onClose: () => void;
     invoiceId: number | null;
     rollbackableIds: number[];
+    customTemplates: CustomTemplate[];
 }) {
     const [detail, setDetail] = React.useState<InvoiceDetail | null>(null);
     const [loading, setLoading] = React.useState(false);
@@ -1717,6 +1719,7 @@ function InvoicesPage({ invoices, stats, clients, rollbackableIds, customTemplat
                 onClose={() => setDrawerOpen(false)}
                 invoiceId={selectedId}
                 rollbackableIds={rollbackableIds}
+                customTemplates={customTemplates}
             />
 
             {/* Print options modal (table row) */}

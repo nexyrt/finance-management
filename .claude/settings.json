@@ -10,5 +10,6 @@
     "additionalDirectories": [
       "d:\\Laravel\\finance-management"
     ]
-  }
+  },
+  "enabledPlugins": {}
 }

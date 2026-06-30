@@ -633,13 +633,20 @@
         // THEAD — DomPDF repeats <thead> on every page automatically
         $thead = '<thead>';
         foreach ($headRows as $row) {
-            $thead .= '<tr style="page-break-inside: avoid;">'.$renderCells($row['cells'] ?? [], true).'</tr>';
+            $rowH    = (int) ($row['height'] ?? 28);
+            $cellHtml = $renderCells($row['cells'] ?? [], true);
+            if ($cellHtml !== '') {
+                $thead .= "<tr style=\"height:{$rowH}px; page-break-inside: avoid;\">{$cellHtml}</tr>";
+            } else {
+                $thead .= "<tr style=\"height:{$rowH}px;\"></tr>";
+            }
         }
         $thead .= '</thead>';
 
         // TBODY
         $tbody = '<tbody>';
         foreach ($bodyRows as $row) {
+            $rowH = (int) ($row['height'] ?? 24);
             if (($row['repeat'] ?? '') === 'items') {
                 // Detail template row — clone once per item, resolving item.* tokens
                 foreach ($itemsArr as $idx => $item) {
@@ -650,11 +657,21 @@
                         }, $cell['content'] ?? '');
                         return [...$cell, 'content' => $content];
                     }, $row['cells'] ?? []);
-                    $tbody .= '<tr style="page-break-inside: avoid;">'.$renderCells($resolvedCells).'</tr>';
+                    $cellHtml = $renderCells($resolvedCells);
+                    if ($cellHtml !== '') {
+                        $tbody .= "<tr style=\"height:{$rowH}px; page-break-inside: avoid;\">{$cellHtml}</tr>";
+                    } else {
+                        $tbody .= "<tr style=\"height:{$rowH}px;\"></tr>";
+                    }
                 }
             } else {
                 // Static body row — rendered once
-                $tbody .= '<tr style="page-break-inside: avoid;">'.$renderCells($row['cells'] ?? []).'</tr>';
+                $cellHtml = $renderCells($row['cells'] ?? []);
+                if ($cellHtml !== '') {
+                    $tbody .= "<tr style=\"height:{$rowH}px; page-break-inside: avoid;\">{$cellHtml}</tr>";
+                } else {
+                    $tbody .= "<tr style=\"height:{$rowH}px;\"></tr>";
+                }
             }
         }
         $tbody .= '</tbody>';
@@ -664,7 +681,13 @@
         if (count($footRows) > 0) {
             $tfoot = '<tfoot>';
             foreach ($footRows as $row) {
-                $tfoot .= '<tr style="page-break-inside: avoid;">'.$renderCells($row['cells'] ?? [], true).'</tr>';
+                $rowH    = (int) ($row['height'] ?? 28);
+                $cellHtml = $renderCells($row['cells'] ?? [], true);
+                if ($cellHtml !== '') {
+                    $tfoot .= "<tr style=\"height:{$rowH}px; page-break-inside: avoid;\">{$cellHtml}</tr>";
+                } else {
+                    $tfoot .= "<tr style=\"height:{$rowH}px;\"></tr>";
+                }
             }
             $tfoot .= '</tfoot>';
         }
