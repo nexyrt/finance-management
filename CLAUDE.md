@@ -6,9 +6,9 @@ Panduan untuk Claude Code saat bekerja di repository ini.
 
 **Finance Management System** — Laravel 12 + **Inertia.js + React 18 + shadcn/ui**. Konteks bisnis Indonesia (NPWP/PKP, Terbilang, Rupiah).
 
-**Fitur:** Invoice & Pembayaran, Recurring Invoice, Reimbursement, Bank Account & Transaksi, Cash Flow, Loans & Receivables, Multi-role Permission, PDF Generation, Notifications, Feedback System, Multi-language (id/en/zh), Excel Export.
+Stack frontend **sepenuhnya React/Inertia** — migrasi dari Livewire + TallStackUI sudah selesai. Tidak ada lagi komponen Livewire atau view Blade untuk halaman aplikasi (Blade hanya dipakai untuk template PDF). Jangan menulis kode Livewire/TallStackUI/Alpine baru.
 
-**Status Migrasi:** Lihat `MIGRATION_PLAN.md` untuk fase & progress terkini.
+**Fitur:** Invoice & Pembayaran, Recurring Invoice, Reimbursement, Bank Account & Transaksi, Cash Flow, Loans & Receivables, Multi-role Permission, PDF Generation, Notifications, Feedback System, Multi-language (id/en/zh), Excel Export.
 
 ## Common Commands
 
@@ -25,6 +25,8 @@ npm run build                          # Build for production
 
 ## Architecture
 
+**Inertia + React 18** — controller Laravel mengembalikan `Inertia::render()` dengan props; halaman React menerimanya.
+
 | Path | Isi |
 |------|-----|
 | `resources/js/pages/` | Halaman React (per module) |
@@ -34,6 +36,16 @@ npm run build                          # Build for production
 | `resources/js/routes/` | Wayfinder generated type-safe routes |
 | `app/Http/Controllers/` | Inertia controllers |
 
+### Currency Storage (integer)
+
+Mata uang disimpan sebagai **integer** di DB (rupiah penuh, tanpa desimal).
+
+```
+DB: 150000 → Display: Rp 150.000
+```
+
+Di React, gunakan komponen `CurrencyInput` (lihat React Component Catalog) yang menangani parse/format otomatis dan menyimpan raw integer.
+
 ---
 
 ## UI/UX Design System
@@ -41,9 +53,83 @@ npm run build                          # Build for production
 **CRITICAL: Semua page baru atau redesign HARUS mengikuti design system ini untuk konsistensi.**
 
 **Design System Reference:** `.claude/design-systems/archipelago.md`
-Sebelum membuat atau memodifikasi UI apapun, **baca file ini terlebih dahulu**. File tersebut mendokumentasikan token warna (primary + dark scale), tipografi, spacing, radius, layout patterns, interactive states, dan shadcn/ui mapping yang berlaku.
+Sebelum membuat atau memodifikasi UI apapun, **baca file ini terlebih dahulu**. File tersebut mendokumentasikan token warna (primary + dark scale), tipografi, spacing, radius, layout patterns, interactive states, dan shadcn/ui mapping yang berlaku — hasil ekstraksi langsung dari production site dengan DevTools + visual analysis.
 
 **Core Philosophy:** Minimalist, Clean & Readable, Consistent, Functional-First.
+
+---
+
+### Visual Design Tokens
+
+#### Dark Mode Color System
+
+Palette zinc — didefinisikan di `app.css` sebagai `--color-dark-*`. **JANGAN hardcode hex** — selalu pakai Tailwind class `dark:bg-dark-{n}`, `dark:text-dark-{n}`, dll.
+
+**Hierarki Background (semakin gelap = semakin tinggi angka):**
+
+| Variable | Hex | Dipakai untuk |
+|----------|-----|---------------|
+| `dark-950` | `#111113` | Body & main content background |
+| `dark-900` | `#18181b` | Sidebar & header background |
+| `dark-800` | `#1e1e1e` | Input field background (`<input>`, `<select>`, checkbox, textarea, range) |
+| `dark-700` | `#27272a` | Card, modal, slide panel, dropdown/floating panel, navbar |
+| `dark-600` | `#52525b` | Border utama, hover background item, disabled background |
+| `dark-500` | `#71717a` | Divider (`divide-*`, `border-t`) |
+| `dark-400` | `#a1a1aa` | Icon, placeholder text, muted text |
+| `dark-300` | `#d4d4d8` | Teks konten utama (body text) |
+| `dark-200` | `#e4e4e7` | Teks heading / prominent text |
+| `dark-50` | `#fafafa` | Teks terang (di atas bg gelap) |
+
+**Konvensi className saat menyusun komponen baru:**
+
+```
+// Input / Select trigger
+dark:bg-dark-800 dark:text-dark-300 dark:ring-dark-600 dark:placeholder-dark-400
+
+// Dropdown panel / floating container
+dark:bg-dark-700 dark:ring-white/10
+
+// Dropdown item (normal)
+dark:text-dark-300 dark:hover:bg-dark-600
+
+// Border / separator
+dark:border-dark-600
+
+// Icon di dalam input
+dark:text-dark-400
+
+// Disabled input
+dark:bg-dark-600 dark:text-dark-500
+
+// Label teks
+dark:text-dark-300
+```
+
+---
+
+#### Typography
+
+- **Headings (h1-h6)**: Plus Jakarta Sans (600, 700, 800)
+- **Body Text**: Inter (400, 500, 600, 700)
+
+```css
+/* Auto-applied via app.css */
+h1, h2, h3, h4, h5, h6 { font-family: var(--font-heading); }
+```
+
+---
+
+#### Spacing Rules
+
+| Level | Value |
+|-------|-------|
+| Root container | `space-y-6` |
+| Filter section | `space-y-4` |
+| Stats grid gap | `gap-4` |
+| Filter grid gap | `gap-3` |
+| Section title | `text-xl font-semibold` |
+| Label/Info | `text-sm` |
+| Small text | `text-xs` |
 
 ---
 
@@ -96,6 +182,7 @@ Semua komponen sudah dikustomisasi penuh sesuai Archipelago design system. Refer
 | `EmptyState` | `@/components/shared/empty-state` | State kosong. Props: `icon`, `title`, `description`, `action`. |
 | `ConfirmDialog` | `@/components/shared/confirm-dialog` | Dialog konfirmasi. Props: `open`, `onOpenChange`, `onConfirm`, `title`, `description`, `variant` (`danger`\|`warning`). |
 | `CurrencyInput` | `@/components/shared/currency-input` | **Input Rupiah — WAJIB untuk semua input mata uang.** Props: `value`, `onChange`, `label`, `hint`, `error`. Format integer, display `Rp 1.500.000`. |
+| `FileUpload` | `@/components/shared/file-upload` | **Upload file/gambar — WAJIB, bukan `<input type="file">`.** Berbasis react-dropzone. Props: `value` (File|null), `onChange`, `label`, `hint`, `error`, `accept` (array ekstensi). Single file. |
 
 ### Quick Decision: "Mana yang harus saya pakai?"
 
@@ -140,25 +227,24 @@ Loading skeleton                  → Skeleton
 
 ## Modules Overview
 
-| Module | Route |
-|--------|-------|
-| Dashboard | `/dashboard` |
-| Clients | `/clients` |
-| Services | `/services` |
-| Invoices | `/invoices` |
-| Recurring | `/recurring-invoices` |
-| Bank Accounts | `/bank-accounts` |
-| Cash Flow | `/cash-flow` |
-| Transactions | `/bank-accounts` (embedded) |
-| Tx Categories | `/transaction-categories` |
-| Reimbursements | `/reimbursements` |
-| Fund Requests | `/fund-requests` |
-| Loans | `/loans` |
-| Receivables | `/receivables` |
-| Feedbacks | `/feedbacks` |
-| Settings | `/settings/*` |
-| Users | `/admin/users` |
-| Permissions/Roles | `/permissions` |
+| Module | Route | Fitur / Halaman |
+|--------|-------|-----------------|
+| Dashboard | `/dashboard` | Overview stats |
+| Clients | `/clients` | Index, Create, Edit, Delete, Show |
+| Services | `/services` | Index, Create, Edit, Delete |
+| Invoices | `/invoices` | Index, Create, Edit, Delete, Show + Payments |
+| Recurring | `/recurring-invoices` | Templates, Monthly, Analytics + CRUD |
+| Bank Accounts | `/bank-accounts` | Index, Create, Edit, Delete, Transactions |
+| Cash Flow | `/cash-flow` | Overview, Income, Expenses, Transfers |
+| Tx Categories | `/transaction-categories` | Index, Create, Update, Delete |
+| Reimbursements | `/reimbursements` | All/My Requests, Create, Review, Payment |
+| Fund Requests | `/fund-requests` | All/My Requests, Create, Review, Disburse |
+| Loans | `/loans` | Index, Create, Update, Delete, PayLoan |
+| Receivables | `/receivables` | Index, Create, Update, Submit, Approve, Pay |
+| Feedbacks | `/feedbacks` | All/My, Create, Show, Respond |
+| Settings | `/settings/*` | Profile, Password, Company, PDF Templates |
+| Users | `/admin/users` | Index, Create, Edit, Delete |
+| Permissions/Roles | `/permissions` | Permissions + Roles CRUD |
 
 ### Key Business Logic
 
@@ -223,9 +309,11 @@ $pdf = (new InvoicePrintService())->generateSingleInvoicePdf($invoice, $dp, $pel
 
 ## Tech Stack
 
-**Backend:** Laravel 12, Spatie Permission 6.21, DomPDF 3.1, Maatwebsite Excel 3.1, ngekoding/terbilang, PHP 8.2+
+**Backend:** Laravel 12, Spatie Permission 6.21, DomPDF 3.1, Maatwebsite Excel 3.1, ngekoding/terbilang, PHP 8.4
 
-**Frontend:** React 18, TypeScript, Inertia.js, shadcn/ui, Tailwind CSS 4.1, Wayfinder (type-safe routes), react-hook-form + zod, @tanstack/react-table, react-day-picker v10, cmdk, Sonner, i18next + react-i18next, react-apexcharts, react-chartjs-2, react-dropzone, Vite 6.0
+**Frontend (Inertia + React):** React 18, TypeScript, Inertia.js 3, shadcn/ui, Tailwind CSS 4.1, Wayfinder (type-safe routes), react-hook-form + zod, @tanstack/react-table, react-day-picker v10, cmdk, Sonner, i18next + react-i18next, react-apexcharts, react-chartjs-2, react-dropzone, Vite 6.0
+
+> Blade dipertahankan **hanya** untuk template PDF (`resources/views/pdf/`). Tidak ada Livewire/TallStackUI/Alpine.
 
 ---
 
@@ -233,19 +321,22 @@ $pdf = (new InvoicePrintService())->generateSingleInvoicePdf($invoice, $dp, $pel
 
 ### Translation & Localization Protocol
 
+Aplikasi mendukung **id / en / zh**. Locale aktif dibagikan ke frontend lewat prop Inertia `locale` (`HandleInertiaRequests::share()`).
+
+**Status frontend i18n:** `i18next` + `react-i18next` sudah terpasang di `package.json`, **tetapi belum diinisialisasi** di `resources/js`. Saat ini halaman React belum punya konvensi translation yang mapan. **Sebelum menambah teks UI baru yang perlu i18n, konfirmasi dulu pendekatan yang diinginkan.** Jangan mengarang pola tanpa konfirmasi.
+
+**Server-side `lang/` masih aktif** — dipakai untuk: pesan validasi, template PDF (Blade), dan heading Excel export.
+
 ```
 lang/
-├── id/  (UTAMA) — common.php (166 keys), pages.php (1343 keys), invoice.php, feedback.php
+├── id/  (UTAMA) — common.php, pages.php, invoice.php, feedback.php, validation.php
 ├── en/  (partial)
-└── zh/  (sync dengan id/ — salin nilai sama, tim update terjemahan Mandarin terpisah)
+└── zh/  (sync dengan id/ — salin nilai sama, terjemahan Mandarin diupdate terpisah)
 ```
 
-**❌ JANGAN hardcode:** judul page, label, placeholder, header kolom, teks tombol, badge status, pesan empty/error/sukses, tooltip.
-**✅ BOLEH tidak translate:** brand names, kode format (`INV/01/KSN/02.26`), nilai variabel dinamis (`{{ $invoice->number }}`).
+**Aturan saat menyentuh `lang/`:** key baru ditambah ke `lang/id/` lalu langsung ke `lang/zh/` (nilai sama dulu). `common.php` untuk string reusable; `pages.php` dengan prefix module (`fund_request_title`, `fund_request_status_draft`).
 
-**Key naming:** `common.php` untuk reusable; `pages.php` dengan prefix module (`fund_request_title`, `fund_request_status_draft`).
-
-### Dynamic Translation (Data dari DB)
+### Dynamic Translation (Data dari DB — backend/PDF only)
 
 | Sumber | Metode | Contoh |
 |--------|--------|--------|
@@ -256,13 +347,15 @@ lang/
 
 `translate_text()` dan `translate_category()` ada di `app/helpers.php` + `app/Services/TranslationService.php`. Cache 6 bulan, fallback ke teks asli jika gagal.
 
-### Currency Storage
+### Currency
 
-```
-DB: 150000 → Display: Rp 1.500
-Parse: preg_replace('/[^0-9]/', '', $input)
-Format: number_format($value, 0, ',', '.')
-```
+Di React: **SELALU gunakan komponen `CurrencyInput`** (`@/components/shared/currency-input`) untuk semua input mata uang — bukan `Input` biasa. Komponen ini menyimpan raw integer dan menampilkan `Rp 1.500.000`. Untuk display read-only, format dengan `Intl.NumberFormat('id-ID')` atau helper format rupiah yang ada.
+
+### Component Usage Protocol
+
+**CRITICAL: Sebelum implementasi ANY external component — baca dokumentasi resminya dulu (WebSearch + WebFetch atau MCP shadcn). Jangan implement berdasarkan asumsi atau memory.**
+
+Berlaku untuk: shadcn/ui components, library React (react-day-picker, cmdk, react-hook-form, dll.), dan Laravel packages.
 
 ---
 
@@ -272,7 +365,9 @@ Format: number_format($value, 0, ',', '.')
 |-------|----------|
 | Permission issues | `php artisan permission:cache-reset` |
 | PDF not generating | Cek `storage/` writable, `php artisan storage:link`, company profile has assets |
+| Inertia props not updating | Pastikan controller mengirim ulang prop; gunakan `router.reload({ only: [...] })` untuk partial reload |
 | Balance incorrect | Balance is computed dynamically, NOT stored — cek transaction types |
+| Currency display | Simpan integer; tampilkan dengan `CurrencyInput` atau `Intl.NumberFormat('id-ID')` |
 | Vite/React changes not visible | Run `npm run build` atau `composer run dev` |
 
 ---
@@ -288,6 +383,7 @@ Format: number_format($value, 0, ',', '.')
 | `app/Models/Reimbursement.php` | Workflow state machine |
 | `app/Models/RecurringTemplate.php` | Recurring date calculations |
 | `app/Models/BankAccount.php` | Dynamic balance |
+| `app/Http/Middleware/HandleInertiaRequests.php` | Shared Inertia props (auth, locale, flash, notifications) |
 | `app/helpers.php` | translate_text(), translate_category() |
 | `database/seeders/MasterPermissionSeeder.php` | Permission structure |
 | `routes/web.php` | All route definitions |
