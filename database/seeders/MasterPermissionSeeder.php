@@ -74,6 +74,9 @@ class MasterPermissionSeeder extends Seeder
         $this->command->info('📋 Creating Permissions (skipping existing)...');
 
         $allPermissions = [
+            // Dashboard
+            'view dashboard',
+
             // Clients
             'view clients',
             'create clients',
@@ -240,6 +243,9 @@ class MasterPermissionSeeder extends Seeder
         // ============================================================
         $financeManager = Role::findByName('finance manager');
         $financeManagerPermissions = [
+            // Dashboard
+            'view dashboard',
+
             // Clients
             'view clients',
             'create clients',
@@ -348,6 +354,9 @@ class MasterPermissionSeeder extends Seeder
         // ============================================================
         $staff = Role::findByName('staff');
         $staffPermissions = [
+            // Dashboard
+            'view dashboard',
+
             // Clients
             'view clients',
             'create clients',

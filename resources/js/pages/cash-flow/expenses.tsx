@@ -6,6 +6,7 @@ import {
     Download,
     Filter,
     Paperclip,
+    Plus,
     Search,
     Trash2,
     X,
@@ -32,6 +33,8 @@ import {
     TransactionDetailDialog,
     type CashFlowDialogData,
 } from './components/transaction-detail-dialog';
+import { TransactionFormDialog } from '../bank-accounts/components/transaction-form-dialog';
+import type { AccountPickerItem } from '../bank-accounts/types';
 import type {
     CashFlowStats,
     ExpenseFilters,
@@ -47,6 +50,7 @@ interface Props {
     filters: ExpenseFilters;
     categoryOptions: FilterOption[];
     bankAccountOptions: FilterOption[];
+    accounts: AccountPickerItem[];
 }
 
 function isoOrNull(d: Date | null): string | null {
@@ -56,9 +60,11 @@ function parseIso(s: string | null): Date | null {
     return s ? new Date(s) : null;
 }
 
-export default function CashFlowExpenses({ rows, pagination, stats, filters, categoryOptions, bankAccountOptions }: Props) {
+export default function CashFlowExpenses({ rows, pagination, stats, filters, categoryOptions, bankAccountOptions, accounts }: Props) {
     const { can } = useCan();
     const canDelete = can('delete expense');
+    const canCreate = can('create expense');
+    const [createOpen, setCreateOpen] = React.useState(false);
     const [selected, setSelected] = React.useState<number[]>([]);
     const [bulkDeleteOpen, setBulkDeleteOpen] = React.useState(false);
     const [deleteProcessing, setDeleteProcessing] = React.useState(false);
@@ -170,10 +176,18 @@ export default function CashFlowExpenses({ rows, pagination, stats, filters, cat
                     title="Pengeluaran"
                     description="Daftar semua pengeluaran (debit) dari rekening bank Anda."
                     action={
-                        <Button variant="outline" size="md" onClick={exportPdf}>
-                            <Download className="w-4 h-4" />
-                            Export PDF
-                        </Button>
+                        <div className="flex items-center gap-2">
+                            <Button variant="outline" size="md" onClick={exportPdf}>
+                                <Download className="w-4 h-4" />
+                                Export PDF
+                            </Button>
+                            {canCreate && accounts.length > 0 && (
+                                <Button variant="red" size="md" onClick={() => setCreateOpen(true)}>
+                                    <Plus className="w-4 h-4" />
+                                    Input Pengeluaran
+                                </Button>
+                            )}
+                        </div>
                     }
                 />
 
@@ -384,6 +398,19 @@ export default function CashFlowExpenses({ rows, pagination, stats, filters, cat
                 data={dialogData}
                 categoryOptions={categoryOptions}
             />
+
+            {canCreate && accounts.length > 0 && (
+                <TransactionFormDialog
+                    open={createOpen}
+                    onOpenChange={(open) => {
+                        setCreateOpen(open);
+                        if (!open) router.reload({ only: ['rows', 'stats', 'pagination'] });
+                    }}
+                    accountId={accounts[0].id}
+                    accounts={accounts}
+                    type="debit"
+                />
+            )}
         </AppLayout>
     );
 }

@@ -22,6 +22,7 @@ class SidebarActionCountsTest extends TestCase
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
 
         foreach ([
+            'view dashboard',
             'approve reimbursements', 'pay reimbursements',
             'approve fund requests', 'disburse fund requests',
         ] as $perm) {
@@ -67,7 +68,7 @@ class SidebarActionCountsTest extends TestCase
         $this->makeFundRequest('disbursed'); // done — excluded
 
         $user = User::factory()->create();
-        $user->givePermissionTo('approve reimbursements', 'pay reimbursements', 'approve fund requests', 'disburse fund requests');
+        $user->givePermissionTo('view dashboard', 'approve reimbursements', 'pay reimbursements', 'approve fund requests', 'disburse fund requests');
 
         $this->actingAs($user)
             ->get('/dashboard')
@@ -86,7 +87,7 @@ class SidebarActionCountsTest extends TestCase
 
         // Can review but not pay/disburse → only pending is actionable.
         $reviewer = User::factory()->create();
-        $reviewer->givePermissionTo('approve reimbursements', 'approve fund requests');
+        $reviewer->givePermissionTo('view dashboard', 'approve reimbursements', 'approve fund requests');
 
         $this->actingAs($reviewer)
             ->get('/dashboard')
@@ -97,6 +98,7 @@ class SidebarActionCountsTest extends TestCase
 
         // No review/pay permissions → nothing is actionable.
         $plain = User::factory()->create();
+        $plain->givePermissionTo('view dashboard');
 
         $this->actingAs($plain)
             ->get('/dashboard')

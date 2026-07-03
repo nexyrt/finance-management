@@ -51,11 +51,13 @@ interface NavSection {
 const NAV: NavSection[] = [
     {
         title: '',
+        anyPermission: ['view dashboard'],
         items: [
             {
                 label: 'Dashboard',
                 href: '/dashboard',
                 icon: <LayoutDashboard className="w-4 h-4 shrink-0" />,
+                permission: 'view dashboard',
                 matchPrefix: '/dashboard',
             },
         ],

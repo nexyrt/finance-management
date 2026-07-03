@@ -167,6 +167,7 @@ class CashFlowController extends Controller
             ],
             'clientOptions' => $this->clientOptions(),
             'categoryOptions' => $this->categoryOptions('income'),
+            'accounts' => $this->accountsForForm(),
         ]);
     }
 
@@ -262,6 +263,7 @@ class CashFlowController extends Controller
             ],
             'categoryOptions' => $this->categoryOptions('expense'),
             'bankAccountOptions' => $this->bankAccountOptions(),
+            'accounts' => $this->accountsForForm(),
         ]);
     }
 
@@ -385,6 +387,7 @@ class CashFlowController extends Controller
                 'page' => $page,
             ],
             'bankAccountOptions' => $this->bankAccountOptions(),
+            'accounts' => $this->accountsForForm(),
         ]);
     }
 
@@ -544,6 +547,22 @@ class CashFlowController extends Controller
             ->map(fn ($a) => [
                 'label' => $a->account_name.' — '.$a->bank_name,
                 'value' => $a->id,
+            ])->all();
+    }
+
+    /**
+     * Full account shape consumed by the create/transfer dialogs' account pickers.
+     *
+     * @return array<int,array{id:int, account_name:string, bank_name:string}>
+     */
+    private function accountsForForm(): array
+    {
+        return BankAccount::orderBy('account_name')
+            ->get(['id', 'account_name', 'bank_name'])
+            ->map(fn ($a) => [
+                'id' => $a->id,
+                'account_name' => $a->account_name,
+                'bank_name' => $a->bank_name,
             ])->all();
     }
 }

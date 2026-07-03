@@ -99,3 +99,10 @@ export interface AccountOption {
     label: string;
     value: number;
 }
+
+/** Minimal account shape the create/transfer dialogs need for their pickers. */
+export interface AccountPickerItem {
+    id: number;
+    account_name: string;
+    bank_name: string;
+}

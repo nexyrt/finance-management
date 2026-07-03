@@ -18,12 +18,12 @@ import { CurrencyInput } from '@/components/shared/currency-input';
 import { FileUpload } from '@/components/shared/file-upload';
 import { toLocalIso } from '@/lib/utils';
 import * as bankTransactionsRoutes from '@/routes/bank-transactions';
-import type { AccountListItem, CategoryOption } from '../types';
+import type { AccountPickerItem, CategoryOption } from '../types';
 
 interface Props {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    accounts: AccountListItem[];
+    accounts: AccountPickerItem[];
     /** Pre-fill the "from" account. */
     fromAccountId?: number | null;
 }

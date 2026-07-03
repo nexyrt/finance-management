@@ -6,6 +6,7 @@ import {
     Download,
     Filter,
     Paperclip,
+    Plus,
     Search,
     Trash2,
     X,
@@ -15,6 +16,7 @@ import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+import { useCan } from '@/hooks/use-can';
 import { Combobox } from '@/components/ui/combobox';
 import { DatePicker } from '@/components/ui/date-picker';
 import { Input } from '@/components/ui/input';
@@ -31,6 +33,8 @@ import {
     TransactionDetailDialog,
     type CashFlowDialogData,
 } from './components/transaction-detail-dialog';
+import { TransferDialog } from '../bank-accounts/components/transfer-dialog';
+import type { AccountPickerItem } from '../bank-accounts/types';
 import type {
     CashFlowStats,
     FilterOption,
@@ -45,6 +49,7 @@ interface Props {
     stats: CashFlowStats;
     filters: TransferFilters;
     bankAccountOptions: FilterOption[];
+    accounts: AccountPickerItem[];
 }
 
 function isoOrNull(d: Date | null): string | null {
@@ -54,7 +59,10 @@ function parseIso(s: string | null): Date | null {
     return s ? new Date(s) : null;
 }
 
-export default function CashFlowTransfers({ rows, pagination, stats, filters, bankAccountOptions }: Props) {
+export default function CashFlowTransfers({ rows, pagination, stats, filters, bankAccountOptions, accounts }: Props) {
+    const { can } = useCan();
+    const canCreate = can('create transfer');
+    const [createOpen, setCreateOpen] = React.useState(false);
     const [selected, setSelected] = React.useState<number[]>([]);
     const [bulkDeleteOpen, setBulkDeleteOpen] = React.useState(false);
     const [deleteProcessing, setDeleteProcessing] = React.useState(false);
@@ -160,10 +168,18 @@ export default function CashFlowTransfers({ rows, pagination, stats, filters, ba
                     title="Transfer & Penyesuaian"
                     description="Riwayat transfer antar rekening internal Anda."
                     action={
-                        <Button variant="outline" size="md" onClick={exportPdf}>
-                            <Download className="w-4 h-4" />
-                            Export PDF
-                        </Button>
+                        <div className="flex items-center gap-2">
+                            <Button variant="outline" size="md" onClick={exportPdf}>
+                                <Download className="w-4 h-4" />
+                                Export PDF
+                            </Button>
+                            {canCreate && accounts.length > 1 && (
+                                <Button variant="primary" size="md" onClick={() => setCreateOpen(true)}>
+                                    <Plus className="w-4 h-4" />
+                                    Input Transfer
+                                </Button>
+                            )}
+                        </div>
                     }
                 />
 
@@ -367,6 +383,17 @@ export default function CashFlowTransfers({ rows, pagination, stats, filters, ba
                 data={dialogData}
                 categoryOptions={[]}
             />
+
+            {canCreate && accounts.length > 1 && (
+                <TransferDialog
+                    open={createOpen}
+                    onOpenChange={(open) => {
+                        setCreateOpen(open);
+                        if (!open) router.reload({ only: ['rows', 'stats', 'pagination'] });
+                    }}
+                    accounts={accounts}
+                />
+            )}
         </AppLayout>
     );
 }

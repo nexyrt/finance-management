@@ -10,13 +10,19 @@ use App\Models\InvoiceItem;
 use App\Models\Payment;
 use App\Models\Reimbursement;
 use Carbon\Carbon;
+use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class DashboardController extends Controller
 {
-    public function __invoke(): Response
+    public function __invoke(): Response|RedirectResponse
     {
+        // Dashboard is a togglable permission; roles without it land on Pengeluaran.
+        if (! auth()->user()?->can('view dashboard')) {
+            return redirect()->route('cash-flow.expenses');
+        }
+
         $start = Carbon::now()->startOfMonth();
         $end = Carbon::now()->endOfMonth();
 

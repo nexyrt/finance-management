@@ -6,6 +6,7 @@ import {
     FileText,
     Filter,
     Paperclip,
+    Plus,
     Search,
     Trash2,
     Wallet,
@@ -33,6 +34,8 @@ import {
     TransactionDetailDialog,
     type CashFlowDialogData,
 } from './components/transaction-detail-dialog';
+import { TransactionFormDialog } from '../bank-accounts/components/transaction-form-dialog';
+import type { AccountPickerItem } from '../bank-accounts/types';
 import type { FilterOption, IncomeFilters, IncomeRow, PaginationMeta, CashFlowStats } from './types';
 
 interface Props {
@@ -42,6 +45,7 @@ interface Props {
     filters: IncomeFilters;
     clientOptions: FilterOption[];
     categoryOptions: FilterOption[];
+    accounts: AccountPickerItem[];
 }
 
 function isoOrNull(d: Date | null): string | null {
@@ -52,9 +56,11 @@ function parseIso(s: string | null): Date | null {
     return s ? new Date(s) : null;
 }
 
-export default function CashFlowIncome({ rows, pagination, stats, filters, clientOptions, categoryOptions }: Props) {
+export default function CashFlowIncome({ rows, pagination, stats, filters, clientOptions, categoryOptions, accounts }: Props) {
     const { can } = useCan();
     const canDelete = can('delete income');
+    const canCreate = can('create income');
+    const [createOpen, setCreateOpen] = React.useState(false);
     const [selected, setSelected] = React.useState<string[]>([]);
     const [bulkDeleteOpen, setBulkDeleteOpen] = React.useState(false);
     const [deleteProcessing, setDeleteProcessing] = React.useState(false);
@@ -190,6 +196,12 @@ export default function CashFlowIncome({ rows, pagination, stats, filters, clien
                                 <Download className="w-4 h-4" />
                                 Export PDF
                             </Button>
+                            {canCreate && accounts.length > 0 && (
+                                <Button variant="green" size="md" onClick={() => setCreateOpen(true)}>
+                                    <Plus className="w-4 h-4" />
+                                    Input Pemasukan
+                                </Button>
+                            )}
                         </div>
                     }
                 />
@@ -422,6 +434,19 @@ export default function CashFlowIncome({ rows, pagination, stats, filters, clien
                 data={dialogData}
                 categoryOptions={categoryOptions}
             />
+
+            {canCreate && accounts.length > 0 && (
+                <TransactionFormDialog
+                    open={createOpen}
+                    onOpenChange={(open) => {
+                        setCreateOpen(open);
+                        if (!open) router.reload({ only: ['rows', 'stats', 'pagination'] });
+                    }}
+                    accountId={accounts[0].id}
+                    accounts={accounts}
+                    type="credit"
+                />
+            )}
         </AppLayout>
     );
 }

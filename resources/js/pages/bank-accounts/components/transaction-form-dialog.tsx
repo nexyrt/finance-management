@@ -20,13 +20,13 @@ import { FileUpload } from '@/components/shared/file-upload';
 import { QuickAddCategoryDialog, type QuickAddCategoryResult } from '@/components/shared/quick-add-category-dialog';
 import { toLocalIso } from '@/lib/utils';
 import * as bankTransactionsRoutes from '@/routes/bank-transactions';
-import type { AccountListItem, CategoryOption } from '../types';
+import type { AccountPickerItem, CategoryOption } from '../types';
 
 interface Props {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     accountId: number;
-    accounts: AccountListItem[];
+    accounts: AccountPickerItem[];
     /** 'credit' = income (Pemasukan), 'debit' = expense (Pengeluaran) */
     type: 'credit' | 'debit';
 }
