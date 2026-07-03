@@ -16,6 +16,7 @@ import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+import { useCan } from '@/hooks/use-can';
 import { Combobox } from '@/components/ui/combobox';
 import { DatePicker } from '@/components/ui/date-picker';
 import { Input } from '@/components/ui/input';
@@ -52,6 +53,8 @@ function parseIso(s: string | null): Date | null {
 }
 
 export default function CashFlowIncome({ rows, pagination, stats, filters, clientOptions, categoryOptions }: Props) {
+    const { can } = useCan();
+    const canDelete = can('delete income');
     const [selected, setSelected] = React.useState<string[]>([]);
     const [bulkDeleteOpen, setBulkDeleteOpen] = React.useState(false);
     const [deleteProcessing, setDeleteProcessing] = React.useState(false);
@@ -276,7 +279,9 @@ export default function CashFlowIncome({ rows, pagination, stats, filters, clien
                                 <thead className="bg-secondary-50/60 dark:bg-dark-800/60 border-b border-secondary-200 dark:border-dark-600">
                                     <tr>
                                         <th className="w-10 px-4 py-3">
-                                            <Checkbox checked={allSelected} onCheckedChange={toggleAll} />
+                                            {canDelete && (
+                                                <Checkbox checked={allSelected} onCheckedChange={toggleAll} />
+                                            )}
                                         </th>
                                         <SortableTh label="Tanggal" column="date" current={filters.sort} direction={filters.direction} onSort={onSort} />
                                         <th className="px-3 py-3 text-left text-xs font-semibold text-dark-500 dark:text-dark-400">
@@ -311,10 +316,12 @@ export default function CashFlowIncome({ rows, pagination, stats, filters, clien
                                             )}
                                         >
                                             <td className="px-4 py-3 align-middle" onClick={(e) => e.stopPropagation()}>
-                                                <Checkbox
-                                                    checked={selected.includes(row.uid)}
-                                                    onCheckedChange={() => toggleOne(row.uid)}
-                                                />
+                                                {canDelete && (
+                                                    <Checkbox
+                                                        checked={selected.includes(row.uid)}
+                                                        onCheckedChange={() => toggleOne(row.uid)}
+                                                    />
+                                                )}
                                             </td>
                                             <td className="px-3 py-3 align-middle whitespace-nowrap text-sm text-dark-700 dark:text-dark-300">
                                                 {formatDate(row.date)}
@@ -377,7 +384,7 @@ export default function CashFlowIncome({ rows, pagination, stats, filters, clien
             </div>
 
             {/* Floating bulk-action bar */}
-            {selected.length > 0 && (
+            {canDelete && selected.length > 0 && (
                 <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 animate-in slide-in-from-bottom-4 duration-200">
                     <div className="bg-white dark:bg-dark-700 rounded-xl shadow-xl border border-secondary-200 dark:border-dark-600 px-4 py-3 flex items-center gap-4 min-w-80">
                         <div className="flex items-center gap-2">

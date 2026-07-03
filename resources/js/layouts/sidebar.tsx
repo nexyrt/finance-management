@@ -109,27 +109,27 @@ const NAV: NavSection[] = [
     },
     {
         title: 'Arus Kas',
-        anyPermission: ['view cash-flow'],
+        anyPermission: ['view income', 'view expense', 'view transfer'],
         items: [
             {
                 label: 'Pemasukan',
                 href: '/cash-flow/income',
                 icon: <TrendingUp className="w-4 h-4 shrink-0" />,
-                permission: 'view cash-flow',
+                permission: 'view income',
                 matchPrefix: '/cash-flow/income',
             },
             {
                 label: 'Pengeluaran',
                 href: '/cash-flow/expenses',
                 icon: <TrendingDown className="w-4 h-4 shrink-0" />,
-                permission: 'view cash-flow',
+                permission: 'view expense',
                 matchPrefix: '/cash-flow/expenses',
             },
             {
                 label: 'Transfer & Penyesuaian',
                 href: '/cash-flow/transfers',
                 icon: <ArrowLeftRight className="w-4 h-4 shrink-0" />,
-                permission: 'view cash-flow',
+                permission: 'view transfer',
                 matchPrefix: '/cash-flow/transfers',
             },
         ],

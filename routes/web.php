@@ -275,20 +275,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/bank-accounts/payments', [BankTransactionController::class, 'indexPayments'])
             ->name('bank-accounts.payments');
 
+        // Income/expense/transfer are authorized inside the FormRequests/controller
+        // based on the transaction's feature (credit=income, debit=expense, TRF=transfer),
+        // since these endpoints are shared across all three cash-flow features.
         Route::post('/bank-transactions', [BankTransactionController::class, 'store'])
-            ->middleware('can:create transactions')
             ->name('bank-transactions.store');
         Route::put('/bank-transactions/{bankTransaction}', [BankTransactionController::class, 'update'])
-            ->middleware('can:edit transactions')
             ->name('bank-transactions.update');
         Route::delete('/bank-transactions/{bankTransaction}', [BankTransactionController::class, 'destroy'])
-            ->middleware('can:delete transactions')
             ->name('bank-transactions.destroy');
         Route::post('/bank-transactions/bulk-delete', [BankTransactionController::class, 'bulkDestroy'])
-            ->middleware('can:delete transactions')
             ->name('bank-transactions.bulk-destroy');
         Route::post('/bank-transactions/transfer', [BankTransactionController::class, 'transfer'])
-            ->middleware('can:create transactions')
             ->name('bank-transactions.transfer');
     });
 
@@ -300,17 +298,33 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->middleware('can:view bank-accounts')
         ->name('bank-account.export.pdf.preview');
 
-    Route::prefix('cash-flow')->name('cash-flow.')->middleware('can:view cash-flow')->group(function () {
-        Route::get('/', fn () => redirect()->route('cash-flow.income'))->name('index');
-        Route::get('/income', [CashFlowController::class, 'income'])->name('income');
-        Route::get('/expenses', [CashFlowController::class, 'expenses'])->name('expenses');
-        Route::get('/transfers', [CashFlowController::class, 'transfers'])->name('transfers');
-        Route::post('/bulk-delete', [CashFlowController::class, 'bulkDestroy'])
-            ->middleware('can:delete transactions')
-            ->name('bulk-destroy');
+    Route::prefix('cash-flow')->name('cash-flow.')->group(function () {
+        // Redirect to the first tab the user is allowed to see.
+        Route::get('/', function () {
+            $user = request()->user();
+            if ($user?->can('view income')) {
+                return redirect()->route('cash-flow.income');
+            }
+            if ($user?->can('view expense')) {
+                return redirect()->route('cash-flow.expenses');
+            }
+            if ($user?->can('view transfer')) {
+                return redirect()->route('cash-flow.transfers');
+            }
+            abort(403);
+        })->name('index');
+        Route::get('/income', [CashFlowController::class, 'income'])->middleware('can:view income')->name('income');
+        Route::get('/expenses', [CashFlowController::class, 'expenses'])->middleware('can:view expense')->name('expenses');
+        Route::get('/transfers', [CashFlowController::class, 'transfers'])->middleware('can:view transfer')->name('transfers');
+        // Bulk delete is authorized per-feature inside the controller.
+        Route::post('/bulk-delete', [CashFlowController::class, 'bulkDestroy'])->name('bulk-destroy');
 
-        Route::get('/export/pdf', [CashFlowExportController::class, 'exportPdf'])->name('export.pdf');
-        Route::get('/export/pdf/preview', [CashFlowExportController::class, 'previewPdf'])->name('export.pdf.preview');
+        // Cash-flow statement export is an account-level report (same controller as the
+        // bank-account export above), so it stays gated by bank-account access.
+        Route::get('/export/pdf', [CashFlowExportController::class, 'exportPdf'])
+            ->middleware('can:view bank-accounts')->name('export.pdf');
+        Route::get('/export/pdf/preview', [CashFlowExportController::class, 'previewPdf'])
+            ->middleware('can:view bank-accounts')->name('export.pdf.preview');
     });
 
     // ------------------------------------------------------------------------

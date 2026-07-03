@@ -104,15 +104,23 @@ class MasterPermissionSeeder extends Seeder
             'edit bank-accounts',
             'delete bank-accounts',
 
-            // Transactions (legacy - jika ada di prod)
-            'view transactions',
-            'create transactions',
-            'edit transactions',
-            'delete transactions',
+            // Cash Flow — Income
+            'view income',
+            'create income',
+            'edit income',
+            'delete income',
 
-            // Cash Flow
-            'view cash-flow',
-            'manage cash-flow',
+            // Cash Flow — Expense
+            'view expense',
+            'create expense',
+            'edit expense',
+            'delete expense',
+
+            // Cash Flow — Transfer
+            'view transfer',
+            'create transfer',
+            'edit transfer',
+            'delete transfer',
 
             // Recurring Invoices
             'view recurring-invoices',
@@ -195,6 +203,21 @@ class MasterPermissionSeeder extends Seeder
         $this->command->info('  ✓ Total: '.count($allPermissions).' permissions');
         $this->command->line("    → New: {$newCount}");
         $this->command->line("    → Existing: {$existingCount}");
+
+        // Remove permissions replaced by the per-feature cash-flow split.
+        // Spatie does not prune these automatically, so they must be deleted explicitly.
+        $obsolete = [
+            'view transactions',
+            'create transactions',
+            'edit transactions',
+            'delete transactions',
+            'view cash-flow',
+            'manage cash-flow',
+        ];
+        $removed = Permission::whereIn('name', $obsolete)->delete();
+        if ($removed > 0) {
+            $this->command->warn("  − Removed {$removed} obsolete permission(s): ".implode(', ', $obsolete));
+        }
     }
 
     /**
@@ -245,15 +268,23 @@ class MasterPermissionSeeder extends Seeder
             'edit bank-accounts',
             'delete bank-accounts',
 
-            // Transactions (legacy)
-            'view transactions',
-            'create transactions',
-            'edit transactions',
-            'delete transactions',
+            // Cash Flow — Income
+            'view income',
+            'create income',
+            'edit income',
+            'delete income',
 
-            // Cash Flow
-            'view cash-flow',
-            'manage cash-flow',
+            // Cash Flow — Expense
+            'view expense',
+            'create expense',
+            'edit expense',
+            'delete expense',
+
+            // Cash Flow — Transfer
+            'view transfer',
+            'create transfer',
+            'edit transfer',
+            'delete transfer',
 
             // Recurring Invoices
             'view recurring-invoices',

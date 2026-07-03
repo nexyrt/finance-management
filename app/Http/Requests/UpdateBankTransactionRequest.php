@@ -2,13 +2,20 @@
 
 namespace App\Http\Requests;
 
+use App\Models\BankTransaction;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateBankTransactionRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true;
+        $transaction = $this->route('bankTransaction');
+
+        if (! $transaction instanceof BankTransaction) {
+            return false;
+        }
+
+        return $this->user()?->can($transaction->abilityFor('edit')) ?? false;
     }
 
     public function rules(): array

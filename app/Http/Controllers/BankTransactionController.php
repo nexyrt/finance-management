@@ -12,6 +12,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 
 class BankTransactionController extends Controller
@@ -237,6 +238,8 @@ class BankTransactionController extends Controller
      */
     public function destroy(BankTransaction $bankTransaction): RedirectResponse
     {
+        Gate::authorize($bankTransaction->abilityFor('delete'));
+
         if ($bankTransaction->reference_number && str_starts_with($bankTransaction->reference_number, 'TRF')) {
             // Delete the paired transfer transaction too
             BankTransaction::where('reference_number', $bankTransaction->reference_number)->delete();

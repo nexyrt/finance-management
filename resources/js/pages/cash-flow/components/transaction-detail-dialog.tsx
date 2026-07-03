@@ -27,6 +27,7 @@ import { CurrencyInput } from '@/components/shared/currency-input';
 import { FileUpload } from '@/components/shared/file-upload';
 import { QuickAddCategoryDialog, type QuickAddCategoryResult } from '@/components/shared/quick-add-category-dialog';
 import * as bankTransactionsRoutes from '@/routes/bank-transactions';
+import { useCan } from '@/hooks/use-can';
 import { cn, formatCurrency, formatDate } from '@/lib/utils';
 import type { FilterOption } from '../types';
 
@@ -221,6 +222,7 @@ interface TransactionEditProps {
 }
 
 function TransactionEditContent({ data, form, setData, errors, processing, categoryOptions, onCategoryAdded, onSubmit, onClose }: TransactionEditProps) {
+    const { can } = useCan();
     const [quickAddOpen, setQuickAddOpen] = React.useState(false);
 
     const isIncome = data.kind === 'income';
@@ -340,15 +342,17 @@ function TransactionEditContent({ data, form, setData, errors, processing, categ
                 <Button type="button" variant="zinc" size="md" onClick={onClose} disabled={processing}>
                     Batal
                 </Button>
-                <Button
-                    form="tx-edit-form"
-                    type="submit"
-                    variant={isIncome ? 'green' : 'red'}
-                    size="md"
-                    disabled={processing}
-                >
-                    {processing ? 'Menyimpan…' : 'Simpan Perubahan'}
-                </Button>
+                {can(isIncome ? 'edit income' : 'edit expense') && (
+                    <Button
+                        form="tx-edit-form"
+                        type="submit"
+                        variant={isIncome ? 'green' : 'red'}
+                        size="md"
+                        disabled={processing}
+                    >
+                        {processing ? 'Menyimpan…' : 'Simpan Perubahan'}
+                    </Button>
+                )}
             </DialogFooter>
         </>
     );
@@ -444,6 +448,8 @@ interface TransferEditProps {
 }
 
 function TransferEditContent({ data, form, setData, errors, processing, onSubmit, onClose }: TransferEditProps) {
+    const { can } = useCan();
+
     return (
         <>
             <DialogHeader>
@@ -529,15 +535,17 @@ function TransferEditContent({ data, form, setData, errors, processing, onSubmit
                 <Button variant="zinc" size="md" onClick={onClose} disabled={processing}>
                     Batal
                 </Button>
-                <Button
-                    form="transfer-edit-form"
-                    type="submit"
-                    variant="primary"
-                    size="md"
-                    disabled={processing}
-                >
-                    {processing ? 'Menyimpan…' : 'Simpan Perubahan'}
-                </Button>
+                {can('edit transfer') && (
+                    <Button
+                        form="transfer-edit-form"
+                        type="submit"
+                        variant="primary"
+                        size="md"
+                        disabled={processing}
+                    >
+                        {processing ? 'Menyimpan…' : 'Simpan Perubahan'}
+                    </Button>
+                )}
             </DialogFooter>
         </>
     );

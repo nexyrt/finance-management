@@ -38,10 +38,41 @@ class BankTransaction extends Model
         return $this->belongsTo(TransactionCategory::class);
     }
 
+    /**
+     * Resolve which cash-flow feature this transaction belongs to for permission
+     * checks. Transfer legs (TRF reference) override the credit/debit direction.
+     */
+    public function permissionFeature(): string
+    {
+        if ($this->reference_number && str_starts_with($this->reference_number, 'TRF')) {
+            return 'transfer';
+        }
+
+        return $this->transaction_type === 'credit' ? 'income' : 'expense';
+    }
+
+    /**
+     * Build the permission name for an action against this transaction's feature,
+     * e.g. "delete transfer" or "edit income".
+     */
+    public function abilityFor(string $action): string
+    {
+        return $action.' '.$this->permissionFeature();
+    }
+
+    /**
+     * Feature name for a fresh income/expense entry given its accounting
+     * direction. Transfers are created through the dedicated transfer endpoint.
+     */
+    public static function featureForType(string $transactionType): string
+    {
+        return $transactionType === 'credit' ? 'income' : 'expense';
+    }
+
     // Format currency for display
     public function getFormattedAmountAttribute(): string
     {
-        return 'Rp ' . number_format($this->amount, 0, ',', '.');
+        return 'Rp '.number_format($this->amount, 0, ',', '.');
     }
 
     // Convert rupiah string to integer (remove formatting)
@@ -58,15 +89,17 @@ class BankTransaction extends Model
 
     public function hasAttachment(): bool
     {
-       return !empty($this->attachment_path);
+        return ! empty($this->attachment_path);
     }
 
     public function getAttachmentTypeAttribute(): ?string
     {
-        if (!$this->hasAttachment())
+        if (! $this->hasAttachment()) {
             return null;
+        }
 
         $extension = pathinfo($this->attachment_name, PATHINFO_EXTENSION);
+
         return strtolower($extension);
     }
 

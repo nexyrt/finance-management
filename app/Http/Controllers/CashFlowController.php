@@ -10,6 +10,7 @@ use App\Models\TransactionCategory;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -410,15 +411,32 @@ class CashFlowController extends Controller
             }
         }
 
+        // Load transactions once — used for both authorization and deletion.
+        $trxs = ! empty($transactionIds)
+            ? BankTransaction::whereIn('id', $transactionIds)->get()
+            : collect();
+
+        // Require the matching delete permission for every feature in the selection.
+        // Payments are money received, so they fall under the income feature.
+        $abilities = [];
+        if (! empty($paymentIds)) {
+            $abilities[] = 'delete income';
+        }
+        foreach ($trxs->map->permissionFeature()->unique() as $feature) {
+            $abilities[] = "delete {$feature}";
+        }
+        foreach (array_unique($abilities) as $ability) {
+            Gate::authorize($ability);
+        }
+
         $deleted = 0;
 
         if (! empty($paymentIds)) {
             $deleted += Payment::whereIn('id', $paymentIds)->delete();
         }
 
-        if (! empty($transactionIds)) {
+        if ($trxs->isNotEmpty()) {
             // Handle transfer pairs
-            $trxs = BankTransaction::whereIn('id', $transactionIds)->get();
             $transferRefs = $trxs->filter(fn ($t) => $t->reference_number && str_starts_with($t->reference_number, 'TRF'))
                 ->pluck('reference_number')->unique()->values()->all();
 

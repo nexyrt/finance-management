@@ -29,7 +29,10 @@ class BankTransactionControllerTest extends TestCase
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
 
         $permissions = [
-            'view bank-accounts', 'create transactions', 'edit transactions', 'delete transactions',
+            'view bank-accounts',
+            'view income', 'create income', 'edit income', 'delete income',
+            'view expense', 'create expense', 'edit expense', 'delete expense',
+            'view transfer', 'create transfer', 'edit transfer', 'delete transfer',
         ];
         foreach ($permissions as $perm) {
             Permission::firstOrCreate(['name' => $perm]);
@@ -92,7 +95,7 @@ class BankTransactionControllerTest extends TestCase
         $this->assertSame($balanceBefore - 500000, $this->account->fresh()->balance);
     }
 
-    public function test_store_requires_create_transactions_permission(): void
+    public function test_store_is_forbidden_without_feature_permission(): void
     {
         $noPermUser = User::factory()->create();
 

@@ -2,13 +2,21 @@
 
 namespace App\Http\Requests;
 
+use App\Models\BankTransaction;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreBankTransactionRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true;
+        $type = $this->input('transaction_type');
+
+        // Defer an invalid/missing type to validation (422) rather than a 403.
+        if (! in_array($type, ['credit', 'debit'], true)) {
+            return true;
+        }
+
+        return $this->user()?->can('create '.BankTransaction::featureForType($type)) ?? false;
     }
 
     public function rules(): array

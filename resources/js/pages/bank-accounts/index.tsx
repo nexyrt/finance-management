@@ -29,6 +29,7 @@ import { EmptyState } from '@/components/shared/empty-state';
 import { PageHeader } from '@/components/shared/page-header';
 import { Tabs } from '@/components/ui/tabs';
 import { AppLayout } from '@/layouts/app-layout';
+import { useCan } from '@/hooks/use-can';
 import { cn } from '@/lib/utils';
 import * as bankAccountsRoutes from '@/routes/bank-accounts';
 import { AccountCharts } from './components/account-charts';
@@ -54,6 +55,7 @@ interface Props {
 type TabKey = 'transactions' | 'payments';
 
 export default function BankAccountsIndex({ accounts, overallSummary, detail, filters }: Props) {
+    const { can } = useCan();
     const selectedAccount = accounts.find((a) => a.id === filters.account) ?? null;
 
     // Dialog state
@@ -208,30 +210,36 @@ export default function BankAccountsIndex({ accounts, overallSummary, detail, fi
                                             </div>
 
                                             <div className="flex items-center gap-2 flex-wrap">
-                                                <Button
-                                                    size="sm"
-                                                    onClick={() => setTxType('debit')}
-                                                    className="bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:hover:bg-red-900/30 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-900/40"
-                                                >
-                                                    <ArrowUpRight className="w-4 h-4" />
-                                                    Pengeluaran
-                                                </Button>
-                                                <Button
-                                                    size="sm"
-                                                    onClick={() => setTxType('credit')}
-                                                    className="bg-green-50 hover:bg-green-100 dark:bg-green-900/20 dark:hover:bg-green-900/30 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-900/40"
-                                                >
-                                                    <ArrowDownLeft className="w-4 h-4" />
-                                                    Pemasukan
-                                                </Button>
-                                                <Button
-                                                    size="sm"
-                                                    onClick={() => setTransferOpen(true)}
-                                                    className="bg-purple-50 hover:bg-purple-100 dark:bg-purple-900/20 dark:hover:bg-purple-900/30 text-purple-700 dark:text-purple-400 border border-purple-200 dark:border-purple-900/40"
-                                                >
-                                                    <ArrowLeftRight className="w-4 h-4" />
-                                                    <span className="hidden sm:inline">Transfer</span>
-                                                </Button>
+                                                {can('create expense') && (
+                                                    <Button
+                                                        size="sm"
+                                                        onClick={() => setTxType('debit')}
+                                                        className="bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:hover:bg-red-900/30 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-900/40"
+                                                    >
+                                                        <ArrowUpRight className="w-4 h-4" />
+                                                        Pengeluaran
+                                                    </Button>
+                                                )}
+                                                {can('create income') && (
+                                                    <Button
+                                                        size="sm"
+                                                        onClick={() => setTxType('credit')}
+                                                        className="bg-green-50 hover:bg-green-100 dark:bg-green-900/20 dark:hover:bg-green-900/30 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-900/40"
+                                                    >
+                                                        <ArrowDownLeft className="w-4 h-4" />
+                                                        Pemasukan
+                                                    </Button>
+                                                )}
+                                                {can('create transfer') && (
+                                                    <Button
+                                                        size="sm"
+                                                        onClick={() => setTransferOpen(true)}
+                                                        className="bg-purple-50 hover:bg-purple-100 dark:bg-purple-900/20 dark:hover:bg-purple-900/30 text-purple-700 dark:text-purple-400 border border-purple-200 dark:border-purple-900/40"
+                                                    >
+                                                        <ArrowLeftRight className="w-4 h-4" />
+                                                        <span className="hidden sm:inline">Transfer</span>
+                                                    </Button>
+                                                )}
 
                                                 <DropdownMenu>
                                                     <DropdownMenuTrigger asChild>

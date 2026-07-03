@@ -12,10 +12,17 @@ import { AttachmentPreviewButton } from '@/components/shared/file-preview-dialog
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { EmptyState } from '@/components/shared/empty-state';
 import { Pagination } from '@/components/shared/pagination';
+import { useCan } from '@/hooks/use-can';
 import { cn, formatCurrency, formatDate } from '@/lib/utils';
 import * as bankAccountsRoutes from '@/routes/bank-accounts';
 import * as bankTransactionsRoutes from '@/routes/bank-transactions';
 import type { CategoryOption, PaginatedResponse, TransactionRow } from '../types';
+
+/** Resolve which cash-flow feature a row belongs to for delete gating. */
+function featureOf(row: TransactionRow): 'income' | 'expense' | 'transfer' {
+    if (row.reference_number?.startsWith('TRF')) return 'transfer';
+    return row.transaction_type === 'credit' ? 'income' : 'expense';
+}
 
 interface Props {
     accountId: number;
@@ -46,6 +53,8 @@ const DEFAULT_FILTERS: Filters = {
 };
 
 export function TransactionsTab({ accountId, refreshKey }: Props) {
+    const { can } = useCan();
+    const canDeleteRow = (row: TransactionRow) => can(`delete ${featureOf(row)}`);
     const [filters, setFilters] = React.useState<Filters>(DEFAULT_FILTERS);
     const [data, setData] = React.useState<PaginatedResponse<TransactionRow> | null>(null);
     const [loading, setLoading] = React.useState(true);
@@ -106,11 +115,8 @@ export function TransactionsTab({ accountId, refreshKey }: Props) {
 
     const toggleAll = () => {
         if (!data) return;
-        if (selected.length === data.data.length) {
-            setSelected([]);
-        } else {
-            setSelected(data.data.map((r) => r.id));
-        }
+        const deletableIds = data.data.filter(canDeleteRow).map((r) => r.id);
+        setSelected((prev) => (prev.length === deletableIds.length ? [] : deletableIds));
     };
 
     const toggleOne = (id: number) => {
@@ -158,7 +164,8 @@ export function TransactionsTab({ accountId, refreshKey }: Props) {
     };
 
     const rows = data?.data ?? [];
-    const allSelected = rows.length > 0 && selected.length === rows.length;
+    const deletableCount = rows.filter(canDeleteRow).length;
+    const allSelected = deletableCount > 0 && selected.length === deletableCount;
 
     return (
         <div className="space-y-4">
@@ -248,7 +255,9 @@ export function TransactionsTab({ accountId, refreshKey }: Props) {
                             <thead className="bg-secondary-50/60 dark:bg-dark-800/60 border-b border-secondary-200 dark:border-dark-600">
                                 <tr>
                                     <th className="w-10 px-4 py-3">
-                                        <Checkbox checked={allSelected} onCheckedChange={toggleAll} />
+                                        {rows.some(canDeleteRow) && (
+                                            <Checkbox checked={allSelected} onCheckedChange={toggleAll} />
+                                        )}
                                     </th>
                                     <SortableHeader
                                         label="Transaksi"
@@ -291,10 +300,12 @@ export function TransactionsTab({ accountId, refreshKey }: Props) {
                                         )}
                                     >
                                         <td className="px-4 py-3 align-middle">
-                                            <Checkbox
-                                                checked={selected.includes(row.id)}
-                                                onCheckedChange={() => toggleOne(row.id)}
-                                            />
+                                            {canDeleteRow(row) && (
+                                                <Checkbox
+                                                    checked={selected.includes(row.id)}
+                                                    onCheckedChange={() => toggleOne(row.id)}
+                                                />
+                                            )}
                                         </td>
                                         <td className="px-3 py-3 align-middle">
                                             <div className="flex items-start gap-3">
@@ -348,13 +359,15 @@ export function TransactionsTab({ accountId, refreshKey }: Props) {
                                             </span>
                                         </td>
                                         <td className="px-3 py-3 align-middle">
-                                            <button
-                                                onClick={() => setDeleteId(row.id)}
-                                                className="p-1.5 rounded-lg text-dark-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-                                                title="Hapus"
-                                            >
-                                                <Trash2 className="w-3.5 h-3.5" />
-                                            </button>
+                                            {canDeleteRow(row) && (
+                                                <button
+                                                    onClick={() => setDeleteId(row.id)}
+                                                    className="p-1.5 rounded-lg text-dark-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                                                    title="Hapus"
+                                                >
+                                                    <Trash2 className="w-3.5 h-3.5" />
+                                                </button>
+                                            )}
                                         </td>
                                     </tr>
                                 ))}
