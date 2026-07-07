@@ -275,20 +275,22 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/bank-accounts/payments', [BankTransactionController::class, 'indexPayments'])
             ->name('bank-accounts.payments');
 
-        // Income/expense/transfer are authorized inside the FormRequests/controller
-        // based on the transaction's feature (credit=income, debit=expense, TRF=transfer),
-        // since these endpoints are shared across all three cash-flow features.
-        Route::post('/bank-transactions', [BankTransactionController::class, 'store'])
-            ->name('bank-transactions.store');
-        Route::put('/bank-transactions/{bankTransaction}', [BankTransactionController::class, 'update'])
-            ->name('bank-transactions.update');
-        Route::delete('/bank-transactions/{bankTransaction}', [BankTransactionController::class, 'destroy'])
-            ->name('bank-transactions.destroy');
-        Route::post('/bank-transactions/bulk-delete', [BankTransactionController::class, 'bulkDestroy'])
-            ->name('bank-transactions.bulk-destroy');
-        Route::post('/bank-transactions/transfer', [BankTransactionController::class, 'transfer'])
-            ->name('bank-transactions.transfer');
     });
+
+    // Income/expense/transfer are authorized inside the FormRequests/controller
+    // based on the transaction's feature (credit=income, debit=expense, TRF=transfer),
+    // since these endpoints are shared across all three cash-flow features and
+    // must stay reachable for users with cash-flow permissions but no bank-accounts access.
+    Route::post('/bank-transactions', [BankTransactionController::class, 'store'])
+        ->name('bank-transactions.store');
+    Route::put('/bank-transactions/{bankTransaction}', [BankTransactionController::class, 'update'])
+        ->name('bank-transactions.update');
+    Route::delete('/bank-transactions/{bankTransaction}', [BankTransactionController::class, 'destroy'])
+        ->name('bank-transactions.destroy');
+    Route::post('/bank-transactions/bulk-delete', [BankTransactionController::class, 'bulkDestroy'])
+        ->name('bank-transactions.bulk-destroy');
+    Route::post('/bank-transactions/transfer', [BankTransactionController::class, 'transfer'])
+        ->name('bank-transactions.transfer');
 
     Route::get('/bank-account/export/pdf', [CashFlowExportController::class, 'exportPdf'])
         ->middleware('can:view bank-accounts')

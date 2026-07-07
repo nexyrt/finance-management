@@ -89,15 +89,15 @@ class CashFlowPermissionTest extends TestCase
             ->assertForbidden();
     }
 
-    public function test_store_requires_view_bank_accounts_group(): void
+    public function test_store_does_not_require_view_bank_accounts(): void
     {
-        $user = $this->userWith(['create income']); // missing view bank-accounts
+        $user = $this->userWith(['create income']); // no view bank-accounts, only cash-flow perm
         $account = BankAccount::factory()->create();
         $category = $this->category('income');
 
         $this->actingAs($user)
             ->post('/bank-transactions', $this->storePayload($account->id, $category->id, 'credit'))
-            ->assertForbidden();
+            ->assertRedirect();
     }
 
     public function test_edit_permission_is_feature_scoped(): void
