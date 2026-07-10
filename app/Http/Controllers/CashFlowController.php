@@ -231,7 +231,7 @@ class CashFlowController extends Controller
             ->get()
             ->map(fn ($r) => [
                 'id' => (int) $r->id,
-                'transaction_date' => $r->transaction_date,
+                'transaction_date' => $r->transaction_date->toDateString(),
                 'amount' => (int) $r->amount,
                 'description' => $r->description,
                 'reference_number' => $r->reference_number,
@@ -350,7 +350,7 @@ class CashFlowController extends Controller
             return [
                 'id' => (int) $c->id,
                 'debit_id' => $debit ? (int) $debit->id : null,
-                'transaction_date' => $c->transaction_date,
+                'transaction_date' => $c->transaction_date->toDateString(),
                 'reference_number' => $c->reference_number,
                 'amount' => (int) $c->amount,
                 'total_debit' => $debit ? (int) $debit->total_debit : (int) $c->amount,

@@ -28,7 +28,7 @@ import { FileUpload } from '@/components/shared/file-upload';
 import { QuickAddCategoryDialog, type QuickAddCategoryResult } from '@/components/shared/quick-add-category-dialog';
 import * as bankTransactionsRoutes from '@/routes/bank-transactions';
 import { useCan } from '@/hooks/use-can';
-import { cn, formatCurrency, formatDate } from '@/lib/utils';
+import { cn, formatCurrency, formatDate, toastErrors, toLocalIso } from '@/lib/utils';
 import type { FilterOption } from '../types';
 
 /* ─── Discriminated union for dialog data ───────────────────── */
@@ -86,8 +86,9 @@ interface Props {
 /* ─── Form shape ─────────────────────────────────────────────── */
 
 interface EditForm {
+    _method: 'put';
     amount: number;
-    date: string;
+    transaction_date: string;
     description: string;
     category_id: number | null;
     reference_number: string;
@@ -120,9 +121,10 @@ export function TransactionDetailDialog({ open, onOpenChange, data, categoryOpti
         });
     };
 
-    const { data: form, setData, put, processing, errors, clearErrors } = useForm<EditForm>({
+    const { data: form, setData, post, processing, errors, clearErrors } = useForm<EditForm>({
+        _method: 'put',
         amount: 0,
-        date: '',
+        transaction_date: '',
         description: '',
         category_id: null,
         reference_number: '',
@@ -134,8 +136,9 @@ export function TransactionDetailDialog({ open, onOpenChange, data, categoryOpti
         if (!open || !data) return;
         if (data.kind === 'income' || data.kind === 'expense') {
             setData({
+                _method: 'put',
                 amount: data.amount,
-                date: data.date,
+                transaction_date: data.date,
                 description: data.description ?? '',
                 category_id: data.category_id,
                 reference_number: data.reference_number ?? '',
@@ -144,8 +147,9 @@ export function TransactionDetailDialog({ open, onOpenChange, data, categoryOpti
             });
         } else if (data.kind === 'transfer') {
             setData({
+                _method: 'put',
                 amount: data.amount,
-                date: data.date,
+                transaction_date: data.date,
                 description: data.description ?? '',
                 category_id: null,
                 reference_number: '',
@@ -161,14 +165,15 @@ export function TransactionDetailDialog({ open, onOpenChange, data, categoryOpti
         e.preventDefault();
         if (!data || data.kind === 'payment') return;
 
-        put(bankTransactionsRoutes.update.url(data.id), {
+        // PUT + multipart/form-data is unparseable by PHP, so POST with _method spoofing.
+        post(bankTransactionsRoutes.update.url(data.id), {
             forceFormData: true,
             preserveScroll: true,
             onSuccess: () => {
                 toast.success('Transaksi berhasil diperbarui');
                 onOpenChange(false);
             },
-            onError: () => toast.error('Gagal menyimpan perubahan'),
+            onError: (errs) => toastErrors(errs, 'Gagal menyimpan perubahan'),
         });
     };
 
@@ -270,9 +275,9 @@ function TransactionEditContent({ data, form, setData, errors, processing, categ
                     <DatePicker
                         mode="single"
                         label="Tanggal *"
-                        value={form.date ? new Date(form.date) : null}
-                        onChange={(d) => setData('date', d ? d.toISOString().slice(0, 10) : '')}
-                        error={errors.date}
+                        value={form.transaction_date ? new Date(form.transaction_date + 'T00:00:00') : null}
+                        onChange={(d) => setData('transaction_date', d ? toLocalIso(d) : '')}
+                        error={errors.transaction_date}
                     />
                     <div>
                         <div className="flex items-center justify-between mb-1.5">
@@ -516,9 +521,9 @@ function TransferEditContent({ data, form, setData, errors, processing, onSubmit
                         <DatePicker
                             mode="single"
                             label="Tanggal *"
-                            value={form.date ? new Date(form.date) : null}
-                            onChange={(d) => setData('date', d ? d.toISOString().slice(0, 10) : '')}
-                            error={errors.date}
+                            value={form.transaction_date ? new Date(form.transaction_date + 'T00:00:00') : null}
+                            onChange={(d) => setData('transaction_date', d ? toLocalIso(d) : '')}
+                            error={errors.transaction_date}
                         />
                         <Input
                             label="Deskripsi *"

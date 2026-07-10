@@ -7,6 +7,8 @@ use App\Models\BankTransaction;
 use App\Models\TransactionCategory;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
@@ -190,6 +192,56 @@ class BankTransactionControllerTest extends TestCase
             ])
             ->assertStatus(422)
             ->assertJsonValidationErrors('from_account_id');
+    }
+
+    public function test_update_via_method_spoofing_saves_category_and_attachment(): void
+    {
+        Storage::fake('public');
+
+        $tx = BankTransaction::factory()->create([
+            'bank_account_id' => $this->account->id,
+            'category_id' => $this->category->id,
+            'transaction_type' => 'debit',
+            'transaction_date' => '2026-07-01',
+            'description' => 'Sebelum diubah',
+            'amount' => 100000,
+        ]);
+
+        $newCategory = TransactionCategory::create(['type' => 'expense', 'label' => 'Beban Maintenance']);
+
+        $this->actingAs($this->admin)->post("/bank-transactions/{$tx->id}", [
+            '_method' => 'put',
+            'amount' => 673000,
+            'transaction_date' => '2026-07-08',
+            'description' => 'Belanja bahan wastafel',
+            'category_id' => $newCategory->id,
+            'attachment' => UploadedFile::fake()->image('clipboard-1783657398686.jpeg'),
+        ])->assertRedirect();
+
+        $tx->refresh();
+
+        $this->assertSame($newCategory->id, $tx->category_id);
+        $this->assertSame(673000, $tx->amount);
+        $this->assertSame('2026-07-08', $tx->transaction_date->toDateString());
+        $this->assertSame('Belanja bahan wastafel', $tx->description);
+        $this->assertSame('clipboard-1783657398686.jpeg', $tx->attachment_name);
+        Storage::disk('public')->assertExists($tx->attachment_path);
+    }
+
+    public function test_update_requires_transaction_date_not_date(): void
+    {
+        $tx = BankTransaction::factory()->create([
+            'bank_account_id' => $this->account->id,
+            'transaction_type' => 'debit',
+        ]);
+
+        $this->actingAs($this->admin)
+            ->putJson("/bank-transactions/{$tx->id}", [
+                'date' => '2026-07-08',
+                'description' => 'Pakai key date yang salah',
+            ])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['transaction_date']);
     }
 
     public function test_bulk_destroy_deletes_multiple_transactions(): void

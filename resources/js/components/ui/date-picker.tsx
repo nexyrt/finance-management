@@ -289,7 +289,9 @@ export function DatePicker(props: DatePickerProps) {
     const isRange = props.mode === 'range';
 
     const monthValue = isMonth ? ((props as DatePickerMonthProps).value ?? null) : null;
-    const singleValue = !isMonth && !isRange ? ((props as DatePickerSingleProps).value ?? null) : null;
+    // An Invalid Date would make format() throw and take the whole dialog down; treat it as empty.
+    const rawSingleValue = !isMonth && !isRange ? ((props as DatePickerSingleProps).value ?? null) : null;
+    const singleValue = rawSingleValue && !Number.isNaN(rawSingleValue.getTime()) ? rawSingleValue : null;
     const rangeValue = isRange ? ((props as DatePickerRangeProps).value ?? null) : null;
 
     /* picker year for month mode — initialised from value or current year */
