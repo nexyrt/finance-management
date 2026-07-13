@@ -17,6 +17,7 @@ class DisburseFundRequestRequest extends FormRequest
             'bank_account_id' => ['required', 'exists:bank_accounts,id'],
             'disbursement_date' => ['required', 'date', 'before_or_equal:today'],
             'disbursement_notes' => ['nullable', 'string', 'max:500'],
+            'attachment' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
         ];
     }
 }

@@ -143,6 +143,7 @@ export default function FundRequestsIndex({
     const [disburseBankAccountId, setDisburseBankAccountId] = React.useState<number | null>(null);
     const [disburseDate, setDisburseDate] = React.useState(new Date().toISOString().slice(0, 10));
     const [disburseNotes, setDisburseNotes] = React.useState('');
+    const [disburseFile, setDisburseFile] = React.useState<File | null>(null);
     const [disburseProcessing, setDisburseProcessing] = React.useState(false);
 
     // Delete confirm
@@ -251,6 +252,7 @@ export default function FundRequestsIndex({
                 bank_account_id: disburseBankAccountId,
                 disbursement_date: disburseDate,
                 disbursement_notes: disburseNotes || undefined,
+                attachment: disburseFile || undefined,
             },
             {
                 preserveScroll: true,
@@ -260,6 +262,7 @@ export default function FundRequestsIndex({
                     setDetailRow(null);
                     setDisburseBankAccountId(null);
                     setDisburseNotes('');
+                    setDisburseFile(null);
                 },
                 onError: () => toast.error('Gagal mencairkan dana'),
                 onFinish: () => setDisburseProcessing(false),
@@ -737,6 +740,13 @@ export default function FundRequestsIndex({
                             onChange={(e) => setDisburseNotes(e.target.value)}
                             placeholder="Catatan atau nomor referensi (opsional)..."
                             rows={2}
+                        />
+                        <FileUpload
+                            label="Bukti Pembayaran (opsional)"
+                            value={disburseFile}
+                            onChange={setDisburseFile}
+                            accept={['.pdf', '.jpg', '.jpeg', '.png']}
+                            hint="Dilampirkan ke transaksi pengeluaran yang terbentuk"
                         />
                     </div>
                     <DialogFooter>

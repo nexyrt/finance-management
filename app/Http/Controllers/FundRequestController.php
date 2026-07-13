@@ -424,7 +424,15 @@ class FundRequestController extends Controller
 
         $fundRequest->load('items');
 
-        DB::transaction(function () use ($fundRequest, $validated) {
+        $attachmentPath = null;
+        $attachmentName = null;
+        if ($request->hasFile('attachment')) {
+            $file = $request->file('attachment');
+            $attachmentPath = $file->store('transaction-attachments', 'public');
+            $attachmentName = $file->getClientOriginalName();
+        }
+
+        DB::transaction(function () use ($fundRequest, $validated, $attachmentPath, $attachmentName) {
             $transactionIds = [];
 
             foreach ($fundRequest->items as $item) {
@@ -436,6 +444,8 @@ class FundRequestController extends Controller
                     'category_id' => $item->category_id,
                     'description' => "Pencairan Dana: {$fundRequest->title} - {$item->description}",
                     'reference_number' => $validated['disbursement_notes'] ?? null,
+                    'attachment_path' => $attachmentPath,
+                    'attachment_name' => $attachmentName,
                 ]);
 
                 $transactionIds[] = $transaction->id;

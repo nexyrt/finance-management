@@ -236,6 +236,27 @@ class FundRequestControllerTest extends TestCase
         ]);
     }
 
+    public function test_disburse_attaches_payment_proof_to_created_transactions(): void
+    {
+        \Illuminate\Support\Facades\Storage::fake('public');
+
+        $fr = $this->makeDraftFundRequest($this->staff);
+        $fr->update(['status' => 'approved']);
+
+        $account = BankAccount::factory()->create();
+
+        $this->actingAs($this->admin)->post("/fund-requests/{$fr->id}/disburse", [
+            'bank_account_id' => $account->id,
+            'disbursement_date' => now()->toDateString(),
+            'attachment' => \Illuminate\Http\UploadedFile::fake()->image('bukti-transfer.png'),
+        ])->assertRedirect();
+
+        $transaction = \App\Models\BankTransaction::where('bank_account_id', $account->id)->first();
+        $this->assertNotNull($transaction->attachment_path);
+        $this->assertSame('bukti-transfer.png', $transaction->attachment_name);
+        \Illuminate\Support\Facades\Storage::disk('public')->assertExists($transaction->attachment_path);
+    }
+
     public function test_destroy_deletes_draft_fund_request(): void
     {
         $fr = $this->makeDraftFundRequest($this->admin);
