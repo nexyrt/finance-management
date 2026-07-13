@@ -32,6 +32,17 @@ export interface FundRequestRow {
     attachment_url: string | null;
     attachment_name: string | null;
     items_count: number;
+    items: {
+        id: number;
+        description: string;
+        category_label: string | null;
+        quantity: number;
+        unit_price: number;
+        amount: number;
+    }[];
+    disbursement_account_name: string | null;
+    disbursement_attachment_url: string | null;
+    disbursement_attachment_name: string | null;
     can_edit: boolean;
     can_delete: boolean;
     can_submit: boolean;

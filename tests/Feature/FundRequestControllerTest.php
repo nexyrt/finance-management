@@ -3,11 +3,15 @@
 namespace Tests\Feature;
 
 use App\Models\BankAccount;
+use App\Models\BankTransaction;
 use App\Models\FundRequest;
 use App\Models\FundRequestItem;
 use App\Models\TransactionCategory;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
+use Inertia\Testing\AssertableInertia;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
@@ -238,7 +242,7 @@ class FundRequestControllerTest extends TestCase
 
     public function test_disburse_attaches_payment_proof_to_created_transactions(): void
     {
-        \Illuminate\Support\Facades\Storage::fake('public');
+        Storage::fake('public');
 
         $fr = $this->makeDraftFundRequest($this->staff);
         $fr->update(['status' => 'approved']);
@@ -248,13 +252,21 @@ class FundRequestControllerTest extends TestCase
         $this->actingAs($this->admin)->post("/fund-requests/{$fr->id}/disburse", [
             'bank_account_id' => $account->id,
             'disbursement_date' => now()->toDateString(),
-            'attachment' => \Illuminate\Http\UploadedFile::fake()->image('bukti-transfer.png'),
+            'attachment' => UploadedFile::fake()->image('bukti-transfer.png'),
         ])->assertRedirect();
 
-        $transaction = \App\Models\BankTransaction::where('bank_account_id', $account->id)->first();
+        $transaction = BankTransaction::where('bank_account_id', $account->id)->first();
         $this->assertNotNull($transaction->attachment_path);
         $this->assertSame('bukti-transfer.png', $transaction->attachment_name);
-        \Illuminate\Support\Facades\Storage::disk('public')->assertExists($transaction->attachment_path);
+        Storage::disk('public')->assertExists($transaction->attachment_path);
+
+        $this->actingAs($this->admin)->get('/fund-requests')->assertInertia(
+            fn (AssertableInertia $page) => $page
+                ->where('rows.0.disbursement_attachment_name', 'bukti-transfer.png')
+                ->where('rows.0.disbursement_account_name', $account->account_name.' — '.$account->bank_name)
+                ->where('rows.0.items.0.description', 'Beli Kertas A4')
+                ->etc()
+        );
     }
 
     public function test_destroy_deletes_draft_fund_request(): void

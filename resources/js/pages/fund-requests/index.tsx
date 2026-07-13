@@ -601,14 +601,8 @@ export default function FundRequestsIndex({
                                 <Field label="Dibutuhkan" value={formatDate(detailRow.needed_by_date)} />
                                 <Field label="Total" value={formatCurrency(detailRow.total_amount)} />
                                 <Field label="Status" value={<StatusBadge status={detailRow.status} />} />
-                                {detailRow.items_count > 0 && (
-                                    <Field label="Jumlah Item" value={`${detailRow.items_count} item`} />
-                                )}
                                 {detailRow.reviewed_by_name && (
                                     <Field label="Direview oleh" value={detailRow.reviewed_by_name} />
-                                )}
-                                {detailRow.disbursed_by_name && (
-                                    <Field label="Dicairkan oleh" value={`${detailRow.disbursed_by_name} — ${formatDate(detailRow.disbursement_date ?? '')}`} />
                                 )}
                                 {detailRow.review_notes && (
                                     <div className="col-span-2">
@@ -630,6 +624,71 @@ export default function FundRequestsIndex({
                                     className="inline-flex items-center gap-2 text-sm text-primary-600 dark:text-primary-400 hover:underline"
                                     iconSize="w-4 h-4"
                                 />
+                            )}
+
+                            {/* Item biaya */}
+                            {detailRow.items.length > 0 && (
+                                <div>
+                                    <p className="text-xs font-medium uppercase tracking-wide text-dark-500 dark:text-dark-400 mb-2">
+                                        Item Biaya ({detailRow.items.length})
+                                    </p>
+                                    <div className="rounded-xl border border-secondary-200 dark:border-dark-600 divide-y divide-secondary-200 dark:divide-dark-600 overflow-hidden">
+                                        {detailRow.items.map((item) => (
+                                            <div key={item.id} className="flex items-center justify-between gap-3 px-3 py-2.5 bg-secondary-50/50 dark:bg-dark-800/50">
+                                                <div className="min-w-0">
+                                                    <p className="text-sm text-dark-900 dark:text-dark-200 truncate">{item.description}</p>
+                                                    <p className="text-xs text-dark-500 dark:text-dark-400">
+                                                        {item.category_label ?? '—'} · {item.quantity} × {formatCurrency(item.unit_price)}
+                                                    </p>
+                                                </div>
+                                                <p className="text-sm font-medium text-dark-900 dark:text-dark-100 shrink-0">
+                                                    {formatCurrency(item.amount)}
+                                                </p>
+                                            </div>
+                                        ))}
+                                        <div className="flex items-center justify-between px-3 py-2.5">
+                                            <p className="text-sm font-medium text-dark-900 dark:text-dark-200">Total</p>
+                                            <p className="text-sm font-semibold text-dark-900 dark:text-dark-50">
+                                                {formatCurrency(detailRow.total_amount)}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Info pencairan */}
+                            {detailRow.status === 'disbursed' && (
+                                <div>
+                                    <p className="text-xs font-medium uppercase tracking-wide text-dark-500 dark:text-dark-400 mb-2">
+                                        Pencairan
+                                    </p>
+                                    <div className="rounded-xl border border-green-200 dark:border-green-900 bg-green-50/50 dark:bg-green-900/10 p-3 space-y-3">
+                                        <div className="grid grid-cols-2 gap-3 text-sm">
+                                            <Field label="Rekening" value={detailRow.disbursement_account_name ?? '—'} />
+                                            <Field label="Tanggal" value={formatDate(detailRow.disbursement_date ?? '')} />
+                                            {detailRow.disbursed_by_name && (
+                                                <Field label="Dicairkan oleh" value={detailRow.disbursed_by_name} />
+                                            )}
+                                            {detailRow.disbursement_notes && (
+                                                <Field label="Catatan" value={detailRow.disbursement_notes} />
+                                            )}
+                                        </div>
+                                        <p className="text-xs text-dark-500 dark:text-dark-400">
+                                            {detailRow.items_count} transaksi pengeluaran dibuat di rekening ini — lihat di menu Pengeluaran.
+                                        </p>
+                                        {detailRow.disbursement_attachment_url ? (
+                                            <AttachmentPreviewButton
+                                                url={detailRow.disbursement_attachment_url}
+                                                name={detailRow.disbursement_attachment_name}
+                                                label={detailRow.disbursement_attachment_name ?? 'Lihat Bukti Pembayaran'}
+                                                className="inline-flex items-center gap-2 text-sm text-primary-600 dark:text-primary-400 hover:underline"
+                                                iconSize="w-4 h-4"
+                                            />
+                                        ) : (
+                                            <p className="text-xs text-dark-400 dark:text-dark-500">Tidak ada bukti pembayaran diupload.</p>
+                                        )}
+                                    </div>
+                                </div>
                             )}
                         </div>
                     )}

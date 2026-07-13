@@ -35,7 +35,7 @@ class FundRequestController extends Controller
         $perPage = (int) $request->input('per_page', 15);
         $page = (int) $request->input('page', 1);
 
-        $query = FundRequest::with(['user', 'reviewer', 'disburser'])
+        $query = FundRequest::with(['user', 'reviewer', 'disburser', 'items.category', 'bankTransaction.bankAccount'])
             ->withCount('items');
 
         if ($tab === 'my') {
@@ -97,6 +97,21 @@ class FundRequestController extends Controller
             'attachment_url' => $r->attachment_path ? Storage::url($r->attachment_path) : null,
             'attachment_name' => $r->attachment_name,
             'items_count' => $r->items_count,
+            'items' => $r->items->map(fn ($i) => [
+                'id' => $i->id,
+                'description' => $i->description,
+                'category_label' => $i->category?->label,
+                'quantity' => $i->quantity,
+                'unit_price' => $i->unit_price,
+                'amount' => $i->amount,
+            ]),
+            'disbursement_account_name' => $r->bankTransaction?->bankAccount
+                ? $r->bankTransaction->bankAccount->account_name.' — '.$r->bankTransaction->bankAccount->bank_name
+                : null,
+            'disbursement_attachment_url' => $r->bankTransaction?->attachment_path
+                ? Storage::url($r->bankTransaction->attachment_path)
+                : null,
+            'disbursement_attachment_name' => $r->bankTransaction?->attachment_name,
             'can_edit' => $r->canEdit() && ($r->user_id === auth()->id() || auth()->user()->hasRole('admin')),
             'can_delete' => $r->canDelete(),
             'can_submit' => $r->canSubmit() && $r->user_id === auth()->id(),
