@@ -435,7 +435,7 @@ class FundRequestController extends Controller
                     'transaction_type' => 'debit',
                     'category_id' => $item->category_id,
                     'description' => "Pencairan Dana: {$fundRequest->title} - {$item->description}",
-                    'reference_number' => $validated['disbursement_notes'],
+                    'reference_number' => $validated['disbursement_notes'] ?? null,
                 ]);
 
                 $transactionIds[] = $transaction->id;
@@ -445,7 +445,7 @@ class FundRequestController extends Controller
                 $transactionIds[0],
                 $validated['disbursement_date'],
                 auth()->id(),
-                $validated['disbursement_notes']
+                $validated['disbursement_notes'] ?? null
             );
         });
 

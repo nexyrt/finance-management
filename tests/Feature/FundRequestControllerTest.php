@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\BankAccount;
 use App\Models\FundRequest;
 use App\Models\FundRequestItem;
 use App\Models\TransactionCategory;
@@ -210,6 +211,29 @@ class FundRequestControllerTest extends TestCase
         $this->actingAs($this->staff)->post("/fund-requests/{$fr->id}/review", [
             'action' => 'approve',
         ])->assertForbidden();
+    }
+
+    public function test_disburse_works_without_disbursement_notes(): void
+    {
+        $fr = $this->makeDraftFundRequest($this->staff);
+        $fr->update(['status' => 'approved']);
+
+        $account = BankAccount::factory()->create();
+
+        $this->actingAs($this->admin)->post("/fund-requests/{$fr->id}/disburse", [
+            'bank_account_id' => $account->id,
+            'disbursement_date' => now()->toDateString(),
+        ])->assertRedirect();
+
+        $this->assertDatabaseHas('fund_requests', [
+            'id' => $fr->id,
+            'status' => 'disbursed',
+        ]);
+        $this->assertDatabaseHas('bank_transactions', [
+            'bank_account_id' => $account->id,
+            'transaction_type' => 'debit',
+            'reference_number' => null,
+        ]);
     }
 
     public function test_destroy_deletes_draft_fund_request(): void
