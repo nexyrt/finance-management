@@ -69,6 +69,31 @@ class TransactionCategory extends Model
     }
 
     /**
+     * Options for category pickers: parents are disabled group headers,
+     * only child categories are selectable.
+     *
+     * @return array<int,array{label:string, value:int, disabled?:bool}>
+     */
+    public static function selectOptions(string $type): array
+    {
+        $options = [];
+        $parents = self::whereNull('parent_id')
+            ->where('type', $type)
+            ->with('children')
+            ->orderBy('label')
+            ->get();
+
+        foreach ($parents as $parent) {
+            $options[] = ['label' => $parent->label, 'value' => $parent->id, 'disabled' => true];
+            foreach ($parent->children as $child) {
+                $options[] = ['label' => '↳ '.$child->label, 'value' => $child->id];
+            }
+        }
+
+        return $options;
+    }
+
+    /**
      * Scope: Get only parent categories (no parent_id)
      */
     public function scopeParents($query)

@@ -520,21 +520,7 @@ class CashFlowController extends Controller
      */
     private function categoryOptions(string $type): array
     {
-        $options = [];
-        $parents = TransactionCategory::whereNull('parent_id')
-            ->where('type', $type)
-            ->with('children')
-            ->orderBy('label')
-            ->get();
-
-        foreach ($parents as $parent) {
-            $options[] = ['label' => $parent->label, 'value' => $parent->id, 'disabled' => true];
-            foreach ($parent->children as $child) {
-                $options[] = ['label' => '↳ '.$child->label, 'value' => $child->id];
-            }
-        }
-
-        return $options;
+        return TransactionCategory::selectOptions($type);
     }
 
     /**

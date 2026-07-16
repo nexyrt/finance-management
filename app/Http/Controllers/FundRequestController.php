@@ -132,11 +132,7 @@ class FundRequestController extends Controller
             ? User::orderBy('name')->get()->map(fn ($u) => ['value' => $u->id, 'label' => $u->name])
             : collect();
 
-        $categories = TransactionCategory::with('parent')
-            ->where('type', 'expense')
-            ->orderBy('label')
-            ->get()
-            ->map(fn ($c) => ['value' => $c->id, 'label' => $c->full_path]);
+        $categories = TransactionCategory::selectOptions('expense');
 
         $nextNumber = FundRequest::generateRequestNumber();
 
@@ -207,11 +203,7 @@ class FundRequestController extends Controller
 
     public function create(): Response
     {
-        $categories = TransactionCategory::with('parent')
-            ->where('type', 'expense')
-            ->orderBy('label')
-            ->get()
-            ->map(fn ($c) => ['value' => $c->id, 'label' => $c->full_path]);
+        $categories = TransactionCategory::selectOptions('expense');
 
         $nextNumber = FundRequest::generateRequestNumber();
 
@@ -282,11 +274,7 @@ class FundRequestController extends Controller
                 ->with('error', 'Permintaan dana tidak dapat diedit');
         }
 
-        $categories = TransactionCategory::with('parent')
-            ->where('type', 'expense')
-            ->orderBy('label')
-            ->get()
-            ->map(fn ($c) => ['value' => $c->id, 'label' => $c->full_path]);
+        $categories = TransactionCategory::selectOptions('expense');
 
         $items = $fundRequest->items->map(fn ($i) => [
             'id' => $i->id,

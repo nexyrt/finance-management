@@ -104,14 +104,7 @@ class ReimbursementController extends Controller
                 'label' => $b->account_name.' — '.$b->bank_name.' ('.$b->formatted_balance.')',
             ]);
 
-        $categoryOptions = TransactionCategory::where('type', 'expense')
-            ->with('parent')
-            ->orderBy('label')
-            ->get()
-            ->map(fn ($c) => [
-                'value' => $c->id,
-                'label' => $c->full_path,
-            ]);
+        $categoryOptions = TransactionCategory::selectOptions('expense');
 
         return Inertia::render('reimbursements/index', [
             'rows' => $rows,
