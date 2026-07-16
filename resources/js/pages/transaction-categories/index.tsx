@@ -41,6 +41,8 @@ interface Category {
     parent_label: string | null;
     transactions_count: number;
     children_count: number;
+    fund_request_items_count: number;
+    reimbursements_count: number;
 }
 
 interface ParentOption {
@@ -77,6 +79,7 @@ interface Props extends SharedProps {
     categories: PaginatedCategories;
     stats: Stats;
     parentOptions: ParentOption[];
+    reassignOptions: ParentOption[];
     filters: Filters;
 }
 
@@ -206,7 +209,7 @@ function CategoryForm({ form, parentOptions, onCancel, title, submitLabel }: Cat
 /* ─────────────────────────────────── main page ─── */
 
 export default function TransactionCategoriesIndex() {
-    const { categories, stats, parentOptions, filters } = usePage<Props>().props;
+    const { categories, stats, parentOptions, reassignOptions, filters } = usePage<Props>().props;
 
     const [search, setSearch] = React.useState(filters.search ?? '');
     const [typeFilter, setTypeFilter] = React.useState(filters.type ?? '');
@@ -266,13 +269,34 @@ export default function TransactionCategoriesIndex() {
     }
 
     /* ── Delete ── */
-    const deleteForm = useForm({});
+    const [reassignToId, setReassignToId] = React.useState<number | null>(null);
+    const [deleteProcessing, setDeleteProcessing] = React.useState(false);
+
+    const deleteUsageCount = deleteTarget
+        ? deleteTarget.transactions_count + deleteTarget.fund_request_items_count + deleteTarget.reimbursements_count
+        : 0;
+
+    const reassignTargetOptions = React.useMemo(
+        () => reassignOptions
+            .filter((o) => deleteTarget && o.type === deleteTarget.type && o.id !== deleteTarget.id)
+            .map((o) => ({ value: o.id, label: o.label })),
+        [reassignOptions, deleteTarget],
+    );
+
+    function openDelete(cat: Category) {
+        setReassignToId(null);
+        setDeleteTarget(cat);
+    }
 
     function confirmDelete() {
         if (!deleteTarget) return;
-        deleteForm.delete(`/transaction-categories/${deleteTarget.id}`, {
-            onSuccess: () => { setDeleteTarget(null); toast.success('Kategori berhasil dihapus.'); },
+        setDeleteProcessing(true);
+        router.delete(`/transaction-categories/${deleteTarget.id}`, {
+            data: reassignToId ? { reassign_to_id: reassignToId } : {},
+            preserveScroll: true,
+            onSuccess: () => { setDeleteTarget(null); setReassignToId(null); toast.success('Kategori berhasil dihapus.'); },
             onError: (errs) => toastErrors(errs, 'DeleteCategory'),
+            onFinish: () => setDeleteProcessing(false),
         });
     }
 
@@ -406,7 +430,7 @@ export default function TransactionCategoriesIndex() {
                                                         variant="ghost"
                                                         size="icon-sm"
                                                         icon={<Trash2 className="h-3.5 w-3.5 text-red-500" />}
-                                                        onClick={() => setDeleteTarget(cat)}
+                                                        onClick={() => openDelete(cat)}
                                                         disabled={cat.transactions_count > 0 || cat.children_count > 0}
                                                     />
                                                 </div>
@@ -456,16 +480,70 @@ export default function TransactionCategoriesIndex() {
                 </DialogContent>
             </Dialog>
 
-            {/* Delete confirm */}
+            {/* Delete confirm — unused category */}
             <ConfirmDialog
-                open={!!deleteTarget}
+                open={!!deleteTarget && deleteUsageCount === 0}
                 onOpenChange={(o) => { if (!o) setDeleteTarget(null); }}
                 title="Hapus Kategori"
                 description={deleteTarget ? `Hapus kategori "${deleteTarget.label}"?` : ''}
                 confirmLabel="Hapus"
-                loading={deleteForm.processing}
+                loading={deleteProcessing}
                 onConfirm={confirmDelete}
             />
+
+            {/* Delete + reassign — category in use */}
+            <Dialog open={!!deleteTarget && deleteUsageCount > 0} onOpenChange={(o) => { if (!o) setDeleteTarget(null); }}>
+                <DialogContent size="md">
+                    <DialogHeader>
+                        <DialogTitle>Hapus Kategori</DialogTitle>
+                    </DialogHeader>
+                    {deleteTarget && (
+                        <div className="p-6 space-y-4">
+                            <div className="flex gap-3 rounded-xl border border-yellow-200 dark:border-yellow-900 bg-yellow-50/50 dark:bg-yellow-900/10 p-3">
+                                <TriangleAlert className="w-5 h-5 shrink-0 text-yellow-600 dark:text-yellow-500 mt-0.5" />
+                                <div className="text-sm text-dark-700 dark:text-dark-300">
+                                    <p>
+                                        Kategori <span className="font-medium">"{deleteTarget.label}"</span> masih digunakan oleh:
+                                    </p>
+                                    <ul className="mt-1 list-disc list-inside text-dark-600 dark:text-dark-400">
+                                        {deleteTarget.transactions_count > 0 && (
+                                            <li>{deleteTarget.transactions_count} transaksi</li>
+                                        )}
+                                        {deleteTarget.fund_request_items_count > 0 && (
+                                            <li>{deleteTarget.fund_request_items_count} item permintaan dana</li>
+                                        )}
+                                        {deleteTarget.reimbursements_count > 0 && (
+                                            <li>{deleteTarget.reimbursements_count} reimbursement</li>
+                                        )}
+                                    </ul>
+                                    <p className="mt-1">
+                                        Pilih kategori pengganti — semua data di atas akan dipindahkan ke sana sebelum kategori ini dihapus.
+                                    </p>
+                                </div>
+                            </div>
+                            <Combobox
+                                label="Pindahkan ke Kategori *"
+                                options={reassignTargetOptions}
+                                value={reassignToId}
+                                onChange={(v) => setReassignToId(v ? Number(v) : null)}
+                                placeholder="Pilih kategori pengganti"
+                            />
+                        </div>
+                    )}
+                    <DialogFooter>
+                        <Button variant="zinc" size="sm" onClick={() => setDeleteTarget(null)}>Batal</Button>
+                        <Button
+                            variant="red"
+                            size="sm"
+                            onClick={confirmDelete}
+                            disabled={deleteProcessing || !reassignToId}
+                        >
+                            <Trash2 className="w-3.5 h-3.5" />
+                            Pindahkan & Hapus
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </>
     );
 }

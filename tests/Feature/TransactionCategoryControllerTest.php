@@ -236,6 +236,82 @@ class TransactionCategoryControllerTest extends TestCase
         $this->assertDatabaseMissing('transaction_categories', ['id' => $category->id]);
     }
 
+    public function test_destroy_with_reassign_moves_usages_then_deletes(): void
+    {
+        $category = TransactionCategory::create(['type' => 'expense', 'label' => 'Lama']);
+        $replacement = TransactionCategory::create(['type' => 'expense', 'label' => 'Pengganti']);
+        $account = BankAccount::factory()->create();
+
+        $transaction = BankTransaction::create([
+            'bank_account_id' => $account->id,
+            'category_id' => $category->id,
+            'amount' => 100000,
+            'transaction_date' => '2026-03-01',
+            'transaction_type' => 'debit',
+            'description' => 'Test transaction',
+        ]);
+
+        $fr = FundRequest::create([
+            'request_number' => '001/KSN/I/2026',
+            'user_id' => $this->admin->id,
+            'title' => 'Kebutuhan Kantor',
+            'purpose' => 'Pembelian ATK',
+            'total_amount' => 100000,
+            'priority' => 'medium',
+            'needed_by_date' => now()->addDays(7)->toDateString(),
+            'status' => 'draft',
+        ]);
+        $item = FundRequestItem::create([
+            'fund_request_id' => $fr->id,
+            'description' => 'Item',
+            'category_id' => $category->id,
+            'quantity' => 1,
+            'unit_price' => 100000,
+            'amount' => 100000,
+        ]);
+
+        $reimbursement = Reimbursement::create([
+            'user_id' => $this->admin->id,
+            'title' => 'Transport',
+            'amount' => 50000,
+            'expense_date' => now()->toDateString(),
+            'category_input' => 'Transport',
+            'category_id' => $category->id,
+        ]);
+
+        $this->actingAs($this->admin)
+            ->delete("/transaction-categories/{$category->id}", ['reassign_to_id' => $replacement->id])
+            ->assertRedirect()
+            ->assertSessionHasNoErrors();
+
+        $this->assertDatabaseMissing('transaction_categories', ['id' => $category->id]);
+        $this->assertDatabaseHas('bank_transactions', ['id' => $transaction->id, 'category_id' => $replacement->id]);
+        $this->assertDatabaseHas('fund_request_items', ['id' => $item->id, 'category_id' => $replacement->id]);
+        $this->assertDatabaseHas('reimbursements', ['id' => $reimbursement->id, 'category_id' => $replacement->id]);
+    }
+
+    public function test_destroy_reassign_rejects_different_type(): void
+    {
+        $category = TransactionCategory::create(['type' => 'expense', 'label' => 'Beban Lama']);
+        $incomeCategory = TransactionCategory::create(['type' => 'income', 'label' => 'Pendapatan']);
+        $account = BankAccount::factory()->create();
+
+        BankTransaction::create([
+            'bank_account_id' => $account->id,
+            'category_id' => $category->id,
+            'amount' => 100000,
+            'transaction_date' => '2026-03-01',
+            'transaction_type' => 'debit',
+            'description' => 'Test transaction',
+        ]);
+
+        $this->actingAs($this->admin)
+            ->delete("/transaction-categories/{$category->id}", ['reassign_to_id' => $incomeCategory->id])
+            ->assertSessionHasErrors('delete');
+
+        $this->assertDatabaseHas('transaction_categories', ['id' => $category->id]);
+    }
+
     public function test_destroy_blocked_when_category_has_children(): void
     {
         $parent = TransactionCategory::create(['type' => 'expense', 'label' => 'Parent']);

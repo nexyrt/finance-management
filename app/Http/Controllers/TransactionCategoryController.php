@@ -8,6 +8,7 @@ use App\Models\TransactionCategory;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -24,7 +25,7 @@ class TransactionCategoryController extends Controller
         $direction = $request->input('direction', 'asc');
 
         $categories = TransactionCategory::with(['parent'])
-            ->withCount(['transactions', 'children'])
+            ->withCount(['transactions', 'children', 'fundRequestItems', 'reimbursements'])
             ->when($search, fn ($q) => $q->where('label', 'like', "%{$search}%"))
             ->when($type, fn ($q) => $q->where('type', $type))
             ->when($plStatus === 'unclassified', fn ($q) => $q->whereIn('type', ['income', 'expense'])->whereNull('pl_group'))
@@ -41,6 +42,8 @@ class TransactionCategoryController extends Controller
                 'parent_label' => $cat->parent?->label,
                 'transactions_count' => $cat->transactions_count,
                 'children_count' => $cat->children_count,
+                'fund_request_items_count' => $cat->fund_request_items_count,
+                'reimbursements_count' => $cat->reimbursements_count,
             ]);
 
         $all = TransactionCategory::withCount('transactions')->get();
@@ -62,10 +65,20 @@ class TransactionCategoryController extends Controller
                 'type' => $cat->type,
             ]);
 
+        $reassignOptions = TransactionCategory::with('parent')
+            ->orderBy('label')
+            ->get()
+            ->map(fn ($cat) => [
+                'id' => $cat->id,
+                'label' => $cat->full_path,
+                'type' => $cat->type,
+            ]);
+
         return Inertia::render('transaction-categories/index', [
             'categories' => $categories,
             'stats' => $stats,
             'parentOptions' => $parentOptions,
+            'reassignOptions' => $reassignOptions,
             'filters' => [
                 'search' => $search,
                 'type' => $type,
@@ -115,25 +128,45 @@ class TransactionCategoryController extends Controller
         return back();
     }
 
-    public function destroy(TransactionCategory $transactionCategory): RedirectResponse
+    public function destroy(Request $request, TransactionCategory $transactionCategory): RedirectResponse
     {
         if ($transactionCategory->children()->exists()) {
             return redirect()->back()->withErrors(['delete' => 'Kategori ini memiliki sub-kategori. Hapus sub-kategori terlebih dahulu.']);
         }
 
-        if ($transactionCategory->transactions()->exists()) {
-            return redirect()->back()->withErrors(['delete' => 'Kategori ini digunakan oleh transaksi dan tidak dapat dihapus.']);
+        $validated = $request->validate([
+            'reassign_to_id' => [
+                'nullable',
+                Rule::exists('transaction_categories', 'id'),
+                Rule::notIn([$transactionCategory->id]),
+            ],
+        ]);
+
+        $inUse = $transactionCategory->transactions()->exists()
+            || $transactionCategory->fundRequestItems()->exists()
+            || $transactionCategory->reimbursements()->exists();
+
+        $reassignTo = isset($validated['reassign_to_id'])
+            ? TransactionCategory::find($validated['reassign_to_id'])
+            : null;
+
+        if ($inUse && ! $reassignTo) {
+            return redirect()->back()->withErrors(['delete' => 'Kategori ini masih digunakan. Pilih kategori pengganti untuk memindahkan data yang terhubung.']);
         }
 
-        if ($transactionCategory->fundRequestItems()->exists()) {
-            return redirect()->back()->withErrors(['delete' => 'Kategori ini digunakan oleh permintaan dana dan tidak dapat dihapus.']);
+        if ($inUse && $reassignTo->type !== $transactionCategory->type) {
+            return redirect()->back()->withErrors(['delete' => 'Kategori pengganti harus bertipe sama.']);
         }
 
-        if ($transactionCategory->reimbursements()->exists()) {
-            return redirect()->back()->withErrors(['delete' => 'Kategori ini digunakan oleh reimbursement dan tidak dapat dihapus.']);
-        }
+        DB::transaction(function () use ($transactionCategory, $reassignTo, $inUse) {
+            if ($inUse) {
+                $transactionCategory->transactions()->update(['category_id' => $reassignTo->id]);
+                $transactionCategory->fundRequestItems()->update(['category_id' => $reassignTo->id]);
+                $transactionCategory->reimbursements()->update(['category_id' => $reassignTo->id]);
+            }
 
-        $transactionCategory->delete();
+            $transactionCategory->delete();
+        });
 
         return redirect()->back()->with('success', 'Kategori berhasil dihapus.');
     }
