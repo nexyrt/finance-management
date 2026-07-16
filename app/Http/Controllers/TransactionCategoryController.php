@@ -125,6 +125,14 @@ class TransactionCategoryController extends Controller
             return redirect()->back()->withErrors(['delete' => 'Kategori ini digunakan oleh transaksi dan tidak dapat dihapus.']);
         }
 
+        if ($transactionCategory->fundRequestItems()->exists()) {
+            return redirect()->back()->withErrors(['delete' => 'Kategori ini digunakan oleh permintaan dana dan tidak dapat dihapus.']);
+        }
+
+        if ($transactionCategory->reimbursements()->exists()) {
+            return redirect()->back()->withErrors(['delete' => 'Kategori ini digunakan oleh reimbursement dan tidak dapat dihapus.']);
+        }
+
         $transactionCategory->delete();
 
         return redirect()->back()->with('success', 'Kategori berhasil dihapus.');

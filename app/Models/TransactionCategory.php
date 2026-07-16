@@ -61,6 +61,14 @@ class TransactionCategory extends Model
     }
 
     /**
+     * Fund request items relationship
+     */
+    public function fundRequestItems(): HasMany
+    {
+        return $this->hasMany(FundRequestItem::class, 'category_id');
+    }
+
+    /**
      * Scope: Get only parent categories (no parent_id)
      */
     public function scopeParents($query)

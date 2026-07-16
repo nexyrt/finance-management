@@ -4,6 +4,9 @@ namespace Tests\Feature;
 
 use App\Models\BankAccount;
 use App\Models\BankTransaction;
+use App\Models\FundRequest;
+use App\Models\FundRequestItem;
+use App\Models\Reimbursement;
 use App\Models\TransactionCategory;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -243,6 +246,56 @@ class TransactionCategoryControllerTest extends TestCase
             ->assertSessionHasErrors('delete');
 
         $this->assertDatabaseHas('transaction_categories', ['id' => $parent->id]);
+    }
+
+    public function test_destroy_blocked_when_category_used_by_fund_request_items(): void
+    {
+        $category = TransactionCategory::create(['type' => 'expense', 'label' => 'Dipakai FR']);
+
+        $fr = FundRequest::create([
+            'request_number' => '001/KSN/I/2026',
+            'user_id' => $this->admin->id,
+            'title' => 'Kebutuhan Kantor',
+            'purpose' => 'Pembelian ATK',
+            'total_amount' => 100000,
+            'priority' => 'medium',
+            'needed_by_date' => now()->addDays(7)->toDateString(),
+            'status' => 'draft',
+        ]);
+        FundRequestItem::create([
+            'fund_request_id' => $fr->id,
+            'description' => 'Item',
+            'category_id' => $category->id,
+            'quantity' => 1,
+            'unit_price' => 100000,
+            'amount' => 100000,
+        ]);
+
+        $this->actingAs($this->admin)
+            ->delete("/transaction-categories/{$category->id}")
+            ->assertSessionHasErrors('delete');
+
+        $this->assertDatabaseHas('transaction_categories', ['id' => $category->id]);
+    }
+
+    public function test_destroy_blocked_when_category_used_by_reimbursements(): void
+    {
+        $category = TransactionCategory::create(['type' => 'expense', 'label' => 'Dipakai Reimburse']);
+
+        Reimbursement::create([
+            'user_id' => $this->admin->id,
+            'title' => 'Transport',
+            'amount' => 50000,
+            'expense_date' => now()->toDateString(),
+            'category_input' => 'Transport',
+            'category_id' => $category->id,
+        ]);
+
+        $this->actingAs($this->admin)
+            ->delete("/transaction-categories/{$category->id}")
+            ->assertSessionHasErrors('delete');
+
+        $this->assertDatabaseHas('transaction_categories', ['id' => $category->id]);
     }
 
     public function test_destroy_blocked_when_category_has_transactions(): void
