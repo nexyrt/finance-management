@@ -24,6 +24,7 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { StatsCard } from '@/components/shared/stats-card';
 import { AppLayout } from '@/layouts/app-layout';
@@ -429,13 +430,32 @@ export default function TransactionCategoriesIndex() {
                                             <td className="px-3 py-3 align-middle">
                                                 <div className="flex items-center justify-end gap-1">
                                                     <Button variant="ghost" size="icon-sm" icon={<Pencil className="h-3.5 w-3.5" />} onClick={() => openEdit(cat)} />
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="icon-sm"
-                                                        icon={<Trash2 className="h-3.5 w-3.5 text-red-500" />}
-                                                        onClick={() => openDelete(cat)}
-                                                        disabled={cat.children_count > 0}
-                                                    />
+                                                    {cat.children_count > 0 ? (
+                                                        <TooltipProvider delayDuration={0}>
+                                                        <Tooltip>
+                                                            <TooltipTrigger asChild>
+                                                                <span tabIndex={0}>
+                                                                    <Button
+                                                                        variant="ghost"
+                                                                        size="icon-sm"
+                                                                        icon={<Trash2 className="h-3.5 w-3.5 text-red-500" />}
+                                                                        disabled
+                                                                    />
+                                                                </span>
+                                                            </TooltipTrigger>
+                                                            <TooltipContent>
+                                                                Hapus atau pindahkan {cat.children_count} sub-kategori terlebih dahulu
+                                                            </TooltipContent>
+                                                        </Tooltip>
+                                                        </TooltipProvider>
+                                                    ) : (
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon-sm"
+                                                            icon={<Trash2 className="h-3.5 w-3.5 text-red-500" />}
+                                                            onClick={() => openDelete(cat)}
+                                                        />
+                                                    )}
                                                 </div>
                                             </td>
                                         </tr>
