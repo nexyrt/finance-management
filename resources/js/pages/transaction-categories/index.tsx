@@ -417,11 +417,14 @@ export default function TransactionCategoriesIndex() {
                                                 )}
                                             </td>
                                             <td className="px-3 py-3 align-middle text-dark-600 dark:text-dark-400">
-                                                {cat.transactions_count > 0 ? (
-                                                    <Badge variant="green">{cat.transactions_count} transaksi</Badge>
-                                                ) : (
-                                                    <span className="text-xs text-dark-300 dark:text-dark-600">Belum digunakan</span>
-                                                )}
+                                                {(() => {
+                                                    const usage = cat.transactions_count + cat.fund_request_items_count + cat.reimbursements_count;
+                                                    return usage > 0 ? (
+                                                        <Badge variant="green">{usage} pemakaian</Badge>
+                                                    ) : (
+                                                        <span className="text-xs text-dark-300 dark:text-dark-600">Belum digunakan</span>
+                                                    );
+                                                })()}
                                             </td>
                                             <td className="px-3 py-3 align-middle">
                                                 <div className="flex items-center justify-end gap-1">
@@ -431,7 +434,7 @@ export default function TransactionCategoriesIndex() {
                                                         size="icon-sm"
                                                         icon={<Trash2 className="h-3.5 w-3.5 text-red-500" />}
                                                         onClick={() => openDelete(cat)}
-                                                        disabled={cat.transactions_count > 0 || cat.children_count > 0}
+                                                        disabled={cat.children_count > 0}
                                                     />
                                                 </div>
                                             </td>
