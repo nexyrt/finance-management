@@ -8,6 +8,7 @@ use App\Models\CompanyProfile;
 use App\Models\User;
 use App\Services\CashFlowExportService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\TestCase;
@@ -132,6 +133,32 @@ class CashFlowExportControllerTest extends TestCase
             ->get('/cash-flow/export/pdf?month=06&year=2026')
             ->assertOk()
             ->assertDownload('cash-flow-2026-06.pdf');
+    }
+
+    public function test_export_handles_large_datasets(): void
+    {
+        $account = BankAccount::factory()->create(['initial_balance' => 0]);
+
+        $rows = [];
+        for ($i = 0; $i < 1200; $i++) {
+            $rows[] = [
+                'bank_account_id' => $account->id,
+                'amount' => 1000,
+                'transaction_date' => '2026-06-15',
+                'transaction_type' => 'debit',
+                'description' => 'Bulk '.$i,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+        }
+        foreach (array_chunk($rows, 500) as $chunk) {
+            DB::table('bank_transactions')->insert($chunk);
+        }
+
+        $this->actingAs($this->userWithAccess())
+            ->get('/cash-flow/export/pdf?date_from=2026-06-01&date_to=2026-06-30')
+            ->assertOk()
+            ->assertDownload('cash-flow-2026-06-01-to-2026-06-30.pdf');
     }
 
     public function test_export_accepts_comma_separated_bank_accounts_param(): void

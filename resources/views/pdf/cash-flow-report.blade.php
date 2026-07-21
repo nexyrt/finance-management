@@ -236,96 +236,135 @@
         @endif
     </div>
 
-    {{-- Table --}}
-    <table>
-        <thead>
-            <tr>
-                <th class="col-no">NO</th>
-                <th class="col-date">TANGGAL</th>
-                <th class="col-description">URAIAN</th>
-                <th class="col-amount" colspan="2">UANG MASUK</th>
-                <th class="col-amount" colspan="2">PENGELUARAN</th>
-                <th class="col-amount" colspan="2">SISA SALDO</th>
-            </tr>
-        </thead>
-        <tbody>
-            {{-- Opening Balance --}}
-            <tr class="opening-balance">
-                <td colspan="3" style="text-align: left; padding-left: 15px;">
-                    <strong>SALDO AWAL (TANGGAL {{ $startDate->copy()->subDay()->format('d/m/Y') }})</strong>
-                </td>
-                <td class="right"><strong>Rp</strong></td>
-                <td class="right"><strong>{{ number_format($openingBalance, 0, ',', '.') }}</strong></td>
-                <td colspan="4" class="right"></td>
-            </tr>
+    {{-- Table — chunked into multiple <table> elements: DomPDF renders one huge
+         table quadratically, many small tables stay fast for large exports. --}}
+    @php
+        $runningBalance = $openingBalance;
+        $rowNumber = 1;
+        $totalCredit = 0;
+        $totalDebit = 0;
+        $chunks = $transactions->chunk(250);
+    @endphp
 
-            {{-- Transactions --}}
-            @php
-                $runningBalance = $openingBalance;
-                $rowNumber = 1;
-                $totalCredit = 0;
-                $totalDebit = 0;
-            @endphp
+    @forelse ($chunks as $chunk)
+        <table>
+            <thead>
+                <tr>
+                    <th class="col-no">NO</th>
+                    <th class="col-date">TANGGAL</th>
+                    <th class="col-description">URAIAN</th>
+                    <th class="col-amount" colspan="2">UANG MASUK</th>
+                    <th class="col-amount" colspan="2">PENGELUARAN</th>
+                    <th class="col-amount" colspan="2">SISA SALDO</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if ($loop->first)
+                    <tr class="opening-balance">
+                        <td colspan="3" style="text-align: left; padding-left: 15px;">
+                            <strong>SALDO AWAL (TANGGAL {{ $startDate->copy()->subDay()->format('d/m/Y') }})</strong>
+                        </td>
+                        <td class="right"><strong>Rp</strong></td>
+                        <td class="right"><strong>{{ number_format($openingBalance, 0, ',', '.') }}</strong></td>
+                        <td colspan="4" class="right"></td>
+                    </tr>
+                @endif
 
-            @foreach ($transactions as $transaction)
-                @php
-                    $runningBalance += $transaction['credit'];
-                    $runningBalance -= $transaction['debit'];
-                    $totalCredit += $transaction['credit'];
-                    $totalDebit += $transaction['debit'];
-                    $rowClass = $transaction['debit'] > 0 ? 'row-debit' : 'row-credit';
-                @endphp
-                <tr class="{{ $rowClass }}">
-                    <td class="center">{{ $rowNumber }}</td>
-                    <td class="center">{{ \Carbon\Carbon::parse($transaction['date'])->format('d/m/Y') }}</td>
-                    <td>
-                        <strong>{{ strtoupper($transaction['description']) }}</strong>
-                        @if ($transaction['category'])
-                            <br><small style="color: #666;">{{ $transaction['category'] }}</small>
+                @foreach ($chunk as $transaction)
+                    @php
+                        $runningBalance += $transaction['credit'];
+                        $runningBalance -= $transaction['debit'];
+                        $totalCredit += $transaction['credit'];
+                        $totalDebit += $transaction['debit'];
+                        $rowClass = $transaction['debit'] > 0 ? 'row-debit' : 'row-credit';
+                    @endphp
+                    <tr class="{{ $rowClass }}">
+                        <td class="center">{{ $rowNumber }}</td>
+                        <td class="center">{{ \Carbon\Carbon::parse($transaction['date'])->format('d/m/Y') }}</td>
+                        <td>
+                            <strong>{{ strtoupper($transaction['description']) }}</strong>
+                            @if ($transaction['category'])
+                                <br><small style="color: #666;">{{ $transaction['category'] }}</small>
+                            @endif
+                        </td>
+                        @if ($transaction['credit'] > 0)
+                            <td class="right">Rp</td>
+                            <td class="right">{{ number_format($transaction['credit'], 0, ',', '.') }}</td>
+                        @else
+                            <td></td>
+                            <td></td>
                         @endif
+                        @if ($transaction['debit'] > 0)
+                            <td class="right">Rp</td>
+                            <td class="right">{{ number_format($transaction['debit'], 0, ',', '.') }}</td>
+                        @else
+                            <td></td>
+                            <td></td>
+                        @endif
+                        <td class="right {{ $runningBalance < 0 ? 'negative' : '' }}">
+                            @if ($runningBalance < 0)-@endif Rp
+                        </td>
+                        <td class="right {{ $runningBalance < 0 ? 'negative' : '' }}">
+                            {{ number_format(abs($runningBalance), 0, ',', '.') }}
+                        </td>
+                    </tr>
+                    @php $rowNumber++; @endphp
+                @endforeach
+
+                @if ($loop->last)
+                    <tr class="total-row">
+                        <td colspan="3" style="text-align: center;"><strong>Total:</strong></td>
+                        <td class="right"><strong>Rp</strong></td>
+                        <td class="right"><strong>{{ number_format($totalCredit, 0, ',', '.') }}</strong></td>
+                        <td class="right"><strong>Rp</strong></td>
+                        <td class="right"><strong>{{ number_format($totalDebit, 0, ',', '.') }}</strong></td>
+                        <td class="right" style="background-color: #ffeb3b !important;">
+                            <strong>@if ($closingBalance < 0)-@endif Rp</strong>
+                        </td>
+                        <td class="right" style="background-color: #ffeb3b !important;">
+                            <strong>{{ number_format(abs($closingBalance), 0, ',', '.') }}</strong>
+                        </td>
+                    </tr>
+                @endif
+            </tbody>
+        </table>
+    @empty
+        <table>
+            <thead>
+                <tr>
+                    <th class="col-no">NO</th>
+                    <th class="col-date">TANGGAL</th>
+                    <th class="col-description">URAIAN</th>
+                    <th class="col-amount" colspan="2">UANG MASUK</th>
+                    <th class="col-amount" colspan="2">PENGELUARAN</th>
+                    <th class="col-amount" colspan="2">SISA SALDO</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="opening-balance">
+                    <td colspan="3" style="text-align: left; padding-left: 15px;">
+                        <strong>SALDO AWAL (TANGGAL {{ $startDate->copy()->subDay()->format('d/m/Y') }})</strong>
                     </td>
-                    @if ($transaction['credit'] > 0)
-                        <td class="right">Rp</td>
-                        <td class="right">{{ number_format($transaction['credit'], 0, ',', '.') }}</td>
-                    @else
-                        <td></td>
-                        <td></td>
-                    @endif
-                    @if ($transaction['debit'] > 0)
-                        <td class="right">Rp</td>
-                        <td class="right">{{ number_format($transaction['debit'], 0, ',', '.') }}</td>
-                    @else
-                        <td></td>
-                        <td></td>
-                    @endif
-                    <td class="right {{ $runningBalance < 0 ? 'negative' : '' }}">
-                        @if ($runningBalance < 0)-@endif Rp
+                    <td class="right"><strong>Rp</strong></td>
+                    <td class="right"><strong>{{ number_format($openingBalance, 0, ',', '.') }}</strong></td>
+                    <td colspan="4" class="right"></td>
+                </tr>
+                <tr class="total-row">
+                    <td colspan="3" style="text-align: center;"><strong>Total:</strong></td>
+                    <td class="right"><strong>Rp</strong></td>
+                    <td class="right"><strong>0</strong></td>
+                    <td class="right"><strong>Rp</strong></td>
+                    <td class="right"><strong>0</strong></td>
+                    <td class="right" style="background-color: #ffeb3b !important;">
+                        <strong>@if ($closingBalance < 0)-@endif Rp</strong>
                     </td>
-                    <td class="right {{ $runningBalance < 0 ? 'negative' : '' }}">
-                        {{ number_format(abs($runningBalance), 0, ',', '.') }}
+                    <td class="right" style="background-color: #ffeb3b !important;">
+                        <strong>{{ number_format(abs($closingBalance), 0, ',', '.') }}</strong>
                     </td>
                 </tr>
-                @php $rowNumber++; @endphp
-            @endforeach
-        </tbody>
-        <tfoot>
-            {{-- Total Row --}}
-            <tr class="total-row">
-                <td colspan="3" style="text-align: center;"><strong>Total:</strong></td>
-                <td class="right"><strong>Rp</strong></td>
-                <td class="right"><strong>{{ number_format($totalCredit, 0, ',', '.') }}</strong></td>
-                <td class="right"><strong>Rp</strong></td>
-                <td class="right"><strong>{{ number_format($totalDebit, 0, ',', '.') }}</strong></td>
-                <td class="right" style="background-color: #ffeb3b !important;">
-                    <strong>@if ($closingBalance < 0)-@endif Rp</strong>
-                </td>
-                <td class="right" style="background-color: #ffeb3b !important;">
-                    <strong>{{ number_format(abs($closingBalance), 0, ',', '.') }}</strong>
-                </td>
-            </tr>
-        </tfoot>
-        </tbody>
-    </table>
+            </tbody>
+        </table>
+    @endforelse
 
     {{-- Signature Section --}}
     <div class="signature-section">

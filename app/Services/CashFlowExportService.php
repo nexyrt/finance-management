@@ -25,6 +25,9 @@ class CashFlowExportService
     ) {
         $data = $this->buildReportData($bankAccountIds, $startDate, $endDate, $month, $year);
 
+        ini_set('memory_limit', '1024M');
+        set_time_limit(300);
+
         $pdf = Pdf::loadView('pdf.cash-flow-report', $data);
         $pdf->setPaper('a4', 'portrait');
 
