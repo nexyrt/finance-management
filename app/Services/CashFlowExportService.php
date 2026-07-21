@@ -125,8 +125,8 @@ class CashFlowExportService
         $payments = $paymentsQuery->get()->map(function ($payment) {
             return [
                 'date' => $payment->payment_date,
-                'description' => 'PENGAJUAN DANA NO. '.$payment->invoice->invoice_number,
-                'category' => 'Pembayaran Invoice - '.($payment->invoice->client->name ?? ''),
+                'description' => 'PENGAJUAN DANA NO. '.($payment->invoice?->invoice_number ?? '-'),
+                'category' => 'Pembayaran Invoice - '.($payment->invoice?->client?->name ?? ''),
                 'credit' => $payment->amount,
                 'debit' => 0,
                 'type' => 'payment',
