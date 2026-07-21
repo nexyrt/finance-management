@@ -4,8 +4,8 @@ namespace App\Services;
 
 use App\Models\BankAccount;
 use App\Models\BankTransaction;
-use App\Models\Payment;
 use App\Models\CompanyProfile;
+use App\Models\Payment;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 
@@ -13,42 +13,60 @@ class CashFlowExportService
 {
     /**
      * Generate Cash Flow PDF Report
+     *
+     * @param  array<int,int>|null  $bankAccountIds
      */
     public function generatePdf(
-        ?int $bankAccountId = null,
+        ?array $bankAccountIds = null,
         ?string $startDate = null,
         ?string $endDate = null,
         ?string $month = null,
         ?string $year = null
     ) {
-        // If startDate and endDate are provided, use them
+        $data = $this->buildReportData($bankAccountIds, $startDate, $endDate, $month, $year);
+
+        $pdf = Pdf::loadView('pdf.cash-flow-report', $data);
+        $pdf->setPaper('a4', 'portrait');
+
+        return $pdf;
+    }
+
+    /**
+     * Build the dataset used by the PDF template.
+     *
+     * @param  array<int,int>|null  $bankAccountIds
+     * @return array<string,mixed>
+     */
+    public function buildReportData(
+        ?array $bankAccountIds = null,
+        ?string $startDate = null,
+        ?string $endDate = null,
+        ?string $month = null,
+        ?string $year = null
+    ): array {
         if ($startDate && $endDate) {
             $start = Carbon::parse($startDate)->startOfDay();
             $end = Carbon::parse($endDate)->endOfDay();
-            $periodText = $start->format('d/m/Y') . ' - ' . $end->format('d/m/Y');
+            $periodText = $start->format('d/m/Y').' - '.$end->format('d/m/Y');
         } else {
-            // Otherwise use month/year
-            $month = $month ?? now()->format('m');
-            $year = $year ?? now()->format('Y');
+            $month = $month ?: now()->format('m');
+            $year = $year ?: now()->format('Y');
             $start = Carbon::createFromDate($year, $month, 1)->startOfMonth();
             $end = Carbon::createFromDate($year, $month, 1)->endOfMonth();
-            $periodText = $this->getIndonesianMonth((int)$month) . ' ' . $year;
+            $periodText = $this->getIndonesianMonth((int) $month).' '.$year;
         }
 
-        // Get company profile
         $company = CompanyProfile::current();
 
-        // Get bank account if specified
-        $bankAccount = $bankAccountId ? BankAccount::find($bankAccountId) : null;
+        $bankAccount = ($bankAccountIds && count($bankAccountIds) === 1)
+            ? BankAccount::find($bankAccountIds[0])
+            : null;
 
-        // Get transactions for the period
-        $transactions = $this->getTransactionsForDateRange($bankAccountId, $start, $end);
+        $transactions = $this->getTransactionsForDateRange($bankAccountIds, $start, $end);
 
-        // Calculate opening balance (balance before start date)
-        $openingBalance = $this->getBalanceBeforeDate($bankAccountId, $start);
+        $openingBalance = $this->getBalanceBeforeDate($bankAccountIds, $start);
 
-        // Prepare data for PDF
-        $data = [
+        return [
             'company' => $company,
             'bankAccount' => $bankAccount,
             'periodText' => $periodText,
@@ -58,28 +76,22 @@ class CashFlowExportService
             'transactions' => $transactions,
             'closingBalance' => $this->calculateClosingBalance($openingBalance, $transactions),
         ];
-
-        // Generate PDF
-        $pdf = Pdf::loadView('pdf.cash-flow-report', $data);
-        $pdf->setPaper('a4', 'portrait');
-
-        return $pdf;
     }
 
     /**
      * Get all transactions for a date range
+     *
+     * @param  array<int,int>|null  $bankAccountIds
      */
-    private function getTransactionsForDateRange(?int $bankAccountId, Carbon $startDate, Carbon $endDate)
+    private function getTransactionsForDateRange(?array $bankAccountIds, Carbon $startDate, Carbon $endDate)
     {
-
-        // Get bank transactions
         $bankTransactionsQuery = BankTransaction::with(['category.parent', 'bankAccount'])
             ->whereBetween('transaction_date', [$startDate, $endDate])
             ->orderBy('transaction_date')
             ->orderBy('id');
 
-        if ($bankAccountId) {
-            $bankTransactionsQuery->where('bank_account_id', $bankAccountId);
+        if ($bankAccountIds) {
+            $bankTransactionsQuery->whereIn('bank_account_id', $bankAccountIds);
         }
 
         $bankTransactions = $bankTransactionsQuery->get()->map(function ($transaction) {
@@ -93,75 +105,58 @@ class CashFlowExportService
             ];
         });
 
-        // Get payments (invoice payments)
         $paymentsQuery = Payment::with(['invoice.client', 'bankAccount'])
             ->whereBetween('payment_date', [$startDate, $endDate])
             ->orderBy('payment_date')
             ->orderBy('id');
 
-        if ($bankAccountId) {
-            $paymentsQuery->where('bank_account_id', $bankAccountId);
+        if ($bankAccountIds) {
+            $paymentsQuery->whereIn('bank_account_id', $bankAccountIds);
         }
 
         $payments = $paymentsQuery->get()->map(function ($payment) {
             return [
                 'date' => $payment->payment_date,
-                'description' => 'PENGAJUAN DANA NO. ' . $payment->invoice->invoice_number,
-                'category' => 'Pembayaran Invoice - ' . ($payment->invoice->client->name ?? ''),
+                'description' => 'PENGAJUAN DANA NO. '.$payment->invoice->invoice_number,
+                'category' => 'Pembayaran Invoice - '.($payment->invoice->client->name ?? ''),
                 'credit' => $payment->amount,
                 'debit' => 0,
                 'type' => 'payment',
             ];
         });
 
-        // Merge and sort by date
         return $bankTransactions->concat($payments)->sortBy('date')->values();
     }
 
     /**
      * Calculate opening balance (balance before start date)
      * Formula from BankAccount model: initial_balance + payments + credits - debits
+     *
+     * @param  array<int,int>|null  $bankAccountIds
      */
-    private function getBalanceBeforeDate(?int $bankAccountId, Carbon $beforeDate): int
+    private function getBalanceBeforeDate(?array $bankAccountIds, Carbon $beforeDate): int
     {
-        if ($bankAccountId) {
-            $account = BankAccount::find($bankAccountId);
-            $initialBalance = $account->initial_balance ?? 0;
+        $initialQuery = BankAccount::query();
 
-            // Sum all transactions before start date
-            $creditSum = BankTransaction::where('bank_account_id', $bankAccountId)
-                ->where('transaction_type', 'credit')
-                ->where('transaction_date', '<', $beforeDate)
-                ->sum('amount');
+        $creditQuery = BankTransaction::where('transaction_type', 'credit')
+            ->where('transaction_date', '<', $beforeDate);
 
-            $debitSum = BankTransaction::where('bank_account_id', $bankAccountId)
-                ->where('transaction_type', 'debit')
-                ->where('transaction_date', '<', $beforeDate)
-                ->sum('amount');
+        $debitQuery = BankTransaction::where('transaction_type', 'debit')
+            ->where('transaction_date', '<', $beforeDate);
 
-            $paymentsSum = Payment::where('bank_account_id', $bankAccountId)
-                ->where('payment_date', '<', $beforeDate)
-                ->sum('amount');
+        $paymentsQuery = Payment::where('payment_date', '<', $beforeDate);
 
-            // Formula: initial_balance + payments + credits - debits
-            return $initialBalance + $paymentsSum + $creditSum - $debitSum;
+        if ($bankAccountIds) {
+            $initialQuery->whereIn('id', $bankAccountIds);
+            $creditQuery->whereIn('bank_account_id', $bankAccountIds);
+            $debitQuery->whereIn('bank_account_id', $bankAccountIds);
+            $paymentsQuery->whereIn('bank_account_id', $bankAccountIds);
         }
 
-        // If no specific account, sum all accounts
-        $totalInitial = BankAccount::sum('initial_balance');
-
-        $totalCredit = BankTransaction::where('transaction_type', 'credit')
-            ->where('transaction_date', '<', $beforeDate)
-            ->sum('amount');
-
-        $totalDebit = BankTransaction::where('transaction_type', 'debit')
-            ->where('transaction_date', '<', $beforeDate)
-            ->sum('amount');
-
-        $totalPayments = Payment::where('payment_date', '<', $beforeDate)
-            ->sum('amount');
-
-        return $totalInitial + $totalPayments + $totalCredit - $totalDebit;
+        return (int) $initialQuery->sum('initial_balance')
+            + (int) $paymentsQuery->sum('amount')
+            + (int) $creditQuery->sum('amount')
+            - (int) $debitQuery->sum('amount');
     }
 
     /**

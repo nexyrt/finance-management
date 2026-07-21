@@ -2,11 +2,13 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Storage;
 
 class CompanyProfile extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'name',
         'abbreviation',
@@ -22,7 +24,7 @@ class CompanyProfile extends Model
         'ppn_rate',
         'bank_accounts',
         'finance_manager_name',
-        'finance_manager_position'
+        'finance_manager_position',
     ];
 
     protected $casts = [
@@ -34,45 +36,53 @@ class CompanyProfile extends Model
     // Model CompanyProfile.php
     public function getLogoBase64Attribute(): string
     {
-        if (!$this->logo_path)
+        if (! $this->logo_path) {
             return '';
+        }
 
         $fullPath = public_path($this->logo_path);
+
         return file_exists($fullPath)
-            ? 'data:image/png;base64,' . base64_encode(file_get_contents($fullPath))
+            ? 'data:image/png;base64,'.base64_encode(file_get_contents($fullPath))
             : '';
     }
 
     public function getSignatureBase64Attribute(): string
     {
-        if (!$this->signature_path)
+        if (! $this->signature_path) {
             return '';
+        }
 
         $fullPath = public_path($this->signature_path);
+
         return file_exists($fullPath)
-            ? 'data:image/png;base64,' . base64_encode(file_get_contents($fullPath))
+            ? 'data:image/png;base64,'.base64_encode(file_get_contents($fullPath))
             : '';
     }
 
     public function getLetterHeadBase64Attribute(): string
     {
-        if (!$this->letter_head_path)
+        if (! $this->letter_head_path) {
             return '';
+        }
 
         $fullPath = public_path($this->letter_head_path);
+
         return file_exists($fullPath)
-            ? 'data:image/png;base64,' . base64_encode(file_get_contents($fullPath))
+            ? 'data:image/png;base64,'.base64_encode(file_get_contents($fullPath))
             : '';
     }
 
     public function getStampBase64Attribute(): string
     {
-        if (!$this->stamp_path)
+        if (! $this->stamp_path) {
             return '';
+        }
 
         $fullPath = public_path($this->stamp_path);
+
         return file_exists($fullPath)
-            ? 'data:image/png;base64,' . base64_encode(file_get_contents($fullPath))
+            ? 'data:image/png;base64,'.base64_encode(file_get_contents($fullPath))
             : '';
     }
 
@@ -94,7 +104,7 @@ class CompanyProfile extends Model
         }
 
         $skipWords = ['PT', 'PT.', 'CV', 'CV.', 'UD', 'UD.', 'TB', 'TB.', 'FA', 'FA.',
-                      'NV', 'NV.', 'PP', 'PP.', 'PD', 'PD.', 'PERSERO', 'TBK', 'TBK.'];
+            'NV', 'NV.', 'PP', 'PP.', 'PD', 'PD.', 'PERSERO', 'TBK', 'TBK.'];
 
         $words = preg_split('/\s+/', trim($this->name));
         $filtered = array_filter($words, fn ($word) => ! in_array(strtoupper($word), $skipWords));

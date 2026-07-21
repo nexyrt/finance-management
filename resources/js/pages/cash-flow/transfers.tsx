@@ -145,6 +145,7 @@ export default function CashFlowTransfers({ rows, pagination, stats, filters, ba
         params.set('section', 'transfers');
         if (filters.date_from) params.set('date_from', filters.date_from);
         if (filters.date_to) params.set('date_to', filters.date_to);
+        if (filters.bank_accounts.length > 0) params.set('bank_accounts', filters.bank_accounts.join(','));
         window.open(`/cash-flow/export/pdf?${params.toString()}`, '_blank');
     };
 
