@@ -104,6 +104,36 @@ class CashFlowExportControllerTest extends TestCase
         $this->assertSame($accountA->id, $data['bankAccount']->id);
     }
 
+    public function test_export_without_params_covers_all_time(): void
+    {
+        $account = BankAccount::factory()->create(['initial_balance' => 500000]);
+        $this->transactionOn($account, '2025-01-15', 'debit', 100000);
+        $this->transactionOn($account, '2026-06-10', 'debit', 25000);
+
+        $data = app(CashFlowExportService::class)->buildReportData();
+
+        $this->assertCount(2, $data['transactions']);
+        $this->assertSame('SEMUA WAKTU', $data['periodText']);
+        $this->assertSame(500000, $data['openingBalance']);
+        $this->assertSame(375000, $data['closingBalance']);
+
+        $this->actingAs($this->userWithAccess())
+            ->get('/cash-flow/export/pdf')
+            ->assertOk()
+            ->assertDownload('cash-flow-semua-waktu.pdf');
+    }
+
+    public function test_export_with_month_still_uses_that_month(): void
+    {
+        $account = BankAccount::factory()->create(['initial_balance' => 0]);
+        $this->transactionOn($account, '2026-06-15');
+
+        $this->actingAs($this->userWithAccess())
+            ->get('/cash-flow/export/pdf?month=06&year=2026')
+            ->assertOk()
+            ->assertDownload('cash-flow-2026-06.pdf');
+    }
+
     public function test_export_accepts_comma_separated_bank_accounts_param(): void
     {
         $accountA = BankAccount::factory()->create(['initial_balance' => 0]);

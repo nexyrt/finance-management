@@ -33,11 +33,16 @@ class CashFlowExportController extends Controller
                 date('Y-m-d', strtotime($endDate)),
                 $bankAccountIds ? '-account-'.implode('-', $bankAccountIds) : ''
             );
-        } else {
+        } elseif ($month || $year) {
             $filename = sprintf(
                 'cash-flow-%s-%s%s.pdf',
                 $year ?? now()->format('Y'),
                 str_pad($month ?? now()->format('m'), 2, '0', STR_PAD_LEFT),
+                $bankAccountIds ? '-account-'.implode('-', $bankAccountIds) : ''
+            );
+        } else {
+            $filename = sprintf(
+                'cash-flow-semua-waktu%s.pdf',
                 $bankAccountIds ? '-account-'.implode('-', $bankAccountIds) : ''
             );
         }

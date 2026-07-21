@@ -48,12 +48,20 @@ class CashFlowExportService
             $start = Carbon::parse($startDate)->startOfDay();
             $end = Carbon::parse($endDate)->endOfDay();
             $periodText = $start->format('d/m/Y').' - '.$end->format('d/m/Y');
-        } else {
+        } elseif ($month || $year) {
             $month = $month ?: now()->format('m');
             $year = $year ?: now()->format('Y');
             $start = Carbon::createFromDate($year, $month, 1)->startOfMonth();
             $end = Carbon::createFromDate($year, $month, 1)->endOfMonth();
             $periodText = $this->getIndonesianMonth((int) $month).' '.$year;
+        } else {
+            $earliest = collect([
+                BankTransaction::min('transaction_date'),
+                Payment::min('payment_date'),
+            ])->filter()->min();
+            $start = $earliest ? Carbon::parse($earliest)->startOfDay() : now()->startOfDay();
+            $end = now()->endOfDay();
+            $periodText = 'SEMUA WAKTU';
         }
 
         $company = CompanyProfile::current();
