@@ -1,3 +1,4 @@
+import { toLocalIso } from '@/lib/utils';
 import { Head, router, useForm } from '@inertiajs/react';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -35,7 +36,7 @@ export default function ReimbursementsCreate() {
         title: '',
         description: '',
         amount: 0,
-        expense_date: new Date().toISOString().slice(0, 10),
+        expense_date: toLocalIso(new Date()),
         category: '',
         attachment: null,
         action: 'draft',
@@ -89,7 +90,7 @@ export default function ReimbursementsCreate() {
                             <DatePicker
                                 label="Tanggal Pengeluaran *"
                                 value={data.expense_date ? new Date(data.expense_date) : null}
-                                onChange={(d) => setData('expense_date', d ? d.toISOString().slice(0, 10) : '')}
+                                onChange={(d) => setData('expense_date', d ? toLocalIso(d) : '')}
                                 error={errors.expense_date}
                             />
                         <Combobox

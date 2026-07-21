@@ -16,7 +16,7 @@ import { EmptyState } from '@/components/shared/empty-state';
 import { PageHeader } from '@/components/shared/page-header';
 import { StatsCard } from '@/components/shared/stats-card';
 import { AppLayout } from '@/layouts/app-layout';
-import { cn, formatCurrency, toastError, toastErrors } from '@/lib/utils';
+import { cn, formatCurrency, toastError, toastErrors, toLocalIso } from '@/lib/utils';
 import { ColDef, CurrencyCell, ResizableTh, parseQty, useColumnResize } from '@/pages/invoices/create';
 import { router } from '@inertiajs/react';
 import {
@@ -502,8 +502,8 @@ interface MonthlyFormState {
 
 const EMPTY_MONTHLY_FORM: MonthlyFormState = {
     template_id: null,
-    scheduled_date: new Date().toISOString().slice(0, 10),
-    issue_date: new Date().toISOString().slice(0, 10),
+    scheduled_date: toLocalIso(new Date()),
+    issue_date: toLocalIso(new Date()),
     due_date: '',
     items: [{ ...EMPTY_ITEM }],
     discount_type: 'fixed',
@@ -552,7 +552,7 @@ function MonthlyFormModal({ open, onClose, onSuccess, editTarget, clients, servi
                     discount_reason: d.discount_reason ?? '',
                 });
             } else {
-                const d = new Date(defaultYear, defaultMonth - 1, 1).toISOString().slice(0, 10);
+                const d = toLocalIso(new Date(defaultYear, defaultMonth - 1, 1));
                 setForm({ ...EMPTY_MONTHLY_FORM, scheduled_date: d });
             }
             setErrors({});
@@ -669,18 +669,18 @@ function MonthlyFormModal({ open, onClose, onSuccess, editTarget, clients, servi
                         <DatePicker
                             label="Tanggal Terjadwal *"
                             value={form.scheduled_date ? new Date(form.scheduled_date) : undefined}
-                            onChange={(d) => setForm({ ...form, scheduled_date: d ? d.toISOString().slice(0, 10) : '' })}
+                            onChange={(d) => setForm({ ...form, scheduled_date: d ? toLocalIso(d) : '' })}
                             error={errors.scheduled_date}
                         />
                         <DatePicker
                             label="Tanggal Terbit"
                             value={form.issue_date ? new Date(form.issue_date) : undefined}
-                            onChange={(d) => setForm({ ...form, issue_date: d ? d.toISOString().slice(0, 10) : '' })}
+                            onChange={(d) => setForm({ ...form, issue_date: d ? toLocalIso(d) : '' })}
                         />
                         <DatePicker
                             label="Tanggal Jatuh Tempo"
                             value={form.due_date ? new Date(form.due_date) : undefined}
-                            onChange={(d) => setForm({ ...form, due_date: d ? d.toISOString().slice(0, 10) : '' })}
+                            onChange={(d) => setForm({ ...form, due_date: d ? toLocalIso(d) : '' })}
                         />
                     </div>
 
@@ -729,18 +729,18 @@ interface GenerateModalProps {
 }
 
 function GenerateModal({ open, onClose, onSuccess, month, year }: GenerateModalProps) {
-    const [issueDate, setIssueDate] = React.useState(new Date().toISOString().slice(0, 10));
+    const [issueDate, setIssueDate] = React.useState(toLocalIso(new Date()));
     const [dueDate, setDueDate] = React.useState(() => {
         const d = new Date(); d.setDate(d.getDate() + 30);
-        return d.toISOString().slice(0, 10);
+        return toLocalIso(d);
     });
     const [loading, setLoading] = React.useState(false);
 
     React.useEffect(() => {
         if (open) {
-            setIssueDate(new Date().toISOString().slice(0, 10));
+            setIssueDate(toLocalIso(new Date()));
             const d = new Date(); d.setDate(d.getDate() + 30);
-            setDueDate(d.toISOString().slice(0, 10));
+            setDueDate(toLocalIso(d));
         }
     }, [open]);
 
@@ -786,12 +786,12 @@ function GenerateModal({ open, onClose, onSuccess, month, year }: GenerateModalP
                         <DatePicker
                             label="Tanggal Terbit"
                             value={issueDate ? new Date(issueDate) : undefined}
-                            onChange={(d) => setIssueDate(d ? d.toISOString().slice(0, 10) : '')}
+                            onChange={(d) => setIssueDate(d ? toLocalIso(d) : '')}
                         />
                         <DatePicker
                             label="Jatuh Tempo"
                             value={dueDate ? new Date(dueDate) : undefined}
-                            onChange={(d) => setDueDate(d ? d.toISOString().slice(0, 10) : '')}
+                            onChange={(d) => setDueDate(d ? toLocalIso(d) : '')}
                         />
                     </div>
                 </div>
@@ -824,12 +824,12 @@ function PublishModal({ open, onClose, onSuccess, invoice }: PublishModalProps) 
 
     React.useEffect(() => {
         if (open && invoice) {
-            setIssueDate(invoice.issue_date ?? new Date().toISOString().slice(0, 10));
+            setIssueDate(invoice.issue_date ?? toLocalIso(new Date()));
             if (invoice.due_date) {
                 setDueDate(invoice.due_date);
             } else {
                 const d = new Date(); d.setDate(d.getDate() + 30);
-                setDueDate(d.toISOString().slice(0, 10));
+                setDueDate(toLocalIso(d));
             }
         }
     }, [open, invoice]);
@@ -877,12 +877,12 @@ function PublishModal({ open, onClose, onSuccess, invoice }: PublishModalProps) 
                         <DatePicker
                             label="Tanggal Terbit *"
                             value={issueDate ? new Date(issueDate) : undefined}
-                            onChange={(d) => setIssueDate(d ? d.toISOString().slice(0, 10) : '')}
+                            onChange={(d) => setIssueDate(d ? toLocalIso(d) : '')}
                         />
                         <DatePicker
                             label="Jatuh Tempo *"
                             value={dueDate ? new Date(dueDate) : undefined}
-                            onChange={(d) => setDueDate(d ? d.toISOString().slice(0, 10) : '')}
+                            onChange={(d) => setDueDate(d ? toLocalIso(d) : '')}
                         />
                     </div>
                 </div>
@@ -909,8 +909,8 @@ interface BulkPublishModalProps {
 }
 
 function BulkPublishModal({ open, onClose, onSuccess, selectedIds }: BulkPublishModalProps) {
-    const [issueDate, setIssueDate] = React.useState(new Date().toISOString().slice(0, 10));
-    const [dueDate, setDueDate] = React.useState(() => { const d = new Date(); d.setDate(d.getDate() + 30); return d.toISOString().slice(0, 10); });
+    const [issueDate, setIssueDate] = React.useState(toLocalIso(new Date()));
+    const [dueDate, setDueDate] = React.useState(() => { const d = new Date(); d.setDate(d.getDate() + 30); return toLocalIso(d); });
     const [loading, setLoading] = React.useState(false);
 
     const handle = async () => {
@@ -944,8 +944,8 @@ function BulkPublishModal({ open, onClose, onSuccess, selectedIds }: BulkPublish
                     </div>
                 </DialogHeader>
                 <div className="px-6 pb-2 grid grid-cols-2 gap-4">
-                    <DatePicker label="Tanggal Terbit *" value={issueDate ? new Date(issueDate) : undefined} onChange={(d) => setIssueDate(d ? d.toISOString().slice(0, 10) : '')} />
-                    <DatePicker label="Jatuh Tempo *" value={dueDate ? new Date(dueDate) : undefined} onChange={(d) => setDueDate(d ? d.toISOString().slice(0, 10) : '')} />
+                    <DatePicker label="Tanggal Terbit *" value={issueDate ? new Date(issueDate) : undefined} onChange={(d) => setIssueDate(d ? toLocalIso(d) : '')} />
+                    <DatePicker label="Jatuh Tempo *" value={dueDate ? new Date(dueDate) : undefined} onChange={(d) => setDueDate(d ? toLocalIso(d) : '')} />
                 </div>
                 <DialogFooter>
                     <Button variant="zinc" onClick={onClose} disabled={loading} className="w-full sm:w-auto order-2 sm:order-1">Batal</Button>

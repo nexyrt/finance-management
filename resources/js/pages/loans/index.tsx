@@ -46,7 +46,7 @@ import { PageHeader } from '@/components/shared/page-header';
 import { Pagination } from '@/components/shared/pagination';
 import { StatsCard } from '@/components/shared/stats-card';
 import { AppLayout } from '@/layouts/app-layout';
-import { cn, formatCurrency, formatDate } from '@/lib/utils';
+import { cn, formatCurrency, formatDate, toLocalIso } from '@/lib/utils';
 import * as loanRoutes from '@/routes/loans';
 import type { FilterOption, LoanFilters, LoanRow, LoanStats, PaginationMeta } from './types';
 
@@ -65,7 +65,7 @@ const STATUS_OPTIONS: FilterOption[] = [
 ];
 
 function isoOrNull(d: Date | null): string | null {
-    return d ? d.toISOString().slice(0, 10) : null;
+    return d ? toLocalIso(d) : null;
 }
 
 function statusBadge(status: string) {
@@ -437,7 +437,7 @@ function LoanForm({ mode, row, nextLoanNumber, bankAccountOptions, onClose }: Lo
         interest_amount: row?.interest_amount ?? 0,
         interest_rate: row?.interest_rate ?? '',
         term_months: row?.term_months ?? '',
-        start_date: row?.start_date ?? new Date().toISOString().slice(0, 10),
+        start_date: row?.start_date ?? toLocalIso(new Date()),
         maturity_date: row?.maturity_date ?? '',
         purpose: row?.purpose ?? '',
         contract_attachment: null,
@@ -450,7 +450,7 @@ function LoanForm({ mode, row, nextLoanNumber, bankAccountOptions, onClose }: Lo
         if (start && months) {
             const d = new Date(start);
             d.setMonth(d.getMonth() + Number(months));
-            setData('maturity_date', d.toISOString().slice(0, 10));
+            setData('maturity_date', toLocalIso(d));
         }
     };
 
@@ -649,7 +649,7 @@ interface PayLoanDialogProps {
 function PayLoanDialog({ row, bankAccountOptions, onClose }: PayLoanDialogProps) {
     const { data, setData, post, processing, errors, reset } = useForm({
         bank_account_id: null as number | null,
-        payment_date: new Date().toISOString().slice(0, 10),
+        payment_date: toLocalIso(new Date()),
         principal_paid: 0,
         interest_paid: 0,
         reference_number: '',

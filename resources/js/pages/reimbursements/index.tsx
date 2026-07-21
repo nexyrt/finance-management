@@ -45,7 +45,7 @@ import { FileUpload } from '@/components/shared/file-upload';
 import { PageHeader } from '@/components/shared/page-header';
 import { Pagination } from '@/components/shared/pagination';
 import { AppLayout } from '@/layouts/app-layout';
-import { cn, formatCurrency, formatDate } from '@/lib/utils';
+import { cn, formatCurrency, formatDate, toLocalIso } from '@/lib/utils';
 import * as reimbursementRoutes from '@/routes/reimbursements';
 import type {
     FilterOption,
@@ -67,7 +67,7 @@ interface Props {
 }
 
 function isoOrNull(d: Date | null): string | null {
-    return d ? d.toISOString().slice(0, 10) : null;
+    return d ? toLocalIso(d) : null;
 }
 function parseIso(s: string | null): Date | null {
     return s ? new Date(s) : null;
@@ -237,7 +237,7 @@ export default function ReimbursementsIndex({
             reimbursementRoutes.pay.url({ reimbursement: payRow.id }),
             {
                 bank_account_id: payBankAccountId,
-                payment_date: payDate ? payDate.toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10),
+                payment_date: payDate ? toLocalIso(payDate) : toLocalIso(new Date()),
                 payment_amount: payAmount,
                 reference_notes: payNotes || undefined,
             },
@@ -792,7 +792,7 @@ function ReimbursementForm({ mode, row, onClose }: ReimbursementFormProps) {
         title: row?.title ?? '',
         description: row?.description ?? '',
         amount: row?.amount ?? 0,
-        expense_date: row?.expense_date ?? new Date().toISOString().slice(0, 10),
+        expense_date: row?.expense_date ?? toLocalIso(new Date()),
         category: row?.category_input ?? '',
         attachment: null,
         remove_attachment: false,
@@ -873,7 +873,7 @@ function ReimbursementForm({ mode, row, onClose }: ReimbursementFormProps) {
                     <DatePicker
                         label="Tanggal Pengeluaran *"
                         value={data.expense_date ? new Date(data.expense_date) : null}
-                        onChange={(d) => setData('expense_date', d ? d.toISOString().slice(0, 10) : '')}
+                        onChange={(d) => setData('expense_date', d ? toLocalIso(d) : '')}
                         error={errors.expense_date}
                     />
                 <Combobox

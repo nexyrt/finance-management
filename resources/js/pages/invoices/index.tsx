@@ -68,7 +68,7 @@ import { PageHeader } from '@/components/shared/page-header';
 import { Pagination } from '@/components/shared/pagination';
 import { AppLayout } from '@/layouts/app-layout';
 import { format as formatDateFns } from 'date-fns';
-import { cn, formatCurrency, formatDate } from '@/lib/utils';
+import { cn, formatCurrency, formatDate, toLocalIso } from '@/lib/utils';
 import type { SharedProps } from '@/types';
 
 /* ─────────────────────────────────── types ─── */
@@ -252,7 +252,7 @@ interface PaymentFormState {
 
 const EMPTY_PAYMENT_FORM: PaymentFormState = {
     amount: 0,
-    payment_date: new Date().toISOString().slice(0, 10),
+    payment_date: toLocalIso(new Date()),
     payment_method: 'bank_transfer',
     bank_account_id: null,
     reference_number: '',
@@ -1011,7 +1011,7 @@ function InvoiceDrawer({
 
 /* ─────────────────────────────────── main page ─── */
 
-const DEFAULT_MONTH = new Date().toISOString().slice(0, 7);
+const DEFAULT_MONTH = toLocalIso(new Date()).slice(0, 7);
 
 
 /* Colored accent config for stats cards */
@@ -1138,8 +1138,8 @@ function InvoicesPage({ invoices, stats, clients, rollbackableIds, customTemplat
 
     const handleDateRangeChange = (range: { from: Date | null; to: Date | null }) => {
         navigate({
-            date_from: range.from ? range.from.toISOString().slice(0, 10) : '',
-            date_to: range.to ? range.to.toISOString().slice(0, 10) : '',
+            date_from: range.from ? toLocalIso(range.from) : '',
+            date_to: range.to ? toLocalIso(range.to) : '',
         });
     };
 

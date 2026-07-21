@@ -11,7 +11,7 @@ import { FileUpload } from '@/components/shared/file-upload';
 import { FormSection } from '@/components/shared/form-section';
 import { PageHeader } from '@/components/shared/page-header';
 import { AppLayout } from '@/layouts/app-layout';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, toLocalIso } from '@/lib/utils';
 import * as fundRequestRoutes from '@/routes/fund-requests';
 import type { FilterOption, FundRequestItem } from './types';
 
@@ -134,7 +134,7 @@ export default function FundRequestsEdit({ fundRequest, categories }: Props) {
                         <DatePicker
                             label="Dibutuhkan Sebelum *"
                             value={data.needed_by_date ? new Date(data.needed_by_date) : null}
-                            onChange={(d) => setData('needed_by_date', d ? d.toISOString().slice(0, 10) : '')}
+                            onChange={(d) => setData('needed_by_date', d ? toLocalIso(d) : '')}
                             error={errors.needed_by_date}
                         />
                         <div className="sm:col-span-2">

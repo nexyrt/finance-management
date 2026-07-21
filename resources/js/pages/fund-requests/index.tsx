@@ -37,7 +37,7 @@ import { FileUpload } from '@/components/shared/file-upload';
 import { PageHeader } from '@/components/shared/page-header';
 import { Pagination } from '@/components/shared/pagination';
 import { AppLayout } from '@/layouts/app-layout';
-import { cn, formatCurrency, formatDate } from '@/lib/utils';
+import { cn, formatCurrency, formatDate, toLocalIso } from '@/lib/utils';
 import * as fundRequestRoutes from '@/routes/fund-requests';
 import {
     Dialog,
@@ -141,7 +141,7 @@ export default function FundRequestsIndex({
     // Disburse dialog
     const [disburseRow, setDisburseRow] = React.useState<FundRequestRow | null>(null);
     const [disburseBankAccountId, setDisburseBankAccountId] = React.useState<number | null>(null);
-    const [disburseDate, setDisburseDate] = React.useState(new Date().toISOString().slice(0, 10));
+    const [disburseDate, setDisburseDate] = React.useState(toLocalIso(new Date()));
     const [disburseNotes, setDisburseNotes] = React.useState('');
     const [disburseFile, setDisburseFile] = React.useState<File | null>(null);
     const [disburseProcessing, setDisburseProcessing] = React.useState(false);
@@ -519,7 +519,7 @@ export default function FundRequestsIndex({
                                                         </Button>
                                                     )}
                                                     {row.can_disburse && canDisburse && (
-                                                        <Button variant="green" size="sm" onClick={() => { setDisburseRow(row); setDisburseBankAccountId(null); setDisburseDate(new Date().toISOString().slice(0, 10)); setDisburseNotes(''); }}>
+                                                        <Button variant="green" size="sm" onClick={() => { setDisburseRow(row); setDisburseBankAccountId(null); setDisburseDate(toLocalIso(new Date())); setDisburseNotes(''); }}>
                                                             Cairkan
                                                         </Button>
                                                     )}
@@ -711,7 +711,7 @@ export default function FundRequestsIndex({
                                 </>
                             )}
                             {detailRow?.can_disburse && canDisburse && (
-                                <Button variant="green" size="sm" onClick={() => { setDetailRow(null); setDisburseRow(detailRow); setDisburseBankAccountId(null); setDisburseDate(new Date().toISOString().slice(0, 10)); setDisburseNotes(''); }}>
+                                <Button variant="green" size="sm" onClick={() => { setDetailRow(null); setDisburseRow(detailRow); setDisburseBankAccountId(null); setDisburseDate(toLocalIso(new Date())); setDisburseNotes(''); }}>
                                     Cairkan Dana
                                 </Button>
                             )}
@@ -790,7 +790,7 @@ export default function FundRequestsIndex({
                         <DatePicker
                             label="Tanggal Pencairan *"
                             value={disburseDate ? new Date(disburseDate) : null}
-                            onChange={(d) => setDisburseDate(d ? d.toISOString().slice(0, 10) : '')}
+                            onChange={(d) => setDisburseDate(d ? toLocalIso(d) : '')}
                             maxDate={new Date()}
                         />
                         <Textarea
@@ -991,7 +991,7 @@ function FundRequestForm({ mode, categories, nextNumber, fundRequest, onClose }:
                         <DatePicker
                             label="Dibutuhkan Sebelum *"
                             value={data.needed_by_date ? new Date(data.needed_by_date) : null}
-                            onChange={(d) => setData('needed_by_date', d ? d.toISOString().slice(0, 10) : '')}
+                            onChange={(d) => setData('needed_by_date', d ? toLocalIso(d) : '')}
                             error={errors.needed_by_date}
                         />
                     </div>

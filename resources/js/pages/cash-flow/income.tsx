@@ -27,7 +27,7 @@ import { EmptyState } from '@/components/shared/empty-state';
 import { PageHeader } from '@/components/shared/page-header';
 import { Pagination } from '@/components/shared/pagination';
 import { AppLayout } from '@/layouts/app-layout';
-import { cn, formatCurrency, formatDate } from '@/lib/utils';
+import { cn, formatCurrency, formatDate, toLocalIso } from '@/lib/utils';
 import * as cashFlowRoutes from '@/routes/cash-flow';
 import { CashFlowStatsBar } from './components/cash-flow-stats';
 import {
@@ -49,7 +49,7 @@ interface Props {
 }
 
 function isoOrNull(d: Date | null): string | null {
-    return d ? d.toISOString().slice(0, 10) : null;
+    return d ? toLocalIso(d) : null;
 }
 
 function parseIso(s: string | null): Date | null {

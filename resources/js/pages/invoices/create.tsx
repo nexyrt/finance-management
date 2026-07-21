@@ -20,7 +20,7 @@ import { CurrencyInput } from '@/components/shared/currency-input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { AppLayout } from '@/layouts/app-layout';
-import { cn, formatCurrency, toastErrors } from '@/lib/utils';
+import { cn, formatCurrency, toastErrors, toLocalIso } from '@/lib/utils';
 import type { SharedProps } from '@/types';
 
 /* ─────────────────────────────────── types ─── */
@@ -357,7 +357,7 @@ export function InvoiceForm({
 
     const { data, setData, post, put, transform, processing, errors } = useForm({
         client_id: initialData?.client_id ?? null as number | null,
-        issue_date: initialData?.issue_date ?? new Date().toISOString().slice(0, 10),
+        issue_date: initialData?.issue_date ?? toLocalIso(new Date()),
         due_date: initialData?.due_date ?? '',
         items: (initialData?.items ?? [emptyItem()]) as InvoiceItem[],
         discount_type: initialData?.discount_type ?? 'fixed',

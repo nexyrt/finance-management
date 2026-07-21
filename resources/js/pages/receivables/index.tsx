@@ -48,7 +48,7 @@ import { PageHeader } from '@/components/shared/page-header';
 import { Pagination } from '@/components/shared/pagination';
 import { StatsCard } from '@/components/shared/stats-card';
 import { AppLayout } from '@/layouts/app-layout';
-import { cn, formatCurrency, formatDate } from '@/lib/utils';
+import { cn, formatCurrency, formatDate, toLocalIso } from '@/lib/utils';
 import * as receivableRoutes from '@/routes/receivables';
 import type {
     FilterOption,
@@ -91,7 +91,7 @@ const PAYMENT_METHOD_OPTIONS: FilterOption[] = [
 ];
 
 function isoOrNull(d: Date | null): string | null {
-    return d ? d.toISOString().slice(0, 10) : null;
+    return d ? toLocalIso(d) : null;
 }
 
 function statusBadge(status: string) {
@@ -556,7 +556,7 @@ function ReceivableForm({ mode, row, nextReceivableNumber, employeeOptions, comp
         interest_amount: 0,
         interest_rate: row?.interest_rate ?? '',
         installment_months: row?.installment_months ?? '',
-        loan_date: row?.loan_date ?? new Date().toISOString().slice(0, 10),
+        loan_date: row?.loan_date ?? toLocalIso(new Date()),
         purpose: row?.purpose ?? '',
         notes: row?.notes ?? '',
         disbursement_account: row?.disbursement_account ?? '',
@@ -862,7 +862,7 @@ function ApproveReceivableDialog({ row, bankAccountOptions, onClose }: { row: Re
 function PayReceivableDialog({ row, bankAccountOptions, onClose }: { row: ReceivableRow; bankAccountOptions: FilterOption[]; onClose: () => void }) {
     const { data, setData, post, processing, errors, reset } = useForm({
         bank_account_id: null as number | null,
-        payment_date: new Date().toISOString().slice(0, 10),
+        payment_date: toLocalIso(new Date()),
         principal_paid: 0,
         interest_paid: 0,
         payment_method: 'bank_transfer',
